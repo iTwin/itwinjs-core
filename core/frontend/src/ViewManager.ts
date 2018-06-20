@@ -71,6 +71,8 @@ export class ViewManager {
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
 
+  public set doContinuousRendering(doContRend: boolean) { this._doContinuousRendering = doContRend; }
+
   public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
     //   if (this.doesHostHaveFocus())
     //     this.getInfoWindow().show(viewPt, vp, msg);

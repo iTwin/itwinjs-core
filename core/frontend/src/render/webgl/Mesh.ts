@@ -344,8 +344,8 @@ export class EdgeGeometry extends MeshGeometry {
   }
 
   public _wantWoWReversal(_target: Target): boolean { return true; }
-  public getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
-  public getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  public _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  public _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Edge; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
@@ -468,6 +468,9 @@ export class PolylineEdgeGeometry extends MeshGeometry {
     return undefined;
   }
 
+  public _wantWoWReversal(_target: Target): boolean { return true; }
+  public _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  public _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Polyline; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }

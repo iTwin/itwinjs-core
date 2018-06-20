@@ -3,21 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 const FS = require('fs-extra');
-const Path = require('path');
-const objTraverse = require('obj-traverse');
-
-const validTags = ["see", "note", "throws", "param", "deprecated", "module"];
+const validTags = ["see", "throws", "note", "param", "deprecated", "module"];
 
 function validateTags(path) {
     let tags = parseFile(path);
-    let invalidTags = [];
-
-    for (tag in tags) {
-        if (!validTags.includes(tag)) {
-            invalidTags.push(tag);
-        }
-    }
-    return invalidTags;
+    return tags;
 }
 
 function parseFile(path) {
@@ -34,8 +24,15 @@ function parseFile(path) {
                 allTags[tags[j][i]['tag']] = allTags[tags[j][i]['tag']] ? allTags[tags[j][i]['tag']] + 1 : 1;
             }
         }
+
+        let invalidTagObjects = [];
+        for (tag in allTags) {
+            if (!validTags.includes(tag)) {
+                invalidTagObjects.push(tag, findSource(jsonContents, 'tag', tag));
+            }
+        }
+        return invalidTagObjects;
     }
-    return allTags;
 }
 
 function findValues(obj, key) {
@@ -57,6 +54,47 @@ function findValuesHelper(obj, key, list) {
         if (children.length > 0) {
             for (i = 0; i < children.length; i++) {
                 list = list.concat(findValuesHelper(obj[children[i]], key, []));
+            }
+        }
+    }
+    return list;
+}
+
+function findSource(obj, key, value) {
+    return findSourceHelper(obj, key, value, []);
+}
+
+function findSourceHelper(obj, key, value, list) {
+    if (!obj) return list;
+    if (obj instanceof Array) {
+        for (var i in obj) {
+            list = list.concat(findSourceHelper(obj[i], key, value, []));
+        }
+        return list;
+    }
+
+    //Look for tag in signature or in comment
+    if (obj['signatures']) {
+        if (obj['signatures'][0] && obj['signatures'][0]['comment'] && obj['signatures'][0]['comment']['tags']) {
+            for (let tag in obj['signatures'][0]['comment']['tags']) {
+                if (obj['signatures'][0]['comment']['tags'][tag].tag === value && obj['sources'] && obj['sources'][0])
+                    list.push(obj['sources'][0]);
+
+            }
+        }
+    }
+    if (obj['comment'] && obj['comment']['tags']) {
+        for (let tag in obj['comment']['tags']) {
+            if (obj['comment']['tags'][tag].tag === value && obj['sources'] && obj['sources'][0])
+                list.push(obj['sources'][0]);
+        }
+    }
+
+    if ((typeof obj == "object") && (obj !== null)) {
+        var children = Object.keys(obj);
+        if (children.length > 0) {
+            for (i = 0; i < children.length; i++) {
+                list = list.concat(findSourceHelper(obj[children[i]], key, value, []));
             }
         }
     }

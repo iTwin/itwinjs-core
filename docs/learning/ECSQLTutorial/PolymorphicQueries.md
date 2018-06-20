@@ -9,24 +9,47 @@ We begin the lesson by using a simple ECSQL similar to the ones used at the begi
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and class id of all Elements
+> *Goal:* Return the id and class id of all `SpatialElement`s.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, ECClassId FROM bis.Element
+> SELECT ECInstanceId, ECClassId FROM bis.SpatialElement
 > ```
 >
 > *Result*
 >
 > ECInstanceId | ECClassId
 > --- | ---
-> lll | XX
-> xxx | YY
-> xxx | ZZ
+> 0x10000000012 | MyDomain.Building
+> 0x10000000021 | MyDomain.Device
+> 0x10000000022 | MyDomain.Device
+> 0x10000000023 | MyDomain.Device
+> 0x10000000024 | MyDomain.Device
+> 0x10000000025 | MyDomain.Device
+> 0x10000000026 | MyDomain.Device
+> 0x10000000027 | MyDomain.Device
+> 0x10000000028 | MyDomain.Device
+> 0x10000000029 | MyDomain.Device
+> 0x1000000002a | MyDomain.Device
+> 0x1000000002b | MyDomain.Device
+> 0x10000000014 | MyDomain.Space
+> 0x10000000015 | MyDomain.Space
+> 0x10000000017 | MyDomain.Space
+> 0x10000000019 | MyDomain.Space
+> 0x1000000001a | MyDomain.Space
+> 0x1000000001b | MyDomain.Space
+> 0x1000000001c | MyDomain.Space
+> 0x1000000001d | MyDomain.Space
+> 0x1000000001e | MyDomain.Space
+> 0x1000000001f | MyDomain.Space
+> 0x10000000020 | MyDomain.Space
+> 0x10000000013 | MyDomain.Story
+> 0x10000000016 | MyDomain.Story
+> 0x10000000018 | MyDomain.Story
 
 This example illustrates that polymorphism is pretty obvious. All examples throughout the tutorial up to here were polymorphic queries, and we did not have to mention or even explain it. It has worked intuitively. If we now take a closer look at what the ECSQL does, you can notice this:
 
-- The `Element` ECClass is an abstract class, i.e. it cannot have any instances. However you can query against it, and because of polymorphism the query intuitively returns instances of all subclasses of `Element`.
+- The `SpatialElement` ECClass is an abstract class, i.e. it cannot have any instances. However you can query against it, and because of polymorphism the query intuitively returns instances of all subclasses of `Element`.
 - Returning the [ECClassId](./ECSQLDataTypes.md#ecinstanceid-and-ecclassid) in the query only makes sense because of polymorphism. If the query was not polymorphic, the returned ECClassId would always be the same.
 - Consequently, the [ECClassId](./ECSQLDataTypes.md#ecinstanceid-and-ecclassid) is key when you need to know about the subclasses of a polymorphic query.
 
@@ -34,11 +57,11 @@ Now let's turn the query into a non-polymorphic one.
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and class id of instances of only the Element class
+> *Goal:* Return the id and class id of instances of only the `SpatialElement` class
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, ECClassId FROM ONLY bis.Element
+> SELECT ECInstanceId, ECClassId FROM ONLY bis.SpatialElement
 > ```
 >
 > *Result*
@@ -47,79 +70,112 @@ Now let's turn the query into a non-polymorphic one.
 > --- | ---
 > no rows |
 
-As expected the query does not return anything, because `Element` is an abstract class, and hence cannot have any instances. It is more meaningful to query against a non-abstract class.
+As expected the query does not return anything, because `SpatialElement` is an abstract class, and hence cannot have any instances. It is more meaningful to query against a non-abstract class.
 
 > **Try it yourself**
 >
-> *Goal:* Return the code of instances of only the Subject class (which is a subclass of Element)
+> *Goal:* Return the code of instances of only the `Device` class (which is a subclass of `SpatialElement`)
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue FROM ONLY bis.Subject
+> SELECT ECInstanceId, CodeValue FROM ONLY MyDomain.Device
 > ```
 >
 > *Result*
 >
-> CodeValue |
-> --- |
-> My demo file |
+> ECInstanceId | CodeValue
+> --- | ---
+> 0x10000000021 | DEV-A-G-1
+> 0x10000000022 | DEV-A-G-2
+> 0x10000000023 | DEV-A-1-1
+> 0x10000000024 | DEV-A-2-1
+> 0x10000000025 | DEV-A-2-2
+> 0x10000000026 | DEV-A-2-3
+> 0x10000000027 | DEV-A-2-4
+> 0x10000000028 | DEV-A-2-5
+> 0x10000000029 | DEV-A-2-6
+> 0x1000000002a | DEV-A-2-7
+> 0x1000000002b | DEV-A-2-8
 
 Let's go back to explore more how to work with the ECClassId to tell between subclasses of a polymorphic query.
 
 > **Try it yourself**
 >
-> *Goal:* Return the code and class id of all Elements that are either XX or YY or ZZ classes.
+> *Goal:* Return the code and class id of all SpatialElements that are either `Space` (ECClassId 244) or `Story` (ECClassId 245) classes.
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue, ECClassId FROM bis.Element WHERE ECClassId IN (123,134,512)
+> SELECT CodeValue, ECClassId FROM bis.SpatialElement WHERE ECClassId IN (244,245)
 > ```
 >
 > *Result*
 >
 > CodeValue | ECClassId
 > --- | ---
-> lll | XX
-> xxx | XX
-> xxx | YY
+> A-G-1 | MyDomain.Space
+> A-G-2 | MyDomain.Space
+> A-1-1 | MyDomain.Space
+> A-2-1 | MyDomain.Space
+> A-2-2 | MyDomain.Space
+> A-2-3 | MyDomain.Space
+> A-2-4 | MyDomain.Space
+> A-2-5 | MyDomain.Space
+> A-2-6 | MyDomain.Space
+> A-2-7 | MyDomain.Space
+> A-2-8 | MyDomain.Space
+> A-G | MyDomain.Story
+> A-1 | MyDomain.Story
+> A-2 | MyDomain.Story
 
 As usually the class ids are not known, you need to look them up first. You can do so by joining to the `ECDbMeta` ECSchema. This allows you to specify the subclasses by name rather than by id. The `ECDbMeta` ECSchema is covered in more detail in the advanced lesson about [Meta queries](./MetaQueries).
 
 > **Try it yourself**
 >
-> *Goal:* Return the code and class id of all Elements that are either XX or YY or ZZ classes.
+> *Goal:* Return the code and class id of all Elements that are either `Space` or `Story` classes.
 >
 > *ECSQL*
 > ```sql
-> SELECT Element.CodeValue, Element.ECClassId FROM bis.Element JOIN meta.ECClassDef ON Element.ECClassId=ECClassDef.ECInstanceId WHERE ECClassDef.Name IN ('XX','YY','ZZ')
+> SELECT SpatialElement.CodeValue, SpatialElement.ECClassId FROM bis.SpatialElement JOIN meta.ECClassDef ON SpatialElement.ECClassId=ECClassDef.ECInstanceId WHERE ECClassDef.Name IN ('Space','Story')
 > ```
 >
 > *Result*
 >
 > CodeValue | ECClassId
 > --- | ---
-> lll | XX
-> xxx | XX
-> xxx | YY
+> A-G-1 | MyDomain.Space
+> A-G-2 | MyDomain.Space
+> A-1-1 | MyDomain.Space
+> A-2-1 | MyDomain.Space
+> A-2-2 | MyDomain.Space
+> A-2-3 | MyDomain.Space
+> A-2-4 | MyDomain.Space
+> A-2-5 | MyDomain.Space
+> A-2-6 | MyDomain.Space
+> A-2-7 | MyDomain.Space
+> A-2-8 | MyDomain.Space
+> A-G | MyDomain.Story
+> A-1 | MyDomain.Story
+> A-2 | MyDomain.Story
 
 The following shows how you can perform simple statistics on the distribution of instances across the Element subclasses.
 
 > **Try it yourself**
 >
-> *Goal:* Return Element count per Element subclass for all Elements in the iModel.
+> *Goal:* Return Element count per `SpatialElement` subclass for all `SpatialElement`s in the iModel.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECClassId, count(*) ElementCount FROM bis.Element GROUP BY ECClassId
+> SELECT ECClassId, count(*) ElementCount FROM bis.SpatialElement GROUP BY ECClassId
 > ```
 >
 > *Result*
 >
 > ECClassId | ElementCount
 > --- | ---
-> XX | 10
-> YY | 100
-> ZZ | 15
+> MyDomain.Building | 1
+> MyDomain.Device | 11
+> MyDomain.Space | 11
+> MyDomain.Story | 3
 
 ---
 

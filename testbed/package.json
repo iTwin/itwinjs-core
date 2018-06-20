@@ -6,11 +6,13 @@
   "scripts": {
     "prebuild": "rush build -t imodeljs-core-testbed",
     "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:testpublic && npm run webpack:frontend",
+    "build:perf": "npm run prebuild && tsc 1>&2 && npm run copy:frontendpublic && npm run copy:testpublic && npm run webpack:frontend:perf",
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
     "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
     "copy:testpublic": "cpx ./public/**/* ./lib/backend/public",
     "docs": "",
     "lint": "tslint --project . 1>&2",
+    "webpack:frontend:perf": "webpack --config ./webpack_performance.config.js",
     "webpack:frontend": "webpack --config webpack.config.js"
   },
   "repository": {},

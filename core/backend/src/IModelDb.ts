@@ -8,7 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse,
+  IModelNotFoundResponse, EcefLocation,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -473,18 +473,33 @@ export class IModelDb extends IModel {
     return this.briefcase.nativeDb.setDbGuid(guidStr);
   }
 
-  /** Update the imodel project extents.
+  /** Update the project extents for this iModel.
    * <p><em>Example:</em>
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
    * ```
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
     this.projectExtents.setFrom(newExtents);
-    const extentsJson = newExtents.toJSON();
-    this.briefcase.nativeDb.updateProjectExtents(JSON.stringify(extentsJson));
+    this.updateIModelProps();
+  }
+
+  /** Update the EcefLocation of this iModel.  */
+  public updateEcefLocation(ecef: EcefLocation) {
+    this.setEcefLocation(ecef);
+    this.updateIModelProps();
+  }
+
+  /** Update the IModelProps of this iModel in the database.
+   *
+   * Example:
+   * ``` ts
+   * [[include:IModelDb.updateIModelProps]]
+   * ```
+   */
+  public updateIModelProps() {
+    // TODO: re-enable when new version is available.
+    // this.briefcase.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
   }
 
   /**

@@ -86,6 +86,8 @@ export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDb
   WrongElement = IMODEL_ERROR_BASE + 62,
   WrongHandler = IMODEL_ERROR_BASE + 63,
   WrongModel = IMODEL_ERROR_BASE + 64,
+  ConstraintNotUnique = IMODEL_ERROR_BASE + 65,
+  NoGeoLocation = IMODEL_ERROR_BASE + 66,
 }
 
 /** Error status from various briefcase operations */

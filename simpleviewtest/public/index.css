@@ -40,6 +40,20 @@
   margin-left: 20px;
 }
 
+.fsp-info {
+  background-color: #f0f0f0;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: 3px;
+  margin-right: 3px;
+  display: inline;
+}
+
 .bim-spinner-container {
     position:absolute;
     z-index:9999999;
@@ -232,6 +246,9 @@
 .bim-icon-model:before {
       content: "\e90b"
 }
+.bim-icon-model:categories {
+      content: "\e901"
+}
 
 .toolMenu {
   position:absolute;
@@ -246,6 +263,23 @@
   border-color: gray;
   border-style: solid;
   border-width: 1px;
+}
+.scrollingToolMenu {
+  position:absolute;
+  background-color: #f0f0f0;
+  display:none;
+  width:200px;
+  padding-left: 3px;
+  padding-top: 3px;
+  z-index: 999;
+  top: 45px;
+  left: -1px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  float:left;
+  overflow-y: auto;
+  height: 400px;
 }
 #standardRotationMenu .simpleicon {
   float:left;

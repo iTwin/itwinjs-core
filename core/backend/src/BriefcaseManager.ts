@@ -213,7 +213,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager._hubClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler(false));
+      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.hubDeploymentEnv, new AzureFileHandler(false));
     }
     return BriefcaseManager._hubClient;
   }
@@ -225,7 +225,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager._connectClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._connectClient = new ConnectClient(IModelHost.configuration.iModelHubDeployConfig);
+      BriefcaseManager._connectClient = new ConnectClient(IModelHost.configuration.hubDeploymentEnv);
     }
     return BriefcaseManager._connectClient;
   }
@@ -275,6 +275,7 @@ export class BriefcaseManager {
     BriefcaseManager.clearCache();
     BriefcaseManager._hubClient = undefined;
     BriefcaseManager._connectClient = undefined;
+    BriefcaseManager._cacheDir = undefined;
     IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.onIModelHostShutdown);
   }
 
@@ -371,12 +372,17 @@ export class BriefcaseManager {
     return dirs[0];
   }
 
-  private static cacheDir: string;
+  private static _cacheDir?: string;
+  public static get cacheDir(): string {
+    if (!BriefcaseManager._cacheDir)
+      BriefcaseManager.setupCacheDir();
+    return BriefcaseManager._cacheDir!;
+  }
 
   private static setupCacheDir() {
     const cacheSubDirOnDisk = BriefcaseManager.findCacheSubDir();
     const cacheSubDir = BriefcaseManager.buildCacheSubDir();
-    BriefcaseManager.cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
+    const cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
 
     if (!cacheSubDirOnDisk) {
       // For now, just recreate the entire cache if the directory for the major version is not found - NEEDS_WORK
@@ -386,8 +392,10 @@ export class BriefcaseManager {
       BriefcaseManager.deleteFolderRecursive(cacheDirOnDisk);
     }
 
-    if (!IModelJsFs.existsSync(BriefcaseManager.cacheDir))
-      BriefcaseManager.makeDirectoryRecursive(BriefcaseManager.cacheDir);
+    if (!IModelJsFs.existsSync(cacheDir))
+      BriefcaseManager.makeDirectoryRecursive(cacheDir);
+
+    BriefcaseManager._cacheDir = cacheDir;
   }
 
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary).
@@ -404,7 +412,6 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    BriefcaseManager.setupCacheDir();
     for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {
       await BriefcaseManager.initCacheForIModel(accessToken, iModelId);
     }

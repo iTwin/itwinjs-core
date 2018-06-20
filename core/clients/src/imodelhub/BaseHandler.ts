@@ -42,8 +42,8 @@ export class IModelHubBaseHandler extends WsgClient {
    * Creates an instance of IModelHubBaseHandler.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000) {
-    super(deploymentEnv, "v2.5", "https://connect-wsg20.bentley.com");
+  public constructor(public deploymentEnv: DeploymentEnv = "PROD", keepAliveDuration = 30000) {
+    super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
     if (!Config.isBrowser())
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }

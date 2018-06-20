@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -160,6 +160,16 @@ export abstract class Target extends RenderTarget {
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
+  private _frameTimes: BeTimePoint[] = [];
+  private _curFrameTimeIndex = 0;
+  private _gatherFrameTimings = true;
+  private _curSpfTimeIndex = 0;
+  private _spfTimes: number[] = [];
+  private _spfSum: number = 0;
+  private _renderSpfTimes: number[] = [];
+  private _renderSpfSum: number = 0;
+  private static _fpsTimer: StopWatch = new StopWatch(undefined, true);
+  private static _fpsTimerStart: number = 0;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -276,6 +286,23 @@ export abstract class Target extends RenderTarget {
 
   public pushActiveVolume(): void { } // ###TODO
   public popActiveVolume(): void { } // ###TODO
+
+  public setFrameTime(sceneTime = 0.0) {
+    if (this._gatherFrameTimings) {
+      if (sceneTime > 0.0) {
+        this._frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
+        this._frameTimes[1] = BeTimePoint.now();
+        this._curFrameTimeIndex = 2;
+      } else if (this._curFrameTimeIndex < 12)
+        this._frameTimes[this._curFrameTimeIndex++] = BeTimePoint.now();
+    }
+  }
+  public get frameTimings(): number[] {
+    const timings: number[] = [];
+    for (let i = 0; i < 11; ++i)
+      timings[i] = (this._frameTimes[i + 1].milliseconds - this._frameTimes[i].milliseconds);
+    return timings;
+  }
 
   // ---- Implementation of RenderTarget interface ---- //
 
@@ -470,13 +497,13 @@ export abstract class Target extends RenderTarget {
     }
   }
 
-  public drawFrame(): void {
+  public drawFrame(sceneSecondsElapsed?: number): void {
     assert(System.instance.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
-    this.paintScene();
+    this.paintScene(sceneSecondsElapsed);
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
@@ -531,7 +558,7 @@ export abstract class Target extends RenderTarget {
   private _doDebugPaint: boolean = false;
   protected debugPaint(): void { }
 
-  private paintScene(): void {
+  private paintScene(sceneSecondsElapsed?: number): void {
     if (this._doDebugPaint) {
       this.debugPaint();
       return;
@@ -541,6 +568,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
+    this.setFrameTime(sceneSecondsElapsed);
     this._beginPaint();
 
     const gl = System.instance.context;
@@ -549,16 +577,41 @@ export abstract class Target extends RenderTarget {
 
     // ###TODO? System.instance.garbage.execute();
 
+    this.setFrameTime();
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
+    this.setFrameTime();
     this.compositor.draw(this._renderCommands);
 
+    this.setFrameTime();
     this._stack.pushState(this.decorationState);
     this.drawPass(RenderPass.WorldOverlay);
     this.drawPass(RenderPass.ViewOverlay);
     this._stack.pop();
 
     this._endPaint();
+    this.setFrameTime();
+
+    if ((document.getElementById("continuousRendering")! as HTMLInputElement).checked) {
+      const fpsTimerElapsed = Target._fpsTimer.currentSeconds - Target._fpsTimerStart;
+      if (this._spfTimes[this._curSpfTimeIndex]) this._spfSum -= this._spfTimes[this._curSpfTimeIndex];
+      this._spfSum += fpsTimerElapsed;
+      this._spfTimes[this._curSpfTimeIndex] = fpsTimerElapsed;
+
+      const renderTimeElapsed = (this._frameTimes[10].milliseconds - this._frameTimes[1].milliseconds);
+      if (this._renderSpfTimes[this._curSpfTimeIndex]) this._renderSpfSum -= this._renderSpfTimes[this._curSpfTimeIndex];
+      this._renderSpfSum += renderTimeElapsed;
+      this._renderSpfTimes[this._curSpfTimeIndex++] = renderTimeElapsed;
+      if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
+      if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
+        "Average FPS: " + (this._spfTimes.length / this._spfSum).toFixed(5)
+        + "<br />Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2);
+      Target._fpsTimerStart = Target._fpsTimer.currentSeconds;
+    }
+    if (this._gatherFrameTimings) {
+      gl.finish();
+      this.setFrameTime();
+    }
   }
 
   private drawPass(pass: RenderPass): void {
@@ -621,6 +674,7 @@ export abstract class Target extends RenderTarget {
     vf.setShowGrid(false);
     vf.setMonochrome(false);
     vf.setShowMaterials(false);
+    vf.setDoContinuousRendering(false);
 
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);

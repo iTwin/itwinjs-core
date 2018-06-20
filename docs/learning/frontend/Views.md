@@ -22,19 +22,19 @@ via [IModelDb.Elements.updateElement]($backend).
 
 An instance of a `ViewState` in memory holds references to several other objects, including a [CategorySelectorState]($frontend), a [DisplayStyle3dState]($frontend),
 and a [ModelSelectorState]($frontend) (for `SpatialViews`). Since each of these objects must be loaded in the frontend asynchronously, there is an
-async method called [IModelConnection.Views.load]($frontend) that returns a promise when the `ViewState` and all other `State` objects required to display a
-View are ready. The [Viewport]($frontend) class expects loaded `ViewState` objects.
+async method called [IModelConnection.Views.load]($frontend) that returns a promise when the `ViewState` and all other State objects required to display a
+View are ready. The [Viewport]($frontend) class expects loaded ViewState objects.
 
 ## Types of ViewDefinitions
 
-There are subclasses of `ViewDefinition` to show different types of `Models` in various ways.
+There are subclasses of `ViewDefinition` to show different types of Models in various ways.
 
 Here are several significant subclasses:
 
 * `ViewDefinition`
-  * `SpatialViewDefinition` - shows a view of one or more 3d `SpatialModel`s
-  * `DrawingViewDefinition` - shows a view of a single 2d `DrawingModel`
-  * `SheetViewDefinition` - shows a view of a single 2d `SheetModel`
+  * `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
+  * `DrawingViewDefinition` - shows a view of a single 2d DrawingModel
+  * `SheetViewDefinition` - shows a view of a single 2d SheetModel
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 

@@ -274,7 +274,7 @@ export class IModelTestUtils {
 
   public static startBackend() {
     const config = new IModelHostConfiguration();
-    config.iModelHubDeployConfig = "QA";
+    config.hubDeploymentEnv = "QA";
     IModelHost.startup(config);
   }
 }

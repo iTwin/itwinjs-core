@@ -147,9 +147,8 @@ export class IntersectDetail extends SnapDetail {
 export class HitList {
   public hits: HitDetail[] = [];
   public currHit = -1;
-  public size(): number { return this.hits.length; }
-  public clear(): void { this.hits.length = 0; }
-  public empty(): void { this.clear(); this.resetCurrentHit(); }
+  public get length(): number { return this.hits.length; }
+  public empty(): void { this.hits.length = 0; this.currHit = -1; }
   public resetCurrentHit(): void { this.currHit = -1; }
 
   /**
@@ -157,13 +156,13 @@ export class HitList {
    * return the requested hit from the HitList or undefined
    */
   public getHit(hitNum: number): HitDetail | undefined {
-    if (hitNum < 0) hitNum = this.size() - 1;
-    return (hitNum >= this.size()) ? undefined : this.hits[hitNum];
+    if (hitNum < 0) hitNum = this.length - 1;
+    return (hitNum >= this.length) ? undefined : this.hits[hitNum];
   }
 
   /** When setting one or more indices to undefined you must call dropNulls afterwards */
   public setHit(i: number, p: HitDetail | undefined): void {
-    if (i < 0 || i >= this.size())
+    if (i < 0 || i >= this.length)
       return;
     this.hits[i] = p!;
   }
@@ -175,18 +174,29 @@ export class HitList {
       this.hits.push(hit);
   }
 
-  public getCurrentHit(): HitDetail | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
   public getNextHit(): HitDetail | undefined { this.currHit++; return this.getCurrentHit(); }
+  public getCurrentHit(): HitDetail | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
+
+  public setCurrentHit(hit: HitDetail): void {
+    this.resetCurrentHit();
+    for (let thisHit; undefined !== (thisHit = this.getNextHit());) {
+      if (thisHit === hit)
+        return;
+    }
+  }
+
+  /** remove the current hit from the list. */
+  public removeCurrentHit() { this.removeHit(this.currHit); }
 
   /** remove a hit in the list. */
   public removeHit(hitNum: number) {
     if (hitNum < 0)                   // Support -1 == END
-      hitNum = this.size() - 1;
+      hitNum = this.length - 1;
 
-    if (hitNum >= this.currHit)
+    if (hitNum <= this.currHit)
       this.currHit = -1;
 
-    if (hitNum >= this.size())        // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
+    if (hitNum >= this.length)        // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
       return;                         // Then Reset call RemoteCurrentHit, which passes in currHit. When it is out of range, we do nothing.
 
     this.hits.splice(hitNum, 1);
@@ -197,7 +207,7 @@ export class HitList {
     let removedOne = false;
 
     // walk backwards through list so we don't have to worry about what happens on remove
-    for (let i = this.size() - 1; i >= 0; i--) {
+    for (let i = this.length - 1; i >= 0; i--) {
       const thisHit = this.hits[i];
       if (thisHit && sourceId === thisHit.sourceId) {
         removedOne = true;
@@ -223,9 +233,7 @@ export class HitList {
     }
   }
 
-  /**
-   * compare two hits for insertion into list. Hits are compared by calling getLocatePriority() and then getLocateDistance() on each.
-   */
+  /** compare two hits for insertion into list. */
   public compare(hit1: HitDetail | undefined, hit2: HitDetail | undefined): -1 | 1 | 0 {
     if (!hit1 || !hit2)
       return 0;
@@ -237,23 +245,13 @@ export class HitList {
     if (zOverride1 < zOverride2) return -1;
     if (zOverride1 > zOverride2) return 1;
 
-    if (zOverride1 >= 2) { // Compare 2 surface hits, prefer hit closer to center over a "partial" surface hit (ex. helps with choosing chair leg over floor)...
-      // Compare xy distance from pick point, prefer hits closer to center...
-      if (hit1.distXY < hit2.distXY) return -1;
-      if (hit1.distXY > hit2.distXY) return 1;
+    // Compare xy distance from pick point, prefer hits closer to center...
+    if (hit1.distXY < hit2.distXY) return -1;
+    if (hit1.distXY > hit2.distXY) return 1;
 
-      // Compare distance fraction, prefer hits closer to eye...
-      if (hit1.distFraction > hit2.distFraction) return -1;
-      if (hit1.distFraction < hit2.distFraction) return 1;
-    } else { // Compare 2 edge hits, prefer hit closer to eye over hit closer to center...
-      // Compare distance fraction, prefer hits closer to eye...
-      if (hit1.distFraction > hit2.distFraction) return -1;
-      if (hit1.distFraction < hit2.distFraction) return 1;
-
-      // Compare xy distance from pick point, prefer hits closer to center...
-      if (hit1.distXY < hit2.distXY) return -1;
-      if (hit1.distXY > hit2.distXY) return 1;
-    }
+    // Compare distance fraction, prefer hits closer to eye...
+    if (hit1.distFraction > hit2.distFraction) return -1;
+    if (hit1.distFraction < hit2.distFraction) return 1;
 
     // Compare geometry class, prefer path/region hits over surface hits when all else is equal...
     if (hit1.priority < hit2.priority) return -1;
@@ -262,24 +260,16 @@ export class HitList {
     return 0;
   }
 
-  /**
-   * Add a new hit to the list. Hits are sorted according to their priority and distance.
-   */
+  /** Add a new hit to the list. Hits are sorted according to their priority and distance. */
   public addHit(newHit: HitDetail): number {
-    if (this.size() === 0) {
+    if (0 === this.hits.length) {
       this.hits.push(newHit);
       return 0;
     }
-
     let index = 0;
-    for (; index < this.size(); ++index) {
-      let oldHit = this.hits[index];
+    for (; index < this.hits.length; ++index) {
+      const oldHit = this.hits[index];
       const comparison = this.compare(newHit, oldHit);
-      if (newHit.isSameHit(oldHit)) {
-        if (comparison < 0)
-          oldHit = newHit; // replace with new hit since it's better
-        return this.size(); // ignore new hit...
-      }
       if (comparison < 0)
         break;
     }
@@ -288,18 +278,9 @@ export class HitList {
     return index;
   }
 
-  public removeCurrentHit() { this.removeHit(this.currHit); }
-
-  public setCurrentHit(hit: HitDetail): void {
-    this.resetCurrentHit();
-    for (let thisHit; undefined !== (thisHit = this.getNextHit());) {
-      if (thisHit === hit)
-        return;
-    }
-  }
-
-  public insert(i: number, hit: HitDetail): void {
-    if (i < 0 || i >= this.size())
+  /** Insert a new hit into the list at the supplied index. */
+  public insertHit(i: number, hit: HitDetail): void {
+    if (i < 0 || i >= this.length)
       this.hits.push(hit);
     else
       this.hits.splice(i, 0, hit);

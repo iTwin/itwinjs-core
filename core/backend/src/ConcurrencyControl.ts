@@ -186,7 +186,7 @@ export class ConcurrencyControl {
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
-  private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
+  private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.hubDeploymentEnv; }
   private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv(), new AzureFileHandler()); }
 
   /** process the Lock-specific part of the request. */

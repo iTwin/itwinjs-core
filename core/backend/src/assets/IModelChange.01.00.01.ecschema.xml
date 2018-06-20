@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="IModelChange" alias="imodelchange" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+<ECSchema schemaName="IModelChange" alias="imodelchange" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
   <ECSchemaReference name="ECDbChange" version="01.00" alias="change"/>
   <ECSchemaReference name="CoreCustomAttributes" version="01.00.00" alias="CoreCA"/>
 
@@ -12,26 +12,26 @@
             <Properties>
               <string>ParentWsgId</string>
             </Properties>
-          </DbIndex>		
+          </DbIndex>
           <DbIndex>
             <Name>uix_imodelchange_ChangeSet_WsgId</Name>
             <IsUnique>True</IsUnique>
             <Properties>
               <string>WsgId</string>
             </Properties>
-          </DbIndex>		
+          </DbIndex>
           <DbIndex>
             <Name>ix_imodelchange_ChangeSet_PushDate</Name>
             <Properties>
               <string>PushDate</string>
             </Properties>
-          </DbIndex>		
+          </DbIndex>
           <DbIndex>
             <Name>ix_imodelchange_ChangeSet_Author</Name>
             <Properties>
               <string>Author</string>
             </Properties>
-          </DbIndex>		
+          </DbIndex>
         </Indexes>
       </DbIndexList>
     </ECCustomAttributes>
@@ -50,6 +50,13 @@
       </ECCustomAttributes>
     </ECProperty>
     <ECProperty propertyName="WsgId" typeName="string">
+      <ECCustomAttributes>
+        <PropertyMap xmlns="ECDbMap.02.00">
+          <Collation>NoCase</Collation>
+        </PropertyMap>
+      </ECCustomAttributes>
+    </ECProperty>
+    <ECProperty propertyName="Description" typeName="string">
       <ECCustomAttributes>
         <PropertyMap xmlns="ECDbMap.02.00">
           <Collation>NoCase</Collation>

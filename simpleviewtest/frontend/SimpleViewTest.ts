@@ -1,10 +1,11 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
 import { remote } from "electron";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 // tslint:disable:no-console
 
@@ -147,7 +148,13 @@ function startToggleModel(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-// build list of  models; enables them all
+// open up the category selection model
+function startCategorySelection(_event: any) {
+  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
+// build list of models; enables them all
 async function buildModelMenu(state: SimpleViewState) {
   const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
   const modelQueryParams: ModelQueryParams = { wantPrivate: false };
@@ -167,20 +174,42 @@ async function buildModelMenu(state: SimpleViewState) {
   curNumModels = i;
   for (let c = 0; c < curNumModels; c++) {
     const cbxName = "cbxModel" + c;
-    updateModelToggleState(cbxName, true);
+    updateCheckboxToggleState(cbxName, true);
     addModelToggleHandler(cbxName);
   }
 
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
 }
 
-// set model checkbox state to checked or unchecked
-function updateModelToggleState(id: string, enabled: boolean) {
+// build list of categories; enables them all
+async function buildCategoryMenu(state: SimpleViewState) {
+  const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  categoryMenu.innerHTML = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
+
+  const view = state.viewState!;
+  for (const cat of view.categorySelector.categories) {
+    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
+    categoryMenu.innerHTML += '<input id="cbxCat' + id.value + '" type="checkbox"> ' + cat + "\n<br>\n";
+  }
+
+  updateCheckboxToggleState("cbxCatToggleAll", true);
+  addCategoryToggleAllHandler();
+
+  for (const cat of view.categorySelector.categories) {
+    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
+    const cbxName = "cbxCat" + id.value;
+    updateCheckboxToggleState(cbxName, true); // enable all categories
+    addCategoryToggleHandler(cbxName);
+  }
+}
+
+// set checkbox state to checked or unchecked
+function updateCheckboxToggleState(id: string, enabled: boolean) {
   (document.getElementById(id)! as HTMLInputElement).checked = enabled;
 }
 
-// query model checkbox state (checked or unchecked)
-function getModelToggleState(id: string): boolean {
+// query checkbox state (checked or unchecked)
+function getCheckboxToggleState(id: string): boolean {
   return (document.getElementById(id)! as HTMLInputElement).checked;
 }
 
@@ -194,7 +223,7 @@ function applyModelToggleChange(_cbxModel: string) {
 
   for (let c = 0; c < curNumModels; c++) {
     const cbxName = "cbxModel" + c;
-    const isChecked = getModelToggleState(cbxName);
+    const isChecked = getCheckboxToggleState(cbxName);
     if (isChecked)
       view.addViewedModel(curModelProps[curModelPropIndices[c]].id!);
   }
@@ -205,9 +234,74 @@ function applyModelToggleChange(_cbxModel: string) {
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
 }
 
+function toggleCategoryState(invis: boolean, cat: Id64, view: ViewState) {
+  const ovr = new SubCategoryOverride();
+  if (invis) {
+    ovr.setInvisible(true);
+    view.overrideSubCategory(cat, ovr);
+    // view.categorySelector.categories.clear(); // ###TEST - this tests if some problem files respect the categories in here at all
+  } else {
+    view.dropSubCategoryOverride(cat);
+  }
+}
+
+// apply a category checkbox state being changed
+function applyCategoryToggleChange(_cbxCategory: string) {
+  const view = theViewport!.view;
+
+  let allToggledOn = true;
+  for (const cat of view.categorySelector.categories) {
+    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
+
+    const cbxName = "cbxCat" + id.value;
+    const isChecked = getCheckboxToggleState(cbxName);
+    const invis = isChecked ? false : true;
+    toggleCategoryState(invis, id, view);
+    if (invis)
+      allToggledOn = false;
+  }
+
+  updateCheckboxToggleState("cbxCatToggleAll", allToggledOn);
+  theViewport!.sync.invalidateScene();
+
+  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
+}
+
+// toggle all checkboxes being toggled
+function applyCategoryToggleAllChange() {
+  const view = theViewport!.view;
+  const isChecked = getCheckboxToggleState("cbxCatToggleAll");
+
+  for (const cat of view.categorySelector.categories) {
+    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
+
+    const cbxName = "cbxCat" + id.value;
+    updateCheckboxToggleState(cbxName, isChecked);
+
+    const invis = isChecked ? false : true;
+    toggleCategoryState(invis, id, view);
+  }
+
+  theViewport!.sync.invalidateScene();
+
+  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
+}
+
 // add a click handler to model checkbox
 function addModelToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyModelToggleChange(id));
+}
+
+// add a click handler to category checkbox
+function addCategoryToggleHandler(id: string) {
+  document.getElementById(id)!.addEventListener("click", () => applyCategoryToggleChange(id));
+}
+
+// add a click handler to the category 'toggle all' checkbox
+function addCategoryToggleAllHandler() {
+  document.getElementById("cbxCatToggleAll")!.addEventListener("click", () => applyCategoryToggleAllChange());
 }
 
 function toggleStandardViewMenu(_event: any) {
@@ -291,6 +385,7 @@ function updateRenderModeOptionsMap() {
   updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions.flags);
   updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions.flags);
   updateRenderModeOption("transparency", viewflags.showTransparency(), renderModeOptions.flags);
+  updateRenderModeOption("continuousRendering", viewflags.doContinuousRendering(), renderModeOptions.flags);
 
   renderModeOptions.mode = viewflags.getRenderMode();
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.getRenderMode());
@@ -310,6 +405,7 @@ async function openView(state: SimpleViewState) {
 async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
   buildModelMenu(activeViewState);
+  buildCategoryMenu(activeViewState);
   updateRenderModeOptionsMap();
 }
 
@@ -409,6 +505,7 @@ function wireIconsToFunctions() {
   document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
   document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startToggleModel")!.addEventListener("click", startToggleModel);
+  document.getElementById("startCategorySelection")!.addEventListener("click", startCategorySelection);
   document.getElementById("startToggleCamera")!.addEventListener("click", startToggleCamera);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
@@ -446,6 +543,12 @@ function wireIconsToFunctions() {
   addRenderModeHandler("weights");
   addRenderModeHandler("styles");
   addRenderModeHandler("transparency");
+  document.getElementById("continuousRendering")!.addEventListener("click", () => {
+    const contRend = (document.getElementById("continuousRendering")! as HTMLInputElement);
+    (document.getElementById("showfps")! as HTMLInputElement).style.display = contRend.checked ? "inline" : "none";
+    IModelApp.viewManager.doContinuousRendering = contRend.checked;
+    applyRenderModeChange("continuousRendering");
+  });
 
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 }

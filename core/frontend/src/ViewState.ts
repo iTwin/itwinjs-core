@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -284,6 +284,16 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     this.setFeatureOverridesDirty();
   }
 
+  public dropSubCategoryOverride(id: Id64) {
+    this.displayStyle.dropSubCategoryOverride(id);
+    this.setFeatureOverridesDirty();
+  }
+
+  public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
+    this.displayStyle.overrideSubCategory(id, ovr);
+    this.setFeatureOverridesDirty();
+  }
+
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
   public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
 
@@ -470,20 +480,22 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
 
-    const limitWindowSize = (v: number) => {
+    const limitWindowSize = (v: number, ignoreError: boolean) => {
       if (v < limit.min) {
         v = limit.min;
-        error = ViewStatus.MinWindow;
+        if (!ignoreError)
+          error = ViewStatus.MinWindow;
       } else if (v > limit.max) {
         v = limit.max;
-        error = ViewStatus.MaxWindow;
+        if (!ignoreError)
+          error = ViewStatus.MaxWindow;
       }
       return v;
     };
 
-    delta.x = limitWindowSize(delta.x);
-    delta.y = limitWindowSize(delta.y);
-    delta.z = limitWindowSize(delta.z);
+    delta.x = limitWindowSize(delta.x, false);
+    delta.y = limitWindowSize(delta.y, false);
+    delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2D views
 
     if (messageNeeded && error !== ViewStatus.Success) {
       //      Viewport::OutputFrustumErrorMessage(error);
@@ -924,9 +936,9 @@ export abstract class ViewState3d extends ViewState {
    * If newExtents is undefined, the existing size is unchanged.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-   * <em>note:</em> If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
-   * adjusted when the Viewport is synchronized from this view.
+   * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
+   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * adjusted when the [[Viewport]] is synchronized from this view.
    */
   public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
     const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);

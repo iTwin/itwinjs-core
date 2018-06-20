@@ -195,7 +195,7 @@ export abstract class RenderTarget {
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
-  public abstract drawFrame(): void;
+  public abstract drawFrame(sceneSecondsElapsed?: number): void;
   public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
   public abstract setHiliteSet(hilited: Set<string>): void;
   public abstract setFlashed(elementId: Id64, intensity: number): void;

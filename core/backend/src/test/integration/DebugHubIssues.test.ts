@@ -109,7 +109,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     // Restart host on PROD
     IModelHost.shutdown();
     const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
-    hostConfig.iModelHubDeployConfig = "PROD";
+    hostConfig.hubDeploymentEnv = "PROD";
     IModelHost.startup(hostConfig);
 
     const projectName = "1MWCCN01 - North Project";
@@ -125,7 +125,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     // Restart host on DEV
     IModelHost.shutdown();
     const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
-    hostConfig.iModelHubDeployConfig = "DEV";
+    hostConfig.hubDeploymentEnv = "DEV";
     IModelHost.startup(hostConfig);
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
 

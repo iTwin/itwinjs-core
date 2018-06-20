@@ -274,14 +274,19 @@ export class GlobalEventHandler extends EventBaseHandler {
    * @param baseAddress Base address of Service Bus topic.
    * @param subscriptionInstanceId Id of the subscription instance to the topic.
    * @param timeout Optional timeout duration in seconds for request, when using long polling.
-   * @return Global Event if it exists.
+   * @return Global Event if it exists, undefined otherwise.
    */
-  public async getEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number): Promise<IModelHubGlobalEvent> {
+  public async getEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number): Promise<IModelHubGlobalEvent | undefined> {
     Logger.logInfo(loggingCategory, `Getting global event from subscription with instance id: ${subscriptionInstanceId}`);
 
     const options = this.getEventRequestOptions(sasToken, timeout);
 
     const result = await request(this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
+
+    if (result.status === 204) {
+      Logger.logTrace(loggingCategory, `No events found on subscription ${subscriptionInstanceId}`);
+      return undefined;
+    }
 
     const event = ParseGlobalEvent(result);
     Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);

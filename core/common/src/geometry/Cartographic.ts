@@ -6,9 +6,11 @@
 import { Angle, Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
+export interface LatAndLong { longitude: number; latitude: number; }
+export interface LatLongAndHeight extends LatAndLong { height: number; }
 
-/** A position defined by longitude, latitude, and height above the WSG84 ellipsoid . */
-export class Cartographic {
+/** A position on the earth defined by longitude, latitude, and height above the WSG84 ellipsoid . */
+export class Cartographic implements LatLongAndHeight {
   /**
    * @param longitude longitude, in radians.
    * @param latitude latitude, in radians.
@@ -17,7 +19,7 @@ export class Cartographic {
   constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) { }
 
   /**
-   * Creates a new Cartographic instance from longitude and latitude specified in radians.
+   * Create a new Cartographic from longitude and latitude specified in radians.
    * @param longitude longitude, in radians.
    * @param latitude latitude, in radians.
    * @param height The height, in meters, above the ellipsoid.
@@ -34,7 +36,7 @@ export class Cartographic {
   }
 
   /**
-   * Creates a new Cartographic instance from longitude and latitude specified in degrees. The values in the resulting object will
+   * Create a new Cartographic from longitude and latitude specified in degrees. The values in the resulting object will
    * be in radians.
    * @param longitude longitude, in degrees.
    * @param latitude latitude, in degrees.
@@ -45,6 +47,14 @@ export class Cartographic {
     return Cartographic.fromRadians(Angle.degreesToRadians(longitude), Angle.degreesToRadians(latitude), height, result);
   }
 
+  /**
+   * Create a new Cartographic from longitude and latitude in [Angle]($geometry)s. The values in the resulting object will
+   * be in radians.
+   * @param longitude longitude.
+   * @param latitude latitude.
+   * @param height The height, in meters, above the ellipsoid.
+   * @param result The object into which to store the result (optional)
+   */
   public static fromAngles(longitude: Angle, latitude: Angle, height: number, result?: Cartographic) {
     return Cartographic.fromRadians(longitude.radians, latitude.radians, height, result);
   }
@@ -60,8 +70,8 @@ export class Cartographic {
   private static scratchK = new Vector3d();
 
   /**
-   * Creates a new Cartographic instance from an ECEF Cartesian position.
-   * @param cartesian The Cartesian position, in ECEF, to convert to cartographic representation.
+   * Creates a new Cartographic from an [ECEF](https://en.wikipedia.org/wiki/ECEF) position.
+   * @param cartesian The position, in ECEF, to convert to cartographic representation.
    * @param [result] The object onto which to store the result.
    * @returns The modified result parameter, new Cartographic instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
    */
@@ -92,7 +102,7 @@ export class Cartographic {
     return result;
   }
 
-  /** Duplicates a Cartographic instance. */
+  /** Duplicates a Cartographic. */
   public clone(result?: Cartographic): Cartographic {
     if (!result)
       return new Cartographic(this.longitude, this.latitude, this.height);
@@ -103,8 +113,8 @@ export class Cartographic {
     return result;
   }
 
-  /** return true if this Cartographic is the same as right */
-  public equals(right: Cartographic): boolean {
+  /** Return true if this Cartographic is the same as right */
+  public equals(right: LatLongAndHeight): boolean {
     return (this === right) ||
       ((this.longitude === right.longitude) &&
         (this.latitude === right.latitude) &&
@@ -112,7 +122,7 @@ export class Cartographic {
   }
 
   /** Compares this Cartographic component-wise and returns true if they are within the provided epsilon, */
-  public equalsEpsilon(right: Cartographic, epsilon: number): boolean {
+  public equalsEpsilon(right: LatLongAndHeight, epsilon: number): boolean {
     return (this === right) ||
       ((Math.abs(this.longitude - right.longitude) <= epsilon) &&
         (Math.abs(this.latitude - right.latitude) <= epsilon) &&
@@ -144,7 +154,7 @@ export class Cartographic {
     result.z = left.z + right.z;
   }
 
-  /** Creates a string representing this cartographic in the format '(longitude, latitude, height)'. */
+  /** Create a string representing this cartographic in the format '(longitude, latitude, height)'. */
   public toString(): string { return "(" + this.longitude + ", " + this.latitude + ", " + this.height + ")"; }
 
   private static scaleToGeodeticSurfaceIntersection = new Point3d();
@@ -236,7 +246,7 @@ export class Cartographic {
     return result;
   }
 
-  /** Returns an ECEF point from a Cartographic point */
+  /** Return an ECEF point from a Cartographic point */
   public toEcef(result?: Point3d): Point3d {
     const cosLatitude = Math.cos(this.latitude);
     const scratchN = Cartographic.scratchN;

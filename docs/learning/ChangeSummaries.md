@@ -43,7 +43,7 @@ This is achieved by executing ECSQL queries against the **ECDbChange** and **IMo
 
 ECSQL | Description
 --- | ---
-`SELECT Summary.Id,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the date when the changeset was pushed and by who
+`SELECT Summary.Id,ParentWsgId,Description,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the description, the date when the changeset was pushed and by who
 `SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [ChangeOpCode]($common) (e.g. whether the instance was inserted, updated or deleted)
 
 ### Find out *how* values have changed

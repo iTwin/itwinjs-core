@@ -11,13 +11,13 @@ import { IModelError, IModelStatus } from "./IModelError";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { Rank, AppearanceProps } from "./SubCategoryAppearance";
 
-/** The iModelJson properties of an ECNavigationProperty in a BIS schema. */
+/** Properties of an ECNavigationProperty. */
 export interface RelatedElementProps {
   id: Id64Props;
   relClassName?: string;
 }
 
-/** The iModelJson properties of a BIS Element */
+/** Properties of an [Element]($docs/bis/intro/element-fundamentals) */
 export interface ElementProps extends EntityProps {
   model?: Id64Props | RelatedElementProps;
   code?: CodeProps;
@@ -34,7 +34,7 @@ export class RelatedElement implements RelatedElementProps {
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
 
-  /** accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
+  /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
   public static idFromJson(json: any): Id64 {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
@@ -46,65 +46,72 @@ export class RelatedElement implements RelatedElementProps {
   }
 }
 
-/** A RelatedElement that describes the type definition of an element. */
+/** A [RelatedElement]($common) relationship that describes the [TypeDefinitionElement]($backend) of an element. */
 export class TypeDefinition extends RelatedElement {
 }
 
-/** Properties of a GeometricElement */
+/** Properties of a [GeometricElement]($backend) */
 export interface GeometricElementProps extends ElementProps {
   category: Id64Props;
   geom?: GeometryStreamProps;
 }
 
+/** Properties of a [[Placement3d]] */
 export interface Placement3dProps {
   origin: XYZProps;
   angles: YawPitchRollProps;
   bbox?: LowAndHighXYZ;
 }
 
+/** Properties of a [[Placement2d]] */
 export interface Placement2dProps {
   origin: XYProps;
   angle: AngleProps;
   bbox?: LowAndHighXY;
 }
 
-/** Properties that define a GeometricElement3d */
+/** Properties that define a [GeometricElement3d]($backend) */
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3dProps;
   typeDefinition?: RelatedElementProps;
 }
 
-/** Properties that define a GeometricElement2d */
+/** Properties that define a [GeometricElement2d]($backend) */
 export interface GeometricElement2dProps extends GeometricElementProps {
   placement?: Placement2dProps;
   typeDefinition?: RelatedElementProps;
 }
 
-/** Properties of a GeometryPart */
+/** Properties of a [GeometryPart]($backend) */
 export interface GeometryPartProps extends ElementProps {
   geom?: GeometryStreamProps;
   bbox?: LowAndHighXYZ;
 }
 
+/** Properties for a [ViewAttachment]($backend) */
 export interface ViewAttachmentProps extends GeometricElement2dProps {
   view?: Id64Props;
 }
 
+/** Properties of a [Subject]($backend) */
 export interface SubjectProps extends ElementProps {
   description?: string;
 }
 
+/** Properties of a [SheetBorderTemplate]($backend) */
 export interface SheetBorderTemplateProps extends ElementProps {
   height?: number;
   width?: number;
 }
 
+/** Properties of a [SheetTemplate]($backend) */
 export interface SheetTemplateProps extends ElementProps {
   height?: number;
   width?: number;
   border?: Id64Props;
 }
 
+/** Properties of a [Sheet]($backend) */
 export interface SheetProps extends ElementProps {
   scale?: number;
   height?: number;
@@ -112,19 +119,22 @@ export interface SheetProps extends ElementProps {
   sheetTemplate?: Id64Props;
 }
 
+/** Properties of a [DefinitionElement]($backend) */
 export interface DefinitionElementProps extends ElementProps {
   isPrivate?: boolean;
 }
 
+/** Properties of a [TypeDefinitionElement]($backend) */
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
   recipe?: RelatedElementProps;
 }
 
+/** Properties of a [InformationPartitionElement]($backend) */
 export interface InformationPartitionElementProps extends DefinitionElementProps {
   description?: string;
 }
 
-/** Parameters to specify what element to load. */
+/** Parameters to specify what element to load for [IModelDb.Elements.getElementProps]($backend). */
 export interface ElementLoadProps {
   id?: Id64Props;
   code?: CodeProps;
@@ -135,28 +145,30 @@ export interface ElementLoadProps {
   wantBRepData?: boolean;
 }
 
-/** ElementAspectProps */
+/** Properties of an [ElementAspect]($backend) */
 export interface ElementAspectProps extends EntityProps {
   id: Id64Props;
   element: Id64Props;
 }
 
+/** Properties of a [LineStyle]($backend) */
 export interface LineStyleProps extends ElementProps {
   description?: string;
   data: string;
 }
 
+/** Properties of a [LightLocation]($backend) */
 export interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;
 }
 
-/** Parameters to create a Category element */
+/** Parameters of a [Category]($backend) */
 export interface CategoryProps extends ElementProps {
   rank?: Rank;
   description?: string;
 }
 
-/** Parameters to create a SubCategory element */
+/** Parameters of a [SubCategory]($backend) */
 export interface SubCategoryProps extends ElementProps {
   appearance?: AppearanceProps;
   description?: string;

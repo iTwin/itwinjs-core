@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module SelectionSet */
 
-import { Point3d, Point2d } from "@bentley/geometry-core";
+import { Point3d, Point2d, Range2d } from "@bentley/geometry-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
@@ -18,7 +18,9 @@ import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { FenceParams } from "../FenceParams";
 import { AccuDrawHintBuilder } from "../AccuDraw";
-import { Id64Arg } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Id64Arg, Id64 } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { ViewRect } from "../Viewport";
+import { Pixel } from "../rendering";
 
 /** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
@@ -104,7 +106,7 @@ export class SelectionTool extends PrimitiveTool {
     IModelApp.accuSnap.enableSnap(false);
   }
 
-  public processSingleSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
+  public processSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
     // NEEDSWORK...SelectionScope
     switch (process) {
       case SelectionProcessing.AddElementToSelection:
@@ -355,55 +357,13 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  protected useFenceOverlap(ev: BeButtonEvent): boolean {
+  protected useOverlapSelection(ev: BeButtonEvent): boolean {
     let overlapMode = false;
     const vp = ev.viewport!;
     const pt1 = vp.worldToView(this.points[0]);
     const pt2 = vp.worldToView(ev.point);
     overlapMode = (pt1.x > pt2.x);
     return (ev.isShiftKey ? !overlapMode : overlapMode); // Shift inverts inside/overlap selection...
-  }
-
-  protected toggleFencePointsSelection(_ev: BeButtonEvent, _worldPts: Point3d[], _nPts: number, _overlap: boolean): void {
-    // FenceParams fp;
-    // fp.SetViewParams(ev.GetViewport());
-    // fp.SetOverlapMode(overlap);
-    // fp.StoreClippingPoints(worldPts, nPts, false);
-
-    // if (this.multiSelectControls(fp))
-    //   return;
-
-    // DgnElementIdSet contents;
-    // DragSelectCheckStop checkStop;
-
-    // if (SUCCESS != fp.GetContents(contents, & checkStop)) {
-    //   if (!ev.IsControlKey() && _WantSelectionClearOnMiss(ev))
-    //     SelectionSetManager:: GetManager(GetDgnDb()).EmptyAll();
-    //   return;
-    // }
-
-    // switch (GetSelectionMode()) {
-    //   case SelectionMode:: Replace:
-    //     {
-    //       if (!ev.IsControlKey())
-    //         loadSelection(contents, ReplaceSelectionWithElement, GetDgnDb());
-    //       else
-    //         loadSelection(contents, InvertElementInSelection, GetDgnDb());
-    //       break;
-    //     }
-
-    //   case SelectionMode:: Add:
-    //     {
-    //       loadSelection(contents, AddElementToSelection, GetDgnDb());
-    //       break;
-    //     }
-
-    //   case SelectionMode:: Remove:
-    //     {
-    //       loadSelection(contents, RemoveElementFromSelection, GetDgnDb());
-    //       break;
-    //     }
-    // }
   }
 
   protected checkDoubleClickOnElement(ev: BeButtonEvent): boolean {
@@ -613,7 +573,7 @@ export class SelectionTool extends PrimitiveTool {
       viewPts[1] = new Point3d(corner.x, origin.y, corner.z);
       viewPts[2] = corner;
       viewPts[3] = new Point3d(origin.x, corner.y, origin.z);
-      graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useFenceOverlap(ev) ? LinePixels.Code2 : LinePixels.Solid);
+      graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useOverlapSelection(ev) ? LinePixels.Code2 : LinePixels.Solid);
       graphic.addLineString(viewPts);
     }
     context.addViewOverlay(graphic.finish()!);
@@ -630,6 +590,81 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
+  protected doDragSelect(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean) {
+    const vp = ev.viewport;
+    if (!vp)
+      return;
+    const pts: Point2d[] = [];
+    pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
+    pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
+    const range = Range2d.createArray(pts);
+
+    const rect = new ViewRect();
+    rect.initFromRange(range);
+    const pixels = vp.readPixels(rect, Pixel.Selector.ElementId);
+    if (undefined === pixels)
+      return;
+
+    let contents = new Set<string>();
+    const testPoint = Point2d.createZero();
+
+    if (SelectionMethod.Box === method) {
+      const outline = overlap ? undefined : new Set<string>();
+      const offset = range.clone();
+      offset.expandInPlace(-2); // NEEDWORK: Why doesn't -1 work?!?
+      for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
+        for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+            continue; // no geometry at this location...
+          if (undefined !== outline && !offset.containsPoint(testPoint))
+            outline.add(pixel.elementId.toString());
+          else
+            contents.add(pixel.elementId.toString());
+        }
+      }
+      if (undefined !== outline && 0 !== outline.size) {
+        const inside = new Set<string>();
+        Id64.toIdSet(contents).forEach((id) => { if (!outline.has(id)) inside.add(id); });
+        contents = inside;
+      }
+    } else {
+      const closePoint = Point2d.createZero();
+      for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
+        for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+            continue; // no geometry at this location...
+          const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
+          pts[0].interpolate(fraction, pts[1], closePoint);
+          if (closePoint.distance(testPoint) < 1.5)
+            contents.add(pixel.elementId.toString());
+        }
+      }
+    }
+
+    if (0 === contents.size) {
+      if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
+        this.iModel.selectionSet.emptyAll();
+      return;
+    }
+
+    switch (this.getSelectionMode()) {
+      case SelectionMode.Replace:
+        if (!ev.isControlKey)
+          this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
+        else
+          this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
+        break;
+      case SelectionMode.Add:
+        this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+        break;
+      case SelectionMode.Remove:
+        this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
+        break;
+    }
+  }
+
   protected dragSelect(ev: BeButtonEvent): boolean {
     if (!this.isDragSelect)
       return false;
@@ -640,24 +675,12 @@ export class SelectionTool extends PrimitiveTool {
       return false;
     }
 
-    const worldPts: Point3d[] = [];
     const origin = vp.worldToView(this.points[0]);
     const corner = vp.worldToView(ev.point);
-    origin.z = corner.z = 0.0;
-
-    if (SelectionMethod.Line === this.getSelectionMethod() || (SelectionMethod.Pick === this.getSelectionMethod() && BeButton.Reset === ev.button)) {
-      worldPts[0] = origin;
-      worldPts[1] = corner;
-      vp.viewToWorldArray(worldPts);
-      this.toggleFencePointsSelection(ev, worldPts, 2, true);
-    } else {
-      worldPts[0] = worldPts[4] = origin;
-      worldPts[1] = new Point3d(corner.x, origin.y, corner.z);
-      worldPts[2] = corner;
-      worldPts[3] = new Point3d(origin.x, corner.y, origin.z);
-      vp.viewToWorldArray(worldPts);
-      this.toggleFencePointsSelection(ev, worldPts, 5, this.useFenceOverlap(ev));
-    }
+    if (SelectionMethod.Line === this.getSelectionMethod() || (SelectionMethod.Pick === this.getSelectionMethod() && BeButton.Reset === ev.button))
+      this.doDragSelect(origin, corner, ev, SelectionMethod.Line, true);
+    else
+      this.doDragSelect(origin, corner, ev, SelectionMethod.Box, this.useOverlapSelection(ev));
 
     this.initSelectTool();
     vp.invalidateDecorations();
@@ -750,12 +773,12 @@ export class SelectionTool extends PrimitiveTool {
         case SelectionMode.Replace: {
           if (ev.isControlKey) {
             if (hit.isElementHit())
-              this.processSingleSelection(hit.sourceId, SelectionProcessing.InvertElementInSelection);
+              this.processSelection(hit.sourceId, SelectionProcessing.InvertElementInSelection);
             else
               this.synchManipulators(true); // Replace transient manipulator...
           } else {
             if (hit.isElementHit()) {
-              if (!this.processSingleSelection(hit.sourceId, SelectionProcessing.ReplaceSelectionWithElement)) {
+              if (!this.processSelection(hit.sourceId, SelectionProcessing.ReplaceSelectionWithElement)) {
                 // Selection un-changed...give manipulator a chance to use new HitDetail...
                 if (this.manipulator && this.manipulator.onNewHit(hit))
                   this.synchManipulators(true); // Clear manipulator...
@@ -771,7 +794,7 @@ export class SelectionTool extends PrimitiveTool {
 
         case SelectionMode.Add: {
           if (hit.isElementHit())
-            this.processSingleSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
+            this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
           else
             this.synchManipulators(true); // Clear manipulator...
           break;
@@ -779,7 +802,7 @@ export class SelectionTool extends PrimitiveTool {
 
         case SelectionMode.Remove: {
           if (hit.isElementHit())
-            this.processSingleSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+            this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
           else
             this.synchManipulators(true); // Clear manipulator...
           break;
@@ -838,11 +861,11 @@ export class SelectionTool extends PrimitiveTool {
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode...
         if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
-          this.processSingleSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          this.processSingleSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
         return false;
       }
     }

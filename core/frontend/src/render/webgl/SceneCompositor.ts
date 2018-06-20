@@ -384,18 +384,26 @@ export class SceneCompositor {
     this.clearOpaque(needComposite);
 
     this.renderBackground(commands, needComposite);
+    this._target.setFrameTime();
 
     // Enable clipping
     this._target.pushActiveVolume();
+    this._target.setFrameTime();
 
     this.renderOpaque(commands, needComposite);
+    this._target.setFrameTime();
 
     if (needComposite) {
       this._geometry.composite!.update(flags);
       this.clearTranslucent();
       this.renderTranslucent(commands);
+      this._target.setFrameTime();
       this.renderHilite(commands);
+      this._target.setFrameTime();
       this.composite();
+    } else {
+      this._target.setFrameTime();
+      this._target.setFrameTime();
     }
 
     this._target.popActiveVolume();
