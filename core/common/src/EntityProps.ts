@@ -7,7 +7,7 @@ import { Id64Props } from "@bentley/bentleyjs-core";
 
 /** The properties of an [Entity]($backend) as they are read/stored from/to the iModel. */
 export interface EntityProps {
-  /** The full name of the [ECClass]($docs/bis/intro/glossary/ecclass) for this entity, in the form "Schema:ClassName" */
+  /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */
   id?: Id64Props;
