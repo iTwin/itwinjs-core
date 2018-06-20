@@ -46,7 +46,7 @@ export class RelatedElement implements RelatedElementProps {
   }
 }
 
-/** A [[RelatedElement]] relationship that describes the [TypeDefinitionElement]($backend) of an element. */
+/** A [RelatedElement]($common) relationship that describes the [TypeDefinitionElement]($backend) of an element. */
 export class TypeDefinition extends RelatedElement {
 }
 
