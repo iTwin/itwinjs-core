@@ -17,6 +17,7 @@ import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
 import { PromiseContainer } from "@helpers/Promises";
+import "@helpers/Snapshots";
 
 /**
  * This is just a helper class to provide public access to
