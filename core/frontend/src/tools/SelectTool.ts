@@ -45,7 +45,8 @@ export const enum SelectionMode {
 export const enum SelectionProcessing {
   AddElementToSelection,
   RemoveElementFromSelection,
-  InvertElementInSelection, // (if element is in selection remove it else add it.)
+  /** (if element is in selection remove it else add it.) */
+  InvertElementInSelection,
   ReplaceSelectionWithElement,
 }
 
@@ -53,7 +54,7 @@ export const enum ManipulatorPreference { Disabled, Placement, Geometry }
 
 /** Tool for picking a set of elements of interest, selected by the user. */
 export class SelectionTool extends PrimitiveTool {
-  public static hidden = true;
+  public static hidden = false;
   public static toolId = "Select";
   public isDragSelect = false;
   public isDragControl = false;

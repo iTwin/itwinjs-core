@@ -12,8 +12,8 @@ import { IModelApp } from "../IModelApp";
 import { IModelError } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
-type ToolType = typeof Tool;
-type CommandList = ToolType[];
+export type ToolType = typeof Tool;
+export type ToolList = ToolType[];
 
 export const enum BeButton {
   Data = 0,
@@ -34,29 +34,45 @@ export enum BeCursor {
   Dynamics = "move",
 }
 
+/** The *type* of a gesture. */
 export const enum GestureId {
   None = 0,
-  MultiFingerMove = 1, // two or more fingers dragging
-  SingleFingerMove = 2, // a single finger dragging
-  TwoFingerTap = 3, // tap with two fingers
-  PressAndTap = 4, // long press followed by a tap
-  SingleTap = 5, // One finger down and up; implies no LongPress active
-  DoubleTap = 6, // One finger down and up; implies no LongPress active
-  LongPress = 7, // One finger held down for more than some threshold
+  /** Two or more fingers dragging */
+  MultiFingerMove = 1,
+  /** A single finger dragging */
+  SingleFingerMove = 2,
+  /** tap with two fingers */
+  TwoFingerTap = 3,
+  /** long press followed by a tap */
+  PressAndTap = 4,
+  /** One finger down and up; implies no LongPress active */
+  SingleTap = 5,
+  /** One finger down and up, twice; implies no LongPress active */
+  DoubleTap = 6,
+  /** One finger held down for more than some threshold */
+  LongPress = 7,
 }
 
+/** The *source* that generated an event. */
 export const enum InputSource {
-  Unknown = 0, // source not defined
-  Mouse = 1,   // mouse or other pointing device
-  Touch = 2,    // touch-sensitive device e.g. a touch screen
+  /** Source not defined */
+  Unknown = 0,
+  /** From a mouse or other pointing device */
+  Mouse = 1,
+  /** From a touch screen */
+  Touch = 2,
 }
 
-/** The "source" that generated this event. */
+/** The *source* that generated a point. */
 export const enum CoordSource {
-  User = 0,    // event was created by an action from the user
-  Precision = 1,    // event was created by a program or by a precision keyin
-  TentativePoint = 2,  // event was created by a tentative point
-  ElemSnap = 3,    // event was created by snapping to an element
+  /** Event was created by an action from the user */
+  User = 0,
+  /** Event was created by a program or by a precision keyin */
+  Precision = 1,
+  /** Event was created by a tentative point */
+  TentativePoint = 2,
+  /** Event was created by snapping to an element */
+  ElemSnap = 3,
 }
 
 export const enum BeModifierKey {
@@ -350,8 +366,11 @@ export class BeWheelEvent extends BeButtonEvent {
  * @see [Tools]($docs/learning/frontend/tools.md)
  */
 export class Tool {
+  /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. */
   public static hidden = false;
+  /** The unique string that identifies this tool. */
   public static toolId = "";
+  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool */
   public static namespace: I18NNamespace;
   protected static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
   protected static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
@@ -406,14 +425,14 @@ export class Tool {
   public get description(): string { return (this.constructor as ToolType).description; }
 
   /**
-   * run this instance of a Tool. Subclasses should override to perform their action.
-   * @returns true if the tool executed successfully.
+   * Run this instance of a Tool. Subclasses should override to perform some action.
+   * @returns `true` if the tool executed successfully.
    */
   public run(..._arg: any[]): boolean { return true; }
 }
 
 /**
- * A Tool that may be installed, via ToolAdmin, to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
+ * A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
  */
 export abstract class InteractiveTool extends Tool {
@@ -540,7 +559,7 @@ export abstract class InteractiveTool extends Tool {
   public getInfoString(_hit: HitDetail, _delimiter: string): string { return ""; }
 
   /**
-   * Call to fill a button event from the current cursor location.
+   * Fill the supplied button event from the current cursor location.
    */
   public getCurrentButtonEvent(ev: BeButtonEvent): void {
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
@@ -569,8 +588,8 @@ export abstract class InputCollector extends InteractiveTool {
  * find Tools by their toolId, and also a way to iterate over the collection of Tools available.
  */
 export class ToolRegistry {
-  public readonly tools = new Map<string, typeof Tool>();
-  private _keyinList?: CommandList;
+  public readonly tools = new Map<string, ToolType>();
+  private _keyinList?: ToolList;
 
   /**
    * Un-register a Tool class.
@@ -583,7 +602,7 @@ export class ToolRegistry {
    * @param toolClass the subclass of Tool to register.
    * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
    */
-  public register(toolClass: typeof Tool, namespace?: I18NNamespace) {
+  public register(toolClass: ToolType, namespace?: I18NNamespace) {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
 
@@ -614,7 +633,7 @@ export class ToolRegistry {
   }
 
   /** Look up a tool by toolId */
-  public find(toolId: string): typeof Tool | undefined { return this.tools.get(toolId); }
+  public find(toolId: string): ToolType | undefined { return this.tools.get(toolId); }
 
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
@@ -638,25 +657,27 @@ export class ToolRegistry {
     return !!tool && tool.run(...args);
   }
 
-  private async getKeyinList(): Promise<CommandList> {
-    if (this._keyinList)
-      return this._keyinList;
-    const thePromise = new Promise<CommandList>((resolve: any, reject: any) => {
-      IModelApp.i18n.waitForAllRead().then(() => {
-        this._keyinList = [];
-        for (const thisTool of this.tools.values()) {
-          this._keyinList.push(thisTool);
-        }
-        resolve(this._keyinList);
-      }, () => { reject(); });
-    });
-    return thePromise;
+  /** Get the list of Tools currently available */
+  public getToolList(): ToolList {
+    if (this._keyinList === undefined) { }
+    this._keyinList = [];
+    for (const thisTool of this.tools.values()) {
+      if (!thisTool.hidden)
+        this._keyinList.push(thisTool);
+    }
+    return this._keyinList;
   }
 
-  public async findPartialMatches(keyin: string): Promise<FuzzySearchResults<typeof Tool>> {
-    const commandList: CommandList = await this.getKeyinList();
+  /**
+   * Find a tool by its localized keyin using a FuzzySearch
+   * @param keyin the localized keyin string of the tool.
+   * @returns the tool class, if an exact match is found.
+   * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
+   */
+  public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
+    const toolList: ToolList = this.getToolList();
     const searcher = new FuzzySearch<ToolType>();
-    const searchResults: FuzzySearchResults<ToolType> = searcher.search(commandList, ["keyin"], keyin);
+    const searchResults: FuzzySearchResults<ToolType> = searcher.search(toolList, ["keyin"], keyin);
     return searchResults;
   }
 
@@ -664,9 +685,10 @@ export class ToolRegistry {
    * Find a tool by its localized keyin. If found (via exact match), execute the tool with the supplied arguments.
    * @param keyin the localized keyin string of the tool to run.
    * @param args the arguments for the tool. Note: these argument are passed to both the constructor and the tools' run method.
+   * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
-  public async executeExactMatch(keyin: string, ...args: any[]): Promise<boolean> {
-    const foundClass = await this.findExactMatch(keyin);
+  public executeExactMatch(keyin: string, ...args: any[]): boolean {
+    const foundClass = this.findExactMatch(keyin);
     return foundClass ? new foundClass(...args).run(...args) : false;
   }
 
@@ -674,9 +696,10 @@ export class ToolRegistry {
    * Find a tool by its localized keyin.
    * @param keyin the localized keyin string of the tool.
    * @returns the tool class, if an exact match is found.
+   * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
-  public async findExactMatch(keyin: string): Promise<typeof Tool | undefined> {
-    const commandList: CommandList = await this.getKeyinList();
+  public findExactMatch(keyin: string): ToolType | undefined {
+    const commandList = this.getToolList();
     for (const thisTool of commandList) {
       if (thisTool.keyin === keyin)
         return thisTool;
