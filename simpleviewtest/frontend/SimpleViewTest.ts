@@ -1,4 +1,4 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -157,18 +157,15 @@ function startCategorySelection(_event: any) {
 // build list of models; enables them all
 async function buildModelMenu(state: SimpleViewState) {
   const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
-  const modelQueryParams: ModelQueryParams = { wantPrivate: false };
+  const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
   curModelProps = await state.iModelConnection!.models.queryProps(modelQueryParams);
   curModelPropIndices = [];
   modelMenu.innerHTML = "";
-  let i = 0, p = 0;
+  let i = 0;
   for (const modelProp of curModelProps) {
-    if (modelProp.name && modelProp.id && (modelProp.bisBaseClass === "PhysicalModel" || modelProp.bisBaseClass === "SpatialModel")) {
-      modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
-      curModelPropIndices.push(p);
-      i++;
-    }
-    p++;
+    modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
+    curModelPropIndices.push(i);
+    i++;
   }
 
   curNumModels = i;
