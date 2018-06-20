@@ -27,6 +27,7 @@ import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { assert } from "@bentley/bentleyjs-core";
 import { Material } from "../Material";
+import { System } from "../System";
 
 const applyMaterialOverrides = `
 bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
@@ -306,6 +307,9 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
         texture.texture.bindSampler(uniform, TextureUnit.Zero);
+      } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
+        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.Zero);
       }
     });
   });

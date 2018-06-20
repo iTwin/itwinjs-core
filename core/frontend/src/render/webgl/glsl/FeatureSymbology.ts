@@ -28,6 +28,7 @@ import { addRenderPass } from "./RenderPass";
 import { SurfaceGeometry } from "../Surface";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
+import { System } from "../System";
 
 export const enum FeatureSymbologyOptions {
   None = 0,
@@ -529,6 +530,10 @@ export function addElementId(builder: ProgramBuilder) {
       const table = params.target.currentPickTable!;
       if (undefined !== table.nonUniform)
         table.nonUniform.bindSampler(uniform, TextureUnit.ElementId);
+      else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
+        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.ElementId);
+      }
     });
   });
   vert.addUniform("u_elementIdParams", VariableType.Vec2, (prog) => {
