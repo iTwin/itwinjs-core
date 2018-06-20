@@ -550,7 +550,6 @@ function wireIconsToFunctions() {
     applyRenderModeChange("continuousRendering");
   });
 
-
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 }
 
