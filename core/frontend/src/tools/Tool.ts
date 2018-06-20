@@ -657,13 +657,14 @@ export class ToolRegistry {
     return !!tool && tool.run(...args);
   }
 
-  /** Get the list of Tools currently available */
+  /** Get a list of Tools currently registered, excluding hidden tools */
   public getToolList(): ToolList {
-    if (this._keyinList === undefined) { }
-    this._keyinList = [];
-    for (const thisTool of this.tools.values()) {
-      if (!thisTool.hidden)
-        this._keyinList.push(thisTool);
+    if (this._keyinList === undefined) {
+      this._keyinList = [];
+      for (const thisTool of this.tools.values()) {
+        if (!thisTool.hidden)
+          this._keyinList.push(thisTool);
+      }
     }
     return this._keyinList;
   }
