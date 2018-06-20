@@ -15,7 +15,8 @@ Logger.initializeToConsole();
 // console with the existing suite of tests, and this is quite misleading,
 // especially when diagnosing CI job failures.
 
-Logger.setLevelDefault(LogLevel.Info);
+// Logger.setLevelDefault(LogLevel.Error);
+Logger.setLevel("imodeljs-clients", LogLevel.Info);
 
 /** Credentials for test users */
 export interface UserCredentials {
