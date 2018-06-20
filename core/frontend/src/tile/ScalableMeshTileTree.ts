@@ -98,9 +98,9 @@ export namespace ScalableMeshTileTree {
       auth: { user: "bistroQA_test1@mailinator.com", password: "test1" },
     };
 
-    let url = result[0].url;
+    const url = result[0].url;
     // TBD.... Figure out how to authenticate client for RealityDataService.
-    //url = "http://realitymodeling-pw.bentley.com/a3D/Cesium/Philadelphia/PhiladelphiaHiResRealityModelWithComcast/ComcastMerged_20.json";
+    // url = "http://realitymodeling-pw.bentley.com/a3D/Cesium/Philadelphia/PhiladelphiaHiResRealityModelWithComcast/ComcastMerged_20.json";
     const data = await request(url, options);
 
     if (undefined === data.body)
