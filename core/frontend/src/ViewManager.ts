@@ -214,13 +214,16 @@ export class ViewManager {
     // ###TODO: precompile shaders?
   }
 
+  /** Called when rendering a frame to allow decorations to be added */
+  public readonly onDecorate = new BeEvent<(context: DecorateContext) => void>();
+
   public callDecorators(context: DecorateContext) {
-    IModelApp.accuSnap.decorateViewport(context);
-    IModelApp.tentativePoint.displayTP(context);
-    IModelApp.accuDraw.display(context);
+    IModelApp.accuSnap.decorate(context);
+    IModelApp.tentativePoint.decorate(context);
+    IModelApp.accuDraw.decorate(context);
     IModelApp.toolAdmin.decorate(context);
-    context.viewport.callDecorators(context);
-    // ###TODO: decorators.callAllHandlers(new DecoratorCaller(context));
+    context.viewport.decorate(context);
+    this.onDecorate.raiseEvent(context);
   }
 
   public setViewCursor(cursor: BeCursor | undefined): void {

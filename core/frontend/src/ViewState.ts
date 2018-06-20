@@ -314,7 +314,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   public abstract onRenderFrame(): void;
 
   /** WIP: should be abstract, but for now leave unimplemented  */
-  public drawDecorations(_context: DecorateContext): void { }
+  public decorate(_context: DecorateContext): void { }
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;

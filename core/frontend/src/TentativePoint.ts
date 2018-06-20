@@ -126,7 +126,7 @@ export class TentativePoint {
     graphic.addLineString2d(tpCross, 0.0);
   }
 
-  public displayTP(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     const viewport = context.viewport;
     if (!this.isActive || !viewport)
       return;

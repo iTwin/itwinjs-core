@@ -1593,8 +1593,8 @@ export class Viewport {
     }
   }
 
-  public callDecorators(context: DecorateContext): void {
-    this.view.drawDecorations(context);
+  public decorate(context: DecorateContext): void {
+    this.view.decorate(context);
     // ###TODO: Decorations...
     // this.view.drawGrid(context);
     // if (context.viewFlags.showAcsTriad())
