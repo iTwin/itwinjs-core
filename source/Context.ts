@@ -13,7 +13,24 @@ export class SchemaMap extends Array<Schema> { }
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
  */
 export interface ISchemaLocater {
-  getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined>;
+
+  /**
+   * Attempts to get a schema from the locater. Yields undefined if no matching schema is found.
+   * For schemas that may have references, construct and call through a SchemaContext instead.
+   * @param schemaKey key to look up
+   * @param matchType how to match key against candidate schemas
+   * @param context optional context for loading schema references
+   */
+  getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
+
+  /**
+   * Attempts to get a schema from the locater. Yields undefined if no matching schema is found.
+   * For schemas that may have references, construct and call through a SchemaContext instead.
+   * @param schemaKey key to look up
+   * @param matchType how to match key against candidate schemas
+   * @param context optional context for loading schema references
+   */
+  getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
 
 export interface ISchemaItemLocater {
@@ -96,40 +113,6 @@ export class SchemaCache implements ISchemaLocater {
 
     return foundSchema as T;
   }
-
-  /**
-   * Removes the schema which matches the provided SchemaKey.
-   * @param schemaKey The schema key of the schema to remove.
-   */
-  public async removeSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<void> {
-    const findFunc = (schema: Schema) => {
-      return schema.schemaKey.matches(schemaKey, matchType);
-    };
-
-    const indx = this._schema.findIndex(findFunc);
-    if (indx < 0)
-      return Promise.reject("");
-
-    this._schema.splice(indx, 1);
-    return;
-  }
-
-  /**
-   * Removes the schema which matches the provided SchemaKey.
-   * @param schemaKey The schema key of the schema to remove.
-   * @param matchType
-   */
-  public removeSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest) {
-    const findFunc = (schema: Schema) => {
-      return schema.schemaKey.matches(schemaKey, matchType);
-    };
-
-    const indx = this._schema.findIndex(findFunc);
-    if (indx < 0)
-      return;
-
-    this._schema.splice(indx, 1);
-  }
 }
 
 /**
@@ -160,6 +143,14 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schema The schema to add to this context
    */
   public async addSchema(schema: Schema) {
+    this.addSchemaSync(schema);
+  }
+
+  /**
+   * Adds the schema to this context
+   * @param schema The schema to add to this context
+   */
+  public addSchemaSync(schema: Schema) {
     this.knownSchemas.addSchemaSync(schema);
   }
 
@@ -181,10 +172,28 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schemaKey
    */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
+    // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
     for (const locater of this._locaters) {
-      const schema = await locater.getSchema<T>(schemaKey, matchType);
-      if (schema)
+      const schema = await locater.getSchema<T>(schemaKey, matchType, this);
+      if (schema) {
         return schema;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   *
+   * @param schemaKey
+   */
+  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
+    // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
+    for (const locater of this._locaters) {
+      const schema = locater.getSchemaSync<T>(schemaKey, matchType, this);
+      if (schema) {
+        return schema;
+      }
     }
 
     return undefined;
@@ -196,5 +205,13 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
       return undefined;
 
     return schema.getItem<T>(schemaItemKey.name, false);
+  }
+
+  public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined {
+    const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
+    if (!schema)
+      return undefined;
+
+    return schema.getItemSync<T>(schemaItemKey.name, false);
   }
 }

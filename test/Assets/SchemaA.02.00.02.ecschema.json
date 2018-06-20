@@ -7,11 +7,11 @@
 	"references" : [
 		{
 			"name" : "SchemaC",
-			"version" : "4.4"
+			"version" : "4.4.4"
 		},
 		{
 			"name" : "SchemaB",
-			"version" : "3.3"
+			"version" : "3.3.3"
 		}
 	],
 	"version" : "2.0.2"

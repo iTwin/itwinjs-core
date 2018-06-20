@@ -3,25 +3,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaXmlFileLocater } from "../source/Deserialization/SchemaXmlFileLocater";
-import { SchemaKey } from "../source";
+import { SchemaKey, SchemaContext, SchemaMatchType } from "../source";
 import Schema from "../source/Metadata/Schema";
 import { assert } from "chai";
 import { SchemaGraphUtil } from "../source/Deserialization/SchemaGraphUtil";
 
 describe("SchemaGraphUtil tests:", () => {
-  const paths: string[] = [];
+  const path = __dirname + "\\assets";
   const locator = new SchemaXmlFileLocater();
-
-  beforeEach(() => {
-    const srcName = __dirname + "\\assets\\";
-    paths.push(srcName);
-  });
+  locator.addSchemaSearchPath(path);
+  const context = new SchemaContext();
+  context.addLocater(locator);
 
   it("buildDependencyOrderedSchemaList succeeds", async () => {
     // Arrange
-    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
-    locator.addSchemaSearchPaths(paths);
-    const importSchema = await locator.loadSchema(schemaPath);
+    const key = new SchemaKey("SchemaA", 1, 1, 1);
+    const importSchema = await context.getSchema(key, SchemaMatchType.Exact);
 
     // ensure refs in wrong order for valid test
     await importSchema!.references[0];

@@ -171,6 +171,28 @@ describe("EntityClass", () => {
       assert.isDefined(ecschema);
     });
 
+    it("should succeed with multiple mixins synchronously", () => {
+      const schemaJson = createSchemaJsonWithItems({
+        testMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.testClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          mixins: [
+            "TestSchema.testMixin",
+            "TestSchema.anotherMixin",
+          ],
+        },
+        anotherMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.testClass",
+        },
+      });
+      const ecschema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(ecschema);
+    });
+
     it("should succeed with base class", async () => {
       const schemaJson = createSchemaJsonWithItems({
         baseClass: {
@@ -197,6 +219,33 @@ describe("EntityClass", () => {
       assert.isTrue(await testEntity!.baseClass === testBaseEntity);
     });
 
+    it("should succeed with base class synchronously", () => {
+      const schemaJson = createSchemaJsonWithItems({
+        baseClass: {
+          schemaItemType: "EntityClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.baseClass",
+        },
+      });
+
+      const ecSchema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(ecSchema);
+
+      const testEntity = ecSchema.getClassSync<EntityClass>("testClass");
+      assert.isDefined(testEntity);
+
+      const testBaseEntity = ecSchema.getClassSync<EntityClass>("baseClass");
+      assert.isDefined(testBaseEntity);
+
+      const baseClass = testEntity!.getBaseClassSync();
+      assert.isDefined(baseClass);
+      assert.isTrue(typeof(baseClass) === "object");
+
+      assert.isTrue(baseClass === testBaseEntity);
+    });
+
     it("with navigation property", async () => {
       const schemaJson = createNavPropSchemaJson({
         properties: [
@@ -220,6 +269,34 @@ describe("EntityClass", () => {
       if (navProp && navProp.isNavigation()) {
         const relClass = await schema.getClass<RelationshipClass>("NavPropRelationship");
         assert.isTrue(await navProp.relationshipClass === relClass);
+      } else {
+        assert.fail();
+      }
+    });
+
+    it("with navigation property synchronously", () => {
+      const schemaJson = createNavPropSchemaJson({
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+        ],
+      });
+
+      const schema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(schema);
+
+      const entityClass = schema.getClassSync<EntityClass>("TestEntityClass");
+      assert.isDefined(entityClass);
+
+      const navProp = entityClass!.getPropertySync("testNavProp");
+      assert.isDefined(navProp);
+      if (navProp && navProp.isNavigation()) {
+        const relClass = schema.getClassSync<RelationshipClass>("NavPropRelationship");
+        assert.isTrue(navProp.getRelationshipClassSync() === relClass);
       } else {
         assert.fail();
       }
@@ -406,6 +483,18 @@ describe("EntityClass", () => {
 
       json = { ...baseJson, mixins: [ "DoesNotExist" ] };
       await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has a mixin ("DoesNotExist") that cannot be found.`);
+    });
+
+    it("should throw for invalid mixins synchronously", () => {
+      expect(testClass).to.exist;
+      let json: any = { ...baseJson, mixins: 0 };
+      expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+
+      json = { ...baseJson, mixins: [0] };
+      expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+
+      json = { ...baseJson, mixins: [ "DoesNotExist" ] };
+      expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `The ECEntityClass TestEntity has a mixin ("DoesNotExist") that cannot be found.`);
     });
   });
 });

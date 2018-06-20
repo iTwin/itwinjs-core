@@ -224,6 +224,34 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   /**
+   * Attempts to find a schema item with a name matching, case-insensitive, the provided name. It will look for the schema item in the context of this schema.
+   * If the name is a full name, it will search in the reference schema matching the name.
+   * @param name The name of the schema item to search for.
+   */
+  public getItemSync<T extends SchemaItem>(name: string, includeReference?: boolean): T | undefined {
+    const [schemaName, itemName] = SchemaItem.parseFullName(name);
+
+    let foundItem;
+    if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
+      // Case-insensitive search
+      foundItem = this.getLocalItem(itemName);
+      if (!foundItem && this._context) {
+        // this._context.
+      }
+
+    } else if (includeReference) {
+      const refSchema = this.getReferenceSync(schemaName);
+      if (!refSchema)
+        return undefined;
+
+      // Since we are only passing the itemName to the reference schema it will not check its own referenced schemas.
+      foundItem = refSchema.getItemSync<T>(itemName, includeReference);
+    }
+
+    return foundItem ? foundItem as T : foundItem;
+  }
+
+  /**
    *
    * @param item
    */
@@ -247,6 +275,12 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name The name of the class to return.
    */
   public getClass<T extends ECClass>(name: string): Promise<T | undefined> { return this.getItem<T>(name); }
+
+  /**
+   * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
+   * @param name The name of the class to return.
+   */
+  public getClassSync<T extends ECClass>(name: string): T | undefined { return this.getItemSync<T>(name); }
 
   /**
    *
@@ -287,15 +321,14 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
+    return this.getReferenceSync<T>(refSchemaName);
+  }
+
+  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
     if (this.references.length === 0)
       return undefined;
 
     return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
-  }
-
-  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
-    if (refSchemaName) { }
-    throw new Error("Not implemented");
   }
 
   /**
@@ -303,6 +336,22 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
+    this.schemaFromJson(jsonObj);
+  }
+
+  /**
+   *
+   * @param jsonObj
+   */
+  public fromJsonSync(jsonObj: any): void {
+    this.schemaFromJson(jsonObj);
+  }
+
+  /**
+   *
+   * @param jsonObj
+   */
+  private schemaFromJson(jsonObj: any): void {
     if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
@@ -367,11 +416,17 @@ export default class Schema implements CustomAttributeContainerProps {
   public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
     let schema: Schema = new Schema();
 
-    if (context) {
-      const reader = new SchemaReadHelper(context);
-      schema = await reader.readSchema(schema, jsonObj);
-    } else
-      schema = await SchemaReadHelper.to<Schema>(schema, jsonObj);
+    const reader = new SchemaReadHelper(context);
+    schema = await reader.readSchema(schema, jsonObj);
+
+    return schema;
+  }
+
+  public static fromJsonSync(jsonObj: object | string, context?: SchemaContext): Schema {
+    let schema: Schema = new Schema();
+
+    const reader = new SchemaReadHelper(context);
+    schema = reader.readSchemaSync(schema, jsonObj);
 
     return schema;
   }
