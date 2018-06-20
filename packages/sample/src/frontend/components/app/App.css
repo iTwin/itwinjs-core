@@ -2,37 +2,57 @@
   display: flex;
   flex-flow: column;
   height: 100vh;
+  overflow: hidden;
 }
 
 .App .Header {
-  flex: 0 1 auto;
   background-color: #222;
-  padding: 20px;
   color: white;
-}
-
-.App .Header h2 {
-  display: inline-block;
-  vertical-align: middle;
+  padding-left: 20px;
 }
 
 .App .Content {
-  flex: 1 1 auto;
-  display: flex;
-  flex-flow: column;
+  position: relative;
+  height: 100%;
+  width: 100%;
 }
 
-.App .Content-Top {
-  flex: 1 1 auto;
-  display: flex;
-  flex-flow: row;
-  border-bottom: 1px solid black;
-  min-height: 300px;
+.App .Content .top-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 70%;
+  width: 70%;
 }
 
-.App .Content-Bottom {
-  flex: 1 1 auto;
-  display: flex;
-  flex-flow: row;
-  min-height: 300px;
+.App .Content .bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 30%;
+  width: 70%;
+}
+
+.App .Content .right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 30%;
+}
+
+.App .Content .right .top {
+  position: absolute;
+  top: 0;
+  height: 50%;
+  width: 100%;
+  overflow: auto;
+}
+
+.App .Content .right .bottom {
+  position: absolute;
+  bottom: 0;
+  height: 50%;
+  width: 100%;
+  overflow: auto;
 }

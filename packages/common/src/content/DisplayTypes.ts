@@ -19,4 +19,7 @@ export default class DefaultContentDisplayTypes {
 
   /** List content type. By default adds [[ContentFlags.NoFields]] and [[ContentFlags.ShowLabels]] flags */
   public static readonly LIST = "List";
+
+  /** Viewport content type. By default adds [[ContentFlags.KeysOnly]] flag. */
+  public static readonly VIEWPORT = "Graphics";
 }

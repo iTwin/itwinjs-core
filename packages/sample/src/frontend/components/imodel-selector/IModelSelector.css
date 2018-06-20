@@ -1,6 +1,5 @@
 .IModelSelector {
-  flex: 0 1 auto;
-  padding: 20px;
+  padding: 10px;
 }
 
 .IModelSelector .Error {

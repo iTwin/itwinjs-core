@@ -14,8 +14,18 @@ import { initializeRpcInterface } from "@helpers/RpcHelper";
 
 describe("ECPresentation", () => {
 
+  const shutdownIModelApp = () => {
+    try {
+      IModelApp.shutdown();
+    } catch (_e) {
+      // calling `IModelApp.shutdown` on uninitialized IModelApp throws
+      // `Cannot read property 'onShutDown' of undefined` because it's trying
+      // to shutdown undefined renderSystem...
+    }
+  };
+
   beforeEach(() => {
-    IModelApp.shutdown();
+    shutdownIModelApp();
     IModelApp.startup();
     initializeRpcInterface(ECPresentationRpcInterface);
     const interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
@@ -26,7 +36,7 @@ describe("ECPresentation", () => {
   describe("initialize", () => {
 
     it("throws when initialized before IModelApp.startup()", () => {
-      IModelApp.shutdown();
+      shutdownIModelApp();
       expect(() => ECPresentation.initialize()).to.throw(ECPresentationError, "IModelApp.startup");
     });
 

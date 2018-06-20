@@ -19,7 +19,7 @@ export default class SelectionHandler implements IDisposable {
   private _inSelect: boolean;
   private _disposables: DisposableList;
   public name: string;
-  public rulesetId: string;
+  public rulesetId?: string;
   public imodel: IModelConnection;
   public onSelect?: SelectionChangesListener;
 
@@ -31,7 +31,7 @@ export default class SelectionHandler implements IDisposable {
    * @param imodel iModel connection with which the selection changes will be associated with.
    * @param onSelect Callback function called when selection changes.
    */
-  constructor(manager: SelectionManager, name: string, imodel: IModelConnection, rulesetId: string, onSelect?: SelectionChangesListener) {
+  constructor(manager: SelectionManager, name: string, imodel: IModelConnection, rulesetId?: string, onSelect?: SelectionChangesListener) {
     this._inSelect = false;
     this._manager = manager;
     this._disposables = new DisposableList();

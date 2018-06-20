@@ -1,6 +1,6 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@bentley/imodeljs-common";
 import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
@@ -11,7 +11,7 @@ declare namespace global {
 export function setupWebServer(app: express.Application) {
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "my-app", version: "v1.0" } },
-    [StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface, SampleRpcInterface]);
+    [StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface, IModelTileRpcInterface, SampleRpcInterface]);
 
   app.use(bodyParser.text());
 

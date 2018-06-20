@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Viewport renders correctly 1`] = `
+<ViewportComponent
+  imodel={null}
+  viewDefinitionId={"0x18586000000a2e6"}
+/>
+`;

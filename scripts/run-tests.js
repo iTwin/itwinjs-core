@@ -14,11 +14,13 @@ const options = {
   timeoutsEnabled: yargs.noTimeouts || true, // measure tests' coverage
   coverage: yargs.coverage || false, // create test coverage report
   report: yargs.report || false, // create test run report
+  cache: yargs.cache || true, // enable/disable ts-node caching
   extensions: [".ts", ".tsx"], // source file extensions
 };
 const testsName = path.basename(path.resolve("./"));
 
 process.env.TS_NODE_PROJECT = path.join(options.testsDir, "tsconfig.json");
+process.env.TS_NODE_CACHE = options.cache;
 
 const setupTestingFramework = () => {
   // setup chai

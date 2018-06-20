@@ -1,15 +1,6 @@
 .PropertiesWidget {
-  display: flex;
-  flex-direction: column;
-  width: 60%;
-  border-left: 1px solid black;
-  padding: 5px;
 }
 
 .PropertiesWidget h3 {
   margin: 0;
-}
-
-.PropertiesWidget .ContentContainer {
-  overflow-y: auto;
 }
