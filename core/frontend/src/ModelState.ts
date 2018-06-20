@@ -9,8 +9,8 @@ import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
-import { TileTree } from "./tile/TileTree";
-import { ScalableMeshTileTree } from "./tile/ScalableMeshTileTree";
+import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
+import { ScalableMeshTileTree, ScalableMeshTileLoader, ScalableMeshTileTreeProps } from "./tile/ScalableMeshTileTree";
 
 /** the state of a Model */
 export class ModelState extends EntityState implements ModelProps {
@@ -67,8 +67,8 @@ export abstract class GeometricModelState extends ModelState {
     if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
       this._loadStatus = TileTree.LoadStatus.Loading;
       if (this.classFullName === "ScalableMesh:ScalableMeshModel") {
-        ScalableMeshTileTree.getTileTreeProps(this.modeledElement, this.iModel).then((result: TileTreeProps) => {
-          this.setTileTree(result);
+        ScalableMeshTileTree.getTileTreeProps(this.modeledElement, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
+          this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps.tilesetJson));
           IModelApp.viewManager.onNewTilesReady();
         }).catch((_err) => {
           this._loadStatus = TileTree.LoadStatus.NotFound;
@@ -76,7 +76,7 @@ export abstract class GeometricModelState extends ModelState {
       } else {
         const ids = Id64.toIdSet(this.id);
         this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
-          this.setTileTree(result[0]);
+          this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
           IModelApp.viewManager.onNewTilesReady();
         }).catch((_err) => {
           this._loadStatus = TileTree.LoadStatus.NotFound;
@@ -88,8 +88,8 @@ export abstract class GeometricModelState extends ModelState {
 
   protected constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
 
-  private setTileTree(props: TileTreeProps) {
-    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this));
+  private setTileTree(props: TileTreeProps, loader: TileLoader) {
+    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
 }
