@@ -3,30 +3,36 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module views */
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Gradient, LinePixels, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
+import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ViewContext } from "./ViewContext";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { Target } from "./render/webgl/Target";
+// import { Target } from "./render/webgl/Target";
 
 /** Describes the geometry of the sheet border in view coordinates or world coordinates. */
 export class SheetBorder {
   private rect: Point2d[];
   private shadow: Point2d[];
-  private gradient: Gradient.Symb;
+  // private gradient: Gradient.Symb;
 
-  private constructor(rect: Point2d[], shadow: Point2d[], gradient: Gradient.Symb) {
+  private constructor(rect: Point2d[], shadow: Point2d[], _gradient: Gradient.Symb) {
     this.rect = rect;
     this.shadow = shadow;
-    this.gradient = gradient;
+    // this.gradient = gradient;
   }
 
   /** Create a new sheet border. If a context is supplied, points are transformed to view coordinates. */
   public static create(width: number, height: number, context?: ViewContext) {
     // Rect
-    const rect: Point3d[] = [Point3d.create(0, 0), Point3d.create(width, 0), Point3d.create(width, height), Point3d.create(0, height), Point3d.create(0, 0)];
+    const rect: Point3d[] = [
+      Point3d.create(0, height),
+      Point3d.create(0, 0),
+      Point3d.create(width, 0),
+      Point3d.create(width, height),
+      Point3d.create(0, height)];
     if (context) {
       context.viewport.worldToViewArray(rect);
     }
@@ -35,11 +41,11 @@ export class SheetBorder {
     const shadowWidth = .01 * Math.sqrt(width * width + height * height);
     const shadow: Point3d[] = [
       Point3d.create(shadowWidth, 0),
-      Point3d.create(width, 0),
-      Point3d.create(width, height - shadowWidth),
-      Point3d.create(width + shadowWidth, height - shadowWidth),
-      Point3d.create(width + shadowWidth, -shadowWidth),
       Point3d.create(shadowWidth, -shadowWidth),
+      Point3d.create(width + shadowWidth, -shadowWidth),
+      Point3d.create(width + shadowWidth, height - shadowWidth),
+      Point3d.create(width, height - shadowWidth),
+      Point3d.create(width, 0),
       Point3d.create(shadowWidth, 0),
     ];
     if (context) {
@@ -73,14 +79,14 @@ export class SheetBorder {
 
   /** Add this border to the given GraphicBuilder. */
   public addToBuilder(builder: GraphicBuilder) {
-    builder.setSymbology(ColorDef.black, ColorDef.black, 2, LinePixels.Solid);
+    builder.setSymbology(ColorDef.black, ColorDef.black, 2);
     builder.addLineString2d(this.rect, 0);
 
     const params = new GraphicParams();
-    params.setLineColor(ColorDef.from(25, 25, 25));
-    params.gradient = this.gradient;
+    params.setFillColor(ColorDef.black);
+    // params.gradient = this.gradient;
+    builder.activateGraphicParams(params);   // <== ###TODO: Setting a gradient seems to make the linestring above not have a width or color...
 
-    builder.activateGraphicParams(params);
     builder.addShape2d(this.shadow, Target.frustumDepth2d);
   }
 }

@@ -1076,6 +1076,8 @@ class ViewRotate extends ViewingToolHandle {
 
   private rotateViewWorld(worldOrigin: Point3d, worldAxisVector: Vector3d, primaryAngle: Angle) {
     const worldMatrix = RotMatrix.createRotationAroundVector(worldAxisVector, primaryAngle);
+    if (!worldMatrix)
+      return;
     const worldTransform = Transform.createFixedPointAndMatrix(worldOrigin, worldMatrix!);
     const frustum = this.frustum.clone();
     frustum.multiply(worldTransform);
