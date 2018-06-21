@@ -182,7 +182,7 @@ async function buildModelMenu(state: SimpleViewState) {
 }
 
 // build list of categories; enables them all
-async function buildCategoryMenu(state: SimpleViewState) {
+function buildCategoryMenu(state: SimpleViewState) {
   const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
   categoryMenu.innerHTML = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
 
@@ -404,7 +404,8 @@ async function openView(state: SimpleViewState) {
 
 async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
-  buildModelMenu(activeViewState);
+  activeViewState.viewState = view;
+  await buildModelMenu(activeViewState);
   buildCategoryMenu(activeViewState);
   updateRenderModeOptionsMap();
 }
@@ -448,7 +449,7 @@ async function changeView(event: any) {
     view = await activeViewState.iModelConnection!.views.load((view as IModelConnection.ViewSpec).id);
     viewMap.set(viewName, view);
   }
-  _changeView(view.clone());
+  await _changeView(view.clone());
   spinner.style.display = "none";
 }
 
