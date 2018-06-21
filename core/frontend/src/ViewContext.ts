@@ -432,6 +432,7 @@ export class DecorateContext extends RenderContext {
         if (points.length !== 0)
           graphic.addPointString(points);
       }
+      points.length = 0;  // reuse the array, but reset it on each iteration
     }
   }
 
