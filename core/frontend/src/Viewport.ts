@@ -1596,7 +1596,7 @@ export class Viewport {
     }
   }
 
-  public callDecorators(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     this.view.decorate(context);
     this.view.drawGrid(context);
     if (context.viewFlags.showAcsTriad())
