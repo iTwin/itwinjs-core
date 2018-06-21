@@ -5,6 +5,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.6.1]  -  2018-06-21
+### Fixed
+
+- Navigation Properties in Mixin classes should now load correctly when loading them synchronously
+
 ## [0.6.0]  -  2018-06-20
 ### Added
 - Synchronous methods for most things.
