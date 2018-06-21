@@ -14,13 +14,20 @@ const options = {
   timeoutsEnabled: yargs.noTimeouts || true, // measure tests' coverage
   coverage: yargs.coverage || false, // create test coverage report
   report: yargs.report || false, // create test run report
+  cache: yargs.cache || true, // enable/disable ts-node caching
   extensions: [".ts", ".tsx"], // source file extensions
 };
 const testsName = path.basename(path.resolve("./"));
 
 process.env.TS_NODE_PROJECT = path.join(options.testsDir, "tsconfig.json");
+process.env.TS_NODE_CACHE = options.cache;
 
-const setupReactTesting = () => {
+const setupTestingFramework = () => {
+  // setup chai
+  const chai = require("chai");
+  const chaiAsPromised = require("chai-as-promised");
+  chai.use(chaiAsPromised);
+
   // configure enzyme (testing utils for React)
   const enzyme = require("enzyme");
   const Adapter = require("enzyme-adapter-react-16");
@@ -28,7 +35,7 @@ const setupReactTesting = () => {
   const chaiJestSnapshot = require("chai-jest-snapshot");
   chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 }
-setupReactTesting();
+setupTestingFramework();
 
 let extensionsRegistered = false;
 const registerExtensions = () => {
@@ -77,7 +84,6 @@ const getTestFiles = () => {
     });
   };
   addFilesRecursively(options.testsDir);
-  addFilesRecursively("../test-helpers/");
   return testFiles;
 };
 

@@ -3,7 +3,11 @@ import * as ReactDOM from "react-dom";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, StandaloneIModelRpcInterface, IModelReadRpcInterface, RpcOperation, IModelToken } from "@bentley/imodeljs-common";
+import {
+  BentleyCloudRpcManager, BentleyCloudRpcParams,
+  StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface,
+  RpcOperation, IModelToken,
+} from "@bentley/imodeljs-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import { UiComponents } from "@bentley/ui-components";
 import initLogging from "./api/logging";
@@ -15,7 +19,7 @@ import "./index.css";
 initLogging();
 
 const rpcParams: BentleyCloudRpcParams = { info: { title: "my-app", version: "v1.0" } };
-const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, SampleRpcInterface];
+const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
 // __PUBLISH_EXTRACT_START__ Frontend.Initialization.RpcInterface
 import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, ECPresentationRpcInterface]);

@@ -1,8 +1,4 @@
 .TreeWidget {
-  display: flex;
-  flex-direction: column;
-  width: 40%;
-  padding: 5px;
 }
 
 .TreeWidget h3 {

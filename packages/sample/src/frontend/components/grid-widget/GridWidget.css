@@ -1,9 +1,5 @@
 .GridWidget {
-  display: flex;
-  flex-direction: column;
-  border-left: 1px solid black;
-  padding: 5px;
-  width: 100%;
+  height: 100%;
 }
 
 .GridWidget h3 {
@@ -11,6 +7,5 @@
 }
 
 .GridWidget .ContentContainer {
-  overflow-y: auto;
   height: 100%;
 }

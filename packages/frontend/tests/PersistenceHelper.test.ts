@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelConnectionElements, IModelConnectionModels } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/ecpresentation-common";
 import { PersistenceHelper } from "@src/index";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
@@ -27,13 +27,13 @@ describe("PersistenceHelper", () => {
       };
       const nodeKey = createRandomECInstanceNodeKey();
       // set up the mock
-      const modelsMock = moq.Mock.ofType<IModelConnectionModels>();
+      const modelsMock = moq.Mock.ofType<IModelConnection.Models>();
       modelsMock.setup((x) => x.getProps(moq.It.isValue([modelKey.id]))).returns(() => Promise.resolve([{
         modeledElement: { id: new Id64("0x1") } as RelatedElementProps,
         classFullName: modelKey.className,
         id: modelKey.id,
       }])).verifiable();
-      const elementsMock = moq.Mock.ofType<IModelConnectionElements>();
+      const elementsMock = moq.Mock.ofType<IModelConnection.Elements>();
       elementsMock.setup((x) => x.getProps(moq.It.isValue([elementKey.id]))).returns(() => Promise.resolve([{
         classFullName: elementKey.className,
         id: elementKey.id,

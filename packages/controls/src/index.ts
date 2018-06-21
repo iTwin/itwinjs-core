@@ -11,3 +11,5 @@ export { default as Table } from "./table/Table";
 
 export { default as TreeDataProvider } from "./tree/DataProvider";
 export { default as Tree } from "./tree/Tree";
+
+export { default as Viewport } from "./viewport/Viewport";

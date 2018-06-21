@@ -7,6 +7,7 @@ import { ECPresentationError } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription } from "@helpers/random/Content";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomRelationshipPath } from "@helpers/random/EC";
+import "@helpers/Snapshots";
 import ContentBuilder from "@src/common/ContentBuilder";
 
 describe("ContentBuilder", () => {

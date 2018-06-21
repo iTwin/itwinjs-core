@@ -13,6 +13,7 @@ import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import TreeDataProvider from "@src/tree/DataProvider";
+import "@helpers/Snapshots";
 
 describe("TreeDataProvider", () => {
 

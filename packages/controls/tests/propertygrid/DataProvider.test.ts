@@ -17,6 +17,7 @@ import PropertyDataProvider from "@src/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription } from "@helpers/random/Content";
 import { createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath } from "@helpers/random/EC";
+import "@helpers/Snapshots";
 
 const favoritesCategoryName = "Favorite";
 
