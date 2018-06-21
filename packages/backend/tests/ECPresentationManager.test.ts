@@ -13,7 +13,7 @@ import { PageOptions, SelectionInfo, KeySet, ECPresentationError, SettingValueTy
 import { Node, NodeKey, ECInstanceNodeKey } from "@common/index";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@src/ECPresentationManager";
 import UserSettingsManager from "@src/UserSettingsManager";
-import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random/Hierarchy";
 import { createRandomECInstanceKey, createRandomECClassInfoJSON, createRandomRelationshipPathJSON, createRandomECInstanceKeyJSON } from "@helpers/random/EC";
 import { createRandomDescriptor, createRandomCategory } from "@helpers/random/Content";
 import { ContentJSON } from "@common/content/Content";
@@ -440,6 +440,45 @@ describe("ECPresentationManager", () => {
       setup(addonResponse);
       const result = await manager.getChildrenCount(testData.imodelToken, parentNodeKey, testData.extendedOptions);
       verifyWithExpectedResult(result, addonResponse, expectedParams);
+    });
+
+    it("returns filtered node paths", async () => {
+      // what the addon receives
+      const expectedParams = {
+        requestId: NodeAddonRequestTypes.GetFilteredNodePaths,
+        params: {
+          filterText: "filter",
+          options: testData.extendedOptions,
+        },
+      };
+
+      // what addon returns
+      const addonResponse = createRandomNodePathElement(0);
+
+      setup(addonResponse);
+      const result = await manager.getFilteredNodePaths(testData.imodelToken, "filter", testData.extendedOptions);
+      verifyWithSnapshot(result, expectedParams);
+    });
+
+    it("returns node paths", async () => {
+      // what the addon receives
+      const keyArray = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+      const markedIndex = faker.random.number();
+      const expectedParams = {
+        requestId: NodeAddonRequestTypes.GetNodePaths,
+        params: {
+          paths: keyArray,
+          markedIndex,
+          options: testData.extendedOptions,
+        },
+      };
+
+      // what addon returns
+      const addonResponse = createRandomNodePathElement(0);
+
+      setup(addonResponse);
+      const result = await manager.getNodePaths(testData.imodelToken, keyArray, markedIndex, testData.extendedOptions);
+      verifyWithSnapshot(result, expectedParams);
     });
 
     it("returns content descriptor", async () => {

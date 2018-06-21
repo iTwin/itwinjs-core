@@ -9,6 +9,7 @@ import { KeySet, SettingValueTypes } from "@src/index";
 import { ECPresentationRpcInterface } from "@src/index";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceKey } from "@helpers/random/EC";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 
 describe("ECPresentationRpcInterface", () => {
@@ -83,6 +84,17 @@ describe("ECPresentationRpcInterface", () => {
       const parentKey = createRandomECInstanceNodeKey();
       await rpcInterface.getChildrenCount(testData.imodelToken, parentKey, {});
       mock.verify((x) => x(moq.It.isAny(), parentKey, {}), moq.Times.once());
+    });
+
+    it("forwards getFilteredNodePaths call", async () => {
+      await rpcInterface.getFilteredNodePaths(testData.imodelToken, "filter", { RulesetId: "id" });
+      mock.verify((x) => x(moq.It.isAny(), "filter", { RulesetId: "id" }), moq.Times.once());
+    });
+
+    it("forwards getNodePaths call", async () => {
+      const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+      await rpcInterface.getNodePaths(testData.imodelToken, keys, 1, { RulesetId: "id" });
+      mock.verify((x) => x(moq.It.isAny(), keys, 1, { RulesetId: "id" }), moq.Times.once());
     });
 
     it("forwards getContentDescriptor call", async () => {
