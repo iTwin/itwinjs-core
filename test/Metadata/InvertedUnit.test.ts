@@ -8,6 +8,8 @@ import Schema from "../../source/Metadata/Schema";
 import InvertedUnit from "../../source/Metadata/InvertedUnit";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
+import UnitSystem from "../../source/Metadata/UnitSystem";
+import Unit from "../../source/Metadata/Unit";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
@@ -37,40 +39,80 @@ describe("Inverted Unit tests", () => {
     });
     it("Basic test for label", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          HORIZONTAL_PER_VERTICAL: {
+              schemaItemType: "InvertedUnit",
+              unitSystem: "TestSchema.INTERNATIONAL",
+              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+              label: "Horizontal/Vertical",
+          },
+          INTERNATIONAL: {
+            schemaItemType: "UnitSystem",
+            label: "Imperial",
+            description: "Units of measure from the british imperial empire",
+          },
+          VERTICAL_PER_HORIZONTAL: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            definition: "Vert/Horizontal",
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.Length",
+          },
+        },
       };
-      await testUnit.fromJson(json);
-      assert(testUnit.label, "Horizontal/Vertical");
-    });
-    it("Name is not a valid ECName", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "111HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof InvertedUnit);
+      const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
+      assert.isDefined(testInvertedUnit);
+      assert(testInvertedUnit.label, "Horizontal/Vertical");
     });
     it("Label and description are optional", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          HORIZONTAL_PER_VERTICAL: {
+              schemaItemType: "InvertedUnit",
+              unitSystem: "TestSchema.INTERNATIONAL",
+              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+              label: "Horizontal/Vertical",
+          },
+          INTERNATIONAL: {
+            schemaItemType: "UnitSystem",
+            label: "Imperial",
+            description: "Units of measure from the british imperial empire",
+          },
+          VERTICAL_PER_HORIZONTAL: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            definition: "Vert/Horizontal",
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.Length",
+          },
+        },
       };
-      await testUnit.fromJson(json);
-      assert(testUnit.unitSystem, "ExampleSchema.INTERNATIONAL");
-      assert(testUnit.invertsUnit, "ExampleSchema.VERTICAL_PER_HORIZONTAL");
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof InvertedUnit);
+      const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
+      assert.isDefined(testInvertedUnit);
+      assert(testInvertedUnit.unitSystem, "TestSchema.INTERNATIONAL");
+      assert(testInvertedUnit.invertsUnit, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("Label must be string", async () => {
       const json = {
@@ -109,14 +151,84 @@ describe("Inverted Unit tests", () => {
     });
     it("unitSystem is required", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: "A unit representing run over rise",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          HORIZONTAL_PER_VERTICAL: {
+              schemaItemType: "InvertedUnit",
+              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+              label: "Horizontal/Vertical",
+          },
+          INTERNATIONAL: {
+            schemaItemType: "UnitSystem",
+            label: "Imperial",
+            description: "Units of measure from the british imperial empire",
+          },
+          VERTICAL_PER_HORIZONTAL: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            definition: "Vert/Horizontal",
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.Length",
+          },
+        },
       };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+    });
+    it("Resolve all dependencies for inverts unit and unit system", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          HORIZONTAL_PER_VERTICAL: {
+              schemaItemType: "InvertedUnit",
+              unitSystem: "TestSchema.INTERNATIONAL",
+              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+          },
+          INTERNATIONAL: {
+            schemaItemType: "UnitSystem",
+            label: "Imperial",
+            description: "Units of measure from the british imperial empire",
+          },
+          VERTICAL_PER_HORIZONTAL: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            definition: "Vert/Horizontal",
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.Length",
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof InvertedUnit);
+      const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
+      assert.isDefined(testInvertedUnit);
+
+      const unitSysFromInvertedUnit = await testInvertedUnit.unitSystem;
+      const invertsUnitFromInvertedUnit = await testInvertedUnit.invertsUnit;
+
+      const testUnitSys = await ecSchema.getItem("INTERNATIONAL");
+      assert.isDefined(testUnitSys);
+      assert.isTrue(testUnitSys instanceof UnitSystem);
+      const testUnitSysItem: UnitSystem = testUnitSys as UnitSystem;
+      assert(unitSysFromInvertedUnit!.description, testUnitSysItem!.description);
+
+      const testInvertsUnit = await ecSchema.getItem("VERTICAL_PER_HORIZONTAL");
+      assert.isDefined(testInvertsUnit);
+      assert.isTrue(testInvertsUnit instanceof Unit);
+      const testInvertsUnitItem: Unit = testInvertsUnit as Unit;
+      assert(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem!.definition);
     });
   });
 });

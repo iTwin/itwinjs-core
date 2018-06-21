@@ -46,23 +46,23 @@ export default class Unit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
     const phenomenon = await this.schema.getItem<Phenomenon>(jsonObj.phenomenon, true);
     if (!phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Phenomenon ${jsonObj.phenomenon}.`);
     this._phenomenon =   new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon);
 
     if (undefined === jsonObj.unitSystem)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'unitSystem' attribute.`);
-    else if (typeof(jsonObj.unitSystem) !== "string")
+    if (typeof(jsonObj.unitSystem) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
     const unitSystem = await this.schema.getItem<UnitSystem>(jsonObj.unitSystem, true);
     if (!unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Unit System ${jsonObj.unitSystem}.`);
     this._unitSystem =   new DelayedPromiseWithProps(unitSystem.key, async () => unitSystem);
 
     if (undefined === jsonObj.definition)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'definition' attribute.`);
-    else if (typeof(jsonObj.definition) !== "string")
+    if (typeof(jsonObj.definition) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute. It should be of type 'string'.`);
-    else if (this._definition !== "" && jsonObj.definition.toLowerCase() !== this._definition.toLowerCase())
+    if (this._definition !== "" && jsonObj.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "") // this is the default value for the definition, which we assigned in the constructor
       this._definition = jsonObj.definition; // so, if we have yet to define the definition variable, assign it the json definition
@@ -70,21 +70,21 @@ export default class Unit extends SchemaItem {
     if (undefined !== jsonObj.numerator) { // optional; default is 1.0
       if (typeof(jsonObj.numerator) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'numerator' attribute. It should be of type 'number'.`);
-      else if (jsonObj.numerator !== this._numerator) // if numerator isnt default value of 1.0, reassign numerator variable
+      if (jsonObj.numerator !== this._numerator) // if numerator isnt default value of 1.0, reassign numerator variable
         this._numerator = jsonObj.numerator;
     }
 
     if (undefined !== jsonObj.denominator) { // optional; default is 1.0
       if (typeof(jsonObj.denominator) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'denominator' attribute. It should be of type 'number'.`);
-      else if (jsonObj.denominator !== this._denominator) // if denominator isnt default value of 1.0, reassign denominator variable
+      if (jsonObj.denominator !== this._denominator) // if denominator isnt default value of 1.0, reassign denominator variable
         this._denominator = jsonObj.denominator;
     }
 
     if (undefined !== jsonObj.offset) { // optional; default is 0.0
       if (typeof(jsonObj.offset) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'offset' attribute. It should be of type 'number'.`);
-      else if (jsonObj.offset !== this._offset) // if offset isnt default value of 1.0, reassign offset variable
+      if (jsonObj.offset !== this._offset) // if offset isnt default value of 1.0, reassign offset variable
         this._offset = jsonObj.offset;
     }
   }

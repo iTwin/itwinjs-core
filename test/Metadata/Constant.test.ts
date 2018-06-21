@@ -7,6 +7,7 @@ import Schema from "../../source/Metadata/Schema";
 import Constant from "../../source/Metadata/Constant";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
+import Phenomenon from "../../source/Metadata/Phenomenon";
 
 describe("Constant tests", () => {
   let testConstant: Constant;
@@ -36,54 +37,76 @@ describe("Constant tests", () => {
     });
     it("Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        definition: "ONE",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          PI: {
+              schemaItemType: "Constant",
+              numerator: 3.14,
+              phenomenon: "TestSchema.LENGTH_RATIO",
+              denominator: 6.0,
+              definition: "PI",
+          },
+          LENGTH_RATIO: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.LENGTH_RATIO",
+          },
+        },
       };
-      await testConstant.fromJson(json);
-      assert(testConstant.label, "Pi");
-      assert(testConstant.phenomenon, "Units.LENGTH_RATIO");
-    });
-    it("Name must be valid ECName", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "3.14PI",
-        label: "Pi",
-        definition: "ONE",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
-      };
-      await expect(testConstant.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("PI");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      assert(testConst.definition, "PI");
+      assert(testConst.phenomenon, "TestSchema.LENGTH_RATIO");
     });
     it("Label must be string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: 3.14,
-        definition: "ONE",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          PI: {
+              schemaItemType: "Constant",
+              numerator: 3.14,
+              phenomenon: "TestSchema.LENGTH_RATIO",
+              denominator: 6.0,
+              definition: "PI",
+              label: 4,
+          },
+          LENGTH_RATIO: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.LENGTH_RATIO",
+          },
+        },
       };
-      await expect(testConstant.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem PI has an invalid 'label' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem PI has an invalid 'label' attribute. It should be of type 'string'.`);
     });
     it("Description must be string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        description: 3.14,
-        definition: "ONE",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          PI: {
+              schemaItemType: "Constant",
+              numerator: 3.14,
+              phenomenon: "TestSchema.LENGTH_RATIO",
+              denominator: 6.0,
+              definition: "PI",
+              description: 4,
+          },
+          LENGTH_RATIO: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.LENGTH_RATIO",
+          },
+        },
       };
-      await expect(testConstant.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem PI has an invalid 'description' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem PI has an invalid 'description' attribute. It should be of type 'string'.`);
     });
     it("Phenomenon is required", async () => {
       const json = {
@@ -98,78 +121,114 @@ describe("Constant tests", () => {
     });
     it("Definition is required", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          PI: {
+              schemaItemType: "Constant",
+              numerator: 3.14,
+              phenomenon: "TestSchema.LENGTH_RATIO",
+              denominator: 6.0,
+          },
+          LENGTH_RATIO: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.LENGTH_RATIO",
+          },
+        },
       };
-      await expect(testConstant.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Constant PI does not have the required 'definition' attribute.`);
-    });
-    it("Definition must be a string", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        definition: 1,
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
-      };
-      await expect(testConstant.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Constant PI has an invalid 'definition' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Constant PI does not have the required 'definition' attribute.`);
     });
     it("Numerator, denominator default values are both 1.0", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        definition: "ONE",
-        phenomenon: "Units.LENGTH_RATIO",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          PI: {
+              schemaItemType: "Constant",
+              phenomenon: "TestSchema.LENGTH_RATIO",
+              definition: "PI",
+          },
+          LENGTH_RATIO: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.LENGTH_RATIO",
+          },
+        },
       };
-      await testConstant.fromJson(json);
-      assert(testConstant.numerator === 1.0);
-      assert(testConstant.denominator === 1.0);
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("PI");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      assert(testConst.numerator === 1.0);
+      assert(testConst.denominator === 1.0);
     });
     it("Numerator, denominator are different than default", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        definition: "ONE",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
-        denominator: 6.0,
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          PI: {
+              schemaItemType: "Constant",
+              phenomenon: "TestSchema.LENGTH_RATIO",
+              numerator: 3.1415926535897932384626433832795,
+              denominator: 6.0,
+              definition: "PI",
+          },
+          LENGTH_RATIO: {
+            schemaItemType: "Phenomenon",
+            definition: "TestSchema.LENGTH_RATIO",
+          },
+        },
       };
-      await testConstant.fromJson(json);
-      assert(testConstant.numerator === 3.1415926535897932384626433832795);
-      assert(testConstant.denominator === 6.0);
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("PI");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      assert(testConst.numerator === 3.1415926535897932384626433832795);
+      assert(testConst.denominator === 6.0);
     });
-    it("Numerator and denominator must be numbers", async () => {
-      const jsonNumerator = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        definition: "ONE",
-        numerator: "3.1415926535897932384626433832795",
-        phenomenon: "Units.LENGTH_RATIO",
-        denominator: 6.0,
+    it("Resolve all dependencies on Phenomenon", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          PI: {
+              schemaItemType: "Constant",
+              numerator: 3.14,
+              phenomenon: "TestSchema.LENGTH_RATIO",
+              denominator: 6.0,
+              definition: "PI",
+          },
+          LENGTH_RATIO: {
+            schemaItemType: "Phenomenon",
+            definition: "Units.LENGTH_RATIO",
+          },
+        },
       };
-      const jsonDenominator = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        name: "PI",
-        label: "Pi",
-        definition: "ONE",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
-        denominator: "6.0",
-      };
-      await expect(testConstant.fromJson(jsonNumerator)).to.be.rejectedWith(ECObjectsError, `The Constant PI has an invalid 'numerator' attribute. It should be of type 'number'.`);
-      await expect(testConstant.fromJson(jsonDenominator)).to.be.rejectedWith(ECObjectsError, `The Constant PI has an invalid 'denominator' attribute. It should be of type 'number'.`);
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("PI");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      expect(testConst.denominator).equal(6.0);
+      const testPhenom = await ecSchema.getItem("TestSchema.LENGTH_RATIO");
+      assert.isDefined(testPhenom);
+      assert.isTrue(testPhenom instanceof Phenomenon);
+      const phenom: Phenomenon = testPhenom as Phenomenon;
+      assert.isDefined(phenom);
+      const phenomFromConstant = await testConst!.phenomenon;
+      assert(phenomFromConstant!.definition, phenom.definition);
     });
   });
 });

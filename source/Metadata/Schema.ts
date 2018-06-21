@@ -20,6 +20,8 @@ import { SchemaContext } from "../Context";
 import UnitSystem from "./UnitSystem";
 import Phenomenon from "./Phenomenon";
 import Format from "./Format";
+import Constant from "./Constant";
+import InvertedUnit from "./InvertedUnit";
 
 const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
 
@@ -169,6 +171,30 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   /**
+   * Creates a Constant with the provided name in this schema.
+   * @param name
+   */
+  protected async createConstant(name: string): Promise<Constant> {
+    return this.createItem<Constant>(Constant, name);
+  }
+
+  protected createConstantSync(name: string): Constant {
+    return this.createItem<Constant>(Constant, name);
+  }
+
+  /**
+   * Creates a Inverted Unit with the provided name in this schema.
+   * @param name
+   */
+  protected async createInvertedUnit(name: string): Promise<InvertedUnit> {
+    return this.createItem<InvertedUnit>(InvertedUnit, name);
+  }
+
+  protected createInvertedUnitSync(name: string): InvertedUnit {
+    return this.createItem<InvertedUnit>(InvertedUnit, name);
+  }
+
+  /**
    * Creates an Format with the provided name in this schema.
    * @param name
    */
@@ -252,7 +278,7 @@ export default class Schema implements CustomAttributeContainerProps {
    * If the name is a full name, it will search in the reference schema matching the name.
    * @param name The name of the schema item to search for.
    */
-  public async  getItem<T extends SchemaItem>(name: string, includeReference?: boolean): Promise<T | undefined> {
+  public async getItem<T extends SchemaItem>(name: string, includeReference?: boolean): Promise<T | undefined> {
     const [schemaName, itemName] = SchemaItem.parseFullName(name);
 
     let foundItem;
@@ -451,6 +477,10 @@ export abstract class MutableSchema extends Schema {
   public abstract createKindOfQuantitySync(name: string): KindOfQuantity;
   public abstract async createUnit(name: string): Promise<Unit>;
   public abstract createUnitSync(name: string): Unit;
+  public abstract async createConstant(name: string): Promise<Constant>;
+  public abstract createConstantSync(name: string): Constant;
+  public abstract async createInvertedUnit(name: string): Promise<InvertedUnit>;
+  public abstract createInvertedUnitSync(name: string): InvertedUnit;
   public abstract async createPhenomenon(name: string): Promise<Phenomenon>;
   public abstract createPhenomenonSync(name: string): Phenomenon;
   public abstract async createFormat(name: string): Promise<Format>;

@@ -5,12 +5,14 @@
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItemType } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { SchemaItemVisitor, LazyLoadedInvertedUnit, LazyLoadedUnit, LazyLoadedFormat } from "../Interfaces";
 import Schema from "./Schema";
-import Format from "../Metadata/Format";
+import Format, { MutableFormat } from "../Metadata/Format";
 import Unit from "../Metadata/Unit";
-import { LazyLoadedUnit } from "../Interfaces";
+import InvertedUnit from "../Metadata/InvertedUnit";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+
+export const formatStringRgx: RegExp = RegExp(/([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/);
 
 /**
  * A Typescript class representation of a KindOfQuantity.
@@ -18,125 +20,124 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 export default class KindOfQuantity extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line
   protected _precision: number = 1.0;
-  protected _presentationUnits?: string[];
-  protected _persistenceUnit?: LazyLoadedUnit;
-  protected _formats?: any;
-  protected _units?: any;
+  protected _presentationUnits?: LazyLoadedFormat[];
+  protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
-  public static readonly formatStringRgx: RegExp = RegExp(/([\w,:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/);
-  public static readonly unitRgx: RegExp = RegExp(/^\[(u\s*\:\s*)?([\w]+)\s*(\|)?\s*(.*)?\s*\]$/);
+  public static readonly unitRgx: RegExp = RegExp(/^\[(u\s*\:\s*)?([\w\.]+)\s*(\|)?\s*(.*)?\s*\]$/);
   get precision() { return this._precision; }
 
-  get presentationUnits(): string[] | undefined { return this._presentationUnits; }
+  get presentationUnits(): LazyLoadedFormat[] | undefined { return this._presentationUnits; }
 
-  get persistenceUnit(): LazyLoadedUnit | undefined { return this._persistenceUnit; }
+  get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
 
-  set persistenceUnit(persistenceUnit: LazyLoadedUnit | undefined) { this._persistenceUnit = persistenceUnit; }
-
-  get formats() { return this._units; }
-
-  get units() { return this._formats; }
+  set persistenceUnit(persistenceUnit: LazyLoadedUnit| LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = persistenceUnit; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaItemType.KindOfQuantity);
     this._presentationUnits = [];
   }
 
-  public get defaultPresentationUnit() {
+  public get defaultPresentationFormat() {
     return this!.presentationUnits!.length === 0 ? undefined : this!.presentationUnits![0];
   }
 
-  private processPresentationUnits(presentationUnitsJson: string | string[]) {
-    if (presentationUnitsJson instanceof Array) {
-      presentationUnitsJson.forEach((formatString: string) => {
-        if (!KindOfQuantity.formatStringRgx.test(formatString)) // throw if formatString is invalid
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `KindOfQuantity has an invalid 'presentationUnits' option.`);
-        this!._presentationUnits!.push(formatString); // push otherwise
-      });
-    } else {
-        presentationUnitsJson.split(";").forEach((formatString: string) => {
-          if (!KindOfQuantity.formatStringRgx.test(formatString)) // throw if formatString is invalid
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `KindOfQuantity has an invalid 'presentationUnits' option.`);
-          this!._presentationUnits!.push(formatString); // push otherwise
-        });
+  private async processPresentationUnits(presentationUnitsJson: string | string[]) {
+    const presUnitsArr = (Array.isArray(presentationUnitsJson)) ? presentationUnitsJson : presentationUnitsJson.split(";");
+    for (const formatString of presUnitsArr) {
+      if (!formatStringRgx.test(formatString)) // throw if formatString is invalid
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `PresentationUnits contains a Format String with an invalid format.`);
+      const parsedFormatStr = await this.parseFormatString(formatString);
+      await this!._presentationUnits!.push(new DelayedPromiseWithProps(parsedFormatStr.key, async () => parsedFormatStr));
     }
   }
+
+  private async processUnitLabel(overrideLabel: string, unitName: string): Promise<[LazyLoadedUnit | LazyLoadedInvertedUnit, string]> {
+    let unitLabelToPush: string = ""; // if unit override label is undefined, use empty string for label
+    if (overrideLabel !== undefined) // override label is defined... push old label
+      unitLabelToPush = overrideLabel;
+    const newUnit = await this.schema.getItem<Unit | InvertedUnit>(unitName, true);
+    if (!newUnit)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    const unitToBeAdded = new DelayedPromiseWithProps(newUnit.key, async () => newUnit) as LazyLoadedUnit | LazyLoadedInvertedUnit;
+    return [unitToBeAdded, unitLabelToPush]; // return new unit label entry
+  }
+
   /**
    * Called to parse a format string and override properties of a Format
-   * @param schema schema in which this format resides
-   * @param formatName An valid fully qualified ECName referring to a Format
    * @param formatString short string-based representation of a Format, which allows overriding of certain key properties
    * @returns object representing {formatName, precision, Array of [unitName, unitLabel?] pairs}
    */
-  public static async parseFormatString(schema: Schema, formatName: string, formatString: string): Promise<object> {
-    // given name of format, figure out units
+  private async parseFormatString(formatString: string): Promise<Format> {
     let precision: any = null;
     let numUnits: number | undefined;
-    let unitArray: Array<[string, string | undefined]>;
+    let unitArray: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>;
     let unit: any = null;
-    let index = 4;
+    let index = 4;  // units reside at indices 4,8,12,16
     let compositeIsDefined: boolean = false;
-    function processUnitLabel(overrideLabel: string, unitName: string): [string, string] {
-      let unitLabelToPush: string = ""; // if unit override label is undefined, use empty string for label
-      if (overrideLabel !== undefined) // override label is defined... push old label
-        unitLabelToPush = overrideLabel;
-      return [unitName, unitLabelToPush]; // return new unit label entry
-    }
-    if (!KindOfQuantity.formatStringRgx.test(formatString))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format string has incorrect format.`);
-    const match = formatString.split(KindOfQuantity.formatStringRgx);
-    if (match[1] !== formatName) // handle format first to fail fast
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format names do not match.`);
-    const matchedFormat = await schema.getItem<Format>(match[1], true); // get format item and units
+
+    // function to determine number of unit overrides from index
+    const getNumUnitOverrides = ((x: number) => {
+      if (x === 4) return 0; // if index is 4, that means there are 0 units
+      else return (x - 4) / 4;
+    });
+
+    const match = formatString.split(formatStringRgx); // split string based on regex groups
+    const matchedFormat = await this.schema.getItem<Format>(match[1], true); // get format object
     if (!matchedFormat)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Format ${formatName}.`);
-    if (matchedFormat!.composite === undefined) { // composite is undefined
-      compositeIsDefined = false; // unit overrides are to be used
-      if (!(/\[/g).test(formatString)) // if format has 0 units, format string must have at least one unit
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format string requires unit overrides if the format does not have any.`);
-      numUnits = formatString.match(/\[/g)!.length; // units in format string are used bc there are no units in format
-    } else {
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Format ${match[1]}.`);
+    if (matchedFormat!.composite === undefined) { // if composite is undefined
+      compositeIsDefined = false;
+    } else { // otherwise, composite is defined
       compositeIsDefined = true;
-      numUnits = matchedFormat!.composite!.units!.length; // get how many units this format has
+      numUnits = matchedFormat!.composite!.units!.length; // get how many units this format object has
     }
+
     if (match[2] !== undefined && match[3] !== undefined) { // if formatString contains optional override of the precision defined in Format
       precision = +match[3].split(",")[0]; // override the precision value, take the first value if it is a list
       if (!Number.isInteger(precision)) // precision value must be an integer
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Precision must be an integer.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Precision override must be an integer.`);
     } else {
-      precision = null; // precision is not present in the format string
+      precision = matchedFormat.precision; // precision is not present in the format string, so use precision from format object
     }
-    matchedFormat.precision = precision;
-    if ((/\[/g).test(formatString) && formatString.match(/\[/g)!.length !== numUnits) // count number of left brackets in string- same as coutning number of units
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Incorrect number of unit overrides.`);
-    unitArray = new Array<[string, string | undefined]>(); // array to hold [unitName, unitLabel?] entries
-    if (!(/\[/g).test(formatString) && numUnits > 0) // if there are no unit overrides and the number of format Units is not zero
-      unitArray = matchedFormat!.composite!.units as Array<[string, string | undefined]>;
+    unitArray = new Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>(); // array to hold [lazyloadedunit | lazyloadedinvertedLabel, unitLabel?] entries
     while ( index < match.length - 1 ) { // index 0 and 21 are empty strings
-      if ( match[index] !== undefined) {
-        unit = match[index].split(KindOfQuantity.unitRgx);
+      if ( match[index] !== undefined) { // this unit is defined
+        unit = match[index].split(KindOfQuantity.unitRgx); // split unit based on regex groups
         let foundUnitName: boolean = false; // did we find a matching unit name in the format?
         if (!compositeIsDefined) { // if no units in format, units in format string are used
-          unitArray.push(processUnitLabel(unit[4], unit[2]));
+          unitArray.push(await this.processUnitLabel(unit[4], unit[2]));
           foundUnitName = true;
         } else { // if composite is defined
-          matchedFormat!.composite!.units!.forEach((value: [string, string | undefined]) => { // find match for unitName in format
-            if ( unit[2].toLowerCase() === value[0].toLowerCase() ) { // we found a match for this unitName
-              unitArray.push(processUnitLabel(unit[4], unit[2]));
+          const compositeUnits =  matchedFormat!.composite!.units;
+          for (const compUnit of compositeUnits!) {
+            const unitValue = await compUnit["0"];
+            if ( unit[2].split(".")[1].toLowerCase() === unitValue.name.toLowerCase()) { // we found a match for this unitName
+              unitArray.push(await this.processUnitLabel(unit[4], unit[2]));
               foundUnitName = true;
             }
-          });
+          }
         }
         if ( foundUnitName === false )
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find unit name ${unit[2]}.`);
       } else
         break;
-      index += 4;
+      index += 4; // add 4 to get to next unit
     }
-    if (!compositeIsDefined)
-      matchedFormat!.composite = {includeZero: true, spacer: " ", units: new Array<[string, string | undefined]>()}; // if composite was undefined, init with default values
-    matchedFormat!.composite!.units = unitArray; // assign unit array to composite
-    return {FormatName: formatName, Precision: precision, Units: unitArray};
+    const numOverrides = getNumUnitOverrides(index);
+
+    if (!compositeIsDefined) // if composite is not defined, number of units depends on format string
+      numUnits = numOverrides;
+    if (numOverrides !== numUnits) //  # of override units be = # of unit in the composite only if composite is defined - composite is require to have #units > 0
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Number of unit overrides must match number of units present in Format.`);
+    if (numOverrides === 0 && numUnits > 0) // if there are no unit overrides and the number of format Units is not zero
+      unitArray = matchedFormat!.composite!.units as Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>; // use the format's composite's units
+
+    let newFormat: Format = new Format(this.schema, matchedFormat.name);
+    newFormat = Object.assign(newFormat, matchedFormat);
+    (newFormat as MutableFormat).setPrecision(precision);
+    (newFormat as MutableFormat).setUnits(unitArray);
+    const newFormatPromise = new DelayedPromiseWithProps(newFormat.key, async () => newFormat);
+    return newFormatPromise;
   }
 
   public async fromJson(jsonObj: any) {
@@ -149,18 +150,18 @@ export default class KindOfQuantity extends SchemaItem {
     this._precision = jsonObj.precision;
 
     if (undefined === jsonObj.persistenceUnit)
-    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
     if (typeof(jsonObj.persistenceUnit) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
     const persistenceUnit = await this.schema.getItem<Unit>(jsonObj.persistenceUnit, true);
     if (!persistenceUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find the persistence unit ${jsonObj.persistenceUnit}.`);
     this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== jsonObj.presentationUnits) {
       if (!Array.isArray(jsonObj.presentationUnits) && typeof(jsonObj.presentationUnits) !== "string") // must be a string or an array
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be either type 'string[]' or type 'string'.`);
-      this.processPresentationUnits(jsonObj.presentationUnits);
+      await this.processPresentationUnits(jsonObj.presentationUnits);
     }
   }
 

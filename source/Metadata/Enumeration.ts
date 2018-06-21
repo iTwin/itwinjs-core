@@ -4,12 +4,12 @@
 
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType, SchemaItemType, ECName } from "../ECObjects";
+import { PrimitiveType, SchemaItemType } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export interface Enumerator<T> {
-  readonly name: ECName;
+  readonly name: string;
   readonly value: T;
   readonly label?: string;
   readonly description?: string;
@@ -46,6 +46,10 @@ export default class Enumeration extends SchemaItem {
     this._enumerators = [];
   }
 
+  private isValidECName(newName: string) {
+    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
+  }
+
   public isInt(): this is IntEnumeration { return this.primitiveType === PrimitiveType.Integer; }
   public isString(): this is StringEnumeration { return this.primitiveType === PrimitiveType.String; }
 
@@ -53,9 +57,8 @@ export default class Enumeration extends SchemaItem {
    * Gets an enumerator that matches the name provided.
    * @param name The ECName of the Enumerator to find.
    */
-
   public getEnumeratorByName(name: string): AnyEnumerator | undefined {
-    return this.enumerators.find((item) => item.name.name.toLowerCase() === name.toLowerCase());
+    return this.enumerators.find((item) => item.name.toLowerCase() === name.toLowerCase());
   }
 
   /**
@@ -75,7 +78,7 @@ export default class Enumeration extends SchemaItem {
     */
   private findDuplicateEnumerators(name: string, value: string | number) {
     this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
-      if (element.name.name.toLowerCase() === name.toLowerCase() || element.value === value)
+      if (element.name.toLowerCase() === name.toLowerCase() || element.value === value)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The enumerator ${name} has a duplicate name or value.`);
     });
   }
@@ -88,11 +91,14 @@ export default class Enumeration extends SchemaItem {
    * @param description A localized description for the enumerator.
    */
   public createEnumerator(name: string, value: string | number, label?: string, description?: string) {
-    if ((this.isInt() && typeof(value) === "string") || (!this.isInt() && typeof(value) === "number")) // throws if backing type is int and value is string OR if backing type is string and value is number
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has an enumerator with an invalid 'value' attribute.`);
+    if (this.isInt() && typeof(value) === "string") // throws if backing type is int and value is string
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
+    if (!this.isInt() && typeof(value) === "number") // also throws if backing type is string and value is number
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
-    const enumName = new ECName(name);
-    this.enumerators.push({name: enumName, value, label, description});
+    if (!this.isValidECName(name))
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
+    this.enumerators.push({name, value, label, description});
   }
 
   /**
@@ -155,7 +161,9 @@ export default class Enumeration extends SchemaItem {
           if (typeof(enumerator.description) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
         }
-        this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description); // throws ECObjectsError if there are duplicate values
+        // Creates a new enumerator with the specified name, value, label and description- label and description are optional.
+        // Throws ECObjectsError if there are duplicate names or values present in the enumeration
+        this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description);
       });
     }
   }

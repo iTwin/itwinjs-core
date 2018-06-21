@@ -5,9 +5,10 @@
 import { assert, expect } from "chai";
 
 import Schema from "../../source/Metadata/Schema";
-import Format, { ShowSignOption, Type } from "../../source/Metadata/Format";
+import Format, { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "../../source/Metadata/Format";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
+import Unit from "../../source/Metadata/Unit";
 
 describe("Format tests", () => {
   let testFormat: Format;
@@ -56,11 +57,12 @@ describe("Format tests", () => {
         assert(testFormat.label, "myfi4");
         assert(testFormat.description === "");
         assert(testFormat.roundFactor === 0.0);
-        assert(testFormat.type, Type.Fractional);
-        assert(testFormat.showSignOption, ShowSignOption.OnlyNegative);
-        assert(testFormat.formatTraits!.get("keepSingleZero") === true);
-        assert(testFormat.formatTraits!.get("trailZeroes") === true);
-        assert(testFormat.precision === 4);
+        assert(testFormat.type === FormatType.Fractional);
+        assert(testFormat.showSignOption === ShowSignOption.OnlyNegative);
+        assert(testFormat.hasFormatTrait(FormatTraits.keepSingleZero));
+        assert(testFormat.hasFormatTrait(FormatTraits.trailZeroes));
+        assert(testFormat.hasFormatTrait(FormatTraits.applyRounding) === false);
+        assert(testFormat.precision === FractionalPrecision.four);
         assert(testFormat.decimalSeparator, ".");
         assert(testFormat.thousandSeparator, ",");
         assert(testFormat.uomSeparator, " ");
@@ -325,7 +327,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 does not have the required 'scientificType' attribute.`);
+        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has type 'Scientific' therefore attribute 'scientificType' is required.`);
       });
       it("ScientificType value is not valid", async () => {
         const json = {
@@ -469,7 +471,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer greater than 0.`);
+        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       });
       it("StationOffsetSize is not positive", async () => {
         const json = {
@@ -487,7 +489,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer greater than 0.`);
+        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       });
       it("Type is station; StationOffsetSize is required", async () => {
         const json = {
@@ -504,7 +506,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 does not have the required 'stationOffsetSize' attribute.`);
+        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
       });
       it("Type is not station; StationOffsetSize is ignored", async () => {
         const json = {
@@ -605,9 +607,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        testFormat.formatTraits!.forEach((value: boolean) => {
-          assert(value === true);
-        });
+        assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("Valid options with multiple separators", async () => {
         const json = {
@@ -625,9 +625,8 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        testFormat.formatTraits!.forEach((value: boolean) => {
-          assert(value === true);
-      });      });
+        assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
+      });
       it("Valid options with invalid separator", async () => {
         const json = {
           schemaItemType: "Format",
@@ -678,7 +677,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        assert(testFormat.formatTraits ===  undefined);
+        assert(testFormat.formatTraits ===  0);
       });
       it("String[] with valid options", async () => {
         const json = {
@@ -707,9 +706,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        testFormat.formatTraits!.forEach((value: boolean) => {
-            assert(value === true);
-        });
+        assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("String[] with one valid option", async () => {
         const json = {
@@ -729,12 +726,9 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        testFormat.formatTraits!.forEach((value: boolean, key: string) => {
-          if (key !== "trailZeroes")
-            assert(value === false);
-          else
-            assert(value === true);
-        });
+        assert(testFormat.hasFormatTrait(FormatTraits.keepSingleZero) === false);
+        assert(testFormat.hasFormatTrait(FormatTraits.trailZeroes));
+        assert(testFormat.hasFormatTrait(FormatTraits.applyRounding) === false);
       });
       it("String[] with invalid option", async () => {
         const json = {
@@ -763,85 +757,158 @@ describe("Format tests", () => {
       testFormat = new Format(schema, "AmerMYFI4");
     });
     it("Basic test", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-              label: "mile(s)",
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          AmerMYFI4: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "TestSchema.MILE",
+                  label: "mile(s)",
+                },
+              ],
             },
-            {
-              name: "YRD",
-              label: "yrd(s)",
-            },
-            {
-              name: "FT",
-              label: "'",
-            },
-            {
-              name: "IN",
-              label: "\"",
-            },
-          ],
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Imperial: {
+            schemaItemType: "UnitSystem",
+          },
+          MILE: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Imperial",
+            definition: "mile",
+          },
         },
       };
-      await testFormat.fromJson(json);
-      assert(testFormat.composite!.units!.length === 4);
-      assert(testFormat.composite!.includeZero === false);
-      assert(testFormat.composite!.spacer === "-");
-    });
+      const ecSchema = await Schema.fromJson(testSchema);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("AmerMYFI4");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Format);
+      const formatTest: Format = testItem as Format;
+      assert.isDefined(formatTest);
+      expect(formatTest.type === FormatType.Fractional);
+      const testUnitItem = await ecSchema.getItem("MILE");
+      assert.isDefined(testUnitItem);
+      const unitTest: Unit = testUnitItem as Unit;
+      assert(unitTest!.name, "MILE");
+     });
     it("Throw for Composite with missing units attribute", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          AmerMYFI4: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+            },
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Imperial: {
+            schemaItemType: "UnitSystem",
+          },
+          MILE: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Imperial",
+            definition: "mile",
+          },
         },
       };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'Composite' attribute. It must have 1-4 units.`);
     });
     it("Throw for Composite with empty units array", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-          ],
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          AmerMYFI4: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+
+              ],
+            },
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Imperial: {
+            schemaItemType: "UnitSystem",
+          },
+          MILE: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Imperial",
+            definition: "mile",
+          },
         },
       };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'Composite' attribute. It must have 1-4 units.`);
     });
     it("includeZero must be boolean", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: "false",
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-              label: "mile(s)",
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          AmerMYFI4: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: "false",
+              spacer: "-",
+              units: [
+                {
+                  name: "TestSchema.MILE",
+                  label: "mile(s)",
+                },
+              ],
             },
-          ],
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Imperial: {
+            schemaItemType: "UnitSystem",
+          },
+          MILE: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Imperial",
+            definition: "mile",
+          },
         },
       };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
     });
     it("spacer must be a one character string", async () => {
       const json = {
@@ -854,7 +921,7 @@ describe("Format tests", () => {
           spacer: "space",
           units: [
             {
-              name: "MILE",
+              name: "TestSchema.MILE",
               label: "mile(s)",
             },
           ],
@@ -874,7 +941,7 @@ describe("Format tests", () => {
           spacer: 1,
           units: [
             {
-              name: "MILE",
+              name: "TestSchema.MILE",
               label: "mile(s)",
             },
           ],
@@ -882,166 +949,102 @@ describe("Format tests", () => {
       };
       await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
     });
-    it("Unit name is required", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              label: "mile(s)",
-            },
-          ],
-        },
-      };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    });
-    it("Unit label is optional", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-            },
-          ],
-        },
-      };
-      await testFormat.fromJson(json);
-      assert(testFormat.composite!.units!.length === 1);
-      assert(testFormat.composite!.includeZero === false);
-      assert(testFormat.composite!.spacer === "-");
-    });
-    it("Unit name must be a string", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: 1234,
-            },
-          ],
-        },
-      };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    });
-    it("Label must be a string", async () => {
-      const json = {
-        includeZero: false,
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-              label: 1,
-            },
-          ],
-        },
-      };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    });
     it("Unit names must be unique", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-              label: "mile(s)",
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          AmerMYFI4: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "TestSchema.MILE",
+                  label: "mile(s)",
+                },
+                {
+                  name: "TestSchema.MILE",
+                  label: "yrd(s)",
+                },
+              ],
             },
-            {
-              name: "MILE",
-              label: "yrd(s)",
-            },
-          ],
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Imperial: {
+            schemaItemType: "UnitSystem",
+          },
+          MILE: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Imperial",
+            definition: "mile",
+          },
         },
       };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The unit MILE has a duplicate name.`);
-    });
-    it("Unit labels do not have to be unique", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-              label: "mile(s)",
-            },
-            {
-              name: "YARD",
-              label: "miles(s)",
-            },
-          ],
-        },
-      };
-      await testFormat.fromJson(json);
-      assert(testFormat.composite!.units!.length === 2);
-      assert(testFormat.composite!.includeZero === false);
-      assert(testFormat.composite!.spacer === "-");
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The unit MILE has a duplicate name.`);
+
     });
     it("Cannot have more than 4 units", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-              label: "mile(s)",
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          AmerMYFI4: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "MILE",
+                  label: "mile(s)",
+                },
+                {
+                  name: "YRD",
+                  label: "yrd(s)",
+                },
+                {
+                  name: "FT",
+                  label: "'",
+                },
+                {
+                  name: "IN",
+                  label: "\"",
+                },
+                {
+                  name: "METER",
+                  label: "meter(s)",
+                },
+              ],
             },
-            {
-              name: "YRD",
-              label: "yrd(s)",
-            },
-            {
-              name: "FT",
-              label: "'",
-            },
-            {
-              name: "IN",
-              label: "\"",
-            },
-            {
-              name: "METER",
-              label: "meter(s)",
-            },
-          ],
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Imperial: {
+            schemaItemType: "UnitSystem",
+          },
+          MILE: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Imperial",
+            definition: "mile",
+          },
         },
       };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'Composite' attribute. It must have 1-4 units.`);
     });
   });
 });
