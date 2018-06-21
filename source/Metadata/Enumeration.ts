@@ -104,9 +104,7 @@ export default class Enumeration extends SchemaItem {
   /**
    * Populates this Enumeration with the values from the provided.
    */
-  public async fromJson(jsonObj: any) {
-    await super.fromJson(jsonObj);
-
+  private enumerationFromJson(jsonObj: any) {
     if (undefined === this._primitiveType) {
       if (undefined === jsonObj.backingTypeName)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} is missing the required 'backingTypeName' attribute.`);
@@ -166,6 +164,22 @@ export default class Enumeration extends SchemaItem {
         this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description);
       });
     }
+  }
+
+  /**
+   * Populates this Enumeration with the values from the provided.
+   */
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+    this.enumerationFromJson(jsonObj);
+  }
+
+  /**
+   * Populates this Enumeration with the values from the provided.
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+    this.enumerationFromJson(jsonObj);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

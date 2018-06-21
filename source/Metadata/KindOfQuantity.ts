@@ -51,6 +51,16 @@ export default class KindOfQuantity extends SchemaItem {
     }
   }
 
+  public async fromJson(jsonObj: any) {
+    await super.fromJson(jsonObj);
+    await this.koqFromJson(jsonObj);
+  }
+
+  public fromJsonSync(jsonObj: any) {
+    super.fromJsonSync(jsonObj);
+    this.koqFromJson(jsonObj);
+  }
+
   private async processUnitLabel(overrideLabel: string, unitName: string): Promise<[LazyLoadedUnit | LazyLoadedInvertedUnit, string]> {
     let unitLabelToPush: string = ""; // if unit override label is undefined, use empty string for label
     if (overrideLabel !== undefined) // override label is defined... push old label
@@ -140,8 +150,7 @@ export default class KindOfQuantity extends SchemaItem {
     return newFormatPromise;
   }
 
-  public async fromJson(jsonObj: any) {
-    await super.fromJson(jsonObj);
+  private async koqFromJson(jsonObj: any) {
 
     if (undefined === jsonObj.precision)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'precision'.`);
@@ -153,7 +162,7 @@ export default class KindOfQuantity extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
     if (typeof(jsonObj.persistenceUnit) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
-    const persistenceUnit = await this.schema.getItem<Unit>(jsonObj.persistenceUnit, true);
+    const persistenceUnit = this.schema.getItemSync<Unit>(jsonObj.persistenceUnit, true);
     if (!persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find the persistence unit ${jsonObj.persistenceUnit}.`);
     this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
