@@ -501,7 +501,7 @@ export class SceneCompositor {
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
 
-    const fbStack = System.instance.frameBufferStack;
+    let fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
@@ -513,7 +513,7 @@ export class SceneCompositor {
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels) {
-      const fbStack = System.instance.frameBufferStack;
+      fbStack = System.instance.frameBufferStack;
       fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);

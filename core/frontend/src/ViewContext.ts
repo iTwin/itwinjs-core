@@ -326,7 +326,7 @@ export class DecorateContext extends RenderContext {
       gridOrigin.plusScaled(xVec, repetitions.x),
       gridOrigin.plus2Scaled(xVec, repetitions.x, yVec, repetitions.y),
       gridOrigin.plusScaled(yVec, repetitions.y),
-      gridOrigin
+      gridOrigin,
     ];
 
     if (0 === gridsPerRef) {
@@ -348,7 +348,7 @@ export class DecorateContext extends RenderContext {
       const vD = plane.dotProductVector(direction);
       const vN = plane.evaluatePoint(origin);
 
-      let testValue = -vN / vD;
+      const testValue = -vN / vD;
       if (vD > 0.0) {
         if (testValue > clipDistance.min)
           clipDistance.min = testValue;
@@ -383,7 +383,7 @@ export class DecorateContext extends RenderContext {
       const sizeLimit = maxHorizonGrids * colSpacing / vp.viewDelta.x;
 
       vp.rotMatrix.rowZ(viewZ);
-      zCamera = viewZ.dotProduct(camera.getEyePoint())
+      zCamera = viewZ.dotProduct(camera.getEyePoint());
       zCameraLimit = zCamera - camera.focusDist * sizeLimit;
     }
 
