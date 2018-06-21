@@ -53,7 +53,7 @@ exports.handler = (argv) => {
   
   // Support jest-style args for updating all snapshots
   if (argv.updateSnapshot || argv.u)
-  process.env.CHAI_JEST_SNAPSHOT_UPDATE_ALL = "true";
+    process.env.CHAI_JEST_SNAPSHOT_UPDATE_ALL = "true";
   
   // Some additional options are required for CI builds
   let reporterOptions = [ "--inline-diffs",  "--colors" ];
