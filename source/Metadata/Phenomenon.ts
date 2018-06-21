@@ -18,9 +18,7 @@ export default class Phenomenon extends SchemaItem {
 
   get definition(): string { return this._definition; }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
+  public phenomenonFromJson(jsonObj: any) {
     if (undefined === jsonObj.definition)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} does not have the required 'definition' attribute.`);
     else if (typeof(jsonObj.definition) !== "string")
@@ -29,6 +27,22 @@ export default class Phenomenon extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "") // this is the default value for the definition, which we assigned in the constructor
       this._definition = jsonObj.definition; // so, if we have yet to define the definition variable, assign it the json definition
+  }
+
+  /**
+   * Populates this Phenomenon with the values from the provided.
+   */
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+    await this.phenomenonFromJson(jsonObj);
+  }
+
+  /**
+   * Populates this Phenomenon with the values from the provided.
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+    this.phenomenonFromJson(jsonObj);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

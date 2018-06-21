@@ -340,9 +340,7 @@ export default class Format extends SchemaItem {
     this._composite!.units!.push([unitToBeAdded, label]);
   }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
+  public async formatFromJson(jsonObj: any) {
     if (undefined === jsonObj.type) // type is required
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} does not have the required 'type' attribute.`);
     if (typeof(jsonObj.type) !== "string")
@@ -461,6 +459,22 @@ export default class Format extends SchemaItem {
       } else
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
     }
+  }
+
+  /**
+   * Populates this Format with the values from the provided.
+   */
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+    await this.formatFromJson(jsonObj);
+  }
+
+  /**
+   * Populates this Format with the values from the provided.
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+    this.formatFromJson(jsonObj);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

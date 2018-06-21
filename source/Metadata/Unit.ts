@@ -37,14 +37,12 @@ export default class Unit extends SchemaItem {
   get offset(): number { return this._offset; }
   get denominator(): number { return this._denominator; }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
+  public unitFromJson(jsonObj: any) {
     if (undefined === jsonObj.phenomenon)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'phenomenon' attribute.`);
     if (typeof(jsonObj.phenomenon) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-    const phenomenon = await this.schema.getItem<Phenomenon>(jsonObj.phenomenon, true);
+    const phenomenon = this.schema.getItemSync<Phenomenon>(jsonObj.phenomenon, true);
     if (!phenomenon)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Phenomenon ${jsonObj.phenomenon}.`);
     this._phenomenon =   new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon);
@@ -53,7 +51,7 @@ export default class Unit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'unitSystem' attribute.`);
     if (typeof(jsonObj.unitSystem) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-    const unitSystem = await this.schema.getItem<UnitSystem>(jsonObj.unitSystem, true);
+    const unitSystem = this.schema.getItemSync<UnitSystem>(jsonObj.unitSystem, true);
     if (!unitSystem)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Unit System ${jsonObj.unitSystem}.`);
     this._unitSystem =   new DelayedPromiseWithProps(unitSystem.key, async () => unitSystem);
@@ -88,6 +86,23 @@ export default class Unit extends SchemaItem {
         this._offset = jsonObj.offset;
     }
   }
+
+  /**
+   * Populates this Unit with the values from the provided.
+   */
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+    await this.unitFromJson(jsonObj);
+  }
+
+  /**
+   * Populates this Unit with the values from the provided.
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+    this.unitFromJson(jsonObj);
+  }
+
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitUnit)
       await visitor.visitUnit(this);

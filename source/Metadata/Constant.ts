@@ -29,13 +29,12 @@ export default class Constant extends SchemaItem {
   get numerator(): number { return this._numerator; }
   get denominator(): number { return this._denominator; }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
+  public constantFromJson(jsonObj: any) {
     if (undefined === jsonObj.phenomenon)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} does not have the required 'phenomenon' attribute.`);
     if (typeof(jsonObj.phenomenon) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-    const phenomenon = await this.schema.getItem<Phenomenon>(jsonObj.phenomenon, true);
+    const phenomenon = this.schema.getItemSync<Phenomenon>(jsonObj.phenomenon, true);
     if (!phenomenon)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     this._phenomenon = new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon);
@@ -62,6 +61,22 @@ export default class Constant extends SchemaItem {
       if (jsonObj.denominator !== this._denominator) // if denominator isnt default value of 1.0, reassign denominator variable
         this._denominator = jsonObj.denominator;
     }
+  }
+
+  /**
+   * Populates this Constant with the values from the provided.
+   */
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+    this.constantFromJson(jsonObj);
+  }
+
+  /**
+   * Populates this Constant with the values from the provided.
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+    this.constantFromJson(jsonObj);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

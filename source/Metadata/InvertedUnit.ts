@@ -26,14 +26,12 @@ export default class InvertedUnit extends SchemaItem {
   get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
+  public invertedUnitFromJson(jsonObj: any) {
     if (undefined === jsonObj.invertsUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} does not have the required 'invertsUnit' attribute.`);
     if (typeof(jsonObj.invertsUnit) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} has an invalid 'invertsUnit' attribute. It should be of type 'string'.`);
-    const invertsUnit = await this.schema.getItem<Unit>(jsonObj.invertsUnit, true);
+    const invertsUnit = this.schema.getItemSync<Unit>(jsonObj.invertsUnit, true);
     if (!invertsUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find the Unit ${jsonObj.invertsUnit}.`);
     this._invertsUnit = new DelayedPromiseWithProps(invertsUnit.key, async () => invertsUnit);
@@ -42,12 +40,28 @@ export default class InvertedUnit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} does not have the required 'unitSystem' attribute.`);
     if (typeof(jsonObj.unitSystem) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-    const unitSystem = await this.schema.getItem<UnitSystem>(jsonObj.unitSystem, true);
+    const unitSystem = this.schema.getItemSync<UnitSystem>(jsonObj.unitSystem, true);
     if (!unitSystem)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find the Unit System ${jsonObj.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps(unitSystem.key, async () => unitSystem);
-
   }
+
+  /**
+   * Populates this Inverted Unit with the values from the provided.
+   */
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+    await this.invertedUnitFromJson(jsonObj);
+  }
+
+  /**
+   * Populates this Inverted Unit with the values from the provided.
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+    this.invertedUnitFromJson(jsonObj);
+  }
+
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitInvertedUnit)
       await visitor.visitInvertedUnit(this);
