@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d } from "@bentley/geometry-core";
+import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane } from "@bentley/geometry-core";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube. */
 export const enum Npc {
@@ -142,5 +142,29 @@ export class Frustum {
       pts[i] = pts[i + 1];
       pts[i + 1] = tmpPoint;
     }
+  }
+
+  /** Get a convex set of clipping planes bounding the region contained by this frustum. */
+  public getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet {
+    const convexSet = ConvexClipPlaneSet.createEmpty();
+
+    const scratchNormal = Vector3d.createCrossProductToPoints(this.points[5], this.points[3], this.points[1]);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[1]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[2], this.points[4], this.points[0], scratchNormal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[3], this.points[6], this.points[2], scratchNormal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[2]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[4], this.points[1], this.points[0], scratchNormal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+
+    if (clipBack) {
+      Vector3d.createCrossProductToPoints(this.points[1], this.points[2], this.points[0], scratchNormal);
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+    }
+    if (clipFront) {
+      Vector3d.createCrossProductToPoints(this.points[6], this.points[5], this.points[4], scratchNormal);
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[4]) - expandPlaneDistance));
+    }
+    return convexSet;
   }
 }
