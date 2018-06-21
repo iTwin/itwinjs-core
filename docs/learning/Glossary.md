@@ -28,7 +28,7 @@ tableRowAnchors: true
 |**EC**|An abbreviation for *Entity Classification*. This prefix is used to refer to the metadata system of iModels.
 |**ECClass**|A named set of properties and relationships that defines a type of object. Data in iModels are defined by ECClasses.
 |**ECDb**|A [SQLite](https://www.sqlite.org/index.html) database conforming to the rules of EC. iModels are a type of ECDb.
-|**EcefLocation**|The position and orientation, in [Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) (also known as ECR "earth-centered rotational") coordinates, of the origin of the Spatial Coordinate System of an iModel.
+|**EcefLocation**<a name="eceflocation"/>|The position and orientation, in [Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) (also known as ECR "earth-centered rotational") coordinates, of the origin of the Spatial Coordinate System of an iModel.
 |**ECProperty**|A named member of an ECClass.
 |**ECRelationship**|A named type of relationship and cardinality between instances of ECClasses.
 |**ECSchema**|A named group of ECClasses and ECRelationships.
@@ -60,7 +60,7 @@ tableRowAnchors: true
 |**ModeledElement**|An Element that is *broken down in more detail* by a Model. Note that the *name* of a Model **is** the name of its ModeledElement, and the *ParentModel* of a Model **is** the Model of its ModeledElement.
 |**ModelSelector**|A named set of Models that are visible in a View. Many ViewDefinitions may point to the same ModelSelector.
 |**Node.js**|A [runtime for JavaScript](https://nodejs.org) outside a web browser.
-|**NPC**<a name="npc"></a>|**N**ormalized **P**lane **C**oordinates. A coordinate system for Frustums where each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0 inside the Frustum. In NPC, [0,0,0] is the left-bottom-rear and [1,1,1] is the right-top-front of the Frustum.
+|**NPC**<a name="npc"/>|**N**ormalized **P**lane **C**oordinates. A coordinate system for Frustums where each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0 inside the Frustum. In NPC, [0,0,0] is the left-bottom-rear and [1,1,1] is the right-top-front of the Frustum.
 |**Npm**|[Node Package Manager](https://www.npmjs.com/). A tool for distributing JavaScript packages.
 |**ParentModel**|A derived property of Model that is equal to the Model of its ModeledElement.
 |**PhysicalModel**|A subclass of SpatialModel that holds PhysicalElements.

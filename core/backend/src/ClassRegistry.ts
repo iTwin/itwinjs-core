@@ -60,7 +60,7 @@ export class ClassRegistry {
 
   /**
    * Generate a JavaScript class from Entity metadata.
-   * @param entityMetaData The Entity metadata
+   * @param entityMetaData The Entity metadata that defines the class
    */
   private static generateClassForEntity(entityMetaData: EntityMetaData): typeof Entity {
     const name = entityMetaData.ecclass.split(":");

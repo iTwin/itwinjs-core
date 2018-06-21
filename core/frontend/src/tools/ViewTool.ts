@@ -878,7 +878,7 @@ class ViewPan extends ViewingToolHandle {
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (CoordSource.User === ev.coordsFrom && vp.isCameraOn()) {
-      const depthIntersection = vp.pickDepthBuffer(ev.viewPoint);
+      const depthIntersection = undefined; // TODO: NEEDS_WORK vp.pickDepthBuffer(ev.viewPoint);
       if (depthIntersection) {
         this.anchorPt.setFrom(depthIntersection);
       } else {
@@ -2037,7 +2037,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(this.startPtView);
     this.startTime = Date.now();
-    const pickPt = vp.pickDepthBuffer(ev.viewPoint);
+    const pickPt = undefined; // TODO: NEEDS_WORK vp.pickDepthBuffer(ev.viewPoint);
     if (!pickPt)
       return;
 

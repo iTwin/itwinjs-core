@@ -128,7 +128,7 @@ export class IModelDb extends IModel {
   /** Get the parameters used to open this iModel */
   public readonly openParams: OpenParams;
 
-  /** Event raised just before a connected IModelDb is opened.
+  /** Event raised just before an IModelDb is opened.
    *
    * **Example:**
    * ``` ts
@@ -136,8 +136,9 @@ export class IModelDb extends IModel {
    * ```
    */
   public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
-  /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only,
-   * it is *not* raised for standalone IModelDbs.
+
+  /** Event raised just after an IModelDb is opened.
+   * @note This event is *not* raised for standalone IModelDbs.
    *
    * **Example:**
    * ``` ts
@@ -456,23 +457,14 @@ export class IModelDb extends IModel {
     return ids;
   }
 
+  /** Empty the [[ECSqlStatementCache]] for this iModel. */
   public clearStatementCache(): void { this.statementCache.clear(); }
 
-  /** Get the GUID of this iModel. */
-  public getGuid(): Guid {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
-    const guidStr = this.briefcase.nativeDb.getDbGuid();
-    return new Guid(guidStr);
-  }
+  /** Get the GUID of this iModel.  */
+  public getGuid(): Guid { return new Guid(this.briefcase.nativeDb.getDbGuid()); }
 
   /** Set the GUID of this iModel. */
-  public setGuid(guid: Guid) {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
-    const guidStr = guid.toString();
-    return this.briefcase.nativeDb.setDbGuid(guidStr);
-  }
+  public setGuid(guid: Guid): DbResult { return this.briefcase.nativeDb.setDbGuid(guid.toString()); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -485,7 +477,7 @@ export class IModelDb extends IModel {
     this.updateIModelProps();
   }
 
-  /** Update the EcefLocation of this iModel.  */
+  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.  */
   public updateEcefLocation(ecef: EcefLocation) {
     this.setEcefLocation(ecef);
     this.updateIModelProps();
