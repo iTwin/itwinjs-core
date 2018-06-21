@@ -114,23 +114,23 @@ export class DecorateContext extends RenderContext {
     const index = new Array<[number, number]>(
       // lines connecting front to back
       [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
+      [Npc._100, Npc._101],
+      [Npc._010, Npc._011],
+      [Npc._110, Npc._111],
       // around front face
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
+      [Npc._000, Npc._100],
+      [Npc._100, Npc._110],
+      [Npc._110, Npc._010],
+      [Npc._010, Npc._000],
       // around back face.
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001],
-      [Npc._000, Npc._001]);
+      [Npc._001, Npc._101],
+      [Npc._101, Npc._111],
+      [Npc._111, Npc._011],
+      [Npc._011, Npc._001]);
 
     const frust = vp.getFrustum();
 
-    range = limitRange ? range.intersect(frust.toRange()) : frust.toRange();
+    limitRange ? range.intersect(frust.toRange(), range) : frust.toRange(range);
     frust.initFromRange(range); // equivalent to: range.Get8Corners(frust.m_pts);
 
     const plane = Plane3dByOriginAndUnitNormal.create(planePoint, planeNormal);
