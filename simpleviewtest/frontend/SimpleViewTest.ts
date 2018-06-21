@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -315,8 +315,8 @@ function toggleRenderModeMenu(_event: any) {
 }
 
 function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
-  theViewport!.setStandardRotation(rotationId);
-  IModelApp.tools.run("View.Fit", theViewport!, false, false);
+  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport!.isContextRotationRequired());
+  theViewport!.setRotationAboutPoint(rMatrix);
   showStatus(label, "view");
 }
 

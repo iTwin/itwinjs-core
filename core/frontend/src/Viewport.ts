@@ -704,6 +704,24 @@ export class Viewport {
     this.backStack.length = 0;
   }
 
+  public setRotationAboutPoint(rotation: RotMatrix, center?: Point3d): void {
+    if (undefined === center) {
+      center = this.view.getTargetPoint();
+      const visible = this.determineNearestVisibleGeometryPoint(center, 20.0);
+      if (undefined !== visible)
+        center = visible;
+    }
+    const inverse = rotation.clone().inverse();
+    if (undefined === inverse)
+      return;
+    const targetMatrix = inverse.multiplyMatrixMatrix(this.view.getRotation());
+    const worldTransform = Transform.createFixedPointAndMatrix(center, targetMatrix);
+    const frustum = this.getWorldFrustum();
+    frustum.multiply(worldTransform);
+    this.setupFromFrustum(frustum);
+    this.synchWithView(true);
+  }
+
   public setStandardRotation(id: StandardViewId): void {
     this.view.setStandardRotation(id);
     this.setupFromView();
