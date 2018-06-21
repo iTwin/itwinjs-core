@@ -189,7 +189,7 @@ function buildCategoryMenu(state: SimpleViewState) {
   const view = state.viewState!;
   for (const cat of view.categorySelector.categories) {
     let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-    categoryMenu.innerHTML += '<input id="cbxCat' + id.value + '" type="checkbox"> ' + cat + "\n<br>\n";
+    categoryMenu.innerHTML += '<input id="cbxCat' + id.value + '" type="checkbox"> ' + cat + " (" + id.value + ")\n<br>\n";
   }
 
   updateCheckboxToggleState("cbxCatToggleAll", true);
