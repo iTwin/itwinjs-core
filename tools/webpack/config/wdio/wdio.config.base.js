@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-var path = require("path");
-var paths = require("../paths");
-var VisualRegressionCompare = require("wdio-visual-regression-service/compare");
+const path = require("path");
+const paths = require("../paths");
+const VisualRegressionCompare = require("wdio-visual-regression-service/compare");
 
-var defaultScreenshotPath = path.resolve(paths.appTestE2EScreenshots, "screen");
-var defaultScreenshotReferencePath = path.resolve(paths.appTestE2EScreenshots, "reference");
-var defaultScreenshotDiffPath = path.resolve(paths.appTestE2EScreenshots, "diff");
-var defaultViewportWidth = 1024;
-var defaultViewportHeight = 768;
 
 function getScreenshotName(basePath) {
   return function (context) {
@@ -24,6 +19,25 @@ function getScreenshotName(basePath) {
     return path.join(basePath, `${testName}_${type}_${browserName}_v${browserVersion}_${browserWidth}x${browserHeight}.png`);
   };
 }
+
+const screenshotPath = path.resolve(paths.appTestE2EScreenshots, "screen");
+const screenshotReferencePath = path.resolve(paths.appTestE2EScreenshots, "reference");
+const screenshotDiffPath = path.resolve(paths.appTestE2EScreenshots, "diff");
+
+const visualRegressionConfig = {
+  compare: (process.env.E2E_SCREENSHOT_UPDATE_ALL) ?
+    new VisualRegressionCompare.SaveScreenshot({
+      screenshotName: getScreenshotName(screenshotReferencePath),
+    }) : new VisualRegressionCompare.LocalCompare({
+      referenceName: getScreenshotName(screenshotReferencePath),
+      screenshotName: getScreenshotName(screenshotPath),
+      diffName: getScreenshotName(screenshotDiffPath),
+      misMatchTolerance: 0.01,
+    }),
+  viewportChangePause: 300,
+  viewports: [{ width: 1024, height: 768 }],
+  orientations: ["landscape", "portrait"],
+};
 
 exports.config = {
 
@@ -132,17 +146,7 @@ exports.config = {
     "chromedriver",
     "visual-regression",
   ],
-  visualRegression: {
-    compare: new VisualRegressionCompare.LocalCompare({
-      referenceName: getScreenshotName(defaultScreenshotReferencePath),
-      screenshotName: getScreenshotName(defaultScreenshotPath),
-      diffName: getScreenshotName(defaultScreenshotDiffPath),
-      misMatchTolerance: 0.01,
-    }),
-    viewportChangePause: 300,
-    viewports: [{ width: defaultViewportWidth, height: defaultViewportHeight }],
-    orientations: ["landscape", "portrait"],
-  },
+  visualRegression: visualRegressionConfig,
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber

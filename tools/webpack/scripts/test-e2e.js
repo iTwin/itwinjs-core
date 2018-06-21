@@ -13,6 +13,12 @@ exports.builder = (yargs) =>
       choices: ["electron", "chrome", "headless"],
       describe: `The type of browser to run the test in.`,
       type: "string"
+    }).options({
+      "updateScreenshot": {
+        alias: "u",
+        type: "boolean",
+        describe: `Use this flag to re-record every reference screenshot during this test run.`
+      },
     });
 
 exports.handler = async (argv) => {  
@@ -31,6 +37,10 @@ exports.handler = async (argv) => {
   if (tscExitCode !== 0) {
     process.exit(tscExitCode);
   }
+  
+  // Support jest-style args for updating all screenshots
+  if (argv.updateScreenshot || argv.u)
+    process.env.E2E_SCREENSHOT_UPDATE_ALL = "true";
 
   console.log("Starting WebdriverIO E2E Tests...");
   const wdioArgs = [
