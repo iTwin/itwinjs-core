@@ -14,7 +14,7 @@ Each `Subject` in a BIS Repository can have a `PhysicalPartition` child Element,
 
 ### Motivations
 
-BIS defines a data model that shared by a growing set of applications and services. Many of these applications and service read and/or write `PhysicalModel` data. There are two choices to ensure that these applications and services will be coordinated:
+BIS defines a data model that is shared by a growing set of applications and services. Many of these applications and services read and/or write `PhysicalModel` data. There are two choices to ensure that these applications and services will be coordinated:
  - Require every application and service to work with any data organization.
  - Specify a data organization which applications and services should read and write.
 
@@ -41,7 +41,7 @@ Breakdown `Model`s are weakly-typed in BIS. To understand the real-world Entity 
 ![Element and Model Modeling Building](./media/physical-hierarchy-organization-building-model.png)
 
 ## ModelAffinity Custom Attribute
-While strong-typing is not used, there is still a desire to provide validation of the organization of the data in a `PhysicalModel` hierarchy. To run this validation the software must be able to determine which `Model`s are appropriate containers for each `Element`. This is determined through the `ModelAffinity` custom attribute.
+While strong-typing is not used, there is still a desire to provide validation of the organization of the data in a `PhysicalModel` hierarchy. To run this validation, the software must be able to determine which `Model`s are appropriate containers for each `Element`. This is determined through the `ModelAffinity` custom attribute.
 
 The `ModelAffinity` custom attribute can be applied to any `PhysicalElement` subclass. It declares for the class:
  - Which `Element`s' breakdown `Model`s this `Element` has an affinity for (multiple can be declared).
@@ -146,7 +146,7 @@ These types and their behaviors are explained below, along with the behaviors of
 
 ### Site
 
-`Site` is class that represents an region of land and all that is contained on, above and below that land.
+`Site` is a `PhysicalElement` subclass that represents a region of land and all that is contained on, above and below that land.
 
 <!-- Should Site be Sealed? -->
 
