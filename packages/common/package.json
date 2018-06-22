@@ -30,12 +30,13 @@
     "validatePackageJson": "validjson ./package.json",
     "watch": "npm test -- --watch"
   },
-  "//peerDependencies": [
-    "No need to repeat all of the dependencies are already expressed by frontend and backend."
-  ],
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^8",
+    "@bentley/imodeljs-common": "^0.95"
+  },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
-    "@bentley/imodeljs-common": "^0.93",
+    "@bentley/imodeljs-common": "^0.95",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",

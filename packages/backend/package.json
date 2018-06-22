@@ -33,19 +33,17 @@
     "validatePackageJson": "validjson ./package.json",
     "watch": "npm test -- --watch"
   },
-  "dependencies": {
-    "@bentley/ecpresentation-common": "^0.4.0"
-  },
-  "//peerDependencies": [
-    "No need to repeat all of the dependencies that I have in common with backend."
-  ],
   "peerDependencies": {
-    "@bentley/imodeljs-backend": "^0.94"
+    "@bentley/bentleyjs-core": "^8",
+    "@bentley/imodeljs-common": "^0.95",
+    "@bentley/imodeljs-backend": "^0.96",
+    "@bentley/ecpresentation-common": "^0.4.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
-    "@bentley/imodeljs-backend": "^0.94",
-    "@bentley/imodeljs-common": "^0.93",
+    "@bentley/imodeljs-common": "^0.95",
+    "@bentley/imodeljs-backend": "^0.96",
+    "@bentley/ecpresentation-common": "^0.4.0",
     "cpx": "^1.5",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
