@@ -7,7 +7,7 @@ import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/ecpresentation-co
 import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { Props as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
-import { Subtract } from "../common/Utils";
+import { getDisplayName, Subtract } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import ECPresentationTreeDataProvider from "./DataProvider";
 
@@ -56,6 +56,9 @@ export default function withUnifiedSelection<P extends TreeProps>(TreeComponent:
   return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
 
     private _selectionHandler?: SelectionHandler;
+
+    /** Returns the display name of this component */
+    public static get displayName() { return `WithUnifiedSelection(${getDisplayName(TreeComponent)})`; }
 
     /** Get selection handler used by this property grid */
     public get selectionHandler(): SelectionHandler | undefined { return this._selectionHandler; }

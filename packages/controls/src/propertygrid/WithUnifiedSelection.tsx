@@ -5,7 +5,7 @@ import * as React from "react";
 import { KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
-import { Subtract } from "../common/Utils";
+import { getDisplayName, Subtract } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import ECPresentationPropertyDataProvider from "./DataProvider";
 
@@ -34,6 +34,9 @@ export default function withUnifiedSelection<P extends PropertyGridProps>(Proper
   return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
 
     private _selectionHandler?: SelectionHandler;
+
+    /** Returns the display name of this component */
+    public static get displayName() { return `WithUnifiedSelection(${getDisplayName(PropertyGridComponent)})`; }
 
     /** Get selection handler used by this property grid */
     public get selectionHandler(): SelectionHandler | undefined { return this._selectionHandler; }

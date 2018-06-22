@@ -5,7 +5,7 @@ import * as React from "react";
 import { KeySet, InstanceKey } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
 import { Table as BaseTable, TableProps, RowItem } from "@bentley/ui-components";
-import { Subtract } from "../common/Utils";
+import { getDisplayName, Subtract } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import ECPresentationTableDataProvider from "./DataProvider";
 
@@ -49,6 +49,9 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
       this._base = React.createRef<BaseTable>();
       this._boundarySelectionLevel = getSelectionLevelFromProps(props);
     }
+
+    /** Returns the display name of this component */
+    public static get displayName() { return `WithUnifiedSelection(${getDisplayName(TableComponent)})`; }
 
     /** Get selection handler used by this property grid */
     public get selectionHandler(): SelectionHandler | undefined { return this._selectionHandler; }

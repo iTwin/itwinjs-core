@@ -7,6 +7,7 @@ import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
 import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/ecpresentation-common";
 import { SelectionHandler, ECPresentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
+import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import ContentDataProvider from "../common/ContentDataProvider";
 
@@ -33,6 +34,9 @@ export default function withUnifiedSelection<P extends ViewportProps>(ViewportCo
   return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
 
     private _selectionHandler?: ViewportSelectionHandler;
+
+    /** Returns the display name of this component */
+    public static get displayName() { return `WithUnifiedSelection(${getDisplayName(ViewportComponent)})`; }
 
     /** Get selection handler used by this property grid */
     public get selectionHandler(): SelectionHandler | undefined {

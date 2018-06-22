@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 
@@ -39,6 +40,14 @@ export const translate = async (stringId: string): Promise<string> => {
   await localizationNamespace.readFinished;
   stringId = `${localizationNamespaceName}:${stringId}`;
   return ECPresentation.i18n.translate(stringId);
+};
+
+export const getDisplayName = <P>(component: React.ComponentType<P>): string => {
+  if (component.displayName)
+    return component.displayName;
+  if (component.name)
+    return component.name;
+  return "Component";
 };
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
