@@ -136,3 +136,70 @@ These models are subclasses of [SpatialModel]($backend), and can therefore be in
 ## View Thumbnails
 
 Every view may have a thumbnail that shows an approximation of what it contains. This can be helpful for user interfaces that offer a choice of Views.
+
+## ViewState Parameters
+
+ This is what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean.
+
+ ```cmd
+                 v-- {origin}
+            -----+-------------------------------------- -   [back plane]
+            ^\   .                                    /  ^
+            | \  .                                   /   |        P
+          d |  \ .                                  /    |        o
+          e |   \.         {targetPoint}           /     |        s
+          l |    |---------------+----------------|      |        i    [focus plane]
+          t |     \  ^delta.x    ^               /     b |        t
+          a |      \             |              /      a |        i
+          . |       \            |             /       c |        v
+          z |        \           | f          /        k |        e
+            |         \          | o         /         D |        Z
+            |          \         | c        /          i |        |
+            |           \        | u       /           s |        v
+            v            \       | s      /            t |
+            -     -       -----  | D -----               |   [front plane]
+                  ^              | i                     |
+                  |              | s                     |
+      frontDist ->|              | t                     |
+                  |              |                       |
+                  v           \  v  / <- lens angle      v
+                  -              + {eyePoint}            -     positiveX ->
+```
+
+### Notes
+
+* Up vector (positiveY) points out of the screen towards you in this diagram. Likewise delta.y.
+
+* The view origin is in world coordinates. It is the point at the lower left of the rectangle at the focus plane, projected onto the back plane.
+
+* `[delta.x,delta.y]` are on the focus plane and `delta.z` is from the back plane to the front plane.
+
+* The three view vectors come from:
+
+ ```cmd
+  {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
+  {the up vector}                     : +Y
+  {Z cross Y}                         : +X
+  ```
+
+  these three vectors form the rows of the view's [RotMatrix]($geometry)
+
+* Objects in space in front of the front plane or behind the back plane are not displayed.
+
+* The focus plane is not necessarily centered between the front plane and back plane (though it often is).
+It should generally be between the front plane and the back plane.
+
+* targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[RotMatrix]` and `focusDist`.
+
+* The view volume is completely specified by: `{origin}<delta>[RotMatrix]`
+
+* Perspective is determined by `{eyePoint}`, which is independent of the view volume. Sometimes the eyepoint is not
+ on the rectangle on the focus plane (that is, a vector from the eyepoint along the viewZ does not hit the view
+center.) This creates a 1-point perspective, which can be disconcerting. It is usually best to keep the camera centered.
+
+* Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
+The lens angle value is not used to compute the perspective transform for a view.
+Instead, the lens angle value can be used to reposition `{eyePoint}` when the view volume or target changes.
+
+* View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope"
+views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.

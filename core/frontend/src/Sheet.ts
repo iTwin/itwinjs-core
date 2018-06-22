@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module views */
+/** @module Views */
+
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ViewContext } from "./ViewContext";
@@ -12,7 +13,7 @@ import { GraphicBuilder } from "./render/GraphicBuilder";
 import { Target } from "./render/webgl/Target";
 // import { Target } from "./render/webgl/Target";
 
-/** Describes the geometry of the sheet border in view coordinates or world coordinates. */
+/** Describes the geometry of a sheet border. */
 export class SheetBorder {
   private rect: Point2d[];
   private shadow: Point2d[];
