@@ -1,7 +1,11 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Table } from "@bentley/ecpresentation-controls";
+import { ECPresentationTableDataProvider, withUnifiedSelection } from "@bentley/ecpresentation-controls/lib/table";
+import { Table } from "@bentley/ui-components";
 import "./GridWidget.css";
+
+// tslint:disable-next-line:variable-name naming-convention
+const SampleTable = withUnifiedSelection(Table);
 
 export interface Props {
   imodel: IModelConnection;
@@ -18,7 +22,7 @@ export default class GridWidget extends React.Component<Props> {
       <div className="GridWidget">
         <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
         <div className="ContentContainer">
-          <Table imodel={this.props.imodel} rulesetId={this.props.rulesetId} />
+          <SampleTable dataProvider={new ECPresentationTableDataProvider(this.props.imodel, this.props.rulesetId)} />
         </div>
       </div>
     );

@@ -13,7 +13,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ValuesDictionary } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
-import PropertyDataProvider from "@src/propertygrid/DataProvider";
+import ECPresentationPropertyDataProvider from "@src/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription } from "@helpers/random/Content";
 import { createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath } from "@helpers/random/EC";
@@ -25,7 +25,7 @@ const favoritesCategoryName = "Favorite";
  * This is just a helper class to provide public access to
  * protected methods of TableDataProvider
  */
-class Provider extends PropertyDataProvider {
+class Provider extends ECPresentationPropertyDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
   public configureContentDescriptor(descriptor: content.Descriptor) { return super.configureContentDescriptor(descriptor); }
   public shouldExcludeFromDescriptor(field: content.Field) { return super.shouldExcludeFromDescriptor(field); }

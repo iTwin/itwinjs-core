@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-controls",
+      "comment": "Remove ecpresentation component implementations",
+      "type": "minor"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-controls",
+      "comment": "Provide withUnifiedSelection HOCs for each type of CPUB component to create a unified selection component from any base class that uses an ecpresentation-driven data provider",
+      "type": "patch"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-controls",
+      "comment": "Prefix data providers with ECPresentation",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-controls",
+  "email": "grigas.petraitis@bentley.com"
+}

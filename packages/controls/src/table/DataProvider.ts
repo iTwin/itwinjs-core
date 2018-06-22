@@ -24,7 +24,7 @@ interface PromisedPage<TItem> extends Page<TItem> {
 /**
  * Presentation Rules-driven table data provider.
  */
-export default class TableDataProvider extends ContentDataProvider implements ITableDataProvider {
+export default class ECPresentationTableDataProvider extends ContentDataProvider implements ITableDataProvider {
   private _sortColumnKey: string | undefined;
   private _sortDirection: SortDirection = SortDirection.NoSort;
   private _filterExpression: string | undefined;

@@ -204,7 +204,7 @@ class PropertyDataBuilder {
 /**
  * Presentation Rules-driven property data provider implementation.
  */
-export default class PropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
+export default class ECPresentationPropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
   public onDataChanged = new PropertyDataChangeEvent();
 

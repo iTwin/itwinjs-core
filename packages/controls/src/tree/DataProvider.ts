@@ -11,24 +11,10 @@ import { CheckBoxState } from "@bentley/ui-core";
 import { TreeNodeItem } from "@bentley/ui-components";
 import StyleHelper from "../common/StyleHelper";
 
-class MemoizationHelpers {
-  public static createKeyForPageOptions(pageOptions?: PageOptions) {
-    if (!pageOptions)
-      return "0/0";
-    return `${(pageOptions.pageStart) ? pageOptions.pageStart : 0}/${(pageOptions.pageSize) ? pageOptions.pageSize : 0}`;
-  }
-  public static createKeyForTreeNodeItem(item: TreeNodeItem) { return item.id; }
-  public static getRootNodesKeyResolver(pageOptions?: PageOptions) { return MemoizationHelpers.createKeyForPageOptions(pageOptions); }
-  public static getChildNodesKeyResolver(parent: TreeNodeItem, pageOptions?: PageOptions) {
-    return `${MemoizationHelpers.createKeyForTreeNodeItem(parent)}/${MemoizationHelpers.createKeyForPageOptions(pageOptions)}`;
-  }
-  public static getChildNodesCountKeyResolver(item: TreeNodeItem) { return MemoizationHelpers.createKeyForTreeNodeItem(item); }
-}
-
 /**
  * Presentation Rules-driven tree data provider.
  */
-export default class TreeDataProvider {
+export default class ECPresentationTreeDataProvider {
   private _rulesetId: string;
   private _imodelConnection: IModelConnection;
 
@@ -147,3 +133,17 @@ const createTreeNodeItem = (node: Readonly<Node>): TreeNodeItem => {
   };
   return item;
 };
+
+class MemoizationHelpers {
+  public static createKeyForPageOptions(pageOptions?: PageOptions) {
+    if (!pageOptions)
+      return "0/0";
+    return `${(pageOptions.pageStart) ? pageOptions.pageStart : 0}/${(pageOptions.pageSize) ? pageOptions.pageSize : 0}`;
+  }
+  public static createKeyForTreeNodeItem(item: TreeNodeItem) { return item.id; }
+  public static getRootNodesKeyResolver(pageOptions?: PageOptions) { return MemoizationHelpers.createKeyForPageOptions(pageOptions); }
+  public static getChildNodesKeyResolver(parent: TreeNodeItem, pageOptions?: PageOptions) {
+    return `${MemoizationHelpers.createKeyForTreeNodeItem(parent)}/${MemoizationHelpers.createKeyForPageOptions(pageOptions)}`;
+  }
+  public static getChildNodesCountKeyResolver(item: TreeNodeItem) { return MemoizationHelpers.createKeyForTreeNodeItem(item); }
+}

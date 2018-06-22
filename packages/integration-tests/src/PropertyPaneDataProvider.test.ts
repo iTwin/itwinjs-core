@@ -7,7 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { PropertyDataProvider } from "@bentley/ecpresentation-controls";
+import { ECPresentationPropertyDataProvider } from "@bentley/ecpresentation-controls/lib/propertygrid";
 import "@helpers/Snapshots";
 
 before(() => {
@@ -35,13 +35,13 @@ describe("PropertyDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
-  let provider: PropertyDataProvider;
+  let provider: ECPresentationPropertyDataProvider;
   before(async () => {
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new PropertyDataProvider(imodel, "SimpleContent");
+    provider = new ECPresentationPropertyDataProvider(imodel, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();
