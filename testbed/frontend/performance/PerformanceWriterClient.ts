@@ -5,8 +5,8 @@ import { request, Response } from "@bentley/imodeljs-clients";
 import { PerformanceDataEntry } from "./PerformanceInterface";
 
 export class PerformanceWriterClient {
-  public static async startup(input?: string, output?: string): Promise<Response> {
-    return await request("http://localhost:3002/startup", { method: "POST", body: { input, output } });
+  public static async startup(input?: string, output?: string, isNew?: boolean): Promise<Response> {
+    return await request("http://localhost:3002/startup", { method: "POST", body: { input, output, isNew } });
   }
 
   public static async addEntry(data: PerformanceDataEntry): Promise<Response> {

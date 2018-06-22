@@ -15,7 +15,7 @@ app.post("/", (_req: any, res: any) => {
 });
 
 app.post("/startup", async (req: any, res: any) => {
-  await PerformanceReportWriter.startup(req.body.input, req.body.output);
+  await PerformanceReportWriter.startup(req.body.input, req.body.output, req.body.isNew);
   return res.status(200).send();
 });
 
