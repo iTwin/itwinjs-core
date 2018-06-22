@@ -491,8 +491,7 @@ export class IModelDb extends IModel {
    * ```
    */
   public updateIModelProps() {
-    // TODO: re-enable when new version is available.
-    // this.briefcase.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
+    this.briefcase.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
   }
 
   /**
