@@ -13,7 +13,8 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "webpack:frontend:perf": "webpack --config ./webpack_performance.config.js",
-    "webpack:frontend": "webpack --config webpack.config.js"
+    "webpack:frontend": "webpack --config webpack.config.js",
+    "runExcel": "tsc && node ./lib/frontend/performance/PerformanceReportWriter.js"
   },
   "repository": {},
   "dependencies": {
