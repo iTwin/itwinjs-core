@@ -220,11 +220,11 @@ export class ChangeSummaryManager {
         if (currentChangeSetInfo.userCreated) {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
-          if (!foundUserEmail) {
+          if (foundUserEmail === undefined) {
             const userInfo: UserInfo = (await BriefcaseManager.hubClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
-            userInfoCache.set(userId, userEmail !== undefined ? userEmail : "");
+            userInfoCache.set(userId, !!userEmail ? userEmail : "");
           } else
             userEmail = foundUserEmail.length !== 0 ? foundUserEmail : undefined;
         }

@@ -57,7 +57,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public isShared(): boolean { return this._isShared; }
 
   /** Check if this statement has been prepared successfully or not */
-  public isPrepared(): boolean { return this._stmt !== undefined; }
+  public isPrepared(): boolean { return !!this._stmt; }
 
   /** @hidden used internally only
    * Prepare this statement prior to first use.
@@ -867,7 +867,7 @@ class ECSqlValueHelper {
   }
 
   public static queryClassName(ecdb: ECDb, classId: Id64, tableSpace?: string): string {
-    if (tableSpace === undefined)
+    if (!tableSpace)
       tableSpace = "main";
 
     return ecdb.withPreparedStatement("SELECT s.Name schemaName, c.Name className FROM [" + tableSpace

@@ -25,7 +25,7 @@ export class ECDb implements IDisposable {
    *  ECDb object.
    */
   public dispose(): void {
-    if (this._nativeDb === undefined)
+    if (!this._nativeDb)
       return;
 
     this.closeDb();
@@ -132,7 +132,7 @@ export class ECDb implements IDisposable {
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
     const cachedStmt = this._statementCache.find(ecsql);
-    if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+    if (!!cachedStmt && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       assert(cachedStmt.statement.isShared());
       assert(cachedStmt.statement.isPrepared());
       cachedStmt.useCount++;
@@ -156,7 +156,7 @@ export class ECDb implements IDisposable {
   }
 
   public get nativeDb(): NativeECDb {
-    if (this._nativeDb == null)
+    if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 
     return this._nativeDb!;
