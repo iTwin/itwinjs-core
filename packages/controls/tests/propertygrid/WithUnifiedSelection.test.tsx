@@ -7,30 +7,40 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
+import { createRandomECInstanceKey } from "@helpers/random/EC";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { KeySet } from "@bentley/ecpresentation-common";
 import {
-  ECPresentation, ECPresentationManager,
+  ECPresentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider,
 } from "@bentley/ecpresentation-frontend";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import DataProvider from "@src/propertygrid/DataProvider";
-import PropertyGrid, { Props as PropertyGridProps } from "@src/propertygrid/PropertyGrid";
-import { KeySet } from "@bentley/ecpresentation-common/lib";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
+import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
+import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
+import { ECPresentationPropertyDataProvider, withUnifiedSelection } from "@src/propertygrid";
 
-describe("PropertyGrid", () => {
+// tslint:disable-next-line:variable-name naming-convention
+const ECPresentationPropertyGrid = withUnifiedSelection(PropertyGrid);
 
+describe("PropertyGrid withUnifiedSelection", () => {
+
+  let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType<DataProvider>();
+  const dataProviderMock = moq.Mock.ofType<ECPresentationPropertyDataProvider>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   beforeEach(() => {
+    testRulesetId = faker.random.word();
     selectionHandlerMock.reset();
     setupDataProvider();
   });
 
-  const setupDataProvider = (propertyData?: PropertyData) => {
-    dataProviderMock.reset();
+  const setupDataProvider = (providerMock?: moq.IMock<ECPresentationPropertyDataProvider>, imodel?: IModelConnection, rulesetId?: string, propertyData?: PropertyData) => {
+    if (!providerMock)
+      providerMock = dataProviderMock;
+    if (!imodel)
+      imodel = imodelMock.object;
+    if (!rulesetId)
+      rulesetId = testRulesetId;
     if (!propertyData) {
       propertyData = {
         label: faker.random.word(),
@@ -39,87 +49,100 @@ describe("PropertyGrid", () => {
         records: {},
       };
     }
-    dataProviderMock.setup((x) => x.getData()).returns(async () => propertyData!);
-    dataProviderMock.setup((x) => x.onDataChanged).returns(() => new PropertyDataChangeEvent());
+    providerMock.reset();
+    providerMock.setup((x) => x.connection).returns(() => imodel!);
+    providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
+    providerMock.setup((x) => x.getData()).returns(async () => propertyData!);
+    providerMock.setup((x) => x.onDataChanged).returns(() => new PropertyDataChangeEvent());
   };
 
   it("mounts", () => {
-    mount(<PropertyGrid
+    mount(<ECPresentationPropertyGrid
+      orientation={Orientation.Horizontal}
+      dataProvider={dataProviderMock.object}
+      selectionHandler={selectionHandlerMock.object} />);
+  });
+
+  it("uses data provider's imodel and rulesetId", () => {
+    const component = shallow(<ECPresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-      imodel={imodelMock.object}
-      rulesetId={faker.random.word()} />);
+    />).instance() as any as IUnifiedSelectionComponent;
+
+    expect(component.imodel).to.equal(imodelMock.object);
+    expect(component.rulesetId).to.equal(testRulesetId);
   });
 
-  it("creates default implementation for selection handler and data provider when not provided through props", () => {
+  it("creates default implementation for selection handler when not provided through props", () => {
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     ECPresentation.selection = selectionManagerMock.object;
 
-    const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
-    presentationManagerMock
-      .setup((x) => x.getContentDescriptor(imodelMock.object, moq.It.isAnyString(), moq.It.isAny(), undefined, moq.It.isAny()))
-      .returns(async () => undefined);
-    ECPresentation.presentation = presentationManagerMock.object;
-
-    const rulesetId = faker.random.word();
-
-    const tree = mount(<PropertyGrid
+    const component = shallow(<ECPresentationPropertyGrid
       orientation={Orientation.Vertical}
-      imodel={imodelMock.object}
-      rulesetId={rulesetId} />).instance() as PropertyGrid;
+      dataProvider={dataProviderMock.object} />).instance() as any as IUnifiedSelectionComponent;
 
-    expect(tree.selectionHandler.name).to.not.be.undefined;
-    expect(tree.selectionHandler.rulesetId).to.eq(rulesetId);
-    expect(tree.selectionHandler.imodel).to.eq(imodelMock.object);
-
-    expect(tree.dataProvider.rulesetId).to.eq(rulesetId);
-    expect(tree.dataProvider.connection).to.eq(imodelMock.object);
+    expect(component.selectionHandler).to.not.be.undefined;
+    expect(component.selectionHandler!.name).to.not.be.undefined;
+    expect(component.selectionHandler!.rulesetId).to.eq(testRulesetId);
+    expect(component.selectionHandler!.imodel).to.eq(imodelMock.object);
   });
 
   it("renders correctly", () => {
-    expect(shallow(<PropertyGrid
+    expect(shallow(<ECPresentationPropertyGrid
       orientation={Orientation.Horizontal}
-      id={faker.random.uuid()}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-      imodel={imodelMock.object}
-      rulesetId={faker.random.word()} />)).to.matchSnapshot();
+    />)).to.matchSnapshot();
   });
 
   it("disposes selection handler when unmounts", () => {
-    const tree = mount(<PropertyGrid
+    const component = mount(<ECPresentationPropertyGrid
       orientation={Orientation.Vertical}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-      imodel={imodelMock.object}
-      rulesetId={faker.random.word()} />);
-    tree.unmount();
+    />);
+    component.unmount();
     selectionHandlerMock.verify((x) => x.dispose(), moq.Times.once());
   });
 
-  it("updates selection handler and data provider when props change", () => {
-    const tree = mount<PropertyGridProps>(<PropertyGrid
+  it("updates selection handler when data provider changes", () => {
+    const component = shallow<PropertyGridProps>(<ECPresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-      imodel={imodelMock.object}
-      rulesetId={faker.random.word()} />);
+    />);
 
     const imodelMock2 = moq.Mock.ofType<IModelConnection>();
     const rulesetId2 = faker.random.word();
+    const dataProviderMock2 = moq.Mock.ofType<ECPresentationPropertyDataProvider>();
+    setupDataProvider(dataProviderMock2, imodelMock2.object, rulesetId2);
 
-    tree.setProps({
-      imodel: imodelMock2.object,
-      rulesetId: rulesetId2,
+    component.setProps({
+      dataProvider: dataProviderMock2.object,
     });
 
     selectionHandlerMock.verify((x) => x.imodel = imodelMock2.object, moq.Times.once());
     selectionHandlerMock.verify((x) => x.rulesetId = rulesetId2, moq.Times.once());
+  });
 
-    dataProviderMock.verify((x) => x.connection = imodelMock2.object, moq.Times.once());
-    dataProviderMock.verify((x) => x.rulesetId = rulesetId2, moq.Times.once());
+  it("handles missing selection handler when unmounts", () => {
+    const component = shallow(<ECPresentationPropertyGrid
+      orientation={Orientation.Horizontal}
+      dataProvider={dataProviderMock.object}
+      selectionHandler={selectionHandlerMock.object}
+    />, { disableLifecycleMethods: true });
+    component.unmount();
+  });
+
+  it("handles missing selection handler when updates", () => {
+    const component = shallow(<ECPresentationPropertyGrid
+      orientation={Orientation.Horizontal}
+      dataProvider={dataProviderMock.object}
+      selectionHandler={selectionHandlerMock.object}
+    />, { disableLifecycleMethods: true });
+    component.instance().componentDidUpdate!(component.props(), component.state());
   });
 
   describe("selection handling", () => {
@@ -130,12 +153,11 @@ describe("PropertyGrid", () => {
       const selectionProviderMock = moq.Mock.ofType<ISelectionProvider>();
       selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0))
         .returns(() => keysOverall);
-      mount(<PropertyGrid
+      shallow(<ECPresentationPropertyGrid
         orientation={Orientation.Vertical}
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
-        imodel={imodelMock.object}
-        rulesetId={faker.random.word()} />);
+      />);
       selectionHandlerMock.target.onSelect!({
         imodel: imodelMock.object,
         source: faker.random.word(),
@@ -152,12 +174,11 @@ describe("PropertyGrid", () => {
       const selectionProviderMock = moq.Mock.ofType<ISelectionProvider>();
       selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0))
         .returns(() => emptyKeySet);
-      mount(<PropertyGrid
+      shallow(<ECPresentationPropertyGrid
         orientation={Orientation.Vertical}
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
-        imodel={imodelMock.object}
-        rulesetId={faker.random.word()} />);
+      />);
       selectionHandlerMock.target.onSelect!({
         imodel: imodelMock.object,
         source: faker.random.word(),

@@ -7,8 +7,8 @@ import IModelSelector from "../imodel-selector/IModelSelector";
 import PropertiesWidget from "../properties-widget/PropertiesWidget";
 import GridWidget from "../grid-widget/GridWidget";
 import TreeWidget from "../tree-widget/TreeWidget";
-import { Viewport } from "@bentley/ecpresentation-controls";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
+import ViewportContentControl from "../viewport/ViewportContentControl";
 import "./App.css";
 
 export interface State {
@@ -44,11 +44,11 @@ export default class App extends React.Component<{}, State> {
     return spatialViewSpecs.length > 0 ? spatialViewSpecs[0].id! : viewSpecs[0].id!;
   }
 
-  private renderIModelComponents(imodel: IModelConnection, rulesetId: string) {
+  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64Props) {
     return (
       <div className="Content">
         <div className="top-left">
-          <Viewport imodel={imodel} rulesetId={rulesetId} viewDefinitionId={this.state.currentViewDefinitionId!} />
+          <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
         </div>
         <div className="right">
           <div className="top">
@@ -67,8 +67,8 @@ export default class App extends React.Component<{}, State> {
 
   public render() {
     let imodelComponents = null;
-    if (this.state.imodel && this.state.currentRulesetId)
-      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId);
+    if (this.state.imodel && this.state.currentRulesetId && this.state.currentViewDefinitionId)
+      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId, this.state.currentViewDefinitionId);
 
     return (
       <div className="App">

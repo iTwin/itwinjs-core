@@ -12,13 +12,13 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
-import TreeDataProvider from "@src/tree/DataProvider";
+import ECPresentationTreeDataProvider from "@src/tree/DataProvider";
 import "@helpers/Snapshots";
 
 describe("TreeDataProvider", () => {
 
   let rulesetId: string;
-  let provider: TreeDataProvider;
+  let provider: ECPresentationTreeDataProvider;
   let memoizedCacheSpies: any[];
   const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -28,7 +28,7 @@ describe("TreeDataProvider", () => {
   });
   beforeEach(() => {
     presentationManagerMock.reset();
-    provider = new TreeDataProvider(imodelMock.object, rulesetId);
+    provider = new ECPresentationTreeDataProvider(imodelMock.object, rulesetId);
     memoizedCacheSpies = [
       spies.spy.on(provider.getRootNodesCount.cache, "clear"),
       spies.spy.on(provider.getRootNodes.cache, "clear"),

@@ -40,3 +40,6 @@ export const translate = async (stringId: string): Promise<string> => {
   stringId = `${localizationNamespaceName}:${stringId}`;
   return ECPresentation.i18n.translate(stringId);
 };
+
+export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+export type Subtract<T, K> = Omit<T, keyof K>;

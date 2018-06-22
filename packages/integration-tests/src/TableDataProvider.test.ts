@@ -7,7 +7,7 @@ import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { TableDataProvider } from "@bentley/ecpresentation-controls";
+import { ECPresentationTableDataProvider } from "@bentley/ecpresentation-controls/lib/table";
 import { SortDirection } from "@bentley/ui-core";
 import "@helpers/Snapshots";
 
@@ -36,13 +36,13 @@ describe("TableDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
-  let provider: TableDataProvider;
+  let provider: ECPresentationTableDataProvider;
   before(async () => {
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new TableDataProvider(imodel, "SimpleContent");
+    provider = new ECPresentationTableDataProvider(imodel, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();

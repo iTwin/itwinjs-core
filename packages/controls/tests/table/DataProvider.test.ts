@@ -12,7 +12,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECPresentationError, ValuesDictionary } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
-import TableDataProvider from "@src/table/DataProvider";
+import ECPresentationTableDataProvider from "@src/table/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
@@ -21,9 +21,9 @@ import "@helpers/Snapshots";
 
 /**
  * This is just a helper class to provide public access to
- * protected methods of TableDataProvider
+ * protected methods of ECPresentationTableDataProvider
  */
-class Provider extends TableDataProvider {
+class Provider extends ECPresentationTableDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
   public configureContentDescriptor(descriptor: content.Descriptor) { return super.configureContentDescriptor(descriptor); }
 }

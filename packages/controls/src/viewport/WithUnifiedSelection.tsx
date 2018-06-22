@@ -1,23 +1,91 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DisposableList, Id64Set, Id64, IDisposable } from "@bentley/bentleyjs-core";
+import * as React from "react";
+import { Id64Set, Id64, IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
-import { DefaultContentDisplayTypes, KeySet, SelectionInfo } from "@bentley/ecpresentation-common";
-import { SelectionHandler as UnifiedSelectionHandler, SelectionChangeEventArgs, ISelectionProvider, ECPresentation } from "@bentley/ecpresentation-frontend";
+import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/ecpresentation-common";
+import { SelectionHandler, ECPresentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
+import { ViewportProps } from "@bentley/ui-components";
+import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import ContentDataProvider from "../common/ContentDataProvider";
 
-let counter = 1;
+/**
+ * Props that are injected to the HOC component.
+ */
+export interface Props {
+  /** Id of the ruleset to use when determining viewport selection. */
+  rulesetId: string;
+
+  /** @hidden */
+  selectionHandler?: ViewportSelectionHandler;
+}
+
+/**
+ * A HOC component that adds unified selection functionality to the supplied
+ * viewport component.
+ */
+// tslint:disable-next-line: variable-name naming-convention
+export default function withUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+
+  type CombinedProps = P & Props;
+
+  return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
+
+    private _selectionHandler?: ViewportSelectionHandler;
+
+    /** Get selection handler used by this property grid */
+    public get selectionHandler(): SelectionHandler | undefined {
+      return this._selectionHandler ? this._selectionHandler.selectionHandler : undefined;
+    }
+
+    public get imodel() { return this.props.imodel; }
+
+    public get rulesetId() { return this.props.rulesetId; }
+
+    public componentDidMount() {
+      const imodel = this.props.imodel;
+      const rulesetId = this.props.rulesetId;
+      this._selectionHandler = this.props.selectionHandler
+        ? this.props.selectionHandler : new ViewportSelectionHandler(imodel, rulesetId);
+    }
+
+    public componentWillUnmount() {
+      if (this._selectionHandler) {
+        this._selectionHandler.dispose();
+        this._selectionHandler = undefined;
+      }
+    }
+
+    public componentDidUpdate() {
+      if (this._selectionHandler) {
+        this._selectionHandler.imodel = this.props.imodel;
+        this._selectionHandler.rulesetId = this.props.rulesetId;
+      }
+    }
+
+    public render() {
+      const {
+        rulesetId, selectionHandler, // do not bleed our props
+        ...props /* tslint:disable-line: trailing-comma */ // pass-through props
+      } = this.props as any;
+      return (
+        <ViewportComponent {...props} />
+      );
+    }
+
+  };
+}
 
 /**
  * @hidden
  */
-export default class SelectionHandler implements IDisposable {
+export class ViewportSelectionHandler implements IDisposable {
 
   private _imodel: IModelConnection;
   private _rulesetId: string;
   private _disposables = new DisposableList();
-  private _selectionHandler: UnifiedSelectionHandler;
+  private _selectionHandler: SelectionHandler;
   private _selectedElementsProvider: SelectedElementsProvider;
   private _isApplyingUnifiedSelection = false;
 
@@ -26,7 +94,7 @@ export default class SelectionHandler implements IDisposable {
     this._rulesetId = rulesetId;
 
     // handles changing and listening to unified selection
-    this._selectionHandler = new UnifiedSelectionHandler(ECPresentation.selection,
+    this._selectionHandler = new SelectionHandler(ECPresentation.selection,
       `Viewport_${counter++}`, imodel, rulesetId, this.onUnifiedSelectionChanged);
     this._disposables.add(this._selectionHandler);
 
@@ -40,6 +108,8 @@ export default class SelectionHandler implements IDisposable {
   public dispose() {
     this._disposables.dispose();
   }
+
+  public get selectionHandler() { return this._selectionHandler; }
 
   public get imodel() { return this._imodel; }
   public set imodel(value: IModelConnection) {
@@ -136,3 +206,5 @@ class SelectedElementsProvider extends ContentDataProvider {
     return ids;
   }
 }
+
+let counter = 1;

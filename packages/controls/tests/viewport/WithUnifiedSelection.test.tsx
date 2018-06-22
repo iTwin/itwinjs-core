@@ -2,29 +2,175 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
+import * as React from "react";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import * as spies from "@helpers/Spies";
-import * as faker from "faker";
-import { PromiseContainer } from "@helpers/Promises";
 import { createRandomId } from "@helpers/random/Misc";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomDescriptor } from "@helpers/random/Content";
-import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
+import { PromiseContainer } from "@helpers/Promises";
+import "@helpers/Snapshots";
+import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SelectionSet, SelectEventType, IModelApp } from "@bentley/imodeljs-frontend";
-import { KeySet, DefaultContentDisplayTypes, Content, Item, SelectionInfo } from "@bentley/ecpresentation-common";
+import { IModelConnection, SelectionSet, ViewState3d, IModelApp, SelectEventType } from "@bentley/imodeljs-frontend";
+import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/ecpresentation-common";
 import {
   ECPresentation, ECPresentationManager,
-  SelectionManager, SelectionChangeEventArgs, SelectionChangeType, SelectionChangeEvent,
+  SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/ecpresentation-frontend";
-import SelectionHandler from "@src/viewport/SelectionHandler";
+import { ViewportComponent } from "@bentley/ui-components";
+import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
+import { default as withUnifiedSelection, ViewportSelectionHandler } from "@src/viewport/WithUnifiedSelection";
 
-describe("Viewport SelectionHandler", () => {
+// tslint:disable-next-line:variable-name naming-convention
+const ECPresentationViewport = withUnifiedSelection(ViewportComponent);
+
+describe("Viewport withUnifiedSelection", () => {
+
+  before(() => {
+    IModelApp.startup();
+  });
+  after(() => {
+    IModelApp.shutdown();
+  });
+
+  let viewDefinitionId: Id64;
+  const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const selectionHandlerMock = moq.Mock.ofType<ViewportSelectionHandler>();
+  beforeEach(() => {
+    viewDefinitionId = createRandomId();
+    selectionHandlerMock.reset();
+    const viewsMock = moq.Mock.ofInstance<IModelConnection.Views>(new IModelConnection.Views(imodelMock.object));
+    viewsMock.setup((views) => views.load(moq.It.isAny())).returns(async () => moq.Mock.ofType<ViewState3d>().object);
+    imodelMock.reset();
+    imodelMock.setup((imodel) => imodel.selectionSet).returns((imodel) => new SelectionSet(imodel));
+    imodelMock.setup((imodel) => imodel.views).returns(() => viewsMock.object);
+  });
+
+  it("mounts", () => {
+    mount(<ECPresentationViewport
+      imodel={imodelMock.object}
+      rulesetId={faker.random.word()}
+      viewDefinitionId={viewDefinitionId}
+      selectionHandler={ selectionHandlerMock.object }
+    />);
+  });
+
+  it("uses data provider's imodel and rulesetId", () => {
+    const rulesetId = faker.random.word();
+    const component = shallow(<ECPresentationViewport
+      imodel={imodelMock.object}
+      rulesetId={rulesetId}
+      viewDefinitionId={viewDefinitionId}
+      selectionHandler={selectionHandlerMock.object}
+    />).instance() as any as IUnifiedSelectionComponent;
+
+    expect(component.imodel).to.equal(imodelMock.object);
+    expect(component.rulesetId).to.equal(rulesetId);
+  });
+
+  it("renders correctly", () => {
+    expect(shallow(<ECPresentationViewport
+      imodel={imodelMock.object}
+      rulesetId={faker.random.word()}
+      viewDefinitionId={viewDefinitionId}
+      selectionHandler={selectionHandlerMock.object}
+    />)).to.matchSnapshot();
+  });
+
+  describe("selectionHandler", () => {
+
+    it("creates default implementation when not provided through props", () => {
+      const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
+      selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
+      ECPresentation.selection = selectionManagerMock.object;
+
+      const rulesetId = faker.random.word();
+
+      const viewport = shallow(<ECPresentationViewport
+        imodel={imodelMock.object}
+        rulesetId={rulesetId}
+        viewDefinitionId={viewDefinitionId}
+      />).instance() as any as IUnifiedSelectionComponent;
+
+      expect(viewport.selectionHandler).to.not.be.undefined;
+      expect(viewport.selectionHandler!.rulesetId).to.eq(rulesetId);
+      expect(viewport.selectionHandler!.imodel).to.eq(imodelMock.object);
+    });
+
+    it("disposes when component unmounts", () => {
+      const viewport = shallow(<ECPresentationViewport
+        imodel={imodelMock.object}
+        rulesetId={faker.random.word()}
+        viewDefinitionId={viewDefinitionId}
+        selectionHandler={selectionHandlerMock.object}
+      />);
+      viewport.unmount();
+      selectionHandlerMock.verify((x) => x.dispose(), moq.Times.once());
+    });
+
+    it("updates handler when component's props change", () => {
+      const viewport = shallow(<ECPresentationViewport
+        imodel={imodelMock.object}
+        rulesetId={faker.random.word()}
+        viewDefinitionId={viewDefinitionId}
+        selectionHandler={selectionHandlerMock.object}
+      />);
+
+      const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+      const rulesetId2 = faker.random.word();
+
+      viewport.setProps({
+        imodel: imodelMock2.object,
+        rulesetId: rulesetId2,
+      });
+
+      selectionHandlerMock.verify((x) => x.imodel = imodelMock2.object, moq.Times.once());
+      selectionHandlerMock.verify((x) => x.rulesetId = rulesetId2, moq.Times.once());
+    });
+
+    it("returns undefined handler when not mounted", () => {
+      const viewport = shallow(<ECPresentationViewport
+        imodel={imodelMock.object}
+        rulesetId={faker.random.word()}
+        viewDefinitionId={viewDefinitionId}
+        selectionHandler={selectionHandlerMock.object}
+      />, { disableLifecycleMethods: true }).instance() as any as IUnifiedSelectionComponent;
+      expect(viewport.selectionHandler).to.be.undefined;
+    });
+
+    it("handles missing handler when unmounts", () => {
+      const viewport = shallow(<ECPresentationViewport
+        imodel={imodelMock.object}
+        rulesetId={faker.random.word()}
+        viewDefinitionId={viewDefinitionId}
+        selectionHandler={selectionHandlerMock.object}
+      />, { disableLifecycleMethods: true });
+      viewport.unmount();
+    });
+
+    it("handles missing handler when updates", () => {
+      const viewport = shallow(<ECPresentationViewport
+        imodel={imodelMock.object}
+        rulesetId={faker.random.word()}
+        viewDefinitionId={viewDefinitionId}
+        selectionHandler={selectionHandlerMock.object}
+      />, { disableLifecycleMethods: true });
+      viewport.instance().componentDidUpdate!(viewport.props(), viewport.state());
+    });
+
+  });
+
+});
+
+describe("ViewportSelectionHandler", () => {
 
   let rulesetId: string;
-  let handler: SelectionHandler;
+  let handler: ViewportSelectionHandler;
   const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
   const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -54,7 +200,7 @@ describe("Viewport SelectionHandler", () => {
     imodelMock.setup((imodel) => imodel.selectionSet).returns(() => selectionSet);
     imodelMock.setup((imodel) => imodel.elements).returns(() => imodelElementsMock.object);
 
-    handler = new SelectionHandler(imodelMock.object, rulesetId);
+    handler = new ViewportSelectionHandler(imodelMock.object, rulesetId);
   });
 
   afterEach(() => {
