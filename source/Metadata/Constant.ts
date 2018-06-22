@@ -68,7 +68,7 @@ export default class Constant extends SchemaItem {
    */
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
-    this.constantFromJson(jsonObj);
+    await this.constantFromJson(jsonObj);
   }
 
   /**

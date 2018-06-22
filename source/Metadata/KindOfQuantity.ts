@@ -37,7 +37,7 @@ export default class KindOfQuantity extends SchemaItem {
     this._presentationUnits = [];
   }
 
-  public get defaultPresentationFormat() {
+  public get defaultPresentationFormat(): undefined | LazyLoadedFormat {
     return this!.presentationUnits!.length === 0 ? undefined : this!.presentationUnits![0];
   }
 
