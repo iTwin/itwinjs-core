@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { WebGLTestContext } from "../WebGLTestContext";
+import { PerformanceWriterClient } from "./PerformanceWriterClient";
 
 describe("PerformanceTests", () => {
   before(() => {
@@ -29,7 +30,83 @@ import { ColorMap } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
 describe("ColorMap", () => {
-  it("create a new ColorMap", () => {
+  it("create a new ColorMap", async () => {
+    // console.log(response); //tslint:disable-line
+    async function run() {
+      try {
+        await PerformanceWriterClient.startup();
+        await PerformanceWriterClient.addEntry({
+          imodelName: "test",
+          viewName: "test",
+          viewFlags: "test",
+          data: {
+            tileLoadingTime: 1,
+            scene: 2,
+            garbageExecute: 3,
+            initCommands: 4,
+            backgroundDraw: 5,
+            setClips: 6,
+            opaqueDraw: 7,
+            translucentDraw: 8,
+            hiliteDraw: 9,
+            compositeDraw: 10,
+            overlayDraw: 11,
+            renderFrameTime: 12,
+            glFinish: 13,
+            totalTime: 14,
+          },
+        });
+        await PerformanceWriterClient.addEntry({
+          imodelName: "test",
+          viewName: "test",
+          viewFlags: "test",
+          data: {
+            tileLoadingTime: 11,
+            scene: 12,
+            garbageExecute: 13,
+            initCommands: 14,
+            backgroundDraw: 15,
+            setClips: 16,
+            opaqueDraw: 17,
+            translucentDraw: 18,
+            hiliteDraw: 19,
+            compositeDraw: 110,
+            overlayDraw: 111,
+            renderFrameTime: 112,
+            glFinish: 113,
+            totalTime: 1411,
+          },
+        });
+        await PerformanceWriterClient.addEntry({
+          imodelName: "test",
+          viewName: "test",
+          viewFlags: "test",
+          data: {
+            tileLoadingTime: 21,
+            scene: 22,
+            garbageExecute: 23,
+            initCommands: 24,
+            backgroundDraw: 25,
+            setClips: 26,
+            opaqueDraw: 27,
+            translucentDraw: 28,
+            hiliteDraw: 29,
+            compositeDraw: 20,
+            overlayDraw: 121,
+            renderFrameTime: 122,
+            glFinish: 213,
+            totalTime: 124,
+          },
+        });
+      } catch (ex) {
+        console.log(ex); // tslint:disable-line
+      }
+
+      await PerformanceWriterClient.finishSeries();
+    }
+
+    await run();
+
     /** Test creating a ColorMap */
     const a: ColorMap = new ColorMap();
     expect(a.length).to.equal(0);

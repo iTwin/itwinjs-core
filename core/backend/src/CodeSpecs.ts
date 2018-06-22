@@ -75,7 +75,7 @@ export class CodeSpecs {
    * ```
    * @param  codeSpec The new entry to add.
    * @return The id of the persistent CodeSpec.
-   * <em>note:</em> If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
+   * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
    * @throws IModelError if the insertion fails
    */
   public insert(codeSpec: CodeSpec): Id64 {

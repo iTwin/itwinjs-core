@@ -3,25 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-/**
- * A doubly linked list-based Least Recently Used (LRU) cache. Will keep most
- * recently used items while discarding least recently used items when its limit
- * is reached.
- *
+/*
  * Derived from:
  * Licensed under MIT. Copyright (c) 2010 Rasmus Andersson <http://hunch.se/>
  * See README.md at https://github.com/rsms/js-lru for details.
- *
- * Illustration of the design:
- *
- *       entry             entry             entry             entry
- *       ______            ______            ______            ______
- *      | head |.newer => |      |.newer => |      |.newer => | tail |
- *      |  A   |          |  B   |          |  C   |          |  D   |
- *      |______| <= older.|______| <= older.|______| <= older.|______|
- *
- *  removed  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  added
- *
  */
 
 /** An entry holds the key and value, and pointers to any older and newer entries. */
@@ -74,8 +59,24 @@ class ValueIterator<K, V> implements Iterator<V | undefined> {
   }
 }
 
-/** A Map of a key/value pairs, where the size of the map can be limited. When entries are inserted, if the map is "full", the
+/**
+ * A Map of a key/value pairs, where the size of the map can be limited.
+ *
+ * When entries are inserted, if the map is "full", the
  * least-recently-used (LRU) value is dropped. When entries are retrieved, they are moved to the front of the LRU list.
+ *
+ * Illustration of the design:
+ *
+ * ```
+ *
+ *       entry             entry             entry             entry
+ *       ______            ______            ______            ______
+ *      | head |.newer => |      |.newer => |      |.newer => | tail |
+ *      |  A   |          |  B   |          |  C   |          |  D   |
+ *      |______| <= older.|______| <= older.|______| <= older.|______|
+ *
+ *  removed  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  added
+ * ```
  */
 export class LRUMap<K, V> {
   private _keymap: Map<K, Entry<K, V>>;
@@ -165,7 +166,7 @@ export class LRUMap<K, V> {
   }
 
   /** Put <value> into the cache associated with <key>. Replaces any existing entry with the same key.
-   *  Returns `this`.
+   *  @returns `this`.
    */
   public set(key: K, value: V): LRUMap<K, V> {
     let entry = this._keymap.get(key);
@@ -199,7 +200,7 @@ export class LRUMap<K, V> {
   }
 
   /**  Purge the least recently used (oldest) entry from the cache.
-   *  Returns the removed entry or undefined if the cache was empty.
+   *  @returns The removed entry or undefined if the cache was empty.
    */
   public shift(): [K, V] | undefined {
     const entry = this.oldest;
@@ -223,9 +224,9 @@ export class LRUMap<K, V> {
     return undefined;
   }
 
-  /** Access value for <key> without registering recent use. Useful if you do not
+  /** Access value for `key` without registering recent use. Useful if you do not
    *  want to change the state of the map, but only "peek" at it.
-   *  Returns the value associated with <key> if found, or undefined if not found.
+   *  @returns The value associated with `key` if found, or undefined if not found.
    */
   public find(key: K): V | undefined {
     const e = this._keymap.get(key);
@@ -237,8 +238,8 @@ export class LRUMap<K, V> {
     return this._keymap.has(key);
   }
 
-  /**  Remove entry <key> from cache and return its value.
-   *  Returns the removed value, or undefined if not found.
+  /**  Remove entry `key` from cache and return its value.
+   *  @returns The removed value, or undefined if not found.
    */
   public delete(key: K): V | undefined {
     const entry = this._keymap.get(key);
