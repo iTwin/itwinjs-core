@@ -40,7 +40,7 @@ async function createNamedVersion(changeSetId: string, versionName: string) {
 
 const cmd = (args.length > 1) ? args[1] : "";
 if (cmd === "namedVersion") {
-  createNamedVersion(args[2], args[3]).then(() => process.exit(0));
+  createNamedVersion(args[2], args[3]).then(() => process.exit(0)).catch((err) => console.log(err.message));
 } else {
-  runDemo().then(() => process.exit(0));
+  runDemo().then(() => process.exit(0)).catch((err) => console.log(err.message));
 }

@@ -4,9 +4,9 @@
 // tslint:disable-next-line:no-var-keyword
 // tslint:disable-next-line:no-var-requires
 // const prompt = require("prompt");
-import { BriefcaseManager, IModelHost, IModelDb, OpenParams, IModelHostConfiguration, IModelAccessContext, Model, ECSqlStatement, Element } from "@bentley/imodeljs-backend";
+import { BriefcaseManager, IModelHost, IModelDb, OpenParams, IModelHostConfiguration, IModelAccessContext } from "@bentley/imodeljs-backend";
 import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, Version } from "@bentley/imodeljs-clients";
-import { Logger, LogLevel, DbResult, Id64 } from "@bentley/bentleyjs-core";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import * as fs from "fs-extra";
 
@@ -20,8 +20,8 @@ export class DemoBackend {
   public static initialize(useHub: boolean) {
     useIModelHub = useHub;
 
-    Logger.initializeToConsole();
-    Logger.setLevel("imodeljs-clients", LogLevel.Error);
+    // Logger.initializeToConsole();
+    // Logger.setLevel("imodeljs-clients", LogLevel.Error);
 
     const hostConfig = new IModelHostConfiguration();
     hostConfig.briefcaseCacheDir = path.join(__dirname, "briefcaseCache", useIModelHub ? "hub" : "bank");
@@ -45,6 +45,7 @@ export class DemoBackend {
     console.log(`name: ${version.name} changeSetId: ${version.changeSetId}`);
   }
 
+  /*
   private static fmtElement(iModelDb: IModelDb, id: Id64): string {
     const el: Element = iModelDb.elements.getElement(id);
     let desc = `${el.classFullName} ${el.code.value}`;
@@ -57,6 +58,7 @@ export class DemoBackend {
     // tslint:disable-next-line:no-console
     console.log(`name: ${model.name} modeledElement: ${this.fmtElement(model.iModel, model.modeledElement.id)}`);
   }
+  */
 
   public async createNamedVersion(changeSetId: string, versionName: string, context: IModelAccessContext, accessToken: AccessToken) {
     BriefcaseManager.setContext(context);
@@ -80,12 +82,14 @@ export class DemoBackend {
     for (const version of versions) {
       DemoBackend.displayVersion(version);
     }
+    /*
     console.log("\nModels:");
     const imodelDb = await IModelDb.open(accessToken, context.projectId, context.iModelId, OpenParams.pullAndPush());
     imodelDb.withPreparedStatement("select ecinstanceid as id from bis.Model", (stmt: ECSqlStatement) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW)
         DemoBackend.displayModel(imodelDb.models.getModel(stmt.getValue(0).getId()));
     });
+    */
   }
 
   public async downloadBriefcase(context: IModelAccessContext, accessToken: AccessToken) {
