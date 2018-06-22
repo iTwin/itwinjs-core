@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
@@ -235,13 +235,10 @@ function applyModelToggleChange(_cbxModel: string) {
 }
 
 function toggleCategoryState(invis: boolean, cat: Id64, view: ViewState) {
-  const ovr = new SubCategoryOverride();
-  if (invis) {
-    ovr.setInvisible(true);
+  const ovr = view.getSubCategoryOverride(cat);
+  if (invis !== ovr.invisible) {
+    ovr.setInvisible(invis);
     view.overrideSubCategory(cat, ovr);
-    // view.categorySelector.categories.clear(); // ###TEST - this tests if some problem files respect the categories in here at all
-  } else {
-    view.dropSubCategoryOverride(cat);
   }
 }
 
