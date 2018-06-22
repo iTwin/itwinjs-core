@@ -10,7 +10,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
-import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "../Interfaces";
+import { AnyClass, LazyLoadedECClass, SchemaItemVisitor, LazyLoadedSchemaItem } from "../Interfaces";
 
 function createLazyLoadedItem<T extends SchemaItem>(c: T) {
   return new DelayedPromiseWithProps(c.key, async () => c);
@@ -57,20 +57,24 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     return prop;
   }
 
-  public getBaseClassSync(): ECClass | undefined {
-    if (!this.baseClass)
+  protected getReferencedClassSync<T extends SchemaItem>(key?: LazyLoadedSchemaItem<T>): ECClass | undefined {
+    if (!key)
       return undefined;
 
-    const isInThisSchema = (this.schema.name.toLowerCase() === this.baseClass.schemaName.toLowerCase());
+    const isInThisSchema = (this.schema.name.toLowerCase() === key.schemaName.toLowerCase());
 
     if (isInThisSchema)
-      return this.schema.getClassSync(this.baseClass.name);
+      return this.schema.getClassSync(key.name);
 
-    const reference = this.schema.getReferenceSync(this.baseClass.schemaName);
+    const reference = this.schema.getReferenceSync(key.schemaName);
     if (reference)
-      return reference.getClassSync(this.baseClass.name);
+      return reference.getClassSync(key.name);
 
     return undefined;
+  }
+
+  public getBaseClassSync(): ECClass | undefined {
+    return this.getReferencedClassSync(this.baseClass);
   }
 
   /**

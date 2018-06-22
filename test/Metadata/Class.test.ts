@@ -36,6 +36,21 @@ describe("ECClass", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
+    it("inherited properties from base class synchronously", () => {
+      const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
+      const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
+
+      const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
+      (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
+      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+
+      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
+      expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
+    });
+
     it("case-insensitive search", async () => {
       const entityClass = new EntityClass(schema, "TestClass");
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");

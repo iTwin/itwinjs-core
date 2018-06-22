@@ -8,7 +8,7 @@ import RelationshipClass from "./RelationshipClass";
 import { LazyLoadedMixin } from "../Interfaces";
 import { ECClassModifier, StrengthDirection, SchemaItemType, parseStrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { NavigationProperty, AnyProperty } from "./Property";
+import { NavigationProperty, AnyProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
 
@@ -57,6 +57,32 @@ export default class EntityClass extends ECClass {
     }
 
     return inheritedProperty as AnyProperty | undefined;
+  }
+
+  /**
+   * Searches the base class, if one exists, first then any mixins that exist for the property with the name provided.
+   * @param name The name of the property to find.
+   */
+  public getInheritedPropertySync(name: string): Property | undefined {
+    const inheritedProperty = super.getInheritedPropertySync(name);
+    if (inheritedProperty)
+      return inheritedProperty;
+
+    if (!this._mixins) {
+      return undefined;
+    }
+
+    for (const mixin of this._mixins) {
+      const mObj = this.getReferencedClassSync(mixin);
+      if (mObj) {
+        const result = mObj.getPropertySync(name, true);
+        if (result) {
+          return result;
+        }
+      }
+    }
+
+    return undefined;
   }
 
   /**

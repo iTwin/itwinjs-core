@@ -133,14 +133,12 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    */
   public async loadSchema<T extends Schema>(schemaPath: string): Promise<T | undefined> {
     // Load the file
-    const file = this.getSchemaFile(schemaPath);
+    const schemaText = await this.readUtf8FileToString(schemaPath);
 
     // If the file wasn't found, throw an error
-    if (!file) throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${schemaPath}`);
+    if (!schemaText) throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${schemaPath}`);
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
-
-    const schemaText = file.toString();
 
     // Grab the key and see if the schema is already loaded
     const key = this.getSchemaKey(schemaText);
@@ -175,9 +173,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param data The Schema XML string.
    */
   private _getSchemaReferenceKeys(xmlSchemaKey: FileSchemaKey): SchemaKey[] {
-    let file = xmlSchemaKey.schemaText;
-    if (!file)
-      file = this.getSchemaFile(xmlSchemaKey.fileName);
+    const file = xmlSchemaKey.schemaText;
 
     if (!file)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
