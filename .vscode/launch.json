@@ -212,7 +212,10 @@
       "program": "${workspaceFolder}/bank-demo/lib/cli.js",
       "cwd": "${workspaceFolder}/bank-demo/lib",
       "args": [
-        "bank"
+        "bank",
+        "namedVersion",
+        "045b90f383e9e036f0a2612167277094667c9242",
+        "version1"
       ]
     }
   ],

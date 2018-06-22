@@ -4,14 +4,14 @@
 import { DemoFrontend } from "./DemoFrontend";
 import { DemoBackend } from "./DemoBackend";
 
-let arg = (process.argv.length === 3) ? process.argv[2] : "";
-arg = arg.toLocaleLowerCase();
+const args = process.argv.slice(2);
+
 let useIModelHub = false;
-if (arg === "hub")
+if (args[0].toLowerCase() === "hub")
   useIModelHub = true;
 else {
-  if (arg !== "bank") {
-    console.log(`syntax: ${process.argv0} {hub|bank}`);
+  if (args[0].toLowerCase() !== "bank") {
+    console.log(`syntax: ${process.argv0} {hub|bank} [cmd]`);
     process.exit(1);
   }
 }
@@ -31,4 +31,16 @@ async function runDemo() {
   await backend.logChangeSets(context, frontend.accessToken);
 }
 
-runDemo().then(() => process.exit(0));
+async function createNamedVersion(changeSetId: string, versionName: string) {
+  await frontend.login();
+  const iModelId = await frontend.chooseIModel();
+  const context = await frontend.getIModelAccessContext(iModelId);
+  await backend.createNamedVersion(changeSetId, versionName, context, frontend.accessToken);
+}
+
+const cmd = (args.length > 1) ? args[1] : "";
+if (cmd === "namedVersion") {
+  createNamedVersion(args[2], args[3]).then(() => process.exit(0));
+} else {
+  runDemo().then(() => process.exit(0));
+}
