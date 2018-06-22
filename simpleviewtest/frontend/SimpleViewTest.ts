@@ -545,9 +545,7 @@ function wireIconsToFunctions() {
   addRenderModeHandler("styles");
   addRenderModeHandler("transparency");
   document.getElementById("continuousRendering")!.addEventListener("click", () => {
-    const contRend = (document.getElementById("continuousRendering")! as HTMLInputElement);
-    (document.getElementById("showfps")! as HTMLInputElement).style.display = contRend.checked ? "inline" : "none";
-    IModelApp.viewManager.doContinuousRendering = contRend.checked;
+    IModelApp.viewManager.doContinuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
     applyRenderModeChange("continuousRendering");
   });
 

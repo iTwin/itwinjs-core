@@ -592,7 +592,7 @@ export abstract class Target extends RenderTarget {
     this._endPaint();
     this.setFrameTime();
 
-    if ((document.getElementById("continuousRendering")! as HTMLInputElement).checked) {
+    if (this.currentViewFlags.continuousRendering) {
       const fpsTimerElapsed = Target._fpsTimer.currentSeconds - Target._fpsTimerStart;
       if (this._spfTimes[this._curSpfTimeIndex]) this._spfSum -= this._spfTimes[this._curSpfTimeIndex];
       this._spfSum += fpsTimerElapsed;
