@@ -499,6 +499,10 @@ export class ECName {
     this._name = name;
   }
 
+  public static isValidECName(newName: string) {
+    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
+  }
+
   get name() { return this._name; }
 }
 

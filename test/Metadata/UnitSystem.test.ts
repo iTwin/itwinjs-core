@@ -29,7 +29,7 @@ describe("UnitSystem tests", () => {
       await testUnitSystem.accept({});
     });
   });
-  describe("fromJson", () => {
+  describe("Async fromJson", () => {
     beforeEach(() => {
       const schema = new Schema("ExampleSchema", 1, 0, 0);
       testUnitSystem = new UnitSystem(schema, "IMPERIAL");
@@ -75,6 +75,54 @@ describe("UnitSystem tests", () => {
         description: 1,
       };
       await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
+    });
+  });
+  describe("Sync fromJson", () => {
+    beforeEach(() => {
+      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      testUnitSystem = new UnitSystem(schema, "IMPERIAL");
+    });
+    it("Basic test", () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "IMPERIAL",
+        label: "Imperial",
+      };
+      testUnitSystem.fromJsonSync(json);
+      assert(testUnitSystem.label, "Imperial");
+      assert(testUnitSystem.description === undefined);
+    });
+    it("Name must be a valid ECName", () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "12IMPERIAL",
+        label: "Imperial",
+        description: "Units of measure from the british imperial empire",
+      };
+      assert.throws(() => testUnitSystem.fromJsonSync(json), ECObjectsError, ``);
+    });
+    it("Label must be a string", () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "IMPERIAL",
+        label: 1,
+        description: "Units of measure from the british imperial empire",
+      };
+      assert.throws(() => testUnitSystem.fromJsonSync(json), ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'label' attribute. It should be of type 'string'.`);
+
+    });
+    it("Description must be a string", () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "IMPERIAL",
+        label: "Imperial",
+        description: 1,
+      };
+      assert.throws(() => testUnitSystem.fromJsonSync(json), ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
     });
   });
 });

@@ -4,7 +4,7 @@
 
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType, SchemaItemType } from "../ECObjects";
+import { PrimitiveType, SchemaItemType, ECName } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
@@ -44,10 +44,6 @@ export default class Enumeration extends SchemaItem {
     this._primitiveType = primitiveType;
     this._isStrict = true;
     this._enumerators = [];
-  }
-
-  private isValidECName(newName: string) {
-    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
   }
 
   public isInt(): this is IntEnumeration { return this.primitiveType === PrimitiveType.Integer; }
@@ -96,7 +92,7 @@ export default class Enumeration extends SchemaItem {
     if (!this.isInt() && typeof(value) === "number") // also throws if backing type is string and value is number
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
-    if (!this.isValidECName(name))
+    if (!ECName.isValidECName(name))
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     this.enumerators.push({name, value, label, description});
   }

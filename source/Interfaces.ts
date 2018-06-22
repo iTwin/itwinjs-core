@@ -6,7 +6,6 @@ import { SchemaKey, SchemaItemKey } from "./ECObjects";
 import { DelayedPromise } from "./DelayedPromise";
 import Schema from "./Metadata/Schema";
 import SchemaItem from "./Metadata/SchemaItem";
-import { Property } from "./Metadata/Property";
 import ECClass, { StructClass } from "./Metadata/Class";
 import EntityClass from "./Metadata/EntityClass";
 import Mixin from "./Metadata/Mixin";
@@ -23,7 +22,6 @@ import UnitSystem from "./Metadata/UnitSystem";
 import Format from "./Metadata/Format";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
-export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<Property>;
 
 export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T>;
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;

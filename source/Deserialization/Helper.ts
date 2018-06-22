@@ -370,10 +370,6 @@ export default class SchemaReadHelper {
         schemaItem = (schema as MutableSchema).createUnitSystemSync(itemName);
         schemaItem.fromJsonSync(schemaItemJson);
         break;
-      case SchemaItemType.PropertyCategory:
-        schemaItem = (schema as MutableSchema).createPropertyCategorySync(itemName);
-        schemaItem.fromJsonSync(schemaItemJson);
-        break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
     return schemaItem;
@@ -405,114 +401,62 @@ export default class SchemaReadHelper {
   }
 
   /**
-   * Load dependencies on phenomenon and unitSystem for a Unit object and load the class itself from the json
+   * Load dependencies on phenomenon and unitSystem for a Unit object and load the Unit from the json
    * @param unit the Unit object that we are loading dependencies for
    * @param unitJson The JSON containing the Unit to be added to the container
    */
   private async loadUnit(unit: Unit, unitJson: any): Promise<void> {
-    let phenomenon: undefined | SchemaItem;
-    let unitSystem: undefined | SchemaItem;
     if (undefined !== unitJson.phenomenon) {
       if (typeof(unitJson.phenomenon) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-      phenomenon = await this.findSchemaItem(unitJson.phenomenon, true);
+      await this.findSchemaItem(unitJson.phenomenon, true);
     }
     if (undefined !== unitJson.unitSystem ) {
       if (typeof(unitJson.unitSystem ) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'unitSystem ' attribute. It should be of type 'string'.`);
-      unitSystem = await this.findSchemaItem(unitJson.unitSystem , true);
+      await this.findSchemaItem(unitJson.unitSystem , true);
     }
 
     await unit.fromJson(unitJson);
-
-    if (phenomenon && this._visitor) {
-      await phenomenon.accept(this._visitor);
-    }
-    if (unitSystem && this._visitor) {
-      await unitSystem.accept(this._visitor);
-    }
   }
 
   private loadUnitSync(unit: Unit, unitJson: any) {
-    let phenomenon: undefined | SchemaItem;
-    let unitSystem: undefined | SchemaItem;
     if (undefined !== unitJson.phenomenon) {
       if (typeof(unitJson.phenomenon) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-      phenomenon = this.findSchemaItemSync(unitJson.phenomenon, true);
+      this.findSchemaItemSync(unitJson.phenomenon, true);
     }
     if (undefined !== unitJson.unitSystem ) {
       if (typeof(unitJson.unitSystem ) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'unitSystem ' attribute. It should be of type 'string'.`);
-      unitSystem = this.findSchemaItemSync(unitJson.unitSystem , true);
+      this.findSchemaItemSync(unitJson.unitSystem , true);
     }
 
     unit.fromJsonSync(unitJson);
-
-    if (phenomenon && this._visitor) {
-      phenomenon.accept(this._visitor);
-    }
-    if (unitSystem && this._visitor) {
-      unitSystem.accept(this._visitor);
-    }
   }
 
   /**
-   * Takes in presentation Units json (either array | string). Throws if format string in presentation units is invalid. Returns array of format strings if all are valid.
-   * @param presentationUnitsJson Json string or string[] containing format strings
-   * @return String array containing all valid format strings
-   */
-   private processPresentationUnits(presentationUnitsJson: string | string[]) {
-    const presentationUnits = new Array<string>();
-    if (Array.isArray(presentationUnitsJson)) {
-      presentationUnitsJson.forEach((formatString: string) => {
-        if (!formatStringRgx.test(formatString)) // throw if formatString is invalid
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `PresentationUnits contains an invalid 'formatStrings' option.`);
-        presentationUnits.push(formatString); // push otherwise
-      });
-    } else {
-        presentationUnitsJson.split(";").forEach((formatString: string) => {
-          if (!formatStringRgx.test(formatString)) // throw if formatString is invalid
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `PresentationUnits contains an invalid 'formatStrings' option.`);
-          presentationUnits.push(formatString); // push otherwise
-        });
-    }
-    return presentationUnits;
-  }
-
-  /**
-   * Load the persistence unit and presentation unit dependencies for a KindOfQuantity object and load the class from the json
+   * Load the persistence unit and presentation unit dependencies for a KindOfQuantity object and load the KoQ from the json
    * @param koq the kind of quantity object that we are loading the persistence unit and presentation unit dependencies for
    * @param koqJson The JSON containing the kind of quantity to be added to the container
    */
   private async loadKindOfQuantity(koq: KindOfQuantity, koqJson: any): Promise<void> {
-    // Load persistence unit first
-    let persistenceUnit: undefined | SchemaItem;
     let index = 4;
-    const formats = new Array< SchemaItem | undefined>();
-    const units = new Array< SchemaItem | undefined>();
     if (undefined !== koqJson.persistenceUnit) {
       if (typeof(koqJson.persistenceUnit) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Kind Of Quantity ${koq.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
-      persistenceUnit = await this.findSchemaItem(koqJson.persistenceUnit, true);
+      await this.findSchemaItem(koqJson.persistenceUnit, true);
     }
     if (undefined !== koqJson.presentationUnits) {
       if (!Array.isArray(koqJson.presentationUnits) && typeof(koqJson.presentationUnits) !== "string") // must be a string or an array
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Kind Of Quantity ${koq.name} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
-      const presUnits = await this.processPresentationUnits(koqJson.presentationUnits);
+      const presUnits = (Array.isArray(koqJson.presentationUnits)) ? koqJson.presentationUnits : (koqJson.presentationUnits).split(";");
       for (const formatString of presUnits) {
-        if (!formatStringRgx.test(formatString)) // throw if formatString is invalid
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `PresentationUnits contains a Format String with an invalid format.`);
         const match = formatString.split(formatStringRgx);
-        const format = await this.findSchemaItem(match[1], true);
-        formats.push(format);
+        await this.findSchemaItem(match[1], true); // will throw ECObjectsError if it cant find the FormatName
         while ( index < match.length - 1 ) { // index 0 and 21 are empty strings
           if ( match[index] !== undefined) {
-            if (!KindOfQuantity.unitRgx.test(match[index])) // throw if unit is invalid
-              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `PresentationUnits contains a unit with an invalid format.`);
-            const unit = match[index].split(KindOfQuantity.unitRgx);
-            const newUnit = await this.findSchemaItem(unit[2], true); // find unit by name
-            units.push(newUnit); // push onto array
+            await this.findSchemaItem(match[index + 1], true); // find unit by name
           } else
             break;
           index += 4;
@@ -520,49 +464,25 @@ export default class SchemaReadHelper {
       }
     }
     await koq.fromJson(koqJson);
-
-    if (persistenceUnit && this._visitor)
-      await persistenceUnit.accept(this._visitor);
-
-    for (const format of formats) {
-      if (format && this._visitor)
-        await format.accept(this._visitor);
-    }
-
-    for (const unit of units) {
-      if (unit && this._visitor)
-        await unit.accept(this._visitor);
-    }
   }
 
   private loadKindOfQuantitySync(koq: KindOfQuantity, koqJson: any) {
-    // Load persistence unit first
-    let persistenceUnit: undefined | SchemaItem;
     let index = 4;
-    const formats = new Array< SchemaItem | undefined>();
-    const units = new Array< SchemaItem | undefined>();
     if (undefined !== koqJson.persistenceUnit) {
       if (typeof(koqJson.persistenceUnit) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Kind Of Quantity ${koq.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
-      persistenceUnit = this.findSchemaItemSync(koqJson.persistenceUnit, true);
+      this.findSchemaItemSync(koqJson.persistenceUnit, true);
     }
     if (undefined !== koqJson.presentationUnits) {
       if (!Array.isArray(koqJson.presentationUnits) && typeof(koqJson.presentationUnits) !== "string") // must be a string or an array
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Kind Of Quantity ${koq.name} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
-      const presUnits = this.processPresentationUnits(koqJson.presentationUnits);
+      const presUnits = (Array.isArray(koqJson.presentationUnits)) ? koqJson.presentationUnits : (koqJson.presentationUnits).split(";");
       for (const formatString of presUnits) {
-        if (!formatStringRgx.test(formatString)) // throw if formatString is invalid
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `PresentationUnits contains a Format String with an invalid format.`);
         const match = formatString.split(formatStringRgx);
-        const format = this.findSchemaItemSync(match[1], true);
-        formats.push(format);
+        this.findSchemaItemSync(match[1], true); // will throw ECObjectsError if it cant find the FormatName
         while ( index < match.length - 1 ) { // index 0 and 21 are empty strings
           if ( match[index] !== undefined) {
-            if (!KindOfQuantity.unitRgx.test(match[index])) // throw if unit is invalid
-              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `PresentationUnits contains a unit with an invalid format.`);
-            const unit = match[index].split(KindOfQuantity.unitRgx);
-            const newUnit = this.findSchemaItemSync(unit[2], true); // find unit by name
-            units.push(newUnit); // push onto array
+            this.findSchemaItemSync(match[index + 1], true); // find unit by name
           } else
             break;
           index += 4;
@@ -570,154 +490,100 @@ export default class SchemaReadHelper {
       }
     }
     koq.fromJsonSync(koqJson);
-
-    if (persistenceUnit && this._visitor)
-      persistenceUnit.accept(this._visitor);
-
-    for (const format of formats) {
-      if (format && this._visitor)
-        format.accept(this._visitor);
-    }
-
-    for (const unit of units) {
-      if (unit && this._visitor)
-        unit.accept(this._visitor);
-    }
   }
 
   /**
-   * Load the phenomenon dependency for a Constant object and load the class from the json
+   * Load the phenomenon dependency for a Constant object and load the Constant from the json
    * @param constant the Constant object that we are loading the phenomenon dependency for
    * @param constantJson The JSON containing the Constant to be added to the container
    */
   private async loadConstant(constant: Constant, constantJson: any): Promise<void> {
-    let phenomenon: undefined | SchemaItem;
     if (undefined !== constantJson.phenomenon) {
       if (typeof(constantJson.phenomenon) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${constant.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-      phenomenon = await this.findSchemaItem(constantJson.phenomenon, true);
+      await this.findSchemaItem(constantJson.phenomenon, true);
     }
-
     await constant.fromJson(constantJson);
-
-    if (phenomenon && this._visitor)
-      await phenomenon.accept(this._visitor);
   }
 
   private loadConstantSync(constant: Constant, constantJson: any) {
-    let phenomenon: undefined | SchemaItem;
     if (undefined !== constantJson.phenomenon) {
       if (typeof(constantJson.phenomenon) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${constant.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-      phenomenon = this.findSchemaItemSync(constantJson.phenomenon, true);
+      this.findSchemaItemSync(constantJson.phenomenon, true);
     }
-
     constant.fromJsonSync(constantJson);
-
-    if (phenomenon && this._visitor)
-      phenomenon.accept(this._visitor);
   }
 
   /**
-   * Load the unit system and invertsUnit dependencies for an Inverted Unit object and load the class from the json
+   * Load the unit system and invertsUnit dependencies for an Inverted Unit object and load the Inverted Unit from the json
    * @param invertedUnit the inverted unit object that we are loading the unit system and invertsUnit dependencies for
    * @param invertedUnitJson The JSON containing the InvertedUnit to be added to the container
    */
   private async loadInvertedUnit(invertedUnit: InvertedUnit, invertedUnitJson: any): Promise<void> {
-    let unitSystem: undefined | SchemaItem;
-    let invertsUnit: undefined | SchemaItem;
     if (undefined !== invertedUnitJson.invertsUnit) {
       if (typeof(invertedUnitJson.invertsUnit) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Inverted Unit ${invertedUnit.name} has an invalid 'invertsUnit' attribute. It should be of type 'string'.`);
-      invertsUnit = await this.findSchemaItem(invertedUnitJson.invertsUnit, true);
+      await this.findSchemaItem(invertedUnitJson.invertsUnit, true);
     }
     if (undefined !== invertedUnitJson.unitSystem) {
       if (typeof(invertedUnitJson.unitSystem) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Inverted Unit ${invertedUnit.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-      unitSystem = await this.findSchemaItem(invertedUnitJson.unitSystem, true);
+      await this.findSchemaItem(invertedUnitJson.unitSystem, true);
     }
-
     await invertedUnit.fromJson(invertedUnitJson);
-
-    if (invertsUnit && this._visitor)
-      await invertsUnit.accept(this._visitor);
-
-    if (unitSystem && this._visitor)
-      await unitSystem.accept(this._visitor);
   }
 
   private loadInvertedUnitSync(invertedUnit: InvertedUnit, invertedUnitJson: any) {
-    let unitSystem: undefined | SchemaItem;
-    let invertsUnit: undefined | SchemaItem;
     if (undefined !== invertedUnitJson.invertsUnit) {
       if (typeof(invertedUnitJson.invertsUnit) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Inverted Unit ${invertedUnit.name} has an invalid 'invertsUnit' attribute. It should be of type 'string'.`);
-      invertsUnit = this.findSchemaItemSync(invertedUnitJson.invertsUnit, true);
+      this.findSchemaItemSync(invertedUnitJson.invertsUnit, true);
     }
     if (undefined !== invertedUnitJson.unitSystem) {
       if (typeof(invertedUnitJson.unitSystem) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Inverted Unit ${invertedUnit.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-      unitSystem = this.findSchemaItemSync(invertedUnitJson.unitSystem, true);
+      this.findSchemaItemSync(invertedUnitJson.unitSystem, true);
     }
-
     invertedUnit.fromJsonSync(invertedUnitJson);
-
-    if (invertsUnit && this._visitor)
-      invertsUnit.accept(this._visitor);
-
-    if (unitSystem && this._visitor)
-      unitSystem.accept(this._visitor);
   }
 
   /**
-   * Load the unit dependencies for a Format object and load the class from the json
+   * Load the unit dependencies for a Format object and load the Format from the json
    * @param format the format object that we are loading the unit dependencies for
    * @param formatJson The JSON containing the Format to be added to the container
    */
   private async loadFormat(format: Format, formatJson: any): Promise<void> {
-    const units = new Array<SchemaItem | undefined>();
     if (undefined !== formatJson.composite && undefined !== formatJson.composite.units) {
       if (!Array.isArray(formatJson.composite.units))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${format.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
       if (formatJson.composite.units.length > 0 && formatJson.composite.units.length <= 4) { // Composite requires 1-4 units
         const formatUnits = await formatJson.composite.units;
         for (const unit of formatUnits) {
-          const foundUnit = await this.findSchemaItem(unit.name, true);
-          units.push(foundUnit);
+          await this.findSchemaItem(unit.name, true);
         }
       } else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${format.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
-    }
+    } else if ( undefined !== formatJson.composite && undefined === formatJson.composite.units ) // if you have a composite without any units that is an error
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${format.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
 
     await format.fromJson(formatJson);
-
-    for (const unit of units) {
-      if (unit && this._visitor)
-        await unit.accept(this._visitor);
-    }
   }
 
   private loadFormatSync(format: Format, formatJson: any) {
-    const units = new Array<SchemaItem | undefined>();
     if (undefined !== formatJson.composite && undefined !== formatJson.composite.units) {
       if (!Array.isArray(formatJson.composite.units))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${format.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
       if (formatJson.composite.units.length > 0 && formatJson.composite.units.length <= 4) { // Composite requires 1-4 units
         const formatUnits = formatJson.composite.units;
         for (const unit of formatUnits) {
-          const foundUnit = this.findSchemaItemSync(unit.name, true);
-          units.push(foundUnit);
+          this.findSchemaItemSync(unit.name, true);
         }
       } else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${format.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
     }
 
     format.fromJsonSync(formatJson);
-
-    for (const unit of units) {
-      if (unit && this._visitor)
-        unit.accept(this._visitor);
-    }
   }
 
   /*

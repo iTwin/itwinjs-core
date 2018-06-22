@@ -18,7 +18,7 @@ export default class Phenomenon extends SchemaItem {
 
   get definition(): string { return this._definition; }
 
-  public phenomenonFromJson(jsonObj: any) {
+  private phenomenonFromJson(jsonObj: any) {
     if (undefined === jsonObj.definition)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} does not have the required 'definition' attribute.`);
     else if (typeof(jsonObj.definition) !== "string")
