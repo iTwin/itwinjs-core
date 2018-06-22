@@ -453,7 +453,7 @@ describe("ECPresentationManager", () => {
       };
 
       // what addon returns
-      const addonResponse = createRandomNodePathElement(0);
+      const addonResponse = [createRandomNodePathElement(0)];
 
       setup(addonResponse);
       const result = await manager.getFilteredNodePaths(testData.imodelToken, "filter", testData.extendedOptions);
@@ -474,7 +474,7 @@ describe("ECPresentationManager", () => {
       };
 
       // what addon returns
-      const addonResponse = createRandomNodePathElement(0);
+      const addonResponse = [createRandomNodePathElement(0)];
 
       setup(addonResponse);
       const result = await manager.getNodePaths(testData.imodelToken, keyArray, markedIndex, testData.extendedOptions);
