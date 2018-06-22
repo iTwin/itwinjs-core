@@ -3,9 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Node, NodeKey } from "./hierarchy";
+import { Node, NodeKey, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { IModel } from "@bentley/imodeljs-common";
+import { InstanceKey } from "./EC";
 import KeySet from "./KeySet";
 import { PresentationRuleSet } from "./rules";
 import { UserSettingsManager } from "./UserSettingsManager";
@@ -78,6 +79,25 @@ export interface ECPresentationManager<TIModel extends IModel> {
    * @return A promise object that returns the number of child nodes.
    */
   getChildrenCount(imodel: TIModel, parentKey: Readonly<NodeKey>, options: object): Promise<number>;
+
+  /**
+   * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
+   * @param imodel iModel to pull data from.
+   * @param paths Paths from root node to some child node.
+   * @param markedIndex Index of the path in `paths` that will be marked.
+   * @param options An options object that depends on the used presentation manager implementation.
+   * @return A promise object that returns either an array of paths on success or an error string on error.
+   */
+  getNodePaths(imodel: Readonly<TIModel>, paths: InstanceKey[][], markedIndex: number, options: object): Promise<NodePathElement[]>;
+
+  /**
+   * Retrieves paths from root nodes to nodes containing filter text in their label.
+   * @param imodel iModel to pull data from.
+   * @param filterText Text to filter nodes against.
+   * @param options An options object that depends on the used presentation manager implementation.
+   * @return A promise object that returns either an array of paths on success or an error string on error.
+   */
+  getFilteredNodePaths(imodel: Readonly<TIModel>, filterText: string, options: object): Promise<NodePathElement[]>;
 
   /** Retrieves the content descriptor which can be used to get content.
    * @param imodel iModel to pull data from.

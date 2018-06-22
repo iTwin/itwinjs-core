@@ -9,7 +9,7 @@ import { PresentationRuleSpecificationTypes } from "../PresentationRuleSpecifica
 /** Returns all instance nodes of specified ECClasses. */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase {
   /** Used for serializing to JSON. */
-  type: PresentationRuleSpecificationTypes.CustomNodeSpecification;
+  type: PresentationRuleSpecificationTypes.InstanceNodesOfSpecificClassesSpecification;
 
   /** Groups instances by ECClass. By default is set to true. */
   groupByClass?: boolean;

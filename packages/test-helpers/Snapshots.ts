@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import * as faker from "faker";
+import faker = require("faker");
 import { mapSourcePosition } from "source-map-support";
 
 // tslint:disable-next-line:no-var-requires

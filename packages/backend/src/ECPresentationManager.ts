@@ -10,11 +10,13 @@ import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import {
   ECPresentationManager as ECPresentationManagerDefinition,
   ECPresentationError, ECPresentationStatus,
-  NodeKey, Node,
+  NodeKey, Node, NodePathElement,
   SelectionInfo, Content, Descriptor,
   PageOptions, KeySet, PresentationRuleSet,
+  InstanceKey,
 } from "@bentley/ecpresentation-common";
 import { listReviver as nodesListReviver } from "@bentley/ecpresentation-common/lib/hierarchy/Node";
+import { listReviver as nodePathElementReviver } from "@bentley/ecpresentation-common/lib/hierarchy/NodePathElement";
 import UserSettingsManager from "./UserSettingsManager";
 
 /**
@@ -81,7 +83,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
   }
 
   public get settings(): UserSettingsManager {
-      return this._settings;
+    return this._settings;
   }
 
   /** @hidden */
@@ -174,6 +176,16 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       options,
     });
     return this.request<number>(imodel, params);
+  }
+
+  public getNodePaths(imodel: IModelDb, paths: InstanceKey[][], markedIndex: number, options: object): Promise<NodePathElement[]> {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetNodePaths, { paths, markedIndex, options });
+    return this.request<NodePathElement[]>(imodel, params, nodePathElementReviver);
+  }
+
+  public getFilteredNodePaths(imodel: IModelDb, filterText: string, options: object): Promise<NodePathElement[]> {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetFilteredNodePaths, { filterText, options });
+    return this.request<NodePathElement[]>(imodel, params, nodePathElementReviver);
   }
 
   public async getContentDescriptor(imodel: IModelDb, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
@@ -314,6 +326,8 @@ export enum NodeAddonRequestTypes {
   GetRootNodesCount = "GetRootNodesCount",
   GetChildren = "GetChildren",
   GetChildrenCount = "GetChildrenCount",
+  GetNodePaths = "GetNodePaths",
+  GetFilteredNodePaths = "GetFilteredNodePaths",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",

@@ -4,7 +4,7 @@
 /** @module Core */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions, InstanceKey, NodePathElement } from "@bentley/ecpresentation-common";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationManager as ECPInterface, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
@@ -101,6 +101,14 @@ export default class ECPresentationManager implements ECPInterface<IModelConnect
 
   public async getChildrenCount(imodel: IModelConnection, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
     return await ECPresentationRpcInterface.getClient().getChildrenCount(imodel.iModelToken, parentKey, options);
+  }
+
+  public async getNodePaths(imodel: IModelConnection, paths: InstanceKey[][], markedIndex: number, options: object): Promise<NodePathElement[]> {
+    return await ECPresentationRpcInterface.getClient().getNodePaths(imodel.iModelToken, paths, markedIndex, options);
+  }
+
+  public async getFilteredNodePaths(imodel: IModelConnection, filterText: string, options: object): Promise<NodePathElement[]> {
+    return await ECPresentationRpcInterface.getClient().getFilteredNodePaths(imodel.iModelToken, filterText, options);
   }
 
   public async getContentDescriptor(imodel: IModelConnection, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {

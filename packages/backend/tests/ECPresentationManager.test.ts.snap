@@ -357,6 +357,75 @@ Descriptor {
 }
 `;
 
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns filtered node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 634,
+    "isMarked": true,
+    "node": Object {
+      "hasChildren": false,
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": false,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": true,
+      "isSelectable": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "throughput",
+          "id": "0x17ae30000017e71",
+        },
+        "pathFromRoot": Array [
+          "0ac963ce-ddc4-488c-864d-6bb70fbea7cb",
+          "ca893c40-6773-462d-af5a-0c6206c3a8d4",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Kyat West Virginia",
+    },
+  },
+]
+`;
+
+exports[`ECPresentationManager addon results conversion to ECPresentation objects returns node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 481,
+    "isMarked": false,
+    "node": Object {
+      "backColor": "rgb(
+    56,
+    207,
+    36
+  )",
+      "description": "Nesciunt dolor enim ipsum officiis voluptates eaque a.",
+      "foreColor": "#21F749",
+      "hasChildren": true,
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": false,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": true,
+      "isSelectable": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Honduras",
+          "id": "0x29e9000000e470",
+        },
+        "pathFromRoot": Array [
+          "ef79d4c7-b408-45d1-897a-94a388c42752",
+          "ef51cc8e-90ad-4460-aa8f-7aa6d39cf5a1",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "transition",
+    },
+  },
+]
+`;
+
 exports[`ECPresentationManager addon results conversion to ECPresentation objects returns root nodes 1`] = `
 Array [
   Object {

@@ -6,11 +6,12 @@
 import { Id64 } from "@bentley/bentleyjs-core";
 import { RpcInterface, IModelToken, RpcManager } from "@bentley/imodeljs-common";
 import { PresentationRuleSet } from "./rules";
-import { Node, NodeKey } from "./hierarchy";
+import { Node, NodeKey, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
 import { PageOptions } from "./ECPresentationManager";
 import KeySet from "./KeySet";
 import { SettingValue, SettingValueTypes } from "./UserSettingsManager";
+import { InstanceKey } from "./EC";
 
 /** Interface used for communication between ECPresentation backend and frontend. */
 export default class ECPresentationRpcInterface extends RpcInterface {
@@ -53,6 +54,10 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   public getChildren(_token: Readonly<IModelToken>, _parentKey: Readonly<NodeKey>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<ReadonlyArray<Readonly<Node>>> { return this.forward.apply(this, arguments); }
   /** See [[ECPresentationManager.getChildrenCount]] */
   public getChildrenCount(_token: Readonly<IModelToken>, _parentKey: Readonly<NodeKey>, _options: object): Promise<number> { return this.forward.apply(this, arguments); }
+  /** See [[ECPresentationManager.getNodePaths]] */
+  public getNodePaths(_token: Readonly<IModelToken>, _paths: InstanceKey[][], _markedIndex: number, _options: object): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
+  /** See [[ECPresentationManager.getFilteredNodePaths]] */
+  public getFilteredNodePaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
 
   /** See [[ECPresentationManager.getContentDescriptor]] */
   public getContentDescriptor(_token: Readonly<IModelToken>, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined, _options: object): Promise<Readonly<Descriptor> | undefined> { return this.forward.apply(this, arguments); }

@@ -10,7 +10,8 @@ import { KeySet, Content, Descriptor, ECPresentationRpcInterface } from "@common
 import { ECPresentationManager } from "@src/index";
 import UserSettingsManager from "@src/UserSettingsManager";
 import { createRandomDescriptor } from "@helpers/random/Content";
-import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceKey } from "@helpers/random/EC";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 
@@ -117,6 +118,35 @@ describe("ECPresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getChildrenCount(testData.imodelMock.object, parentNodeKey, testData.pageOptions);
       expect(actualResult).to.eq(result);
+      interfaceMock.verifyAll();
+    });
+
+  });
+
+  describe("getFilteredNodePaths", () => {
+
+    it("calls getFilteredNodePaths through proxy", async () => {
+      const value = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
+      interfaceMock.setup((x) => x.getFilteredNodePaths(testData.imodelToken, "filter", testData.extendedData))
+        .returns(async () => value)
+        .verifiable();
+      const result = await manager.getFilteredNodePaths(testData.imodelMock.object, "filter", testData.extendedData);
+      expect(value).to.be.deep.equal(result);
+      interfaceMock.verifyAll();
+    });
+
+  });
+
+  describe("getNodePaths", () => {
+
+    it("calls getNodePaths through proxy", async () => {
+      const value = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
+      const keyArray = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+      interfaceMock.setup((x) => x.getNodePaths(testData.imodelToken, keyArray, 1, testData.extendedData))
+        .returns(async () => value)
+        .verifiable();
+      const result = await manager.getNodePaths(testData.imodelMock.object, keyArray, 1, testData.extendedData);
+      expect(value).to.be.deep.equal(result);
       interfaceMock.verifyAll();
     });
 

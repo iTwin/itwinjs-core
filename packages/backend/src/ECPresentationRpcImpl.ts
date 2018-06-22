@@ -8,9 +8,10 @@ import { IModelDb } from "@bentley/imodeljs-backend";
 import { ECPresentationRpcInterface,
   SettingValue, SettingValueTypes,
   ECPresentationError, ECPresentationStatus,
+  InstanceKey,
 } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
-import { Node, NodeKey } from "@bentley/ecpresentation-common";
+import { Node, NodeKey, NodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { PresentationRuleSet } from "@bentley/ecpresentation-common";
 import ECPresentation from "./ECPresentation";
@@ -73,6 +74,14 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
 
   public async getChildrenCount(token: IModelToken, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
     return await this.getManager().getChildrenCount(this.getIModel(token), parentKey, options);
+  }
+
+  public async getNodePaths(token: Readonly<IModelToken>, paths: InstanceKey[][], markedIndex: number, options: object): Promise<NodePathElement[]> {
+    return await this.getManager().getNodePaths(this.getIModel(token), paths, markedIndex, options);
+  }
+
+  public async getFilteredNodePaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<NodePathElement[]> {
+    return await this.getManager().getFilteredNodePaths(this.getIModel(token), filterText, options);
   }
 
   public async getContentDescriptor(token: IModelToken, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {

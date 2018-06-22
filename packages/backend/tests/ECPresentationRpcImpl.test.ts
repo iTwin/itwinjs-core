@@ -6,11 +6,11 @@ import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { PageOptions, KeySet, SettingValueTypes, ECPresentationError } from "@common/index";
+import { PageOptions, KeySet, SettingValueTypes, ECPresentationError, InstanceKey } from "@common/index";
 import { Node } from "@common/hierarchy";
 import { Descriptor, Content } from "@common/content";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "@helpers/random/Hierarchy";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import ECPresentationManager from "@src/ECPresentationManager";
 import ECPresentationRpcImpl from "@src/ECPresentationRpcImpl";
@@ -139,6 +139,31 @@ describe("ECPresentationRpcImpl", () => {
         const actualResult = await impl.getChildrenCount(testData.imodelToken, parentNodeKey, testData.extendedOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.eq(result);
+      });
+    });
+
+    describe("getFilteredNodePaths", () => {
+      it("calls manager", async () => {
+        const nodePathElementMock = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
+        presentationManagerMock.setup((x) => x.getFilteredNodePaths(testData.imodelMock.object, "filter", moq.It.isAny()))
+          .returns(async () => nodePathElementMock)
+          .verifiable();
+        const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, "filter", { RulesetId: "id" });
+        presentationManagerMock.verifyAll();
+        expect(actualResult).to.deep.equal(nodePathElementMock);
+      });
+    });
+
+    describe("getNodePaths", () => {
+      it("calls manager", async () => {
+        const nodePathElementMock = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
+        const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+        presentationManagerMock.setup((x) => x.getNodePaths(testData.imodelMock.object, keyArray, 1, { RulesetId: "id" }))
+          .returns(async () => nodePathElementMock)
+          .verifiable();
+        const actualResult = await impl.getNodePaths(testData.imodelToken, keyArray, 1, { RulesetId: "id" });
+        presentationManagerMock.verifyAll();
+        expect(actualResult).to.deep.equal(nodePathElementMock);
       });
     });
 
