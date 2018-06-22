@@ -10,7 +10,7 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.post("/", (req: any, res: any) => {
+app.post("/", (_req: any, res: any) => {
   return res.status(200).send();
 });
 
