@@ -8,7 +8,9 @@ import { ElementProps, RelatedElement, TileTreeProps, TileProps, TileId, IModelE
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64, BentleyStatus } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d } from "@bentley/geometry-core";
-import { request, RequestOptions } from "@bentley/imodeljs-clients";
+import { RealityDataServicesClient, AuthorizationToken, AccessToken } from "@bentley/imodeljs-clients";
+import { TestConfig, TestUsers } from "@bentley/imodeljs-clients/lib/test/TestConfig";
+
 namespace CesiumUtils {
   export function rangeFromBoundingVolume(boundingVolume: any): Range3d {
     const box: number[] = boundingVolume.box;
@@ -90,22 +92,23 @@ export class ScalableMeshTileLoader {
 
 export namespace ScalableMeshTileTree {
   export async function getTileTreeProps(modeledElement: RelatedElement, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
-
     const result: ElementProps[] = await iModel.elements.getProps(modeledElement.id);
-    const options: RequestOptions = {
-      method: "GET",
-      responseType: "json",
-      auth: { user: "bistroQA_test1@mailinator.com", password: "test1" },
-    };
 
+    // backup url = "http://realitymodeling-pw.bentley.com/a3D/Cesium/Philadelphia/PhiladelphiaHiResRealityModelWithComcast/ComcastMerged_20.json";
     const url = result[0].url;
-    // TBD.... Figure out how to authenticate client for RealityDataService.
-    // url = "http://realitymodeling-pw.bentley.com/a3D/Cesium/Philadelphia/PhiladelphiaHiResRealityModelWithComcast/ComcastMerged_20.json";
-    const data = await request(url, options);
 
-    if (undefined === data.body)
+    if (undefined !== url) {
+
+      // ###TODO determine apropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
+      const authToken: AuthorizationToken = await TestConfig.login(TestUsers.regular);
+      const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient("QA");
+      const accessToken: AccessToken = await realityDataServiceClient.getAccessToken(authToken);
+
+      const json = await realityDataServiceClient.getRootDocumentJsonFromUrl(accessToken, url);
+
+      return new ScalableMeshTileTreeProps(json);
+    } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
-
-    return new ScalableMeshTileTreeProps(data.body);
+    }
   }
 }
