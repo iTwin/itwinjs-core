@@ -2,6 +2,37 @@
   "name": "@bentley/ecpresentation-controls",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@bentley/ecpresentation-controls_v0.4.0",
+      "date": "Fri, 22 Jun 2018 10:25:30 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Remove ecpresentation component implementations"
+          },
+          {
+            "comment": "Prefix data providers with ECPresentation"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Provide withUnifiedSelection HOCs for each type of CPUB component to create a unified selection component from any base class that uses an ecpresentation-driven data provider"
+          },
+          {
+            "comment": "Update package dependencies"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.0` to `^0.4.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.4.0` to `^0.4.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.0",
       "tag": "@bentley/ecpresentation-controls_v0.3.0",
       "date": "Thu, 14 Jun 2018 12:12:59 GMT",

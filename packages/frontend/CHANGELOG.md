@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecpresentation-frontend
 
-This log was last generated on Thu, 14 Jun 2018 12:12:59 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Jun 2018 10:25:30 GMT and should not be manually modified.
+
+## 0.4.1
+Fri, 22 Jun 2018 10:25:30 GMT
+
+### Patches
+
+- Update package dependencies
 
 ## 0.4.0
 Thu, 14 Jun 2018 12:12:59 GMT
@@ -123,3 +130,4 @@ Mon, 08 Jan 2018 14:51:31 GMT
 
 - Some restructuring to make the code more maintainable.
 - Use imodeljs-frontend@0.12.0
+

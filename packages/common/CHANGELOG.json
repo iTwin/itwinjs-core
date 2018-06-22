@@ -2,6 +2,18 @@
   "name": "@bentley/ecpresentation-common",
   "entries": [
     {
+      "version": "0.4.1",
+      "tag": "@bentley/ecpresentation-common_v0.4.1",
+      "date": "Fri, 22 Jun 2018 10:25:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.0",
       "tag": "@bentley/ecpresentation-common_v0.4.0",
       "date": "Thu, 14 Jun 2018 12:12:59 GMT",
