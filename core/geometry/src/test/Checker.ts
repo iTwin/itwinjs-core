@@ -316,6 +316,14 @@ export class Checker {
       }
     return this.announceError("Expect containsCoordinate", dataA, dataB, params);
   }
+  public testArrayContainsCoordinate(dataA: Float64Array | number[], dataB: number, ...params: any[]): boolean {
+    // simple number array.
+    for (const a of dataA)
+      if (Geometry.isSameCoordinate(a, dataB)) {
+        return this.announceOK();
+      }
+    return this.announceError("Expect containsCoordinate", dataA, dataB, params);
+  }
   // return true if dataA and dataB are almost equal as Segment1d.
   public testSegment1d(dataA: Segment1d, dataB: Segment1d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB))
