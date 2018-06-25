@@ -11,7 +11,7 @@ import { EditManipulator, ManipulatorSelectionMode } from "./EditManipulator";
 import { IModelConnection } from "../IModelConnection";
 import { SelectEventType } from "../SelectionSet";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor } from "./Tool";
+import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, InputCollector } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -51,6 +51,15 @@ export const enum SelectionProcessing {
 }
 
 export const enum ManipulatorPreference { Disabled, Placement, Geometry }
+
+export class ManipulatorToolBase extends InputCollector {
+  public static toolId = "Select.Manipulator";
+  public static hidden = true;
+
+  public onPostInstall(): void { super.onPostInstall(); IModelApp.accuSnap.enableLocate(false); IModelApp.accuSnap.enableSnap(true); IModelApp.toolAdmin.currentInputState.buttonDownTool = this; }
+  //  public onModelMotion(_ev: BeButtonEvent) { console.log("Motion"); }
+  //  public onDataButtonDown(_ev: BeButtonEvent): boolean { console.log("Exit"); this.exitTool(); return false; }
+}
 
 /** Tool for picking a set of elements of interest, selected by the user. */
 export class SelectionTool extends PrimitiveTool {
@@ -706,7 +715,22 @@ export class SelectionTool extends PrimitiveTool {
     this.dragElements(ev, context);
   }
 
+  /*   public testInputCollectorManip(_ev: BeButtonEvent): boolean {
+      if (!this.iModel.selectionSet.isActive())
+        return false;
+      const autoHit = IModelApp.accuSnap.currHit;
+      if (undefined === autoHit || !this.iModel.selectionSet.has(autoHit.sourceId))
+        return false;
+      // NOTE: Could check ev.isControlKey and just "select" a control handle without installing tool yet...
+      const manipTool = new ManipulatorToolBase();
+      return manipTool.run();
+    } */
+
   public onModelStartDrag(ev: BeButtonEvent): boolean {
+    /** TESTING InputCollector */
+    //    if (this.testInputCollectorManip(ev))
+    //      return false;
+
     if (this.selectControls(ev) && this.haveSelectedControls()) {
       const tmpEv = ev.clone();
       if (this.startDragControls(tmpEv))
@@ -739,6 +763,10 @@ export class SelectionTool extends PrimitiveTool {
 
     if (this.checkDoubleClickOnElement(ev))
       return false;
+
+    /** TESTING InputCollector */
+    //    if (this.testInputCollectorManip(ev))
+    //      return false;
 
     if (this.dragControls(ev))
       return false;
