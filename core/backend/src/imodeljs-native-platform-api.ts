@@ -6,13 +6,6 @@ import {
 } from "@bentley/bentleyjs-core";
 
 /**
- * Used for run-time check of Native API version.
- * Should be the same as the "imodeljs-native-platform-api" dependency in package.json
- * @hidden
- */
-export type NATIVE_API_VERSION_REQUIRED = "22.0.0";
-
-/**
  * The primary key for the DGN_TABLE_Txns table.
  * @hidden
  */
