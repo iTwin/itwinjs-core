@@ -7,7 +7,7 @@ import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
 // tslint:disable-next-line:no-var-requires
-const semver = require('semver')
+const semver = require("semver");
 
 let realrequire: any;
 try {
