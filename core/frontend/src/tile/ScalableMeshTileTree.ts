@@ -7,8 +7,9 @@ import { } from "./TileTree";
 import { ElementProps, RelatedElement, TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64, BentleyStatus } from "@bentley/bentleyjs-core";
-import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d } from "@bentley/geometry-core";
+import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix, XYZ, PointString3d } from "@bentley/geometry-core";
 import { request, RequestOptions } from "@bentley/imodeljs-clients";
+
 namespace CesiumUtils {
   export function rangeFromBoundingVolume(boundingVolume: any): Range3d {
     const box: number[] = boundingVolume.box;
@@ -30,6 +31,12 @@ namespace CesiumUtils {
     const minToleranceRatio = 256.0;   // Nominally the screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
+  export function transformFromJson(jTrans: [] | undefined): TransformProps | undefined {
+    if (jTrans === undefined || !jTrans instanceof Array)
+      return undefined;
+
+    return Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14), RotMatrix.createRowValues(jTrans[0], jTrans[4], jTrans[9], jTrans[1], jTrans[5], jTrans[10], jTrans[2], jTrans[6], jTrans[11])).toJSON();
+  }
 }
 
 export class ScalableMeshTileTreeProps implements TileTreeProps {
@@ -41,7 +48,7 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
     this.tilesetJson = json.root;
     this.id = new Id64();
     this.rootTile = new ScalableMeshTileProps(json.root, "");
-    this.location = Transform.createIdentity();
+    this.location = CesiumUtils.transformFromJson(json.root.transf);
   }
 }
 
@@ -98,12 +105,15 @@ export namespace ScalableMeshTileTree {
       auth: { user: "bistroQA_test1@mailinator.com", password: "test1" },
     };
 
-    const url = result[0].url;
+    let url = result[0].url;
     // TBD.... Figure out how to authenticate client for RealityDataService.
     // url = "http://realitymodeling-pw.bentley.com/a3D/Cesium/Philadelphia/PhiladelphiaHiResRealityModelWithComcast/ComcastMerged_20.json";
+    url = "http://realitymodeling-pw.bentley.com/a3D/Cesium/TigerCapture/Model_28/Model_28.json";   // Testing...
     const data = await request(url, options);
+    const ecefLocation = iModel.ecefLocation;
+    if (undefined === ecefLocation) { }
 
-    if (undefined === data.body)
+    if (null === data.body)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
 
     return new ScalableMeshTileTreeProps(data.body);
