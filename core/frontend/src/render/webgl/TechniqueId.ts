@@ -20,6 +20,7 @@ export const enum TechniqueId {
   OITClearTranslucent,
   CopyPickBuffers,
   CopyColor,
+  CopyColorNoAlpha,
   ClearPickAndColor,
   ClipMask,
 

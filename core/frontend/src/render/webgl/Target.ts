@@ -784,7 +784,7 @@ export class OnScreenTarget extends Target {
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColor);
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     return undefined !== this._blitGeom;
   }
 
