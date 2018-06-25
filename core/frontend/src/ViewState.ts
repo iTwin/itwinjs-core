@@ -5,7 +5,7 @@
 import { Id64, JsonUtils, Id64Set, Id64Props } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
@@ -387,6 +387,84 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 
+  private computeRootToNpc(): Map4d | undefined {
+    const viewRot = this.getRotation();
+    const delta = this.getExtents();
+    const inOrigin = this.getOrigin();
+    const xVector = viewRot.rowX();
+    const yVector = viewRot.rowY();
+    const zVector = viewRot.rowZ();
+
+    let frustFraction = 1.0;
+    let xExtent: Vector3d;
+    let yExtent: Vector3d;
+    let zExtent: Vector3d;
+    let origin: Point3d;
+
+    // Compute root vectors along edges of view frustum.
+    if (this.is3d() && this.isCameraOn()) {
+      const camera = this.camera;
+      const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
+      viewRot.multiplyVectorInPlace(eyeToOrigin);                        // align with view coordinates.
+
+      const focusDistance = camera.focusDist;
+      let zDelta = delta.z;
+      let zBack = eyeToOrigin.z;              // Distance from eye to backplane.
+      let zFront = zBack + zDelta;            // Distance from eye to frontplane.
+
+      if (zFront / zBack < Viewport.nearScale24) {
+        const maximumBackClip = 10000 * Constant.oneKilometer;
+        if (-zBack > maximumBackClip) {
+          zBack = -maximumBackClip;
+          eyeToOrigin.z = zBack;
+        }
+
+        zFront = zBack * Viewport.nearScale24;
+        zDelta = zFront - eyeToOrigin.z;
+      }
+
+      // z out back of eye ====> origin z coordinates are negative.  (Back plane more negative than front plane)
+      const backFraction = -zBack / focusDistance;    // Perspective fraction at back clip plane.
+      const frontFraction = -zFront / focusDistance;  // Perspective fraction at front clip plane.
+      frustFraction = frontFraction / backFraction;
+
+      // delta.x,delta.y are view rectangle sizes at focus distance.  Scale to back plane:
+      xExtent = xVector.scale(delta.x * backFraction);   // xExtent at back == delta.x * backFraction.
+      yExtent = yVector.scale(delta.y * backFraction);   // yExtent at back == delta.y * backFraction.
+
+      // Calculate the zExtent in the View coordinate system.
+      zExtent = new Vector3d(
+        eyeToOrigin.x * (frontFraction - backFraction), // eyeToOrigin.x * frontFraction - eyeToOrigin.x * backFraction
+        eyeToOrigin.y * (frontFraction - backFraction), // eyeToOrigin.y * frontFraction - eyeToOrigin.y * backFraction
+        zDelta);
+      viewRot.multiplyVectorInPlace(zExtent);   // rotate back to root coordinates.
+
+      origin = new Point3d(
+        eyeToOrigin.x * backFraction,   // Calculate origin in eye coordinates
+        eyeToOrigin.y * backFraction,
+        eyeToOrigin.z);
+
+      viewRot.multiplyTransposeVectorInPlace(origin);  // Rotate back to root coordinates
+      origin.plus(camera.eye, origin); // Add the eye point.
+    } else {
+      origin = inOrigin;
+      xExtent = xVector.scale(delta.x);
+      yExtent = yVector.scale(delta.y);
+      zExtent = zVector.scale(delta.z);
+    }
+
+    // calculate the root-to-npc mapping (using expanded frustum)
+    return Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction);
+  }
+
+  public calculateFrustum(result?: Frustum): Frustum {
+    const box = result ? result.initNpc() : new Frustum();
+    const rootToNpc = this.computeRootToNpc();
+    if (undefined !== rootToNpc)
+      rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
+    return box;
+  }
+
   /**
    * Initialize the origin, extents, and rotation from an existing Frustum
    * @param frustum the input Frustum.
@@ -614,7 +692,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     JsonUtils.setOrRemoveNumber(details, "gridSpaceY", spacing.y, spacing.x);
   }
 
-  /** Populate the given origin and rotmatrix with information from the contained grid settings, dependent upon the grid orientation. */
+  /** Populate the given origin and rotation with information from the grid settings from the grid orientation. */
   public getGridSettings(vp: Viewport, origin: Point3d, rMatrix: RotMatrix, orientation: GridOrientationType) {
     // start with global origin (for spatial views) and identity matrix
     rMatrix.setIdentity();
@@ -773,6 +851,27 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     if (undefined !== model.tileTree)
       model.tileTree.drawScene(context);
   }
+
+  /**
+   * Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
+   * @param rotation The new rotation matrix for this ViewState.
+   * @param point The point to rotate about. If undefined, use the [[getTargetPoint]].
+   */
+  public setRotationAboutPoint(rotation: RotMatrix, point?: Point3d): void {
+    if (undefined === point)
+      point = this.getTargetPoint();
+
+    const inverse = rotation.clone().inverse();
+    if (undefined === inverse)
+      return;
+
+    const targetMatrix = inverse.multiplyMatrixMatrix(this.getRotation());
+    const worldTransform = Transform.createFixedPointAndMatrix(point, targetMatrix);
+    const frustum = this.calculateFrustum();
+    frustum.multiply(worldTransform);
+    this.setupFromFrustum(frustum);
+  }
+
 }
 
 /** Defines the state of a view of 3d models.
