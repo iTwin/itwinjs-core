@@ -8,7 +8,7 @@ import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, Concurr
 import { IModelError, Appearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { ErrorStatusOrResult } from "../../imodeljs-native-platform-api";
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.
 function createChangeSet(imodel: IModelDb): ChangeSetToken {

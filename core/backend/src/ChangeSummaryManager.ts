@@ -4,7 +4,7 @@
 /** @module iModels */
 
 import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
-import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { Id64, using, assert, Logger, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
