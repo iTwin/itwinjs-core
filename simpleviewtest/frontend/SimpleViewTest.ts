@@ -47,6 +47,7 @@ let theViewport: Viewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
+const curCategories: Set<string> = new Set<string>();
 let configuration = {} as SVTConfiguration;
 
 interface SVTConfiguration {
@@ -187,7 +188,10 @@ function buildCategoryMenu(state: SimpleViewState) {
   categoryMenu.innerHTML = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
 
   const view = state.viewState!;
+
+  curCategories.clear();
   for (const cat of view.categorySelector.categories) {
+    curCategories.add(cat);
     let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
     categoryMenu.innerHTML += '<input id="cbxCat' + id.value + '" type="checkbox"> ' + cat + " (" + id.value + ")\n<br>\n";
   }
@@ -195,7 +199,7 @@ function buildCategoryMenu(state: SimpleViewState) {
   updateCheckboxToggleState("cbxCatToggleAll", true);
   addCategoryToggleAllHandler();
 
-  for (const cat of view.categorySelector.categories) {
+  for (const cat of curCategories) {
     let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
     const cbxName = "cbxCat" + id.value;
     updateCheckboxToggleState(cbxName, true); // enable all categories
@@ -234,12 +238,21 @@ function applyModelToggleChange(_cbxModel: string) {
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
 }
 
-function toggleCategoryState(invis: boolean, cat: Id64, view: ViewState) {
-  const ovr = view.getSubCategoryOverride(cat);
-  if (invis !== ovr.invisible) {
-    ovr.setInvisible(invis);
-    view.overrideSubCategory(cat, ovr);
+function toggleCategoryState(_invis: boolean, _cat: Id64, _origCat: Id64, view: ViewState) {
+  // Use overrides to toggle visibility
+  const ovr = view.getSubCategoryOverride(_cat);
+  if (_invis !== ovr.invisible) {
+    ovr.setInvisible(_invis);
+    view.overrideSubCategory(_cat, ovr); // sets feature overrides dirty
   }
+
+  // Use categorySelector to toggle visibility
+  // if (_invis) {
+  //   view.categorySelector.dropCategories(_origCat);
+  // } else {
+  //   view.categorySelector.addCategories(_origCat);
+  // }
+  // view.setFeatureOverridesDirty(); // add/dropCategories doesn't set feature overrides dirty
 }
 
 // apply a category checkbox state being changed
@@ -247,13 +260,13 @@ function applyCategoryToggleChange(_cbxCategory: string) {
   const view = theViewport!.view;
 
   let allToggledOn = true;
-  for (const cat of view.categorySelector.categories) {
+  for (const cat of curCategories) {
     let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
 
     const cbxName = "cbxCat" + id.value;
     const isChecked = getCheckboxToggleState(cbxName);
     const invis = isChecked ? false : true;
-    toggleCategoryState(invis, id, view);
+    toggleCategoryState(invis, id, new Id64(cat), view);
     if (invis)
       allToggledOn = false;
   }
@@ -270,14 +283,14 @@ function applyCategoryToggleAllChange() {
   const view = theViewport!.view;
   const isChecked = getCheckboxToggleState("cbxCatToggleAll");
 
-  for (const cat of view.categorySelector.categories) {
+  for (const cat of curCategories) {
     let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
 
     const cbxName = "cbxCat" + id.value;
     updateCheckboxToggleState(cbxName, isChecked);
 
     const invis = isChecked ? false : true;
-    toggleCategoryState(invis, id, view);
+    toggleCategoryState(invis, id, new Id64(cat), view);
   }
 
   theViewport!.sync.invalidateScene();

@@ -4,7 +4,7 @@
 /** @module ECDb */
 
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { NativeECDb } from "@bentley/imodeljs-native-platform-api";
+import { NativeECDb } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
