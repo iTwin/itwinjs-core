@@ -120,8 +120,8 @@ export class ViewManager {
   /**
    * Add a new Viewport to the list of opened views and create an EventController for it.
    * @param newVp the Viewport to add
-   * <em>note:</em> raises onViewOpen event with newVp.
-   * <em>note:</em> Does nothing if newVp is already present in the list.
+   * @note raises onViewOpen event with newVp.
+   * @note Does nothing if newVp is already present in the list.
    */
   public addViewport(newVp: Viewport): void {
     for (const vp of this._viewports) { if (vp === newVp) return; } // make sure its not already in view array
@@ -142,7 +142,7 @@ export class ViewManager {
    * Remove a Viewport from the list of opened views.
    * @param vp the Viewport to remove.
    * @return SUCCESS if vp was successfully removed, ERROR if it was not present.
-   * <em>note:</em> raises onViewClose event with vp.
+   * @note raises onViewClose event with vp.
    */
   public dropViewport(vp: Viewport): BentleyStatus {
     this.onViewClose.raiseEvent(vp);

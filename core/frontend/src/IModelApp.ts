@@ -42,14 +42,18 @@ export class IModelApp {
   public static tentativePoint: TentativePoint;
   public static i18n: I18N;
 
-  /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels */
+  /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels. */
   public static hubDeploymentEnv: DeploymentEnv = "QA";
 
   public static readonly features = new FeatureGates();
   public static readonly tools = new ToolRegistry();
   protected static _iModelHubClient?: IModelHubClient;
   public static get initialized() { return IModelApp._initialized; }
-  public static get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.hubDeploymentEnv)); }
+  public static get iModelHubClient(): IModelHubClient {
+    if (!this._iModelHubClient || this._iModelHubClient.deploymentEnv !== this.hubDeploymentEnv)
+      this._iModelHubClient = new IModelHubClient(this.hubDeploymentEnv);
+    return this._iModelHubClient;
+  }
   public static get hasRenderSystem() { return this.renderSystem.isValid(); }
 
   /**

@@ -734,7 +734,7 @@ export abstract class ViewManip extends ViewTool {
     const transform = Transform.createFixedPointAndMatrix(pivotPoint, rotMatrix, scratchTransform1);
     const frust = vp.getWorldFrustum(scratchFrustum);
     frust.multiply(transform);
-    vp.setupFromFrustum(frust);
+    vp.setupViewFromFrustum(frust);
     return true;
   }
 
@@ -1019,7 +1019,7 @@ class ViewRotate extends ViewingToolHandle {
     const frustumChange = !currentFrustum.equals(this.activeFrustum);
     if (frustumChange)
       this.frustum.setFrom(currentFrustum);
-    else if (!viewport.setupFromFrustum(this.frustum))
+    else if (!viewport.setupViewFromFrustum(this.frustum))
       return false;
 
     const currPt = viewport.npcToView(ptNpc, scratchPoint3d2);
@@ -1081,7 +1081,7 @@ class ViewRotate extends ViewingToolHandle {
     const worldTransform = Transform.createFixedPointAndMatrix(worldOrigin, worldMatrix!);
     const frustum = this.frustum.clone();
     frustum.multiply(worldTransform);
-    this.viewTool.viewport!.setupFromFrustum(frustum);
+    this.viewTool.viewport!.setupViewFromFrustum(frustum);
   }
 }
 
@@ -1352,7 +1352,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     if (haveNavigateEvent) {
       const frust = vp.getWorldFrustum(scratchFrustum);
       frust.multiply(motion!.transform);
-      if (!vp.setupFromFrustum(frust)) {
+      if (!vp.setupViewFromFrustum(frust)) {
         haveNavigateEvent = false;
         if (OrientationResult.NoEvent === orientationResult)
           return false;
@@ -1824,7 +1824,7 @@ export class ViewGestureTool extends ViewManip {
     frustum.multiply(transform);
     vp.npcToWorldArray(frustum.points);
 
-    if (!vp.setupFromFrustum(frustum))
+    if (!vp.setupViewFromFrustum(frustum))
       return false;
 
     const view = vp.view;
@@ -1948,7 +1948,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const vp = this.viewport!;
 
     //  All of the transforms and computation are relative to the original transform.
-    if (!vp.setupFromFrustum(this.frustum))
+    if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
     const view = vp.view;
@@ -1972,7 +1972,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     transform = scaleTransform.multiplyTransformTransform(transform, scratchTransform2);
     const frust = this.frustum.transformBy(transform);
 
-    vp.setupFromFrustum(frust);
+    vp.setupViewFromFrustum(frust);
     this.saveTouchStopData(info);
     this.doUpdate(true);
 
@@ -1991,7 +1991,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(currPt);
 
-    if (!vp.setupFromFrustum(this.frustum))
+    if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
     const viewRect = vp.viewRect;
@@ -2008,7 +2008,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
     const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
 
-    if (!vp.setupFromFrustum(frustum))
+    if (!vp.setupViewFromFrustum(frustum))
       return true;
 
     this.saveTouchStopData(ev.gestureInfo!);
@@ -2059,7 +2059,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const zoomRatio = this.computeZoomRatio(info);
 
     // reset frustum to original position
-    if (!vp.setupFromFrustum(this.frustum))
+    if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
     const zoomCenter = Point3d.create();

@@ -132,12 +132,12 @@ export class ViewRect {
 /**
  * The minimum and maximum values for the z-depth of a rectangle of screen space.
  *
- * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0
+ * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
  */
 export class DepthRangeNpc {
   /**
-   * @param minimum The lowest (closest to back) value
-   * @param maximum The highest (closest to the front) value
+   * @param minimum The lowest (closest to back) value.
+   * @param maximum The highest (closest to the front) value.
    */
   constructor(public minimum = 0, public maximum = 1.0) { }
 
@@ -157,15 +157,15 @@ export const enum CoordSystem {
   View,
 
   /**
-   * Coordinates are in [normalized plane coordinates]($docs/learning/glossary.md#npc)
-   * NPC is a coordinate system for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
+   * Coordinates are in [Normalized Plane Coordinates]($docs/learning/glossary.md#npc). NPC is a coordinate system
+   * for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
    * [0,0,0] corresponds to the left-bottom-rear and [1,1,1] to the right-top-front of the frustum.
    */
   Npc,
 
   /**
    * Coordinates are in the coordinate system of the models in the view. For SpatialViews, this is the iModel's spatial coordinate system.
-   * For 2d views, it is the coordinate system of the 2d model that the view shows.
+   * For 2d views, it is the coordinate system of the GeometricModel2d] that the view shows.
    */
   World,
 }
@@ -181,7 +181,7 @@ class Animator {
     for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
     }
-    this.viewport.setupFromFrustum(this.currFrustum);
+    this.viewport.setupViewFromFrustum(this.currFrustum);
   }
 
   private moveToTime(time: number) {
@@ -688,6 +688,7 @@ export class Viewport {
   }
 
   private readonly _viewRange: ViewRect = new ViewRect();
+
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
@@ -704,22 +705,25 @@ export class Viewport {
     this.backStack.length = 0;
   }
 
-  public setRotationAboutPoint(rotation: RotMatrix, center?: Point3d): void {
-    if (undefined === center) {
-      center = this.view.getTargetPoint();
-      const visible = this.determineNearestVisibleGeometryPoint(center, 20.0);
-      if (undefined !== visible)
-        center = visible;
-    }
+  /**
+   * Set the rotation of this Viewport to the supplied rotation, by rotating its ViewState about a point.
+   * @param rotation The new rotation matrix for this Viewport's ViewState.
+   * @param point The point to rotate about. If undefined, use the [[ViewState.getTargetPoint]].
+   * @note This method calls [[setupFromView]] before it returns.
+   */
+  public setRotationAboutPoint(rotation: RotMatrix, point?: Point3d): void {
+    if (undefined === point)
+      point = this.view.getTargetPoint();
+
     const inverse = rotation.clone().inverse();
     if (undefined === inverse)
       return;
+
     const targetMatrix = inverse.multiplyMatrixMatrix(this.view.getRotation());
-    const worldTransform = Transform.createFixedPointAndMatrix(center, targetMatrix);
+    const worldTransform = Transform.createFixedPointAndMatrix(point, targetMatrix);
     const frustum = this.getWorldFrustum();
     frustum.multiply(worldTransform);
-    this.setupFromFrustum(frustum);
-    this.synchWithView(true);
+    this.setupViewFromFrustum(frustum);
   }
 
   public setStandardRotation(id: StandardViewId): void {
@@ -806,7 +810,7 @@ export class Viewport {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
+    const frustFraction = this.computeRootToNpc(this.rootToNpc, origin, delta);
     if (frustFraction === undefined)
       return ViewStatus.InvalidViewport;
 
@@ -821,7 +825,7 @@ export class Viewport {
   }
 
   /** Compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
-  private rootToNpcFromViewDef(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
+  private computeRootToNpc(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
     const view = this.view;
     const viewRot = this.rotMatrix;
     const xVector = viewRot.rowX();
@@ -1037,9 +1041,8 @@ export class Viewport {
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
       const ueRootToNpc = Map4d.createIdentity();
-      const compression = this.rootToNpcFromViewDef(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
-      if (!compression)
-        return box;
+      if (undefined === this.computeRootToNpc(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded))
+        return box; // invalid frustum
 
       // get the root corners of the unexpanded box
       const ueRootBox = new Frustum();
@@ -1190,16 +1193,14 @@ export class Viewport {
   }
 
   /**
-   * Set up this Viewport's viewing parameters based on a Frustum
+   * Shortcut to call view.setupFromFrustum and then [[setupFromView]]
    * @param inFrustum the new viewing frustum
-   * @returns true if successful
+   * @returns true if both steps were successful
    */
-  public setupFromFrustum(inFrustum: Frustum): boolean {
+  public setupViewFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
-    if (this.setupFromView() !== ViewStatus.Success)
-      return false;
-    this.view.setRotation(this.rotMatrix);  // Is this redundant, occurring in setupFromView?..
-    return validSize === ViewStatus.Success;
+    // note: always call setupFromView, even if setupFromFrustum failed
+    return this.setupFromView() ? validSize === ViewStatus.Success : false;
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
@@ -1212,30 +1213,6 @@ export class Viewport {
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const viewRange = this.view.computeFitRange();
-
-    // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
-    // const geomRange = this.geometry.range;
-    // const geomMatrix = this.geometry.modelMatrix;
-    // geomMatrix.multiply(geomRange.low);
-    // geomMatrix.multiply(geomRange.high);
-    // const center = geomRange.getCenter();
-    // const high = geomRange.high;
-    // const delta = Cartesian3.fromDifferenceOf(high, center);
-
-    // //addDebugRange(this, center, delta);
-
-    // const geomScale = Matrix3.fromScaleFactors(delta.x, delta.y, delta.z);
-    // const modelMatrix = Matrix4.fromRotationTranslation(geomScale, center);
-
-    // const scaleFactor = 1.0;
-    // const range = new Range3(new Cartesian3(-scaleFactor, -scaleFactor, -scaleFactor), new Cartesian3(scaleFactor, scaleFactor, scaleFactor));
-    // modelMatrix.multiplyByPoint(range.low, range.low);
-    // modelMatrix.multiplyByPoint(range.high, range.high);
-
-    // const rangeBox = range.get8Corners();
-    // this.rotMatrix.multiplyArray(rangeBox);
-
-    // const viewRange = Range3.fromArray(rangeBox);
 
     return viewRange;
   }
@@ -1287,7 +1264,7 @@ export class Viewport {
   /** @hidden */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
     if (!animationTime || 0.0 >= animationTime.milliseconds) {
-      this.setupFromFrustum(end);
+      this.setupViewFromFrustum(end);
       return;
     }
 

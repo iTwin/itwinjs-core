@@ -491,13 +491,12 @@ export class IModelDb extends IModel {
    * ```
    */
   public updateIModelProps() {
-    // TODO: re-enable when new version is available.
-    // this.briefcase.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
+    this.briefcase.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
   }
 
   /**
    * Commit pending changes to this iModel.
-   * <em>note:</em> If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
+   * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */

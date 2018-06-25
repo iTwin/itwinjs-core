@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { StandaloneIModelRpcInterface, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
-import { IModelTestUtils, NoRenderApp } from "./Utils";
+import { IModelTestUtils } from "./Utils";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
 import { RobotWorld } from "../RobotWorldSchema";

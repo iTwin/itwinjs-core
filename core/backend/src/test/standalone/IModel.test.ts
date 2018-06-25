@@ -546,8 +546,7 @@ describe("iModel", () => {
     checkElementMetaData(metaData);
   });
 
-  // TODO: Re-enable when new version is available.
-  it.skip("update the project extents", async () => {
+  it("update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
     const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
@@ -560,8 +559,7 @@ describe("iModel", () => {
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
   });
 
-  // TODO: Re-enable when new version is available.
-  it.skip("ecefLocation for iModels", () => {
+  it("ecefLocation for iModels", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
