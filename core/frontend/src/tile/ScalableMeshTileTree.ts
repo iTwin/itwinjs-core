@@ -109,7 +109,7 @@ export namespace ScalableMeshTileTree {
       const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient("QA");
       const accessToken: AccessToken = await realityDataServiceClient.getAccessToken(authToken);
 
-      const json = await realityDataServiceClient.getRootDocumentJsonFromUrl(accessToken, url);
+      const json = await realityDataServiceClient.getTileJsonFromUrl(accessToken, url);
 
       return new ScalableMeshTileTreeProps(json);
     } else {
