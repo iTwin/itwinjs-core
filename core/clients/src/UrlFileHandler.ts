@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ProgressInfo } from "./Request";
 import { FileHandler } from "./FileHandler";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as path from "path";
 import * as https from "https";
 import { URL } from "url";
