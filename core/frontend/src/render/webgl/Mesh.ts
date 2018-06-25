@@ -184,6 +184,10 @@ export class MeshGraphic extends Graphic {
     // });
   }
   public get surfaceType(): SurfaceType { return this.meshData.type; }
+
+  public dispose(): void {
+    // ###TODO
+  }
 }
 
 // Defines one aspect of the geometry of a mesh (surface or edges)
