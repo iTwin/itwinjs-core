@@ -168,6 +168,8 @@ export abstract class Target extends RenderTarget {
   private _spfSum: number = 0;
   private _renderSpfTimes: number[] = [];
   private _renderSpfSum: number = 0;
+  private _loadTileTimes: number[] = [];
+  private _loadTileSum: number = 0;
   private static _fpsTimer: StopWatch = new StopWatch(undefined, true);
   private static _fpsTimerStart: number = 0;
   protected _dcAssigned: boolean = false;
@@ -602,10 +604,18 @@ export abstract class Target extends RenderTarget {
       if (this._renderSpfTimes[this._curSpfTimeIndex]) this._renderSpfSum -= this._renderSpfTimes[this._curSpfTimeIndex];
       this._renderSpfSum += renderTimeElapsed;
       this._renderSpfTimes[this._curSpfTimeIndex++] = renderTimeElapsed;
-      if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
+
+      if (sceneSecondsElapsed) {
+        if (this._loadTileTimes[this._curSpfTimeIndex]) this._loadTileSum -= this._loadTileTimes[this._curSpfTimeIndex];
+        this._loadTileSum += sceneSecondsElapsed;
+        this._loadTileTimes[this._curSpfTimeIndex++] = sceneSecondsElapsed;
+        if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
+      }
+
       if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
-        "Average FPS: " + (this._spfTimes.length / this._spfSum).toFixed(5)
-        + "<br />Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2);
+        "Avg. FPS (ms): " + (this._spfTimes.length / this._spfSum).toFixed(2)
+        + " Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2)
+        + "<br />Scene Time (sec): " + (1000 * this._loadTileSum / this._loadTileTimes.length).toFixed(2); // (this._frameTimes[1].milliseconds - this._frameTimes[0].milliseconds).toFixed(2)
       Target._fpsTimerStart = Target._fpsTimer.currentSeconds;
     }
     if (this._gatherFrameTimings) {
