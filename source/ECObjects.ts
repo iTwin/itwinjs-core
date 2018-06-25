@@ -26,6 +26,12 @@ export const enum SchemaItemType {
   Enumeration,
   KindOfQuantity,
   PropertyCategory,
+  Unit,
+  InvertedUnit,
+  Constant,
+  Phenomenon,
+  UnitSystem,
+  Format,
 }
 
 /**
@@ -147,6 +153,12 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
     case "enumeration": return SchemaItemType.Enumeration;
     case "kindofquantity": return SchemaItemType.KindOfQuantity;
     case "propertycategory": return SchemaItemType.PropertyCategory;
+    case "unit": return SchemaItemType.Unit;
+    case "invertedunit": return SchemaItemType.InvertedUnit;
+    case "constant": return SchemaItemType.Constant;
+    case "phenomenon": return SchemaItemType.Phenomenon;
+    case "unitsystem": return SchemaItemType.UnitSystem;
+    case "format": return SchemaItemType.Format;
   }
   return undefined;
 }
@@ -485,6 +497,14 @@ export class ECName {
     if (!test)
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     this._name = name;
+  }
+
+  /**
+   * @param newName string to validate
+   * @return boolean whether newName is a valid ECName
+   */
+  public static validate(newName: string) {
+    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
   }
 
   get name() { return this._name; }

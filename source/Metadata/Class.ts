@@ -408,7 +408,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
   public async *getAllBaseClasses(): AsyncIterableIterator<ECClass> {
     const baseClasses: ECClass[] = [ this ];
     const addBaseClasses = async (ecClass: AnyClass) => {
-      if (SchemaItemType.EntityClass === ecClass.type) {
+      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
         for (let i = ecClass.mixins.length - 1; i >= 0; i--) {
           baseClasses.push(await ecClass.mixins[i]);
         }
@@ -431,7 +431,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
  * A Typescript class representation of an ECStructClass.
  */
 export class StructClass extends ECClass {
-  public readonly type!: SchemaItemType.StructClass; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.StructClass; // tslint:disable-line
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, SchemaItemType.StructClass, modifier);

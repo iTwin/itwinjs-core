@@ -9,7 +9,7 @@ import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export default class PropertyCategory extends SchemaItem {
-  public readonly type!: SchemaItemType.PropertyCategory; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.PropertyCategory; // tslint:disable-line
   protected _priority: number = 0;
 
   get priority() { return this._priority; }
@@ -18,17 +18,9 @@ export default class PropertyCategory extends SchemaItem {
     super(schema, name, SchemaItemType.PropertyCategory);
   }
 
-  public async fromJson(jsonObj: any): Promise<void> {
+  public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
-    this.propertyCategoryFromJson(jsonObj);
-  }
 
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
-    this.propertyCategoryFromJson(jsonObj);
-  }
-
-  private propertyCategoryFromJson(jsonObj: any): void {
     if (undefined !== jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The PropertyCategory ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);

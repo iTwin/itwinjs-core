@@ -21,7 +21,7 @@ export default abstract class SchemaItem {
     this.schema = schema;
   }
 
-  public get type(): SchemaItemType { return this.key.type; }
+  public get schemaItemType(): SchemaItemType { return this.key.type; }
 
   get name() { return this.key.name; }
 
@@ -33,15 +33,15 @@ export default abstract class SchemaItem {
 
   get description() { return this._description; }
 
-  private itemFromJson(jsonObj: any): void {
+  public itemFromJson(jsonObj: any) {
     if (undefined === jsonObj.schemaItemType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} is missing the required schemaItemType property.`);
 
     if (typeof(jsonObj.schemaItemType) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
-    if (parseSchemaItemType(jsonObj.schemaItemType) !== this.type)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.type)}", not "${jsonObj.schemaItemType}".`);
+    if (parseSchemaItemType(jsonObj.schemaItemType) !== this.schemaItemType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${jsonObj.schemaItemType}".`);
 
     if (undefined !== jsonObj.name) {
       if (typeof(jsonObj.name) !== "string")

@@ -13,7 +13,7 @@ describe("Enumeration", () => {
   describe("deserialization", () => {
     it("minimum values", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -41,7 +41,7 @@ describe("Enumeration", () => {
 
     it("with enumerators", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -50,6 +50,7 @@ describe("Enumeration", () => {
             backingTypeName: "integer",
             enumerators: [
               {
+                name: "ZeroValue",
                 value: 0,
                 label: "None",
               },
@@ -61,6 +62,28 @@ describe("Enumeration", () => {
       const ecSchema = await Schema.fromJson(testSchema);
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
+    });
+  });
+
+  describe("accept", () => {
+    let testEnum: Enumeration;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+    });
+
+    it("should call visitEnumeration on a SchemaItemVisitor object", async () => {
+      expect(testEnum).to.exist;
+      const mockVisitor = { visitEnumeration: sinon.spy() };
+      await testEnum.accept(mockVisitor);
+      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
+      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
+    });
+
+    it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
+      expect(testEnum).to.exist;
+      await testEnum.accept({});
     });
   });
 
@@ -77,30 +100,33 @@ describe("Enumeration", () => {
       testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
     });
 
-    describe("should successfully deserialize valid JSON", () => {
-      function assertValidEnumeration(enumeration: Enumeration) {
-        expect(enumeration.name).to.eql("TestEnumeration");
-        expect(enumeration.label).to.eql("SomeDisplayLabel");
-        expect(enumeration.description).to.eql("A really long description...");
-        expect(enumeration.isStrict).to.be.false;
-        expect(enumeration.enumerators).to.exist;
-        expect(enumeration.enumerators.length).to.eql(2);
-      }
-      function assertValidIntEnumeration(enumeration: Enumeration) {
-        assertValidEnumeration(enumeration);
+    function assertValidEnumeration(enumeration: Enumeration) {
+      expect(enumeration.name).to.eql("TestEnumeration");
+      expect(enumeration.label).to.eql("SomeDisplayLabel");
+      expect(enumeration.description).to.eql("A really long description...");
+      expect(enumeration.isStrict).to.be.false;
+      expect(enumeration.enumerators).to.exist;
+      expect(enumeration.enumerators.length).to.eql(2);
+    }
+    function assertValidEnumerator(enumeration: Enumeration, enumVal: number | string, label?: string, description?: string) {
+      if (typeof(enumVal) === "number") {
         expect(enumeration.isInt()).to.be.true;
         expect(enumeration.isString()).to.be.false;
-        expect(enumeration.getEnumerator(8)).to.exist;
-        expect(enumeration.getEnumerator(8)!.label).to.eql("An enumerator label");
-      }
-      function assertValidStringEnumeration(enumeration: Enumeration) {
-        assertValidEnumeration(enumeration);
+        if (typeof(label) !== undefined)
+          expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
+        if (typeof(description) !== undefined)
+          expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
+      } else {
         expect(enumeration.isInt()).to.be.false;
         expect(enumeration.isString()).to.be.true;
-        expect(enumeration.getEnumerator("8")).to.exist;
-        expect(enumeration.getEnumerator("8")!.label).to.eql("An enumerator label");
+        if (typeof(label) !== undefined)
+          expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
+        if (typeof(description) !== undefined)
+          expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
       }
+    }
 
+    describe("should successfully deserialize valid JSON", () => {
       it("with backingTypeName first specified in JSON", async () => {
         const json = {
           ...baseJson,
@@ -109,12 +135,12 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: 6 },
-            { value: 8, label: "An enumerator label" },
+            { name: "SixValue", value: 6 },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
         await testEnumSansPrimType.fromJson(json);
-        assertValidIntEnumeration(testEnumSansPrimType);
+        assertValidEnumeration(testEnumSansPrimType);
       });
 
       it("with backingTypeName repeated in JSON", async () => {
@@ -125,12 +151,12 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: 6 },
-            { value: 8, label: "An enumerator label" },
+            { name: "SixValue", value: 6 },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
         await testEnum.fromJson(json);
-        assertValidIntEnumeration(testEnum);
+        assertValidEnumeration(testEnum);
       });
 
       it("with backingTypeName omitted in JSON", async () => {
@@ -140,12 +166,12 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: 6 },
-            { value: 8, label: "An enumerator label" },
+            { name: "SixValue", value: 6 },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
         await testEnum.fromJson(json);
-        assertValidIntEnumeration(testEnum);
+        assertValidEnumeration(testEnum);
       });
 
       it(`with backingTypeName="string"`, async () => {
@@ -156,12 +182,12 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: "6" },
-            { value: "8", label: "An enumerator label" },
+            { name: "SixValue", value: "6" },
+            { name: "EightValue", value: "8", label: "An enumerator label" },
           ],
         };
         await testEnumSansPrimType.fromJson(json);
-        assertValidStringEnumeration(testEnumSansPrimType);
+        assertValidEnumeration(testEnumSansPrimType);
       });
     });
 
@@ -209,65 +235,163 @@ describe("Enumeration", () => {
       const json: any = { ...baseJson, enumerators: [0] };
       await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
     });
-
-    it("should throw for enumerator with missing value", async () => {
-      expect(testEnum).to.exist;
-      const json: any = { ...baseJson, enumerators: [{}] };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'value'.`);
+    it("Duplicate name", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "SixValue", value: 6 },
+          { name: "SixValue", value: 8, label: "An enumerator label" },
+        ],
+      };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
     });
-
-    it("should throw for enumerator with invalid value", async () => {
-      expect(testEnum).to.exist;
-      const json: any = { ...baseJson, enumerators: [
-        { value: false },
-      ]};
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'number'.`);
+    it("Duplicate value", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "SixValue", value: 6 },
+          { name: "EightValue", value: 6},
+        ],
+      };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
     });
-
-    it("should throw for enumerator with incompatible value type", async () => {
-      expect(testEnum).to.exist;
-      const json: any = { ...baseJson, enumerators: [
-        { value: "shouldBeNumber" },
-      ]};
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'number'.`);
-
-      // TODO: setting primitiveType is not available anymore
-      /* json = { ...baseJson, enumerators: [
-        { value: 0 /* should be string * },
-      ]};
-      testEnum.primitiveType = PrimitiveType.String;
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'string'.`);
-      */
+    it("Basic test with number values", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "OneValue", value: 1, label: "Label for the first value", description: "description for the first value" },
+          { name: "TwoValue", value: 2, label: "Label for the second value", description: "description for the second value" },
+          { name: "ThreeValue", value: 3, label: "Label for the third value", description: "description for the third value" },
+          { name: "FourValue", value: 4, label: "Label for the fourth value", description: "description for the fourth value" },
+          { name: "FiveValue", value: 5, label: "Label for the fifth value", description: "description for the fifth value" },
+        ],
+      };
+      await testEnum.fromJson(json);
+      assertValidEnumerator(testEnum, 1, "Label for the first value", "description for the first value");
+      assertValidEnumerator(testEnum, 2, "Label for the second value", "description for the second value");
+      assertValidEnumerator(testEnum, 3, "Label for the third value", "description for the third value");
+      assertValidEnumerator(testEnum, 4, "Label for the fourth value", "description for the fourth value");
+      assertValidEnumerator(testEnum, 5, "Label for the fifth value", "description for the fifth value");
     });
-
-    it("should throw for enumerator with invalid label", async () => {
-      expect(testEnum).to.exist;
-      const json: any = { ...baseJson, enumerators: [
-        { value: 0, label: 0 },
-      ]};
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
+    it("Basic test with string values", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "OneValue", value: "one", label: "Label for the first value", description: "description for the first value" },
+          { name: "TwoValue", value: "two", label: "Label for the second value", description: "description for the second value" },
+          { name: "ThreeValue", value: "three", label: "Label for the third value", description: "description for the third value" },
+          { name: "FourValue", value: "four", label: "Label for the fourth value", description: "description for the fourth value" },
+          { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
+        ],
+      };
+      await testStringEnum.fromJson(json);
+      assertValidEnumerator(testStringEnum, "one", "Label for the first value", "description for the first value");
+      assertValidEnumerator(testStringEnum, "two", "Label for the second value", "description for the second value");
+      assertValidEnumerator(testStringEnum, "three", "Label for the third value", "description for the third value");
+      assertValidEnumerator(testStringEnum, "four", "Label for the fourth value", "description for the fourth value");
+      assertValidEnumerator(testStringEnum, "five", "Label for the fifth value", "description for the fifth value");
     });
-  });
-
-  describe("accept", () => {
-    let testEnum: Enumeration;
-
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+    it("ECName comparison is case insensitive", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "ONEVALUE", value: "one", label: "Label for the first value", description: "description for the first value" },
+          { name: "onevalue", value: "two", label: "Label for the second value", description: "description for the second value" },
+        ],
+      };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
     });
-
-    it("should call visitEnumeration on a SchemaItemVisitor object", async () => {
-      expect(testEnum).to.exist;
-      const mockVisitor = { visitEnumeration: sinon.spy() };
-      await testEnum.accept(mockVisitor);
-      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
-      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
+    it("Description is not a string", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "ONEVALUE", value: "one", label: "Label for the first value", description: 1 },
+        ],
+      };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
     });
-
-    it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
-      expect(testEnum).to.exist;
-      await testEnum.accept({});
+    it("Get enumerator by name", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "OneValue", value: "one", label: "Label for the first value", description: "description for the first value" },
+          { name: "TwoValue", value: "two", label: "Label for the second value", description: "description for the second value" },
+          { name: "ThreeValue", value: "three", label: "Label for the third value", description: "description for the third value" },
+          { name: "FourValue", value: "four", label: "Label for the fourth value", description: "description for the fourth value" },
+          { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
+        ],
+      };
+      await testStringEnum.fromJson(json);
+      expect(testStringEnum.getEnumeratorByName("OneValue")).to.exist;
+      expect(testStringEnum.getEnumeratorByName("onevalue")!.description).to.eql("description for the first value");
+      expect(testStringEnum.getEnumeratorByName("fourVALUE")!.label).to.eql("Label for the fourth value");
+    });
+    it("Name is required", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { value: "one", label: "Label for the first value", description: "Description for the first value" },
+        ],
+      };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
+    });
+    it("Value is required", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "one", label: "Label for the first value", description: "Description for the first value" },
+        ],
+      };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'value'.`);
+    });
+    it("Invalid ECName", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          {  name: "5FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
+        ],
+      };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
     });
   });
 });

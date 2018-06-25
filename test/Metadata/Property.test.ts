@@ -145,29 +145,6 @@ describe("Property", () => {
       expect(await testProp.kindOfQuantity).to.eql(testKindOfQuantity);
     });
 
-    it("should successfully deserialize valid JSON synchronously", () => {
-      const propertyJson = {
-        name: "BadProp",
-        label: "SomeDisplayLabel",
-        description: "A really long description...",
-        priority: 1000,
-        readOnly: false,
-        category: "TestSchema.TestCategory",
-        kindOfQuantity: "TestSchema.TestKoQ",        // FIXME: kindOfQuantity: "TestSchema.1.0.0.TestKoQ",
-      };
-      const testProp = new MockProperty("BadProp");
-      expect(testProp).to.exist;
-      testProp.fromJsonSync(propertyJson);
-
-      expect(testProp.name).to.eql("BadProp");
-      expect(testProp.label).to.eql("SomeDisplayLabel");
-      expect(testProp.description).to.eql("A really long description...");
-      expect(testProp.priority).to.eql(1000);
-      expect(testProp.isReadOnly).to.eql(false);
-      expect(testProp.getCategorySync()).to.eql(testCategory);
-      expect(testProp.getKindOfQuantitySync()).to.eql(testKindOfQuantity);
-    });
-
     it("should throw for mismatched name", async () => {
       const propertyJson = { name: "ThisDoesNotMatch"};
       const testProp = new MockProperty("BadProp");

@@ -11,7 +11,7 @@ import Schema from "./Schema";
  * A Typescript class representation of an ECCustomAttributeClass.
  */
 export default class CustomAttributeClass extends ECClass {
-  public readonly type!: SchemaItemType.CustomAttributeClass; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.CustomAttributeClass; // tslint:disable-line
   protected _containerType?: CustomAttributeContainerType;
 
   get containerType(): CustomAttributeContainerType {
