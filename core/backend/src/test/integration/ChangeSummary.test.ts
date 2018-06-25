@@ -16,7 +16,7 @@ import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil
 import * as TypeMoq from "typemoq";
 
 function setupTest(iModelId: string): void {
-  const cacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModelId);
+  const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
   if (IModelJsFs.existsSync(cacheFilePath))
     IModelJsFs.removeSync(cacheFilePath);
 }
@@ -78,7 +78,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
+      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
       ChangeSummaryManager.detachChangeCache(iModel);
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -126,7 +126,7 @@ describe("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
+      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
       ChangeSummaryManager.detachChangeCache(iModel);
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -248,7 +248,7 @@ describe("ChangeSummary", () => {
       const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
       assert.isTrue(summaryIds[0].isValid());
-      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
+      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -286,7 +286,7 @@ describe("ChangeSummary", () => {
       assert.exists(iModel);
       const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel, { startVersion });
       assert.equal(summaryIds.length, 2);
-      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
+      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -334,7 +334,7 @@ describe("ChangeSummary", () => {
       // now extract change summary for that one changeset
       const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
-      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
+      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);

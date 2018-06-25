@@ -11,6 +11,14 @@ import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentle
 
 const loggingCategory = "imodeljs-backend.ECDb";
 
+/** Modes for how to open [ECDb]($backend) files. */
+export enum ECDbOpenMode {
+  Readonly,
+  Readwrite,
+  /** Opens the file read-write and upgrades the file if necessary to the latest file format version. */
+  FileUpgrade,
+}
+
 /** An ECDb file */
 export class ECDb implements IDisposable {
   private _nativeDb: NativeECDb | undefined;
@@ -48,8 +56,10 @@ export class ECDb implements IDisposable {
    * @param openMode Open mode
    * @throws [IModelError]($common) if the operation failed.
    */
-  public openDb(pathName: string, openMode: OpenMode = OpenMode.Readonly): void {
-    const status: DbResult = this.nativeDb.openDb(pathName, openMode);
+  public openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): void {
+    const nativeOpenMode: OpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const tryUpgrade: boolean = openMode === ECDbOpenMode.FileUpgrade;
+    const status: DbResult = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }

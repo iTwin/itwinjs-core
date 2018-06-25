@@ -3,7 +3,7 @@ ignore: true
 ---
 # Meta Queries - Querying ECSchemas
 
-Every iModel includes the **ECDbMeta** ECSchema. It exposes the content of all schemas that the iModel contains. You can therefore use ECSQL against that schema to query for schemas, classes, properties etc.
+Every iModel includes the [ECDbMeta](../ECDbMeta.ecschema.md) ECSchema. It exposes the content of all schemas that the iModel contains. You can therefore use ECSQL against that schema to query for schemas, classes, properties etc.
 
 > **Try it yourself**
 >

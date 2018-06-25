@@ -294,6 +294,10 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     this.setFeatureOverridesDirty();
   }
 
+  public getSubCategoryOverride(id: Id64): SubCategoryOverride {
+    return this.displayStyle.getSubCategoryOverride(id);
+  }
+
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
   public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
 

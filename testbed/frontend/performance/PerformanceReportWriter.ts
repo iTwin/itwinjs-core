@@ -9,39 +9,45 @@ export class PerformanceReportWriter {
   public static input: string = "c:/performanceResults.xlsx";
   public static dataArray: number[][] = [];
 
-  public static async startup(inputPath?: string, outputPath?: string): Promise<void> {
+  public static async startup(inputPath?: string, outputPath?: string, isNew?: boolean): Promise<void> {
     if (undefined !== inputPath)
       PerformanceReportWriter.input = inputPath;
     if (undefined !== inputPath || undefined !== outputPath)
       PerformanceReportWriter.input = undefined !== outputPath ? outputPath : inputPath!;
 
+    const doSetupNewFile = (undefined !== isNew) ? isNew : true;
+
     PerformanceReportWriter.dataArray = [];
 
-    const wb = new Excel.Workbook();
-    const ws = wb.addWorksheet("Performance Results");
+    if (doSetupNewFile) {
+      const wb = new Excel.Workbook();
+      const ws = wb.addWorksheet("Performance Results");
 
-    ws.columns = [
-      { header: "" },
-      { header: "IModel" },
-      { header: "View" },
-      { header: "Flags" },
-      { header: "TileLoadingTime" },
-      { header: "Scene" },
-      { header: "GarbageExecute" },
-      { header: "InitCommands" },
-      { header: "BackgroundDraw" },
-      { header: "SetClips" },
-      { header: "OpaqueDraw" },
-      { header: "TranslucentDraw" },
-      { header: "HiliteDraw" },
-      { header: "CompositeDraw" },
-      { header: "OverlayDraw" },
-      { header: "RenderFrameTime" },
-      { header: "glFinish" },
-      { header: "TotalTime" },
-    ];
+      ws.columns = [
+        { header: "" },
+        { header: "IModel" },
+        { header: "View" },
+        { header: "Flags" },
+        { header: "TileLoadingTime" },
+        { header: "Scene" },
+        { header: "GarbageExecute" },
+        { header: "InitCommands" },
+        { header: "BackgroundDraw" },
+        { header: "SetClips" },
+        { header: "OpaqueDraw" },
+        { header: "TranslucentDraw" },
+        { header: "HiliteDraw" },
+        { header: "CompositeDraw" },
+        { header: "OverlayDraw" },
+        { header: "RenderFrameTime" },
+        { header: "glFinish" },
+        { header: "TotalTime" },
+      ];
 
-    return wb.xlsx.writeFile(PerformanceReportWriter.output);
+      return wb.xlsx.writeFile(PerformanceReportWriter.output);
+    }
+
+    return Promise.resolve();
   }
 
   public static async applyToWorksheet(fnc: (worksheet: Excel.Worksheet) => void): Promise<void> {
