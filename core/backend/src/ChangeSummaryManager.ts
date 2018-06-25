@@ -5,9 +5,9 @@
 
 import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
-import { Id64, using, assert, Logger, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
+import { Id64, using, assert, Logger, PerfLogger, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
-import { ECDb } from "./ECDb";
+import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { ChangeOpCode, ChangedValueState, IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -99,10 +99,10 @@ export class ChangeSummaryManager {
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       return;
 
-    const changesCacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
+    const changesCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.briefcase.iModelId);
     if (!IModelJsFs.existsSync(changesCacheFilePath)) {
-      using(new ECDb(), (changesFile: ECDb) => {
-        ChangeSummaryManager.createChangesFile(iModel, changesFile, changesCacheFilePath);
+      using(new ECDb(), (changeCacheFile: ECDb) => {
+        ChangeSummaryManager.createChangeCacheFile(iModel, changeCacheFile, changesCacheFilePath);
       });
     }
 
@@ -280,39 +280,40 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel but be open.");
 
     const changesFile = new ECDb();
-    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
-    if (IModelJsFs.existsSync(changesPath)) {
-      changesFile.openDb(changesPath, OpenMode.ReadWrite);
-      ChangeSummaryManager.upgradeChangesFile(changesFile);
+    const changeCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.briefcase.iModelId);
+    if (IModelJsFs.existsSync(changeCacheFilePath)) {
+      ChangeSummaryManager.openChangeCacheFile(changesFile, changeCacheFilePath);
       return changesFile;
     }
 
     try {
-      ChangeSummaryManager.createChangesFile(iModel, changesFile, changesPath);
+      ChangeSummaryManager.createChangeCacheFile(iModel, changesFile, changeCacheFilePath);
       return changesFile;
     } catch (e) {
       // delete cache file again in case it was created but schema import failed
-      if (IModelJsFs.existsSync(changesPath))
-        IModelJsFs.removeSync(changesPath);
+      if (IModelJsFs.existsSync(changeCacheFilePath))
+        IModelJsFs.removeSync(changeCacheFilePath);
 
       throw e;
     }
   }
 
-  private static createChangesFile(iModel: IModelDb, changesFile: ECDb, changesFilePath: string): void {
+  private static createChangeCacheFile(iModel: IModelDb, changesFile: ECDb, changeCacheFilePath: string): void {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel but be open.");
 
     assert(iModel.nativeDb);
-    const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changesFilePath);
+    const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changeCacheFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Failed to create Change Cache file at '" + changesFilePath + "'.");
+      throw new IModelError(stat, "Failed to create Change Cache file at '" + changeCacheFilePath + "'.");
 
     // Extended information like changeset ids, push dates are persisted in the IModelChange ECSchema
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
   }
 
-  private static upgradeChangesFile(changesFile: ECDb): void {
+  private static openChangeCacheFile(changesFile: ECDb, changeCacheFilePath: string): void {
+    changesFile.openDb(changeCacheFilePath, ECDbOpenMode.FileUpgrade);
+
     const actualSchemaVersion: { read: number, write: number, minor: number } = changesFile.withPreparedStatement("SELECT VersionMajor read,VersionWrite write,VersionMinor minor FROM meta.ECSchemaDef WHERE Name='IModelChange'",
       (stmt: ECSqlStatement) => {
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)

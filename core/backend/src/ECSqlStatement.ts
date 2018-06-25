@@ -870,15 +870,14 @@ class ECSqlValueHelper {
     if (!tableSpace)
       tableSpace = "main";
 
-    return ecdb.withPreparedStatement("SELECT s.Name schemaName, c.Name className FROM [" + tableSpace
+    return ecdb.withPreparedStatement("SELECT s.Name, c.Name FROM [" + tableSpace
       + "].meta.ECSchemaDef s, JOIN [" + tableSpace + "].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, classId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
 
-        const row: any = stmt.getRow();
-        return row.schemaName + "." + row.className;
+        return stmt.getValue(0).getString() + "." + stmt.getValue(1).getString();
       });
   }
 }

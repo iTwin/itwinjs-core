@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.96.1",
+  "version": "0.96.2",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -42,7 +42,7 @@
     "@bentley/geometry-core": "9",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-native-platform-api": "~21.0.0"
+    "@bentley/imodeljs-native-platform-api": "~21.1.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -77,7 +77,7 @@
     "*** Keep this in synch with tools/native-platform-installer ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~21.0.0",
+    "@bentley/imodeljs-native-platform-api": "~21.1.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.0",
     "glob": "^7.1.2"

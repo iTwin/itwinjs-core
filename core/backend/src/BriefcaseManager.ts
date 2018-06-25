@@ -237,7 +237,7 @@ export class BriefcaseManager {
   }
 
   public static getChangeSetsPath(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
-  public static getChangeSummaryPathname(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
+  public static getChangeCachePathName(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
 
   private static getBriefcasesPath(iModelId: string) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc");
