@@ -25,7 +25,7 @@ describe("ECDb", () => {
   });
 
   it("should be able to open an ECDb", () => {
-    const fileName: string = "open.ecdb";
+    const fileName = "open.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
       assert.isTrue(testECDb.isOpen());
@@ -37,8 +37,8 @@ describe("ECDb", () => {
     });
   });
 
-  it.only("Open ECDb with upgrade option", () => {
-    const fileName: string = "open.ecdb";
+  it("Open ECDb with upgrade option", () => {
+    const fileName = "open.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
       assert.isTrue(testECDb.isOpen());
@@ -58,7 +58,7 @@ describe("ECDb", () => {
   });
 
   it("should be able to import a schema", () => {
-    const fileName: string = "schemaimport.ecdb";
+    const fileName = "schemaimport.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     let id: Id64;
     using(ECDbTestHelper.createECDb(_outDir, fileName,
