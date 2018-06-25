@@ -520,11 +520,11 @@ export class Viewport {
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
 
-  private static readonly fullRangeNpc = new Range3d(0, 0, 0, 1, 1, 1); // full range of view (used in determineVisibleDepthNpcRange to avoid reinitializing)
-  private static readonly depthRect = new ViewRect(); // used in determineVisibleDepthNpcRange to avoid reinitializing
+  private static readonly fullRangeNpc = new Range3d(0, 0, 0, 1, 1, 1); // full range of view (used in determineVisibleDepthNpcRange)
+  private static readonly depthRect = new ViewRect(); // used in determineVisibleDepthNpcRange
   /**
    * Computes the range of depth values for a region of the screen
-   * @param subRectView the subrange in view coordinates we wish to view
+   * @param subRectView the sub-range, in view coordinates, we wish to view
    * @param result optional DepthRangeNpc to store the result
    * @returns the minimum and maximum depth values within the region, or undefined.
    */
@@ -552,8 +552,8 @@ export class Viewport {
     let minimum = 1;
     const npc = Point3d.create();
     const testPoint = Point2d.create();
-    for (testPoint.x = readRect.left; testPoint.x < readRect.right; testPoint.x++) {
-      for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; testPoint.y++) {
+    for (testPoint.x = readRect.left; testPoint.x < readRect.right; ++testPoint.x) {
+      for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; ++testPoint.y) {
         if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
           minimum = Math.min(minimum, npc.z);
           maximum = Math.max(maximum, npc.z);
@@ -570,9 +570,8 @@ export class Viewport {
       }
 
       return result;
-    } else {
-      return undefined;
     }
+    return undefined;
   }
 
   private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);

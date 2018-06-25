@@ -27,6 +27,7 @@
     "Cloneable",
     "Elems",
     "Frenet",
+    "Hilites",
     "Intersectable",
     "Keypoint",
     "Kubernetes",

@@ -457,11 +457,18 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     return Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction);
   }
 
-  public calculateFrustum(result?: Frustum): Frustum {
-    const box = result ? result.initNpc() : new Frustum();
+  /**
+   * Calculate the world coordinate Frustum from the parameters of this ViewState.
+   * @param result Optional Frustum to hold result. If undefined a new Frustum is created.
+   * @returns The 8-point Frustum with the corners of this ViewState, or undefined if the parameters are invalid.
+   */
+  public calculateFrustum(result?: Frustum): Frustum | undefined {
     const rootToNpc = this.computeRootToNpc();
-    if (undefined !== rootToNpc)
-      rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
+    if (undefined === rootToNpc)
+      return undefined;
+
+    const box = result ? result.initNpc() : new Frustum();
+    rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
     return box;
   }
 
@@ -868,10 +875,11 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     const targetMatrix = inverse.multiplyMatrixMatrix(this.getRotation());
     const worldTransform = Transform.createFixedPointAndMatrix(point, targetMatrix);
     const frustum = this.calculateFrustum();
-    frustum.multiply(worldTransform);
-    this.setupFromFrustum(frustum);
+    if (undefined !== frustum) {
+      frustum.multiply(worldTransform);
+      this.setupFromFrustum(frustum);
+    }
   }
-
 }
 
 /** Defines the state of a view of 3d models.
@@ -1293,7 +1301,7 @@ export abstract class ViewState3d extends ViewState {
 
     const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront));
 
-    const pseudoCameraHalfAngle = 22.5;   // Chosen arbitrarily to match Luxology
+    const pseudoCameraHalfAngle = 22.5;
     const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
     const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Constant.radiansPerDegree));
 
