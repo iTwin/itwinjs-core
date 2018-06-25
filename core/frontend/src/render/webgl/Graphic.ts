@@ -458,6 +458,10 @@ export class Batch extends Graphic {
     // ###TODO
     // this._overrides.erase(target);
   }
+
+  public dispose(): void {
+    // ###TODO
+  }
 }
 
 export class Branch extends Graphic {
@@ -479,6 +483,10 @@ export class Branch extends Graphic {
     for (const entry of this.branch.entries) {
       (entry as Graphic).assignUniformFeatureIndices(index);
     }
+  }
+
+  public dispose(): void {
+    // ###TODO
   }
 }
 
@@ -516,5 +524,9 @@ export class GraphicsList extends Graphic {
     for (const gf of this.graphics) {
       (gf as Graphic).assignUniformFeatureIndices(index);
     }
+  }
+
+  public dispose(): void {
+    // ###TODO
   }
 }

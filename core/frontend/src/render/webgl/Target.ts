@@ -313,7 +313,10 @@ export abstract class Target extends RenderTarget {
     return 0; // ###TODO
   }
 
-  public changeDecorations(decs: Decorations): void { this._decorations = decs; }
+  public changeDecorations(decs: Decorations): void {
+    this._decorations.dispose();
+    this._decorations = decs;
+  }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
     // ###TODO active volume
