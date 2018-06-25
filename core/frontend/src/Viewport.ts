@@ -904,7 +904,7 @@ export class Viewport {
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
    * If so, save a *clone* of the previous state in the view undo stack to permit View Undo.
    */
-  private saveViewUndo(): void {
+  public saveViewUndo(): void {
     if (!this._view)
       return;
 
@@ -1200,7 +1200,7 @@ export class Viewport {
   public setupViewFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
     // note: always call setupFromView, even if setupFromFrustum failed
-    return this.setupFromView() ? validSize === ViewStatus.Success : false;
+    return (ViewStatus.Success === this.setupFromView() && ViewStatus.Success === validSize);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
