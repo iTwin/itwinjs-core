@@ -24,7 +24,7 @@ import { DecorateContext } from "./ViewContext";
  * Sprites can be of varying sizes and color depths and can have both opaque and transparent pixels.
  * <p>
  * Element Manipulator handles and the AccuSnap indicators are examples of  use of Sprites.
- * <em>note:</em> It is also possible to draw a Sprite onto a Viewport directly
+ * @note It is also possible to draw a Sprite onto a Viewport directly
  * without ever using a SpritLocation. SpriteLocations are merely provided as a convenience.
  */
 export abstract class Sprite {
@@ -79,7 +79,7 @@ export class SpriteLocation {
     this.sprite = undefined;
   }
 
-  public decorateViewport(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     if (context.viewport === this.viewport) {
       const loc = this.viewport!.worldToView(this.location);
       loc.z = 0;

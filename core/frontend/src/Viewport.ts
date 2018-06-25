@@ -8,10 +8,10 @@ import {
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64 } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
-import { AuxCoordSystemState } from "./AuxCoordSys";
+import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -132,12 +132,12 @@ export class ViewRect {
 /**
  * The minimum and maximum values for the z-depth of a rectangle of screen space.
  *
- * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0
+ * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
  */
 export class DepthRangeNpc {
   /**
-   * @param minimum The lowest (closest to back) value
-   * @param maximum The highest (closest to the front) value
+   * @param minimum The lowest (closest to back) value.
+   * @param maximum The highest (closest to the front) value.
    */
   constructor(public minimum = 0, public maximum = 1.0) { }
 
@@ -147,6 +147,9 @@ export class DepthRangeNpc {
 
 /** Coordinate system types */
 export const enum CoordSystem {
+  /** Coordinates are relative to the origin of the screen. */
+  Screen,
+
   /**
    * Coordinates are relative to the origin of the viewing rectangle.
    * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
@@ -154,15 +157,15 @@ export const enum CoordSystem {
   View,
 
   /**
-   * Coordinates are in [normalized plane coordinates]($docs/learning/glossary.md#npc)
-   * NPC is a coordinate system for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
+   * Coordinates are in [Normalized Plane Coordinates]($docs/learning/glossary.md#npc). NPC is a coordinate system
+   * for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
    * [0,0,0] corresponds to the left-bottom-rear and [1,1,1] to the right-top-front of the frustum.
    */
   Npc,
 
   /**
    * Coordinates are in the coordinate system of the models in the view. For SpatialViews, this is the iModel's spatial coordinate system.
-   * For 2d views, it is the coordinate system of the 2d model that the view shows.
+   * For 2d views, it is the coordinate system of the GeometricModel2d] that the view shows.
    */
   World,
 }
@@ -178,7 +181,7 @@ class Animator {
     for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
     }
-    this.viewport.setupFromFrustum(this.currFrustum);
+    this.viewport.setupViewFromFrustum(this.currFrustum);
   }
 
   private moveToTime(time: number) {
@@ -285,9 +288,9 @@ export class DecorationAnimator implements ViewportAnimator {
 }
 
 /**
- * A `Viewport` renders one or more Models onto an HTMLCanvasElement.
+ * A Viewport renders one or more Models onto an `HTMLCanvasElement`.
  *
- * It refers to a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
+ * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
  * modify the ViewState object. Changes to the ViewState are only reflected in a Viewport after the
  * [[synchWithView]] method is called.
  *
@@ -308,7 +311,9 @@ export class Viewport {
   /** Id of last flashed element */
   public lastFlashedElem?: string;
   private _viewCmdTargetCenter?: Point3d;
+  /** @hidden */
   public frustFraction: number = 1.0;
+  /** The number of entries in the view undo/redo buffer. */
   public maxUndoSteps = 20;
   private readonly forwardStack: ViewState[] = [];
   private readonly backStack: ViewState[] = [];
@@ -316,23 +321,30 @@ export class Viewport {
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
   private _evController?: EventController;
   private _view!: ViewState;
+  /** @hidden */
   public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
+  /** @hidden */
   public readonly sync: SyncFlags = new SyncFlags();
   /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
   /** View delta, potentially expanded */
   public readonly viewDelta = new Vector3d();
-  /** View origin (from ViewState, un-expanded) */
+  /** View origin (from ViewState, unexpanded) */
   public readonly viewOriginUnexpanded = new Point3d();
-  /** View delta (from ViewState, un-expanded) */
+  /** View delta (from ViewState, unexpanded) */
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
   public readonly rotMatrix = new RotMatrix();
+  /** @hidden */
   public readonly rootToView = Map4d.createIdentity();
+  /** @hidden */
   public readonly rootToNpc = Map4d.createIdentity();
-  /** Called whenever this viewport is synchronized with its ViewState */
+
+  /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
+
+  /** The settings that control how elements are hilited in this Viewport. */
   public readonly hilite = new Hilite.Settings();
 
   /**
@@ -340,15 +352,21 @@ export class Viewport {
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
+  /** The [ViewFlags]($common) that determine how this Viewport is rendered.  */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
+  /** @hidden */
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
+  /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
-  /** The IModelConnection of the ViewSate of this Viewport */
+  /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
 
+  /** @hidden */
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
+  /** @hidden */
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
+  /** @hidden */
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   /** Construct a new Viewport
@@ -368,21 +386,24 @@ export class Viewport {
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
-  /** The current ViewState controlling this Viewport */
+  /** The ViewState for this Viewport */
   public get view(): ViewState { return this._view; }
+  /** @hidden */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
+  /** True if this is a 3d view with the camera turned on. */
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
+  /** @hidden */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
-
+  /** @hidden */
   public changeDynamics(dynamics: DecorationList | undefined): void {
     this.target.changeDynamics(dynamics);
     this.invalidateDecorations();
   }
 
   /** Change the cursor for this Viewport */
-  public setCursor(cursor: BeCursor = BeCursor.Default) {
+  public setCursor(cursor: BeCursor = BeCursor.Default): void {
     if (cursor === BeCursor.OpenHand)
       this.canvas.style.cursor = "-webkit-grab";
     else if (cursor === BeCursor.ClosedHand)
@@ -391,6 +412,10 @@ export class Viewport {
       this.canvas.style.cursor = cursor;
   }
 
+  /** Set or clear the currently *flashed* element.
+   * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element
+   * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]])
+   */
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this.flashedElem) {
       this.lastFlashedElem = this.flashedElem;
@@ -404,7 +429,9 @@ export class Viewport {
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
+  /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(Viewport.copyOutput(from, to)); }
+  /** @hidden */
   public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(Viewport.copyOutput(from, to)); }
 
   /** Adjust the front and back planes to encompass the entire viewed volume */
@@ -661,6 +688,7 @@ export class Viewport {
   }
 
   private readonly _viewRange: ViewRect = new ViewRect();
+
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
@@ -670,11 +698,32 @@ export class Viewport {
   /** True if an redoable viewing operation exists on the stack */
   public get isRedoPossible(): boolean { return 0 < this.forwardStack.length; }
 
-  /** clear the view-undo buffers of this Viewport */
+  /** Clear the view undo buffers of this Viewport. */
   public clearUndo(): void {
     this.currentBaseline = undefined;
     this.forwardStack.length = 0;
     this.backStack.length = 0;
+  }
+
+  /**
+   * Set the rotation of this Viewport to the supplied rotation, by rotating its ViewState about a point.
+   * @param rotation The new rotation matrix for this Viewport's ViewState.
+   * @param point The point to rotate about. If undefined, use the [[ViewState.getTargetPoint]].
+   * @note This method calls [[setupFromView]] before it returns.
+   */
+  public setRotationAboutPoint(rotation: RotMatrix, point?: Point3d): void {
+    if (undefined === point)
+      point = this.view.getTargetPoint();
+
+    const inverse = rotation.clone().inverse();
+    if (undefined === inverse)
+      return;
+
+    const targetMatrix = inverse.multiplyMatrixMatrix(this.view.getRotation());
+    const worldTransform = Transform.createFixedPointAndMatrix(point, targetMatrix);
+    const frustum = this.getWorldFrustum();
+    frustum.multiply(worldTransform);
+    this.setupViewFromFrustum(frustum);
   }
 
   public setStandardRotation(id: StandardViewId): void {
@@ -761,7 +810,7 @@ export class Viewport {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
+    const frustFraction = this.computeRootToNpc(this.rootToNpc, origin, delta);
     if (frustFraction === undefined)
       return ViewStatus.InvalidViewport;
 
@@ -776,7 +825,7 @@ export class Viewport {
   }
 
   /** Compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
-  private rootToNpcFromViewDef(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
+  private computeRootToNpc(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
     const view = this.view;
     const viewRot = this.rotMatrix;
     const xVector = viewRot.rowX();
@@ -874,7 +923,7 @@ export class Viewport {
     this.currentBaseline = this.view.clone<ViewState>(); // now update our baseline to match the current state
   }
 
-  /** Call setupFrom view on this Viewport. Optionally, save previous state in view undo stack */
+  /** Call [[setupFromView]] on this Viewport and save previous state in view undo stack */
   public synchWithView(saveInUndo: boolean): void {
     this.setupFromView();
     if (saveInUndo)
@@ -992,9 +1041,8 @@ export class Viewport {
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
       const ueRootToNpc = Map4d.createIdentity();
-      const compression = this.rootToNpcFromViewDef(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
-      if (!compression)
-        return box;
+      if (undefined === this.computeRootToNpc(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded))
+        return box; // invalid frustum
 
       // get the root corners of the unexpanded box
       const ueRootBox = new Frustum();
@@ -1024,8 +1072,8 @@ export class Viewport {
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
 
   /**
-   * scroll the view by a given number of pixels.
-   * @param screenDist distance to scroll in pixels
+   * Scroll the view by a given number of pixels.
+   * @param screenDist distance to scroll, in pixels
    */
   public scroll(screenDist: Point2d): ViewStatus {
     const view = this.view;
@@ -1145,52 +1193,26 @@ export class Viewport {
   }
 
   /**
-   * Set up this Viewport's viewing parameters based on a Frustum
+   * Shortcut to call view.setupFromFrustum and then [[setupFromView]]
    * @param inFrustum the new viewing frustum
-   * @returns true if successful
+   * @returns true if both steps were successful
    */
-  public setupFromFrustum(inFrustum: Frustum): boolean {
+  public setupViewFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
-    if (this.setupFromView() !== ViewStatus.Success)
-      return false;
-    this.view.setRotation(this.rotMatrix);  // Is this redundant, occurring in setupFromView?..
-    return validSize === ViewStatus.Success;
+    // note: always call setupFromView, even if setupFromFrustum failed
+    return this.setupFromView() ? validSize === ViewStatus.Success : false;
   }
 
+  /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
   public resetUndo() {
     this.clearUndo();
     this.saveViewUndo();  // Set up new baseline state
-    // Notify event listeners
-    // this.historyChanged.raiseEvent();
   }
 
+  /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const viewRange = this.view.computeFitRange();
-
-    // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
-    // const geomRange = this.geometry.range;
-    // const geomMatrix = this.geometry.modelMatrix;
-    // geomMatrix.multiply(geomRange.low);
-    // geomMatrix.multiply(geomRange.high);
-    // const center = geomRange.getCenter();
-    // const high = geomRange.high;
-    // const delta = Cartesian3.fromDifferenceOf(high, center);
-
-    // //addDebugRange(this, center, delta);
-
-    // const geomScale = Matrix3.fromScaleFactors(delta.x, delta.y, delta.z);
-    // const modelMatrix = Matrix4.fromRotationTranslation(geomScale, center);
-
-    // const scaleFactor = 1.0;
-    // const range = new Range3(new Cartesian3(-scaleFactor, -scaleFactor, -scaleFactor), new Cartesian3(scaleFactor, scaleFactor, scaleFactor));
-    // modelMatrix.multiplyByPoint(range.low, range.low);
-    // modelMatrix.multiplyByPoint(range.high, range.high);
-
-    // const rangeBox = range.get8Corners();
-    // this.rotMatrix.multiplyArray(rangeBox);
-
-    // const viewRange = Range3.fromArray(rangeBox);
 
     return viewRange;
   }
@@ -1219,12 +1241,14 @@ export class Viewport {
     this.applyViewState(this.currentBaseline, animationTime);
   }
 
+  /** @hidden */
   public animate() {
     if (this.animator && this.animator.animate()) {
       this.animator = undefined;
     }
   }
 
+  /** @hidden */
   public removeAnimator() {
     if (this.animator) {
       this.animator.interrupt(); // will be destroyed
@@ -1237,57 +1261,22 @@ export class Viewport {
     this.animator = animator;
   }
 
+  /** @hidden */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
     if (!animationTime || 0.0 >= animationTime.milliseconds) {
-      this.setupFromFrustum(end);
+      this.setupViewFromFrustum(end);
       return;
     }
 
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
+  /** @hidden */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
     this._view = val.clone<ViewState>();
     this.synchWithView(false);
     this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
-  }
-
-  public pickEntity(_mousePos: Point3d, _radius: number, _result?: Point3d): Point3d | undefined {
-    return undefined;
-  }
-
-  /**
-   * Converts an {x,y} position in screen coordinates to world coordinates by picking against
-   * the depth buffer.
-   * @param  mousePos the position in screen coordinates
-   * @param result optional output point
-   * @param enforceGeometryPicks optional, if set to true picks that aren't on tileset geometry return undefined
-   * @return the corresponding position in world coordinates, or undefined if no value exists in the depth buffer for the specified point
-   */
-  public pickDepthBuffer(_mousePos: Point3d, _result?: Point3d, _enforceGeometryPicks?: boolean): Point3d | undefined {
-    // var depthIntersection;
-    // if (this.scene.pickPositionSupported) {
-    //   depthIntersection = this.scene.pickPosition(mousePos, scratchDepthBufferIntersection);
-    // }
-
-    // if (!Cesium.defined(depthIntersection))
-    //   return undefined;
-
-    // if (enforceGeometryPicks) {
-    //   let isTilesetGeometry = this.pickEntity(mousePos) instanceof Cesium.Cesium3DTileFeature
-    //   if (!isTilesetGeometry)
-    //     return undefined
-    // }
-
-    // var npcPt = this.worldToNpc(depthIntersection, scratchDepthNpcPt);
-    // var viewPt = this.npcToView(npcPt);
-    // viewPt.x = mousePos.x;
-    // viewPt.y = mousePos.y;
-    // this.viewToWorld(viewPt, depthIntersection);
-
-    // return depthIntersection;
-    return undefined;
   }
 
   private static roundGrid(num: number, units: number): number {
@@ -1362,6 +1351,7 @@ export class Viewport {
     point.setFrom(pointView);
   }
 
+  /** @hidden */
   public pointToGrid(point: Point3d): void {
     if (GridOrientationType.AuxCoord === this.view.getGridOrientation()) {
       this.pointToStandardGrid(point, this.getAuxCoordRotation(), this.getAuxCoordOrigin());
@@ -1374,11 +1364,18 @@ export class Viewport {
     this.pointToStandardGrid(point, rMatrix, origin);
   }
 
-  public getPixelSizeAtPoint(point?: Point3d, coordSys: CoordSystem = CoordSystem.World): number {
-    if (!point) {
-      point = NpcCenter.clone(); // if undefined, use center of view
-      this.npcToWorld(point, point);
-    }
+  /**
+   * Get the width of a pixel (a unit vector in the x direction in view coordinates) at a given point in world coordinates, returning the result in meters (world units).
+   *
+   * This is most useful to determine how large something is in a view. In particular, in a perspective view
+   * the result of this method will be a larger number for points closer to the back of the view Frustum (that is,
+   * one pixel of the view represents more spatial area at the back of the Frustum than the front.)
+   * @param point The point to test, in World coordinates. If undefined, the center of the view in NPC space is used.
+   * @returns The width of a view pixel at the supplied world point, in meters.
+   */
+  public getPixelSizeAtPoint(point?: Point3d): number {
+    if (point === undefined)
+      point = this.npcToWorld(NpcCenter); // if undefined, use center of view
 
     const worldPts: Point3d[] = [];
     const viewPts: Point4d[] = [];
@@ -1386,20 +1383,6 @@ export class Viewport {
     viewPts[1] = viewPts[0].clone();
     viewPts[1].x += viewPts[1].w; // form a vector one pixel wide in x direction.
     this.view4dToWorldArray(viewPts, worldPts);
-
-    switch (coordSys) {
-      case CoordSystem.View:
-        this.worldToViewArray(worldPts);
-        break;
-
-      case CoordSystem.Npc:
-        this.worldToNpcArray(worldPts);
-        break;
-
-      case CoordSystem.World:
-      default:
-        break;
-    }
 
     return worldPts[0].distance(worldPts[1]);
   }
@@ -1504,10 +1487,14 @@ export class Viewport {
     return needsFlashUpdate;
   }
 
+  /** @hidden */
   public renderFrame(plan: UpdatePlan): boolean {
     const sync = this.sync;
     const view = this.view;
     const target = this.target;
+
+    // Start timer for tile loading time
+    const timer = new StopWatch(undefined, true);
 
     this.animate();
 
@@ -1575,12 +1562,14 @@ export class Viewport {
       isRedrawNeeded = true;
     }
 
+    timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame();
+      target.drawFrame(timer.elapsedSeconds);
 
     return true;
   }
 
+  /** @hidden */
   public prepareDecorations(plan: UpdatePlan, decorations: Decorations): void {
     this.sync.setValidDecorations();
     if (plan.wantDecorators) {
@@ -1589,14 +1578,15 @@ export class Viewport {
     }
   }
 
-  public callDecorators(context: DecorateContext): void {
-    this.view.drawDecorations(context);
-    // ###TODO: Decorations...
-    // this.view.drawGrid(context);
-    // if (context.viewFlags.showAcsTriad())
-    //   this.getAuxCoordSystem()
+  /** @hidden */
+  public decorate(context: DecorateContext): void {
+    this.view.decorate(context);
+    this.view.drawGrid(context);
+    if (context.viewFlags.showAcsTriad())
+      this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
   }
 
+  /** @hidden */
   public requestScene(_plan: UpdatePlan): void { }
 
   /**

@@ -285,8 +285,7 @@ export class Tile {
   private loadChildren(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
       this._childrenLoadStatus = TileTree.LoadStatus.Loading;
-      const childIds: TileId[] = this._childIds.map((childId: string) => new TileId(this.root.id, childId));
-      this.iModel.tiles.getTileProps(childIds).then((props: TileProps[]) => {
+      this.root.loader.getTileProps(this._childIds).then((props: TileProps[]) => {
         this._children = [];
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
@@ -406,6 +405,7 @@ export class TileTree {
   public readonly id: Id64;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
+  public readonly loader: TileLoader;
 
   public constructor(props: TileTree.Params) {
     this.model = props.model;
@@ -416,6 +416,7 @@ export class TileTree {
     this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this));
+    this.loader = props.loader;
   }
 
   public get is3d(): boolean { return this.model.is3d; }
@@ -453,6 +454,18 @@ export class TileTree {
   public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }
 }
 
+export abstract class TileLoader {
+  public abstract async getTileProps(ids: string[]): Promise<TileProps[]>;
+}
+export class IModelTileLoader {
+  constructor(private iModel: IModelConnection, private rootId: Id64) { }
+
+  public async getTileProps(ids: string[]): Promise<TileProps[]> {
+    const tileIds: TileId[] = ids.map((id: string) => new TileId(this.rootId, id));
+    return this.iModel.tiles.getTileProps(tileIds);
+  }
+}
+
 export namespace TileTree {
   /** Parameters used to construct a TileTree */
   export class Params {
@@ -460,13 +473,14 @@ export namespace TileTree {
       public readonly id: Id64,
       public readonly rootTile: TileProps,
       public readonly model: GeometricModelState,
+      public readonly loader: TileLoader,
       public readonly location: Transform,
       public readonly maxTilesToSkip?: number,
       public readonly clipVector?: ClipVector,
       public readonly viewFlagOverrides?: ViewFlag.Overrides) { }
 
-    public static fromJSON(props: TileTreeProps, model: GeometricModelState) {
-      return new Params(Id64.fromJSON(props.id), props.rootTile, model, Transform.fromJSON(props.location), props.maxTilesToSkip);
+    public static fromJSON(props: TileTreeProps, model: GeometricModelState, loader: TileLoader) {
+      return new Params(Id64.fromJSON(props.id), props.rootTile, model, loader, Transform.fromJSON(props.location), props.maxTilesToSkip);
     }
   }
 

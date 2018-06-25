@@ -353,7 +353,7 @@ describe("BriefcaseManager", () => {
     const config = new IModelHostConfiguration();
 
     IModelHost.shutdown();
-    config.iModelHubDeployConfig = "DEV";
+    config.hubDeploymentEnv = "DEV";
     IModelHost.startup(config);
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
@@ -367,7 +367,7 @@ describe("BriefcaseManager", () => {
     assert.exists(devIModel);
 
     IModelHost.shutdown();
-    config.iModelHubDeployConfig = "QA";
+    config.hubDeploymentEnv = "QA";
     IModelHost.startup(config);
 
     const qaProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);

@@ -11,7 +11,7 @@ import {
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { IModelDb, OpenParams, SyncMode, AccessMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -223,7 +223,7 @@ export class BriefcaseManager {
         throw new Error("IModelHost.startup() should be called before any backend operations");
       // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
       const fileHandler = (this._handler === undefined) ? new AzureFileHandler(false) : this._handler.getFileHandler();
-      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, fileHandler, this._handler);
+      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.hubDeploymentEnv, fileHandler, this._handler);
     }
     return BriefcaseManager._hubClient;
   }
@@ -251,7 +251,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager._connectClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._connectClient = new ConnectClient(IModelHost.configuration.iModelHubDeployConfig);
+      BriefcaseManager._connectClient = new ConnectClient(IModelHost.configuration.hubDeploymentEnv);
     }
     return BriefcaseManager._connectClient;
   }
@@ -263,7 +263,7 @@ export class BriefcaseManager {
   }
 
   public static getChangeSetsPath(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
-  public static getChangeSummaryPathname(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
+  public static getChangeCachePathName(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
 
   private static getBriefcasesPath(iModelId: string) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc");
@@ -301,6 +301,7 @@ export class BriefcaseManager {
     BriefcaseManager.clearCache();
     BriefcaseManager._hubClient = undefined;
     BriefcaseManager._connectClient = undefined;
+    BriefcaseManager._cacheDir = undefined;
     IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.onIModelHostShutdown);
   }
 
@@ -397,12 +398,17 @@ export class BriefcaseManager {
     return dirs[0];
   }
 
-  private static cacheDir: string;
+  private static _cacheDir?: string;
+  public static get cacheDir(): string {
+    if (!BriefcaseManager._cacheDir)
+      BriefcaseManager.setupCacheDir();
+    return BriefcaseManager._cacheDir!;
+  }
 
   private static setupCacheDir() {
     const cacheSubDirOnDisk = BriefcaseManager.findCacheSubDir();
     const cacheSubDir = BriefcaseManager.buildCacheSubDir();
-    BriefcaseManager.cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
+    const cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
 
     if (!cacheSubDirOnDisk) {
       // For now, just recreate the entire cache if the directory for the major version is not found - NEEDS_WORK
@@ -412,8 +418,10 @@ export class BriefcaseManager {
       BriefcaseManager.deleteFolderRecursive(cacheDirOnDisk);
     }
 
-    if (!IModelJsFs.existsSync(BriefcaseManager.cacheDir))
-      BriefcaseManager.makeDirectoryRecursive(BriefcaseManager.cacheDir);
+    if (!IModelJsFs.existsSync(cacheDir))
+      BriefcaseManager.makeDirectoryRecursive(cacheDir);
+
+    BriefcaseManager._cacheDir = cacheDir;
   }
 
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary).
@@ -430,7 +438,6 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    BriefcaseManager.setupCacheDir();
     for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {
       await BriefcaseManager.initCacheForIModel(accessToken, iModelId);
     }

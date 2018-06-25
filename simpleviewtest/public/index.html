@@ -38,6 +38,11 @@
         <div class="toolMenu" id="toggleModelMenu">
         </div>
       </div>
+      <div class="simpleicon" id="startCategorySelection">
+        <i class="bim-icon-categories"></i>
+        <div class="scrollingToolMenu" id="categorySelectionMenu">
+        </div>
+      </div>
       <img class="simpleicon" src="toggle-camera.svg" id="startToggleCamera" />
       <img class="simpleicon" src="fit-to-view.svg" id="startFit" />
       <img class="simpleicon" src="window-area.svg" id="startWindowArea" />
@@ -115,6 +120,8 @@
           <br>
           <input id="styles" type="checkbox"> Line Styles
           <br>
+          <input id="continuousRendering" type="checkbox"> Cont. Rendering
+          <br>
         </div>
       </div>
       <div class="simpleicon" id="doUndo">
@@ -123,7 +130,9 @@
       <div class="simpleicon" id="doRedo">
         <i class="bim-icon-redo"></i>
       </div>
-      <span class="statusspan" id="showstatus" />
+      <span class="fsp-info" id="showfps" style="display: inline;">Average FPS: 0.00000
+        <br />Render Time (ms): 0.00</span>
+      <span class="statusspan" id="showstatus" style="display:inline;"></span>
     </div>
     <div id="spinner" class="bim-spinner-container">
       <div class="bim-spinner"></div>

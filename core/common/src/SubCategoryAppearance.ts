@@ -91,6 +91,18 @@ export class SubCategoryOverride {
   private _material?: boolean;
   private _transp?: boolean;
 
+  public get invisible(): boolean | undefined { return this._invisible ? this._value.invisible : undefined; }
+  public get color(): ColorDef | undefined { return this._color ? this._value.color : undefined; }
+  public get weight(): number | undefined { return this._weight ? this._value.weight : undefined; }
+  public get style(): Id64 | undefined { return this._style ? this._value.styleId : undefined; }
+  public get priority(): number | undefined { return this._priority ? this._value.priority : undefined; }
+  public get material(): Id64 | undefined { return this._material ? this._value.materialId : undefined; }
+  public get transparency(): number | undefined { return this._transp ? this._value.transparency : undefined; }
+
+  public get anyOverridden(): boolean {
+    return undefined !== this._invisible || undefined !== this._color || undefined !== this._weight || undefined !== this._style || undefined !== this._priority || undefined !== this._material || undefined !== this._transp;
+  }
+
   public setInvisible(val: boolean): void { this._invisible = true; this._value.invisible = val; }
   public setColor(val: ColorDef): void { this._color = true; this._value.color = val; }
   public setWeight(val: number): void { this._weight = true; this._value.weight = val; }

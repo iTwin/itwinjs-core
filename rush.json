@@ -73,11 +73,5 @@
       "projectFolder": "bank-demo",
       "shouldPublish": true
     }
-  ],
-  "eventHooks": {
-    "postRushInstall": [
-      "npm run clean",
-      "rush clean"
-    ]
-  }
+  ]
 }

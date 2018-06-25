@@ -27,6 +27,7 @@ import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { assert } from "@bentley/bentleyjs-core";
 import { Material } from "../Material";
+import { System } from "../System";
 
 const applyMaterialOverrides = `
 bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
@@ -63,19 +64,19 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
   frag.addUniform("u_matRgb", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_matRgb", (uniform, params) => {
-      const mat: Material = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material : Material.default;
+      const mat: Material = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform4fv(mat.diffuseUniform);
     });
   });
   frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_matAlpha", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material : Material.default;
+      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform2fv(mat.alphaUniform);
     });
   });
   frag.addUniform("u_textureWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_textureWeight", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material : Material.default;
+      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform1f(mat.textureWeight);
     });
   });
@@ -306,6 +307,9 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
         texture.texture.bindSampler(uniform, TextureUnit.Zero);
+      } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
+        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.Zero);
       }
     });
   });

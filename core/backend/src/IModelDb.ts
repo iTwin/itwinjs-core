@@ -8,10 +8,10 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse,
+  IModelNotFoundResponse, EcefLocation,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
-import { Element, Subject } from "./Element";
+import { Element, Subject, Sheet } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
@@ -22,6 +22,7 @@ import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
+import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -127,7 +128,7 @@ export class IModelDb extends IModel {
   /** Get the parameters used to open this iModel */
   public readonly openParams: OpenParams;
 
-  /** Event raised just before a connected IModelDb is opened.
+  /** Event raised just before an IModelDb is opened.
    *
    * **Example:**
    * ``` ts
@@ -135,8 +136,9 @@ export class IModelDb extends IModel {
    * ```
    */
   public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
-  /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only,
-   * it is *not* raised for standalone IModelDbs.
+
+  /** Event raised just after an IModelDb is opened.
+   * @note This event is *not* raised for standalone IModelDbs.
    *
    * **Example:**
    * ``` ts
@@ -455,41 +457,46 @@ export class IModelDb extends IModel {
     return ids;
   }
 
+  /** Empty the [[ECSqlStatementCache]] for this iModel. */
   public clearStatementCache(): void { this.statementCache.clear(); }
 
-  /** Get the GUID of this iModel. */
-  public getGuid(): Guid {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
-    const guidStr = this.briefcase.nativeDb.getDbGuid();
-    return new Guid(guidStr);
-  }
+  /** Get the GUID of this iModel.  */
+  public getGuid(): Guid { return new Guid(this.briefcase.nativeDb.getDbGuid()); }
 
   /** Set the GUID of this iModel. */
-  public setGuid(guid: Guid) {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
-    const guidStr = guid.toString();
-    return this.briefcase.nativeDb.setDbGuid(guidStr);
-  }
+  public setGuid(guid: Guid): DbResult { return this.briefcase.nativeDb.setDbGuid(guid.toString()); }
 
-  /** Update the imodel project extents.
+  /** Update the project extents for this iModel.
    * <p><em>Example:</em>
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
    * ```
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
     this.projectExtents.setFrom(newExtents);
-    const extentsJson = newExtents.toJSON();
-    this.briefcase.nativeDb.updateProjectExtents(JSON.stringify(extentsJson));
+    this.updateIModelProps();
+  }
+
+  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.  */
+  public updateEcefLocation(ecef: EcefLocation) {
+    this.setEcefLocation(ecef);
+    this.updateIModelProps();
+  }
+
+  /** Update the IModelProps of this iModel in the database.
+   *
+   * Example:
+   * ``` ts
+   * [[include:IModelDb.updateIModelProps]]
+   * ```
+   */
+  public updateIModelProps() {
+    this.briefcase.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
   }
 
   /**
    * Commit pending changes to this iModel.
-   * <em>note:</em> If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
+   * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
@@ -1062,11 +1069,19 @@ export namespace IModelDb {
     public getViewStateData(viewDefinitionId: string): any {
       const viewStateData: any = {};
       const elements = this._iModel.elements;
-      viewStateData.viewDefinitionProps = elements.getElementProps(viewDefinitionId) as ViewDefinitionProps;
+      const viewDefinitionElement = elements.getElement(viewDefinitionId) as ViewDefinition;
+      viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId);
       viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
-      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
+      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined) {
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
+      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
+        // If we have 2d sheet view, pass along the sheet size stored on element of id basemodelid
+        const sheetElement = elements.getElementProps(viewDefinitionElement.baseModelId) as Sheet;
+        viewStateData.sheetProps = {};
+        viewStateData.sheetProps.width = sheetElement.width;
+        viewStateData.sheetProps.height = sheetElement.height;
+      }
       return viewStateData;
     }
   }

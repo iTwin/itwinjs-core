@@ -20,8 +20,8 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
  * Configuration of imodeljs-backend.
  */
 export class IModelHostConfiguration {
-  /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
-  public iModelHubDeployConfig: DeploymentEnv = "QA";
+  /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels */
+  public hubDeploymentEnv: DeploymentEnv = "QA";
 
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;

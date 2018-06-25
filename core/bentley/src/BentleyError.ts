@@ -86,6 +86,8 @@ export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDb
   WrongElement = IMODEL_ERROR_BASE + 62,
   WrongHandler = IMODEL_ERROR_BASE + 63,
   WrongModel = IMODEL_ERROR_BASE + 64,
+  ConstraintNotUnique = IMODEL_ERROR_BASE + 65,
+  NoGeoLocation = IMODEL_ERROR_BASE + 66,
 }
 
 /** Error status from various briefcase operations */
@@ -396,7 +398,7 @@ export class BentleyError extends Error {
       case DbResult.BE_SQLITE_ERROR_BadDbProfile: return "Bad Db Profile";
       case DbResult.BE_SQLITE_ERROR_InvalidProfileVersion: return "Invalid Profile Version";
       case DbResult.BE_SQLITE_ERROR_ProfileUpgradeFailed: return "Profile Upgrade Failed";
-      case DbResult.BE_SQLITE_ERROR_ProfileUpgradeFailedCannotOpenForWrite: return "Profile Upgrade Failed CannotOpenForWrite";
+      case DbResult.BE_SQLITE_ERROR_ProfileTooOldForReadWrite: return "Profile Too Old For ReadWrite";
       case DbResult.BE_SQLITE_ERROR_ProfileTooOld: return "Profile Too Old";
       case DbResult.BE_SQLITE_ERROR_ProfileTooNewForReadWrite: return "Profile Too New For ReadWrite";
       case DbResult.BE_SQLITE_ERROR_ProfileTooNew: return "Profile Too New";

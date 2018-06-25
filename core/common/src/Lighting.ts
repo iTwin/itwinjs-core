@@ -65,7 +65,7 @@ export class Light {
   public isVisible(): boolean { return this.isValid() && this.intensity > 0.0; }
 }
 
-/** Properties of a [[Spot]] light. */
+/** Properties of a [[LightType.Spot]] light. */
 export interface SpotProps extends LightProps {
   inner?: AngleProps;
   outer?: AngleProps;

@@ -4,12 +4,20 @@
 /** @module ECDb */
 
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { NativeECDb } from "@bentley/imodeljs-native-platform-api";
+import { NativeECDb } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-backend.ECDb";
+
+/** Modes for how to open [ECDb]($backend) files. */
+export enum ECDbOpenMode {
+  Readonly,
+  Readwrite,
+  /** Opens the file read-write and upgrades the file if necessary to the latest file format version. */
+  FileUpgrade,
+}
 
 /** An ECDb file */
 export class ECDb implements IDisposable {
@@ -25,7 +33,7 @@ export class ECDb implements IDisposable {
    *  ECDb object.
    */
   public dispose(): void {
-    if (this._nativeDb === undefined)
+    if (!this._nativeDb)
       return;
 
     this.closeDb();
@@ -48,8 +56,10 @@ export class ECDb implements IDisposable {
    * @param openMode Open mode
    * @throws [IModelError]($common) if the operation failed.
    */
-  public openDb(pathName: string, openMode: OpenMode = OpenMode.Readonly): void {
-    const status: DbResult = this.nativeDb.openDb(pathName, openMode);
+  public openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): void {
+    const nativeOpenMode: OpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const tryUpgrade: boolean = openMode === ECDbOpenMode.FileUpgrade;
+    const status: DbResult = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
@@ -132,7 +142,7 @@ export class ECDb implements IDisposable {
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
     const cachedStmt = this._statementCache.find(ecsql);
-    if (cachedStmt !== undefined && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+    if (!!cachedStmt && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       assert(cachedStmt.statement.isShared());
       assert(cachedStmt.statement.isPrepared());
       cachedStmt.useCount++;
@@ -156,7 +166,7 @@ export class ECDb implements IDisposable {
   }
 
   public get nativeDb(): NativeECDb {
-    if (this._nativeDb == null)
+    if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 
     return this._nativeDb!;

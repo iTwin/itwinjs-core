@@ -87,6 +87,6 @@ spawn(path.resolve(process.cwd(), "node_modules/.bin/typedoc"), args).then((code
         fs.renameSync(path.join(outputDir, argv.tsIndexFile), path.join(outputDir, 'index.ts'));
     }
 
-    process.exit(code)
+    process.exit(0)
 });
 handleInterrupts();

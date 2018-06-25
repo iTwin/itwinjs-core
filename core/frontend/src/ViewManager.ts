@@ -71,6 +71,8 @@ export class ViewManager {
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
 
+  public set doContinuousRendering(doContRend: boolean) { this._doContinuousRendering = doContRend; }
+
   public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
     //   if (this.doesHostHaveFocus())
     //     this.getInfoWindow().show(viewPt, vp, msg);
@@ -118,8 +120,8 @@ export class ViewManager {
   /**
    * Add a new Viewport to the list of opened views and create an EventController for it.
    * @param newVp the Viewport to add
-   * <em>note:</em> raises onViewOpen event with newVp.
-   * <em>note:</em> Does nothing if newVp is already present in the list.
+   * @note raises onViewOpen event with newVp.
+   * @note Does nothing if newVp is already present in the list.
    */
   public addViewport(newVp: Viewport): void {
     for (const vp of this._viewports) { if (vp === newVp) return; } // make sure its not already in view array
@@ -140,7 +142,7 @@ export class ViewManager {
    * Remove a Viewport from the list of opened views.
    * @param vp the Viewport to remove.
    * @return SUCCESS if vp was successfully removed, ERROR if it was not present.
-   * <em>note:</em> raises onViewClose event with vp.
+   * @note raises onViewClose event with vp.
    */
   public dropViewport(vp: Viewport): BentleyStatus {
     this.onViewClose.raiseEvent(vp);
@@ -212,13 +214,16 @@ export class ViewManager {
     // ###TODO: precompile shaders?
   }
 
+  /** Called when rendering a frame to allow decorations to be added */
+  public readonly onDecorate = new BeEvent<(context: DecorateContext) => void>();
+
   public callDecorators(context: DecorateContext) {
-    IModelApp.accuSnap.decorateViewport(context);
-    IModelApp.tentativePoint.displayTP(context);
-    IModelApp.accuDraw.display(context);
+    IModelApp.accuSnap.decorate(context);
+    IModelApp.tentativePoint.decorate(context);
+    IModelApp.accuDraw.decorate(context);
     IModelApp.toolAdmin.decorate(context);
-    context.viewport.callDecorators(context);
-    // ###TODO: decorators.callAllHandlers(new DecoratorCaller(context));
+    context.viewport.decorate(context);
+    this.onDecorate.raiseEvent(context);
   }
 
   public setViewCursor(cursor: BeCursor | undefined): void {

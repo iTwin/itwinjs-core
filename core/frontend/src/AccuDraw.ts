@@ -1839,7 +1839,7 @@ export class AccuDraw {
   }
 
   public enableDisplay: boolean = false; // ###TODO: Don't try to display yet...we will throw an exception...
-  public display(context: DecorateContext) {
+  public decorate(context: DecorateContext) {
     // Make sure this is cleared even if we do nothing...redraw might have been to make compass go away...
     this.flags.redrawCompass = false;
 

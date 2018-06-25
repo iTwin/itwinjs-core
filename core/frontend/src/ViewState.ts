@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -25,7 +25,7 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState } from "./ModelState";
+import { GeometricModelState, SheetModelState, GeometricModel2dState } from "./ModelState";
 
 export const enum GridOrientationType {
   View = 0,
@@ -284,6 +284,20 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     this.setFeatureOverridesDirty();
   }
 
+  public dropSubCategoryOverride(id: Id64) {
+    this.displayStyle.dropSubCategoryOverride(id);
+    this.setFeatureOverridesDirty();
+  }
+
+  public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
+    this.displayStyle.overrideSubCategory(id, ovr);
+    this.setFeatureOverridesDirty();
+  }
+
+  public getSubCategoryOverride(id: Id64): SubCategoryOverride {
+    return this.displayStyle.getSubCategoryOverride(id);
+  }
+
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
   public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
 
@@ -303,8 +317,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
 
-  /** WIP: should be abstract, but for now leave unimplemented  */
-  public drawDecorations(_context: DecorateContext): void { }
+  public abstract decorate(context: DecorateContext): void;
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
@@ -351,7 +364,6 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   public drawGrid(context: DecorateContext): void {
     const vp = context.viewport;
-
     if (!vp.isGridOn)
       return;
 
@@ -364,17 +376,15 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       // NEEDSWORK...
     }
 
-    // #TODO
-    // let isoGrid = false,
-    //     gridsPerRef = 0;
-    // const spacing = new Point2d();
-    // const origin = new Point3d();
-    // const rMatrix = new RotMatrix();
-    // const fixedRepsAuto = new Point2d();
+    const isoGrid = false;
+    const gridsPerRef = this.getGridsPerRef();
+    const spacing = Point2d.createFrom(this.getGridSpacing());
+    const origin = Point3d.create();
+    const matrix = RotMatrix.createIdentity();
+    const fixedRepsAuto = Point2d.create();
 
-    // this.getGridSpacing(spacing);
-    // this.getGridOrientation(vp, origin, rMatrix, orientation);
-    // context.drawStandardGrid(origin, rMatrix, spacing gridsPerRef, isoGrid, GridOrientationType.View !== orientation ? fixedRepsAuto : undefined);
+    this.getGridSettings(vp, origin, matrix, orientation);
+    context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 
   /**
@@ -604,6 +614,46 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     JsonUtils.setOrRemoveNumber(details, "gridSpaceY", spacing.y, spacing.x);
   }
 
+  /** Populate the given origin and rotmatrix with information from the contained grid settings, dependent upon the grid orientation. */
+  public getGridSettings(vp: Viewport, origin: Point3d, rMatrix: RotMatrix, orientation: GridOrientationType) {
+    // start with global origin (for spatial views) and identity matrix
+    rMatrix.setIdentity();
+    origin.setFrom(vp.view.isSpatialView() ? vp.view.iModel.globalOrigin : Point3d.create());
+
+    switch (orientation) {
+      case GridOrientationType.View: {
+        const centerWorld = Point3d.create(0.5, 0.5, 0.5);
+        vp.npcToWorld(centerWorld, centerWorld);
+
+        rMatrix.setFrom(vp.rotMatrix);
+        rMatrix.multiplyXYZtoXYZ(origin, origin);
+        origin.z = centerWorld.z;
+        rMatrix.multiplyTransposeVectorInPlace(origin);
+        break;
+      }
+      case GridOrientationType.WorldXY:
+        break;
+      case GridOrientationType.WorldYZ: {
+        const rowX = rMatrix.getRow(0);
+        const rowY = rMatrix.getRow(1);
+        const rowZ = rMatrix.getRow(2);
+        rMatrix.setRow(0, rowY);
+        rMatrix.setRow(1, rowZ);
+        rMatrix.setRow(2, rowX);
+        break;
+      }
+      case GridOrientationType.WorldXZ: {
+        const rowX = rMatrix.getRow(0);
+        const rowY = rMatrix.getRow(1);
+        const rowZ = rMatrix.getRow(2);
+        rMatrix.setRow(0, rowX);
+        rMatrix.setRow(1, rowZ);
+        rMatrix.setRow(2, rowY);
+        break;
+      }
+    }
+  }
+
   /** Get the grid settings for this view */
   public getGridOrientation(): GridOrientationType { return JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY); }
   public getGridsPerRef(): number { return JsonUtils.asInt(this.getDetail("gridPerRef"), 10); }
@@ -620,7 +670,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
    * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
    * of space shown in the view.) If undefined, no additional white space is added.
-   * <em>note:</em> for 2d views, only the X and Y values of volume are used.
+   * @note for 2d views, only the X and Y values of volume are used.
    */
   public lookAtVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
     const rangeBox = volume.corners();
@@ -725,61 +775,9 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   }
 }
 
-/*
- * This is what the parameters to the camera methods, and the values stored by ViewDefinition3d mean.
- * @verbatim
- *                v-- {origin}
- *           -----+-------------------------------------- -   [back plane]
- *           ^\   .                                    /  ^
- *           | \  .                                   /   |        P
- *         d |  \ .                                  /    |        o
- *         e |   \.         {targetPoint}           /     |        s
- *         l |    |---------------+----------------|      |        i    [focus plane]
- *         t |     \  ^delta.x    ^               /     b |        t
- *         a |      \             |              /      a |        i
- *         . |       \            |             /       c |        v
- *         z |        \           | f          /        k |        e
- *           |         \          | o         /         D |        Z
- *           |          \         | c        /          i |        |
- *           |           \        | u       /           s |        v
- *           v            \       | s      /            t |
- *           -     -       -----  | D -----               |   [front plane]
- *                 ^              | i                     |
- *                 |              | s                     |
- *     frontDist ->|              | t                     |
- *                 |              |                       |
- *                 v           \  v  / <- lens angle      v
- *                 -              + {eyePoint}            -     positiveX ->
- * @endverbatim
- *    Notes:
- *          - Up vector (positiveY) points out of the screen towards you in this diagram. Likewise delta.y.
- *          - The view origin is in world coordinates. It is the point at the lower left of the rectangle at the
- *            focus plane, projected onto the back plane.
- *          - [delta.x,delta.y] are on the focus plane and delta.z is from the back plane to the front plane.
- *          - The three view vectors come from:
- * @verbatim
- *                 {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
- *                 {the up vector}                     : +Y
- *                 {Z cross Y}                         : +X
- * @endverbatim
- *            these three vectors form the rows of the view's RotMatrix
- *          - Objects in space in front of the front plane or behind the back plane are not displayed.
- *          - The focus plane is not necessarily centered between the front plane and back plane (though it often is). It should generally be
- *            between the front plane and the back plane.
- *          - targetPoint is not stored in the view parameters. Instead it may be derived from
- *            {origin},{eyePoint},[RotMatrix] and focusDist.
- *          - The view volume is completely specified by: @verbatim {origin}<delta>[RotMatrix] @endverbatim
- *          - Perspective is determined by {eyePoint}, which is independent of the view volume. Sometimes the eyepoint is not centered
- *            on the rectangle on the focus plane (that is, a vector from the eyepoint along the viewZ does not hit the view center.)
- *            This creates a 1-point perspective, which can be disconcerting. It is usually best to keep the camera centered.
- *          - Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
- *            The lens angle value is not used to compute the perspective transform for a view. Instead, the lens angle value
- *            can be used to reposition {eyePoint} when the view volume or target changes.
- *          - View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views,
- *            or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
+/** Defines the state of a view of 3d models.
+ * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
  */
-
-/** Defines the state of a view of 3d models. */
 export abstract class ViewState3d extends ViewState {
   protected cameraOn: boolean;  // if true, camera is valid.
   public readonly origin: Point3d;        // The lower left back corner of the view frustum.
@@ -885,6 +883,7 @@ export abstract class ViewState3d extends ViewState {
   public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
+  /** @hidden */
   protected enableCamera(): void { if (this.supportsCamera()) this.cameraOn = true; }
   public supportsCamera(): boolean { return true; }
   public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
@@ -895,7 +894,7 @@ export abstract class ViewState3d extends ViewState {
   /**
    * Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
    * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
-   * <em>note:</em> To turn the camera back on, call #lookAt
+   * @note To turn the camera back on, call #lookAt
    */
   public turnCameraOff() { this.cameraOn = false; }
 
@@ -926,9 +925,9 @@ export abstract class ViewState3d extends ViewState {
    * If newExtents is undefined, the existing size is unchanged.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-   * <em>note:</em> If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
-   * adjusted when the Viewport is synchronized from this view.
+   * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
+   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * adjusted when the [[Viewport]] is synchronized from this view.
    */
   public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
     const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
@@ -1003,7 +1002,7 @@ export abstract class ViewState3d extends ViewState {
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-   * <em>note:</em> The aspect ratio of the view remains unchanged.
+   * @note The aspect ratio of the view remains unchanged.
    */
   public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
     const focusDist = eyePoint.vectorTo(targetPoint).magnitude();   // Set focus at target point
@@ -1054,7 +1053,7 @@ export abstract class ViewState3d extends ViewState {
    * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
    *  (i.e. about the current eyePoint).
-   * <em>note:</em> Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
+   * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
@@ -1107,7 +1106,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
    * lens angle, rotation, back distance, and front distance unchanged.
-   * <em>note:</em> The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
+   * @note The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
    */
   public centerFocusDistance(): void {
     const backDist = this.getBackDistance();
@@ -1159,21 +1158,21 @@ export abstract class ViewState3d extends ViewState {
 
   /** Set the lens angle for this view.
    *  @param angle The new lens angle in radians. Must be greater than 0 and less than pi.
-   *  <em>note:</em> This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
+   *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
    *  is subsequently modified and the lens angle is used to position the eyepoint.
-   *  <em>note:</em> To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
+   *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
    */
   public setLensAngle(angle: Angle): void { this.camera.setLensAngle(angle); }
 
   /** Change the location of the eyePoint for the camera in this view.
    * @param pt The new eyepoint.
-   * <em>note:</em> This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
+   * @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
    * The most common method for user-level camera positioning is #lookAt.
    */
   public setEyePoint(pt: XYAndZ): void { this.camera.setEyePoint(pt); }
 
   /** Set the focus distance for this view.
-   *  <em>note:</em> Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
+   *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
    *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect
    */
   public setFocusDistance(dist: number): void { this.camera.setFocusDistance(dist); }
@@ -1183,7 +1182,7 @@ export abstract class ViewState3d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
-  public drawDecorations(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     this.drawSkyBox(context);
     this.drawGroundPlane(context);
   }
@@ -1272,6 +1271,7 @@ export abstract class ViewState3d extends ViewState {
     builder.addPolyface(polyface, true);
   }
 
+  /** @hidden */
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
     if (!style3d.getEnvironment().sky.display)
@@ -1353,6 +1353,7 @@ export abstract class ViewState3d extends ViewState {
     return extents;
   }
 
+  /** @hidden */
   protected drawGroundPlane(context: DecorateContext): void {
     const extents = this.getGroundExtents(context.viewport);
     if (extents.isNull()) {
@@ -1513,6 +1514,19 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  public getViewedModel(): GeometricModel2dState | undefined {
+    const model = this.iModel.models.getLoaded(this.baseModelId.value);
+    if (model && !(model instanceof GeometricModel2dState))
+      return undefined;
+    return model;
+  }
+
+  /**
+   * This should be overridden by more specific leaf classes of ViewState2d
+   * @hidden
+   */
+  public decorate(_context: DecorateContext): void { }
+
   public equalState(other: ViewState2d): boolean {
     if (!this.baseModelId.equals(other.baseModelId))
       return false;
@@ -1577,4 +1591,28 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
+  public readonly size: Point2d;
+
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
+    super(props, iModel, categories, displayStyle);
+
+    // sheetProps is necessary for a Sheet View, and contains a height and width for the size of the sheet itself
+    // if it does not appear as given by a sheetProps object, we expect it to be included on the props object (from cloning)
+    if (sheetProps)
+      this.size = Point2d.create(sheetProps.width, sheetProps.height);
+    else
+      this.size = Point2d.create(props.sheetProps.width, props.sheetProps.height);
+  }
+
+  public decorate(context: DecorateContext): void {
+    const border = SheetModelState.createBorder(this.size.x, this.size.y, context);
+    context.setViewBackground(border);
+  }
+
+  /** Serialize this SheetViewState into a JSON object. */
+  public toJSON(): any {
+    const json = super.toJSON();
+    json.sheetProps = { width: this.size.x, height: this.size.y };
+    return json;
+  }
 }

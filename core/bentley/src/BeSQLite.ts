@@ -81,12 +81,12 @@ export const enum DbResult {
   BE_SQLITE_ERROR_FileNotFound = (BE_SQLITE_IOERR | (4 << 24)),                            // the database name is not a file.
   BE_SQLITE_ERROR_NoTxnActive = (BE_SQLITE_IOERR | (5 << 24)),                             // there is no transaction active and the database was opened with AllowImplicitTransactions=false
   BE_SQLITE_ERROR_BadDbProfile = (BE_SQLITE_IOERR | (6 << 24)),                            // wrong BeSQLite profile version
-  BE_SQLITE_ERROR_InvalidProfileVersion = (BE_SQLITE_IOERR | (7 << 24)),                   // Profile (aka application level BeSQLite schema) of file could not be determined.
-  BE_SQLITE_ERROR_ProfileUpgradeFailed = (BE_SQLITE_IOERR | (8 << 24)),                    // Upgrade of profile (aka application level BeSQLite schema) of file failed.
-  BE_SQLITE_ERROR_ProfileUpgradeFailedCannotOpenForWrite = (BE_SQLITE_IOERR | (9 << 24)),  // Upgrade of profile (aka application level SQLite schema) of file failed because the file could not be reopened in read-write mode.
-  BE_SQLITE_ERROR_ProfileTooOld = (BE_SQLITE_IOERR | (10 << 24)),                          // Profile (aka application level BeSQLite schema) of file is too old. Therefore file cannot be opened.
-  BE_SQLITE_ERROR_ProfileTooNewForReadWrite = (BE_SQLITE_IOERR | (11 << 24)),              // Profile (aka application level schema) of file is too new for read-write access. Therefore file can only be opened read-only.
-  BE_SQLITE_ERROR_ProfileTooNew = (BE_SQLITE_IOERR | (12 << 24)),                          // Profile (aka application level SQLite schema) of file is too new. Therefore file cannot be opened.
+  BE_SQLITE_ERROR_InvalidProfileVersion = (BE_SQLITE_IOERR | (7 << 24)),                   // Profile of file could not be determined.
+  BE_SQLITE_ERROR_ProfileUpgradeFailed = (BE_SQLITE_IOERR | (8 << 24)),                    // Upgrade of profile of file failed.
+  BE_SQLITE_ERROR_ProfileTooOldForReadWrite = (BE_SQLITE_IOERR | (9 << 24)),               // Profile of file is too old. Therefore file can only be opened read-only.
+  BE_SQLITE_ERROR_ProfileTooOld = (BE_SQLITE_IOERR | (10 << 24)),                          // Profile of file is too old. Therefore file cannot be opened.
+  BE_SQLITE_ERROR_ProfileTooNewForReadWrite = (BE_SQLITE_IOERR | (11 << 24)),              // Profile of file is too new for read-write access. Therefore file can only be opened read-only.
+  BE_SQLITE_ERROR_ProfileTooNew = (BE_SQLITE_IOERR | (12 << 24)),                          // Profile of file is too new. Therefore file cannot be opened.
   BE_SQLITE_ERROR_ChangeTrackError = (BE_SQLITE_IOERR | (13 << 24)),                       // attempt to commit with active changetrack
   BE_SQLITE_ERROR_InvalidChangeSetVersion = (BE_SQLITE_IOERR | (14 << 24)),                // invalid version of the revision file is being imported
   BE_SQLITE_ERROR_SchemaUpgradeRequired = (BE_SQLITE_IOERR | 15 << 24),                    // The schemas found in the database need to be upgraded.

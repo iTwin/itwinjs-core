@@ -49,19 +49,19 @@ export class KnownTestLocations {
 }
 
 export class IModelTestUtils {
-  public static iModelHubDeployConfig: DeploymentEnv = "QA";
+  public static hubDeploymentEnv: DeploymentEnv = "QA";
 
   private static _connectClient: ConnectClient | undefined;
   public static get connectClient(): ConnectClient {
     if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ConnectClient(IModelTestUtils.iModelHubDeployConfig);
+      IModelTestUtils._connectClient = new ConnectClient(IModelTestUtils.hubDeploymentEnv);
     return IModelTestUtils._connectClient!;
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)
       userCredentials = TestUsers.regular;
-    const env = IModelTestUtils.iModelHubDeployConfig;
+    const env = IModelTestUtils.hubDeploymentEnv;
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
 

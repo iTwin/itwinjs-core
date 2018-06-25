@@ -55,6 +55,8 @@ export abstract class EventBaseHandler {
           try {
             if (res.statusCode === 200) {
               cb(null, parse(res.text));
+            } else if (res.statusCode === 204) {
+              cb(null, "");
             } else {
               cb(res, null);
             }
@@ -94,7 +96,7 @@ export abstract class EventBaseHandler {
 export class ListenerSubscription {
   public listeners: BeEvent<(event: IModelHubBaseEvent) => void>;
   public authenticationCallback: () => Promise<AccessToken>;
-  public getEvent: (token: string, baseAddress: string, subscriptionId: string, timeout?: number) => Promise<IModelHubBaseEvent>;
+  public getEvent: (token: string, baseAddress: string, subscriptionId: string, timeout?: number) => Promise<IModelHubBaseEvent | undefined>;
   public getSASToken: (token: AccessToken) => Promise<BaseEventSAS>;
   public id: string;
 }
@@ -151,10 +153,10 @@ export class EventListener {
       while (subscription.listeners.numberOfListeners > 0) {
         try {
           const event = await subscription.getEvent(eventSAS!.sasToken!, eventSAS!.baseAddress!, subscription.id, 60);
-          subscription.listeners.raiseEvent(event);
+          if (event)
+            subscription.listeners.raiseEvent(event);
         } catch (err) {
-          if (err.status === 204) {
-          } else if (err.status === 401) {
+          if (err.status === 401) {
             break;
           } else {
             break mainLoop;

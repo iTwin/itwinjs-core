@@ -685,6 +685,7 @@ export abstract class ViewManip extends ViewTool {
     const before = viewport.getWorldFrustum(scratchFrustum);
 
     // ###TODO: Currently computeViewRange() simply returns the viewed extents, in *world* coords.
+    // This will change to be the range of a particular geometric model once Keith adds range as a property of GeometricModelState
     if (this._useViewAlignedVolume)
       viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     else
@@ -733,7 +734,7 @@ export abstract class ViewManip extends ViewTool {
     const transform = Transform.createFixedPointAndMatrix(pivotPoint, rotMatrix, scratchTransform1);
     const frust = vp.getWorldFrustum(scratchFrustum);
     frust.multiply(transform);
-    vp.setupFromFrustum(frust);
+    vp.setupViewFromFrustum(frust);
     return true;
   }
 
@@ -877,7 +878,7 @@ class ViewPan extends ViewingToolHandle {
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (CoordSource.User === ev.coordsFrom && vp.isCameraOn()) {
-      const depthIntersection = vp.pickDepthBuffer(ev.viewPoint);
+      const depthIntersection = undefined; // TODO: NEEDS_WORK vp.pickDepthBuffer(ev.viewPoint);
       if (depthIntersection) {
         this.anchorPt.setFrom(depthIntersection);
       } else {
@@ -1018,7 +1019,7 @@ class ViewRotate extends ViewingToolHandle {
     const frustumChange = !currentFrustum.equals(this.activeFrustum);
     if (frustumChange)
       this.frustum.setFrom(currentFrustum);
-    else if (!viewport.setupFromFrustum(this.frustum))
+    else if (!viewport.setupViewFromFrustum(this.frustum))
       return false;
 
     const currPt = viewport.npcToView(ptNpc, scratchPoint3d2);
@@ -1075,10 +1076,12 @@ class ViewRotate extends ViewingToolHandle {
 
   private rotateViewWorld(worldOrigin: Point3d, worldAxisVector: Vector3d, primaryAngle: Angle) {
     const worldMatrix = RotMatrix.createRotationAroundVector(worldAxisVector, primaryAngle);
+    if (!worldMatrix)
+      return;
     const worldTransform = Transform.createFixedPointAndMatrix(worldOrigin, worldMatrix!);
     const frustum = this.frustum.clone();
     frustum.multiply(worldTransform);
-    this.viewTool.viewport!.setupFromFrustum(frustum);
+    this.viewTool.viewport!.setupViewFromFrustum(frustum);
   }
 }
 
@@ -1349,7 +1352,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     if (haveNavigateEvent) {
       const frust = vp.getWorldFrustum(scratchFrustum);
       frust.multiply(motion!.transform);
-      if (!vp.setupFromFrustum(frust)) {
+      if (!vp.setupViewFromFrustum(frust)) {
         haveNavigateEvent = false;
         if (OrientationResult.NoEvent === orientationResult)
           return false;
@@ -1821,7 +1824,7 @@ export class ViewGestureTool extends ViewManip {
     frustum.multiply(transform);
     vp.npcToWorldArray(frustum.points);
 
-    if (!vp.setupFromFrustum(frustum))
+    if (!vp.setupViewFromFrustum(frustum))
       return false;
 
     const view = vp.view;
@@ -1945,7 +1948,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const vp = this.viewport!;
 
     //  All of the transforms and computation are relative to the original transform.
-    if (!vp.setupFromFrustum(this.frustum))
+    if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
     const view = vp.view;
@@ -1969,7 +1972,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     transform = scaleTransform.multiplyTransformTransform(transform, scratchTransform2);
     const frust = this.frustum.transformBy(transform);
 
-    vp.setupFromFrustum(frust);
+    vp.setupViewFromFrustum(frust);
     this.saveTouchStopData(info);
     this.doUpdate(true);
 
@@ -1988,7 +1991,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(currPt);
 
-    if (!vp.setupFromFrustum(this.frustum))
+    if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
     const viewRect = vp.viewRect;
@@ -2005,7 +2008,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
     const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
 
-    if (!vp.setupFromFrustum(frustum))
+    if (!vp.setupViewFromFrustum(frustum))
       return true;
 
     this.saveTouchStopData(ev.gestureInfo!);
@@ -2034,7 +2037,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(this.startPtView);
     this.startTime = Date.now();
-    const pickPt = vp.pickDepthBuffer(ev.viewPoint);
+    const pickPt = undefined; // TODO: NEEDS_WORK vp.pickDepthBuffer(ev.viewPoint);
     if (!pickPt)
       return;
 
@@ -2056,7 +2059,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const zoomRatio = this.computeZoomRatio(info);
 
     // reset frustum to original position
-    if (!vp.setupFromFrustum(this.frustum))
+    if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
     const zoomCenter = Point3d.create();
@@ -2186,6 +2189,7 @@ export class ViewChangeRenderModeTool extends ViewTool {
     viewflags.setMonochrome(this.renderOptions.get("monochrome")!);
     viewflags.setShowConstructions(this.renderOptions.get("constructions")!);
     viewflags.setShowTransparency(this.renderOptions.get("transparency")!);
+    viewflags.setDoContinuousRendering(this.renderOptions.get("continuousRendering")!);
     viewflags.setShowHiddenEdges(this.renderOptions.get("hiddenEdges")!);
     viewflags.setShowWeights(this.renderOptions.get("weights")!);
     viewflags.setShowStyles(this.renderOptions.get("styles")!);

@@ -863,20 +863,20 @@ export class AccuSnap {
       hit.draw(context);
   }
 
-  public decorateViewport(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     this.flashElements(context);
 
     if (this.cross.isActive()) {
-      this.cross.decorateViewport(context);
+      this.cross.decorate(context);
 
       // we have to adjust the world pt for the icon every time we draw it because the view may have changed size since we snapped
       const iconSize = this.icon.sprite!.getSize();
       const viewport = context.viewport!;
       this.icon.location.setFrom(AccuSnap.adjustIconLocation(viewport, this.cross.location, iconSize));
-      this.icon.decorateViewport(context);
+      this.icon.decorate(context);
     }
 
-    this.errorIcon.decorateViewport(context);
+    this.errorIcon.decorate(context);
   }
 
   private clearElemFromHitList(element: string) {

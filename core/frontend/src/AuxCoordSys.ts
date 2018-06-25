@@ -3,13 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel } from "@bentley/imodeljs-common";
-import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
+import { GraphicBuilder } from "./render/GraphicBuilder";
+import { Viewport, CoordSystem } from "./Viewport";
 
 export const enum ACSType {
   None = 0,
@@ -83,6 +85,150 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     // Called for active ACS when grid orientation is GridOrientationType::ACS.
     const view = context.viewport.view;
     context.drawStandardGrid(this.getOrigin(), this.getRotation(), view.getGridSpacing(), view.getGridsPerRef(), false, undefined);
+  }
+
+  /** Returns the value if it falls within the bounds given. Otherwise, returns the offended boundary. */
+  private static limitRange(min: number, max: number, val: number): number {
+    if (val < min)
+      return min;
+    else if (val > max)
+      return max;
+    return val;
+  }
+
+  /**
+   * Given an origin point, returns whether the point falls within the view or not. If adjustOrigin is set to true, a point outside
+   * the view will be modified to fall within the appropriate range.
+   */
+  public static isOriginInView(drawOrigin: Point3d, viewport: Viewport, adjustOrigin: boolean): boolean {
+    const frustum = viewport.getFrustum(CoordSystem.Screen, false);
+
+    const testPtView = viewport.worldToView(drawOrigin);
+    const screenRange = Point3d.create(
+      frustum.getCorner(Npc._000).distance(frustum.getCorner(Npc._100)),
+      frustum.getCorner(Npc._000).distance(frustum.getCorner(Npc._010)),
+      frustum.getCorner(Npc._000).distance(frustum.getCorner(Npc._001)));
+
+    // Check if current acs origin is outside view...
+    const inView = (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
+
+    if (!adjustOrigin)
+      return inView;
+
+    if (!inView) {
+      const offset = viewport.pixelsFromInches(0.6);  // TRIAD_SIZE_INCHES magic constant
+      testPtView.x = AuxCoordSystemState.limitRange(offset, screenRange.x - offset, testPtView.x);
+      testPtView.y = AuxCoordSystemState.limitRange(offset, screenRange.y - offset, testPtView.y);
+    }
+
+    // Limit point to NPC box to prevent triad from being clipped from display...
+    const originPtNpc = viewport.viewToNpc(testPtView);
+    originPtNpc.x = AuxCoordSystemState.limitRange(0, 1, originPtNpc.x);
+    originPtNpc.y = AuxCoordSystemState.limitRange(0, 1, originPtNpc.y);
+    originPtNpc.z = AuxCoordSystemState.limitRange(0, 1, originPtNpc.z);
+    viewport.npcToView(originPtNpc, testPtView);
+    viewport.viewToWorld(testPtView, drawOrigin);
+
+    return inView;
+  }
+
+  private getAdjustedColor(inColor: ColorDef, isFill: boolean, viewport: Viewport, options: ACSDisplayOptions): ColorDef {
+    const color = new ColorDef();
+
+    if ((options & ACSDisplayOptions.Hilite) !== ACSDisplayOptions.None) {
+      color.setFrom(viewport.hilite.color);
+    } else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None) {
+      color.setFrom(inColor.equals(ColorDef.white) ? viewport.getContrastToBackgroundColor() : inColor);
+    } else {
+      color.colors.r = 150;
+      color.colors.g = 150;
+      color.colors.b = 150;
+      color.colors.t = 0;
+    }
+
+    color.adjustForContrast(viewport.view.backgroundColor);
+
+    if (isFill)
+      color.setTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 255 : 200);
+    else
+      color.setTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
+
+    return color;
+  }
+
+  private addAxis(builder: GraphicBuilder, axis: number, options: ACSDisplayOptions, vp: Viewport) {
+    if (axis === 2) {
+      const color = ColorDef.blue;
+      const linePts: Point3d[] = [Point3d.create(), Point3d.create()];
+      linePts[1].z = 0.65;
+
+      const lineColor = this.getAdjustedColor(color, false, vp, options);
+      const fillColor = this.getAdjustedColor(color, true, vp, options);
+
+      builder.setSymbology(lineColor, lineColor, 6);
+      builder.addPointString(linePts);
+
+      builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
+      builder.addLineString(linePts);
+
+      const scale = 0.2;  // ARROW_TIP_WIDTH / 2
+      const center = Point3d.create();
+      const viewRMatrix = vp.rotMatrix;
+
+      const xVec = viewRMatrix.getRow(0);
+      const yVec = viewRMatrix.getRow(1);
+
+      builder.localToWorldTransform.matrix.multiplyTransposeVectorInPlace(xVec);
+      builder.localToWorldTransform.matrix.multiplyTransposeVectorInPlace(yVec);
+
+      xVec.normalize(xVec);
+      yVec.normalize(yVec);
+
+      const ellipse = Arc3d.createScaledXYColumns(center, RotMatrix.createColumns(xVec, yVec, Vector3d.create()), scale, scale, AngleSweep.createStartEnd(Angle.createRadians(0), Angle.createRadians(Math.PI * 2)));
+      builder.addArc(ellipse, false, false);
+
+      builder.setBlankingFill(fillColor);
+      builder.addArc(ellipse, true, true);
+      return;
+    }
+  }
+
+  /** Returns a GraphicBuilder for this AuxCoordSystemState. */
+  private createGraphic(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
+    const checkOutOfView = (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None;
+    const drawOrigin = this.getOrigin();
+
+    if (checkOutOfView && !AuxCoordSystemState.isOriginInView(drawOrigin, context.viewport, true))
+      options = options | ACSDisplayOptions.Deemphasized;
+
+    let pixelSize = context.viewport.pixelsFromInches(0.6);  // TRIAD_SIZE_INCHES: Active size...
+
+    if ((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None)
+      pixelSize *= 0.8;
+    else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None)
+      pixelSize *= 0.9;
+
+    const exagg = context.viewport.view.getAspectRatioSkew();
+    const scale = context.getPixelSizeAtPoint(drawOrigin) * pixelSize;
+    const rMatrix = this.getRotation();
+    rMatrix.inverse(rMatrix);   // Assuming that this will not fail..
+    rMatrix.scaleRows(scale, scale / exagg, scale);
+    const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
+
+    const graphic = context.createWorldOverlay(transform);
+    const vp = context.viewport;
+    this.addAxis(graphic, 0, options, vp);
+    this.addAxis(graphic, 1, options, vp);
+    this.addAxis(graphic, 2, options, vp);
+
+    return graphic;
+  }
+
+  public display(context: DecorateContext, options: ACSDisplayOptions) {
+    const graphic = this.createGraphic(context, options);
+    if (!graphic)
+      return;
+    context.addWorldOverlay(graphic.finish());
   }
 }
 

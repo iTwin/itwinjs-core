@@ -52,7 +52,7 @@ readDirectory(extractDir, [ignoreFunction], (error, inputFileNames) => {
 
           const outputFilePath = path.join(outDir, outputFileName);
           console.log("> Extracting into: " + outputFilePath);
-          fs.writeFileSync(outputFilePath, outputLines.join(""));
+          fs.writeFileSync(outputFilePath, outputLines.join("\n"));
 
           outputFileName = undefined;
           outputLines = [];

@@ -20,7 +20,7 @@ export class IModelHubClient {
    * Creates an instance of IModelHubClient.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv, fileHandler?: FileHandler, baseHandler: IModelServerHandler = new IModelHubBaseHandler(deploymentEnv)) {
+  public constructor(public deploymentEnv: DeploymentEnv = "PROD", fileHandler?: FileHandler, baseHandler: IModelServerHandler = new IModelHubBaseHandler(deploymentEnv)) {
     this._handler = baseHandler;
     this._fileHandler = fileHandler || this._handler.getFileHandler();
     if (this._fileHandler)
