@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 const program = require("commander");
 const floss = require("../floss");
+const PerformanceWriterServer = require("../lib/frontend/performance/PerformanceWriterServer");
 
 program
   .version("0.1.0")
@@ -13,7 +14,10 @@ program
   .option('-t, --timeout <ms>', 'set test-case timeout in milliseconds [2000]')
   .option('-c, --coveragePattern <pattern>', 'Generate json coverage report')
   .option('--coverageSourceMaps', 'Remap json report using sourcemaps')
+  .option('--usePerfWriterServer', 'use PerformanceWriterServer (localhost:3002) for writing results to excel file')
   .parse(process.argv);
+
+const perfServer = (program.usePerfWriterServer) ? PerformanceWriterServer.run() : undefined;
 
 floss(
   {
@@ -29,6 +33,8 @@ floss(
     checkLeaks: true
   },
   function (returnCode) {
+    if (program.usePerfWriterServer)
+      perfServer.close();
     process.exit(returnCode ? 1 : 0);
   }
 );
