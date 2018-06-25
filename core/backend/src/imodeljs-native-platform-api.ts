@@ -171,9 +171,9 @@ export declare class NativeDgnDb {
 
   /**
    * Set the briefcase Id of this iModel.
-   * @param idvalue The briefcase Id value.
+   * @param idValue The briefcase Id value.
    */
-  public setBriefcaseId(idvalue: number): DbResult;
+  public setBriefcaseId(idValue: number): DbResult;
 
   /** Get the briefcase Id of this iModel. */
   public getBriefcaseId(): number;

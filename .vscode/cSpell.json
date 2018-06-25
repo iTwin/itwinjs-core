@@ -87,6 +87,8 @@
         "remoting",
         "renderable",
         "Renormalize",
+        "ruleset",
+        "rulesets",
         "skybox",
         "snappable",
         "struct",
