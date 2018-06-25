@@ -68,11 +68,5 @@
       "projectFolder": "core/i18n",
       "shouldPublish": true
     }
-  ],
-  "eventHooks": {
-    "postRushInstall": [
-      "npm run clean",
-      "rush clean"
-    ]
-  }
+  ]
 }
