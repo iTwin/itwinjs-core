@@ -19,44 +19,44 @@ export interface Composite {
 }
 
 export const enum FormatTraits {
-  trailZeroes = 0x1,
-  keepSingleZero = 0x2,
-  zeroEmpty = 0x4,
-  keepDecimalPoint = 0x8,
-  applyRounding = 0x10,
-  fractionDash = 0x20,
-  showUnitLabel = 0x40,
-  prependUnitLabel = 0x80,
-  use1000Separator = 0x100,
-  exponentOnlyNegative = 0x200,
+  TrailZeroes = 0x1,
+  KeepSingleZero = 0x2,
+  ZeroEmpty = 0x4,
+  KeepDecimalPoint = 0x8,
+  ApplyRounding = 0x10,
+  FractionDash = 0x20,
+  ShowUnitLabel = 0x40,
+  PrependUnitLabel = 0x80,
+  Use1000Separator = 0x100,
+  ExponentOnlyNegative = 0x200,
 }
 
 export const enum FractionalPrecision {
-  one = 1,
-  two = 2,
-  four = 4,
-  eight = 8,
-  sixteen = 16,
-  thirtytwo = 32,
-  sixtyfour = 64,
-  onehundredtwentyeight = 128,
-  twohundredfiftysix = 256,
+  One = 1,
+  Two = 2,
+  Four = 4,
+  Eight = 8,
+  Sixteen = 16,
+  ThirtyTwo = 32,
+  SixtyFour = 64,
+  OneHundredTwentyEight = 128,
+  TwoHundredFiftySix = 256,
 }
 
 export const enum DecimalPrecision {
-  zero = 0,
-  one = 1,
-  two = 2,
-  three = 3,
-  four = 4,
-  five = 5,
-  six = 6,
-  seven = 7,
-  eight = 8,
-  nine = 9,
-  ten = 10,
-  eleven = 11,
-  tweleve = 12,
+  Zero = 0,
+  One = 1,
+  Two = 2,
+  Three = 3,
+  Four = 4,
+  Five = 5,
+  Six = 6,
+  Seven = 7,
+  Eight = 8,
+  Nine = 9,
+  Ten = 10,
+  Eleven = 11,
+  Twelve = 12,
 }
 
 export const enum FormatType {
@@ -82,34 +82,34 @@ function parseFormatTrait(stringToCheck: string, currentFormatTrait: number): nu
   let formatTrait = currentFormatTrait;
   switch (stringToCheck) {
     case "trailzeroes":
-      formatTrait = currentFormatTrait | FormatTraits.trailZeroes;
+      formatTrait = currentFormatTrait | FormatTraits.TrailZeroes;
       break;
     case "keepsinglezero":
-      formatTrait = currentFormatTrait | FormatTraits.keepSingleZero;
+      formatTrait = currentFormatTrait | FormatTraits.KeepSingleZero;
       break;
     case "zeroempty":
-      formatTrait = currentFormatTrait | FormatTraits.zeroEmpty;
+      formatTrait = currentFormatTrait | FormatTraits.ZeroEmpty;
       break;
     case "keepdecimalpoint":
-      formatTrait = currentFormatTrait | FormatTraits.keepDecimalPoint;
+      formatTrait = currentFormatTrait | FormatTraits.KeepDecimalPoint;
       break;
     case "applyrounding":
-      formatTrait = currentFormatTrait | FormatTraits.applyRounding;
+      formatTrait = currentFormatTrait | FormatTraits.ApplyRounding;
       break;
     case "fractiondash":
-      formatTrait = currentFormatTrait | FormatTraits.fractionDash;
+      formatTrait = currentFormatTrait | FormatTraits.FractionDash;
       break;
     case "showunitlabel":
-      formatTrait = currentFormatTrait | FormatTraits.showUnitLabel;
+      formatTrait = currentFormatTrait | FormatTraits.ShowUnitLabel;
       break;
     case "prependunitlabel":
-      formatTrait = currentFormatTrait | FormatTraits.prependUnitLabel;
+      formatTrait = currentFormatTrait | FormatTraits.PrependUnitLabel;
       break;
     case "use1000separator":
-      formatTrait = currentFormatTrait | FormatTraits.use1000Separator;
+      formatTrait = currentFormatTrait | FormatTraits.Use1000Separator;
       break;
     case "exponentonlynegative":
-      formatTrait = currentFormatTrait | FormatTraits.exponentOnlyNegative;
+      formatTrait = currentFormatTrait | FormatTraits.ExponentOnlyNegative;
       break;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format has an invalid 'formatTraits' option.`);
@@ -141,43 +141,43 @@ function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): nu
   let precision;
   switch (jsonObjPrecision) {
     case 0:
-      precision = DecimalPrecision.zero;
+      precision = DecimalPrecision.Zero;
       break;
     case 1:
-      precision = DecimalPrecision.one;
+      precision = DecimalPrecision.One;
       break;
     case 2:
-      precision = DecimalPrecision.two;
+      precision = DecimalPrecision.Two;
       break;
     case 3:
-      precision = DecimalPrecision.three;
+      precision = DecimalPrecision.Three;
       break;
     case 4:
-      precision = DecimalPrecision.four;
+      precision = DecimalPrecision.Four;
       break;
     case 5:
-      precision = DecimalPrecision.five;
+      precision = DecimalPrecision.Five;
       break;
     case 6:
-      precision = DecimalPrecision.six;
+      precision = DecimalPrecision.Six;
       break;
     case 7:
-      precision = DecimalPrecision.seven;
+      precision = DecimalPrecision.Seven;
       break;
     case 8:
-      precision = DecimalPrecision.eight;
+      precision = DecimalPrecision.Eight;
       break;
     case 9:
-      precision = DecimalPrecision.nine;
+      precision = DecimalPrecision.Nine;
       break;
     case 10:
-      precision = DecimalPrecision.ten;
+      precision = DecimalPrecision.Ten;
       break;
     case 11:
-      precision = DecimalPrecision.eleven;
+      precision = DecimalPrecision.Eleven;
       break;
     case 12:
-      precision = DecimalPrecision.tweleve;
+      precision = DecimalPrecision.Twelve;
       break;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
@@ -189,31 +189,31 @@ function parseFractionalPrecision(jsonObjPrecision: number, formatName: string) 
   let precision;
   switch (jsonObjPrecision) {
     case 1:
-      precision = FractionalPrecision.one;
+      precision = FractionalPrecision.One;
       break;
     case 2:
-      precision = FractionalPrecision.two;
+      precision = FractionalPrecision.Two;
       break;
     case 4:
-      precision = FractionalPrecision.four;
+      precision = FractionalPrecision.Four;
       break;
     case 8:
-      precision = FractionalPrecision.eight;
+      precision = FractionalPrecision.Eight;
       break;
     case 16:
-      precision = FractionalPrecision.sixteen;
+      precision = FractionalPrecision.Sixteen;
       break;
     case 32:
-      precision = FractionalPrecision.thirtytwo;
+      precision = FractionalPrecision.ThirtyTwo;
       break;
     case 64:
-      precision = FractionalPrecision.sixtyfour;
+      precision = FractionalPrecision.SixtyFour;
       break;
     case 128:
-      precision = FractionalPrecision.onehundredtwentyeight;
+      precision = FractionalPrecision.OneHundredTwentyEight;
       break;
     case 256:
-      precision = FractionalPrecision.twohundredfiftysix;
+      precision = FractionalPrecision.TwoHundredFiftySix;
       break;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
@@ -365,68 +365,6 @@ export default class Format extends SchemaItem {
     this._composite!.units!.push([unitToBeAdded, label]);
   }
 
-  private async formatFromJson(jsonObj: any) {
-    this.loadFormatProperties(jsonObj);
-    if (undefined !== jsonObj.composite) { // optional
-      this._composite = {includeZero: true, spacer: " ", units: new Array<[ LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>()};
-      if (jsonObj.composite.includeZero !== undefined) {
-        if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
-        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
-      }
-      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
-        if (typeof(jsonObj.composite.spacer) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
-        if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
-        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
-      }
-      if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
-        if (!Array.isArray(jsonObj.composite.units)) { // must be an array
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
-        }
-        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          const units = jsonObj.composite.units;
-          for (const unit of units) {
-             await this.createUnit(unit.name, unit.label); // create the unit
-          }
-        }
-      } else
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
-    }
-  }
-
-  private formatFromJsonSync(jsonObj: any) {
-    this.loadFormatProperties(jsonObj);
-    if (undefined !== jsonObj.composite) { // optional
-      this._composite = {includeZero: true, spacer: " ", units: new Array<[ LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>()};
-      if (jsonObj.composite.includeZero !== undefined) {
-        if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
-        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
-      }
-      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
-        if (typeof(jsonObj.composite.spacer) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
-        if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
-        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
-      }
-      if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
-        if (!Array.isArray(jsonObj.composite.units)) { // must be an array
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
-        }
-        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          const units = jsonObj.composite.units;
-          for (const unit of units) {
-             this.createUnitSync(unit.name, unit.label); // create the unit
-          }
-        }
-      } else
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
-    }
-  }
-
   private loadFormatProperties(jsonObj: any) {
     if (undefined === jsonObj.type) // type is required
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} does not have the required 'type' attribute.`);
@@ -525,7 +463,34 @@ export default class Format extends SchemaItem {
    */
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
-    await this.formatFromJson(jsonObj);
+    this.loadFormatProperties(jsonObj);
+    if (undefined !== jsonObj.composite) { // optional
+      this._composite = {includeZero: true, spacer: " ", units: new Array<[ LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>()};
+      if (jsonObj.composite.includeZero !== undefined) {
+        if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
+      }
+      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
+        if (typeof(jsonObj.composite.spacer) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
+        if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
+        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
+      }
+      if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
+        if (!Array.isArray(jsonObj.composite.units)) { // must be an array
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
+        }
+        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
+          const units = jsonObj.composite.units;
+          for (const unit of units) {
+             await this.createUnit(unit.name, unit.label); // create the unit
+          }
+        }
+      } else
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
+    }
   }
 
   /**
@@ -533,7 +498,34 @@ export default class Format extends SchemaItem {
    */
   public fromJsonSync(jsonObj: any): void {
     super.fromJsonSync(jsonObj);
-    this.formatFromJsonSync(jsonObj);
+    this.loadFormatProperties(jsonObj);
+    if (undefined !== jsonObj.composite) { // optional
+      this._composite = {includeZero: true, spacer: " ", units: new Array<[ LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>()};
+      if (jsonObj.composite.includeZero !== undefined) {
+        if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
+      }
+      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
+        if (typeof(jsonObj.composite.spacer) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
+        if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
+        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
+      }
+      if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
+        if (!Array.isArray(jsonObj.composite.units)) { // must be an array
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
+        }
+        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
+          const units = jsonObj.composite.units;
+          for (const unit of units) {
+             this.createUnitSync(unit.name, unit.label); // create the unit
+          }
+        }
+      } else
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
+    }
   }
 
   public async accept(visitor: SchemaItemVisitor) {

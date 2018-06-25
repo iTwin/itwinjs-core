@@ -17,7 +17,7 @@ describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
     it("should successfully deserialize a valid JSON string", async () => {
       const schemaString = JSON.stringify({
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         description: "This is a test description",
@@ -32,10 +32,27 @@ describe("Full Schema Deserialization", () => {
       expect(ecschema.description).equal("This is a test description");
       expect(ecschema.label).equal("This is a test label");
     });
+    it("should successfully deserialize a valid JSON string synchronously", () => {
+      const schemaString = JSON.stringify({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        description: "This is a test description",
+        label: "This is a test label",
+      });
+
+      const ecschema = Schema.fromJsonSync(schemaString);
+      expect(ecschema.name).equal("TestSchema");
+      expect(ecschema.readVersion).equal(1);
+      expect(ecschema.writeVersion).equal(2);
+      expect(ecschema.minorVersion).equal(3);
+      expect(ecschema.description).equal("This is a test description");
+      expect(ecschema.label).equal("This is a test label");
+    });
 
     it("should successfully deserialize name and version from a valid JSON object", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         description: "This is a test description",
@@ -53,7 +70,7 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid schema version", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.100.0",
       };
@@ -63,7 +80,7 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid schema name", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "0TestSchema",
         version: "1.0.0",
       };
@@ -74,7 +91,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with schema reference", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "TestSchema",
       version: "1.2.3",
     };
@@ -153,7 +170,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with items", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "TestSchema",
       version: "1.2.3",
     };
@@ -190,7 +207,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with visitor", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "TestSchema",
       version: "1.2.3",
     };

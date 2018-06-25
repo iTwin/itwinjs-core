@@ -23,7 +23,7 @@ import Format from "./Format";
 import Constant from "./Constant";
 import InvertedUnit from "./InvertedUnit";
 
-const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
+const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
 
 /**
  *
@@ -433,7 +433,7 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public schemaFromJson(jsonObj: any) {
-    if (SCHEMAURL3_1 !== jsonObj.$schema)
+    if (SCHEMAURL3_2 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
     if (!this._schemaKey) {

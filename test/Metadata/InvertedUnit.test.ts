@@ -39,7 +39,7 @@ describe("Inverted Unit tests", () => {
     });
     it("Basic test for label", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -77,7 +77,7 @@ describe("Inverted Unit tests", () => {
     });
     it("Label and description are optional", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -151,7 +151,7 @@ describe("Inverted Unit tests", () => {
     });
     it("unitSystem is required", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -181,7 +181,7 @@ describe("Inverted Unit tests", () => {
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -238,7 +238,7 @@ describe("Inverted Unit tests", () => {
     });
     it("Basic test for label",  () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -276,7 +276,7 @@ describe("Inverted Unit tests", () => {
     });
     it("Label and description are optional",  () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -350,7 +350,7 @@ describe("Inverted Unit tests", () => {
     });
     it("unitSystem is required",  () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -380,7 +380,7 @@ describe("Inverted Unit tests", () => {
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {

@@ -37,7 +37,7 @@ describe("Constant tests", () => {
     });
     it("Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -66,7 +66,7 @@ describe("Constant tests", () => {
     });
     it("Label must be string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -88,7 +88,7 @@ describe("Constant tests", () => {
     });
     it("Description must be string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -121,7 +121,7 @@ describe("Constant tests", () => {
     });
     it("Definition is required", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -141,7 +141,7 @@ describe("Constant tests", () => {
     });
     it("Numerator, denominator default values are both 1.0", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -168,7 +168,7 @@ describe("Constant tests", () => {
     });
     it("Numerator, denominator are different than default", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -197,7 +197,7 @@ describe("Constant tests", () => {
     });
     it("Resolve all dependencies on Phenomenon", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -228,13 +228,13 @@ describe("Constant tests", () => {
       const phenom: Phenomenon = testPhenom as Phenomenon;
       assert.isDefined(phenom);
       const phenomFromConstant = await testConst!.phenomenon;
-      assert(phenomFromConstant!.definition, phenom.definition);
+      assert(phenomFromConstant!.definition === phenom.definition);
     });
   });
   describe("Sync fromJson", () => {
     it("Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -263,7 +263,7 @@ describe("Constant tests", () => {
     });
     it("Label must be string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -285,7 +285,7 @@ describe("Constant tests", () => {
     });
     it("Description must be string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -305,9 +305,9 @@ describe("Constant tests", () => {
       };
       assert.throws(() => Schema.fromJsonSync(json), ECObjectsError, "The SchemaItem PI has an invalid 'description' attribute. It should be of type 'string'.");
     });
-    it("Phenomenon is required", async () => {
+    it("Cannot locate Phenomenon", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -325,7 +325,7 @@ describe("Constant tests", () => {
     });
     it("Definition is required", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -345,7 +345,7 @@ describe("Constant tests", () => {
     });
     it("Numerator, denominator default values are both 1.0", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -372,7 +372,7 @@ describe("Constant tests", () => {
     });
     it("Numerator, denominator are different than default", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -401,7 +401,7 @@ describe("Constant tests", () => {
     });
     it("Resolve all dependencies on Phenomenon", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {

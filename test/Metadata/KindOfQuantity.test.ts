@@ -19,7 +19,7 @@ describe("KindOfQuantity", () => {
   describe("Async deserialization", () => {
     it("No persistenceUnits", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -74,7 +74,7 @@ describe("KindOfQuantity", () => {
 
     it("should throw for presentationUnits not an array or string", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -104,7 +104,7 @@ describe("KindOfQuantity", () => {
 
     it("should throw for missing persistenceUnit", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -154,7 +154,7 @@ describe("KindOfQuantity", () => {
   describe("Async DelayedPromise Tests", () => {
     it("should successfully deserialize valid JSON I", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -190,7 +190,7 @@ describe("KindOfQuantity", () => {
     });
     it("should successfully deserialize valid JSON II", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -254,7 +254,7 @@ describe("KindOfQuantity", () => {
   describe("Async FormatString Tests", () => {
     it("One unit override", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -316,7 +316,7 @@ describe("KindOfQuantity", () => {
     });
     it("Three overrides", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -399,7 +399,7 @@ describe("KindOfQuantity", () => {
     });
     it("Format name does not exist", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -454,7 +454,7 @@ describe("KindOfQuantity", () => {
     });
     it("# Composite Units does not equal # unit overrides in format string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -507,7 +507,7 @@ describe("KindOfQuantity", () => {
     });
     it("Cannot find unit name for override", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -562,7 +562,7 @@ describe("KindOfQuantity", () => {
     });
     it("No composite; No precision or unit override", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -618,7 +618,7 @@ describe("KindOfQuantity", () => {
   describe("Sync deserialization", () => {
     it("No persistenceUnits", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -673,7 +673,7 @@ describe("KindOfQuantity", () => {
 
     it("should throw for presentationUnits not an array or string", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -703,7 +703,7 @@ describe("KindOfQuantity", () => {
 
     it("should throw for missing persistenceUnit",  () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -733,7 +733,7 @@ describe("KindOfQuantity", () => {
   describe("Sync DelayedPromise Tests", () => {
     it("should successfully deserialize valid JSON I", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -769,7 +769,7 @@ describe("KindOfQuantity", () => {
     });
     it("should successfully deserialize valid JSON II", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -833,7 +833,7 @@ describe("KindOfQuantity", () => {
   describe("Sync FormatString Tests", () => {
     it("One unit override", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -891,7 +891,7 @@ describe("KindOfQuantity", () => {
     });
     it("Three overrides", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -974,7 +974,7 @@ describe("KindOfQuantity", () => {
     });
     it("Format name does not exist", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1029,7 +1029,7 @@ describe("KindOfQuantity", () => {
     });
     it("# Composite Units does not equal # unit overrides in format string", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1082,7 +1082,7 @@ describe("KindOfQuantity", () => {
     });
     it("Cannot find unit name for override", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1137,7 +1137,7 @@ describe("KindOfQuantity", () => {
     });
     it("No composite; No precision or unit override", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {

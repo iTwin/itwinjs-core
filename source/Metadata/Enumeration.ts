@@ -67,15 +67,17 @@ export default class Enumeration extends SchemaItem {
     return this.enumerators.find((item) => item.value === value);
   }
 
-   /**
+   /** @hidden
     * Checks whether there already exists an enumerator with this name or this value
     * @param name The name of the enumerator we are trying to create
     * @param value The value of the enumerator we are trying to create
     */
   private findDuplicateEnumerators(name: string, value: string | number) {
     this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
-      if (element.name.toLowerCase() === name.toLowerCase() || element.value === value)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The enumerator ${name} has a duplicate name or value.`);
+      if (element.name.toLowerCase() === name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a duplicate Enumerator with name '${name}'.`);
+      if (element.value === value)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a duplicate Enumerator with value '${value}'.`);
     });
   }
 
@@ -92,7 +94,7 @@ export default class Enumeration extends SchemaItem {
     if (!this.isInt() && typeof(value) === "number") // also throws if backing type is string and value is number
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
-    if (!ECName.isValidECName(name))
+    if (!ECName.validate(name))
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     this.enumerators.push({name, value, label, description});
   }

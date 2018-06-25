@@ -59,10 +59,10 @@ describe("Format tests", () => {
         assert(testFormat.roundFactor === 0.0);
         assert(testFormat.type === FormatType.Fractional);
         assert(testFormat.showSignOption === ShowSignOption.OnlyNegative);
-        assert(testFormat.hasFormatTrait(FormatTraits.keepSingleZero));
-        assert(testFormat.hasFormatTrait(FormatTraits.trailZeroes));
-        assert(testFormat.hasFormatTrait(FormatTraits.applyRounding) === false);
-        assert(testFormat.precision === FractionalPrecision.four);
+        assert(testFormat.hasFormatTrait(FormatTraits.KeepSingleZero));
+        assert(testFormat.hasFormatTrait(FormatTraits.TrailZeroes));
+        assert(testFormat.hasFormatTrait(FormatTraits.ApplyRounding) === false);
+        assert(testFormat.precision === FractionalPrecision.Four);
         assert(testFormat.decimalSeparator, ".");
         assert(testFormat.thousandSeparator, ",");
         assert(testFormat.uomSeparator, " ");
@@ -726,9 +726,9 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        assert(testFormat.hasFormatTrait(FormatTraits.keepSingleZero) === false);
-        assert(testFormat.hasFormatTrait(FormatTraits.trailZeroes));
-        assert(testFormat.hasFormatTrait(FormatTraits.applyRounding) === false);
+        assert(testFormat.hasFormatTrait(FormatTraits.KeepSingleZero) === false);
+        assert(testFormat.hasFormatTrait(FormatTraits.TrailZeroes));
+        assert(testFormat.hasFormatTrait(FormatTraits.ApplyRounding) === false);
       });
       it("String[] with invalid option", async () => {
         const json = {
@@ -779,10 +779,10 @@ describe("Format tests", () => {
         assert(testFormat.roundFactor === 0.0);
         assert(testFormat.type === FormatType.Fractional);
         assert(testFormat.showSignOption === ShowSignOption.OnlyNegative);
-        assert(testFormat.hasFormatTrait(FormatTraits.keepSingleZero));
-        assert(testFormat.hasFormatTrait(FormatTraits.trailZeroes));
-        assert(testFormat.hasFormatTrait(FormatTraits.applyRounding) === false);
-        assert(testFormat.precision === FractionalPrecision.four);
+        assert(testFormat.hasFormatTrait(FormatTraits.KeepSingleZero));
+        assert(testFormat.hasFormatTrait(FormatTraits.TrailZeroes));
+        assert(testFormat.hasFormatTrait(FormatTraits.ApplyRounding) === false);
+        assert(testFormat.precision === FractionalPrecision.Four);
         assert(testFormat.decimalSeparator, ".");
         assert(testFormat.thousandSeparator, ",");
         assert(testFormat.uomSeparator, " ");
@@ -1447,9 +1447,9 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         testFormat.fromJsonSync(json);
-        assert(testFormat.hasFormatTrait(FormatTraits.keepSingleZero) === false);
-        assert(testFormat.hasFormatTrait(FormatTraits.trailZeroes));
-        assert(testFormat.hasFormatTrait(FormatTraits.applyRounding) === false);
+        assert(testFormat.hasFormatTrait(FormatTraits.KeepSingleZero) === false);
+        assert(testFormat.hasFormatTrait(FormatTraits.TrailZeroes));
+        assert(testFormat.hasFormatTrait(FormatTraits.ApplyRounding) === false);
       });
       it("String[] with invalid option", () => {
         const json = {
@@ -1479,7 +1479,7 @@ describe("Format tests", () => {
     });
     it("Basic test", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1528,7 +1528,7 @@ describe("Format tests", () => {
      });
     it("Throw for Composite with missing units attribute", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1560,7 +1560,7 @@ describe("Format tests", () => {
     });
     it("Throw for Composite with empty units array", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1595,7 +1595,7 @@ describe("Format tests", () => {
     });
     it("includeZero must be boolean", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1672,7 +1672,7 @@ describe("Format tests", () => {
     });
     it("Unit names must be unique", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1715,7 +1715,7 @@ describe("Format tests", () => {
     });
     it("Cannot have more than 4 units", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1775,7 +1775,7 @@ describe("Format tests", () => {
     });
     it("Basic test", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1824,7 +1824,7 @@ describe("Format tests", () => {
      });
     it("Throw for Composite with missing units attribute", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1856,7 +1856,7 @@ describe("Format tests", () => {
     });
     it("Throw for Composite with empty units array", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1891,7 +1891,7 @@ describe("Format tests", () => {
     });
     it("includeZero must be boolean", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1929,7 +1929,7 @@ describe("Format tests", () => {
     });
     it("spacer must be a one character string", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1961,7 +1961,7 @@ describe("Format tests", () => {
     });
     it("spacer must be a string", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -1993,7 +1993,7 @@ describe("Format tests", () => {
     });
     it("Unit names must be unique", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -2036,7 +2036,7 @@ describe("Format tests", () => {
     });
     it("Cannot have more than 4 units", () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {

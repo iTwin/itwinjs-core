@@ -499,7 +499,11 @@ export class ECName {
     this._name = name;
   }
 
-  public static isValidECName(newName: string) {
+  /**
+   * @param newName string to validate
+   * @return boolean whether newName is a valid ECName
+   */
+  public static validate(newName: string) {
     return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
   }
 

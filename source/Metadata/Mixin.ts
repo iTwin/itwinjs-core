@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import EntityClass, { createNavigationProperty } from "./EntityClass";
+import EntityClass, { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
 import { LazyLoadedEntityClass } from "../Interfaces";
 import { ECClassModifier, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -35,6 +35,10 @@ export default class Mixin extends ECClass {
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
+  }
+
+  protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
+    return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
