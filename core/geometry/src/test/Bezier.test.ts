@@ -172,12 +172,21 @@ describe("BezierRoots", () => {
           const fOfR = bezier1.evaluate(r);
           ck.testCoordinate(0, fOfR, "bezier root", r, coffs);
         }
+      // partial check for some other targets . . .
+      for (let target = -0.4; target < 2; target += 0.1054) {
+        const targetRoots = bezier1.roots(target, true);
+        if (targetRoots) {
+          for (const r of targetRoots) {
+            ck.testCoordinate(target, bezier1.evaluate(r), "target root");
+          }
+        }
+      }
       // console.log("deflation roots", deflationRoots);
     }
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("PackedRoots", () => {
+  it("DistributedRoots", () => {
     const ck = new Checker();
     for (const numRoots of [2, 2, 3, 5, 6]) {
       // baes roots at odd integer multiples of 1/(numRoots+1)
@@ -208,6 +217,59 @@ describe("BezierRoots", () => {
               ck.testArrayContainsCoordinate(roots, r);
           }
           // console.log("roots", roots);
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DeflateRight", () => {
+    const ck = new Checker();
+    for (const numZero of [1, 2, 3, 5, 6]) {
+      const coffs = [];
+      for (let i = 0; i < numZero; i++)
+        coffs.push(0);
+
+      for (const numOther of [1, 2, 3, 5]) {
+        for (let i = 0; i < numOther; i++)
+          coffs.push(2 * i + i * i);
+        const bezierA = Bezier.createCoffs(coffs);
+        const bezierB = bezierA.clone() as Bezier;
+        for (let numDeflate = 1; numDeflate <= numZero; numDeflate++) {
+          bezierB.deflateLeft();
+          for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {
+            let factor = 1;
+            for (let i = 0; i < numDeflate; i++)
+              factor *= u;
+            ck.testCoordinate(bezierA.evaluate(u), factor * bezierB.evaluate(u), "left deflated bezier evaluation");
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DeflateRight", () => {
+    const ck = new Checker();
+    for (const numZero of [1, 2, 3, 5, 6]) {
+
+      for (const numOther of [1, 2, 3, 5]) {
+        const coffs = [];
+        for (let i = 0; i < numOther; i++)
+          coffs.push(2 * i + i * i);
+        for (let i = 0; i < numZero; i++)
+          coffs.push(0);
+
+        const bezierA = Bezier.createCoffs(coffs);
+        const bezierB = bezierA.clone() as Bezier;
+        for (let numDeflate = 1; numDeflate <= numZero; numDeflate++) {
+          bezierB.deflateRight();
+          for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {
+            let factor = 1;
+            for (let i = 0; i < numDeflate; i++)
+              factor *= (1 - u);
+            ck.testCoordinate(bezierA.evaluate(u), factor * bezierB.evaluate(u), "right deflated bezier evaluation");
+          }
         }
       }
     }

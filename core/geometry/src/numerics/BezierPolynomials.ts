@@ -272,27 +272,6 @@ export class Bezier extends BezierCoffs {
     }
     this._order--;
   }
-  /** Search for the highest polygon crossing.
-   * @returns undefined if not crossing.  Otherwise the local fraction of the rightmost
-   * polygon crossing.
-   */
-  public searchRightPolygonCrossing(): number | undefined {
-    const order = this.order;
-    let i2 = order;
-    const coffs = this.coffs;
-    let i1;
-    let a2, a1;
-    while (--i2 > 0) {
-      a2 = coffs[i2];
-      if (a2 === 0.0)
-        return i2 / (order - 1);
-      i1 = i2 - 1;
-      a1 = coffs[i1];
-      if (a1 * a2 <= 0.0)
-        return (i1 - a1 / (a2 - a1)) / (order - 1);
-    }
-    return undefined;
-  }
   /**
    * divide the polynomial by `(x-root)`.
    * * If `root` is truly a root.
