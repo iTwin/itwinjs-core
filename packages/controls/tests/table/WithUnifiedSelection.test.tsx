@@ -12,9 +12,10 @@ import { createRandomECInstanceKey } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys } from "@bentley/ecpresentation-common";
 import {
-  ECPresentation, ECPresentationManager,
+  ECPresentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
 } from "@bentley/ecpresentation-frontend";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
 import { ECPresentationTableDataProvider, withUnifiedSelection } from "@src/table";

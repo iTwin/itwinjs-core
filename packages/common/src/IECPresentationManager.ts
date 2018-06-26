@@ -8,14 +8,25 @@ import { SelectionInfo, Descriptor, Content } from "./content";
 import { IModel } from "@bentley/imodeljs-common";
 import { InstanceKey } from "./EC";
 import KeySet from "./KeySet";
-import { PresentationRuleSet } from "./rules";
-import { UserSettingsManager } from "./UserSettingsManager";
+import { IUserSettingsManager } from "./IUserSettingsManager";
+import { IRulesetManager } from "./IRulesetManager";
 
 /** A generic request options type used for both hierarchy and content requests */
 export interface RequestOptions<TIModel> {
+  /** iModel to request data from */
   imodel: TIModel;
+
+  /** Id of the ruleset to use when requesting data */
   rulesetId: string;
+
+  /** Optional locale to use when formatting / localizing data */
   locale?: string;
+
+  /**
+   * Optional client ID used to identify who requests data
+   * @hidden
+   */
+  clientId?: string;
 }
 /** Request type for hierarchy requests */
 export interface HierarchyRequestOptions<TIModel> extends RequestOptions<TIModel> { }
@@ -24,11 +35,15 @@ export interface ContentRequestOptions<TIModel> extends RequestOptions<TIModel> 
 
 /** Paging options. */
 export interface PageOptions {
+  /** Inclusive start 0-based index of the page */
   start?: number;
+
+  /** Maximum size of the page */
   size?: number;
 }
 /** A wrapper type that injects [[PageOptions]] into supplied type */
 export type Paged<TOptions extends {}> = TOptions & {
+  /** Optional paging parameters */
   paging?: PageOptions;
 };
 
@@ -36,33 +51,22 @@ export type Paged<TOptions extends {}> = TOptions & {
  * An interface of presentation manager which provides presentation services for
  * tree and content controls
  */
-export interface ECPresentationManager<TIModel extends IModel> {
+export interface IECPresentationManager<TIModel extends IModel> {
   /**
-   * Currently active locale used to localize presentation data.
+   * Get / set active locale used for localizing presentation data
    */
   activeLocale: string | undefined;
 
   /**
-   * Settings manager for accessing and setting user settings.
+   * Get rulesets manager
    */
-  readonly settings: UserSettingsManager;
+  rulesets(): IRulesetManager;
 
   /**
-   * Register a ruleset
-   * @param ruleSet Ruleset to register
+   * Get settings manager for specific ruleset
+   * @param rulesetId Id of the ruleset to get settings manager for
    */
-  addRuleSet(ruleSet: PresentationRuleSet): Promise<void>;
-
-  /**
-   * Unregister a ruleset.
-   * @param ruleSetId Id of a ruleset to unregister.
-   */
-  removeRuleSet(ruleSetId: string): Promise<void>;
-
-  /**
-   * Removes all rulesets added with addRuleSet.
-   */
-  clearRuleSets(): Promise<void>;
+  settings(rulesetId: string): IUserSettingsManager;
 
   /**
    * Retrieves root nodes.

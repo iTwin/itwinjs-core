@@ -76,60 +76,60 @@ export interface Id64ArraySetting extends BaseSetting {
 export type SettingValue = IntegerSetting | IntegerArraySetting | BooleanSetting | StringSetting | Id64Setting | Id64ArraySetting;
 
 /** Used for setting and accessing user settings. **[[ECPresentation]] must be initialized before using this.** */
-export interface UserSettingsManager {
+export interface IUserSettingsManager {
   /**
    * Sets user setting value
-   * @param ruleSetId Id of a ruleset setting is associated with.
    * @param settingId Id of a setting.
    * @param value Value and type.
    */
-  setValue(ruleSetId: string, settingId: string, value: SettingValue): Promise<void>;
+  setValue(settingId: string, value: SettingValue): Promise<void>;
+
+  /**
+   * Get user setting value
+   * @param settingId Id of the setting to get
+   * @param settingType Type of the setting
+   */
+  getValue(settingId: string, settingType: SettingValueTypes): Promise<boolean | string | number | number[] | Id64 | Id64[]>;
 
   /**
    * Retrieves boolean setting value. Returns default value if setting does not exist or does not convert to boolean.
-   * @param ruleSetId Id of a ruleset setting is associated with.
    * @param settingId Id of a setting.
    * @return A promise object that returns setting value.
    */
-  getBoolean(ruleSetId: string, settingId: string): Promise<boolean>;
+  getBoolean(settingId: string): Promise<boolean>;
 
   /**
    * Retrieves integer setting value. Returns default value if setting does not exist or does not convert to integer.
-   * @param ruleSetId Id of a ruleset setting is associated with.
    * @param settingId Id of a setting.
    * @return A promise object that returns setting value.
    */
-  getInt(ruleSetId: string, settingId: string): Promise<number>;
+  getInt(settingId: string): Promise<number>;
 
   /**
    * Retrieves integer array setting value. Returns default value if setting does not exist or does not convert to integer array.
-   * @param ruleSetId Id of a ruleset setting is associated with.
    * @param settingId Id of a setting.
    * @return A promise object that returns setting value.
    */
-  getIntArray(ruleSetId: string, settingId: string): Promise<number[]>;
+  getIntArray(settingId: string): Promise<number[]>;
 
   /**
    * Retrieves Id64 setting value. Returns default value if setting does not exist or does not convert to Id64.
-   * @param ruleSetId Id of a ruleset setting is associated with.
    * @param settingId Id of a setting.
    * @return A promise object that returns setting value.
    */
-  getId64(ruleSetId: string, settingId: string): Promise<Id64>;
+  getId64(settingId: string): Promise<Id64>;
 
   /**
    * Retrieves Id64 array setting value. Returns default value if setting does not exist or does not convert to Id64 array.
-   * @param ruleSetId Id of a ruleset setting is associated with.
    * @param settingId Id of a setting.
    * @return A promise object that returns setting value.
    */
-  getId64Array(ruleSetId: string, settingId: string): Promise<Id64[]>;
+  getId64Array(settingId: string): Promise<Id64[]>;
 
   /**
    * Retrieves string setting value. Returns default value if setting does not exist or does not convert to string.
-   * @param ruleSetId Id of a ruleset setting is associated with.
    * @param settingId Id of a setting.
    * @return A promise object that returns setting value.
    */
-  getString(ruleSetId: string, settingId: string): Promise<string>;
+  getString(settingId: string): Promise<string>;
 }

@@ -4,53 +4,41 @@
 /** @module Core */
 
 import * as path from "path";
-import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
-  ECPresentationManager as ECPresentationManagerDefinition,
   ECPresentationError, ECPresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
-  RequestOptions, Paged, KeySet, InstanceKey, PresentationRuleSet,
+  IUserSettingsManager, IRulesetManager,
+  RequestOptions, Paged, KeySet, InstanceKey,
 } from "@bentley/ecpresentation-common";
 import { listReviver as nodesListReviver } from "@bentley/ecpresentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/ecpresentation-common/lib/hierarchy/NodePathElement";
-import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform"
+import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import UserSettingsManager from "./UserSettingsManager";
+import RulesetManager from "./RulesetManager";
+import IBackendECPresentationManager, { Props as IBackendECPresentationManagerProps } from "./IBackendECPresentationManager";
 
 /**
- * Properties that can be used to configure [[ECPresentationManager]]
+ * Properties that can be used to configure [[SingleClientECPresentationManager]]
+ *
+ * @hidden
  */
-export interface Props {
+export interface Props extends IBackendECPresentationManagerProps {
   /** @hidden */
   addon?: NativePlatformDefinition;
-
-  /**
-   * A list of directories containing presentation rulesets.
-   */
-  rulesetDirectories?: string[];
-
-  /**
-   * A list of directories containing locale-specific localized
-   * string files (in simplified i18next v3 format)
-   */
-  localeDirectories?: string[];
-
-  /**
-   * Sets the active locale to use when localizing presentation-related
-   * strings. It can later be changed through ECPresentationManager.
-   */
-  activeLocale?: string;
 }
 
 /**
  * Backend ECPresentation manager which pulls the presentation data from
- * an iModel.
+ * an iModel using native platform.
+ *
+ * @hidden
  */
-export default class ECPresentationManager implements ECPresentationManagerDefinition<IModelDb>, IDisposable {
+export default class SingleClientECPresentationManager implements IBackendECPresentationManager {
 
-  private _addon?: NativePlatformDefinition;
-  private _settings: UserSettingsManager;
+  private _nativePlatform?: NativePlatformDefinition;
+  private _rulesets: RulesetManager;
   private _isDisposed: boolean;
   public activeLocale: string | undefined;
 
@@ -61,39 +49,48 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
   constructor(props?: Props) {
     this._isDisposed = false;
     if (props && props.addon)
-      this._addon = props.addon;
+      this._nativePlatform = props.addon;
     if (props && props.rulesetDirectories)
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
     if (props)
       this.activeLocale = props.activeLocale;
     this.setupLocaleDirectories(props);
-    this._settings = new UserSettingsManager(this.getNativePlatform);
+    this._rulesets = new RulesetManager(this.getNativePlatform);
   }
 
   /**
    * Dispose the presentation manager. Must be called to clean up native resources.
    */
   public dispose() {
-    if (this._addon) {
+    if (this._nativePlatform) {
       this.getNativePlatform().dispose();
-      this._addon = undefined;
+      this._nativePlatform = undefined;
     }
     this._isDisposed = true;
   }
 
-  public get settings(): UserSettingsManager {
-    return this._settings;
+  /**
+   * Get rulesets manager
+   */
+  public rulesets(): IRulesetManager { return this._rulesets; }
+
+  /**
+   * Get settings manager for specific ruleset
+   * @param rulesetId Id of the ruleset to get settings manager for
+   */
+  public settings(rulesetId: string): IUserSettingsManager {
+    return new UserSettingsManager(this.getNativePlatform, rulesetId);
   }
 
   /** @hidden */
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
       throw new ECPresentationError(ECPresentationStatus.UseAfterDisposal, "Attempting to use ECPresentation manager after disposal");
-    if (!this._addon) {
-      const addonImpl = createDefaultNativePlatform();
-      this._addon = new addonImpl();
+    if (!this._nativePlatform) {
+      const nativePlatformImpl = createDefaultNativePlatform();
+      this._nativePlatform = new nativePlatformImpl();
     }
-    return this._addon!;
+    return this._nativePlatform!;
   }
 
   private setupLocaleDirectories(props?: Props) {
@@ -105,27 +102,6 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       });
     }
     this.getNativePlatform().setupLocaleDirectories(localeDirectories);
-  }
-
-  /**
-   * Register a presentation rule set.
-   */
-  public async addRuleSet(ruleSet: PresentationRuleSet): Promise<void> {
-    return this.getNativePlatform().addRuleSet(JSON.stringify(ruleSet));
-  }
-
-  /**
-   * Register presentation rule set with the specified ID.
-   */
-  public async removeRuleSet(ruleSetId: string): Promise<void> {
-    return this.getNativePlatform().removeRuleSet(ruleSetId);
-  }
-
-  /**
-   * Unregister all presentation rule sets.
-   */
-  public async clearRuleSets(): Promise<void> {
-    return this.getNativePlatform().clearRuleSets();
   }
 
   public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb>>): Promise<ReadonlyArray<Readonly<Node>>> {
@@ -152,7 +128,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.request<number>(requestOptions.imodel, params);
   }
 
-  public getNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+  public async getNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
     const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, requestOptions, {
       paths,
       markedIndex,
@@ -160,7 +136,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.request<NodePathElement[]>(requestOptions.imodel, params, nodePathElementReviver);
   }
 
-  public getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
+  public async getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
     const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, requestOptions, {
       filterText,
     });
@@ -211,7 +187,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
   }
 
   private createRequestParams(requestId: string, genericOptions: Paged<RequestOptions<IModelDb>>, additionalOptions?: object): string {
-    const { imodel, locale, ...genericOptionsStripped } = genericOptions;
+    const { clientId, imodel, locale, ...genericOptionsStripped } = genericOptions;
     const request = {
       requestId,
       params: {

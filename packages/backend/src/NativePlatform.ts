@@ -24,15 +24,15 @@ export enum NativePlatformRequestTypes {
 
 /** @hidden */
 export interface NativePlatformDefinition extends IDisposable {
-  handleRequest(db: any, options: string): Promise<string>;
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
-  addRuleSet(ruleSetJson: string): void;
-  removeRuleSet(ruleSetId: string): void;
+  addRuleSet(serializedRulesetJson: string): void;
+  removeRuleSet(rulesetId: string): void;
   clearRuleSets(): void;
-  getUserSetting(ruleSetId: string, settingId: string, settingType: string): any;
-  setUserSetting(ruleSetId: string, settingId: string, settingValue: string): void;
+  handleRequest(db: any, options: string): Promise<string>;
+  getUserSetting(rulesetId: string, settingId: string, settingType: string): any;
+  setUserSetting(rulesetId: string, settingId: string, settingValue: string): void;
 }
 
 /** @hidden */
@@ -65,6 +65,26 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     public dispose() {
       this._nativeAddon.dispose();
     }
+    public setupRulesetDirectories(directories: string[]): void {
+      this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
+    }
+    public setupLocaleDirectories(directories: string[]): void {
+      this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));
+    }
+    public getImodelAddon(imodel: IModelDb): any {
+      if (!imodel.nativeDb)
+        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "imodel");
+      return imodel.nativeDb;
+    }
+    public addRuleSet(serializedRulesetJson: string): void {
+      this.handleVoidResult(this._nativeAddon.addRuleSet(serializedRulesetJson));
+    }
+    public removeRuleSet(rulesetId: string): void {
+      this.handleVoidResult(this._nativeAddon.removeRuleSet(rulesetId));
+    }
+    public clearRuleSets(): void {
+      this.handleVoidResult(this._nativeAddon.clearRuleSets());
+    }
     public handleRequest(db: any, options: string): Promise<string> {
       return new Promise((resolve, reject) => {
         this._nativeAddon.handleRequest(db, options, (response) => {
@@ -76,31 +96,11 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
         });
       });
     }
-    public setupRulesetDirectories(directories: string[]): void {
-      this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
+    public getUserSetting(rulesetId: string, settingId: string, settingType: string): any {
+      return this.handleResult(this._nativeAddon.getUserSetting(rulesetId, settingId, settingType));
     }
-    public setupLocaleDirectories(directories: string[]): void {
-      this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));
-    }
-    public addRuleSet(ruleSetJson: string): void {
-      this.handleVoidResult(this._nativeAddon.addRuleSet(ruleSetJson));
-    }
-    public removeRuleSet(ruleSetId: string): void {
-      this.handleVoidResult(this._nativeAddon.removeRuleSet(ruleSetId));
-    }
-    public clearRuleSets(): void {
-      this.handleVoidResult(this._nativeAddon.clearRuleSets());
-    }
-    public getImodelAddon(imodel: IModelDb): any {
-      if (!imodel.nativeDb)
-        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "imodel");
-      return imodel.nativeDb;
-    }
-    public getUserSetting(ruleSetId: string, settingId: string, settingType: string): any {
-      return this.handleResult(this._nativeAddon.getUserSetting(ruleSetId, settingId, settingType));
-    }
-    public setUserSetting(ruleSetId: string, settingId: string, settingValue: string): void {
-      this.handleVoidResult(this._nativeAddon.setUserSetting(ruleSetId, settingId, settingValue));
+    public setUserSetting(rulesetId: string, settingId: string, settingValue: string): void {
+      this.handleVoidResult(this._nativeAddon.setUserSetting(rulesetId, settingId, settingValue));
     }
   };
 };

@@ -10,7 +10,8 @@ import { PromiseContainer } from "@helpers/Promises";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
-import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
+import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 import ContentDataProvider, { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor } from "@helpers/random";
 

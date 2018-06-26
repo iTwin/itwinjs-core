@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "ECPresentationManager now has a `client id` which is used to identify the frontend",
+      "type": "patch"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "Moved ruleset management functions from ECPresentationManager to RulesetManager which is accessible from ECPresentationManager through `rulesets()` method",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

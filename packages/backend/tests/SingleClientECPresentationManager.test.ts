@@ -9,9 +9,10 @@ const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import { using } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { PageOptions, SelectionInfo, KeySet, ECPresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@common/index";
-import ECPresentationManager from "@src/ECPresentationManager";
+import ECPresentationManager from "@src/SingleClientECPresentationManager";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "@src/NativePlatform";
 import UserSettingsManager from "@src/UserSettingsManager";
+import RulesetManager from "@src/RulesetManager";
 import {
   createRandomNodePathElementJSON, createRandomECInstanceNodeKey,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
@@ -32,7 +33,7 @@ import "@helpers/Snapshots";
 import "@helpers/Promises";
 import "./IModeHostSetup";
 
-describe("ECPresentationManager", () => {
+describe("SingleClientECPresentationManager", () => {
 
   beforeEach(() => {
     IModelHost.shutdown();
@@ -139,7 +140,19 @@ describe("ECPresentationManager", () => {
     const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
 
     it("returns settings manager", () => {
-      expect(manager.settings).to.be.instanceOf(UserSettingsManager);
+      const settings = manager.settings(faker.random.word());
+      expect(settings).to.be.instanceOf(UserSettingsManager);
+    });
+
+  });
+
+  describe("rulesets", () => {
+
+    const addon = moq.Mock.ofType<NativePlatformDefinition>();
+    const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
+
+    it("returns rulesets manager", () => {
+      expect(manager.rulesets()).to.be.instanceOf(RulesetManager);
     });
 
   });

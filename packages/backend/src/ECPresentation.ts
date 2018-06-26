@@ -5,9 +5,13 @@
 
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { ECPresentationRpcInterface, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
+import {
+  ECPresentationRpcInterface,
+  ECPresentationError, ECPresentationStatus,
+} from "@bentley/ecpresentation-common";
 import ECPresentationRpcImpl from "./ECPresentationRpcImpl";
-import ECPresentationManager, { Props as ECPresentationManagerProps } from "./ECPresentationManager";
+import IBackendECPresentationManager, { Props } from "./IBackendECPresentationManager";
+import MultiClientECPresentationManager from "./MultiClientECPresentationManager";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 
 /**
@@ -20,7 +24,7 @@ import { DisposeFunc } from "@bentley/bentleyjs-core";
  */
 export default class ECPresentation {
 
-  private static _manager: ECPresentationManager | undefined;
+  private static _manager: IBackendECPresentationManager | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
 
   /* istanbul ignore next */
@@ -38,7 +42,7 @@ export default class ECPresentation {
    *
    * @param props Optional properties for ECPresentationManager
    */
-  public static initialize(props?: ECPresentationManagerProps): void {
+  public static initialize(props?: Props): void {
     try {
       RpcManager.registerImpl(ECPresentationRpcInterface, ECPresentationRpcImpl);
     } catch (_e) {
@@ -47,7 +51,7 @@ export default class ECPresentation {
       // using the one registered first. At least we can avoid an exception...
     }
     ECPresentation._shutdownListener = IModelHost.onBeforeShutdown.addListener(ECPresentation.terminate);
-    ECPresentation._manager = new ECPresentationManager(props);
+    ECPresentation._manager = new MultiClientECPresentationManager(props);
   }
 
   /**
@@ -68,14 +72,14 @@ export default class ECPresentation {
   /**
    * Get the single static instance of [[ECPresentationManager]]
    */
-  public static get manager(): ECPresentationManager {
+  public static get manager(): IBackendECPresentationManager {
     if (!ECPresentation._manager)
       throw new ECPresentationError(ECPresentationStatus.NotInitialized, "ECPresentation must be first initialized by calling ECPresentation.initialize");
     return ECPresentation._manager;
   }
 
   /** @hidden */
-  public static setManager(value: ECPresentationManager) {
+  public static setManager(value: IBackendECPresentationManager) {
     if (ECPresentation._manager)
       ECPresentation._manager.dispose();
     ECPresentation._manager = value;

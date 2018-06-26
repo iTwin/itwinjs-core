@@ -5,29 +5,32 @@ import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import { createRandomId } from "@helpers/random";
 import * as faker from "faker";
-import { SettingValueTypes, ECPresentationError } from "@common/index";
+import { SettingValueTypes } from "@bentley/ecpresentation-common";
 import { NativePlatformDefinition } from "@src/NativePlatform";
 import UserSettingsManager from "@src/UserSettingsManager";
 
 describe("UserSettingsManager", () => {
 
   let settingsManager: UserSettingsManager;
-  const rulesetId = "rulesetId";
-  const settingId = "settingId";
+  let rulesetId = "";
+  let settingId = "";
   const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
   beforeEach(() => {
     addonMock.reset();
-    settingsManager = new UserSettingsManager(() => addonMock.object);
+    rulesetId = faker.random.word();
+    settingId = faker.random.word();
+    settingsManager = new UserSettingsManager(() => addonMock.object, rulesetId);
   });
 
   describe("setValue", () => {
 
     it("calls addon's setUserSettingValue", async () => {
+      const value = faker.random.words();
       addonMock
-        .setup((x) => x.setUserSetting(rulesetId, settingId, JSON.stringify({ value: "value", type: SettingValueTypes.String })))
-        .verifiable();
+      .setup((x) => x.setUserSetting(rulesetId, settingId, JSON.stringify({ value, type: SettingValueTypes.String })))
+      .verifiable();
 
-      await settingsManager.setValue(rulesetId, settingId, { value: "value", type: SettingValueTypes.String });
+      await settingsManager.setValue(settingId, { value, type: SettingValueTypes.String });
       addonMock.verifyAll();
     });
 
@@ -42,7 +45,7 @@ describe("UserSettingsManager", () => {
         .returns(() => value)
         .verifiable();
 
-      const result = await settingsManager.getValue(rulesetId, settingId, SettingValueTypes.Bool);
+      const result = await settingsManager.getBoolean(settingId);
       expect(result).to.be.equal(value);
       addonMock.verifyAll();
     });
@@ -58,7 +61,7 @@ describe("UserSettingsManager", () => {
         .returns(() => (value))
         .verifiable();
 
-      const result = await settingsManager.getValue(rulesetId, settingId, SettingValueTypes.Int);
+      const result = await settingsManager.getInt(settingId);
       expect(result).to.be.equal(value);
       addonMock.verifyAll();
     });
@@ -74,7 +77,7 @@ describe("UserSettingsManager", () => {
         .returns(() => valueArray)
         .verifiable();
 
-      const result = await settingsManager.getValue(rulesetId, settingId, SettingValueTypes.IntArray);
+      const result = await settingsManager.getIntArray(settingId);
       expect(result).to.deep.eq(valueArray);
       addonMock.verifyAll();
     });
@@ -90,7 +93,7 @@ describe("UserSettingsManager", () => {
         .returns(() => value.value)
         .verifiable();
 
-      const result = await settingsManager.getValue(rulesetId, settingId, SettingValueTypes.Id64);
+      const result = await settingsManager.getId64(settingId);
       expect(result).to.be.deep.equal(value);
       addonMock.verifyAll();
     });
@@ -110,7 +113,7 @@ describe("UserSettingsManager", () => {
         .returns(() => valueArray)
         .verifiable();
 
-      const result = await settingsManager.getValue(rulesetId, settingId, SettingValueTypes.Id64Array);
+      const result = await settingsManager.getId64Array(settingId);
       expect(result).to.be.deep.equal(valueArray);
       addonMock.verifyAll();
     });
@@ -120,23 +123,15 @@ describe("UserSettingsManager", () => {
   describe("getString", () => {
 
     it("gets string setting value", async () => {
-      const value = faker.random.word();
+      const value = faker.random.words();
       addonMock
         .setup((x) => x.getUserSetting(rulesetId, settingId, SettingValueTypes.String))
         .returns(() => value)
         .verifiable();
 
-      const result = await settingsManager.getValue(rulesetId, settingId, SettingValueTypes.String);
+      const result = await settingsManager.getString(settingId);
       expect(result).to.be.equal(value);
       addonMock.verifyAll();
-    });
-
-    describe("getValue", () => {
-
-      it("throws if setting type is invalid", () => {
-        expect(settingsManager.getValue.apply(settingsManager, [rulesetId, settingId, ""])).rejectedWith(ECPresentationError);
-      });
-
     });
 
   });

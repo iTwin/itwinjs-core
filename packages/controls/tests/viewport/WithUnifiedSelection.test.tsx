@@ -21,9 +21,10 @@ import { ElementProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, ViewState3d, IModelApp, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/ecpresentation-common";
 import {
-  ECPresentation, ECPresentationManager,
+  ECPresentation,
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/ecpresentation-frontend";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 import { ViewportComponent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
 import { default as withUnifiedSelection, ViewportSelectionHandler } from "@src/viewport/WithUnifiedSelection";

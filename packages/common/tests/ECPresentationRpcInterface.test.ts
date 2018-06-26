@@ -157,14 +157,43 @@ describe("ECPresentationRpcInterface", () => {
       mock.verify((x) => x(options as any, descriptor, moq.It.is((a) => a instanceof KeySet), fieldName, maximumValueCount), moq.Times.once());
     });
 
+    it("forwards addRuleset call", async () => {
+      const options = { clientId: faker.random.uuid() };
+      const ruleset = { ruleSetId: "" };
+      await rpcInterface.addRuleset(options, ruleset);
+      mock.verify((x) => x(options as any, ruleset), moq.Times.once());
+    });
+
+    it("forwards removeRuleset call", async () => {
+      const options = { clientId: faker.random.uuid() };
+      await rpcInterface.removeRuleset(options, "test id");
+      mock.verify((x) => x(options as any, "test id"), moq.Times.once());
+    });
+
+    it("forwards clearRulesets call", async () => {
+      const options = { clientId: faker.random.uuid() };
+      await rpcInterface.clearRulesets(options);
+      mock.verify((x) => x(options as any), moq.Times.once());
+    });
+
     it("forwards setUserSettingValue call", async () => {
-      await rpcInterface.setUserSettingValue("rulesetId", "settingId", { value: "", type: SettingValueTypes.String });
-      mock.verify((x) => x("rulesetId", "settingId", { value: "", type: SettingValueTypes.String }), moq.Times.once());
+      const rulesetId = faker.random.uuid();
+      const settingId = faker.random.uuid();
+      const params = { clientId: "client id", rulesetId, settingId };
+      const value = faker.random.words();
+      await rpcInterface.setUserSettingValue(params, { value, type: SettingValueTypes.String });
+      mock.verify((x) => x(params as any, { value, type: SettingValueTypes.String }), moq.Times.once());
     });
 
     it("forwards getUserSettingValue call", async () => {
-      await rpcInterface.getUserSettingValue("rulesetId", "settingId", SettingValueTypes.String);
-      mock.verify((x) => x("rulesetId", "settingId", SettingValueTypes.String), moq.Times.once());
+      const rulesetId = faker.random.uuid();
+      const settingId = faker.random.uuid();
+      const params = { clientId: "client id", rulesetId, settingId };
+      const value = faker.random.words();
+      mock.setup((x) => x(params as any, SettingValueTypes.String)).returns(async () => value).verifiable(moq.Times.once());
+      const actualValue = await rpcInterface.getUserSettingValue(params, SettingValueTypes.String);
+      mock.verifyAll();
+      expect(actualValue).to.eq(value);
     });
 
   });

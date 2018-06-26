@@ -50,33 +50,33 @@ describe("default NativePlatform", () => {
     addonMock.verifyAll();
   });
 
-  it("calls addon's handleRequest", (done) => {
+  it("calls addon's handleRequest", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .returns((_db, _options, cb) => cb({ result: "0" }))
+      .callback((_db, _options, cb) => { cb({ result: "0" }); })
       .verifiable();
-    expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.equal("0").notify(done);
+    await expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.equal("0");
     addonMock.verifyAll();
   });
 
   it("throws on invalid handleRequest response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .returns((_db, _options, cb) => cb(undefined as any));
+      .callback((_db, _options, cb) => { cb(undefined as any); });
     return expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError);
   });
 
   it("throws on handleRequest error response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .returns((_db, _options, cb) => cb({ error: { status: NativeECPresentationStatus.Error, message: "test" } }));
+      .callback((_db, _options, cb) => { cb({ error: { status: NativeECPresentationStatus.Error, message: "test" } }); });
     return expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError, "test");
   });
 
   it("throws on handleRequest success response without result", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .returns((_db, _options, cb) => cb({ result: undefined }));
+      .callback((_db, _options, cb) => { cb({ result: undefined }); });
     return expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError);
   });
 
@@ -130,20 +130,24 @@ describe("default NativePlatform", () => {
   });
 
   it("calls addon's setUserSetting", async () => {
-    const value = JSON.stringify({ value: "", type: SettingValueTypes.String });
-    addonMock.setup((x) => x.setUserSetting("rulesetId", "settingId", value))
+    const rulesetId = faker.random.word();
+    const settingId = faker.random.word();
+    const value = JSON.stringify({ value: faker.random.word(), type: SettingValueTypes.String });
+    addonMock.setup((x) => x.setUserSetting(rulesetId, settingId, value))
       .returns(() => ({}))
       .verifiable();
-    await nativePlatform.setUserSetting("rulesetId", "settingId", value);
+    await nativePlatform.setUserSetting(rulesetId, settingId, value);
     addonMock.verifyAll();
   });
 
   it("calls addon's getUserSetting", async () => {
+    const rulesetId = faker.random.word();
+    const settingId = faker.random.word();
     const value = faker.random.word();
-    addonMock.setup((x) => x.getUserSetting("rulesetId", "settingId", SettingValueTypes.String))
+    addonMock.setup((x) => x.getUserSetting(rulesetId, settingId, SettingValueTypes.String))
       .returns(() => ({ result: value }))
       .verifiable();
-    const result = await nativePlatform.getUserSetting("rulesetId", "settingId", SettingValueTypes.String);
+    const result = await nativePlatform.getUserSetting(rulesetId, settingId, SettingValueTypes.String);
     expect(result).to.be.equal(value);
     addonMock.verifyAll();
   });

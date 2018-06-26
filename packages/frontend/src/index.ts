@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-export { default as ECPresentationManager } from "./ECPresentationManager";
 export * from "./selection";
 export { default as PersistenceHelper } from "./PersistenceHelper";
 export { default as ECPresentation } from "./ECPresentation";

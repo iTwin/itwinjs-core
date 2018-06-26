@@ -5,12 +5,13 @@ import "@helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import { spy } from "@helpers/Spies";
+import { initializeRpcInterface } from "@helpers/RpcHelper";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ECPresentationRpcInterface, ECPresentationError } from "@common/index";
-import { ECPresentation, ECPresentationManager } from "@src/index";
+import { ECPresentation } from "@src/index";
 import { SelectionManager } from "@src/selection";
-import { initializeRpcInterface } from "@helpers/RpcHelper";
+import ECPresentationManager from "@src/ECPresentationManager";
 
 describe("ECPresentation", () => {
 

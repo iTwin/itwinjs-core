@@ -3,14 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import { Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  ECPresentationManager as ECPInterface, ECPresentationRpcInterface,
+  IECPresentationManager, ECPresentationRpcInterface,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, RequestOptions, KeySet, InstanceKey, PresentationRuleSet,
+  IUserSettingsManager, IRulesetManager,
+  Paged, RequestOptions, KeySet, InstanceKey,
 } from "@bentley/ecpresentation-common";
 import UserSettingsManager from "./UserSettingsManager";
+import RulesetManager from "./RulesetManager";
 
 /**
  * Properties used to configure [[ECPresentationManager]].
@@ -21,25 +24,24 @@ export interface Props {
    * strings. It can later be changed through [[ECPresentationManager]].
    */
   activeLocale?: string;
+
+  /** @hidden */
+  clientId?: string;
 }
 
 /**
  * Frontend ECPresentation manager which basically just forwards all calls to
  * the backend implementation.
  */
-export default class ECPresentationManager implements ECPInterface<IModelConnection> {
+export default class ECPresentationManager implements IECPresentationManager<IModelConnection> {
 
-  private _settings: UserSettingsManager;
+  private _clientId: string;
   public activeLocale: string | undefined;
 
   private constructor(props?: Props) {
     if (props)
       this.activeLocale = props.activeLocale;
-    this._settings = new UserSettingsManager();
-  }
-
-  public get settings(): UserSettingsManager {
-    return this._settings;
+    this._clientId = (props && props.clientId) ? props.clientId : Guid.createValue();
   }
 
   /**
@@ -50,34 +52,26 @@ export default class ECPresentationManager implements ECPInterface<IModelConnect
     return new ECPresentationManager(props);
   }
 
+  /** @hidden */
+  public get clientId() { return this._clientId; }
+
+  public rulesets(): IRulesetManager {
+      return new RulesetManager(this._clientId);
+  }
+
+  public settings(rulesetId: string): IUserSettingsManager {
+    return new UserSettingsManager(this._clientId, rulesetId);
+  }
+
   private toIModelTokenOptions<TOptions extends RequestOptions<IModelConnection>>(options: TOptions) {
     // 1. put default `locale`
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
-    // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options`
+    // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options` put at #2
+    // 4. put `clientId`
     return Object.assign({}, { locale: this.activeLocale }, options, {
       imodel: options.imodel.iModelToken,
+      clientId: this._clientId,
     });
-  }
-
-  /**
-   * Register a presentation ruleset.
-   */
-  public async addRuleSet(ruleSet: PresentationRuleSet): Promise<void> {
-    return await ECPresentationRpcInterface.getClient().addRuleSet(ruleSet);
-  }
-
-  /**
-   * Unregister presentation ruleset with the specified id.
-   */
-  public async removeRuleSet(ruleSetId: string): Promise<void> {
-    return await ECPresentationRpcInterface.getClient().removeRuleSet(ruleSetId);
-  }
-
-  /**
-   * Unregister all registered presentation ruleset
-   */
-  public async clearRuleSets(): Promise<void> {
-    return await ECPresentationRpcInterface.getClient().clearRuleSets();
   }
 
   public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>): Promise<ReadonlyArray<Readonly<Node>>> {

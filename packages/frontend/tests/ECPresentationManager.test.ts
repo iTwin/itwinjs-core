@@ -8,8 +8,9 @@ import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, Content, Descriptor, ECPresentationRpcInterface, HierarchyRequestOptions, Paged, ContentRequestOptions, RequestOptions } from "@common/index";
-import { ECPresentationManager } from "@src/index";
+import ECPresentationManager from "@src/ECPresentationManager";
 import UserSettingsManager from "@src/UserSettingsManager";
+import RulesetManager from "@srcRulesetManager";
 import {
   createRandomDescriptor,
   createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
@@ -24,17 +25,22 @@ describe("ECPresentationManager", () => {
   const testData = {
     imodelToken: new IModelToken(),
     imodelMock: moq.Mock.ofType<IModelConnection>(),
-    pageOptions: { start: 1, size: 2 },
-    rulesetId: "testRuleset",
-    presentationRuleSet: { ruleSetId: "testRuleset" },
+    pageOptions: { start: 0, size: 0 },
+    rulesetId: "",
+    clientId: "",
   };
 
   beforeEach(() => {
     initializeRpcInterface(ECPresentationRpcInterface);
+
     interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
     ECPresentationRpcInterface.getClient = () => interfaceMock.object;
     testData.imodelMock.setup((x) => x.iModelToken).returns(() => testData.imodelToken);
-    manager = ECPresentationManager.create();
+    testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
+    testData.rulesetId = faker.random.uuid();
+    testData.clientId = faker.random.uuid();
+
+    manager = ECPresentationManager.create({ clientId: testData.clientId });
   });
 
   const toIModelTokenOptions = <TOptions extends RequestOptions<IModelConnection>>(options: TOptions) => {
@@ -43,6 +49,7 @@ describe("ECPresentationManager", () => {
     // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options`
     return Object.assign({}, { locale: undefined }, options, {
       imodel: testData.imodelToken,
+      clientId: testData.clientId,
     });
   };
 
@@ -52,6 +59,12 @@ describe("ECPresentationManager", () => {
       const props = { activeLocale: faker.locale };
       const mgr = ECPresentationManager.create(props);
       expect(mgr.activeLocale).to.eq(props.activeLocale);
+    });
+
+    it("sets custom clientId if supplied with props", async () => {
+      const props = { clientId: faker.random.word() };
+      const mgr = ECPresentationManager.create(props);
+      expect(mgr.clientId).to.eq(props.clientId);
     });
 
   });
@@ -68,6 +81,7 @@ describe("ECPresentationManager", () => {
       interfaceMock.verify((x) => x.getRootNodesCount({
         imodel: testData.imodelToken,
         rulesetId: testData.rulesetId,
+        clientId: testData.clientId,
         locale,
       }), moq.Times.once());
     });
@@ -82,8 +96,27 @@ describe("ECPresentationManager", () => {
       interfaceMock.verify((x) => x.getRootNodesCount({
         imodel: testData.imodelToken,
         rulesetId: testData.rulesetId,
+        clientId: testData.clientId,
         locale,
       }), moq.Times.once());
+    });
+
+  });
+
+  describe("rulesets", () => {
+
+    it("returns rulesets manager", () => {
+      const rulesets = manager.rulesets();
+      expect(rulesets).to.be.instanceOf(RulesetManager);
+    });
+
+  });
+
+  describe("settings", () => {
+
+    it("returns settings manager", () => {
+      const settings = manager.settings(testData.rulesetId);
+      expect(settings).to.be.instanceOf(UserSettingsManager);
     });
 
   });
@@ -324,47 +357,6 @@ describe("ECPresentationManager", () => {
       await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
       interfaceMock.verifyAll();
     });
-  });
-
-  describe("addRuleSet", () => {
-
-    it("calls addRuleSet through proxy", async () => {
-      interfaceMock.setup((x) => x.addRuleSet(testData.presentationRuleSet))
-        .verifiable();
-      await manager.addRuleSet(testData.presentationRuleSet);
-      interfaceMock.verifyAll();
-    });
-
-  });
-
-  describe("removeRuleSets", () => {
-
-    it("calls removeRuleSets through proxy", async () => {
-      interfaceMock.setup((x) => x.removeRuleSet(testData.presentationRuleSet.ruleSetId))
-        .verifiable();
-      await manager.removeRuleSet(testData.presentationRuleSet.ruleSetId);
-      interfaceMock.verifyAll();
-    });
-
-  });
-
-  describe("clearRuleSets", () => {
-
-    it("calls clearRuleSets through proxy", async () => {
-      interfaceMock.setup((x) => x.clearRuleSets())
-        .verifiable();
-      await manager.clearRuleSets();
-      interfaceMock.verifyAll();
-    });
-
-  });
-
-  describe("settings", () => {
-
-    it("returns settings manager", () => {
-      expect(manager.settings).to.be.instanceOf(UserSettingsManager);
-    });
-
   });
 
 });

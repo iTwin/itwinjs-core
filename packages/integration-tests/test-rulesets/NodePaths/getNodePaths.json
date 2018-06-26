@@ -1,5 +1,5 @@
 {
-  "ruleSetId": "JsonRuleSet",
+  "ruleSetId": "getNodePaths",
   "rules": [{
     "type": "RootNode",
     "specifications": [{
