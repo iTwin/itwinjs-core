@@ -129,4 +129,15 @@ export interface ECPresentationManager<TIModel extends IModel> {
    * @return A promise object that returns either content on success or an error string on error.
    */
   getContent(imodel: TIModel, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>>;
+
+  /** Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
+   * @param imodel               iModel to pull data from
+   * @param descriptor           Content descriptor which specifies how the content should be returned.
+   * @param keys                 Keys of ECInstances to get the content for.
+   * @param fieldName            Name of the field from which to take values.
+   * @param options              An options object that depends on the used presentation manager implementation.
+   * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
+   * @return A promise object that returns either distinct values on success or an error string on error.
+   */
+  getDistinctValues(imodel: TIModel, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, options: object, maximumValueCount: number): Promise<string[]>;
 }

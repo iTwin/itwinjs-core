@@ -221,6 +221,33 @@ describe("ECPresentationManager", () => {
 
   });
 
+  describe("getDistinctValues", () => {
+
+    it("requests distinct values", async () => {
+      const keyset = new KeySet();
+      const descriptorMock = moq.Mock.ofInstance(createRandomDescriptor());
+      descriptorMock.callBase = true;
+      const fieldName = faker.random.word();
+      const maximumValueCount = faker.random.number();
+      const result = [faker.random.word(), faker.random.word()];
+      interfaceMock
+        .setup((x) => x.getDistinctValues(testData.imodelToken, moq.It.is((d) => deepEqual(d, descriptorMock.object.createStrippedDescriptor())), keyset, fieldName, testData.extendedData, maximumValueCount))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getDistinctValues(testData.imodelMock.object, descriptorMock.object, keyset, fieldName, testData.extendedData, maximumValueCount);
+      expect(actualResult).to.deep.eq(result);
+      interfaceMock.verifyAll();
+    });
+
+    it("passes 0 for maximumValueCount by default", async () => {
+      interfaceMock
+        .setup((x) => x.getDistinctValues(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), 0))
+        .verifiable();
+      await manager.getDistinctValues(testData.imodelMock.object, createRandomDescriptor(), new KeySet(), "", {});
+      interfaceMock.verifyAll();
+    });
+  });
+
   describe("addRuleSet", () => {
 
     it("calls addRuleSet through proxy", async () => {

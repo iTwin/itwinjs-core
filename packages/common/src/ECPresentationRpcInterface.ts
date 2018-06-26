@@ -65,6 +65,8 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   public getContentSetSize(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _options: object): Promise<number> { return this.forward.apply(this, arguments); }
   /** See [[ECPresentationManager.getContent]] */
   public getContent(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<Readonly<Content>> { return this.forward.apply(this, arguments); }
+  /** See [[ECPresentationManager.getDistinctValues]] */
+  public getDistinctValues(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _options: object, _maximumValueCount: number): Promise<string[]> { return this.forward.apply(this, arguments); }
 
   /** Sets user setting value
    * @param _ruleSetId Id of a ruleset setting is associated with.

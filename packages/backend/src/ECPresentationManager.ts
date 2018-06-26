@@ -217,6 +217,17 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.request<Content>(imodel, params, Content.reviver);
   }
 
+  public async getDistinctValues(imodel: IModelDb, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, options: object, maximumValueCount: number = 0): Promise<string[]> {
+    const params = this.createRequestParams(NodeAddonRequestTypes.GetDistinctValues, {
+      descriptorOverrides: descriptor.createDescriptorOverrides(),
+      keys,
+      fieldName,
+      maximumValueCount,
+      options,
+    });
+    return this.request<string[]>(imodel, params);
+  }
+
   private async request<T>(imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, params);
@@ -331,4 +342,5 @@ export enum NodeAddonRequestTypes {
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
+  GetDistinctValues = "GetDistinctValues",
 }

@@ -127,4 +127,9 @@ export default class ECPresentationManager implements ECPInterface<IModelConnect
     content.descriptor.rebuildParentship();
     return content;
   }
+
+  public async getDistinctValues(imodel: IModelConnection, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, options: object, maximumValueCount: number = 0): Promise<string[]> {
+    return await ECPresentationRpcInterface.getClient().getDistinctValues(imodel.iModelToken, descriptor.createStrippedDescriptor(), keys, fieldName, options, maximumValueCount);
+  }
+
 }
