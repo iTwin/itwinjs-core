@@ -499,13 +499,13 @@ export abstract class Target extends RenderTarget {
     }
   }
 
-  public drawFrame(sceneSecondsElapsed?: number): void {
+  public drawFrame(sceneMilSecElapsed?: number): void {
     assert(System.instance.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
-    this.paintScene(sceneSecondsElapsed);
+    this.paintScene(sceneMilSecElapsed);
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
@@ -560,7 +560,7 @@ export abstract class Target extends RenderTarget {
   private _doDebugPaint: boolean = false;
   protected debugPaint(): void { }
 
-  private paintScene(sceneSecondsElapsed?: number): void {
+  private paintScene(sceneMilSecElapsed?: number): void {
     if (this._doDebugPaint) {
       this.debugPaint();
       return;
@@ -570,7 +570,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.setFrameTime(sceneSecondsElapsed);
+    this.setFrameTime(sceneMilSecElapsed);
     this._beginPaint();
 
     const gl = System.instance.context;
@@ -605,17 +605,17 @@ export abstract class Target extends RenderTarget {
       this._renderSpfSum += renderTimeElapsed;
       this._renderSpfTimes[this._curSpfTimeIndex++] = renderTimeElapsed;
 
-      if (sceneSecondsElapsed) {
+      if (sceneMilSecElapsed !== undefined) {
         if (this._loadTileTimes[this._curSpfTimeIndex]) this._loadTileSum -= this._loadTileTimes[this._curSpfTimeIndex];
-        this._loadTileSum += sceneSecondsElapsed;
-        this._loadTileTimes[this._curSpfTimeIndex++] = sceneSecondsElapsed;
+        this._loadTileSum += sceneMilSecElapsed;
+        this._loadTileTimes[this._curSpfTimeIndex++] = sceneMilSecElapsed;
         if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
       }
 
       if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
         "Avg. FPS (ms): " + (this._spfTimes.length / this._spfSum).toFixed(2)
         + " Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2)
-        + "<br />Scene Time (sec): " + (1000 * this._loadTileSum / this._loadTileTimes.length).toFixed(2); // (this._frameTimes[1].milliseconds - this._frameTimes[0].milliseconds).toFixed(2)
+        + "<br />Scene Time (ms): " + (this._loadTileSum / this._loadTileTimes.length).toFixed(2);
       Target._fpsTimerStart = Target._fpsTimer.currentSeconds;
     }
     if (this._gatherFrameTimings) {

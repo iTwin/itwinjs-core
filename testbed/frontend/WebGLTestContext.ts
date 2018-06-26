@@ -15,7 +15,7 @@ export class NullTarget extends RenderTarget {
   public changeDynamics(): void { }
   public changeDecorations(): void { }
   public changeRenderPlan(): void { }
-  public drawFrame(_sceneSecondsElapsed?: number): void { }
+  public drawFrame(_sceneMilSecElapsed?: number): void { }
   public overrideFeatureSymbology(): void { }
   public setHiliteSet(): void { }
   public setFlashed(): void { }

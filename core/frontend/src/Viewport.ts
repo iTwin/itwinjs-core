@@ -1543,7 +1543,7 @@ export class Viewport {
 
     timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame(timer.elapsedSeconds);
+      target.drawFrame(timer.elapsed.milliseconds);
 
     return true;
   }
