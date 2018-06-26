@@ -272,7 +272,6 @@ function applyCategoryToggleChange(_cbxCategory: string) {
   }
 
   updateCheckboxToggleState("cbxCatToggleAll", allToggledOn);
-  theViewport!.sync.invalidateScene();
 
   const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
@@ -292,8 +291,6 @@ function applyCategoryToggleAllChange() {
     const invis = isChecked ? false : true;
     toggleCategoryState(invis, id, new Id64(cat), view);
   }
-
-  theViewport!.sync.invalidateScene();
 
   const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
