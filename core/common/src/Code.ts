@@ -9,17 +9,20 @@ import { IModel } from "./IModel";
 /** The props that hold the identity of the object defining the uniqueness scope for a set of Code values. */
 export type CodeScopeProps = Id64Props | GuidProps;
 
-/** Properties that define a Code */
+/** The wire format for a Code */
 export interface CodeProps {
   spec: Id64Props;
   scope: CodeScopeProps;
   value?: string;
 }
 
-/** A three part Code that identifies an Element */
+/** A three part [BIS Code]($docs/bis/intro/codes) that identifies an Element */
 export class Code implements CodeProps {
+  /** The id of the [[CodeSpec]] for this Code */
   public spec: Id64;
+  /** the [CodeScope]($docs/bis/intro/glossary.md#codescope) of this Code */
   public scope: string;
+  /** the [CodeValue]($docs/bis/intro/glossary.md#codevalue) of this Code */
   public value?: string;
 
   constructor(val: CodeProps) {
@@ -36,8 +39,9 @@ export class Code implements CodeProps {
 }
 
 /**
- * Names of the BIS CodeSpecs. These names match those specified by the native C++ library.
- * The best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness
+ * Names of the internal BIS CodeSpecs. These names match those specified by the native library.
+ *
+ * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
  */
 export const enum BisCodeSpec {
   nullCodeSpec = "bis:NullCodeSpec",
@@ -76,21 +80,27 @@ export const enum BisCodeSpec {
 /** The scope of the Code. */
 export namespace CodeScopeSpec {
   export const enum Type {
-    Repository = 1,     /** The Code value must be unique within (at least) the iModel repository */
-    Model = 2,          /** The Code value must be unique within the scope of the Model */
-    ParentElement = 3,  /** The Code value must be unique among other children of the same parent element */
-    RelatedElement = 4, /** The Code value must be unique among other elements also scoped by the same element */
+    /** The Code value must be unique within (at least) the iModel repository */
+    Repository = 1,
+    /** The Code value must be unique within the scope of the Model */
+    Model = 2,
+    /** The Code value must be unique among other children of the same parent element */
+    ParentElement = 3,
+    /** The Code value must be unique among other elements also scoped by the same element */
+    RelatedElement = 4,
   }
 
   /** Requirements for using a Code. */
   export const enum ScopeRequirement {
-    ElementId = 1,      /** The Code is required to have a valid ElementId as its scope */
-    FederationGuid = 2, /** The Code is required to have a valid FederationGuid as its scope */
+    /** The Code is required to have a valid ElementId as its scope */
+    ElementId = 1,
+    /** The Code is required to have a valid FederationGuid as its scope */
+    FederationGuid = 2,
   }
 }
 
 /**
- * A "Code Specification" captures the rules for encoding and decoding significant business information into
+ * A [Code Specification]($docs/bis/intro/glossary#codespec) captures the rules for encoding and decoding significant business information into
  * and from a Code (string). This specification is used to generate and validate Codes.
  *
  * A CodeSpec supplies the Codes for a certain type of Entity in an IModel.

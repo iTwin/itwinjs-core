@@ -8,7 +8,7 @@ import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels, TextureMapping, ImageSource, RenderTexture, RenderMaterial, Gradient } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../render/System";
 import { RenderSystem } from "../render/System";
@@ -175,7 +175,6 @@ export namespace IModelTileIO {
     }
 
     protected createDisplayParams(json: any): DisplayParams | undefined {
-      // ###TODO: gradient, material from material ID, texture mapping
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
       const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
       const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));
@@ -184,7 +183,124 @@ export namespace IModelTileIO {
       const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);
       const ignoreLighting = JsonUtils.asBool(json.ignoreLighting);
 
-      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, undefined, undefined, ignoreLighting);
+      // Material will always contain its own texture if it has one
+      const materialKey = json.materialId;
+      const material = undefined !== materialKey ? this.materialFromJson(materialKey) : undefined;
+
+      // We will only attempt to include the texture if material is undefined
+      let textureMapping;
+      if (!material) {
+        const textureJson = json.texture;
+        textureMapping = undefined !== textureJson ? this.textureMappingFromJson(textureJson) : undefined;
+
+        if (undefined === textureMapping) {
+          // Look for a gradient. If defined, create a texture mapping. No reason to pass the Gradient.Symb to the DisplayParams once we have the texture.
+          const gradientProps = json.gradient as Gradient.SymbProps;
+          const gradient = undefined !== gradientProps ? Gradient.Symb.fromJSON(gradientProps) : undefined;
+          if (undefined !== gradient) {
+            const texture = this.system.getGradientTexture(gradient, this.model.iModel);
+            if (undefined !== texture) {
+              // ###TODO: would be better if DisplayParams created the TextureMapping - but that requires an IModelConnection and a RenderSystem...
+              textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
+            }
+          }
+        }
+      }
+
+      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping);
+    }
+
+    protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
+      return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
+    }
+
+    protected materialFromJson(key: string): RenderMaterial | undefined {
+      if (this.renderMaterials[key] === undefined)
+        return undefined;
+
+      let material = this.system.findMaterial(key, this.model.iModel);
+      if (!material) {
+        const materialJson = this.renderMaterials[key];
+
+        const materialParams = new RenderMaterial.Params(key);
+        materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
+        if (materialJson.diffuse !== undefined)
+          materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
+        materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
+        if (materialJson.specular !== undefined)
+          materialParams.specular = JsonUtils.asDouble(materialJson.specular);
+        materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
+        if (materialJson.reflect !== undefined)
+          materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+
+        if (materialJson.specularExponent !== undefined)
+          materialParams.specularExponent = materialJson.specularExponent;
+        if (materialJson.transparency !== undefined)
+          materialParams.transparency = materialJson.transparency;
+        materialParams.refract = JsonUtils.asDouble(materialJson.refract);
+        materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
+        materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
+
+        if (undefined !== materialJson.textureMapping)
+          materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+
+        material = this.system.createMaterial(materialParams, this.model.iModel);
+      }
+
+      return material;
+    }
+
+    private textureMappingFromJson(json: any): TextureMapping | undefined {
+      if (undefined === json)
+        return undefined;
+
+      const name = JsonUtils.asString(json.name);
+      const namedTex = 0 !== name.length ? this.namedTextures[name] : undefined;
+      if (undefined === namedTex)
+        return undefined;
+
+      // If we've already seen this texture name before, it will be in the RenderSystem's cache.
+      const imodel = this.model.iModel;
+      let texture = this.system.findTexture(name, imodel);
+      if (undefined === texture) {
+        // First time encountering this texture name - create it.
+        // ###TODO: We are currently not writing the width and height to json!
+        const width = JsonUtils.asInt(namedTex.width);
+        const height = JsonUtils.asInt(namedTex.height);
+        if (0 >= width || 0 >= height)
+          return undefined;
+
+        const bufferViewId = JsonUtils.asString(namedTex.bufferView);
+        const bufferViewJson = 0 !== bufferViewId.length ? this.bufferViews[bufferViewId] : undefined;
+        if (undefined === bufferViewJson)
+          return undefined;
+
+        const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+        const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+        if (0 === byteLength)
+          return undefined;
+
+        const bytes = this.binaryData.subarray(byteOffset, byteOffset + byteLength);
+        const format = namedTex.format;
+        const imageSource = new ImageSource(bytes, format);
+
+        const params = new RenderTexture.Params(name, JsonUtils.asBool(namedTex.isTileSection), JsonUtils.asBool(namedTex.isGlyph), false);
+        texture = this.system.createTextureFromImageSource(imageSource, width, height, imodel, params);
+
+        if (undefined === texture)
+          return undefined;
+      }
+
+      const paramsJson = json.params;
+      const tf = paramsJson.transform;
+      const paramProps: TextureMapping.ParamProps = {
+        textureMat2x3: new TextureMapping.Trans2x3(tf[0][0], tf[0][1], tf[0][2], tf[1][0], tf[1][1], tf[1][2]),
+        textureWeight: JsonUtils.asDouble(paramsJson.weight, 1.0),
+        mapMode: JsonUtils.asInt(paramsJson.mode),
+        worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
+      };
+
+      return new TextureMapping(texture, new TextureMapping.Params(paramProps));
     }
   }
 }

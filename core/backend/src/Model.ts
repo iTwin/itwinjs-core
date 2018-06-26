@@ -11,7 +11,7 @@ import { IModelDb } from "./IModelDb";
 
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.
- * See [[IModelDbModels]] for how to query and manage the Models in an IModelDB.
+ * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDB.
  */
 export class Model extends Entity implements ModelProps {
   public readonly modeledElement: RelatedElement;

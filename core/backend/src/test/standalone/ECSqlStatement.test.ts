@@ -18,12 +18,12 @@ describe("ECSqlStatement", () => {
   const blobVal = testRange.toFloat64Array().buffer;
 
   it("Bind Ids", () => {
-    using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb) => {
+    using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb: ECDb) => {
 
       assert.isTrue(ecdb.isOpen());
 
       const verify = (ecdbToVerify: ECDb, actualRes: ECSqlInsertResult, expectedECInstanceId?: Id64) => {
-        if (expectedECInstanceId === undefined) {
+        if (!expectedECInstanceId) {
           assert.notEqual(actualRes.status, DbResult.BE_SQLITE_DONE);
           assert.isUndefined(actualRes.id);
           return;
@@ -904,7 +904,7 @@ describe("ECSqlStatement", () => {
 
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-          assert.isTrue(res.id !== undefined);
+          assert.isDefined(res.id);
           id1 = res.id!;
           assert.isTrue(id1.isValid());
         });
@@ -917,7 +917,7 @@ describe("ECSqlStatement", () => {
 
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
-          assert.isTrue(res.id !== undefined);
+          assert.isDefined(res.id);
           id2 = res.id!;
           assert.isTrue(id2.isValid());
         });
@@ -959,7 +959,7 @@ describe("ECSqlStatement", () => {
         <ECProperty propertyName="P3d" typeName="Point3d"/>
         <ECProperty propertyName="S" typeName="string"/>
       </ECEntityClass>
-      </ECSchema>`), (ecdb) => {
+      </ECSchema>`), (ecdb: ECDb) => {
         assert.isTrue(ecdb.isOpen());
 
         const boolVal: boolean = true;

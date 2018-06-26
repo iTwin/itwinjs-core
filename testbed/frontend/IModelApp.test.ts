@@ -114,10 +114,9 @@ describe("IModelApp", () => {
     assert.equal(FourthImmediate.description, "Localized FourthImmediate keyin, flyover, and description");
 
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass.
-    assert.isTrue(IModelApp.tools.run("Select"));
-    const select = IModelApp.toolAdmin.activePrimitiveTool as TestSelectTool;
-    assert.instanceOf(select, TestSelectTool, "test select tool is active");
-    assert.equal(select.keyin, "Select Elements", "keyin comes from superclass");
+    const selTool = IModelApp.tools.create("Select");
+    assert.instanceOf(selTool, TestSelectTool, "test select tool is active");
+    assert.equal(selTool!.keyin, "Select Elements", "keyin comes from superclass");
   });
 
   it("Should do trivial localizations", () => {

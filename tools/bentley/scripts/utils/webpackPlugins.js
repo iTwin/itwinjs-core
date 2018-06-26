@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 const chalk = require('chalk');
 const path = require('path');
@@ -23,11 +23,11 @@ class BanImportsPlugin {
       if (this.bannedRegex.test(request.path) || request.path.startsWith(this.bannedDir)) {
         const actualRequest = request.__innerRequest_request.replace(/^\.[\/\\]/, ""); // not sure why __innerRequest_request always starts with ./
         const errorMessage = chalk.red("You are importing ") + chalk.yellow(actualRequest) + chalk.red(".  ")
-        + chalk.red.bold(this.bannedName) + chalk.red(" code should not be included in the ") 
+        + chalk.red.bold(this.bannedName) + chalk.red(" code should not be included in the ")
         + chalk.red.bold(this.bundleName) + chalk.red(" bundle.");
         return callback(new Error(errorMessage), request);
       }
-      
+
       return callback();
     });
   }

@@ -81,7 +81,7 @@ function mockGetGlobalEventSASToken() {
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "GlobalEventSAS");
   const responseObject = ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS, new Map<string, any>([
     ["sasToken", "12345"],
-    ["baseAddress", `${utils.defaultUrl}/v2.5/Repositories/Global--Global/GlobalScope`]]));
+    ["baseAddress", `${utils.defaultUrl}/sv1.1/Repositories/Global--Global/GlobalScope`]]));
   const requestResponse = ResponseBuilder.generatePostResponse<GlobalEventSAS>(responseObject);
   const postBody = ResponseBuilder.generatePostBody<IModel>(ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS));
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);

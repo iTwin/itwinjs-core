@@ -5,7 +5,7 @@
 
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
-import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
+import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
 import { Model } from "./Model";
@@ -125,7 +125,7 @@ export class ConcurrencyControl {
    * ```
    * @param accessToken The user's iModelHub access token
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
-   * @throws [[RequestError]] if some or all of the request could not be fulfilled by iModelHub.
+   * @throws [[ConcurrencyControl.RequestError]] if some or all of the request could not be fulfilled by iModelHub.
    * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
    */
   public async request(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
@@ -186,7 +186,7 @@ export class ConcurrencyControl {
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
-  private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
+  private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.hubDeploymentEnv; }
   private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv(), new AzureFileHandler()); }
 
   /** process the Lock-specific part of the request. */
@@ -453,7 +453,7 @@ export namespace ConcurrencyControl {
      * [[include:ConcurrencyControl_Codes.reserve]]
      * ```
      * @param codes The Codes to reserve
-     * @throws [[RequestError]]
+     * @throws [[ConcurrencyControl.RequestError]]
      */
     public async reserve(accessToken: AccessToken, codes?: Code[]) {
 

@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module Rendering */
 
 import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorByName } from "./ColorDef";
+import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor } from "@bentley/geometry-core";
@@ -196,13 +196,12 @@ export class PolylineEdgeArgs {
 export abstract class RenderTexture implements IDisposable {
   public readonly params: RenderTexture.Params;
 
-  protected constructor(params: RenderTexture.Params) {
-    this.params = params;
-  }
+  protected constructor(params: RenderTexture.Params) { this.params = params; }
+  public abstract dispose(): void;
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }
-  public abstract dispose(): void;
+  public get isTileSection(): boolean { return this.params.isTileSection; }
 }
 
 export namespace RenderTexture {
@@ -219,7 +218,7 @@ export namespace RenderTexture {
       this.isRGBE = isRGBE;
     }
 
-    /** Create a RenderMaterial params object with QVision default values. */
+    /** Obtain a RenderTexture params object with default values. */
     public static readonly defaults = new Params();
   }
 }
@@ -254,7 +253,7 @@ export namespace RenderMaterial {
     public ambient: number = .3;
     public shadows = true;
 
-    public constructor() { }
+    public constructor(key?: string) { this.key = key; }
 
     /** Create a RenderMaterial params object with QVision default values. */
     public static readonly defaults = new Params();
@@ -390,6 +389,7 @@ export class ViewFlags {
   public weights: boolean = true;               // Controls whether non-zero line weights are used or display using weight 0.
   public styles: boolean = true;                // Controls whether custom line styles are used (e.g. control whether elements with custom line styles draw normally, or as solid lines).
   public transparency: boolean = true;          // Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque).
+  public continuousRendering: boolean = false;  // Controls whether continuous rendering is used.
   public fill: boolean = true;                  // Controls whether the fills on filled elements are displayed.
   public textures: boolean = true;              // Controls whether to display texture maps for material assignments. When off only material color is used for display.
   public materials: boolean = true;             // Controls whether materials are used (e.g. control whether geometry with materials draw normally, or as if it has no material).
@@ -417,6 +417,7 @@ export class ViewFlags {
       val.weights = other.weights;
       val.styles = other.styles;
       val.transparency = other.transparency;
+      val.continuousRendering = other.continuousRendering;
       val.fill = other.fill;
       val.textures = other.textures;
       val.materials = other.materials;
@@ -458,6 +459,7 @@ export class ViewFlags {
     if (!this.weights) out.noWeight = true;
     if (!this.styles) out.noStyle = true;
     if (!this.transparency) out.noTransp = true;
+    if (this.continuousRendering) out.contRend = true;
     if (!this.fill) out.noFill = true;
     if (this.grid) out.grid = true;
     if (this.acsTriad) out.acs = true;
@@ -488,6 +490,7 @@ export class ViewFlags {
     val.weights = !JsonUtils.asBool(json.noWeight);
     val.styles = !JsonUtils.asBool(json.noStyle);
     val.transparency = !JsonUtils.asBool(json.noTransp);
+    val.continuousRendering = JsonUtils.asBool(json.contRend);
     val.fill = !JsonUtils.asBool(json.noFill);
     val.grid = JsonUtils.asBool(json.grid);
     val.acsTriad = JsonUtils.asBool(json.acs);
@@ -514,6 +517,34 @@ export class ViewFlags {
 
     return val;
   }
+
+  public isEqualTo(other: ViewFlags): boolean {
+    return this.renderMode === other.renderMode
+      && this.dimensions === other.dimensions
+      && this.patterns === other.patterns
+      && this.weights === other.weights
+      && this.styles === other.styles
+      && this.transparency === other.transparency
+      && this.continuousRendering === other.continuousRendering
+      && this.fill === other.fill
+      && this.textures === other.textures
+      && this.materials === other.materials
+      && this.acsTriad === other.acsTriad
+      && this.grid === other.grid
+      && this.visibleEdges === other.visibleEdges
+      && this.hiddenEdges === other.hiddenEdges
+      && this.sourceLights === other.sourceLights
+      && this.cameraLights === other.cameraLights
+      && this.solarLight === other.solarLight
+      && this.shadows === other.shadows
+      && this.noClipVolume === other.noClipVolume
+      && this.constructions === other.constructions
+      && this.monochrome === other.monochrome
+      && this.noGeometryMap === other.noGeometryMap
+      && this.hLineMaterialColors === other.hLineMaterialColors
+      && this.edgeMask === other.edgeMask;
+  }
+
   public showDimensions() { return this.dimensions; }
   public ignoreGeometryMap() { return this.noGeometryMap; }
   public isMonochrome() { return this.monochrome; }
@@ -532,6 +563,7 @@ export class ViewFlags {
   public showStyles() { return this.styles; }
   public showTextures() { return this.textures; }
   public showTransparency() { return this.transparency; }
+  public doContinuousRendering() { return this.continuousRendering; }
   public showVisibleEdges() { return this.visibleEdges; }
   public showWeights() { return this.weights; }
   public useHlineMaterialColors() { return this.hLineMaterialColors; }
@@ -555,6 +587,7 @@ export class ViewFlags {
   public setShowStyles(val: boolean) { this.styles = val; }
   public setShowTextures(val: boolean) { this.textures = val; }
   public setShowTransparency(val: boolean) { this.transparency = val; }
+  public setDoContinuousRendering(val: boolean) { this.continuousRendering = val; }
   public setShowVisibleEdges(val: boolean) { this.visibleEdges = val; }
   public setShowWeights(val: boolean) { this.weights = val; }
   public setUseHlineMaterialColors(val: boolean) { this.hLineMaterialColors = val; }
@@ -571,6 +604,7 @@ export namespace ViewFlag {
     kWeights,
     kStyles,
     kTransparency,
+    kContinuousRendering,
     kFill,
     kTextures,
     kMaterials,
@@ -624,6 +658,7 @@ export namespace ViewFlag {
     public setShowWeights(val: boolean) { this.values.setShowWeights(val); this.setPresent(PresenceFlag.kWeights); }
     public setShowStyles(val: boolean) { this.values.setShowStyles(val); this.setPresent(PresenceFlag.kStyles); }
     public setShowTransparency(val: boolean) { this.values.setShowTransparency(val); this.setPresent(PresenceFlag.kTransparency); }
+    public setDoContinuousRendering(val: boolean) { this.values.setDoContinuousRendering(val); this.setPresent(PresenceFlag.kContinuousRendering); }
     public setShowFill(val: boolean) { this.values.setShowFill(val); this.setPresent(PresenceFlag.kFill); }
     public setShowTextures(val: boolean) { this.values.setShowTextures(val); this.setPresent(PresenceFlag.kTextures); }
     public setShowMaterials(val: boolean) { this.values.setShowMaterials(val); this.setPresent(PresenceFlag.kMaterials); }
@@ -653,6 +688,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kWeights)) base.setShowWeights(this.values.showWeights());
       if (this.isPresent(PresenceFlag.kStyles)) base.setShowStyles(this.values.showStyles());
       if (this.isPresent(PresenceFlag.kTransparency)) base.setShowTransparency(this.values.showTransparency());
+      if (this.isPresent(PresenceFlag.kContinuousRendering)) base.setDoContinuousRendering(this.values.doContinuousRendering());
       if (this.isPresent(PresenceFlag.kFill)) base.setShowFill(this.values.showFill());
       if (this.isPresent(PresenceFlag.kTextures)) base.setShowTextures(this.values.showTextures());
       if (this.isPresent(PresenceFlag.kMaterials)) base.setShowMaterials(this.values.showMaterials());
@@ -686,7 +722,7 @@ export const enum LinePixels {
   Code7 = 0xff18ff18,       // 7
   HiddenLine = 0xcccccccc,  // hidden lines
   Invisible = 0x00000001,   // nearly invisible
-  Invalid = 0xffffffff,
+  Invalid = -1,
 }
 
 /** Represents a frustum as 6 planes and provides containment and intersection testing */
@@ -836,9 +872,9 @@ export namespace HiddenLine {
     public transparencyThreshold: number = 1.0;
     public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
     public constructor(json: any) {
-      this.visible = new HiddenLine.Style(undefined !== json ? json.visible : undefined);
-      this.hidden = new HiddenLine.Style(undefined !== json ? json.hidden : undefined);
-      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transparencyThreshold, 1.0) : 1.0;
+      this.visible = new HiddenLine.Style(undefined !== json && undefined !== json.visible ? json.visible : { ovrColor: false, color: new ColorDef(), width: 1, pattern: LinePixels.Solid });
+      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(), width: 1, pattern: LinePixels.HiddenLine });
+      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transThreshold, 1.0) : 1.0;
     }
   }
 }
@@ -894,7 +930,7 @@ export namespace Gradient {
     /** Fraction from 0.0 to 1.0 to denote position along gradient */
     value: number;
     /** Color value for given fraction */
-    color: ColorDef;
+    color: ColorDefProps;
   }
 
   export class KeyColor implements KeyColorProps {
@@ -902,7 +938,7 @@ export namespace Gradient {
     public color: ColorDef;
     public constructor(json: KeyColorProps) {
       this.value = json.value;
-      this.color = json.color;
+      this.color = new ColorDef(json.color);
     }
   }
 
@@ -943,7 +979,7 @@ export namespace Gradient {
       result.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
       result.tint = json.tint;
       result.shift = json.shift ? json.shift : 0;
-      json.keys.forEach((key) => result.keys.push(key));
+      json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
       return result;
     }
 
@@ -1052,6 +1088,17 @@ export namespace Gradient {
       return ColorDef.from(this.roundToByte(red), this.roundToByte(green), this.roundToByte(blue), this.roundToByte(transparency));
     }
 
+    public get hasTranslucency(): boolean {
+      for (const key of this.keys) {
+        if (!key.color.isOpaque)
+          return true;
+      }
+
+      return false;
+    }
+
+    public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
+
     /** Writes the image in 'reverse'. */
     public getImage(width: number, height: number): ImageBuffer {
       if (this.mode === Mode.Thematic) {
@@ -1059,10 +1106,11 @@ export namespace Gradient {
         height = 8192;    // Thematic image height
       }
 
+      const hasAlpha = this.hasTranslucency;
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
-      const image = new Uint8Array(width * height * 4);
+      const image = new Uint8Array(width * height * (hasAlpha ? 4 : 3));
       let currentIdx = image.length - 1;
       const shift = Math.min(1.0, Math.abs(this.shift));
 
@@ -1101,7 +1149,9 @@ export namespace Gradient {
                   f = Math.sin(Math.PI / 2 * (1.0 - d / dMin));
               }
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1120,7 +1170,9 @@ export namespace Gradient {
               const yr = y * cosA - x * sinA;
               const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1138,7 +1190,9 @@ export namespace Gradient {
               const x = xs + i / width - 0.5;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1155,7 +1209,9 @@ export namespace Gradient {
               const x = i / width - xs;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1197,7 +1253,9 @@ export namespace Gradient {
               }
             }
             for (let i = 0; i < width; i++) {
-              image[currentIdx--] = color!.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color!.getAlpha();
+
               image[currentIdx--] = color!.colors.b;
               image[currentIdx--] = color!.colors.g;
               image[currentIdx--] = color!.colors.r;
@@ -1207,7 +1265,7 @@ export namespace Gradient {
       }
 
       assert(-1 === currentIdx);
-      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
+      const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, width);
       assert(undefined !== imageBuffer);
       return imageBuffer!;
     }

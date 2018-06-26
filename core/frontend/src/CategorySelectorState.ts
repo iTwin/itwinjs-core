@@ -23,6 +23,23 @@ export class CategorySelectorState extends ElementState {
     return val;
   }
 
+  public equalState(other: CategorySelectorState): boolean {
+    if (this.categories.size !== other.categories.size)
+      return false;
+
+    if (this.name !== other.name)
+      return false;
+
+    const otherIter = other.categories.keys();
+    let otherRes = otherIter.next();
+    for (let thisIter = this.categories.keys(), thisRes = thisIter.next(); !thisRes.done; thisRes = thisIter.next(), otherRes = otherIter.next()) {
+      if (thisRes.value !== otherRes.value)
+        return false;
+    }
+
+    return true;
+  }
+
   /** Get the name of this CategorySelector */
   public get name(): string { return this.code.getValue(); }
 

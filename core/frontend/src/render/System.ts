@@ -24,7 +24,6 @@ import {
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
-import { HilitedSet } from "../SelectionSet";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 
@@ -126,10 +125,58 @@ export class GraphicBranch {
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 
+/** Describes aspects of a pixel as read from a RenderTarget. */
+export namespace Pixel {
+  export class Data {
+    public constructor(public readonly elementId?: Id64,
+      public readonly distanceFraction: number = -1.0,
+      public readonly type: GeometryType = GeometryType.Unknown,
+      public readonly planarity: Planarity = Planarity.Unknown) { }
+  }
+
+  /** Describes the foremost type of geometry which produced the pixel. */
+  export const enum GeometryType {
+    Unknown, // Geometry was not selected, or type could not be determined
+    None, // No geometry was rendered to this pixel
+    Surface, // A surface
+    Linear, // A polyline
+    Edge, // The edge of a surface
+    Silhouette, // A silhouette of a surface
+  }
+
+  /** Describes the planarity of the foremost geometry which produced the pixel. */
+  export const enum Planarity {
+    Unknown, // Geometry was not selected, or planarity could not be determined
+    None, // No geometry was rendered to this pixel
+    Planar, // Planar geometry
+    NonPlanar, // Non-planar geometry
+  }
+
+  /**
+   * Bit-mask by which callers of DgnViewport::ReadPixels() specify which aspects are of interest.
+   * Aspects not specified will be omitted from the returned data.
+   */
+  export const enum Selector {
+    None = 0,
+    ElementId = 1 << 0, // Select element IDs
+    Distance = 1 << 1, // Select distances from near plane
+    Geometry = 1 << 2, // Select geometry type and planarity
+
+    GeometryAndDistance = Geometry | Distance, // Select geometry type/planarity and distance from near plane
+    All = GeometryAndDistance | ElementId, // Select all aspects
+  }
+
+  /** A rectangular array of pixels as read from a RenderTarget's frame buffer. */
+  export interface Buffer {
+    /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
+    getPixel(x: number, y: number): Data;
+  }
+}
+
 /**
  * A RenderTarget holds the current scene, the current set of dynamic RenderGraphics, and the current decorators.
  * When frames are composed, all of those RenderGraphics are rendered, as appropriate.
- * A RenderTarget holds a reference to a Render::Device, and a Render::System
+ * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
  * Every DgnViewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget {
@@ -148,18 +195,17 @@ export abstract class RenderTarget {
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
-  public abstract drawFrame(): void;
+  public abstract drawFrame(sceneSecondsElapsed?: number): void;
   public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
-  public abstract setHiliteSet(hilited: HilitedSet): void;
+  public abstract setHiliteSet(hilited: Set<string>): void;
   public abstract setFlashed(elementId: Id64, intensity: number): void;
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
   public abstract queueReset(): void;
   public abstract onResized(): void;
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
 
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
-  // ###TODO public abstract setMinimumFrameRate(minimumFrameRate: number): number;
-  // ###TODO public abstract readPixels(rect: ViewRect, selector: PixelDataSelector): PixelDataBuffer;
 }
 
 /**
@@ -168,10 +214,14 @@ export abstract class RenderTarget {
  */
 export abstract class RenderSystem {
   protected _nowPainting?: RenderTarget;
+  public readonly canvas: HTMLCanvasElement;
   public get isPainting(): boolean { return !!this._nowPainting; }
   public checkPainting(target?: RenderTarget): boolean { return target === this._nowPainting; }
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
   public nowPainting() { this._nowPainting = undefined; }
+
+  public isValid(): boolean { return this.canvas !== undefined; }
+  public constructor(canvas: HTMLCanvasElement) { this.canvas = canvas; }
 
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -180,10 +230,10 @@ export abstract class RenderSystem {
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   /** Find a previously-created Material by key. Returns null if no such material exists. */
-  public abstract findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined;
+  public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a Material from parameters */
-  public abstract createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined;
+  public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a GraphicBuilder from parameters */
   public abstract createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
@@ -195,10 +245,10 @@ export abstract class RenderSystem {
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
 
   // /** Create a triangle mesh primitive */
-  public abstract createTriMesh(args: MeshArgs, imodel: IModelConnection): RenderGraphic | undefined;
+  public createTriMesh(_args: MeshArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
   // /** Create an indexed polyline primitive */
-  public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined;
+  public createIndexedPolylines(_args: PolylineArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
@@ -225,16 +275,16 @@ export abstract class RenderSystem {
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
-  public abstract findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined;
+  public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
   /** Create a new Texture from gradient symbology. */
-  public abstract getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined;
+  public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
   /** Create a new Texture from an ImageBuffer. */
-  public abstract createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
+  public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   /** Create a new Texture from an ImageSource. */
-  public abstract createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
+  public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   // /** Create a Texture from a graphic. */
   // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;
@@ -249,6 +299,5 @@ export abstract class RenderSystem {
   public idle(): void { }
 
   public onInitialized(): void { }
-
   public onShutDown(): void { }
 }

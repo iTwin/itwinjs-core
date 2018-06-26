@@ -1,5 +1,12 @@
 # Schema Documentation Style Guide
 
+Goal of the schema doc is to clarify :
+- What is the goal of the schema
+- How should the schema be used
+- Why is the schema done this way ?
+-
+
+
 ## General Guidelines:
 
 1. Include all xml into the .bd (into the appropriate sections)
@@ -22,8 +29,8 @@
 
 ## Illustrations
 
-1. Scale and size ??
-1. Copyright.
+1. Scale cmaps to 150% when makign screenshot for .md
+1. Copyright ?
 
 ## Classes section
 

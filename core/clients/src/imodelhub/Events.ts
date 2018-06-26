@@ -362,14 +362,19 @@ export class EventHandler extends EventBaseHandler {
    * @param baseAddress Base address of Service Bus topic.
    * @param subscriptionId Id of the subscription to the topic.
    * @param timeout Optional timeout duration in seconds for request, when using long polling.
-   * @return Event if it exists.
+   * @return Event if it exists, undefined otherwise.
    */
-  public async getEvent(sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent> {
+  public async getEvent(sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined> {
     Logger.logInfo(loggingCategory, `Getting event from subscription ${subscriptionId}`);
 
     const options = this.getEventRequestOptions(sasToken, timeout);
 
     const result = await request(this.getEventUrl(baseAddress, subscriptionId, timeout), options);
+
+    if (result.status === 204) {
+      Logger.logTrace(loggingCategory, `No events found on subscription ${subscriptionId}`);
+      return undefined;
+    }
 
     const event = ParseEvent(result);
     Logger.logTrace(loggingCategory, `Got event from subscription ${subscriptionId}`);

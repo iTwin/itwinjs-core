@@ -5,9 +5,11 @@ import * as path from "path";
 import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
-import { HubTestUtils } from "./HubTestUtils";
+import { HubUtility } from "./HubUtility";
+import { IModelWriter } from "./IModelWriter";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
 
@@ -20,16 +22,38 @@ describe.skip("DebugHubIssues (#integration)", () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
   });
 
+  it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
+    const projectName = "NodeJsTestProject";
+    const pathname = "d:\\temp\\IModelDumps\\Office Building4.bim";
+
+    // Push the iModel to the Hub
+    const projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const iModelId: string = await HubUtility.pushIModel(accessToken, projectId, pathname);
+
+    const iModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    assert(!!iModelDb);
+
+    // Create and upload a dummy change set to the Hub
+    const modelId = IModelWriter.insertPhysicalModel(iModelDb, "DummyTestModel");
+    assert(!!modelId);
+    iModelDb.saveChanges("Dummy change set");
+    await iModelDb.pushChanges(accessToken!);
+
+    // Create a named version on the just uploaded change set
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, iModelId, BriefcaseManager.hubClient);
+    await BriefcaseManager.hubClient.Versions().create(accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
+  });
+
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
     const projectName = "NodeJsTestProject";
     const iModelName = "TestModel";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to delete any iModel on the Hub", async () => {
-    await HubTestUtils.deleteIModel(accessToken, "NodeJsTestProject", "TestModel");
+    await HubUtility.deleteIModel(accessToken, "NodeJsTestProject", "TestModel");
   });
 
   it.skip("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
@@ -37,15 +61,15 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelName = "TestModel";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.uploadIModel(accessToken, projectName, iModelDir);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
   });
 
   it.skip("should be able to open any iModel on the Hub", async () => {
     const projectName = "NodeJsTestProject";
     const iModelName = "TestModel";
 
-    const myProjectId = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
-    const myIModelId = await HubTestUtils.queryIModelIdByName(accessToken, myProjectId, iModelName);
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
@@ -69,8 +93,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectName = "AbdTestProject";
     const iModelName = "ATP_2018050310145994_scenario22";
 
-    const myProjectId = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
-    const myIModelId = await HubTestUtils.queryIModelIdByName(accessToken, myProjectId, iModelName);
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
@@ -85,14 +109,14 @@ describe.skip("DebugHubIssues (#integration)", () => {
     // Restart host on PROD
     IModelHost.shutdown();
     const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
-    hostConfig.iModelHubDeployConfig = "PROD";
+    hostConfig.hubDeploymentEnv = "PROD";
     IModelHost.startup(hostConfig);
 
     const projectName = "1MWCCN01 - North Project";
     const iModelName = "1MWCCN01";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.downloadIModelByName(accessToken1, projectName, iModelName, iModelDir);
+    await HubUtility.downloadIModelByName(accessToken1, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in DEV", async () => {
@@ -101,7 +125,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     // Restart host on DEV
     IModelHost.shutdown();
     const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
-    hostConfig.iModelHubDeployConfig = "DEV";
+    hostConfig.hubDeploymentEnv = "DEV";
     IModelHost.startup(hostConfig);
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
 
@@ -110,7 +134,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelDir = path.join(iModelRootDir, iModelId);
 
     const startTime = Date.now();
-    await HubTestUtils.downloadIModelById(accessToken1, projectId, iModelId, iModelDir);
+    await HubUtility.downloadIModelById(accessToken1, projectId, iModelId, iModelDir);
     const finishTime = Date.now();
     console.log(`Time taken to download is ${finishTime - startTime} milliseconds`); // tslint:disable-line:no-console
   });

@@ -18,6 +18,13 @@ export interface WidthAndHeight {
   readonly height: number;
 }
 
+export class LUTParams implements WidthAndHeight {
+  public readonly width: number;
+  public readonly height: number;
+
+  public constructor(width: number, height: number) { this.width = width; this.height = height; }
+}
+
 /** Describes the dimensions of a texture used as a look-up table */
 export class LUTDimensions implements WidthAndHeight {
   public readonly width: number;

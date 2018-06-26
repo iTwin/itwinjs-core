@@ -28,6 +28,7 @@ import { addRenderPass } from "./RenderPass";
 import { SurfaceGeometry } from "../Surface";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
+import { System } from "../System";
 
 export const enum FeatureSymbologyOptions {
   None = 0,
@@ -216,14 +217,14 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       const ovr = params.target.currentOverrides;
       assert(undefined !== ovr);
       if (ovr!.isNonUniform)
-        ovr!.texture!.bindSampler(uniform, TextureUnit.FeatureSymbology);
+        ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
     });
   });
   vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_featureParams", (uniform, params) => {
       const ovr = params.target.currentOverrides!;
       if (ovr.isNonUniform)
-        uniform.setUniform2fv([ovr.texture!.width, ovr.texture!.height]);
+        uniform.setUniform2fv([ovr.lut!.width, ovr.lut!.height]);
     });
   });
 
@@ -450,6 +451,7 @@ if (u_featureInfo.x <= kFeatureDimension_SingleUniform) {
 } else {
   vec2 texc = computeElementIdTextureCoords();
   v_element_id0 = TEXTURE(u_elementIdLUT, texc);
+  texc.x += g_elementId_stepX;
   v_element_id1 = TEXTURE(u_elementIdLUT, texc);
 }`;
 
@@ -528,6 +530,10 @@ export function addElementId(builder: ProgramBuilder) {
       const table = params.target.currentPickTable!;
       if (undefined !== table.nonUniform)
         table.nonUniform.bindSampler(uniform, TextureUnit.ElementId);
+      else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
+        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.ElementId);
+      }
     });
   });
   vert.addUniform("u_elementIdParams", VariableType.Vec2, (prog) => {

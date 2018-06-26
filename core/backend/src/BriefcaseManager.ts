@@ -1,17 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet, IModel as HubIModel,
-  ContainsSchemaChanges, Briefcase, Code, IModelHubResponseError, IModelHubResponseErrorId,
+  ContainsSchemaChanges, Briefcase, Code, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, AzureFileHandler, ConflictingCodesError,
 } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { IModelDb, OpenParams, SyncMode, AccessMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -72,7 +72,7 @@ export class BriefcaseEntry {
   /** Briefcase Id  */
   public briefcaseId!: number;
 
-  /** Flag indicating if the briefcase is a standalone iModel that only exists locally on disk, or is from the iModelHub */
+  /** Flag indicating if the briefcase is a standalone iModel that only exists locally on disk, or is from iModelHub */
   public isStandalone!: boolean;
 
   /** Flag to indicate if the briefcase is currently open */
@@ -213,7 +213,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager._hubClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler());
+      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.hubDeploymentEnv, new AzureFileHandler(false));
     }
     return BriefcaseManager._hubClient;
   }
@@ -225,7 +225,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager._connectClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._connectClient = new ConnectClient(IModelHost.configuration.iModelHubDeployConfig);
+      BriefcaseManager._connectClient = new ConnectClient(IModelHost.configuration.hubDeploymentEnv);
     }
     return BriefcaseManager._connectClient;
   }
@@ -237,7 +237,7 @@ export class BriefcaseManager {
   }
 
   public static getChangeSetsPath(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
-  public static getChangeSummaryPathname(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
+  public static getChangeCachePathName(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
 
   private static getBriefcasesPath(iModelId: string) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc");
@@ -275,6 +275,7 @@ export class BriefcaseManager {
     BriefcaseManager.clearCache();
     BriefcaseManager._hubClient = undefined;
     BriefcaseManager._connectClient = undefined;
+    BriefcaseManager._cacheDir = undefined;
     IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.onIModelHostShutdown);
   }
 
@@ -371,12 +372,17 @@ export class BriefcaseManager {
     return dirs[0];
   }
 
-  private static cacheDir: string;
+  private static _cacheDir?: string;
+  public static get cacheDir(): string {
+    if (!BriefcaseManager._cacheDir)
+      BriefcaseManager.setupCacheDir();
+    return BriefcaseManager._cacheDir!;
+  }
 
   private static setupCacheDir() {
     const cacheSubDirOnDisk = BriefcaseManager.findCacheSubDir();
     const cacheSubDir = BriefcaseManager.buildCacheSubDir();
-    BriefcaseManager.cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
+    const cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
 
     if (!cacheSubDirOnDisk) {
       // For now, just recreate the entire cache if the directory for the major version is not found - NEEDS_WORK
@@ -386,8 +392,10 @@ export class BriefcaseManager {
       BriefcaseManager.deleteFolderRecursive(cacheDirOnDisk);
     }
 
-    if (!IModelJsFs.existsSync(BriefcaseManager.cacheDir))
-      BriefcaseManager.makeDirectoryRecursive(BriefcaseManager.cacheDir);
+    if (!IModelJsFs.existsSync(cacheDir))
+      BriefcaseManager.makeDirectoryRecursive(cacheDir);
+
+    BriefcaseManager._cacheDir = cacheDir;
   }
 
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary).
@@ -404,7 +412,6 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    BriefcaseManager.setupCacheDir();
     for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {
       await BriefcaseManager.initCacheForIModel(accessToken, iModelId);
     }
@@ -726,7 +733,7 @@ export class BriefcaseManager {
     BriefcaseManager.cache.deleteBriefcase(briefcase);
   }
 
-  /** Deletes a briefcase, and releases its references in the iModelHub if necessary */
+  /** Deletes a briefcase, and releases its references in iModelHub if necessary */
   private static async deleteBriefcase(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
     await BriefcaseManager.deleteBriefcaseFromHub(accessToken, briefcase);
@@ -878,7 +885,7 @@ export class BriefcaseManager {
     try {
       const files = IModelJsFs.readdirSync(folderPath);
       for (const file of files) {
-        const curPath = folderPath + "/" + file;
+        const curPath = path.join(folderPath, file);
         if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
           BriefcaseManager.deleteFolderRecursive(curPath);
         } else {
@@ -1280,7 +1287,7 @@ export class BriefcaseManager {
       postedChangeSet = await BriefcaseManager.hubClient.ChangeSets().create(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
     } catch (error) {
       // If ChangeSet already exists, updating codes and locks might have timed out.
-      if (!(error instanceof IModelHubResponseError) || error.id !== IModelHubResponseErrorId.ChangeSetAlreadyExists) {
+      if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
         Promise.reject(error);
       }
     }
@@ -1302,12 +1309,12 @@ export class BriefcaseManager {
 
   /** Return true if should attempt pushing again. */
   private static shouldRetryPush(error: any): boolean {
-    if (error instanceof IModelHubResponseError && error.id) {
-      switch (error.id!) {
-        case IModelHubResponseErrorId.AnotherUserPushing:
-        case IModelHubResponseErrorId.PullIsRequired:
-        case IModelHubResponseErrorId.DatabaseTemporarilyLocked:
-        case IModelHubResponseErrorId.iModelHubOperationFailed:
+    if (error instanceof IModelHubError && error.errorNumber) {
+      switch (error.errorNumber!) {
+        case IModelHubStatus.AnotherUserPushing:
+        case IModelHubStatus.PullIsRequired:
+        case IModelHubStatus.DatabaseTemporarilyLocked:
+        case IModelHubStatus.iModelHubOperationFailed:
           return true;
       }
     }
@@ -1339,7 +1346,7 @@ export class BriefcaseManager {
     }
   }
 
-  /** Create an iModel on the iModelHub */
+  /** Create an iModel on iModelHub */
   public static async create(accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<string> {
     await BriefcaseManager.memoizedInitCache(accessToken);
     assert(!!BriefcaseManager.hubClient);

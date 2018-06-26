@@ -3,18 +3,26 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d } from "@bentley/geometry-core";
+import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane } from "@bentley/geometry-core";
 
-/** The 8 corners of the [NPC]($docs/learning/glossary.md#npc) cube. */
+/** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube. */
 export const enum Npc {
-  _000 = 0,  // Left bottom rear
-  _100 = 1,  // Right bottom rear
-  _010 = 2,  // Left top rear
-  _110 = 3,  // Right top rear
-  _001 = 4,  // Left bottom front
-  _101 = 5,  // Right bottom front
-  _011 = 6,  // Left top front
-  _111 = 7,  // Right top front
+  /** Left bottom rear */
+  _000 = 0,
+  /** Right bottom rear */
+  _100 = 1,
+  /** Left top rear */
+  _010 = 2,
+  /** Right top rear */
+  _110 = 3,
+  /** Left bottom front */
+  _001 = 4,
+  /** Right bottom front */
+  _101 = 5,
+  /** Left top front */
+  _011 = 6,
+  /** Right top front */
+  _111 = 7,
 
   LeftBottomRear = 0,
   RightBottomRear = 1,
@@ -24,6 +32,7 @@ export const enum Npc {
   RightBottomFront = 5,
   LeftTopFront = 6,
   RightTopFront = 7,
+  /** useful for sizing arrays */
   CORNER_COUNT = 8,
 }
 
@@ -99,8 +108,8 @@ export class Frustum {
   public initFromRange(range: LowAndHighXYZ | LowAndHighXY): void {
     const getZ = (arg: any): number => arg.z !== undefined ? arg.z : 0;
     const pts = this.points;
-    pts[0].x = pts[3].x = pts[4].x = pts[7].x = range.low.x;
-    pts[1].x = pts[2].x = pts[5].x = pts[6].x = range.high.x;
+    pts[0].x = pts[2].x = pts[4].x = pts[6].x = range.low.x;
+    pts[1].x = pts[3].x = pts[5].x = pts[7].x = range.high.x;
     pts[0].y = pts[1].y = pts[4].y = pts[5].y = range.low.y;
     pts[2].y = pts[3].y = pts[6].y = pts[7].y = range.high.y;
     pts[0].z = pts[1].z = pts[2].z = pts[3].z = getZ(range.low);
@@ -133,5 +142,29 @@ export class Frustum {
       pts[i] = pts[i + 1];
       pts[i + 1] = tmpPoint;
     }
+  }
+
+  /** Get a convex set of clipping planes bounding the region contained by this frustum. */
+  public getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet {
+    const convexSet = ConvexClipPlaneSet.createEmpty();
+
+    const scratchNormal = Vector3d.createCrossProductToPoints(this.points[5], this.points[3], this.points[1]);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[1]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[2], this.points[4], this.points[0], scratchNormal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[3], this.points[6], this.points[2], scratchNormal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[2]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[4], this.points[1], this.points[0], scratchNormal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+
+    if (clipBack) {
+      Vector3d.createCrossProductToPoints(this.points[1], this.points[2], this.points[0], scratchNormal);
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+    }
+    if (clipFront) {
+      Vector3d.createCrossProductToPoints(this.points[6], this.points[5], this.points[4], scratchNormal);
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[4]) - expandPlaneDistance));
+    }
+    return convexSet;
   }
 }

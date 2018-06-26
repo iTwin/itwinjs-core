@@ -58,7 +58,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     if (!iModelToken.iModelId)
       throw new Error("iModelToken is invalid. Must not be a standalone iModel");
 
-    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModelToken.iModelId);
+    const changesPath: string = BriefcaseManager.getChangeCachePathName(iModelToken.iModelId);
     if (IModelJsFs.existsSync(changesPath))
       IModelJsFs.unlinkSync(changesPath);
   }

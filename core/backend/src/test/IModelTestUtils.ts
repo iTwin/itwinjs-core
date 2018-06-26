@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
@@ -11,10 +11,9 @@ import {
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestIModelInfo } from "./MockAssetUtil";
-import { HubTestUtils } from "./integration/HubTestUtils";
+import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import { TestConfig } from "./TestConfig";
 import * as path from "path";
-import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 /** Class for simple test timing */
 export class Timer {
@@ -44,8 +43,6 @@ if (IModelJsFs.existsSync(loggingConfigFile)) {
   Logger.configureLevels(require(loggingConfigFile));
 }
 
-NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
-
 // Initialize the RPC interface classes used by tests
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
@@ -53,12 +50,6 @@ export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
   enableTransactions?: boolean;
   openMode?: OpenMode;
-}
-
-/** Credentials for test users */
-export interface UserCredentials {
-  email: string;
-  password: string;
 }
 
 /** Test users with various permissions */
@@ -98,11 +89,11 @@ export class IModelTestUtils {
 
   public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
     const accessToken = await IModelTestUtils.getTestUserAccessToken();
-    const testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    const testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
 
     for (const iModelInfo of testIModels) {
-      iModelInfo.id = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
+      iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
@@ -113,20 +104,14 @@ export class IModelTestUtils {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // Purge briefcases that are close to reaching the acquire limit
-      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, iModelInfo.name);
+      await HubUtility.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, iModelInfo.name);
     }
 
     return [accessToken, testProjectId, cacheDir];
   }
 
   public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular, deploymentEnv: DeploymentEnv = "QA"): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(deploymentEnv)).getToken(userCredentials.email, userCredentials.password);
-    assert(authToken);
-
-    const accessToken = await (new ImsDelegationSecureTokenClient(deploymentEnv)).getToken(authToken!);
-    assert(accessToken);
-
-    return accessToken;
+    return HubUtility.login(userCredentials, deploymentEnv);
   }
 
   private static getStat(name: string) {
@@ -289,7 +274,7 @@ export class IModelTestUtils {
 
   public static startBackend() {
     const config = new IModelHostConfiguration();
-    config.iModelHubDeployConfig = "QA";
+    config.hubDeploymentEnv = "QA";
     IModelHost.startup(config);
   }
 }

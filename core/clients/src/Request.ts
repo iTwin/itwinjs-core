@@ -1,24 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // import { stringify, IStringifyOptions } from "qs";
 import * as sarequest from "superagent";
 import * as deepAssign from "deep-assign";
 import { stringify, IStringifyOptions } from "qs";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, BentleyError, HttpStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
 
 import * as https from "https";
 const loggingCategory = "imodeljs-clients.Request";
-
-// HTTP response type (status / 100)
-export enum HttpResponseType {
-  Info = 1,
-  Ok,
-  ClientError,
-  ServerError,
-  Error,
-}
 
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
@@ -103,18 +94,21 @@ export interface ProgressInfo {
 /** Error object that's thrown/rejected if the Request fails due to a network error, or
  * if the status is *not* in the range of 200-299 (inclusive)
  */
-export class ResponseError extends Error {
+export class ResponseError extends BentleyError {
   protected _data?: any;
   public status?: number;
   public description?: string;
+  public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, undefined, undefined, getMetaData);
+  }
 
   /**
    * Parses error from server's response
    * @param response Http response from the server.
    * @returns Parsed error.
    */
-  public static parse(response: any): ResponseError {
-    const error = new ResponseError();
+  public static parse(response: any, log = true): ResponseError {
+    const error = new ResponseError(ResponseError.parseHttpStatus(response.status / 100));
     if (!response) {
       error.message = "Couldn't get response object.";
       return error;
@@ -139,6 +133,10 @@ export class ResponseError extends Error {
     error.status = response.status || response.statusCode;
     error.name = response.code || response.name || error.name;
     error.message = error.message || response.message || response.statusMessage;
+
+    if (log)
+      error.log();
+
     return error;
   }
 
@@ -153,10 +151,27 @@ export class ResponseError extends Error {
         return true;
       }
     }
-    return (response !== undefined && response.statusType === HttpResponseType.ServerError);
+    return (response !== undefined && response.statusType === HttpStatus.ServerError);
   }
 
-  protected logMessage(): string {
+  public static parseHttpStatus(status: number): HttpStatus {
+    switch (status) {
+      case 1:
+        return HttpStatus.Info;
+      case 2:
+        return HttpStatus.Success;
+      case 3:
+        return HttpStatus.Redirection;
+      case 4:
+        return HttpStatus.ClientError;
+      case 5:
+        return HttpStatus.ServerError;
+      default:
+        return HttpStatus.Success;
+    }
+  }
+
+  public logMessage(): string {
     return `${this.status} ${this.name}: ${this.message}`;
   }
 
@@ -164,7 +179,7 @@ export class ResponseError extends Error {
    * Logs this error
    */
   public log(): void {
-    Logger.logError(loggingCategory, this.logMessage());
+    Logger.logError(loggingCategory, this.logMessage(), this.getMetaData());
   }
 }
 
@@ -260,7 +275,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
         .pipe(sareq)
         .on("error", (error: any) => {
           const parsedError = errorCallback(error);
-          parsedError.log();
           reject(parsedError);
         })
         .on("end", () => {
@@ -284,7 +298,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
         .on("response", (res: any) => {
           if (res.statusCode !== 200) {
             const parsedError = errorCallback(res);
-            parsedError.log();
             reject(parsedError);
             return;
           }
@@ -292,7 +305,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
         .pipe(options.stream)
         .on("error", (error: any) => {
           const parsedError = errorCallback(error);
-          parsedError.log();
           reject(parsedError);
         })
         .on("finish", () => {
@@ -326,7 +338,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     })
     .catch((error: any) => {
       const parsedError = errorCallback(error);
-      parsedError.log();
       return Promise.reject(parsedError);
     });
 }

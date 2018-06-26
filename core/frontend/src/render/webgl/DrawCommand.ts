@@ -156,12 +156,12 @@ class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 
   public preExecute(exec: ShaderProgramExecutor): void {
-    // ###TODO exec.target.currentOverrides = this.batch.getOverrides(exec.target);
+    exec.target.currentOverrides = this.batch.getOverrides(exec.target);
     assert(undefined === exec.target.currentPickTable);
     exec.target.currentPickTable = this.batch.pickTable;
   }
   public postExecute(exec: ShaderProgramExecutor): void {
-    // ###TODO exec.target.currentOverrides = undefined;
+    exec.target.currentOverrides = undefined;
     exec.target.currentPickTable = undefined;
   }
 }
@@ -199,6 +199,14 @@ export class RenderCommands {
   private _translucentOverrides: boolean = false;
   private _addTranslucentAsOpaque: boolean = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
   public readonly target: Target;
+
+  public get isEmpty(): boolean {
+    for (const commands of this._commands)
+      if (0 < commands.length)
+        return false;
+
+    return true;
+  }
 
   public get hasDecorationOverrides(): boolean { return undefined !== this._curOvrParams; }
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
@@ -456,8 +464,8 @@ export class RenderCommands {
     });
   }
 
-  // #TODO: implement getOverrides(target) on Batch
   // #TODO: implement property range on Batch
+  protected _doFrustumCulling: boolean = false; // ###TODO need to set culling range on each Batch.
   public addBatch(batch: Batch): void {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
@@ -465,12 +473,12 @@ export class RenderCommands {
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
 
-    // ###TODO If all features are overridden to be invisible, draw no graphics in this batch
-    // const overrides = batch.getOverrides(this.target);
-    // if (overrides.allHidden)
-    //   return;
+    // If all features are overridden to be invisible, draw no graphics in this batch
+    const overrides = batch.getOverrides(this.target);
+    if (overrides.allHidden)
+      return;
 
-    if (undefined !== this._frustumPlanes) {
+    if (undefined !== this._frustumPlanes && this._doFrustumCulling) {
       let frustum = this._scratchFrustum; // ###TODO: Batch.range Frustum.fromRange(batch.range, this._scratchFrustum);
       frustum = frustum.transformBy(this.target.currentTransform, frustum);
       if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
@@ -483,8 +491,8 @@ export class RenderCommands {
     const pushBatch = /*overrides.AnyOverridden()*/ true;
     if (pushBatch) {
       this._curBatch = batch;
-      // this._opaqueOverrides = overrides.anyOpaque;
-      // this._translucentOverrides = overrides.anyTranslucent;
+      this._opaqueOverrides = overrides.anyOpaque;
+      this._translucentOverrides = overrides.anyTranslucent;
     }
 
     (batch.graphic as Graphic).addCommands(this);
@@ -498,7 +506,7 @@ export class RenderCommands {
     this._curBatch = undefined;
 
     // If the batch contains hilited features, need to render them in the hilite pass
-    const anyHilited = false; // ###TODO overrides.anyHilited
+    const anyHilited = overrides.anyHilited;
     if (anyHilited) {
       const hiliteCommands = this.getCommands(RenderPass.Hilite);
       (batch.graphic as Graphic).addHiliteCommands(hiliteCommands, batch);

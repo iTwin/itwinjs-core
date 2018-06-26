@@ -4,10 +4,9 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight } from "@bentley/imodeljs-common";
-import { HilitedSet } from "../../SelectionSet";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -27,6 +26,7 @@ import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
+import { Pixel } from "../System";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -147,7 +147,7 @@ export abstract class Target extends RenderTarget {
   private _dynamics?: DecorationList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
-  private _hilite?: HilitedSet;
+  private _hilite?: Set<string>;
   private _hiliteUpdateTime = BeTimePoint.now();
   private _flashedElemId = Id64.invalidId;
   private _flashedUpdateTime = BeTimePoint.now();
@@ -159,7 +159,19 @@ export abstract class Target extends RenderTarget {
   private _clipMask?: TextureHandle;
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
-  private _shaderLights: ShaderLights | undefined;
+  private _shaderLights?: ShaderLights;
+  private _frameTimes: BeTimePoint[] = [];
+  private _curFrameTimeIndex = 0;
+  private _gatherFrameTimings = true;
+  private _curSpfTimeIndex = 0;
+  private _spfTimes: number[] = [];
+  private _spfSum: number = 0;
+  private _renderSpfTimes: number[] = [];
+  private _renderSpfSum: number = 0;
+  private _loadTileTimes: number[] = [];
+  private _loadTileSum: number = 0;
+  private static _fpsTimer: StopWatch = new StopWatch(undefined, true);
+  private static _fpsTimerStart: number = 0;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -171,12 +183,12 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  public readonly environmentMap: TextureHandle | undefined = undefined; // ###TODO: for IBL
-  public readonly diffuseMap: TextureHandle | undefined = undefined; // ###TODO: for IBL
-  public readonly imageSolar: ImageLight.Solar | undefined = undefined; // ###TODO: for IBL
+  public readonly environmentMap?: TextureHandle; // ###TODO: for IBL
+  public readonly diffuseMap?: TextureHandle; // ###TODO: for IBL
+  public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
-  public currentOverrides?: FeatureOverrides;
+  private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
 
   protected constructor() {
@@ -189,10 +201,17 @@ export abstract class Target extends RenderTarget {
     this.compositor = new SceneCompositor(this);
   }
 
+  public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
+  // public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides ? undefined : undefined; } // ###TODO remove this - for testing purposes only (forces overrides off)
+  public set currentOverrides(ovr: FeatureOverrides | undefined) {
+    // Don't bother setting up overrides if they don't actually override anything - wastes time doing texture lookups in shaders.
+    this._currentOverrides = (undefined !== ovr && ovr.anyOverridden) ? ovr : undefined;
+  }
+
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
-  public get hilite(): HilitedSet { return this._hilite!; }
+  public get hilite(): Set<string> { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
   public get flashedElemId(): Id64 { return this._flashedElemId; }
@@ -233,6 +252,7 @@ export abstract class Target extends RenderTarget {
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
@@ -269,6 +289,23 @@ export abstract class Target extends RenderTarget {
   public pushActiveVolume(): void { } // ###TODO
   public popActiveVolume(): void { } // ###TODO
 
+  public setFrameTime(sceneTime = 0.0) {
+    if (this._gatherFrameTimings) {
+      if (sceneTime > 0.0) {
+        this._frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
+        this._frameTimes[1] = BeTimePoint.now();
+        this._curFrameTimeIndex = 2;
+      } else if (this._curFrameTimeIndex < 12)
+        this._frameTimes[this._curFrameTimeIndex++] = BeTimePoint.now();
+    }
+  }
+  public get frameTimings(): number[] {
+    const timings: number[] = [];
+    for (let i = 0; i < 11; ++i)
+      timings[i] = (this._frameTimes[i + 1].milliseconds - this._frameTimes[i].milliseconds);
+    return timings;
+  }
+
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }
@@ -283,13 +320,14 @@ export abstract class Target extends RenderTarget {
   }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
+    // See IModelConnection.transientIds
     this._dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this._stack.setSymbologyOverrides(ovr);
     this._overridesUpdateTime = BeTimePoint.now();
   }
-  public setHiliteSet(hilite: HilitedSet): void {
+  public setHiliteSet(hilite: Set<string>): void {
     this._hilite = hilite;
     this._hiliteUpdateTime = BeTimePoint.now();
   }
@@ -310,7 +348,7 @@ export abstract class Target extends RenderTarget {
     vec3: new Vector3d(),
     point3: new Point3d(),
     visibleEdges: new HiddenLine.Style({}),
-    hiddenEdges: new HiddenLine.Style({}),
+    hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
   };
 
   public changeRenderPlan(plan: RenderPlan): void {
@@ -336,7 +374,6 @@ export abstract class Target extends RenderTarget {
     const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
     const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
 
-    plan.viewFlags.renderMode = RenderMode.SmoothShade; // ###TODO: Remove after we implement support for edges.
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
 
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
@@ -462,18 +499,20 @@ export abstract class Target extends RenderTarget {
     }
   }
 
-  public drawFrame(): void {
+  public drawFrame(sceneSecondsElapsed?: number): void {
     assert(System.instance.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
-    this.paintScene();
+    this.paintScene(sceneSecondsElapsed);
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
   public onDestroy(): void { } // ###TODO
-  public queueReset(): void { } // ###TODO
+  public queueReset(): void {
+    this.reset();
+  }
   public reset(): void {
     this._scene.length = 0;
     this._decorations.reset();
@@ -521,7 +560,7 @@ export abstract class Target extends RenderTarget {
   private _doDebugPaint: boolean = false;
   protected debugPaint(): void { }
 
-  private paintScene(): void {
+  private paintScene(sceneSecondsElapsed?: number): void {
     if (this._doDebugPaint) {
       this.debugPaint();
       return;
@@ -531,6 +570,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
+    this.setFrameTime(sceneSecondsElapsed);
     this._beginPaint();
 
     const gl = System.instance.context;
@@ -539,16 +579,49 @@ export abstract class Target extends RenderTarget {
 
     // ###TODO? System.instance.garbage.execute();
 
+    this.setFrameTime();
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
+    this.setFrameTime();
     this.compositor.draw(this._renderCommands);
 
+    this.setFrameTime();
     this._stack.pushState(this.decorationState);
     this.drawPass(RenderPass.WorldOverlay);
     this.drawPass(RenderPass.ViewOverlay);
     this._stack.pop();
 
     this._endPaint();
+    this.setFrameTime();
+
+    if (this.currentViewFlags.continuousRendering) {
+      const fpsTimerElapsed = Target._fpsTimer.currentSeconds - Target._fpsTimerStart;
+      if (this._spfTimes[this._curSpfTimeIndex]) this._spfSum -= this._spfTimes[this._curSpfTimeIndex];
+      this._spfSum += fpsTimerElapsed;
+      this._spfTimes[this._curSpfTimeIndex] = fpsTimerElapsed;
+
+      const renderTimeElapsed = (this._frameTimes[10].milliseconds - this._frameTimes[1].milliseconds);
+      if (this._renderSpfTimes[this._curSpfTimeIndex]) this._renderSpfSum -= this._renderSpfTimes[this._curSpfTimeIndex];
+      this._renderSpfSum += renderTimeElapsed;
+      this._renderSpfTimes[this._curSpfTimeIndex++] = renderTimeElapsed;
+
+      if (sceneSecondsElapsed) {
+        if (this._loadTileTimes[this._curSpfTimeIndex]) this._loadTileSum -= this._loadTileTimes[this._curSpfTimeIndex];
+        this._loadTileSum += sceneSecondsElapsed;
+        this._loadTileTimes[this._curSpfTimeIndex++] = sceneSecondsElapsed;
+        if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
+      }
+
+      if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
+        "Avg. FPS (ms): " + (this._spfTimes.length / this._spfSum).toFixed(2)
+        + " Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2)
+        + "<br />Scene Time (sec): " + (1000 * this._loadTileSum / this._loadTileTimes.length).toFixed(2); // (this._frameTimes[1].milliseconds - this._frameTimes[0].milliseconds).toFixed(2)
+      Target._fpsTimerStart = Target._fpsTimer.currentSeconds;
+    }
+    if (this._gatherFrameTimings) {
+      gl.finish();
+      this.setFrameTime();
+    }
   }
 
   private drawPass(pass: RenderPass): void {
@@ -569,6 +642,102 @@ export abstract class Target extends RenderTarget {
 
     assert(this._dcAssigned);
     return this._dcAssigned;
+  }
+
+  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
+    // to the pick buffers and others we don't want - such as non-pickable decorations - do.
+    // Render to an offscreen buffer so that we don't destroy the current color buffer.
+    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (undefined === texture)
+      return undefined;
+
+    let result: Pixel.Buffer | undefined;
+    const fbo = FrameBuffer.create([texture]);
+    if (undefined !== fbo) {
+      System.instance.frameBufferStack.execute(fbo, true, () => {
+        result = this.readPixelsFromFbo(rect, selector);
+      });
+
+      fbo.dispose();
+    }
+
+    texture.dispose();
+
+    return result;
+  }
+
+  private readonly _scratchTmpFrustum = new Frustum();
+  private readonly _scratchRectFrustum = new Frustum();
+  private readonly _scratchViewFlags = new ViewFlags();
+  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    // Temporarily turn off textures and lighting. We don't need them and it will speed things up not to use them.
+    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
+    vf.setShowTransparency(false);
+    vf.setShowTextures(false);
+    vf.setShowSourceLights(false);
+    vf.setShowCameraLights(false);
+    vf.setShowSolarLight(false);
+    vf.setShowShadows(false);
+    vf.setIgnoreGeometryMap(true);
+    vf.setShowAcsTriad(false);
+    vf.setShowGrid(false);
+    vf.setMonochrome(false);
+    vf.setShowMaterials(false);
+    vf.setDoContinuousRendering(false);
+
+    const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
+    this.pushState(state);
+
+    // Create a culling frustum based on the input rect.
+    // NB: C++ BSIRect => TypeScript ViewRect...
+    const viewRect = this.viewRect;
+    const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
+    const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
+    const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
+    const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
+
+    const tmpFrust = this._scratchTmpFrustum;
+    const planFrust = this.planFrustum;
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
+
+    const rectFrust = this._scratchRectFrustum;
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
+
+    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
+    // ###TODO: Handle pickable decorations.
+    this._renderCommands.clear();
+    this._renderCommands.setCheckRange(rectFrust);
+    this._renderCommands.init(this._scene, this._decorations, this._dynamics, true);
+    this._renderCommands.clearCheckRange();
+
+    // Don't bother rendering + reading if we know there's nothing to draw.
+    if (this._renderCommands.isEmpty) {
+      this._stack.pop(); // ensure state is restored!
+      return undefined;
+    }
+
+    // Draw the scene
+    this.compositor.drawForReadPixels(this._renderCommands);
+
+    // Restore the state
+    this._stack.pop();
+
+    return this.compositor.readPixels(rect, selector);
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //
@@ -615,7 +784,7 @@ export class OnScreenTarget extends Target {
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColor);
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     return undefined !== this._blitGeom;
   }
 
@@ -778,4 +947,26 @@ function frustum(left: number, right: number, bottom: number, top: number, near:
     0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
     0.0, 0.0, -1.0, 0.0,
     result);
+}
+
+function interpolatePoint(p0: Point3d, fraction: number, p1: Point3d, out: Point3d): Point3d {
+  let x: number;
+  let y: number;
+  let z: number;
+  if (fraction <= 0.5) {
+    x = p0.x + fraction * (p1.x - p0.x);
+    y = p0.y + fraction * (p1.y - p0.y);
+    z = p0.z + fraction * (p1.z - p0.z);
+  } else {
+    const t = fraction - 1.0;
+    x = p1.x + t * (p1.y - p0.x);
+    y = p1.y + t * (p1.y - p0.y);
+    z = p1.z + t * (p1.z - p0.z);
+  }
+
+  return Point3d.create(x, y, z, out);
+}
+
+function interpolateFrustumPoint(destFrust: Frustum, srcFrust: Frustum, destPoint: Npc, scale: number, srcPoint: Npc): void {
+  interpolatePoint(srcFrust.getCorner(destPoint), scale, srcFrust.getCorner(srcPoint), destFrust.points[destPoint]);
 }

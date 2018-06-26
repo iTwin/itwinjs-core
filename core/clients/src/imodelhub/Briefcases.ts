@@ -178,7 +178,7 @@ export class BriefcaseHandler {
    * @param imodelId Id of the iModel
    * @param query Optional query object to filter the queried briefcases and select different data from them.
    * @returns Resolves to the briefcase.
-   * @throws [[IModelHubResponseError]] if briefcases couldn't be queried.
+   * @throws [[ResponseError]] if briefcases couldn't be queried.
    */
   public async get(token: AccessToken, imodelId: string, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
     Logger.logInfo(loggingCategory, `Querying briefcases for iModel ${imodelId}`);

@@ -26,3 +26,12 @@ export interface Comparable<T> {
 }
 
 export function compare<T extends Comparable<T>>(lhs: T, rhs: T): number { return lhs.compare(rhs); }
+export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number {
+  if (undefined === lhs)
+    return undefined === rhs ? 0 : -1;
+  else if (undefined === rhs)
+    return 1;
+  else
+    return compareDefined(lhs, rhs);
+}
+export function compareStringsOrUndefined(lhs?: string, rhs?: string): number { return comparePossiblyUndefined(compareStrings, lhs, rhs); }

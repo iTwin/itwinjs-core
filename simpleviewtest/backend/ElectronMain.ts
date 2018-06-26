@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as url from "url";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@bentley/imodeljs-backend";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -17,7 +17,6 @@ const electron = require("electron");
 // --------------------------------------------------------------------------------------
 // -------------- This part copied from ProtogistBackend.ts ---------------------------
 // Start the backend
-NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
 IModelHost.startup();
 
 Logger.initializeToConsole(); // configure logging for imodeljs-core
@@ -31,7 +30,7 @@ let winRef: any;
 function createWindow() {
 
   const win = new electron.BrowserWindow({
-    width: 1024,
+    width: 1280,
     height: 800,
     webPreferences: {
       webSecurity: !isDevBuild, // Workaround for CORS issue in dev build

@@ -5,7 +5,7 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
-import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, FeatureGates } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
@@ -20,8 +20,8 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
  * Configuration of imodeljs-backend.
  */
 export class IModelHostConfiguration {
-  /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
-  public iModelHubDeployConfig: DeploymentEnv = "QA";
+  /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels */
+  public hubDeploymentEnv: DeploymentEnv = "QA";
 
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;
@@ -41,7 +41,7 @@ export class IModelHostConfiguration {
 }
 
 /**
- * IModelHost initializes imodeljs-backend and captures backend configuration. A backend must call [[IModelHost.startup]] before using any of the classes in imodeljs-backend.
+ * IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
  */
 export class IModelHost {
   public static configuration?: IModelHostConfiguration;
@@ -50,6 +50,9 @@ export class IModelHost {
 
   /** Event raised just before the backend IModelHost is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
+
+  /** Configured FeatureGates for this IModelHost. */
+  public static readonly features = new FeatureGates();
 
   /** This method must be called before any iModelJs services are used.
    * @param configuration Host configuration data.
@@ -87,7 +90,7 @@ export class IModelHost {
     IModelHost.configuration = undefined;
   }
 
-  /** The directory where the app's assets are found */
+  /** The directory where the app's assets may be found */
   public static get appAssetsDir(): string | undefined {
     return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }

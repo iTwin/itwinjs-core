@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
 // Copied from imodeljs-react-scripts
@@ -24,7 +24,7 @@ function simpleSpawn(cmd, args, cwd) {
     child.stderr.on('data', (data) => {
       process.stderr.write(data);
     })
-    child.on('error', function(data) { console.log(chalk.red(data)); });  
+    child.on('error', function(data) { console.log(chalk.red(data)); });
     child.on('close', (code)=> resolve(code));
     simpleSpawn.children.push(child);
   });
@@ -33,7 +33,7 @@ function simpleSpawn(cmd, args, cwd) {
 function simpleSpawnSync(cmd, args, cwd) {
   if (!cwd)
     cwd = process.cwd();
-  
+
     const child = spawn.sync(cmd, args, {
       cwd: cwd,
       env: Object.assign({FORCE_COLOR: "1"}, process.env),

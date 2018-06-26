@@ -6,7 +6,7 @@
 import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
+import { HitDetail, HitSource, SnapDetail, HitPriority } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 
 /**
@@ -46,7 +46,7 @@ export class IdleTool extends InteractiveTool {
     } else if (ev.isControlKey) {
       viewTool = IModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
-      viewTool = IModelApp.tools.create("View.Rotate", vp) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Rotate", vp, true, false, true) as ViewTool | undefined;
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
@@ -58,7 +58,7 @@ export class IdleTool extends InteractiveTool {
         return true;
       }
 
-      viewTool = IModelApp.tools.create("View.Pan", vp) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Pan", vp, true, false, true) as ViewTool | undefined;
     }
 
     return !!viewTool && viewTool.run();
@@ -88,12 +88,8 @@ export class IdleTool extends InteractiveTool {
         const vp = ev.viewport!;
         if (vp.isSnapAdjustmentRequired()) {
           IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-
-          const geomDetail = new GeomDetail();
-          geomDetail.closePoint.setFrom(point);
-          const hit = new HitDetail(vp, undefined, undefined, point, HitSource.TentativeSnap, geomDetail);
+          const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
           const snap = new SnapDetail(hit);
-
           tp.setCurrSnap(snap);
           IModelApp.toolAdmin.adjustSnapPoint();
           tp.point.setFrom(tp.point);
@@ -126,12 +122,12 @@ export class IdleTool extends InteractiveTool {
     return IModelApp.toolAdmin.processWheelEvent(ev, true);
   }
 
-  public run() { return true; }
-  public exitTool(): void { }
-  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.run(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
   public onSingleTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
   public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.run(); } return true; }
   public onTwoFingerTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
+
+  public exitTool(): void { }
+  public run() { return true; }
 }

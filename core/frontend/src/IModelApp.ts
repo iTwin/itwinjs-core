@@ -16,7 +16,6 @@ import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-commo
 import { NotificationManager } from "./NotificationManager";
 import { System } from "./render/webgl/System";
 import { RenderSystem } from "./render/System";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -33,7 +32,7 @@ import * as idleTool from "./tools/IdleTool";
  */
 export class IModelApp {
   protected static _initialized = false;
-  protected static _renderSystem?: RenderSystem;
+  public static renderSystem: RenderSystem;
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
   public static toolAdmin: ToolAdmin;
@@ -42,26 +41,20 @@ export class IModelApp {
   public static locateManager: ElementLocateManager;
   public static tentativePoint: TentativePoint;
   public static i18n: I18N;
-  public static deploymentEnv: DeploymentEnv = "QA";
+
+  /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels. */
+  public static hubDeploymentEnv: DeploymentEnv = "QA";
+
   public static readonly features = new FeatureGates();
   public static readonly tools = new ToolRegistry();
   protected static _iModelHubClient?: IModelHubClient;
   public static get initialized() { return IModelApp._initialized; }
-  public static get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
-  public static get hasRenderSystem() { return undefined !== this._renderSystem; }
-
-  /**
-   * Gets the instance of the [[RenderSystem]] that provides display capabilities. Display capabilities must be explicitly requested by
-   * passing 'true' as the second argument to startup().
-   * @returns The instance of the RenderSystem.
-   * @throws [[IModelError]] if display capabilities are not enabled.
-   */
-  public static get renderSystem() {
-    if (undefined === this._renderSystem)
-      throw new IModelError(BentleyStatus.ERROR, "Display capabilities unavailable");
-
-    return this._renderSystem;
+  public static get iModelHubClient(): IModelHubClient {
+    if (!this._iModelHubClient || this._iModelHubClient.deploymentEnv !== this.hubDeploymentEnv)
+      this._iModelHubClient = new IModelHubClient(this.hubDeploymentEnv);
+    return this._iModelHubClient;
   }
+  public static get hasRenderSystem() { return this.renderSystem.isValid(); }
 
   /**
    * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp
@@ -75,15 +68,12 @@ export class IModelApp {
    * ``` ts
    * MyApp.startup();
    * ```
-   *
-   * If display capabilities are desired, this must be specified at startup time.
    */
-  public static startup(deploymentEnv: DeploymentEnv = "QA", wantDisplayCapabilities: boolean = false) {
+  public static startup() {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     IModelApp._initialized = true;
-    IModelApp.deploymentEnv = deploymentEnv;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
@@ -97,7 +87,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp._renderSystem && wantDisplayCapabilities) IModelApp._renderSystem = this.supplyRenderSystem();
+    if (!IModelApp.renderSystem) IModelApp.renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
     if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
@@ -106,9 +96,7 @@ export class IModelApp {
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
-    if (undefined !== IModelApp._renderSystem)
-      IModelApp._renderSystem.onInitialized();
-
+    IModelApp.renderSystem.onInitialized();
     IModelApp.viewManager.onInitialized();
     IModelApp.toolAdmin.onInitialized();
     IModelApp.accuDraw.onInitialized();
@@ -119,11 +107,8 @@ export class IModelApp {
 
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
-    if (undefined !== IModelApp._renderSystem) {
-      IModelApp._renderSystem.onShutDown();
-      IModelApp._renderSystem = undefined;
-    }
-
+    IModelApp.renderSystem.onShutDown();
+    IModelApp.toolAdmin.onShutDown();
     IModelApp._initialized = false;
   }
 
@@ -134,12 +119,12 @@ export class IModelApp {
   protected static onStartup(): void { }
 
   /**
-   * Implement this method to supply options for the initialization of the [I18N]($imodeljs-i18n) system.
+   * Implement this method to supply options for the initialization of the [I18N]($i18n) system.
    */
   protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
 
   /**
    * Implement this method to supply the RenderSystem that provides display capabilities.
    */
-  protected static supplyRenderSystem(): RenderSystem | undefined { return System.create(); }
+  protected static supplyRenderSystem(): RenderSystem { return System.create(); }
 }

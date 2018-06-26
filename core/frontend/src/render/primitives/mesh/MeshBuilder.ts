@@ -235,7 +235,7 @@ export class MeshBuilder {
     const points = QPoint3dList.createFrom(pts, mesh.points.params);
 
     for (const position of points) {
-      mesh.addVertex({ position, fillColor }); // ###TODO is this only distinction between addPolyline and addPointString is that we always add the vertex to the mesh for point string?
+      mesh.addVertex({ position, fillColor });
       poly.addIndex(this.addVertex({ position, fillColor }, false));
     }
 
@@ -260,9 +260,6 @@ export class MeshBuilder {
     // ###TODO
     // MeshEdgesBuilder(m_tileRange, *m_mesh, *m_currentPolyface).BuildEdges(*m_mesh->m_edges, m_currentPolyface.get());
   }
-
-  // ###TODO: empty method declaration?
-  // public addMesh(triangle: Triangle): void;
 
   public addVertex(vertex: VertexKeyProps, addToMeshOnInsert = true): number {
     // if vertex key isn't duplicate, then also insert properties into mesh

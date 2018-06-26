@@ -10,7 +10,8 @@ import { AccessToken } from "../../Token";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { TestUsers } from "../TestConfig";
-import { UserInfoQuery, UserInfo, UserProfile, IModelHubRequestError, IModelHubRequestErrorId } from "../..";
+import { UserInfoQuery, UserInfo, UserProfile, IModelHubRequestError } from "../..";
+import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 function mockGetUserInfo(iModelId: string, userInfo: UserInfo[], query?: string) {
   if (!TestConfig.enableMocks)
@@ -108,6 +109,6 @@ describe("iModelHubClient UserInfoHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module FontsAndSymbology */
+/** @module Symbology */
 
 /** the type of a font. */
 export const enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }

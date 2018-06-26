@@ -761,7 +761,7 @@ describe("GeometryStream", () => {
     }
   });
 
-  it.skip("create GeometricElement3d from world coordinate brep data", async () => {
+  it("create GeometricElement3d from world coordinate brep data", async () => {
     // Currently only have parasolid for windows...
     if ("win32" !== Platform.platformName)
       return;

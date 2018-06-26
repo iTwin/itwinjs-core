@@ -132,7 +132,7 @@ export abstract class EditManipulator {
    * Transient manipulators need to verify that the new hit is compatible as caller has no way of checking.
    * @return true to clear manipulator, false if current manipulator is still ok.
    */
-  public onNewHit(hit: HitDetail) { return !!hit.elementId; }
+  public onNewHit(hit: HitDetail) { return hit.isElementHit(); }
 
   /**
    *  Called on a data button event to allow controls to act on a single click.

@@ -17,7 +17,7 @@ import { Branch } from "./Graphic";
 export class BranchState {
   public readonly transform: Transform;
   private readonly _viewFlags: ViewFlags;
-  public symbologyOverrides = new FeatureSymbology.Overrides();
+  public symbologyOverrides: FeatureSymbology.Overrides;
   public readonly clipVolume?: Clip.Volume;
 
   public static fromBranch(prev: BranchState, branch: Branch) {

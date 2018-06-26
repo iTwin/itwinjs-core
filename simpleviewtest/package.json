@@ -18,12 +18,14 @@
     "copy:ourpublic": "cpx \"public/**/*\" ./lib/backend/public",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "webpack:frontend": "webpack --config webpack.config.js",
+    "webpack:frontend": "webpack --config webpack.config.js 1>&2",
     "start": "electron ./lib/backend/ElectronMain.js"
   },
   "repository": {},
   "dependencies": {
     "@bentley/bentleyjs-core": "8",
+    "@bentley/geometry-core": "9",
+    "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-frontend": "0",
     "@bentley/imodeljs-backend": "0",

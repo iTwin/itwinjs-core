@@ -32,9 +32,11 @@ class TestCommandApp extends IModelApp {
   protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
 }
 
-function setupToolRegistryTests() {
+async function setupToolRegistryTests() {
   TestCommandApp.startup();
   createTestTools();
+  await TestCommandApp.i18n.waitForAllRead();
+
 }
 
 function logResult(..._args: any[]) {
@@ -51,7 +53,6 @@ describe("ToolRegistry", () => {
     assert.isDefined(command, "Found Select Elements Command");
     if (command) {
       assert.isTrue(command.prototype instanceof Tool);
-      assert.isTrue(IModelApp.tools.run(command.toolId));
     }
   });
 
@@ -63,7 +64,7 @@ describe("ToolRegistry", () => {
   });
 
   it("Should find the MicroStation inputmanager training command", async () => {
-    const command: typeof Tool | undefined = await IModelApp.tools.findExactMatch("inputmanager training");
+    const command: typeof Tool | undefined = IModelApp.tools.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
     if (command) {
       assert.isTrue(IModelApp.tools.run(command.toolId));
@@ -72,29 +73,29 @@ describe("ToolRegistry", () => {
   });
 
   it("Should find some partial matches for 'plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("plac");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("plac");
     showSearchResults("Matches for 'plac':", searchResults);
   });
 
   it("Should find some partial matches for 'plce'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("plce");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("plce");
     showSearchResults("Matches for 'plce':", searchResults);
   });
 
   it("Should find some partial matches for 'cone plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("cone plac");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("cone plac");
     showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
   });
   it("Should find some partial matches for 'vie'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("vie");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("vie");
     showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
   });
   it("Should find some partial matches for 'place '", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("place ");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("place ");
     showSearchResults("Matches for 'place ':", searchResults);
   });
   it("Should find some nomatch results 'fjt'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("fjt");
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("fjt");
     showSearchResults("Matches for 'place ':", searchResults);
   });
 });

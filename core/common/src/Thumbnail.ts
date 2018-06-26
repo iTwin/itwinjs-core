@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module IModels */
+/** @module WireFormats */
 
 import { ImageSourceFormat } from "./Image";
 
@@ -18,7 +18,7 @@ export interface ThumbnailFormatProps {
   format: ImageSourceFormat;
 }
 
-/** properties of a thumbnail in an iModel. */
+/** Properties of a thumbnail in an iModel. */
 export interface ThumbnailProps extends ThumbnailFormatProps {
   /** Base64 encoded image */
   image: string;

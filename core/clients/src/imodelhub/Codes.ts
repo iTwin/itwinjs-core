@@ -9,9 +9,9 @@ import { WsgRequestOptions } from "./../WsgClient";
 import { IModelHubBaseHandler } from "./BaseHandler";
 
 import { AccessToken } from "../Token";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { Query } from "./Query";
-import { IModelHubRequestError, isBriefcaseIdValid, AggregateResponseError, IModelHubResponseError, IModelHubResponseErrorId } from "./index";
+import { IModelHubRequestError, isBriefcaseIdValid, AggregateResponseError, IModelHubError } from "./index";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -120,7 +120,7 @@ export class DefaultCodeUpdateOptionsProvider {
    */
   constructor() {
     this.defaultOptions = {
-      codesPerRequest: 10000,
+      codesPerRequest: 2000,
     };
   }
 
@@ -138,30 +138,30 @@ export class DefaultCodeUpdateOptionsProvider {
 }
 
 /** Error for conflicting codes */
-export class ConflictingCodesError extends IModelHubResponseError {
+export class ConflictingCodesError extends IModelHubError {
   public conflictingCodes?: Code[];
 
   /**
-   * Create ConflictingCodesError from IModelHubResponseError instance.
-   * @param error IModelHubResponseError to get error data from.
+   * Create ConflictingCodesError from IModelHubError instance.
+   * @param error IModelHubError to get error data from.
    * @returns Undefined if the error is not for a code conflict, otherwise newly created error instance.
    */
-  public static fromError(error: IModelHubResponseError): ConflictingCodesError | undefined {
-    if (error.id !== IModelHubResponseErrorId.CodeReservedByAnotherBriefcase &&
-      error.id !== IModelHubResponseErrorId.ConflictsAggregate) {
+  public static fromError(error: IModelHubError): ConflictingCodesError | undefined {
+    if (error.errorNumber !== IModelHubStatus.CodeReservedByAnotherBriefcase &&
+      error.errorNumber !== IModelHubStatus.ConflictsAggregate) {
       return undefined;
     }
-    const result = new ConflictingCodesError();
+    const result = new ConflictingCodesError(error.errorNumber!);
     deepAssign(result, error);
     result.addCodes(error);
     return result;
   }
 
   /**
-   * Amends this error instance with conflicting codes from another IModelHubResponseError.
+   * Amends this error instance with conflicting codes from another IModelHubError.
    * @param error Error to get additional conflicting codes from.
    */
-  public addCodes(error: IModelHubResponseError) {
+  public addCodes(error: IModelHubError) {
     if (!error.data || !error.data.ConflictingCodes) {
       return;
     }
@@ -255,7 +255,7 @@ export class CodeQuery extends Query {
 
   /**
    * Select only top entries from the query.
-   * This is applied after @see skip parameter.
+   * This is applied after @see Query.skip parameter.
    * @param n Number of top entries to select.
    * @returns This query.
    */
@@ -401,9 +401,9 @@ export class CodeHandler {
         result.push(...await this.updateInternal(token, imodelId, chunk, updateOptions));
       } catch (error) {
         if (error instanceof ResponseError) {
-          if (updateOptions && updateOptions.deniedCodes && error instanceof IModelHubResponseError && (
-            error.id === IModelHubResponseErrorId.CodeReservedByAnotherBriefcase ||
-            error.id === IModelHubResponseErrorId.ConflictsAggregate)) {
+          if (updateOptions && updateOptions.deniedCodes && error instanceof IModelHubError && (
+            error.errorNumber === IModelHubStatus.CodeReservedByAnotherBriefcase ||
+            error.errorNumber === IModelHubStatus.ConflictsAggregate)) {
             if (conflictError) {
               conflictError.addCodes(error);
             } else {

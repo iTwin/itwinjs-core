@@ -19,14 +19,15 @@ import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addClipping } from "./Clipping";
-import { FloatRgba, FloatPreMulRgba } from "../FloatRGBA";
+import { FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { assert } from "@bentley/bentleyjs-core";
-import { MaterialData } from "../CachedGeometry";
+import { Material } from "../Material";
+import { System } from "../System";
 
 const applyMaterialOverrides = `
 bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
@@ -63,21 +64,19 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
   frag.addUniform("u_matRgb", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_matRgb", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material! : new MaterialData();
-      const matRgb = FloatRgba.fromRgb(mat.rgb, mat.alpha ? 1 : 0);
-      matRgb.bind(uniform);
+      const mat: Material = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      uniform.setUniform4fv(mat.diffuseUniform);
     });
   });
   frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_matAlpha", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material! : new MaterialData();
-      const matAlpha = [mat.alpha ? mat.alpha : 0, mat.alpha ? 1 : 0];
-      uniform.setUniform2fv(matAlpha);
+      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      uniform.setUniform2fv(mat.alphaUniform);
     });
   });
   frag.addUniform("u_textureWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_textureWeight", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material! : new MaterialData();
+      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform1f(mat.textureWeight);
     });
   });
@@ -157,7 +156,7 @@ if (feature_ignore_material) {
 return flags;
 `;
 
-const octDecodeNormal = `
+export const octDecodeNormal = `
 vec3 octDecodeNormal(vec2 e) {
   e = e / 255.0 * 2.0 - 1.0;
   vec3 n = vec3(e.x, e.y, 1.0 - abs(e.x) - abs(e.y));
@@ -308,6 +307,9 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
         texture.texture.bindSampler(uniform, TextureUnit.Zero);
+      } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
+        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.Zero);
       }
     });
   });

@@ -2,10 +2,10 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping, Gradient } from "@bentley/imodeljs-common";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping, Gradient, SubCategoryOverride, Appearance as SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64, assert } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem } from "./rendering";
 
@@ -13,11 +13,21 @@ import { RenderSystem } from "./rendering";
 export abstract class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
+  private _monochrome: ColorDef;
+  private _subCategories: Map<string, SubCategoryAppearance> = new Map<string, SubCategoryAppearance>();
+  private _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
 
   constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
     this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
+    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
+    const monoJson = this.getStyles()[monoName];
+    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
+  }
+
+  public equalState(other: DisplayStyleState): boolean {
+    return JSON.stringify(this.getStyles()) === JSON.stringify(other.getStyles());
   }
 
   /** Get the name of this DisplayStyle */
@@ -44,10 +54,66 @@ export abstract class DisplayStyleState extends ElementState {
   public get backgroundColor(): ColorDef { return this._background; }
   public set backgroundColor(val: ColorDef) { this._background = val; this.setStyle("backgroundColor", val); }
 
-  public getMonochromeColor(): ColorDef { return ColorDef.fromJSON(this.getStyle("monochromeColor")); }
-  public setMonochromeColor(val: ColorDef): void { this.setStyle("monochromeColor", val); }
+  public getMonochromeColor(): ColorDef { return this._monochrome; }
+  public setMonochromeColor(val: ColorDef): void { this._monochrome = val; this.setStyle("monochromeColor", val); }
 
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
+
+  public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
+    if (!id.isValid)
+      return;
+
+    this._subCategoryOverrides.set(id.value, ovr);
+
+    this.loadSubCategory(id); // To ensure none of the previous overrides are still active, we reload the original SubCategory
+
+    // now apply this override to the unmodified SubCategory appearance
+    const sc = this._subCategories.get(id.value);
+    if (sc !== undefined)
+      ovr.applyTo(sc);
+    else
+      assert(false);
+  }
+
+  public dropSubCategoryOverride(id: Id64) {
+    this._subCategoryOverrides.delete(id.value);
+    this.loadSubCategory(id);
+  }
+
+  public get hasSubCategoryOverride() { return this._subCategoryOverrides.entries.length > 0; }
+
+  public getSubCategoryOverride(id: Id64): SubCategoryOverride {
+    const ovr = this._subCategoryOverrides.get(id.value);
+    return undefined !== ovr ? ovr : new SubCategoryOverride();
+  }
+
+  public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
+    const sc = this._subCategories.get(id.value);
+    if (undefined !== sc)
+      return sc;
+
+    return this.loadSubCategory(id);
+  }
+
+  /** Load a subcategory appearance into its unmodified state */
+  private loadSubCategory(id: Id64): SubCategoryAppearance {
+    const app = new SubCategoryAppearance();
+    this._subCategories.set(id.value, app);
+    return app;
+
+    // ###TODO
+    // auto unmodified = DgnSubCategory::Get(GetDgnDb(), id);
+    // BeAssert(unmodified.IsValid());
+    // if (!unmodified.IsValid())
+    //     return DgnSubCategory::Appearance();
+
+    // BeMutexHolder _v(m_mutex);
+    // auto const& result = m_subCategories.Insert(id, unmodified->GetAppearance());
+    // if (!result.second)
+    //     result.first->second = unmodified->GetAppearance(); // we already had this SubCategory; change it to unmodified state
+
+    // return unmodified->GetAppearance();
+  }
 }
 
 /** A DisplayStyle for 2d views */
@@ -268,7 +334,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
       const image = ImageBuffer.create(buffer, ImageBufferFormat.Rgba, 1);
       if (!image)
         return false;
-      texture = system.createTexture(image, this.iModel, RenderTexture.Params.defaults);
+      texture = system.createTextureFromImageBuffer(image, this.iModel, RenderTexture.Params.defaults);
       if (!texture)
         return false;
     }

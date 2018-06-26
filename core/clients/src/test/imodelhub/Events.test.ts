@@ -61,7 +61,7 @@ function mockGetEventSASToken(imodelId: string) {
   const responseObject = ResponseBuilder.generateObject<EventSAS>(EventSAS,
     new Map<string, any>([
       ["sasToken", Guid.createValue()],
-      ["baseAddress", `${utils.defaultUrl}/v2.5/Repositories/iModel--${imodelId}/iModelScope`],
+      ["baseAddress", `${utils.defaultUrl}/sv1.1/Repositories/iModel--${imodelId}/iModelScope`],
     ]));
   const requestResponse = ResponseBuilder.generatePostResponse<EventSAS>(responseObject);
   const postBody = ResponseBuilder.generatePostBody<EventSAS>(ResponseBuilder.generateObject<EventSAS>(EventSAS));
@@ -161,16 +161,10 @@ describe("iModelHub EventHandler", () => {
     chai.expect(error.status).to.be.equal(404);
   });
 
-  it("should reject when no event is available", async () => {
+  it("should return undefined when no event is available", async () => {
     mockGetEvent(iModelId, subscription.wsgId, {}, undefined, undefined, 204);
-    let error;
-    try {
-      await imodelHubClient.Events().getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
-    } catch (err) {
-      error = err;
-    }
-    chai.assert(error);
-    chai.expect(error.status).to.be.equal(204);
+    const result = await imodelHubClient.Events().getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(result).to.be.equal(undefined);
   });
 
   it("should receive code event", async () => {

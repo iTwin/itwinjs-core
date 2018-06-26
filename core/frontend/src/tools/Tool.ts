@@ -7,14 +7,13 @@ import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
-import { LocateResponse } from "../ElementLocateManager";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
 import { IModelError } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
-type ToolType = typeof Tool;
-type CommandList = ToolType[];
+export type ToolType = typeof Tool;
+export type ToolList = ToolType[];
 
 export const enum BeButton {
   Data = 0,
@@ -35,29 +34,45 @@ export enum BeCursor {
   Dynamics = "move",
 }
 
+/** The *type* of a gesture. */
 export const enum GestureId {
   None = 0,
-  MultiFingerMove = 1, // two or more fingers dragging
-  SingleFingerMove = 2, // a single finger dragging
-  TwoFingerTap = 3, // tap with two fingers
-  PressAndTap = 4, // long press followed by a tap
-  SingleTap = 5, // One finger down and up; implies no LongPress active
-  DoubleTap = 6, // One finger down and up; implies no LongPress active
-  LongPress = 7, // One finger held down for more than some threshold
+  /** Two or more fingers dragging */
+  MultiFingerMove = 1,
+  /** A single finger dragging */
+  SingleFingerMove = 2,
+  /** tap with two fingers */
+  TwoFingerTap = 3,
+  /** long press followed by a tap */
+  PressAndTap = 4,
+  /** One finger down and up; implies no LongPress active */
+  SingleTap = 5,
+  /** One finger down and up, twice; implies no LongPress active */
+  DoubleTap = 6,
+  /** One finger held down for more than some threshold */
+  LongPress = 7,
 }
 
+/** The *source* that generated an event. */
 export const enum InputSource {
-  Unknown = 0, // source not defined
-  Mouse = 1,   // mouse or other pointing device
-  Touch = 2,    // touch-sensitive device e.g. a touch screen
+  /** Source not defined */
+  Unknown = 0,
+  /** From a mouse or other pointing device */
+  Mouse = 1,
+  /** From a touch screen */
+  Touch = 2,
 }
 
-/** The "source" that generated this event. */
+/** The *source* that generated a point. */
 export const enum CoordSource {
-  User = 0,    // event was created by an action from the user
-  Precision = 1,    // event was created by a program or by a precision keyin
-  TentativePoint = 2,  // event was created by a tentative point
-  ElemSnap = 3,    // event was created by snapping to an element
+  /** Event was created by an action from the user */
+  User = 0,
+  /** Event was created by a program or by a precision keyin */
+  Precision = 1,
+  /** Event was created by a tentative point */
+  TentativePoint = 2,
+  /** Event was created by snapping to an element */
+  ElemSnap = 3,
 }
 
 export const enum BeModifierKey {
@@ -192,6 +207,7 @@ export class BeButtonEvent {
   public inputSource = InputSource.Unknown;
   public actualInputSource = InputSource.Unknown;
 
+  public get isValid(): boolean { return this.viewport !== undefined; }
   public get point() { return this._point; }
   public set point(pt: Point3d) { this._point.setFrom(pt); }
   public get rawPoint() { return this._rawPoint; }
@@ -199,6 +215,7 @@ export class BeButtonEvent {
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
+  public invalidate() { this.viewport = undefined; }
   public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKey, button = BeButton.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
@@ -237,6 +254,26 @@ export class BeButtonEvent {
     result.setFrom(this);
     return result;
   }
+
+  /**
+   * Get the anchor point for a Zoom operation, based on this button event, by supplying a point
+   * for the result.
+   * @return boolean value of whether the point comes from an AccuSnap location
+   */
+  public getTargetPoint(result: Point3d): boolean {
+    let isSnap: boolean;
+    if (IModelApp.tentativePoint.isActive) {
+      isSnap = true;
+      result.setFrom(IModelApp.tentativePoint.getPoint());
+    } else if (IModelApp.accuSnap.isHot()) {
+      isSnap = false;
+      result.setFrom(this.rawPoint);
+    } else {
+      isSnap = CoordSource.User !== this.coordsFrom;
+      result.setFrom(isSnap ? this.point : this.rawPoint);
+    }
+    return isSnap;
+  }
 }
 
 /** Describes a "gesture" input originating from a touch-input device. */
@@ -252,7 +289,7 @@ export class GestureInfo {
 
   public getViewPoint(vp: Viewport) {
     const screenRect = vp.viewRect;
-    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.bottom, 0.0);
+    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.top, 0.0);
   }
 
   public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: XAndY[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {
@@ -329,8 +366,11 @@ export class BeWheelEvent extends BeButtonEvent {
  * @see [Tools]($docs/learning/frontend/tools.md)
  */
 export class Tool {
+  /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. */
   public static hidden = false;
+  /** The unique string that identifies this tool. */
   public static toolId = "";
+  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool */
   public static namespace: I18NNamespace;
   protected static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
   protected static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
@@ -385,68 +425,93 @@ export class Tool {
   public get description(): string { return (this.constructor as ToolType).description; }
 
   /**
-   * run this instance of a Tool. Subclasses should override to perform their action.
-   * @returns true if the tool executed successfully.
+   * Run this instance of a Tool. Subclasses should override to perform some action.
+   * @returns `true` if the tool executed successfully.
    */
   public run(..._arg: any[]): boolean { return true; }
 }
 
 /**
- * A Tool that may be installed, via ToolAdmin, to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
+ * A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
  */
 export abstract class InteractiveTool extends Tool {
-  /** Override to execute additional logic after tool becomes active */
-  public onPostInstall(): void { }
+
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
   public onInstall(): boolean { return true; }
+
+  /** Override to execute additional logic after tool becomes active */
+  public onPostInstall(): void { }
+
   public abstract exitTool(): void;
+
+  /** Override Call to reset tool to initial state */
+  public onReinitialize(): void { }
+
   /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
-  public onCleanup() { }
-  /** Implement to handle data-button-down events */
-  public abstract onDataButtonDown(ev: BeButtonEvent): void;
-  /** Invoked when the data-button-up events. */
-  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the reset-button-down events. */
+  public onCleanup(): void { }
+
+  /**
+   * Called to allow an active tool to display non-element decorations in overlay mode.
+   * This method is NOT called while the tool is suspended by a viewing tool or input collector.
+   */
+  public decorate(_context: DecorateContext): void { }
+
+  /**
+   * Called to allow a suspended tool to display non-element decorations in overlay mode.
+   * This method is ONLY called when the tool is suspended by a viewing tool or input collector.
+   * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
+   */
+  public decorateSuspended(_context: DecorateContext): void { }
+
+  /** Invoked when the reset button is pressed.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @note To support right-press menus, a tool should put its reset event processing in onResetButtonUp instead of onResetButtonDown.
+   */
   public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the reset button is released. */
+  /** Invoked when the reset button is released.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   */
   public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the middle mouse button is pressed. */
+
+  /** Invoked when the data button is pressed.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   */
+  public onDataButtonDown(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the data button is released.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   */
+  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
+
+  /** Invoked when the middle mouse button is pressed.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the middle mouse button is released. */
+  /** Invoked when the middle mouse button is released.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public onMiddleButtonUp(_ev: BeButtonEvent): boolean { return false; }
+
   /** Invoked when the cursor is moving */
   public onModelMotion(_ev: BeButtonEvent): void { }
   /** Invoked when the cursor is not moving */
   public onModelNoMotion(_ev: BeButtonEvent): void { }
   /** Invoked when the cursor was previously moving, and has stopped moving. */
   public onModelMotionStopped(_ev: BeButtonEvent): void { }
-  /** Invoked when the cursor begins moving while a button is depressed */
-  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the cursor stops moving while a button is depressed */
-  public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
-  /** Invoked to allow tools to filter which elements can be located.
-   * return true to reject hit (fill out response with reason, if it is defined)
+
+  /** Invoked when the cursor begins moving while a button is depressed.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
    */
-  public onPostLocate(_hit: HitDetail, _out?: LocateResponse) { return false; }
-  /** Invoked when the mouse wheel moves. */
+  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the button is released after onModelStartDrag.
+   * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
+   */
+  public onModelEndDrag(ev: BeButtonEvent): boolean { if (BeButton.Data !== ev.button) return false; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
+
+  /** Invoked when the mouse wheel moves.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
-  /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
-  /** Invoked when the dimensions of the tool's viewport change */
-  public onViewportResized() { }
-  /** Invoked to allow a tool to update any view decorations it may have created */
-  public updateDynamics(_ev: BeButtonEvent) { }
-  public onTouchMotionPaused(): boolean { return false; }
-  public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onMultiFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onTwoFingerTap(_ev: BeGestureEvent): boolean { return false; }
-  public onPressAndTap(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onLongPress(_ev: BeGestureEvent): boolean { return false; }
-  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
-  public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
 
   /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
    * @param _wentDown up or down key event
@@ -455,7 +520,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): boolean { return false; }
 
-  /** Called when  keys are pressed or released.
+  /** Called when keys are pressed or released.
    * @param wentDown up or down key event
    * @param key One of VirtualKey enum values
    * @param shiftIsDown the shift key is down
@@ -465,18 +530,22 @@ export abstract class InteractiveTool extends Tool {
    */
   public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
 
-  /**
-   * Called to allow an active tool to display non-element decorations in overlay mode.
-   * This method is NOT called while the tool is suspended by a viewing tool or input collector.
-   */
-  public decorate(_context: DecorateContext) { }
+  public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
+  public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
+  public onMultiFingerMove(_ev: BeGestureEvent): boolean { return false; }
+  public onTwoFingerTap(_ev: BeGestureEvent): boolean { return false; }
+  public onPressAndTap(_ev: BeGestureEvent): boolean { return false; }
+  public onSingleTap(_ev: BeGestureEvent): boolean { return false; }
+  public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
+  public onLongPress(_ev: BeGestureEvent): boolean { return false; }
+  public onTouchMotionPaused(): boolean { return false; }
 
-  /**
-   * Called to allow a suspended tool to display non-element decorations in overlay mode.
-   * This method is ONLY called when the tool is suspended by a viewing tool or input collector.
-   * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
-   */
-  public decorateSuspended(_context: DecorateContext) { }
+  public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
+  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+
+  /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
+  /** Invoked when the dimensions of the tool's viewport change */
+  public onViewportResized(): void { }
 
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
@@ -486,7 +555,32 @@ export abstract class InteractiveTool extends Tool {
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */
-  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; }
+  //  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; } // NEEDSWORK
+  public getInfoString(_hit: HitDetail, _delimiter: string): string { return ""; }
+
+  /**
+   * Fill the supplied button event from the current cursor location.
+   */
+  public getCurrentButtonEvent(ev: BeButtonEvent): void {
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+  }
+}
+
+export abstract class InputCollector extends InteractiveTool {
+  public run(): boolean {
+    const toolAdmin = IModelApp.toolAdmin;
+    // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
+    if (undefined !== toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
+      return false;
+
+    toolAdmin.startInputCollector(this);
+    toolAdmin.setInputCollector(this);
+    toolAdmin.onPostInstallTool(this);
+    return true;
+  }
+
+  public exitTool(): void { IModelApp.toolAdmin.exitInputCollector(); }
+  public onResetButtonUp(_ev: BeButtonEvent): boolean { this.exitTool(); return true; }
 }
 
 /**
@@ -494,8 +588,8 @@ export abstract class InteractiveTool extends Tool {
  * find Tools by their toolId, and also a way to iterate over the collection of Tools available.
  */
 export class ToolRegistry {
-  public readonly tools = new Map<string, typeof Tool>();
-  private _keyinList?: CommandList;
+  public readonly tools = new Map<string, ToolType>();
+  private _keyinList?: ToolList;
 
   /**
    * Un-register a Tool class.
@@ -508,7 +602,7 @@ export class ToolRegistry {
    * @param toolClass the subclass of Tool to register.
    * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
    */
-  public register(toolClass: typeof Tool, namespace?: I18NNamespace) {
+  public register(toolClass: ToolType, namespace?: I18NNamespace) {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
 
@@ -539,7 +633,7 @@ export class ToolRegistry {
   }
 
   /** Look up a tool by toolId */
-  public find(toolId: string): typeof Tool | undefined { return this.tools.get(toolId); }
+  public find(toolId: string): ToolType | undefined { return this.tools.get(toolId); }
 
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
@@ -563,25 +657,28 @@ export class ToolRegistry {
     return !!tool && tool.run(...args);
   }
 
-  private async getKeyinList(): Promise<CommandList> {
-    if (this._keyinList)
-      return this._keyinList;
-    const thePromise = new Promise<CommandList>((resolve: any, reject: any) => {
-      IModelApp.i18n.waitForAllRead().then(() => {
-        this._keyinList = [];
-        for (const thisTool of this.tools.values()) {
+  /** Get a list of Tools currently registered, excluding hidden tools */
+  public getToolList(): ToolList {
+    if (this._keyinList === undefined) {
+      this._keyinList = [];
+      for (const thisTool of this.tools.values()) {
+        if (!thisTool.hidden)
           this._keyinList.push(thisTool);
-        }
-        resolve(this._keyinList);
-      }, () => { reject(); });
-    });
-    return thePromise;
+      }
+    }
+    return this._keyinList;
   }
 
-  public async findPartialMatches(keyin: string): Promise<FuzzySearchResults<typeof Tool>> {
-    const commandList: CommandList = await this.getKeyinList();
+  /**
+   * Find a tool by its localized keyin using a FuzzySearch
+   * @param keyin the localized keyin string of the tool.
+   * @returns the tool class, if an exact match is found.
+   * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
+   */
+  public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
+    const toolList: ToolList = this.getToolList();
     const searcher = new FuzzySearch<ToolType>();
-    const searchResults: FuzzySearchResults<ToolType> = searcher.search(commandList, ["keyin"], keyin);
+    const searchResults: FuzzySearchResults<ToolType> = searcher.search(toolList, ["keyin"], keyin);
     return searchResults;
   }
 
@@ -589,9 +686,10 @@ export class ToolRegistry {
    * Find a tool by its localized keyin. If found (via exact match), execute the tool with the supplied arguments.
    * @param keyin the localized keyin string of the tool to run.
    * @param args the arguments for the tool. Note: these argument are passed to both the constructor and the tools' run method.
+   * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
-  public async executeExactMatch(keyin: string, ...args: any[]): Promise<boolean> {
-    const foundClass = await this.findExactMatch(keyin);
+  public executeExactMatch(keyin: string, ...args: any[]): boolean {
+    const foundClass = this.findExactMatch(keyin);
     return foundClass ? new foundClass(...args).run(...args) : false;
   }
 
@@ -599,9 +697,10 @@ export class ToolRegistry {
    * Find a tool by its localized keyin.
    * @param keyin the localized keyin string of the tool.
    * @returns the tool class, if an exact match is found.
+   * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
-  public async findExactMatch(keyin: string): Promise<typeof Tool | undefined> {
-    const commandList: CommandList = await this.getKeyinList();
+  public findExactMatch(keyin: string): ToolType | undefined {
+    const commandList = this.getToolList();
     for (const thisTool of commandList) {
       if (thisTool.keyin === keyin)
         return thisTool;

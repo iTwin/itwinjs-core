@@ -2,11 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
-import { HitSource, HitDetail, HitList, SnapMode, SnapDetail, SubSelectionMode } from "./HitDetail";
-import { Point3d } from "@bentley/geometry-core";
-import { Viewport } from "./Viewport";
+import { HitSource, HitDetail, HitList, SnapDetail, SnapMode, HitPriority } from "./HitDetail";
+import { Point3d, Point2d } from "@bentley/geometry-core";
+import { Viewport, ViewRect } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { IModelApp } from "./IModelApp";
+import { Pixel } from "./rendering";
+import { PrimitiveTool } from "./tools/PrimitiveTool";
 
 // tslint:disable:variable-name
 
@@ -18,21 +20,18 @@ export const enum LocateAction {
 
 /**
  * Values to return from a locate filter.
- * <em>note:</em> It would be rare and extreme for a locate filter to ever return Accept.
- * <p>Usually, filters will return Reject to indicate the element is unacceptable, or Neutral to
+ *
+ * @note It would be rare and extreme for a locate filter to ever return Accept.
+ *
+ * Usually, filters will return Reject to indicate the element is unacceptable, or Neutral to
  * indicate that the element is acceptable <i>as far as this filter is concerned.</i> By returning Accept, a
- * single filter can cause the element to be accepted, <b>without calling other filters</b> that might otherwise reject the element.
+ * single filter can cause the element to be accepted, *without calling other filters* that might otherwise reject the element.
  * Indicates the reason an element was rejected by a filter.
  */
 export const enum LocateFilterStatus {
   Reject = 0,
   Neutral = 1,
   Accept = 2,
-}
-
-export const enum SnapType {
-  Points = 1,
-  Constraints = 2,
 }
 
 export const enum SnapStatus {
@@ -52,23 +51,22 @@ export const enum SnapStatus {
 export const enum TestHitStatus {
   NotOn = 0,
   IsOn = 1,
-  Aborted = 2,
 }
 
 export class LocateOptions {
   public disableIModelFilter = false;
-  public allowTransients = false;
+  public allowDecorations = false;
   public maxHits = 20;
   public hitSource = HitSource.DataPoint;
   public clone(): LocateOptions {
     const other = new LocateOptions();
     other.disableIModelFilter = this.disableIModelFilter;
-    other.allowTransients = this.allowTransients;
-    other.hitSource = this.hitSource;
+    other.allowDecorations = this.allowDecorations;
     other.maxHits = this.maxHits;
+    other.hitSource = this.hitSource;
     return other;
   }
-  public init() { this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
+  public init() { this.disableIModelFilter = false, this.allowDecorations = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
 export class LocateResponse {
@@ -85,12 +83,10 @@ export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
   public hitList?: HitList;
-  public lastPickAborted = false;
 
   public empty() {
     this.pickPointWorld.setZero();
     this.viewport = undefined;
-    this.lastPickAborted = true;
     if (this.hitList)
       this.hitList.empty();
     else
@@ -106,51 +102,125 @@ export class ElementPicker {
   }
 
   public getNextHit(): HitDetail | undefined {
-    const list = this.hitList;
-    return list ? list.getNextHit() : undefined;
+    return this.hitList ? this.hitList.getNextHit() : undefined;
   }
 
   /** return a particular hit from the list of hits from the last time pickElements was called. */
   public getHit(i: number): HitDetail | undefined {
-    const list = this.hitList;
-    return list ? list.getHit(i) : undefined;
+    return this.hitList ? this.hitList.getHit(i) : undefined;
   }
 
   public resetCurrentHit(): void {
-    const list = this.hitList;
-    if (list) list.resetCurrentHit();
+    if (this.hitList) this.hitList.resetCurrentHit();
   }
 
-  /** generate a list of elements that are close to a datapoint. */
-  public doPick(vp: Viewport, pickPointWorld: Point3d, _pickApertureScreen: number, _options: LocateOptions): number {
-    if (this.hitList && this.hitList.size() > 0 && !this.lastPickAborted && (vp === this.viewport) && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
+  private getPixelPriority(pixel: Pixel.Data) {
+    switch (pixel.type) {
+      case Pixel.GeometryType.Surface:
+        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarSurface : HitPriority.NonPlanarSurface;
+      case Pixel.GeometryType.Linear:
+        return HitPriority.WireEdge;
+      case Pixel.GeometryType.Edge:
+        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarEdge : HitPriority.NonPlanarEdge;
+      case Pixel.GeometryType.Silhouette:
+        return HitPriority.SilhouetteEdge;
+      default:
+        return HitPriority.Unknown;
+    }
+  }
+
+  private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
+    const priority1 = this.getPixelPriority(pixel1);
+    const priority2 = this.getPixelPriority(pixel2);
+
+    if (priority1 < priority2) return -1;
+    if (priority1 > priority2) return 1;
+
+    if (distXY1 < distXY2) return -1;
+    if (distXY1 > distXY2) return 1;
+
+    if (pixel1.distanceFraction > pixel2.distanceFraction) return -1;
+    if (pixel1.distanceFraction < pixel2.distanceFraction) return 1;
+
+    return 0;
+  }
+
+  /** Generate a list of elements that are close to a given point. */
+  public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
+    if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
-      return this.hitList.size();
+      return this.hitList.length;
     }
 
     this.empty(); // empty the hit list
     this.viewport = vp;
     this.pickPointWorld.setFrom(pickPointWorld);
 
-    // NEEDS_WORK
-    // PickContext pickContext(options, stopTest);
-    // lastPickAborted = pickContext.PickElements(vp, pickPointWorld, pickApertureScreen, hitList);
+    const pickPointView = vp.worldToView(pickPointWorld);
+    const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
+    const pixelRadius = Math.floor(pickRadiusView + 0.5);
+    const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
+    const pixels = vp.readPixels(rect, Pixel.Selector.All);
+    if (undefined === pixels)
+      return 0;
 
-    return this.hitList!.size();
+    const elmHits = new Map<string, Point2d>();
+    const testPoint = Point2d.createZero();
+    for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
+      for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
+        const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+        if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+          continue; // no geometry at this location...
+        const distXY = testPointView.distance(testPoint);
+        if (distXY > pixelRadius)
+          continue; // ignore corners. it's a locate circle not square...
+        const oldPoint = elmHits.get(pixel.elementId.toString());
+        if (undefined !== oldPoint) {
+          if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
+            oldPoint.setFrom(testPoint); // new hit is better, update location...
+        } else {
+          elmHits.set(pixel.elementId.toString(), testPoint.clone());
+        }
+      }
+    }
+    if (0 === elmHits.size)
+      return 0;
+
+    for (const elmPoint of elmHits.values()) {
+      const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
+      if (undefined === pixel || undefined === pixel.elementId)
+        continue;
+      const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
+      if (undefined === hitPointWorld)
+        continue;
+      const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction);
+      this.hitList!.addHit(hit);
+      if (this.hitList!.hits.length > options.maxHits)
+        this.hitList!.hits.length = options.maxHits; // truncate array...
+    }
+    return this.hitList!.length;
   }
 
   /**
    * test a (previously generated) hit against a new datapoint (presumes same view)
    * @return true if the point is on the element
    */
-  public testHit(_hit: HitDetail, hitList: HitList | undefined, _vp: Viewport, _pickPointWorld: Point3d, _pickApertureScreen: number, _options: LocateOptions): TestHitStatus {
+  public testHit(hit: HitDetail, hitList: HitList | undefined, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): TestHitStatus {
     // if they didn't supply a hit list, and we don't have one, create one.
     if (!hitList && !this.hitList)
       this.empty();
 
-    // NEEDS_WORK
-    // PickContext pickContext(options, stopTest);
-    // return pickContext.TestHit(hit, vp, pickPointWorld, pickApertureScreen, !hitList ? this.hitList : hitList);
+    if (!this.doPick(vp, pickPointWorld, pickRadiusView, options) || undefined === this.hitList)
+      return TestHitStatus.NotOn;
+
+    for (let i = 0; i < this.hitList.length; i++) {
+      const thisHit = this.hitList.getHit(i);
+      if (!hit.isSameHit(thisHit))
+        continue;
+      if (hitList)
+        hitList = this.getHitList(true);
+      return TestHitStatus.IsOn;
+    }
     return TestHitStatus.NotOn;
   }
 }
@@ -168,18 +238,15 @@ export class ElementLocateManager {
   public getKeypointDivisor() { return 2; }
   public synchSnapMode() { }
   public onFlashHit(_detail: SnapDetail) { }
-  public onAccuSnapMotion(_detail: SnapDetail | undefined, _wasHot: boolean, _ev: BeButtonEvent) { }
+  public onAccuSnapMotion(_detail: HitDetail | undefined, _wasHot: boolean, _ev: BeButtonEvent) { }
   public getElementPicker() { return this.picker; }
-  public setChosenSnapMode(_snapType: SnapType, _snapMode: SnapMode) { }
-  public isConstraintSnapActive(): boolean { return false; }
-  public performConstraintSnap(_detail: SnapDetail, _hotDistance: number, _snapSource: HitSource) { return SnapStatus.Success; }
+  public setChosenSnapMode(_snapMode: SnapMode) { }
 
   public clear(): void { this.setCurrHit(undefined); }
   public setHitList(list?: HitList) { this.hitList = list; }
   public setCurrHit(hit?: HitDetail): void { this.currHit = hit; }
   public getNextHit(): HitDetail | undefined {
-    const list = this.hitList;
-    return list ? list.getNextHit() : undefined;
+    return this.hitList ? this.hitList.getNextHit() : undefined;
   }
 
   /** return the current path from either the snapping logic or the pre-locating systems. */
@@ -190,7 +257,7 @@ export class ElementLocateManager {
     if (!preLocated && !!(preLocated = IModelApp.tentativePoint.getHitAndList(this))) {
       const vp = preLocated.viewport!;
       this.picker.empty(); // Get new hit list at hit point; want reset to cycle hits using adjusted point location...
-      this.picker.doPick(vp, preLocated.getHitPoint(), (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.options);
+      this.picker.doPick(vp, preLocated.getPoint(), (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.options);
       this.setHitList(this.picker.getHitList(true));
     }
 
@@ -213,17 +280,15 @@ export class ElementLocateManager {
     return snaps;
   }
 
-  public filterHit(hit: HitDetail, mode: SubSelectionMode, _action: LocateAction, out: LocateResponse): boolean {
+  public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.elementId && !this.options.allowTransients) {
+    if (!hit.isElementHit() && !this.options.allowDecorations) {
       out.reason = ElementLocateManager.getFailureMessageKey("Transient");
       return true;
     }
 
-    hit.subSelectionMode = mode; // Set mode for flashing segments/entire element...
-
     const tool = IModelApp.toolAdmin.activeTool;
-    if (!tool)
+    if (!(tool && tool instanceof PrimitiveTool))
       return false;
 
     const retVal = !tool.onPostLocate(hit, out);
@@ -241,21 +306,20 @@ export class ElementLocateManager {
     IModelApp.tentativePoint.clear(true);
   }
 
-  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, mode: SubSelectionMode, filterHits: boolean): HitDetail | undefined {
+  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, filterHits: boolean): HitDetail | undefined {
     if (!vp)
       return;
-    // the "newSearch" flag indicates whether the caller wants us to conduct a new search at the testPoint, or just continue
-    // returning paths from the previous search.
+
+    // the "newSearch" flag indicates whether the caller wants us to conduct a new search at the testPoint, or just continue returning paths from the previous search.
     if (newSearch) {
       const hit = this.getPreLocatedHit();
 
       // if we're snapped to something, that path has the highest priority and becomes the active hit.
       if (hit) {
-        if (!filterHits || !this.filterHit(hit, mode, LocateAction.Identify, response))
+        if (!filterHits || !this.filterHit(hit, LocateAction.Identify, response))
           return hit;
 
-        // we have the reason and explanation we want.
-        response = new LocateResponse();
+        response = new LocateResponse(); // we have the reason and explanation we want.
       }
 
       this.picker.empty();
@@ -267,7 +331,7 @@ export class ElementLocateManager {
 
     let newHit: HitDetail | undefined;
     while (undefined !== (newHit = this.getNextHit())) {
-      if (!filterHits || !this.filterHit(newHit, mode, LocateAction.Identify, response))
+      if (!filterHits || !this.filterHit(newHit, LocateAction.Identify, response))
         return newHit;
       response = new LocateResponse(); // we have the reason and explanation we want.
     }
@@ -275,16 +339,16 @@ export class ElementLocateManager {
     return undefined;
   }
 
-  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, mode: SubSelectionMode = SubSelectionMode.None, filterHits = true): HitDetail | undefined {
+  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, filterHits = true): HitDetail | undefined {
     response.reason = ElementLocateManager.getFailureMessageKey("NoElements");
     response.explanation = "";
 
-    const hit = this._doLocate(response, newSearch, testPoint, view, mode, filterHits);
+    const hit = this._doLocate(response, newSearch, testPoint, view, filterHits);
     this.setCurrHit(hit);
 
-    // if we found a hit, remove it from the list of remaining hit near the current search point.
-    if (hit && this.hitList && hit.elementId)
-      this.hitList.removeHitsFrom(hit.elementId);
+    // if we found a hit, remove it from the list of remaining hits near the current search point.
+    if (hit && this.hitList)
+      this.hitList.removeHitsFrom(hit.sourceId);
     return hit;
   }
 }
