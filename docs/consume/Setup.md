@@ -11,17 +11,25 @@ consumers must do before ECPresentation library can be used.
   ```
 2. Initialize `ECPresentationRpcInterface` (amongst other RPC interfaces):
   ``` ts
+  [[include:Backend.Imports]]
+  ```
+  ``` ts
   [[include:Backend.Initialization.RpcInterface]]
   ```
 
 ## Frontend
 
-1. Initialize `ECPresentation`:
+1. Import dependencies:
+  ``` ts
+  [[include:Frontend.Imports]]
+  ```
+
+2. Initialize `ECPresentation`:
   ``` ts
   [[include:Frontend.Initialization.ECPresentation]]
   ```
 
-2. Initialize `ECPresentationRpcInterface` (amongst other RPC interfaces):
+3. Initialize `ECPresentationRpcInterface` (amongst other RPC interfaces):
   ``` ts
   [[include:Frontend.Initialization.RpcInterface]]
   ```

@@ -5,10 +5,14 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams,
+  ElectronRpcManager, ElectronRpcConfiguration,
   StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface,
   RpcOperation, IModelToken,
 } from "@bentley/imodeljs-common";
+// __PUBLISH_EXTRACT_START__ Frontend.Imports
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
+// __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
 import initLogging from "./api/logging";
 import SampleRpcInterface from "../common/SampleRpcInterface";
@@ -18,16 +22,20 @@ import "./index.css";
 // initialize logging
 initLogging();
 
-const rpcParams: BentleyCloudRpcParams = { info: { title: "my-app", version: "v1.0" } };
-const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
-// __PUBLISH_EXTRACT_START__ Frontend.Initialization.RpcInterface
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
-BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, ECPresentationRpcInterface]);
-// __PUBLISH_EXTRACT_END__
-
-const interfaces = [...otherRpcInterfaces, ECPresentationRpcInterface];
-for (const def of interfaces)
-  RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
+// initialize RPC
+(function initRpc() {
+  const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
+  if (ElectronRpcConfiguration.isElectron) {
+    ElectronRpcManager.initializeClient({}, [...otherRpcInterfaces, ECPresentationRpcInterface]);
+  } else {
+    const rpcParams: BentleyCloudRpcParams = { info: { title: "my-app", version: "v1.0" } };
+    // __PUBLISH_EXTRACT_START__ Frontend.Initialization.RpcInterface
+    const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, ECPresentationRpcInterface]);
+    // __PUBLISH_EXTRACT_END__
+    for (const def of rpcConfiguration.interfaces())
+      RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
+  }
+})();
 
 // subclass of IModelApp needed to use IModelJs API
 export class SampleApp extends IModelApp {

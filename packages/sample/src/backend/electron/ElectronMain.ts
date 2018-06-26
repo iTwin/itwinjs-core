@@ -7,14 +7,18 @@ import * as path from "path";
 import * as url from "url";
 
 // Initialize my application rpc configuration for the backend
-import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, BentleyCloudRpcParams } from "@bentley/imodeljs-common";
+import {
+  ElectronRpcManager,
+  StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface,
+} from "@bentley/imodeljs-common";
+// __PUBLISH_EXTRACT_START__ Backend.Imports
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+// __PUBLISH_EXTRACT_END__
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
-const rpcParams: BentleyCloudRpcParams = { info: { title: "my-app", version: "v1.0" } };
 const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
 // __PUBLISH_EXTRACT_START__ Backend.Initialization.RpcInterface
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
-BentleyCloudRpcManager.initializeImpl(rpcParams, [...otherRpcInterfaces, ECPresentationRpcInterface]);
+ElectronRpcManager.initializeImpl({}, [...otherRpcInterfaces, ECPresentationRpcInterface]);
 // __PUBLISH_EXTRACT_END__
 
 const isDevBuild = (process.env.NODE_ENV === "development");
