@@ -98,6 +98,14 @@ export class NumberArray {
     for (let i = 0; i < n; i++) { a = Math.max(a, Math.abs(dataA[i] - dataB[i])); }
     return a;
   }
+
+  public static maxAbsDiffFloat64(dataA: Float64Array, dataB: Float64Array): number {
+    let a = 0.0;
+    const n = Math.min(dataA.length, dataB.length);
+    for (let i = 0; i < n; i++) { a = Math.max(a, Math.abs(dataA[i] - dataB[i])); }
+    return a;
+  }
+
 }
 
 export class Point2dArray {

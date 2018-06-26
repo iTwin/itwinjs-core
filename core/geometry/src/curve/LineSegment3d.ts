@@ -5,7 +5,7 @@
 /** @module Curve */
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
-import { Order2Bezier } from "../numerics/Polynomials";
+import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
