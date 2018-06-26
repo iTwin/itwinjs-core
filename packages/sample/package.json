@@ -24,7 +24,7 @@
     "@bentley/imodeljs-clients": "^6",
     "@bentley/imodeljs-common": "^0.95",
     "@bentley/imodeljs-backend": "^0.96",
-    "@bentley/imodeljs-frontend": "^0.95",
+    "@bentley/imodeljs-frontend": "^0.95.1",
     "@bentley/ecpresentation-common": "^0.4.1",
     "@bentley/ecpresentation-backend": "^0.4.1",
     "@bentley/ecpresentation-frontend": "^0.4.1",
