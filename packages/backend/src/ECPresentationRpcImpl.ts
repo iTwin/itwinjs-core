@@ -101,6 +101,10 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return content;
   }
 
+  public async getDistinctValues(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, options: object, maximumValueCount: number): Promise<string[]> {
+    return await this.getManager().getDistinctValues(this.getIModel(token), descriptor, keys, fieldName, options, maximumValueCount);
+   }
+
   public async setUserSettingValue(ruleSetId: string, settingId: string, value: SettingValue): Promise<void> {
     return await this.getManager().settings.setValue(ruleSetId, settingId, value);
   }

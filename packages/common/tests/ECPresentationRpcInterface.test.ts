@@ -114,6 +114,14 @@ describe("ECPresentationRpcInterface", () => {
       mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), undefined, {}), moq.Times.once());
     });
 
+    it("forwards getDistinctValues call", async () => {
+      const descriptor = createRandomDescriptor();
+      const fieldName = faker.random.word();
+      const maximumValueCount = faker.random.number();
+      await rpcInterface.getDistinctValues(testData.imodelToken, descriptor, new KeySet(), fieldName, {}, maximumValueCount);
+      mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), fieldName, {}, maximumValueCount), moq.Times.once());
+    });
+
     it("forwards setUserSettingValue call", async () => {
       await rpcInterface.setUserSettingValue("rulesetId", "settingId", { value: "", type: SettingValueTypes.String });
       mock.verify((x) => x("rulesetId", "settingId", { value: "", type: SettingValueTypes.String }), moq.Times.once());

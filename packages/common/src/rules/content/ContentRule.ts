@@ -16,5 +16,5 @@ export interface ContentRule extends ConditionalPresentationRuleBase {
   type: PresentationRuleTypes.ContentRule;
 
   /** Rule specifications define what content the rule results in. */
-  specifications?: ContentSpecification;
+  specifications?: ContentSpecification[];
 }

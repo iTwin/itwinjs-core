@@ -226,6 +226,22 @@ describe("ECPresentationRpcImpl", () => {
       });
     });
 
+    describe("getDistinctValues", () => {
+      it("calls manager", async () => {
+        const descriptor = createRandomDescriptor();
+        const fieldName = faker.random.word();
+        const maximumValueCount = faker.random.number();
+        const distinctValues = [faker.random.word(), faker.random.word()];
+        presentationManagerMock.setup((x) => x.getDistinctValues(testData.imodelMock.object, descriptor, testData.inputKeys, fieldName, testData.extendedOptions, maximumValueCount))
+          .returns(async () => distinctValues)
+          .verifiable();
+        const actualResult = await impl.getDistinctValues(testData.imodelToken, descriptor,
+          testData.inputKeys, fieldName, testData.extendedOptions, maximumValueCount);
+        presentationManagerMock.verifyAll();
+        expect(actualResult).to.deep.eq(distinctValues);
+      });
+    });
+
     describe("setUserSettingValue", () => {
       it("calls settings manager", async () => {
         settingsMock.setup((x) => x.setValue("rulesetId", "settingId", { value: "", type: SettingValueTypes.String }))

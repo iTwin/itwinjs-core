@@ -710,6 +710,55 @@ describe("ECPresentationManager", () => {
       verifyWithSnapshot(result, expectedParams);
     });
 
+    describe("getDistinctValues", () => {
+      it("returns distinct values", async () => {
+        // what the addon receives
+        const descriptor = createRandomDescriptor();
+        const fieldName = faker.random.word();
+        const maximumValueCount = faker.random.number();
+        const expectedParams = {
+          requestId: NodeAddonRequestTypes.GetDistinctValues,
+          params: {
+            descriptorOverrides: descriptor.createDescriptorOverrides(),
+            keys: testData.keys,
+            fieldName,
+            maximumValueCount,
+            options: testData.extendedOptions,
+          },
+        };
+        // what the addon returns
+        const addonResponse = [faker.random.word(), faker.random.word(), faker.random.word()];
+        // test
+        setup(addonResponse);
+        const result = await manager.getDistinctValues(testData.imodelToken, descriptor,
+          testData.keys, fieldName, testData.extendedOptions, maximumValueCount);
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+      it("passes 0 for maximumValueCount by default", async () => {
+        // what the addon receives
+        const descriptor = createRandomDescriptor();
+        const expectedParams = {
+          requestId: NodeAddonRequestTypes.GetDistinctValues,
+          params: {
+            descriptorOverrides: descriptor.createDescriptorOverrides(),
+            keys: testData.keys,
+            fieldName: "",
+            maximumValueCount: 0,
+            options: {},
+          },
+        };
+        // what the addon returns
+        const addonResponse: string[] = [];
+        // test
+        setup(addonResponse);
+        const result = await manager.getDistinctValues(testData.imodelToken, descriptor,
+          testData.keys, "", {});
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
     it("throws on invalid addon response", async () => {
       mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
       return expect(manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions)).to.eventually.be.rejectedWith(Error);
