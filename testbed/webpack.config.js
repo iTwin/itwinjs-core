@@ -17,7 +17,7 @@ module.exports = {
         enforce: "pre"
       },
       {
-        test: /azure-storage|AzureFileHandler/,
+        test: /azure-storage|AzureFileHandler|UrlFileHandler/,
         use: "null-loader"
       }
     ]
