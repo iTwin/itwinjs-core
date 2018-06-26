@@ -33,16 +33,11 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "//peerDependencies": [
-    "NOTE: The @bentley/imodeljs-native-platform-api dependency is REPEATED here, so that clients such as protogist",
-    "will see a warning from NPM INSTALL in case they depend on an incompatible version of the addon and/or API version."
-  ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "8",
     "@bentley/geometry-core": "9",
     "@bentley/imodeljs-clients": "6",
-    "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-native-platform-api": "~22.0.0"
+    "@bentley/imodeljs-common": "0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -54,6 +49,7 @@
     "@bentley/geometry-core": "9",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
+    "@types/semver": "5.5.0",
     "cpx": "^1.5.0",
     "mocha": "^5.2.0",
     "nyc": "^11.8.0",
@@ -68,19 +64,14 @@
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-backend",
-    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: While, imodeljs-native-platform-api seems like it should be a devDependency, it is actually required at run time.",
-    "The NativePlatformRegistry reads it in order to learn what API was used to compile backend. (Also, if we don't make it a real dependency here, then ",
-    "apps would have to depend on it, since this package has a peerDependency on it.",
-    "Also, modeljs-native-platform-api has an install script that turns around and installs the appropriate version of the node addon.",
-    "That side-effect installs the addon needed by apps that depend on backend. Thus, apps don't have to depend on the native packages.",
-    "*** Keep this in synch with tools/native-platform-installer ***"
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
   ],
   "dependencies": {
     "@bentley/imodeljs-native-platform-api": "~22.0.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.0",
-    "glob": "^7.1.2"
+    "glob": "^7.1.2",
+    "semver": "^5.5.0"
   },
   "nyc": {
     "include": [

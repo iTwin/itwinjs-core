@@ -318,14 +318,15 @@ export class Viewport {
   private readonly forwardStack: ViewState[] = [];
   private readonly backStack: ViewState[] = [];
   private currentBaseline?: ViewState;
-  private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
+  /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
+  public static nearScale24 = 0.0003;
   private _evController?: EventController;
   private _view!: ViewState;
   /** @hidden */
   public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   /** @hidden */
-  public readonly sync: SyncFlags = new SyncFlags();
+  public readonly sync = new SyncFlags();
   /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
   /** View delta, potentially expanded */
@@ -705,27 +706,6 @@ export class Viewport {
     this.backStack.length = 0;
   }
 
-  /**
-   * Set the rotation of this Viewport to the supplied rotation, by rotating its ViewState about a point.
-   * @param rotation The new rotation matrix for this Viewport's ViewState.
-   * @param point The point to rotate about. If undefined, use the [[ViewState.getTargetPoint]].
-   * @note This method calls [[setupFromView]] before it returns.
-   */
-  public setRotationAboutPoint(rotation: RotMatrix, point?: Point3d): void {
-    if (undefined === point)
-      point = this.view.getTargetPoint();
-
-    const inverse = rotation.clone().inverse();
-    if (undefined === inverse)
-      return;
-
-    const targetMatrix = inverse.multiplyMatrixMatrix(this.view.getRotation());
-    const worldTransform = Transform.createFixedPointAndMatrix(point, targetMatrix);
-    const frustum = this.getWorldFrustum();
-    frustum.multiply(worldTransform);
-    this.setupViewFromFrustum(frustum);
-  }
-
   public setStandardRotation(id: StandardViewId): void {
     this.view.setStandardRotation(id);
     this.setupFromView();
@@ -884,7 +864,7 @@ export class Viewport {
       this.fromView(origin);  // Rotate back to root coordinates
       origin.plus(camera.eye, origin); // Add the eye point.
     } else {
-      origin = inOrigin.clone();
+      origin = inOrigin;
       xExtent = xVector.scale(delta.x);
       yExtent = yVector.scale(delta.y);
       zExtent = zVector.scale(delta.z);
@@ -904,7 +884,7 @@ export class Viewport {
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
    * If so, save a *clone* of the previous state in the view undo stack to permit View Undo.
    */
-  private saveViewUndo(): void {
+  public saveViewUndo(): void {
     if (!this._view)
       return;
 
@@ -1200,7 +1180,7 @@ export class Viewport {
   public setupViewFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
     // note: always call setupFromView, even if setupFromFrustum failed
-    return this.setupFromView() ? validSize === ViewStatus.Success : false;
+    return (ViewStatus.Success === this.setupFromView() && ViewStatus.Success === validSize);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */

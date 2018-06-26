@@ -325,8 +325,12 @@ function toggleRenderModeMenu(_event: any) {
 }
 
 function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
-  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport!.isContextRotationRequired());
-  theViewport!.setRotationAboutPoint(rMatrix);
+  if (undefined === theViewport)
+    return;
+
+  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
+  theViewport.view.setRotationAboutPoint(rMatrix);
+  theViewport.synchWithView(true);
   showStatus(label, "view");
 }
 

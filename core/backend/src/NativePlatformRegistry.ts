@@ -6,6 +6,8 @@
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
+// tslint:disable-next-line:no-var-requires
+const semver = require('semver')
 
 let realrequire: any;
 try {
@@ -42,22 +44,13 @@ export class NativePlatformRegistry {
     NativePlatformRegistry._platform.logger = Logger;
   }
 
-  private static parseSemVer(str: string): number[] {
-    const c = str.split(".");
-    return [parseInt(c[0], 10), parseInt(c[1], 10), parseInt(c[2], 10)];
-  }
-
   private static checkNativePlatformVersion(): void {
     const platformVer = NativePlatformRegistry._platform.version;
     // tslint:disable-next-line:no-var-requires
-    const iWasBuiltWithVer = require("@bentley/imodeljs-native-platform-api/package.json").version;
-
-    const platformVerDigits = NativePlatformRegistry.parseSemVer(platformVer);
-    const iWasBuiltWithVerDigits = NativePlatformRegistry.parseSemVer(iWasBuiltWithVer);
-
-    if ((platformVerDigits[0] !== iWasBuiltWithVerDigits[0]) || (platformVerDigits[1] < iWasBuiltWithVerDigits[1])) {
+    const backendRequiresVersion = require("../package.json").dependencies["@bentley/imodeljs-native-platform-api"];
+    if (!semver.satisfies(platformVer, backendRequiresVersion)) {
       NativePlatformRegistry._platform = undefined;
-      throw new IModelError(IModelStatus.BadRequest, "Native platform version is (" + platformVer + "). imodeljs-backend requires version (" + iWasBuiltWithVer + ")");
+      throw new IModelError(IModelStatus.BadRequest, "Native platform version is (" + platformVer + "). imodeljs-backend requires version (" + backendRequiresVersion + ")");
     }
   }
 
