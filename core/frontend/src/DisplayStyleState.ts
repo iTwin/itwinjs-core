@@ -180,7 +180,7 @@ export class GroundPlane {
   }
 }
 
-/** the SkyBox is a grid drawn in the background of spatial views to provide context. */
+/** The SkyBox is a grid drawn in the background of spatial views to provide context. */
 export class SkyBox {
   public display: boolean = false;
   public twoColor: boolean = false;
@@ -226,7 +226,7 @@ export class SkyBox {
   }
 }
 
-/** the skyBox, groundPlane, etc. for a 3d view  */
+/** The skyBox, groundPlane, etc. for a 3d view  */
 export class Environment {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;
