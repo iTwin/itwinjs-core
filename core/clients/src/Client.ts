@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as deepAssign from "deep-assign";
 
@@ -8,6 +8,7 @@ import { Config } from "./Config";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
 import { Logger } from "@bentley/bentleyjs-core";
 
+/** The deployment environment of the services - this also identifies the URL location of the service */
 export type DeploymentEnv = "DEV" | "QA" | "PROD" | "PERF";
 
 const loggingCategory = "imodeljs-clients.Clients";

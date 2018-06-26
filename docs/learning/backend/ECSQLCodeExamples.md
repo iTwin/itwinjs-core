@@ -113,7 +113,7 @@ The current row of the query result can be retrieved in two ways:
 - column by column (using the [ECSqlValue]($backend) API as returned from [ECSqlStatement.getValue]($backend))
 
 > The column by column approach is more low-level, but gives you more flexible access to the data in the row. For example,
-> [ECClassIds](../ECSQL#ecclassid) are turned into class names in the [ECSQL row format](../ECSQLRowFormat).
+> [ECClassIds](../ECSQL#ECInstanceId-and-ECClassId) are turned into class names in the [ECSQL row format](../ECSQLRowFormat).
 > Using the [ECSqlValue]($backend) API allows you to retrieve ECClassIds as Id64s.
 
 ### Rows as a whole
@@ -169,7 +169,7 @@ ECInstanceId | ClassName               | Parent Id | Parent RelClassName        
 
 > The sample is code is intentionally verbose to better illustrate the semantics of the API.
 
-The following example illustrates the flexibility of the column by column approach by preserving the [ECClassId](../ECSQL#ecclassid)
+The following example illustrates the flexibility of the column by column approach by preserving the [ECClassId](../ECSQL#ECInstanceId-and-ECClassId)
 as id instead of having it converted to a class name.
 
 ```ts

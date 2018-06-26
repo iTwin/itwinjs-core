@@ -6,7 +6,7 @@ import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-comm
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
-import { HubTestUtils } from "./HubTestUtils";
+import { HubUtility } from "./HubUtility";
 import { TestConfig } from "../TestConfig";
 import { AccessToken, ChangeSet, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
 
@@ -56,7 +56,7 @@ describe("BriefcaseManager", () => {
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
 
       // Clearing the briefcases for frontend tests here since the frontend is not setup with the CORS proxy.
-      await HubTestUtils.purgeAcquiredBriefcases(accessToken, "iModelJsTest", "ConnectionReadTest");
+      await HubUtility.purgeAcquiredBriefcases(accessToken, "iModelJsTest", "ConnectionReadTest");
     }
 
   });
@@ -353,13 +353,13 @@ describe("BriefcaseManager", () => {
     const config = new IModelHostConfiguration();
 
     IModelHost.shutdown();
-    config.iModelHubDeployConfig = "DEV";
+    config.hubDeploymentEnv = "DEV";
     IModelHost.startup(config);
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
-    const devProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    const devProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
     assert(devProjectId);
-    const devIModelId = await HubTestUtils.queryIModelIdByName(accessToken, devProjectId, TestConfig.iModelName);
+    const devIModelId = await HubUtility.queryIModelIdByName(accessToken, devProjectId, TestConfig.iModelName);
     assert(devIModelId);
     const devChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
@@ -367,12 +367,12 @@ describe("BriefcaseManager", () => {
     assert.exists(devIModel);
 
     IModelHost.shutdown();
-    config.iModelHubDeployConfig = "QA";
+    config.hubDeploymentEnv = "QA";
     IModelHost.startup(config);
 
-    const qaProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    const qaProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
     assert(qaProjectId);
-    const qaIModelId = await HubTestUtils.queryIModelIdByName(accessToken, qaProjectId, TestConfig.iModelName);
+    const qaIModelId = await HubUtility.queryIModelIdByName(accessToken, qaProjectId, TestConfig.iModelName);
     assert(qaIModelId);
     const qaChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);

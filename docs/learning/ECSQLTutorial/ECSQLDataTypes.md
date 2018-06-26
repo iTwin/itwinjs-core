@@ -18,17 +18,17 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 
 > **Try it yourself**
 >
-> *Goal:* Return the actual Element subclass of the Element with id 123.
+> *Goal:* Return the actual Element subclass of the Element with id 0x10000000021.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=123
+> SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x10000000021
 > ```
 > *Result*
 >
 > ECClassId | CodeValue
 > --- | ---
-> Generic.PhysicalObject | Blue Rod
+> MyDomain.Device | DEV-A-G-1
 
 ## Primitive Data Types
 
@@ -40,64 +40,75 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 
 > **Try it yourself**
 >
-> *Goal:* Find out for which `ViewDefinition3d`s the camera is on or off.
+> *Goal:* Find out which `Model`s are private or not.
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue, IsCameraOn FROM bis.ViewDefinition3d
+> SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model
 > ```
 > *Result*
 >
-> CodeValue | IsCameraOn
-> --- | ---
-> 1 | True
-> 2 | False
+> ECInstanceId | ECClassId | IsPrivate
+> --- | --- | ---
+> 0x1 | BisCore.RepositoryModel | false
+> 0xe | BisCore.LinkModel | true
+> 0x10 | BisCore.DictionaryModel | true
+> 0x10000000011 | BisCore.PhysicalModel | false
+> 0x10000000030 | BisCore.DocumentListModel | false
+> 0x10000000031 | BisCore.DrawingModel | false
+> 0x10000000039 | BisCore.DrawingModel | false
+> 0x10000000040 | BisCore.DrawingModel | false
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
 boolean value already.
 
 > **Try it yourself**
 >
-> *Goal:* Find `ViewDefinition3d`s with camera on.
+> *Goal:* Find private `Model`s.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId,CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn = True
+> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate = True
 > ```
 > and
 > ```sql
-> SELECT ECInstanceId,CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn
+> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate
 > ```
 > are equivalent.
 >
 > *Result*
 >
-> ECInstanceId | CodeValue
+> ECInstanceId | ECClassId
 > --- | ---
-> 1 | lll
->
+> 0xe | BisCore.LinkModel
+> 0x10 | BisCore.DictionaryModel
 
 And the same example with `False`:
 
 > **Try it yourself**
 >
-> *Goal:* Find `ViewDefinition3d`s with camera off.
+> *Goal:* Find non-private `Models`s.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId,CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn = False
+> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate = False
 > ```
 > and
 > ```sql
-> SELECT ECInstanceId,CodeValue FROM bis.ViewDefinition3d WHERE NOT IsCameraOn
+> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate
 > ```
 > are equivalent.
 >
 > *Result*
 >
-> ECInstanceId | CodeValue
+> ECInstanceId | ECClassId
 > --- | ---
-> 1 | lll
+> 0x1 | BisCore.RepositoryModel
+> 0x10000000011 | BisCore.PhysicalModel
+> 0x10000000030 | BisCore.DocumentListModel
+> 0x10000000031 | BisCore.DrawingModel
+> 0x10000000039 | BisCore.DrawingModel
+> 0x10000000040 | BisCore.DrawingModel
 
 ## DateTime
 
@@ -109,35 +120,37 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all Elements which were modified after January, 1st, 2018.
+> *Goal:* Find all devices (ECClass `MyDomain.Device`) which were modified before June, 1st, 2018.
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue,LastMod FROM bis.Element WHERE LastMod > DATE '2018-01-01'
+> SELECT CodeValue,LastMod FROM MyDomain.Device WHERE LastMod < DATE '2018-06-01'
 > ```
 > *Result*
 >
 > CodeValue | LastMod
 > --- | ---
-> lll | 2018-11-13T00:38:06.374Z
-> xxx | 2018-07-15T12:00:00.000Z
+> DEV-A-G-1 | 2018-05-29T13:43:42.185Z
+> DEV-A-G-2 | 2018-05-29T13:43:42.186Z
+> DEV-A-1-1 | 2018-05-29T19:00:00.029Z
+> DEV-A-2-1 | 2018-05-29T19:00:00.029Z
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Find all Elements which were modified between 8am and 6pm UTC on July, 16th 2018.
+> *Goal:* Find all devices (ECClass `MyDomain.Device`) which were modified between 8am and 6pm UTC on May, 29th 2018.
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue,LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2018-07-16T08:00:00Z' AND TIMESTAMP '2018-07-16T18:00:00Z'
+> SELECT CodeValue,LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2018-05-29T08:00:00Z' AND TIMESTAMP '2018-05-29T18:00:00Z'
 > ```
 > *Result*
 >
 > CodeValue | LastMod
 > --- | ---
-> lll | 2018-07-16T09:23.100Z
-> xxx | 2018-07-16T15:44.321Z
+> DEV-A-G-1 | 2018-05-29T13:43:42.185Z
+> DEV-A-G-2 | 2018-05-29T13:43:42.186Z
 
 ## Points
 
@@ -154,21 +167,22 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Find all `GeometricElement3d`s whose origin lies within a given cube.
+> *Goal:* Find all devices (ECClass `MyDomain.Device`) whose origin lies within the cube with the
+> lower corner point (50, 30, 10) and the upper corner point (70, 40, 20).
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue, Origin FROM bis.GeometricElement3d
-> WHERE Origin.X BETWEEN 3500000.0 AND 3500500.0 AND
-> Origin.Y BETWEEN 5700000.0 AND 5710000.0 AND Origin.Z BETWEEN 0 AND 100.0
+> SELECT CodeValue, Origin FROM MyDomain.Device
+> WHERE Origin.X BETWEEN 50 AND 70 AND
+> Origin.Y BETWEEN 30 AND 40 AND Origin.Z BETWEEN 10 AND 20
 > ```
 >
 > *Result*
 >
 > CodeValue | Origin
 > --- | ---
-> lll | {"x":3500010,"y":5700010,"z":0}
-> lll | {"x":3500422,"y":5700821,"z":30}
+> DEV-A-2-6 | {"x":55,"y":35,"z":11}
+> DEV-A-2-7 | {"x":65,"y":35,"z":11}
 
 ## Navigation Properties
 
@@ -188,50 +202,50 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the parent Element for the Element with id 123.
+> *Goal:* Return the parent Element for the `Space` with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
-> SELECT Parent FROM bis.Element WHERE ECInstanceId=123
+> SELECT Parent FROM MyDomain.Space WHERE CodeValue='A-G-2'
 > ```
 > *Result*
 >
 > Parent |
 > --- |
-> {"id":"0x4","relClassName":"BisCore.ElementOwnsChildElements"} |
+> {"id":"0x10000000013","relClassName":"BisCore.ElementOwnsChildElements"} |
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Return the id of the parent Element for the Element with id 123.
+> *Goal:* Return the id of the parent Element for the `Space` with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
-> SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=123
+> SELECT Parent.Id FROM MyDomain.Space WHERE CodeValue='A-G-2'
 > ```
 > *Result*
 >
 > Parent.Id |
 > --- |
-> 0x4 |
+> 0x10000000013 |
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and RelECClassId of the parent Element separately for the Element with id 123.
+> *Goal:* Return the id and RelECClassId of the parent Element separately for the `Space` with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
-> SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId=123
+> SELECT Parent.Id, Parent.RelECClassId FROM MyDomain.Space WHERE CodeValue='A-G-2'
 > ```
 >
 > *Result*
 >
 > Parent.Id | Parent.RelECClassId
 > --- | ---
-> 4 | BisCore.ElementOwnsChildElements
+> 0x10000000013 | BisCore.ElementOwnsChildElements
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
 

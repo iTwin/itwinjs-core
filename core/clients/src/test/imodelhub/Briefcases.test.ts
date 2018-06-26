@@ -8,12 +8,13 @@ import * as path from "path";
 import { AccessToken } from "../../";
 
 import {
-  IModelHubClient, Briefcase, IModelHubRequestError, IModelHubRequestErrorId, BriefcaseQuery, AzureFileHandler,
+  IModelHubClient, Briefcase, IModelHubRequestError, BriefcaseQuery, AzureFileHandler,
 } from "../../imodelhub";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 function mockGetBriefcaseById(imodelId: string, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
@@ -127,7 +128,7 @@ describe("iModelHub BriefcaseHandler", () => {
     }
     chai.assert(error);
     chai.expect(error).to.be.instanceof(IModelHubRequestError);
-    chai.expect(error.id).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should get information on a briefcase by id", async () => {
@@ -147,7 +148,7 @@ describe("iModelHub BriefcaseHandler", () => {
     }
     chai.assert(error);
     chai.expect(error).to.be.instanceof(IModelHubRequestError);
-    chai.expect(error.id).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should get the download URL for a Briefcase", async () => {
@@ -166,7 +167,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
-    const downloadToPathname: string = path.join(utils.workDir, "1", fileName);
+    const downloadToPathname: string = path.join(utils.workDir, fileName);
 
     utils.mockFileResponse();
 
@@ -182,7 +183,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
-    const downloadToPathname: string = path.join(utils.workDir, "2", fileName);
+    const downloadToPathname: string = path.join(utils.workDir, fileName);
 
     utils.mockFileResponse();
 
@@ -193,20 +194,7 @@ describe("iModelHub BriefcaseHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should get error 400 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
-    const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
-    const requestResponse = ResponseBuilder.generateGetResponse<Briefcase>(ResponseBuilder.generateObject<Briefcase>(Briefcase));
-
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "BadRequest"), 1, undefined, undefined, 400);
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-    const briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId));
-    chai.assert(briefcase);
-  });
-
-  it("should get error 409 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
+  it("should get error 409 and fail to get briefcase", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -249,7 +237,7 @@ describe("iModelHub BriefcaseHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail downloading briefcase with no file url", async () => {
@@ -261,6 +249,6 @@ describe("iModelHub BriefcaseHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.MissingDownloadUrlError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.MissingDownloadUrlError);
   });
 });

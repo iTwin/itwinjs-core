@@ -1,4 +1,4 @@
-# RpcInterface
+# Remote Procedure Call (RPC) Interface
 
 An `RpcInterface` is a set of operations exposed by a server that a client can call, using configurable protocols, in a platform-independent way.
 
@@ -17,7 +17,7 @@ An RpcInterface is defined and implemented in TypeScript. Conceptually, the inte
 
 In practice, two TypeScript classes are needed, as explained below.
 
-Communication between a client and the server is via [RPC](./Glossary.md#RPC). Many RPC mechanisms are [available](../overview/RpcInterface.md#rpc-configuration). Each RPC mechanism is encapsulated in an RpcConfiguration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces, as described below.
+Communication between a client and the server is via [RPC](./Glossary.md#RPC). Several RPC mechanisms are [available](../overview/RpcInterface.md#rpc-configuration). Each RPC mechanism is encapsulated in an RpcConfiguration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces, as described below.
 
 RpcInterface methods are always [asynchronous](#asynchronous-nature-of-rpcInterfaces).
 

@@ -5,7 +5,7 @@ import { UrlDescriptor, DeploymentEnv } from "../Client";
 import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
 import { RequestOptions, RequestQueryOptions } from "../Request";
 import { WsgInstance } from "../ECJsonTypeMap";
-import { IModelHubResponseError } from "./Errors";
+import { IModelHubError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import * as https from "https";
@@ -17,8 +17,8 @@ import { Config } from "..";
 class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this.defaultOptions.errorCallback = IModelHubResponseError.parse;
-    this.defaultOptions.retryCallback = IModelHubResponseError.shouldRetry;
+    this.defaultOptions.errorCallback = IModelHubError.parse;
+    this.defaultOptions.retryCallback = IModelHubError.shouldRetry;
     this.defaultOptions.agent = agent;
   }
 }
@@ -42,8 +42,8 @@ export class IModelHubBaseHandler extends WsgClient {
    * Creates an instance of IModelHubBaseHandler.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000) {
-    super(deploymentEnv, "v2.5", "https://connect-wsg20.bentley.com");
+  public constructor(public deploymentEnv: DeploymentEnv = "PROD", keepAliveDuration = 30000) {
+    super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
     if (!Config.isBrowser())
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }

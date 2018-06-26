@@ -18,6 +18,7 @@ import { ColorInfo } from "./ColorInfo";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
+import { Material } from "./Material";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry {
@@ -47,7 +48,7 @@ export abstract class CachedGeometry {
   public abstract draw(): void;
 
   // Intended to be overridden by specific subclasses
-  public get material(): MaterialData | undefined { return undefined; }
+  public get material(): Material | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public set uniformFeatureIndices(value: number) { assert(undefined !== value); } // silence 'unused variable' warning...
   public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
@@ -68,14 +69,14 @@ export abstract class CachedGeometry {
     return !params.isOverlayPass && this._wantWoWReversal(params.target);
   }
   public getLineCode(params: ShaderProgramParams): number {
-    return params.target.currentViewFlags.showStyles ? this._getLineCode(params) : LineCode.solid;
+    return params.target.currentViewFlags.showStyles() ? this._getLineCode(params) : LineCode.solid;
   }
   public getLineWeight(params: ShaderProgramParams): number {
-    if (!params.target.currentViewFlags.showWeights) {
+    if (!params.target.currentViewFlags.showWeights()) {
       return 1.0;
     }
 
-    const minWeight = 2; // ###TODO: reset back to 1 once 1-px-wide lines are rendering correctly
+    const minWeight = 1;
     let weight = this._getLineWeight(params);
     weight = Math.max(weight, minWeight);
     weight = Math.min(weight, 31.0);
@@ -294,10 +295,6 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
     super(params, techId, [texture]);
   }
 }
-
-export abstract class EdgeGeometry { /* ###TODO */ }
-export abstract class SilhouetteGeometry { /* ###TODO */ }
-export abstract class MaterialData { /* ###TODO */ }
 
 export class PolylineBuffers {
   public indices: BufferHandle;

@@ -7,13 +7,13 @@ import { Cartographic, FontType, FontMap, ColorDef, ColorByName } from "@bentley
 import * as path from "path";
 import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode, FitViewTool } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { RenderTarget, RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 class TestViewport extends Viewport {
-  public constructor(canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
-    super(canvas, viewState, target);
+  public constructor(canvas: HTMLCanvasElement, viewState: ViewState) {
+    super(canvas, viewState);
     this.setupFromView();
   }
 }
@@ -126,20 +126,22 @@ describe("Viewport", () => {
   it("creates a RenderPlan from a viewport", () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const vp = new TestViewport(canvas!, vpView);
-    let plan: RenderPlan| undefined;
+    let plan: RenderPlan | undefined;
     try {
       plan = new RenderPlan(vp);
     } catch (e) {
       plan = undefined;
     }
 
-    expect(plan).not.to.be.undefined;
-    expect(plan!.is3d).to.be.true;
-    expect(plan!.activeVolume).to.be.undefined;
-    expect(plan!.hline).not.to.be.undefined;
-    expect(plan!.hline!.visible.ovrColor).to.be.false;
-    expect(plan!.hline!.hidden.width).to.equal(0);
-    expect(plan!.lights).to.be.undefined;
+    assert.isDefined(plan);
+    if (plan) {
+      assert.isTrue(plan.is3d);
+      assert.isUndefined(plan.activeVolume);
+      assert.isDefined(plan.hline);
+      assert.isFalse(plan.hline!.visible.ovrColor);
+      assert.equal(plan.hline!.hidden.width, 1);
+      assert.isUndefined(plan.lights);
+    }
   });
 });
 
@@ -188,7 +190,7 @@ describe("RenderLoop tests", () => {
     if (!doRenderLoopTests)
       return;
 
-    IModelApp.startup("QA", true);
+    IModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -204,8 +206,7 @@ describe("RenderLoop tests", () => {
       return;
 
     spatialView.displayStyle.backgroundColor = new ColorDef(ColorByName.darkBlue);
-    const target = IModelApp.renderSystem.createTarget(canvas);
-    const viewport = new TestViewport(canvas, spatialView, target);
+    const viewport = new TestViewport(canvas, spatialView);
     IModelApp.viewManager.addViewport(viewport);
 
     const fitView = IModelApp.tools.create("View.Fit", viewport);

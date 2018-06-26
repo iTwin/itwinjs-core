@@ -69,7 +69,7 @@ export const workDir = __dirname + "/../../../lib/test/output/";
  * @returns Created URL.
  */
 export function createRequestUrl(scope: ScopeType, id: string, className: string, query?: string): string {
-  let requestUrl: string = "/v2.5/Repositories/";
+  let requestUrl: string = "/sv1.1/Repositories/";
 
   switch (scope) {
     case ScopeType.iModel:
@@ -313,7 +313,7 @@ export function mockUpdateCodes(iModelId: string, ...codes: Code[]) {
     return;
 
   const multicodes = convertCodesToMultiCodes(codes);
-  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestPath = `/sv1.1/Repositories/iModel--${iModelId}/$changeset`;
   const requestResponse = ResponseBuilder.generateChangesetResponse<MultiCode>(multicodes);
   const postBody = ResponseBuilder.generateChangesetBody<MultiCode>(multicodes);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
@@ -326,7 +326,7 @@ export function mockDeniedCodes(iModelId: string, requestOptions?: object, ...co
 
   const multicodes = convertCodesToMultiCodes(codes);
 
-  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestPath = `/sv1.1/Repositories/iModel--${iModelId}/$changeset`;
   const requestResponse = ResponseBuilder.generateError("iModelHub.CodeReservedByAnotherBriefcase", "", "",
     new Map<string, any>([
       ["ConflictingCodes", JSON.stringify(codes.map((value) => {
@@ -420,7 +420,7 @@ export function mockUpdateLocks(iModelId: string, locks: Lock[], requestOptions?
     return;
 
   const multilocks = convertLocksToMultiLocks(locks);
-  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestPath = `/sv1.1/Repositories/iModel--${iModelId}/$changeset`;
   const requestResponse = ResponseBuilder.generateChangesetResponse<MultiLock>(multilocks);
   const postBody = ResponseBuilder.generateChangesetBody<MultiLock>(multilocks, requestOptions);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
@@ -432,7 +432,7 @@ export function mockDeniedLocks(iModelId: string, locks: Lock[], requestOptions?
 
   const multilocks = convertLocksToMultiLocks(locks);
 
-  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestPath = `/sv1.1/Repositories/iModel--${iModelId}/$changeset`;
   const requestResponse = ResponseBuilder.generateError("iModelHub.LockOwnedByAnotherBriefcase", "", "",
     new Map<string, any>([
       ["ConflictingLocks", JSON.stringify(locks.map((value) => {

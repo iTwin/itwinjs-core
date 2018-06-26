@@ -17,10 +17,9 @@ Working with Change Summaries really means to unleash the power of ECSQL. Change
 
 ### Attaching the Change Cache file to the local briefcase
 
-As the Change Summaries are not persisted in the iModel itself but in the *Change Cache file*, you need to attach the *Change Cache file*
-to the local briefcase of the iModel first.
+As the Change Summaries are not persisted in the iModel itself but in the *Change Cache file*, you need to attach the *Change Cache file* to the local briefcase of the iModel first.
 
-Once done, the Change Summaries can be accessed by ECSQL from the iModel as if they were persisted in the iModel itself. It is visible from ECSQL under the table space **ecchange**.
+Once done, the Change Summaries can be accessed by ECSQL from the iModel as if they were persisted in the iModel itself. The *Change Cache file* is visible from ECSQL under the table space **ecchange**.
 
 > The table space of the attached *Change Cache file* is needed to disambiguate between equally named schemas and classes in the iModel and
 > the Change Cache file. If the schema and class name combination is unambiguous, the table space does not need to be specified in the ECSQL.
@@ -34,16 +33,16 @@ There are two main ways to use Change Summary information:
 
 ### Find out *what* has changed
 
-This is achieved by executing ECSQL queries against the **ECDbChange** and **IModelChange** ECSchemas:
+This is achieved by executing ECSQL queries against the [ECDbChange](./ECDbChange.ecschema.md) and [IModelChange](./ImodelChange.ecschema.md) ECSchemas:
 
-- The **ECDbChange** ECSchema contains the Change Summaries
-- The **IModelChange** ECSchema contains information about the Changesets from which each ChangeSummary was generated from
+- The [ECDbChange](./ECDbChange.ecschema.md) ECSchema contains the Change Summaries
+- The [IModelChange](./ImodelChange.ecschema.md) ECSchema contains information about the Changesets from which each ChangeSummary was generated from
 
 #### Examples
 
 ECSQL | Description
 --- | ---
-`SELECT Summary.Id,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the date when the changeset was pushed and by who
+`SELECT Summary.Id,ParentWsgId,Description,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the description, the date when the changeset was pushed and by who
 `SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [ChangeOpCode]($common) (e.g. whether the instance was inserted, updated or deleted)
 
 ### Find out *how* values have changed
@@ -140,7 +139,7 @@ After having extracting Change Summaries for each of the three Changesets the fo
 3            | 1                    | 4 (Delete)
 
 > - `ChangedInstance.Id` is the ECInstanceId of the changed instance, i.e. the changed `Person` instance in this example.
-> - The `OpCode` values refer to the [ChangeOpCode]($common) enumeration as defined in the **ECDbChange** ECSchema.
+> - The `OpCode` values refer to the [ChangeOpCode]($common) enumeration as defined in the [ECDbChange](./ECDbChange.ecschema.md) ECSchema.
 
 #### Example
 

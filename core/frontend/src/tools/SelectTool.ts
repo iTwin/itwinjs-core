@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @module SelectionSet */
 
-import { Point3d, Point2d } from "@bentley/geometry-core";
+import { Point3d, Point2d, Range2d } from "@bentley/geometry-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
@@ -11,14 +11,18 @@ import { EditManipulator, ManipulatorSelectionMode } from "./EditManipulator";
 import { IModelConnection } from "../IModelConnection";
 import { SelectEventType } from "../SelectionSet";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId } from "./Tool";
+import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, InputCollector } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
-import { SubSelectionMode, HitDetail } from "../HitDetail";
+import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { FenceParams } from "../FenceParams";
 import { AccuDrawHintBuilder } from "../AccuDraw";
+import { Id64Arg, Id64 } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { ViewRect } from "../Viewport";
+import { Pixel } from "../rendering";
 
+/** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
   Pick,
@@ -28,6 +32,7 @@ export const enum SelectionMethod {
   Box,
 }
 
+/** The mode for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMode {
   /** Identified elements replace the current selection set (use control key to add or remove) */
   Replace,
@@ -37,10 +42,28 @@ export const enum SelectionMode {
   Remove,
 }
 
+export const enum SelectionProcessing {
+  AddElementToSelection,
+  RemoveElementFromSelection,
+  /** (if element is in selection remove it else add it.) */
+  InvertElementInSelection,
+  ReplaceSelectionWithElement,
+}
+
 export const enum ManipulatorPreference { Disabled, Placement, Geometry }
 
-export class SelectionTool extends PrimitiveTool {
+export class ManipulatorToolBase extends InputCollector {
+  public static toolId = "Select.Manipulator";
   public static hidden = true;
+
+  public onPostInstall(): void { super.onPostInstall(); IModelApp.accuSnap.enableLocate(false); IModelApp.accuSnap.enableSnap(true); IModelApp.toolAdmin.currentInputState.buttonDownTool = this; }
+  //  public onModelMotion(_ev: BeButtonEvent) { console.log("Motion"); }
+  //  public onDataButtonDown(_ev: BeButtonEvent): boolean { console.log("Exit"); this.exitTool(); return false; }
+}
+
+/** Tool for picking a set of elements of interest, selected by the user. */
+export class SelectionTool extends PrimitiveTool {
+  public static hidden = false;
   public static toolId = "Select";
   public isDragSelect = false;
   public isDragControl = false;
@@ -50,9 +73,12 @@ export class SelectionTool extends PrimitiveTool {
   public manipulatorPreference = ManipulatorPreference.Geometry;
   public manipulator?: EditManipulator;
 
+  public requireWriteableTarget(): boolean { return this.isDragControl || this.isDragElement; }
+  public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
+
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
-  protected wantDragOnlyManipulator() { return false; } // Restrict manipulator operation to drag, default behavior is to support click, click or drag...
-  protected wantElementDrag() { return true; } // A sub-class can override to disable drag move/copy of elements.
+  protected wantDragOnlyManipulator(): boolean { return false; } // Restrict manipulator operation to drag, default behavior is to support click, click or drag...
+  protected wantElementDrag(): boolean { return true; } // A sub-class can override to disable drag move/copy of elements.
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; /* NEEDS_WORK: Settings... */ }
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace;    /* NEEDS_WORK: Settings... */ }
   protected wantToolSettings(): boolean {
@@ -67,8 +93,8 @@ export class SelectionTool extends PrimitiveTool {
     }
     return true;
   }
-  public onRestartTool() { this.exitTool(); }
-  public onCleanup() {
+  public onRestartTool(): void { this.exitTool(); }
+  public onCleanup(): void {
     super.onCleanup();
     this.manipulator = undefined;
     if (this.removeListener) {
@@ -77,16 +103,34 @@ export class SelectionTool extends PrimitiveTool {
     }
   }
 
-  protected initSelectTool() {
+  protected initSelectTool(): void {
     this.isDragSelect = this.isDragControl = this.isDragElement = this.targetIsLocked = false;
     this.points.length = 0;
-    /// IModelApp.toolAdmin.setCursor(ViewManager:: GetManager().GetCursor(Display:: Cursor:: Id:: Arrow));
+    const enableLocate = SelectionMethod.Pick === this.getSelectionMethod();
+    IModelApp.toolAdmin.setCursor(enableLocate ? BeCursor.Arrow : BeCursor.CrossHair);
     IModelApp.toolAdmin.setLocateCircleOn(true);
     IModelApp.locateManager.initToolLocate(); // For drag move/copy...
-    IModelApp.locateManager.options.allowTransients = true; // Support edit manipulator for transient geometry...
+    IModelApp.locateManager.options.allowDecorations = true; // Support edit manipulator for transient geometry...
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
-    IModelApp.accuSnap.enableLocate(true);
+    IModelApp.accuSnap.enableLocate(enableLocate);
     IModelApp.accuSnap.enableSnap(false);
+  }
+
+  public processSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
+    // NEEDSWORK...SelectionScope
+    switch (process) {
+      case SelectionProcessing.AddElementToSelection:
+        return this.iModel.selectionSet.add(elementId);
+      case SelectionProcessing.RemoveElementFromSelection:
+        return this.iModel.selectionSet.remove(elementId);
+      case SelectionProcessing.InvertElementInSelection: // (if element is in selection remove it else add it.)
+        return this.iModel.selectionSet.invert(elementId);
+      case SelectionProcessing.ReplaceSelectionWithElement:
+        this.iModel.selectionSet.replace(elementId);
+        return true;
+      default:
+        return false;
+    }
   }
 
   public onSingleTap(ev: BeGestureEvent): boolean {
@@ -138,7 +182,7 @@ export class SelectionTool extends PrimitiveTool {
     return this.dragSelect(ev);
   }
 
-  protected onSelectionChanged(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string>) {
+  protected onSelectionChanged(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string>): void {
     if (this.iModel !== iModel)
       return;
 
@@ -169,9 +213,9 @@ export class SelectionTool extends PrimitiveTool {
 
     // If current hit is for an element, is it the one and only selected element?
     let currHit = IModelApp.locateManager.currHit;
-    if (currHit && currHit.elementId) {
+    if (currHit && currHit.isElementHit()) {
       const selSet = this.iModel.selectionSet;
-      if (1 !== selSet.size || selSet.has(currHit.elementId))
+      if (1 !== selSet.size || selSet.has(currHit.sourceId))
         currHit = undefined;
     }
 
@@ -323,55 +367,13 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  protected useFenceOverlap(ev: BeButtonEvent): boolean {
+  protected useOverlapSelection(ev: BeButtonEvent): boolean {
     let overlapMode = false;
     const vp = ev.viewport!;
     const pt1 = vp.worldToView(this.points[0]);
     const pt2 = vp.worldToView(ev.point);
     overlapMode = (pt1.x > pt2.x);
     return (ev.isShiftKey ? !overlapMode : overlapMode); // Shift inverts inside/overlap selection...
-  }
-
-  protected toggleFencePointsSelection(_ev: BeButtonEvent, _worldPts: Point3d[], _nPts: number, _overlap: boolean): void {
-    // FenceParams fp;
-    // fp.SetViewParams(ev.GetViewport());
-    // fp.SetOverlapMode(overlap);
-    // fp.StoreClippingPoints(worldPts, nPts, false);
-
-    // if (this.multiSelectControls(fp))
-    //   return;
-
-    // DgnElementIdSet contents;
-    // DragSelectCheckStop checkStop;
-
-    // if (SUCCESS != fp.GetContents(contents, & checkStop)) {
-    //   if (!ev.IsControlKey() && _WantSelectionClearOnMiss(ev))
-    //     SelectionSetManager:: GetManager(GetDgnDb()).EmptyAll();
-    //   return;
-    // }
-
-    // switch (GetSelectionMode()) {
-    //   case SelectionMode:: Replace:
-    //     {
-    //       if (!ev.IsControlKey())
-    //         loadSelection(contents, ReplaceSelectionWithElement, GetDgnDb());
-    //       else
-    //         loadSelection(contents, InvertElementInSelection, GetDgnDb());
-    //       break;
-    //     }
-
-    //   case SelectionMode:: Add:
-    //     {
-    //       loadSelection(contents, AddElementToSelection, GetDgnDb());
-    //       break;
-    //     }
-
-    //   case SelectionMode:: Remove:
-    //     {
-    //       loadSelection(contents, RemoveElementFromSelection, GetDgnDb());
-    //       break;
-    //     }
-    // }
   }
 
   protected checkDoubleClickOnElement(ev: BeButtonEvent): boolean {
@@ -423,8 +425,8 @@ export class SelectionTool extends PrimitiveTool {
     if (0 === this.iModel.selectionSet.size)
       return false;
 
-    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, SubSelectionMode.None, false); // Don't want add/remove mode filtering...
-    if (!hit || !this.iModel.selectionSet.has(hit.elementId))
+    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, false); // Don't want add/remove mode filtering...
+    if (!hit || !this.iModel.selectionSet.has(hit.sourceId))
       return false;
 
     if (this.iModel.isReadonly()) // NOTE: Don't need to check GetFilteredElementIds, this should be sufficient to know we have at least 1 element...
@@ -444,7 +446,7 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  protected dragElements(_ev: BeButtonEvent, context: DynamicsContext): boolean {
+  protected dragElements(_ev: BeButtonEvent, context?: DynamicsContext): boolean {
     if (!this.isDragElement)
       return false;
 
@@ -581,7 +583,7 @@ export class SelectionTool extends PrimitiveTool {
       viewPts[1] = new Point3d(corner.x, origin.y, corner.z);
       viewPts[2] = corner;
       viewPts[3] = new Point3d(origin.x, corner.y, origin.z);
-      graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useFenceOverlap(ev) ? LinePixels.Code2 : LinePixels.Solid);
+      graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useOverlapSelection(ev) ? LinePixels.Code2 : LinePixels.Solid);
       graphic.addLineString(viewPts);
     }
     context.addViewOverlay(graphic.finish()!);
@@ -598,6 +600,81 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
+  protected doDragSelect(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean) {
+    const vp = ev.viewport;
+    if (!vp)
+      return;
+    const pts: Point2d[] = [];
+    pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
+    pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
+    const range = Range2d.createArray(pts);
+
+    const rect = new ViewRect();
+    rect.initFromRange(range);
+    const pixels = vp.readPixels(rect, Pixel.Selector.ElementId);
+    if (undefined === pixels)
+      return;
+
+    let contents = new Set<string>();
+    const testPoint = Point2d.createZero();
+
+    if (SelectionMethod.Box === method) {
+      const outline = overlap ? undefined : new Set<string>();
+      const offset = range.clone();
+      offset.expandInPlace(-2); // NEEDWORK: Why doesn't -1 work?!?
+      for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
+        for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+            continue; // no geometry at this location...
+          if (undefined !== outline && !offset.containsPoint(testPoint))
+            outline.add(pixel.elementId.toString());
+          else
+            contents.add(pixel.elementId.toString());
+        }
+      }
+      if (undefined !== outline && 0 !== outline.size) {
+        const inside = new Set<string>();
+        Id64.toIdSet(contents).forEach((id) => { if (!outline.has(id)) inside.add(id); });
+        contents = inside;
+      }
+    } else {
+      const closePoint = Point2d.createZero();
+      for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
+        for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+            continue; // no geometry at this location...
+          const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
+          pts[0].interpolate(fraction, pts[1], closePoint);
+          if (closePoint.distance(testPoint) < 1.5)
+            contents.add(pixel.elementId.toString());
+        }
+      }
+    }
+
+    if (0 === contents.size) {
+      if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
+        this.iModel.selectionSet.emptyAll();
+      return;
+    }
+
+    switch (this.getSelectionMode()) {
+      case SelectionMode.Replace:
+        if (!ev.isControlKey)
+          this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
+        else
+          this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
+        break;
+      case SelectionMode.Add:
+        this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+        break;
+      case SelectionMode.Remove:
+        this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
+        break;
+    }
+  }
+
   protected dragSelect(ev: BeButtonEvent): boolean {
     if (!this.isDragSelect)
       return false;
@@ -608,24 +685,12 @@ export class SelectionTool extends PrimitiveTool {
       return false;
     }
 
-    const worldPts: Point3d[] = [];
     const origin = vp.worldToView(this.points[0]);
     const corner = vp.worldToView(ev.point);
-    origin.z = corner.z = 0.0;
-
-    if (SelectionMethod.Line === this.getSelectionMethod() || (SelectionMethod.Pick === this.getSelectionMethod() && BeButton.Reset === ev.button)) {
-      worldPts[0] = origin;
-      worldPts[1] = corner;
-      vp.viewToWorldArray(worldPts);
-      this.toggleFencePointsSelection(ev, worldPts, 2, true);
-    } else {
-      worldPts[0] = worldPts[4] = origin;
-      worldPts[1] = new Point3d(corner.x, origin.y, corner.z);
-      worldPts[2] = corner;
-      worldPts[3] = new Point3d(origin.x, corner.y, origin.z);
-      vp.viewToWorldArray(worldPts);
-      this.toggleFencePointsSelection(ev, worldPts, 5, this.useFenceOverlap(ev));
-    }
+    if (SelectionMethod.Line === this.getSelectionMethod() || (SelectionMethod.Pick === this.getSelectionMethod() && BeButton.Reset === ev.button))
+      this.doDragSelect(origin, corner, ev, SelectionMethod.Line, true);
+    else
+      this.doDragSelect(origin, corner, ev, SelectionMethod.Box, this.useOverlapSelection(ev));
 
     this.initSelectTool();
     vp.invalidateDecorations();
@@ -650,12 +715,58 @@ export class SelectionTool extends PrimitiveTool {
     this.dragElements(ev, context);
   }
 
+  /*   public testInputCollectorManip(_ev: BeButtonEvent): boolean {
+      if (!this.iModel.selectionSet.isActive())
+        return false;
+      const autoHit = IModelApp.accuSnap.currHit;
+      if (undefined === autoHit || !this.iModel.selectionSet.has(autoHit.sourceId))
+        return false;
+      // NOTE: Could check ev.isControlKey and just "select" a control handle without installing tool yet...
+      const manipTool = new ManipulatorToolBase();
+      return manipTool.run();
+    } */
+
+  public onModelStartDrag(ev: BeButtonEvent): boolean {
+    /** TESTING InputCollector */
+    //    if (this.testInputCollectorManip(ev))
+    //      return false;
+
+    if (this.selectControls(ev) && this.haveSelectedControls()) {
+      const tmpEv = ev.clone();
+      if (this.startDragControls(tmpEv))
+        return false;
+    }
+
+    if (!ev.isControlKey) {
+      if (this.startDragElements(ev))
+        return false;
+    }
+
+    this.startDragSelect(ev);
+    return false;
+  }
+
+  public onModelEndDrag(ev: BeButtonEvent): boolean {
+    if (this.dragControls(ev))
+      return false;
+
+    if (this.dragElements(ev))
+      return false;
+
+    this.dragSelect(ev);
+    return false;
+  }
+
   public onDataButtonUp(ev: BeButtonEvent): boolean {
     if (!ev.viewport)
       return false;
 
     if (this.checkDoubleClickOnElement(ev))
       return false;
+
+    /** TESTING InputCollector */
+    //    if (this.testInputCollectorManip(ev))
+    //      return false;
 
     if (this.dragControls(ev))
       return false;
@@ -687,52 +798,45 @@ export class SelectionTool extends PrimitiveTool {
 
     const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
     if (hit) {
-      // DgnElementCPtr element = hit -> GetElement();
+      switch (this.getSelectionMode()) {
+        case SelectionMode.Replace: {
+          if (ev.isControlKey) {
+            if (hit.isElementHit())
+              this.processSelection(hit.sourceId, SelectionProcessing.InvertElementInSelection);
+            else
+              this.synchManipulators(true); // Replace transient manipulator...
+          } else {
+            if (hit.isElementHit()) {
+              if (!this.processSelection(hit.sourceId, SelectionProcessing.ReplaceSelectionWithElement)) {
+                // Selection un-changed...give manipulator a chance to use new HitDetail...
+                if (this.manipulator && this.manipulator.onNewHit(hit))
+                  this.synchManipulators(true); // Clear manipulator...
+              }
+            } else {
+              // If we don't have a current manipulator, or if the current manipulator doesn't like the new HitDetail, synch...
+              if (!this.manipulator || this.manipulator.onNewHit(hit))
+                this.synchManipulators(true); // Clear manipulator...
+            }
+          }
+          break;
+        }
 
-      // switch (GetSelectionMode()) {
-      //   case SelectionMode:: Replace:
-      //     {
-      //       if (ev.IsControlKey()) {
-      //         if (element.IsValid())
-      //           loadSelection(* element, InvertElementInSelection);
-      //         else
-      //           SynchManipulators(true); // Replace transient manipulator...
-      //       }
-      //       else {
-      //         if (element.IsValid()) {
-      //           if (!loadSelection(* element, ReplaceSelectionWithElement)) {
-      //             // Selection un-changed...give manipulator a chance to use new HitDetail...
-      //             if (this.m_manipulator.IsValid() && this.m_manipulator -> _OnNewHit(* hit))
-      //               SynchManipulators(true); // Clear manipulator...
-      //           }
-      //         }
-      //         else {
-      //           // If we don't have a current manipulator, or if the current manipulator doesn't like the new HitDetail, synch...
-      //           if (!this.m_manipulator.IsValid() || this.m_manipulator -> _OnNewHit(* hit))
-      //             SynchManipulators(true); // Clear manipulator...
-      //         }
-      //       }
-      //       break;
-      //     }
+        case SelectionMode.Add: {
+          if (hit.isElementHit())
+            this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
+          else
+            this.synchManipulators(true); // Clear manipulator...
+          break;
+        }
 
-      //   case SelectionMode:: Add:
-      //     {
-      //       if (element.IsValid())
-      //         loadSelection(* element, AddElementToSelection);
-      //       else
-      //         SynchManipulators(true); // Clear manipulator...
-      //       break;
-      //     }
-
-      //   case SelectionMode:: Remove:
-      //     {
-      //       if (element.IsValid())
-      //         loadSelection(* element, RemoveElementFromSelection);
-      //       else
-      //         SynchManipulators(true); // Clear manipulator...
-      //       break;
-      //     }
-      // }
+        case SelectionMode.Remove: {
+          if (hit.isElementHit())
+            this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+          else
+            this.synchManipulators(true); // Clear manipulator...
+          break;
+        }
+      }
       return false;
     }
 
@@ -747,8 +851,6 @@ export class SelectionTool extends PrimitiveTool {
 
     return false;
   }
-
-  public onDataButtonDown(_ev: BeButtonEvent): boolean { return false; }
 
   public onResetButtonUp(ev: BeButtonEvent): boolean {
     if (this.isDragSelect) {
@@ -778,38 +880,35 @@ export class SelectionTool extends PrimitiveTool {
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : IModelApp.locateManager.currHit;
-    if (lastHit && this.iModel.selectionSet.has(lastHit.elementId)) {
+    if (lastHit && this.iModel.selectionSet.has(lastHit.sourceId)) {
       const autoHit = IModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit...
-      if (!autoHit || autoHit.isSameHit(lastHit)) {
-        //   DgnElementCPtr element = lastHit -> GetElement();
+      if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
+        const response = new LocateResponse();
+        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport);
 
-        //   if (element.IsValid()) {
-        //     HitDetailCP nextHit = ElementLocateManager:: GetManager().DoLocate(NULL, NULL, false, * ev.GetPoint(), ev.GetViewport());
-        //     DgnElementCPtr nextElement = (nullptr != nextHit ? nextHit -> GetElement() : nullptr);
+        // remove element(s) previously selected if in replace mode, or if we have a next element in add mode...
+        if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
+          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
 
-        //     // remove element(s) previously selected if in replace mode, or if we have a next element in add mode...
-        //     if (SelectionMode:: Replace == GetSelectionMode() || nextElement.IsValid())
-        //     loadSelection(* element, RemoveElementFromSelection);
-
-        //     // add element(s) located via reset button
-        //     if (nextElement.IsValid())
-        //       loadSelection(* nextElement, AddElementToSelection);
-        //   return false;
-        // }
+        // add element(s) located via reset button
+        if (undefined !== nextHit)
+          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+        return false;
       }
     }
+
     IModelApp.accuSnap.resetButton();
     return false;
   }
 
-  public onPostLocate(hit: HitDetail, _out?: LocateResponse) {
+  public onPostLocate(hit: HitDetail, _out?: LocateResponse): boolean {
     const mode = this.getSelectionMode();
     if (SelectionMode.Replace === mode)
       return true;
 
-    const elementId = hit.elementId;
+    const elementId = (hit.isElementHit() ? hit.sourceId : undefined);
     if (!elementId)
       return true; // Don't reject transients...
 
@@ -817,7 +916,7 @@ export class SelectionTool extends PrimitiveTool {
     return (SelectionMode.Add === mode ? !isSelected : isSelected);
   }
 
-  public onPostInstall() {
+  public onPostInstall(): void {
     super.onPostInstall();
     this.initSelectTool();
     this.synchManipulators(true); // Add manipulators for an existing selection set...
@@ -827,7 +926,7 @@ export class SelectionTool extends PrimitiveTool {
     IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
   }
 
-  public static startTool() {
+  public static startTool(): boolean {
     const tool = new SelectionTool();
     return tool.run();
   }

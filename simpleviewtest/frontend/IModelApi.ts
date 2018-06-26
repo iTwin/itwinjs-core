@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import { IModelHubClient, AccessToken, IModel, Version, IModelQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelConnection } from "@bentley/imodeljs-frontend";

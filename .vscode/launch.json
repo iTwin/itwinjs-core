@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Integration)",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -23,7 +23,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Offline)",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -43,7 +43,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Backend IntegrationTests",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -58,7 +58,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Performance test (Offline)",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -74,7 +74,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Clients Tests (Offline)",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/core/clients/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -91,7 +91,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Clients Tests",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/core/clients/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -106,7 +106,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Geometry Tests",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+      "program": "${workspaceFolder}/core/geometry/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
       "cwd": "${workspaceFolder}/core/geometry",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -121,7 +121,7 @@
       "type": "node",
       "request": "launch",
       "name": "Run Bentley Tests",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
       "cwd": "${workspaceFolder}/core/bentley",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -136,7 +136,7 @@
       "type": "node",
       "request": "launch",
       "name": "example-code backend snippet tests",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/example-code/snippets/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/snippets",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -151,7 +151,7 @@
       "type": "node",
       "request": "launch",
       "name": "example-code app backend tests",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "program": "${workspaceFolder}/example-code/app/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/app",
       "args": [
         "--packageRoot=${workspaceFolder}",
@@ -187,7 +187,7 @@
       "port": 9223,
       "webRoot": "${workspaceRoot}",
       "sourceMaps": true
-    }
+    },
     {
       "type": "node",
       "request": "launch",

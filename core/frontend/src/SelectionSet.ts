@@ -34,7 +34,10 @@ export class SelectionSet {
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Id64Set) => void>();
   public constructor(public iModel: IModelConnection) { }
 
-  private sendChangedEvent(evType: SelectEventType, ids?: Id64Set) { this.onChanged.raiseEvent(this.iModel, evType, ids); }
+  private sendChangedEvent(evType: SelectEventType, ids?: Id64Set) {
+    IModelApp.viewManager.onSelectionSetChanged(this.iModel);
+    this.onChanged.raiseEvent(this.iModel, evType, ids);
+  }
 
   /** Get the number of entries in this selection set. */
   public get size() { return this.elements.size; }

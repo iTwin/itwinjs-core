@@ -26,7 +26,7 @@ An *iModel Agent* is a program that performs an unattended action upon being inv
 
 As an example, consider an iModelJs Agent that receives notifications from iModelHub for every ChangeSet to a specific iModel. The Agent could inspect every changeset using the [ChangeSummaryManager]($backend) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
 
-![>](./right_chevron.png)[How to write a Web agent](../learning/WriteAWebAgent.md).
+![>](./next.png) [How to write a Web agent](../learning/WriteAWebAgent.md).
 
 ### iModel Services
 
@@ -38,13 +38,13 @@ An example of a service is a program that serves out spatial tiles that it extra
 
 An iModel service or app backend exposes an *interface* that clients can use to make requests. An iModel service interface is an [RpcInterface](./RpcInterface.md). A service always configures its interfaces using a [Web RPC configuration](./RpcInterface.md#web-rpc-configuration). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
 
-![>](./right_chevron.png)[How to write a Web service](../learning/WriteAWebService.md).
+![>](./next.png) [How to write a Web service](../learning/WriteAWebService.md).
 
 ## Interactive Apps
 
 An interactive app obtains information from an iModel and presents that information in a user interface. It has a [frontend](#app-frontend) and a [backend](#app-backend), which communication through [RpcInterfaces](./RpcInterface.md). An iModelJs-based interactive app can be configured to run as a Web app, a desktop app, or a mobile app.
 
-![>](./right_chevron.png)[How to write an interactive app](../learning/WriteAnInteractiveApp.md).
+![>](./next.png) [How to write an interactive app](../learning/WriteAnInteractiveApp.md).
 
 ### Configurations
 
@@ -52,19 +52,19 @@ An interactive app obtains information from an iModel and presents that informat
 
 When configured as a Web app, the [frontend](#app-frontend) will run in a Web browser and the [backend](#app-backend) will run on a server. The frontend's assets (HTML pages and js files) will be served out by a server (generally different from the backend). The frontend and backend will use a [Web configuration](./RpcInterface.md#web-rpc-configuration) for all RpcInterfaces. See the [diagram of a Web app](./SoftwareArchitecture.md#web) for an overview. Also see [app tailoring](./AppTailoring.md).
 
-![>](./right_chevron.png)[How to write an interactive Web app](../learning/WriteAnInteractiveWebApp.md).
+![>](./next.png) [How to write an interactive Web app](../learning/WriteAnInteractiveWebApp.md).
 
 #### Desktop Apps
 
 [Electron](https://electronjs.org/) is used to package an iModelJs app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](./RpcInterface.md#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a desktop app](./SoftwareArchitecture.md#desktop) for an overview. Also see [app tailoring](./AppTailoring.md).
 
-![>](./right_chevron.png)[How to write an interactive desktop app](../learning/WriteAnInteractiveDesktopApp.md).
+![>](./next.png) [How to write an interactive desktop app](../learning/WriteAnInteractiveDesktopApp.md).
 
 #### Mobile Apps
 
 When configured as a mobile app, the [frontend](#app-frontend) and [backend](#app-backend) will be bundled into a single app. The app will run as a single process, with frontend and backend in separate threads. The app will use the [in-process configuration](./RpcInterface.md#in-process-rpc-configuration) for efficient in-process calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a mobile app](./SoftwareArchitecture.md#mobile) for an overview. Also see [app tailoring](./AppTailoring.md).
 
-![>](./right_chevron.png)[How to write an interactive mobile app](../learning/WriteAnInteractiveMobileApp.md).
+![>](./next.png) [How to write an interactive mobile app](../learning/WriteAnInteractiveMobileApp.md).
 
 ### Architecture
 

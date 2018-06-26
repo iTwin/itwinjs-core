@@ -3,17 +3,23 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial } from "@bentley/imodeljs-common";
-import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
+import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
+import { compareNumbers, compareBooleans, compareStringsOrUndefined, comparePossiblyUndefined, assert } from "@bentley/bentleyjs-core";
+
+function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
+  return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);
+}
+function compareTextureMappings(lhs?: TextureMapping, rhs?: TextureMapping): number {
+  return comparePossiblyUndefined((lhTex: TextureMapping, rhTex: TextureMapping) => lhTex === rhTex ? 0 : compareStringsOrUndefined(lhTex.texture.key, rhTex.texture.key), lhs, rhs);
+}
 
 /** This class is used to determine if things can be batched together for display. */
 export class DisplayParams {
+  public static readonly minTransparency: number = 15;  // Threshold below which we consider a color fully opaque
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
   public readonly material?: RenderMaterial; // meshes only
   public readonly gradient?: Gradient.Symb;
-  // ###TODO
-  // textureMapping should be a getter that uses material's textureMapping if defined otherwise uses gradient to create textureMapping
-  // for now just filling in a default map
+  private readonly _textureMapping?: TextureMapping; // only if material is undefined - e.g. glyphs, gradients
   public readonly lineColor: ColorDef; // all types of geometry (edge color for meshes)
   public readonly fillColor: ColorDef; // meshes only
   public readonly width: number; // linear and mesh (edges)
@@ -22,24 +28,27 @@ export class DisplayParams {
   public readonly ignoreLighting: boolean; // always true for text and linear geometry; true for meshes only if normals not desired
 
   public constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width: number = 0, linePixels: LinePixels = LinePixels.Solid,
-    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false) {
+    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false, textureMapping?: TextureMapping) {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
-    this.lineColor = lineColor;
-    this.fillColor = fillColor;
+    this.lineColor = DisplayParams.adjustTransparencyInPlace(lineColor);
+    this.fillColor = DisplayParams.adjustTransparencyInPlace(fillColor);
     this.width = width;
     this.linePixels = linePixels;
     this.fillFlags = fillFlags;
     this.ignoreLighting = ignoreLighting;
+    this._textureMapping = textureMapping;
+
+    assert(undefined === material || undefined === textureMapping);
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
   public static createForType(type: DisplayParams.Type, gf: GraphicParams): DisplayParams {
-    const lineColor = gf.lineColor.clone();
+    const lineColor = DisplayParams.adjustTransparencyInPlace(gf.lineColor.clone());
     switch (type) {
       case DisplayParams.Type.Mesh:
-        return new DisplayParams(type, lineColor, gf.fillColor.clone(), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, undefined);
+        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparencyInPlace(gf.fillColor.clone()), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, undefined);
       case DisplayParams.Type.Linear:
         return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
       default: // DisplayParams.Type.Text
@@ -83,7 +92,8 @@ export class DisplayParams {
   public get hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
   public get hasFillTransparency(): boolean { return 255 !== this.fillColor.getAlpha(); }
   public get hasLineTransparency(): boolean { return 255 !== this.lineColor.getAlpha(); }
-  public get isTextured(): boolean { return this.material !== undefined && this.material.hasTexture; }
+  public get textureMapping(): TextureMapping | undefined { return undefined !== this.material ? this.material.textureMapping : this._textureMapping; }
+  public get isTextured(): boolean { return undefined !== this.textureMapping; }
 
   /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
   public equals(rhs: DisplayParams, purpose: DisplayParams.ComparePurpose = DisplayParams.ComparePurpose.Strict): boolean {
@@ -95,11 +105,11 @@ export class DisplayParams {
     if (this.type !== rhs.type) return false;
     if (this.ignoreLighting !== rhs.ignoreLighting) return false;
     if (this.width !== rhs.width) return false;
-    if (this.material !== rhs.material) return false;
     if (this.linePixels !== rhs.linePixels) return false;
     if (this.fillFlags !== rhs.fillFlags) return false;
-    // ###TODO: if (this.textureMapping.texture !== rhs.textureMapping.texture) return false;
     if (this.wantRegionOutline !== rhs.wantRegionOutline) return false;
+    if (this.material !== rhs.material) return false;
+    if (this.textureMapping !== rhs.textureMapping) return false;
 
     if (!this.fillColor.equals(rhs.fillColor)) return false;
     if (!this.lineColor.equals(rhs.lineColor)) return false;
@@ -116,11 +126,6 @@ export class DisplayParams {
       if (0 === diff) {
         diff = compareNumbers(this.width, rhs.width);
         if (0 === diff) {
-          // ###TODO texture mapping
-          // ###TODO: Define ordering between materials...
-          if (this.material !== rhs.material)
-            return -1;
-
           diff = compareNumbers(this.linePixels, rhs.linePixels);
           if (0 === diff) {
             diff = compareNumbers(this.fillFlags, rhs.fillFlags);
@@ -130,6 +135,12 @@ export class DisplayParams {
                 diff = compareBooleans(this.hasFillTransparency, rhs.hasFillTransparency);
                 if (0 === diff) {
                   diff = compareBooleans(this.hasLineTransparency, rhs.hasLineTransparency);
+                  if (0 === diff) {
+                    diff = compareMaterials(this.material, rhs.material);
+                    if (0 === diff && undefined === this.material && this.isTextured) {
+                      diff = compareTextureMappings(this.textureMapping, rhs.textureMapping);
+                    }
+                  }
                 }
               }
             }
@@ -139,6 +150,16 @@ export class DisplayParams {
     }
 
     return diff;
+  }
+
+  /**
+   * Given a ColorDef object, check its transparency and if it falls below the minimum, mark the color as fully opaque.
+   * @return The original reference to the color provided, which has possibly been modified.
+   */
+  public static adjustTransparencyInPlace(color: ColorDef): ColorDef {
+    if (color.colors.t < DisplayParams.minTransparency)
+      color.setTransparency(0);
+    return color;
   }
 }
 

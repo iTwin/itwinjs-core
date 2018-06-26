@@ -2,6 +2,13 @@
 
 A `CurveCollection` is a an abstract base class for various collection of curves.
 
+There are 5 concrete derived types:
+* `Path` - curve primtives joining head to tail
+* `Loop` - curve primtives joining head to tail and closing to form a loop
+* `ParityRegion` - `Loop`s that bound a planar area by parity rules.
+* `UnionRegion` - boolean union of areas of `Loop`s and/or `ParityRegion`s
+
+![>](./figs/CurveCollections/CurveCollectionClasses.png)
 
 ## `Path` and `Loop`
 
@@ -60,4 +67,3 @@ Processing all 5 subtypes of `CurveCollection` initally appears quite complex.  
 * A `ParityRegion` may only contain `Loop`s.
 * A `UnionRegion` may contain only `Loop`, `ParityRegion`, or further `UnionRegion`.
 * A `BagOfCurves` is the only one with free mixture of both `CurveCollection` and `CurvePrimitive`.
-

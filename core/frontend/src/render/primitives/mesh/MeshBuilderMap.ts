@@ -93,8 +93,6 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       return;
 
     const builder = this.getBuilder(displayParams, Mesh.PrimitiveType.Mesh, normalCount > 0, isPlanar);
-
-    // ###TODO: is displayParams.fillColor.tbgr equivalent to displayParams->GetFillColor() ?
     builder.addFromPolyface(indexedPolyface, { includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping });
   }
 
@@ -119,8 +117,6 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 
     const type = isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = this.getBuilder(displayParams, type, false, isPlanar);
-
-    // ###TODO: is displayParams.fillColor.tbgr equivalent to displayParams->GetFillColor() ?
     builder.addStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr);
   }
 

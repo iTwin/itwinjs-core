@@ -7,13 +7,13 @@ import { AccessToken } from "../../";
 import {
   IModelHubClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
   AggregateResponseError, ConflictingLocksError,
-  IModelHubRequestError, IModelHubRequestErrorId,
+  IModelHubRequestError,
 } from "../../imodelhub";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -344,7 +344,7 @@ describe("iModelHubClient LockHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should not create a query by locks with no object id", () => {
@@ -358,7 +358,7 @@ describe("iModelHubClient LockHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail deleting all locks with invalid briefcase id", async () => {
@@ -370,6 +370,6 @@ describe("iModelHubClient LockHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

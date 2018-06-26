@@ -10,11 +10,12 @@ import { TestConfig } from "../TestConfig";
 
 import { AccessToken } from "../../";
 import {
-  IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubRequestError, IModelHubRequestErrorId, Version,
+  IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubRequestError, Version,
 } from "../../imodelhub";
 
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -204,7 +205,7 @@ describe("iModelHub ChangeSetHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail downloading ChangeSets with no file handler", async () => {
@@ -217,7 +218,7 @@ describe("iModelHub ChangeSetHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail downloading ChangeSets with no file url", async () => {
@@ -229,7 +230,7 @@ describe("iModelHub ChangeSetHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.MissingDownloadUrlError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.MissingDownloadUrlError);
   });
 
   it("should fail creating a ChangeSet with no file handler", async () => {
@@ -242,7 +243,7 @@ describe("iModelHub ChangeSetHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail creating a ChangeSet with no file", async () => {
@@ -254,7 +255,7 @@ describe("iModelHub ChangeSetHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
   it("should fail creating a ChangeSet with directory path", async () => {
@@ -266,7 +267,7 @@ describe("iModelHub ChangeSetHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
   it("should query between changesets", async function (this: Mocha.ITestCallbackContext) {

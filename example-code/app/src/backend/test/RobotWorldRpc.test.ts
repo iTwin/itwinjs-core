@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { StandaloneIModelRpcInterface, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
@@ -41,26 +41,26 @@ describe("RobotWorldRpc", () => {
   // I18n module (specifically the i18next package).
   (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
-  it("should run robotworld through RPC as a client", async () => {
+  it("should run robotWorld through RPC as a client", async () => {
     // Simulate the deployment of the backend server
     simulateBackendDeployment();
 
     setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
-    IModelApp.startup();
+    NoRenderApp.startup();
 
     // expose interfaces using a direct call mechanism
     TestRpcManager.initialize([StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
-    const rowrite = RobotWorldWriteRpcInterface.getClient();
-    const roread = RobotWorldReadRpcInterface.getClient();
+    const roWrite = RobotWorldWriteRpcInterface.getClient();
+    const roRead = RobotWorldReadRpcInterface.getClient();
 
     const iModel: IModelConnection = await IModelConnection.openStandalone(KnownTestLocations.outputDir + "/" + bimName, OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
     const iToken: IModelToken = iModel.iModelToken;
 
     let modelId!: Id64;
-    for (const mstr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
-      modelId = new Id64(mstr);
+    for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
+      modelId = new Id64(modelStr);
 
     //  Initial placement: Robot1 is not touching any barrier (or other robot)
     //
@@ -72,17 +72,17 @@ describe("RobotWorldRpc", () => {
     //  |                   |
     //  |R1                 V
     //  +-- -- -- -- -- -- --
-    const robot1Id = await rowrite.insertRobot(iToken, modelId, "r1", Point3d.create(0, 0, 0));
-    const barrier1Id = await rowrite.insertBarrier(iToken, modelId, Point3d.create(0, 5, 0), Angle.createDegrees(0), 5);
-    const barrier2Id = await rowrite.insertBarrier(iToken, modelId, Point3d.create(5, 0, 0), Angle.createDegrees(90), 5);
+    const robot1Id = await roWrite.insertRobot(iToken, modelId, "r1", Point3d.create(0, 0, 0));
+    const barrier1Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(0, 5, 0), Angle.createDegrees(0), 5);
+    const barrier2Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(5, 0, 0), Angle.createDegrees(90), 5);
 
     await iModel.saveChanges();
     const barrier1 = (await iModel.elements.getProps(barrier1Id))[0];
     /* const barrier2 = */
     await iModel.elements.getProps(barrier2Id);
-    assert.equal(await roread.countRobots(iToken), 1);
+    assert.equal(await roRead.countRobots(iToken), 1);
 
-    const hits0 = await roread.queryObstaclesHitByRobot(iToken, robot1Id);
+    const hits0 = await roRead.queryObstaclesHitByRobot(iToken, robot1Id);
     assert.equal(hits0.length, 0, "no collisions initially");
 
     //  Move Robot1 up, so that it touches barrier1 but not barrier2
@@ -96,11 +96,11 @@ describe("RobotWorldRpc", () => {
     //  |                   V
     //  +-- -- -- -- -- -- --
     if (true) {
-      rowrite.moveRobot(iToken, robot1Id, barrier1.placement.origin);
+      roWrite.moveRobot(iToken, robot1Id, barrier1.placement.origin);
       await iModel.saveChanges();
       const r1 = (await iModel.elements.getProps(robot1Id))[0];
       assert.deepEqual(r1.placement.origin, barrier1.placement.origin);
-      const barriersHit = await roread.queryObstaclesHitByRobot(iToken, robot1Id);
+      const barriersHit = await roRead.queryObstaclesHitByRobot(iToken, robot1Id);
       assert.equal(barriersHit.length, 1, "expect a collision");
       assert.equal(barriersHit[0].toString(), barrier1.id);
     }
@@ -117,7 +117,7 @@ describe("RobotWorldRpc", () => {
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], webServerUrl?: string) {
-  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: webServerUrl};
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: webServerUrl };
   BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
 // __PUBLISH_EXTRACT_END__

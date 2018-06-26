@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 "use strict";
 
@@ -35,20 +35,20 @@ if (argv.out === undefined){
   console.log(mergedString);
 }
 else{
-  fs.writeFileSync(argv.out, mergedString);  
+  fs.writeFileSync(argv.out, mergedString);
 }
 
 function mergeJson(jsonFilePath){
   var jsonFile = json.parse(fs.readFileSync(jsonFilePath).toString(), null, true);
 
-  if (jsonFile.extends !== undefined && typeof jsonFile.extends === "string"){  
+  if (jsonFile.extends !== undefined && typeof jsonFile.extends === "string"){
     var baseFileName = path.resolve(path.dirname(jsonFilePath), jsonFile.extends)
 
     if (!fs.existsSync(baseFileName)){
       baseFileName = path.resolve(path.dirname(jsonFilePath), path.join("node_modules", jsonFile.extends));
     }
 
-    jsonFile = mergeJSON.merge(mergeJson(baseFileName), jsonFile);      
+    jsonFile = mergeJSON.merge(mergeJson(baseFileName), jsonFile);
   }
 
   return jsonFile;

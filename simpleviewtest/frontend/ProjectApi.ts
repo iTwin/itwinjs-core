@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
 
 export type DeploymentEnv = "DEV" | "QA";

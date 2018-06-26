@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module AccuDraw */
-
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Geometry, Arc3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp"; // This must be first to avoid import cycles.
 import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
@@ -12,11 +11,11 @@ import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels, FillFlags, GraphicParams } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
-import { SnapMode } from "./HitDetail";
+import { SnapMode, SnapDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { DecorateContext, SnapContext } from "./ViewContext";
+import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
 
@@ -1840,7 +1839,7 @@ export class AccuDraw {
   }
 
   public enableDisplay: boolean = false; // ###TODO: Don't try to display yet...we will throw an exception...
-  public display(context: DecorateContext) {
+  public decorate(context: DecorateContext) {
     // Make sure this is cleared even if we do nothing...redraw might have been to make compass go away...
     this.flags.redrawCompass = false;
 
@@ -2765,61 +2764,90 @@ export class AccuDraw {
 
     return false;
   }
-  public onSnap(context: SnapContext): boolean {
-    const snap = context.snapDetail;
 
+  private intersectXYCurve(_snap: SnapDetail, _curve: CurvePrimitive) {
+    // NEEDSWORK...
+  }
+
+  private intersectLine(snap: SnapDetail, linePt: Point3d, unitVec: Vector3d) {
+    const vec = Vector3d.createStartEnd(linePt, snap.getPoint());
+    const endPt = linePt.plusScaled(unitVec, vec.dotProduct(unitVec));
+    const cpLine = LineSegment3d.create(linePt, endPt);
+    this.intersectXYCurve(snap, cpLine);
+  }
+
+  private intersectCircle(snap: SnapDetail, center: Point3d, normal: Vector3d, radius: number) {
+    const matrix = RotMatrix.createRigidHeadsUp(normal);
+    const vector0 = matrix.columnX();
+    const vector90 = matrix.columnY();
+    vector0.scaleToLength(radius);
+    vector90.scaleToLength(radius);
+    const cpArc = Arc3d.create(center, vector0, vector90);
+    this.intersectXYCurve(snap, cpArc);
+  }
+
+  public onSnap(snap: SnapDetail): boolean {
     // If accudraw is locked, adjust near snap point to be the nearest point on this element, CONSTRAINED by the accudraw lock.
-    if (!this.isActive || !this.locked || !snap)
+    if (!this.isActive || !this.locked)
       return false;
 
     if (SnapMode.Nearest !== snap.snapMode)
       return false;
 
-    if (!snap.geomDetail.primitive)
+    if (!snap.primitive)
       return false;
 
-    // const refPt: Point3d;
     switch (this.locked) {
-      // case LockedStates.VEC_BM:
-      //   this.intersectLine(context, this.origin, this.vector);
-      //   break;
+      case LockedStates.VEC_BM: {
+        this.intersectLine(snap, this.origin, this.vector);
+        break;
+      }
 
-      // case LockedStates.X_BM:
-      //   refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.x, this.delta.x) : this.origin;
-      //   this.intersectLine(context, refPt, this.axes.y);
-      //   break;
+      case LockedStates.X_BM: {
+        const refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.x, this.delta.x) : this.origin;
+        this.intersectLine(snap, refPt, this.axes.y);
+        break;
+      }
 
-      // case LockedStates.Y_BM:
-      //   refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.y, this.delta.y) : this.origin;
-      //   this.intersectLine(context, refPt, this.axes.x);
-      //   break;
+      case LockedStates.Y_BM: {
+        const refPt = (CompassMode.Rectangular === this.getCompassMode()) ? this.planePt.plusScaled(this.axes.y, this.delta.y) : this.origin;
+        this.intersectLine(snap, refPt, this.axes.x);
+        break;
+      }
 
-      // case LockedStates.DIST_BM:
-      //   this.intersectCircle(context, this.origin, this.axes.z, this.distance);
-      //   break;
+      case LockedStates.DIST_BM: {
+        this.intersectCircle(snap, this.origin, this.axes.z, this.distance);
+        break;
+      }
     }
 
     return false;
   }
 
-  public onSelectedViewportChanged(previous: Viewport, current: Viewport): void {
+  public onSelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
     // In case previous is closing, always update AccuDraw to current view...
-    if (this.currentView && this.currentView === previous)
+    if (undefined !== this.currentView && this.currentView === previous)
       this.currentView = current;
 
     // Reset AccuDraw when iModel or view type changes...
-    if (current && previous && (current.view.classFullName === previous.view.classFullName) && (current.view.iModel === previous.view.iModel))
+    if (undefined !== current && undefined !== previous &&
+      (current.view.classFullName === previous.view.classFullName) &&
+      (current.view.iModel === previous.view.iModel))
       return;
 
     this.currentView = undefined;
     this.flags.redrawCompass = false;
+
     this.flags.baseRotation = RotationMode.View;
     this.flags.auxRotationPlane = RotationMode.Top;
     this.flags.rotationNeedsUpdate = true;
+
     this.flags.haveValidOrigin = false;
     this.flags.indexLocked = false;
     this.flags.bearingFixToPlane2D = false;
+
     this.savedState.init();
+
     this.setRotationMode(RotationMode.View);
     this.updateRotation();
   }

@@ -22,7 +22,7 @@ export class VertexKey implements Comparable<VertexKey> {
   public readonly normalValid: boolean = false;
 
   public constructor(position: QPoint3d, fillColor: number, normal?: OctEncodedNormal, uvParam?: Point2d) {
-    this.position = position.clone(); // #TODO clone from scratch to prevent calling new
+    this.position = position.clone();
     this.fillColor = fillColor;
 
     if (undefined !== normal) {

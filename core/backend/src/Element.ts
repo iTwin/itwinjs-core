@@ -99,16 +99,22 @@ export abstract class Element extends Entity implements ElementProps {
  * An abstract base class to model real world entities that intrinsically have geometry.
  */
 export abstract class GeometricElement extends Element implements GeometricElementProps {
+  /** The Id of the [[Category]] for this GeometricElement. */
   public category: Id64;
+  /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
+
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.category = Id64.fromJSON(props.category);
     this.geom = props.geom;
   }
 
+  /** Type guard for instanceof [[GeometricElement3d]] */
   public is3d(): this is GeometricElement3d { return this instanceof GeometricElement3d; }
+  /** Type guard for instanceof [[GeometricElement2d]] */
   public is2d(): this is GeometricElement2d { return this instanceof GeometricElement2d; }
+  /** Get the [Transform]($geometry) from the Placement of this GeometricElement */
   public getPlacementTransform(): Transform { return this.placement.getTransform(); }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
@@ -314,14 +320,14 @@ export class SectionDrawing extends Drawing {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** @hidden */
+/** The template for a SheetBorder */
 export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
   public height?: number;
   public width?: number;
   public constructor(props: SheetBorderTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** @hidden */
+/** The template for a [[Sheet]] */
 export class SheetTemplate extends Document implements SheetTemplateProps {
   public height?: number;
   public width?: number;
@@ -362,9 +368,10 @@ export abstract class InformationRecordElement extends InformationContentElement
 }
 
 /**
- * A Definition Element holds configuration - related information that is meant to be referenced / shared.
+ * A Definition Element holds configuration-related information that is meant to be referenced / shared.
  */
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
+  /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
   public toJSON(): DefinitionElementProps {
@@ -375,7 +382,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with an element.
+ * Defines a set of properties (the *type*) that may be associated with an element.
  */
 export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
   public recipe?: RelatedElement;
@@ -390,7 +397,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with a Physical Element. A Physical
+ * Defines a set of properties (the *type*) that can be associated with a Physical Element. A Physical
  * Type has a strong correlation with something that can be ordered from a catalog since all instances
  * share a common set of properties.
  */
@@ -399,7 +406,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with a spatial location.
+ * Defines a set of properties (the *type*) that can be associated with a spatial location.
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }

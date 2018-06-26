@@ -13,9 +13,8 @@ describe("FrameBuffer tests", () => {
   after(() => WebGLTestContext.shutdown());
 
   it("should produce and bind a valid framebuffer with single color attachment", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!IModelApp.hasRenderSystem)
       return;
-    }
 
     const texture: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
     assert(undefined !== texture);
@@ -35,9 +34,8 @@ describe("FrameBuffer tests", () => {
   });
 
   it("should produce and bind a valid framebuffer with two color attachments (if available)", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!IModelApp.hasRenderSystem)
       return;
-    }
 
     const caps: Capabilities = System.instance.capabilities;
     if (caps.maxColorAttachments < 2) {
@@ -68,9 +66,8 @@ describe("FrameBuffer tests", () => {
   });
 
   it("should produce and bind a valid framebuffer with two color attachments (if available) and one depth renderbuffer", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!IModelApp.hasRenderSystem)
       return;
-    }
 
     const caps: Capabilities = System.instance.capabilities;
     if (caps.maxColorAttachments < 2) {

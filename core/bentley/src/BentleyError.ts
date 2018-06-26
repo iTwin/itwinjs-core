@@ -86,6 +86,8 @@ export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDb
   WrongElement = IMODEL_ERROR_BASE + 62,
   WrongHandler = IMODEL_ERROR_BASE + 63,
   WrongModel = IMODEL_ERROR_BASE + 64,
+  ConstraintNotUnique = IMODEL_ERROR_BASE + 65,
+  NoGeoLocation = IMODEL_ERROR_BASE + 66,
 }
 
 /** Error status from various briefcase operations */
@@ -149,6 +151,96 @@ export const enum RepositoryStatus {
   RepositoryIsLocked = 0x1500E, /**  Repository is currently locked, no changes allowed */
 }
 
+/** Status from returned HTTP status code */
+export const enum HttpStatus {
+  Success = 0, /** 2xx Success */
+  Info = 0x17001, /** 1xx Informational responses */
+  Redirection = 0x17002, /** 3xx Redirection */
+  ClientError = 0x17003, /** 4xx Client errors */
+  ServerError = 0x17004, /** 5xx Server errors */
+}
+
+/** Server returned WSG errors */
+export const enum WSStatus {
+  Sucess = 0,
+  WSERROR_BASE = 0x18000,
+
+  Unknown = WSERROR_BASE + 1, /** Unknown error */
+  LoginFailed = WSERROR_BASE + 2, /** Login Failed */
+  SslRequired = WSERROR_BASE + 3, /** SSL required */
+  NotEnoughRights = WSERROR_BASE + 4, /** Not enough rights */
+  RepositoryNotFound = WSERROR_BASE + 5, /** Repository not found */
+  SchemaNotFound = WSERROR_BASE + 6, /** Schema not found */
+  ClassNotFound = WSERROR_BASE + 7, /** Class not found */
+  PropertyNotFound = WSERROR_BASE + 8, /** Property not found */
+  InstanceNotFound = WSERROR_BASE + 9, /** Instance not found */
+  FileNotFound = WSERROR_BASE + 10, /** File not found */
+  NotSupported = WSERROR_BASE + 11, /** Not supported */
+  NoServerLicense = WSERROR_BASE + 12, /** No server license */
+  NoClientLicense = WSERROR_BASE + 13, /** No client license */
+  TooManyBadLoginAttempts = WSERROR_BASE + 14, /** Too many bad login attempts */
+  LoginRequired = WSERROR_BASE + 15, /** Login required */
+}
+
+// iModel Hub Services Errors
+export enum IModelHubStatus {
+  Success = 0,
+  IMODELHUBERROR_BASE = 0x19000,
+  IMODELHUBERROR_REQUESTERRORBASE = 0x19100,
+  Unknown = IMODELHUBERROR_BASE + 1, /** Unknown error */
+
+  MissingRequiredProperties = IMODELHUBERROR_BASE + 2, /** Missing required properties */
+  InvalidPropertiesValues = IMODELHUBERROR_BASE + 3, /** Invalid properties values */
+  UserDoesNotHavePermission = IMODELHUBERROR_BASE + 4, /** User does not have permission */
+  InvalidBriefcase = IMODELHUBERROR_BASE + 5, /** Invalid briefcase */
+  BriefcaseDoesNotExist = IMODELHUBERROR_BASE + 6, /** Briefcase does not exist */
+  BriefcaseDoesNotBelongToUser = IMODELHUBERROR_BASE + 7, /** Briefcase does not belong to user */
+  AnotherUserPushing = IMODELHUBERROR_BASE + 8, /** Another user pushing */
+  ChangeSetAlreadyExists = IMODELHUBERROR_BASE + 9, /** ChangeSet already exists */
+  ChangeSetDoesNotExist = IMODELHUBERROR_BASE + 10, /** ChangeSet does not exist */
+  FileIsNotUploaded = IMODELHUBERROR_BASE + 11, /** File is not uploaded */
+  iModelIsNotInitialized = IMODELHUBERROR_BASE + 12, /** iModel is not initialized */
+  ChangeSetPointsToBadSeed = IMODELHUBERROR_BASE + 13, /** ChangeSet points to a bad seed file */
+  iModelHubOperationFailed = IMODELHUBERROR_BASE + 14, /** iModelHub operation failed */
+  PullIsRequired = IMODELHUBERROR_BASE + 15, /** Pull is required */
+  MaximumNumberOfBriefcasesPerUser = IMODELHUBERROR_BASE + 16, /** Limit of briefcases per user was reached */
+  MaximumNumberOfBriefcasesPerUserPerMinute = IMODELHUBERROR_BASE + 17, /** Limit of briefcases per user per minute was reached */
+  DatabaseTemporarilyLocked = IMODELHUBERROR_BASE + 18, /** Database is temporarily locked */
+  iModelAlreadyExists = IMODELHUBERROR_BASE + 19, /** iModel already exists */
+  iModelDoesNotExist = IMODELHUBERROR_BASE + 20, /** iModel does not exist */
+  LockDoesNotExist = IMODELHUBERROR_BASE + 21, /** Lock does not exist */
+  LocksExist = IMODELHUBERROR_BASE + 22, /** Lock already exists */
+  LockOwnedByAnotherBriefcase = IMODELHUBERROR_BASE + 23, /** Lock is owned by another briefcase */
+  UserAlreadyExists = IMODELHUBERROR_BASE + 24, /** User already exists */
+  UserDoesNotExist = IMODELHUBERROR_BASE + 25, /** User does not exist */
+  CodeStateInvalid = IMODELHUBERROR_BASE + 26, /** Code state is invalid */
+  CodeReservedByAnotherBriefcase = IMODELHUBERROR_BASE + 27, /** Code is reserved by another briefcase */
+  CodeDoesNotExist = IMODELHUBERROR_BASE + 28, /** Code does not exist */
+  CodesExist = IMODELHUBERROR_BASE + 29, /** Code already exists */
+  FileDoesNotExist = IMODELHUBERROR_BASE + 30, /** File does not exist */
+  FileAlreadyExists = IMODELHUBERROR_BASE + 31, /** File already exists */
+  iModelIsLocked = IMODELHUBERROR_BASE + 32, /** iModel is locked */
+  EventTypeDoesNotExist = IMODELHUBERROR_BASE + 33, /** Event type does not exist */
+  EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 34, /** Event subscription does not exist */
+  EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 35, /** Event subscription already exists */
+  ProjectAssociationIsNotEnabled = IMODELHUBERROR_BASE + 36, /** Project association is not enabled */
+  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 37, /** Project Id is not specified */
+  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 38, /** Failed to get project permissions */
+  ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 39, /** ChangeSet already has version */
+  VersionAlreadyExists = IMODELHUBERROR_BASE + 40, /** Version already exists */
+  QueryIdsNotSpecified = IMODELHUBERROR_BASE + 41, /** Query Id is not specified */
+  ConflictsAggregate = IMODELHUBERROR_BASE + 42, /** Codes or locks are owned by another briefcase */
+  SeedFileInitializationFailed = IMODELHUBERROR_BASE + 43,
+
+  /** Id for errors that are returned for incorrect iModel Hub request. */
+  UndefinedArguementError = IMODELHUBERROR_REQUESTERRORBASE + 1, /** Undefined argument */
+  InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2, /** Invalid argument */
+  MissingDownloadUrlError = IMODELHUBERROR_REQUESTERRORBASE + 3, /** Missing download url */
+  NotSupportedInBrowser = IMODELHUBERROR_REQUESTERRORBASE + 4, /** Not supported in browser */
+  FileHandlerNotSet = IMODELHUBERROR_REQUESTERRORBASE + 5, /** File handler is not set */
+  FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6, /** File not found */
+}
+
 /** When you want to associate an explanatory message with an error status value. */
 export interface StatusCodeWithMessage<ErrorCodeType> {
   status: ErrorCodeType;
@@ -165,7 +257,7 @@ export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
   public errorNumber: number;
 
-  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | HttpStatus | WSStatus | IModelHubStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
@@ -306,7 +398,7 @@ export class BentleyError extends Error {
       case DbResult.BE_SQLITE_ERROR_BadDbProfile: return "Bad Db Profile";
       case DbResult.BE_SQLITE_ERROR_InvalidProfileVersion: return "Invalid Profile Version";
       case DbResult.BE_SQLITE_ERROR_ProfileUpgradeFailed: return "Profile Upgrade Failed";
-      case DbResult.BE_SQLITE_ERROR_ProfileUpgradeFailedCannotOpenForWrite: return "Profile Upgrade Failed CannotOpenForWrite";
+      case DbResult.BE_SQLITE_ERROR_ProfileTooOldForReadWrite: return "Profile Too Old For ReadWrite";
       case DbResult.BE_SQLITE_ERROR_ProfileTooOld: return "Profile Too Old";
       case DbResult.BE_SQLITE_ERROR_ProfileTooNewForReadWrite: return "Profile Too New For ReadWrite";
       case DbResult.BE_SQLITE_ERROR_ProfileTooNew: return "Profile Too New";
@@ -391,6 +483,79 @@ export class BentleyError extends Error {
       case RepositoryStatus.CodeUsed: return "CodeUsed";
       case RepositoryStatus.LockNotHeld: return "LockNotHeld";
       case RepositoryStatus.RepositoryIsLocked: return "RepositoryIsLocked";
+
+      // HTTP Status
+      case HttpStatus.Info: return "HTTP Info";
+      case HttpStatus.Redirection: return "HTTP Redirection";
+      case HttpStatus.ClientError: return "HTTP Client error";
+      case HttpStatus.ServerError: return "HTTP Server error";
+
+      // WSStatus
+      case WSStatus.Unknown: return "Unknown error";
+      case WSStatus.ClassNotFound: return "Class not found";
+      case WSStatus.FileNotFound: return "File not found";
+      case WSStatus.InstanceNotFound: return "Instance not found";
+      case WSStatus.LoginFailed: return "Login failed";
+      case WSStatus.NoClientLicense: return "No client license";
+      case WSStatus.NoServerLicense: return "No server license";
+      case WSStatus.NotEnoughRights: return "Not enough rights";
+      case WSStatus.NotSupported: return "Not supported";
+      case WSStatus.PropertyNotFound: return "Property not found";
+      case WSStatus.RepositoryNotFound: return "Repository not found";
+      case WSStatus.SchemaNotFound: return "Schema not found";
+      case WSStatus.SslRequired: return "SSL required";
+      case WSStatus.TooManyBadLoginAttempts: return "Too many bad login attempts";
+
+      // IModelHubStatus
+      case IModelHubStatus.Unknown: return "Unknown error";
+      case IModelHubStatus.MissingRequiredProperties: return "Missing required properties";
+      case IModelHubStatus.InvalidPropertiesValues: return "Invalid properties values";
+      case IModelHubStatus.UserDoesNotHavePermission: return "User does not have permission";
+      case IModelHubStatus.InvalidBriefcase: return "Invalid briefcase";
+      case IModelHubStatus.BriefcaseDoesNotExist: return "Briefcase does not exist";
+      case IModelHubStatus.BriefcaseDoesNotBelongToUser: return "Briefcase does not belong to user";
+      case IModelHubStatus.AnotherUserPushing: return "Another user pushing";
+      case IModelHubStatus.ChangeSetAlreadyExists: return "ChangeSet already exists";
+      case IModelHubStatus.ChangeSetDoesNotExist: return "ChangeSet does not exist";
+      case IModelHubStatus.FileIsNotUploaded: return "File is not uploaded";
+      case IModelHubStatus.iModelIsNotInitialized: return "iModel is not initialized";
+      case IModelHubStatus.ChangeSetPointsToBadSeed: return "ChangeSet points to a bad seed file";
+      case IModelHubStatus.iModelHubOperationFailed: return "iModelHub operation failed";
+      case IModelHubStatus.PullIsRequired: return "Pull is required";
+      case IModelHubStatus.MaximumNumberOfBriefcasesPerUser: return "Limit of briefcases per user was reached";
+      case IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute: return "Limit of briefcases per user per minute was reached";
+      case IModelHubStatus.DatabaseTemporarilyLocked: return "Database is temporarily locked";
+      case IModelHubStatus.iModelAlreadyExists: return "iModel already exists";
+      case IModelHubStatus.iModelDoesNotExist: return "iModel does not exist";
+      case IModelHubStatus.LockDoesNotExist: return "Lock does not exist";
+      case IModelHubStatus.LocksExist: return "Lock already exists";
+      case IModelHubStatus.LockOwnedByAnotherBriefcase: return "Lock is owned by another briefcase";
+      case IModelHubStatus.UserAlreadyExists: return "User already exists";
+      case IModelHubStatus.UserDoesNotExist: return "User does not exist";
+      case IModelHubStatus.CodeStateInvalid: return "Code state is invalid";
+      case IModelHubStatus.CodeReservedByAnotherBriefcase: return "Code is reserved by another briefcase";
+      case IModelHubStatus.CodeDoesNotExist: return "Code does not exist";
+      case IModelHubStatus.CodesExist: return "Code already exists";
+      case IModelHubStatus.FileDoesNotExist: return "File does not exist";
+      case IModelHubStatus.FileAlreadyExists: return "File already exists";
+      case IModelHubStatus.iModelIsLocked: return "iModel is locked";
+      case IModelHubStatus.EventTypeDoesNotExist: return "Event type does not exist";
+      case IModelHubStatus.EventSubscriptionDoesNotExist: return "Event subscription does not exist";
+      case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
+      case IModelHubStatus.ProjectAssociationIsNotEnabled: return "Project association is not enabled";
+      case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
+      case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
+      case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
+      case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
+      case IModelHubStatus.QueryIdsNotSpecified: return "Query Id is not specified";
+      case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
+      /** Id for errors that are returned for incorrect iModel Hub request. */
+      case IModelHubStatus.UndefinedArguementError: return "Undefined argument";
+      case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
+      case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";
+      case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";
+      case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
+      case IModelHubStatus.FileNotFound: return "File not found";
 
       // Unexpected cases
       case IModelStatus.Success:

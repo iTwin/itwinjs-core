@@ -7,7 +7,7 @@
 import { Geometry, Angle, AxisOrder, BeJSONFunctions } from "./Geometry";
 import { Point4d } from "./numerics/Geometry4d";
 import { Range3d } from "./Range";
-import { Point2d, Point3d, Vector3d } from "./PointVector";
+import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
 import { XAndY, XYZ, RotMatrixProps, TransformProps } from "./PointVector";
 /* tslint:disable:variable-name jsdoc-format*/
 /** A RotMatrix is tagged indicating one of the following states:
@@ -930,7 +930,6 @@ export class RotMatrix implements BeJSONFunctions {
       @return the vector result
   */
   public multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d {
-    result = result ? result : new Vector3d();
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -971,7 +970,7 @@ export class RotMatrix implements BeJSONFunctions {
       result);
   }
 
-  public static XYZPlusMatrixTimesXYZ(origin: XYZ, matrix: RotMatrix, vector: XYZ, result?: Point3d): Point3d {
+  public static XYZPlusMatrixTimesXYZ(origin: XYZ, matrix: RotMatrix, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -1870,12 +1869,12 @@ export class Transform implements BeJSONFunctions {
   }
 
   /** Transform the input 2d point.  Return as a new point or in the pre-allocated result (if result is given) */
-  public multiplyPoint2d(source: Point2d, result?: Point2d): Point2d {
+  public multiplyPoint2d(source: XAndY, result?: Point2d): Point2d {
     return RotMatrix.XYPlusMatrixTimesXY(this._origin, this._matrix, source, result);
   }
 
   /** Transform the input 3d point.  Return as a new point or in the pre-allocated result (if result is given) */
-  public multiplyPoint3d(point: Point3d, result?: Point3d): Point3d {
+  public multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d {
     return RotMatrix.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
 
@@ -1896,7 +1895,7 @@ export class Transform implements BeJSONFunctions {
   }
 
   /** @returns Return product of the transform's inverse times a point. */
-  public multiplyInversePoint3d(point: Point3d, result?: Point3d): Point3d | undefined {
+  public multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined {
     return this._matrix.multiplyInverseXYZAsPoint3d(
       point.x - this._origin.x,
       point.y - this._origin.y,

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
@@ -67,7 +67,7 @@ function pseudoLocalize (inputString) {
         }
       }
     outString = outString.concat (replacementChar);
-    }  
+    }
   }
 return outString;
 }

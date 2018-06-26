@@ -12,6 +12,8 @@ import {
   */
 } from "../ShaderBuilder";
 import { addFrustum } from "./Common";
+import { Material } from "../Material";
+
 /* ###TODO: IBL
 import { addNormalMatrixF } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
@@ -232,6 +234,10 @@ const applyLighting = `
   return baseColor;
 `;
 
+const scratchLighting = {
+  lightMix: new Float32Array(4),
+};
+
 export function addLighting(builder: ProgramBuilder) {
   addFrustum(builder);
 
@@ -239,7 +245,7 @@ export function addLighting(builder: ProgramBuilder) {
   frag.addUniform("u_lightMix", VariableType.Vec4, (shaderProg) => {
     shaderProg.addGraphicUniform("u_lightMix", (uniform, params) => {
       // const viewFlags = params.m_target.currentViewFlags(); // TODO set lighting based on these - always default for now.
-      const data = new Float32Array(4);
+      const data = scratchLighting.lightMix;
       data[0] = 0.0; // set to 1.0 for IBL
       data[1] = 0.0; // set to 1.0 for default portrait lighting
       data[2] = 0.0; // set to 1.0 for using scene lights
@@ -299,44 +305,19 @@ export function addLighting(builder: ProgramBuilder) {
 
   frag.addUniform("u_material", VariableType.Vec3, (shader) => {
     shader.addGraphicUniform("u_material", (uniform, params) => {
-      const data = new Float32Array(3);
-      if (params.target.currentViewFlags.showMaterials) {
-        // const mat = params.geometry.material;
-        // data[0] = mat.diffuseWeight;
-        // data[1] = mat.specularWeight;
-        // data[2] = mat.reflect;
-        data[0] = 0.6;
-        data[1] = 0.4;
-        data[2] = 0.0;
-      } else {
-        data[0] = 0.6;
-        data[1] = 0.4;
-        data[2] = 0.0;
-      }
-      uniform.setUniform3fv(data);
+      const material = params.target.currentViewFlags.showMaterials() ? params.geometry.material : undefined;
+      const weights = undefined !== material ? material.weights : Material.default.weights;
+      uniform.setUniform3fv(weights);
     });
   });
 
   frag.addUniform("u_specular", VariableType.Vec4, (shader) => {
     shader.addGraphicUniform("u_specular", (uniform, params) => {
-      const data = new Float32Array(4);
-      if (params.target.currentViewFlags.showMaterials) {
-        // const mat = params.geometry.material;
-        // data[0] = mat.specularColor.red;
-        // data[1] = mat.specularColor.green;
-        // data[2] = mat.specularColor.blue;
-        // data[3] = mat.specularExponent;
-        data[0] = 1.0;
-        data[1] = 1.0;
-        data[2] = 1.0;
-        data[3] = 13.5;
-      } else {
-        data[0] = 1.0;
-        data[1] = 1.0;
-        data[2] = 1.0;
-        data[3] = 13.5;
-      }
-      uniform.setUniform4fv(data);
+      let mat = params.target.currentViewFlags.showMaterials() ? params.geometry.material : undefined;
+      if (undefined === mat)
+        mat = Material.default;
+
+      uniform.setUniform4fv(mat.specular);
     });
   });
 
@@ -344,7 +325,7 @@ export function addLighting(builder: ProgramBuilder) {
   frag.addUniform("u_reflect", VariableType.Vec4, (shader) => {
     shader.addGraphicUniform("u_reflect", (uniform, params) => {
       const data = new Float32Array(4);
-      if (params.target.currentViewFlags.showMaterials) {
+      if (params.target.currentViewFlags.showMaterials()) {
         // const mat = params.geometry.material;
         // data[0] = mat.reflectColor.red;
         // data[1] = mat.reflectColor.green;

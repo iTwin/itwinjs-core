@@ -78,11 +78,10 @@ export class PolylineArgs {
     this.flags.isDisjoint = Mesh.PrimitiveType.Point === mesh.type;
     if (DisplayParams.RegionEdgeType.Outline === mesh.displayParams.regionEdgeType) {
       // This polyline is behaving as the edges of a region surface.
-      // TODO: GradientSymb not implemented yet!  Uncomment following lines when it is implemented.
-      // if (mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined())
-      //   this.flags.setIsNormalEdge();
-      // else
-      this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
+      if (undefined === mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined)
+        this.flags.setIsNormalEdge();
+      else
+        this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
     }
 
     mesh.polylines.forEach((polyline) => {
@@ -97,7 +96,7 @@ export class PolylineArgs {
     this.pointParams = mesh.points.params;
     this.points = mesh.points;
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
-    // mesh.toFeatureIndex(this.features);
+    mesh.toFeatureIndex(this.features);
   }
 }
 
@@ -164,13 +163,12 @@ export class MeshArgs {
       this.textureUv = mesh.uvParams;
 
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
-    // mesh.toFeatureIndex(this.features);
+    mesh.toFeatureIndex(this.features);
 
     this.material = mesh.displayParams.material;
-    this.texture = undefined;
-    if (this.material) {
-      this.texture = this.material.textureMapping ? this.material.textureMapping.texture : undefined;
-    }
+    if (undefined !== mesh.displayParams.textureMapping)
+      this.texture = mesh.displayParams.textureMapping.texture;
+
     this.fillFlags = mesh.displayParams.fillFlags;
     this.isPlanar = mesh.isPlanar;
     this.is2d = mesh.is2d;
@@ -241,7 +239,10 @@ export class Mesh {
   public get triangles(): TriangleList | undefined { return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
   public get polylines(): MeshPolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined; }
 
-  // public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
+  public toFeatureIndex(index: FeatureIndex): void {
+    if (undefined !== this.features)
+      this.features.toFeatureIndex(index);
+  }
 
   public getGraphics(args: MeshGraphicArgs, system: RenderSystem, iModel: IModelConnection): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {

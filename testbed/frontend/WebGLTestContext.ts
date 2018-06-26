@@ -1,36 +1,61 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+import { IModelApp, ViewRect } from "@bentley/imodeljs-frontend";
+import { RenderSystem, RenderTarget } from "@bentley/imodeljs-frontend/lib/rendering";
 
-import { assert } from "chai";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+export class NullTarget extends RenderTarget {
+  public get renderSystem() { return undefined as any; }
+  public get cameraFrustumNearScaleLimit(): number { return 0; }
+  public get viewRect(): ViewRect { return new ViewRect(); }
+  public get wantInvertBlackBackground(): boolean { return false; }
+  public onDestroy(): void { }
+  public reset(): void { }
+  public changeScene(): void { }
+  public changeDynamics(): void { }
+  public changeDecorations(): void { }
+  public changeRenderPlan(): void { }
+  public drawFrame(_sceneSecondsElapsed?: number): void { }
+  public overrideFeatureSymbology(): void { }
+  public setHiliteSet(): void { }
+  public setFlashed(): void { }
+  public setViewRect(): void { }
+  public queueReset(): void { }
+  public onResized(): void { }
+  public updateViewRect(): boolean { return false; }
+  public readPixels() { return undefined; }
+}
+
+export class NullRenderSystem extends RenderSystem {
+  public createTarget() { return new NullTarget(); }
+  public createOffscreenTarget() { return new NullTarget(); }
+  public createGraphic() { return undefined as any; }
+  public createGraphicList() { return undefined as any; }
+  public createBranch() { return undefined as any; }
+  public createBatch() { return undefined as any; }
+  public constructor() { super(undefined as any); }
+}
+
+export class MaybeRenderApp extends IModelApp {
+  protected static supplyRenderSystem(): RenderSystem {
+    try {
+      return super.supplyRenderSystem();
+    } catch (e) {
+      return new NullRenderSystem();
+    }
+  }
+}
 
 export namespace WebGLTestContext {
-  // When executing on the continuous integration server, we fail to obtain a WebGLRenderingContext.
-  // Need to determine why, and how to fix.
-  function isEnabled(): boolean {
-    const electron = (window as any).require("electron");
-    const remote = electron.remote;
-    return undefined === remote.process.env.TF_BUILD;
-  }
-
   export let isInitialized = false;
 
   export function startup() {
-    if (!isEnabled()) {
-      return;
-    }
-
-    IModelApp.startup("QA", true);
-    isInitialized = IModelApp.hasRenderSystem;
-    assert(isInitialized);
+    MaybeRenderApp.startup();
+    isInitialized = MaybeRenderApp.hasRenderSystem;
   }
 
   export function shutdown() {
-    isInitialized = false;
-    if (IModelApp.initialized) {
-      IModelApp.shutdown();
-    }
+    MaybeRenderApp.shutdown();
   }
 
   const canvasId = "WebGLTestCanvas";

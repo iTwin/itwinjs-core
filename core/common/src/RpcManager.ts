@@ -18,7 +18,7 @@ export interface RpcInterfaceEndpoints {
 export class RpcManager {
   /**
    * Initializes an RPC interface class.
-   * <em>note:</em> This function must be called on the frontend and on the backend for each RPC interface class used by an application.
+   * @note This function must be called on the frontend and on the backend for each RPC interface class used by an application.
    */
   public static initializeInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
     RpcRegistry.instance.initializeRpcInterface(definition);

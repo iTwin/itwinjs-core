@@ -7,7 +7,7 @@ import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Angle, AngleProps } from "@bentley/geometry-core";
 
-/** The type of a Light */
+/** The type of a [[Light]] */
 export const enum LightType {
   Invalid = 0,
   Solar = 1,     // Sunlight
@@ -21,7 +21,7 @@ export const enum LightType {
   SkyOpening = 9,
 }
 
-/** Parameters to create a Light */
+/** Parameters to create a [[Light]] */
 export interface LightProps {
   lightType?: LightType;  // the type of light from LightType enum
   intensity?: number;     // intensity of the light
@@ -65,7 +65,7 @@ export class Light {
   public isVisible(): boolean { return this.isValid() && this.intensity > 0.0; }
 }
 
-/** Properties of a Spot light. */
+/** Properties of a [[LightType.Spot]] light. */
 export interface SpotProps extends LightProps {
   inner?: AngleProps;
   outer?: AngleProps;

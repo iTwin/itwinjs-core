@@ -55,7 +55,9 @@ export namespace TileIO {
     private readonly _view: DataView;
     private _curPos: number = 0;
 
-    public constructor(buffer: ArrayBuffer | SharedArrayBuffer) { this._view = new DataView(buffer); }
+    public constructor(buffer: ArrayBuffer | SharedArrayBuffer) {
+      this._view = new DataView(buffer);
+    }
 
     public get length(): number { return this._view.byteLength; }
     public get isPastTheEnd(): boolean { return this.curPos > this.length; }

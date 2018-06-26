@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
@@ -23,7 +23,7 @@ module.exports = {
   appDist: resolveApp('dist'),
   appPublic: resolveApp('public'),
   appLibTests: resolveApp('lib/test'),
-  appDocs: resolveApp('lib/docs'), 
+  appDocs: resolveApp('lib/docs'),
   appJsonDocs: resolveApp('lib/docs/json/file.json'),
   appJUnitTestResults: resolveApp('lib/test/junit_results.xml'),
   appAssets: resolveApp('source/assets'),

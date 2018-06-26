@@ -6,7 +6,6 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { MaterialData } from "./CachedGeometry";
 import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { MeshData, MeshGeometry, MeshPrimitive, MeshGraphic } from "./Mesh";
 import { VertexLUT } from "./VertexLUT";
@@ -18,6 +17,7 @@ import { Target } from "./Target";
 import { ColorInfo } from "./ColorInfo";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
+import { Material } from "./Material";
 
 function wantMaterials(vf: ViewFlags) { return vf.showMaterials() && RenderMode.SmoothShade === vf.renderMode; }
 function wantLighting(vf: ViewFlags) {
@@ -35,8 +35,8 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get isGlyph() { return false; } // ###TODO: Need implementation of Texture...
-  public isTileSection() { return false; } // ###TODO: Need implementation of Texture...
+  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
+  public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
 
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
@@ -76,7 +76,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getRenderPass(target: Target): RenderPass {
     const mat = this.isLit ? this.mesh.material : undefined;
-    // ###TODO const tex = this.texture;
+    const tex = this.texture;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
     const fillFlags = this.fillFlags;
 
@@ -94,25 +94,19 @@ export class SurfaceGeometry extends MeshGeometry {
       }
     }
 
-    // ###TODO if (undefined !== tex && this.wantTextures(target)) {
-    // ###TODO if (tex.hasTranslucency) {
-    // ###TODO   return RenderPass.Translucent;
-    // ###TODO }
+    if (undefined !== tex && this.wantTextures(target)) {
+      if (tex.hasTranslucency)
+        return RenderPass.Translucent;
 
-    // material may have texture weight < 1 - if so must account for material or element alpha below
-    // ###TODO if (undefined === mat || mat.textureWeight >= 1) {
-    // ###TODO   return opaquePass;
-    // ###TODO }
-    // ###TODO }
+      // material may have texture weight < 1 - if so must account for material or element alpha below
+      if (undefined === mat || (mat.textureMapping !== undefined && mat.textureMapping.params.weight >= 1))
+        return opaquePass;
+    }
 
-    let hasAlpha = false;
-    if (undefined !== mat && wantMaterials(vf) /* && ###TODO material stuff */)
-      hasAlpha = false; // ###TODO material stuff
-    else
-      hasAlpha = this.getColor(target).hasTranslucency;
-
+    const hasAlpha = (undefined !== mat && wantMaterials(vf) && mat.hasTranslucency) || this.getColor(target).hasTranslucency;
     return hasAlpha ? RenderPass.Translucent : opaquePass;
   }
+
   public _wantWoWReversal(target: Target): boolean {
     const fillFlags = this.fillFlags;
     if (FillFlags.None !== (fillFlags & FillFlags.Background))
@@ -131,7 +125,7 @@ export class SurfaceGeometry extends MeshGeometry {
     // Don't invert white pixels of textures...
     return !this.isTextured || !this.wantTextures(target);
   }
-  public get material(): MaterialData | undefined { return this.materialData; }
+  public get material(): Material | undefined { return this.mesh.material; }
 
   public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
     const target = params.target;

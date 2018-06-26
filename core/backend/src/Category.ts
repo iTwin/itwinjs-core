@@ -11,12 +11,14 @@ import { DefinitionModel } from "./Model";
 
 /** Defines the appearance for graphics in Geometric elements */
 export class SubCategory extends DefinitionElement {
+  /** The Appearance parameters for this SubCategory */
   public appearance: Appearance;
+  /** Optional description of this SubCategory. */
   public description?: string;
 
   /** Construct a SubCategory.
    * @param props The properties of the SubCategory
-   * @param iModel The IModelDb where the SubCategory may be inserted.
+   * @param iModel The IModelDb for the SubCategory
    */
   public constructor(props: SubCategoryProps, iModel: IModelDb) {
     super(props, iModel);
@@ -33,11 +35,11 @@ export class SubCategory extends DefinitionElement {
     return val;
   }
 
-  /** Get the SubCategory's Code value. That is the name of the SubCategory. */
+  /** Get the SubCategory's name (its Code value). */
   public getSubCategoryName(): string { return this.code.getValue(); }
-  /** Get the uniqueIdID of the SubCategory. */
+  /** Get the Id of the SubCategory. */
   public getSubCategoryId(): Id64 { return this.id; }
-  /** Get the Id of the parent Category. */
+  /** Get the Id of this SubCategory's parent Category. */
   public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
   /** Query if this is the default SubCategory of its parent Category. */
   public isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
@@ -133,7 +135,7 @@ export class SpatialCategory extends Category {
    * Create a new SpatialCategory element.
    * @param scopeModel The model in which the category element will be inserted by the caller.
    * @param categoryName The name of the category.
-   * @return a new SpatialCategory element.
+   * @return A new SpatialCategory element.
    */
   public static create(scopeModel: DefinitionModel, categoryName: string): SpatialCategory {
     return scopeModel.iModel.elements.createElement({

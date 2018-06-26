@@ -71,7 +71,7 @@ export class TesselatedPolyline {
     this.nextIndexAndParam = nextIndexAndParam;
     this.distance = distance;
   }
-  public get numVerts(): number { return this.distance.length; }
+  public get numIndices(): number { return this.distance.length; }
 }
 
 class PolylineTesselatorVertex {
@@ -246,10 +246,11 @@ export class PolylineGeometry extends LUTGeometry {
 
   private _computeEdgePass(target: Target, colorInfo: ColorInfo): RenderPass {
     const vf = target.currentViewFlags;
-    if (RenderMode.SmoothShade === vf.renderMode && !vf.showVisibleEdges)
+    if (RenderMode.SmoothShade === vf.renderMode && !vf.showVisibleEdges())
       return RenderPass.None;
+
     // Only want to return Translucent for edges if rendering in Wireframe mode TODO: what about overrides?
-    const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.showTransparency && colorInfo.hasTranslucency;
+    const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.showTransparency() && colorInfo.hasTranslucency;
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
 
@@ -258,11 +259,11 @@ export class PolylineGeometry extends LUTGeometry {
     if (this.isEdge) {
       let pass = this._computeEdgePass(target, this.lut.colorInfo);
       // Only display the outline in wireframe if Fill is off...
-      if (RenderPass.None !== pass && this.polyline.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.showFill)
+      if (RenderPass.None !== pass && this.polyline.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.showFill())
         pass = RenderPass.None;
       return pass;
     }
-    const isTranslucent: boolean = vf.showTransparency && this.lut.colorInfo.hasTranslucency;
+    const isTranslucent: boolean = vf.showTransparency() && this.lut.colorInfo.hasTranslucency;
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
 
@@ -273,6 +274,7 @@ export class PolylineGeometry extends LUTGeometry {
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this.polyline.features; }
 
   protected _getLineWeight(params: ShaderProgramParams): number {
     return this.isEdge ? params.target.getEdgeWeight(params, this.polyline.lineWeight) : this.polyline.lineWeight;

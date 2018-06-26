@@ -477,7 +477,7 @@ export class Angle implements BeJSONFunctions {
   /**
    * @return a (strongly typed) Angle whose tangent is `numerator/denominator`, using the signs of both in determining the (otherwise ambiguous)
    * quadrant.
-   * @param numerator numererator for tangent
+   * @param numerator numerator for tangent
    * @param denominator denominator for tangent
    */
   public static createAtan2(numerator: number, denominator: number): Angle { return new Angle(Math.atan2(numerator, denominator)); }
