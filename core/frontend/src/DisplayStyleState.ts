@@ -324,7 +324,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
           frac = Math.pow(frac, env.sky.skyExponent);
         }
 
-        color1.lerp(color2, frac);
+        color1.lerp(color2, frac, color1);
         color1.setAlpha(color1.getAlpha() + frac * (color2.getAlpha() - color1.getAlpha()));
         buffer[currentBufferIdx] = color1.colors.r;
         buffer[currentBufferIdx + 1] = color1.colors.g;
