@@ -161,6 +161,7 @@ export class EventController {
     const element = this.vp.canvas;
     if (!element)
       return;
+
     this.registerListener("mousedown", element, this.handleMouseDown as EventListener);
     this.registerListener("mouseup", element, this.handleMouseUp as EventListener);
     this.registerListener("mousemove", element, this.handleMouseMove as EventListener);
@@ -170,6 +171,9 @@ export class EventController {
     this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
     this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
     this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
+
+    element.oncontextmenu = () => false;
+    element.onselectstart = () => false;
   }
 
   private recordShiftKey() { IModelApp.toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
