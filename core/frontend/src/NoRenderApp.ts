@@ -1,10 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import { RenderSystem, RenderTarget } from "./rendering";
 import { IModelApp } from "./IModelApp";
 import { ViewRect } from "./Viewport";
 
 /**
- * Sub class of RenderTarget used by applications that do not really care about rendering the
- * iModel in a browser. This is typically used by non-interactive test applications.
+ * A RenderTarget for applications that must run in environments where WebGL is not present.
+ * This is typically used in tests.
  */
 export class NullTarget extends RenderTarget {
   public get renderSystem() { return undefined as any; }
@@ -29,8 +32,8 @@ export class NullTarget extends RenderTarget {
 }
 
 /**
- * Sub class of RenderSystem used by applications that do not really care about rendering the
- * iModel in a browser. This is typically used by non-interactive test applications.
+ * A RenderSystem for applications that must run in environments where WebGL is not present.
+ * This is typically used in tests.
  */
 export class NullRenderSystem extends RenderSystem {
   public createTarget() { return new NullTarget(); }
@@ -43,8 +46,8 @@ export class NullRenderSystem extends RenderSystem {
 }
 
 /**
- * Sub class of IModelApp used by applications that do not really care about rendering the
- * iModel in a browser. This is typically used by non-interactive test applications.
+ * An IModelApp for applications that must run in environments where WebGL is not present.
+ * This is typically used in tests.
  */
 export class NoRenderApp extends IModelApp {
   protected static supplyRenderSystem(): RenderSystem { return new NullRenderSystem(); }
