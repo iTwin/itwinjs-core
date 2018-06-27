@@ -8,11 +8,13 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair } from "@bentley/imodeljs-common";
+import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
+import { RenderGraphic } from "../render/System";
+import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -23,12 +25,20 @@ export namespace GltfTileIO {
     CurrentVersion = Version1,
     SceneFormat = 0,
   }
-
+  /** The result of Reader.read(). */
+  export interface ReaderResult {
+    readStatus: TileIO.ReadStatus;
+    isLeaf: boolean;
+    contentRange?: ElementAlignedBox3d;
+    geometry?: TileIO.GeometryCollection;
+    renderGraphic?: RenderGraphic;
+  }
   /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
     public readonly gltfLength: number;
     public readonly sceneStrLength: number;
     public readonly gltfSceneFormat: number;
+    public get isValid(): boolean { return TileIO.Format.Gltf === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
@@ -176,7 +186,8 @@ export namespace GltfTileIO {
       public readonly bufferViews: any,
       public readonly scene: any,
       public readonly meshes: any,
-      public readonly materials: any) { }
+      public readonly materials: any,
+      public readonly extensions: any) { }
 
     public static create(buffer: TileIO.StreamBuffer): ReaderProps | undefined {
       const header = new Header(buffer);
@@ -196,11 +207,12 @@ export namespace GltfTileIO {
         const materialValues = JsonUtils.asObject(sceneValue.materials);
         const accessors = JsonUtils.asObject(sceneValue.accessors);
         const bufferViews = JsonUtils.asObject(sceneValue.bufferViews);
+        const extensions = JsonUtils.asObject(sceneValue.extensions);
 
         if (undefined === materialValues || undefined === meshes || undefined === accessors || undefined === bufferViews)
           return undefined;
 
-        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues);
+        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions);
       } catch (e) {
         return undefined;
       }
@@ -208,7 +220,7 @@ export namespace GltfTileIO {
   }
 
   /** Deserializes glTF tile data. */
-  export class Reader {
+  export abstract class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
     protected readonly accessors: any;
     protected readonly bufferViews: any;
@@ -222,14 +234,42 @@ export namespace GltfTileIO {
     protected readonly binaryData: Uint8Array;
     protected readonly model: GeometricModelState;
     protected readonly system: RenderSystem;
+    protected readonly returnToCenter: any;
+
+    public abstract read(): ReaderResult;
 
     public get modelId(): Id64 { return this.model.id; }
 
-    public static createGltfReader(buffer: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
-      const props = ReaderProps.create(buffer);
-      return undefined !== props ? new Reader(props, model, system) : undefined;
-    }
+    public readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
 
+      const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
+      const readStatus = this.readGltf(geometry);
+
+      let renderGraphic: RenderGraphic | undefined;
+      if (!geometry.isEmpty) {
+        const meshGraphicArgs = new MeshGraphicArgs();
+        if (1 === geometry.meshes.length) {
+          renderGraphic = geometry.meshes[0].getGraphics(meshGraphicArgs, this.system, this.model.iModel);
+        } else {
+          const renderGraphicList: RenderGraphic[] = [];
+          for (const mesh of geometry.meshes) {
+            renderGraphic = mesh.getGraphics(meshGraphicArgs, this.system, this.model.iModel);
+            if (undefined !== renderGraphic)
+              renderGraphicList.push(renderGraphic);
+          }
+          renderGraphic = this.system.createGraphicList(renderGraphicList, this.model.iModel);
+        }
+        if (undefined !== renderGraphic)
+          renderGraphic = this.system.createBatch(renderGraphic, featureTable);
+      }
+      return {
+        readStatus,
+        isLeaf,
+        contentRange,
+        geometry,
+        renderGraphic,
+      };
+    }
     public getBufferView(json: any, accessorName: string): BufferView | undefined {
       try {
         const accessorValue = JsonUtils.asString(json[accessorName]);
@@ -271,6 +311,7 @@ export namespace GltfTileIO {
       this.bufferViews = props.bufferViews;
       this.meshes = props.meshes;
       this.materialValues = props.materials;
+      this.returnToCenter = this.extractRTC(props.extensions);
 
       this.textures = props.scene.textures;
       this.images = props.scene.images;
@@ -281,6 +322,11 @@ export namespace GltfTileIO {
       this.model = model;
       this.system = system;
     }
+    private extractRTC(extensions: any) {
+      if (extensions === undefined) { return undefined; }
+      const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
+      return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
+    }
 
     protected readBufferData(json: any, accessorName: string, type: DataType): BufferData | undefined {
       const view = this.getBufferView(json, accessorName);
@@ -288,8 +334,8 @@ export namespace GltfTileIO {
     }
 
     protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
-    protected readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined { return false; }
-    protected createDisplayParams(_json: any): DisplayParams | undefined { return undefined; }
+    protected abstract readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined;
+    protected abstract createDisplayParams(_json: any): DisplayParams | undefined;
 
     protected readGltf(geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
       for (const meshKey of Object.keys(this.meshes)) {
@@ -383,6 +429,13 @@ export namespace GltfTileIO {
       const rangeMax = JsonUtils.asArray(quantized.decodedMax);
       if (undefined === rangeMin || undefined === rangeMax)
         return false;
+
+      if (this.returnToCenter !== undefined) {
+        for (let i = 0; i < 3; i++) {
+          rangeMin[i] += this.returnToCenter[i];
+          rangeMax[i] += this.returnToCenter[i];
+        }
+      }
 
       const buffer = view.toBufferData(DataType.UnsignedShort);
       if (undefined === buffer)

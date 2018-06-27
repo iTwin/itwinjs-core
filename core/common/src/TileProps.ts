@@ -40,7 +40,7 @@ export interface TileProps {
   /** Optional scaling factor applied to this tile's maximum size */
   zoomFactor?: number;
   /** WIP: base-64-encoded binary tile geometry data; or undefined if no geometry */
-  geometry?: string;
+  geometry?: any;
 }
 
 /** The metdata describing a TileTree */

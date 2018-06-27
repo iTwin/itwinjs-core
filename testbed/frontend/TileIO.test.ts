@@ -54,11 +54,6 @@ describe("TileIO", () => {
 
   it("should read tile headers", () => {
     const stream = new TileIO.StreamBuffer(rectangle);
-    const tileHeader = new TileIO.Header(stream);
-    expect(tileHeader.isValid).to.be.true;
-    expect(tileHeader.format).to.equal(TileIO.Format.IModel);
-    expect(tileHeader.version).to.equal(0);
-
     stream.reset();
     const header = new IModelTileIO.Header(stream);
     expect(header.isValid).to.be.true;

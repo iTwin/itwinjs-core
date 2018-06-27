@@ -72,7 +72,7 @@ export abstract class GeometricModelState extends ModelState {
       this._loadStatus = TileTree.LoadStatus.Loading;
       if (this.classFullName === "ScalableMesh:ScalableMeshModel") {
         ScalableMeshTileTree.getTileTreeProps(this.modeledElement, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
-          this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps.tilesetJson));
+          this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
           IModelApp.viewManager.onNewTilesReady();
         }).catch((_err) => {
           this._loadStatus = TileTree.LoadStatus.NotFound;

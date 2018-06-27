@@ -12,6 +12,8 @@ import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
+import { GltfTileIO } from "./GltfTileIO";
+import { B3dmTileIO } from "./B3dmTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
@@ -88,7 +90,17 @@ export class Tile {
     if (undefined === blob)
       return;
 
-    const reader = IModelTileIO.Reader.create(new TileIO.StreamBuffer(blob.buffer), this.root.model, IModelApp.renderSystem);
+    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    const format = streamBuffer.nextUint32;
+    let reader: GltfTileIO.Reader | undefined;
+    streamBuffer.rewind(4);
+
+    if (format === TileIO.Format.B3dm) {
+      reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem);
+    } else {
+      reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem);
+    }
+
     if (undefined !== reader) {
       const result = reader.read();
       if (undefined !== result)
@@ -389,7 +401,12 @@ export namespace Tile {
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
       // ###TODO: We should be requesting the geometry separately, when needed
       // ###TODO: Transmit as binary, not base-64
-      const tileBytes = undefined !== props.geometry ? new Uint8Array(atob(props.geometry).split("").map((c) => c.charCodeAt(0))) : undefined;
+      let tileBytes: Uint8Array | undefined;
+      if (typeof props.geometry === "string") {
+        tileBytes = new Uint8Array(atob(props.geometry as string).split("").map((c) => c.charCodeAt(0)));
+      } else if (props.geometry instanceof ArrayBuffer) {
+        tileBytes = new Uint8Array(props.geometry as ArrayBuffer);
+      } else { tileBytes = undefined; }
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
       return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, tileBytes);
     }
