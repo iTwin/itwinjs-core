@@ -4,7 +4,7 @@
 // tslint:disable-next-line:no-var-keyword
 // tslint:disable-next-line:no-var-requires
 // const prompt = require("prompt");
-import { BriefcaseManager, IModelHost, IModelDb, OpenParams, IModelHostConfiguration, IModelAccessContext } from "@bentley/imodeljs-backend";
+import { BriefcaseManager, IModelHost, IModelDb, /*OpenParams,*/ IModelHostConfiguration, IModelAccessContext } from "@bentley/imodeljs-backend";
 import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, Version } from "@bentley/imodeljs-clients";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as path from "path";
@@ -69,19 +69,22 @@ export class DemoBackend {
   public async logChangeSets(context: IModelAccessContext, accessToken: AccessToken) {
     BriefcaseManager.setContext(context);
 
-    const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, context.projectId, new IModelQuery().byId(context.iModelId)))[0];
     console.log("\niModel:");
+    const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, context.projectId, new IModelQuery().byId(context.iModelId)))[0];
     DemoBackend.displayIModelInfo(iModel);
+
     console.log("\nChangeSets:");
     const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, context.iModelId);
     for (const changeSet of changeSets) {
       DemoBackend.displayChangeSet(changeSet);
     }
+
     console.log("\nVersions:");
     const versions: Version[] = await BriefcaseManager.hubClient.Versions().get(accessToken, context.iModelId);
     for (const version of versions) {
       DemoBackend.displayVersion(version);
     }
+
     /*
     console.log("\nModels:");
     const imodelDb = await IModelDb.open(accessToken, context.projectId, context.iModelId, OpenParams.pullAndPush());
@@ -95,7 +98,7 @@ export class DemoBackend {
   public async downloadBriefcase(context: IModelAccessContext, accessToken: AccessToken) {
     BriefcaseManager.setContext(context);
 
-    const imodel = await IModelDb.open(accessToken, context.projectId, context.iModelId, OpenParams.pullAndPush());
-    console.log(`Downloaded to ${imodel.briefcase.pathname}`);
+    const imodel = await IModelDb.open(accessToken, context.projectId, context.iModelId /*, OpenParams.pullAndPush()*/);
+    console.log(`Briefcase: ${imodel.briefcase.pathname}`);
   }
 }
