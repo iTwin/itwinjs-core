@@ -234,7 +234,7 @@ export namespace GltfTileIO {
     protected readonly binaryData: Uint8Array;
     protected readonly model: GeometricModelState;
     protected readonly system: RenderSystem;
-    protected readonly returnToCenter: any;
+    protected readonly returnToCenter: number[] | undefined;
 
     public abstract read(): ReaderResult;
 
@@ -311,7 +311,7 @@ export namespace GltfTileIO {
       this.bufferViews = props.bufferViews;
       this.meshes = props.meshes;
       this.materialValues = props.materials;
-      this.returnToCenter = this.extractRTC(props.extensions);
+      this.returnToCenter = this.extractReturnToCenter(props.extensions);
 
       this.textures = props.scene.textures;
       this.images = props.scene.images;
@@ -322,11 +322,6 @@ export namespace GltfTileIO {
       this.model = model;
       this.system = system;
     }
-    private extractRTC(extensions: any) {
-      if (extensions === undefined) { return undefined; }
-      const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
-      return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
-    }
 
     protected readBufferData(json: any, accessorName: string, type: DataType): BufferData | undefined {
       const view = this.getBufferView(json, accessorName);
@@ -336,6 +331,7 @@ export namespace GltfTileIO {
     protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
     protected abstract readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined;
     protected abstract createDisplayParams(_json: any): DisplayParams | undefined;
+    protected abstract extractReturnToCenter(extensions: any): number[] | undefined;
 
     protected readGltf(geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
       for (const meshKey of Object.keys(this.meshes)) {

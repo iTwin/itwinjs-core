@@ -67,6 +67,7 @@ export namespace IModelTileIO {
       return undefined !== props ? new Reader(props, model, system) : undefined;
     }
 
+    protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }  // Original IModel Tile creator set RTC unnecessarily and incorrectly.
     private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
       const startPos = stream.curPos;
       const header = FeatureTableHeader.readFrom(stream);

@@ -6,6 +6,7 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature } from "@bentley/imodeljs-common";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
 import { ColorMap } from "../render/primitives/ColorMap";
@@ -75,6 +76,11 @@ export namespace B3dmTileIO {
       if (json === undefined) { }
       const grey: ColorDef = new ColorDef(0x77777777);
       return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, true);
+    }
+    protected extractReturnToCenter(extensions: any): number[] | undefined {
+      if (extensions === undefined) { return undefined; }
+      const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
+      return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
     }
   }
 }
