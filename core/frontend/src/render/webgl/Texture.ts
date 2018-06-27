@@ -238,8 +238,7 @@ export class TextureHandle implements IDisposable {
     if (data.length !== this.dataBytes.length)
       return false;
 
-    // copy data into this.dataBytes
-    for (const i of this.dataBytes) {
+    for (let i = 0; i < this.dataBytes.length; i++) {
       this.dataBytes[i] = data[i];
     }
 

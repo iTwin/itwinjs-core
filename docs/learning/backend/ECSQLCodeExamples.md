@@ -145,12 +145,11 @@ The following example illustrates how to work with the ECSQL row JavaScript lite
 
 #### Output
 
-```txt
-ECInstanceId | ClassName               | Parent Id | Parent RelClassName                      | LastMod
-0x312        | StructuralPhysical.Slab | 0x433     | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
-0x313        | StructuralPhysical.Slab | 0x5873    | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
-...
-```
+ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod
+--- | --- | --- | --- | ---
+0x312 | StructuralPhysical.Slab | 0x433 | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
+0x313 | StructuralPhysical.Slab | 0x5873 | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
+... | | | |
 
 ### Column by column
 
@@ -160,12 +159,11 @@ ECInstanceId | ClassName               | Parent Id | Parent RelClassName        
 
 #### Output
 
-```txt
-ECInstanceId | ClassName               | Parent Id | Parent RelClassName                      | LastMod
-0x312        | StructuralPhysical.Slab | 0x433     | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
-0x313        | StructuralPhysical.Slab | 0x5873    | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
-...
-```
+ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod
+--- | --- | --- | --- | ---
+0x312 | StructuralPhysical.Slab | 0x433 | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
+0x313 | StructuralPhysical.Slab | 0x5873 | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
+... | | | |
 
 > The sample is code is intentionally verbose to better illustrate the semantics of the API.
 
@@ -178,9 +176,8 @@ as id instead of having it converted to a class name.
 
 #### Output
 
-```txt
 ECClassId | Parent RelECClassId
-0x120     | 0x154
-0x120     | 0x154
-...
-```
+--- | ---
+0x120 | 0x154
+0x120 | 0x154
+... |

@@ -5,7 +5,7 @@
 
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
-import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
+import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
 import { Model } from "./Model";

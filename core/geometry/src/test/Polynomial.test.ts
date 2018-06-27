@@ -16,7 +16,7 @@ import { AnalyticRoots } from "../numerics/Polynomials";
 import { SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
 /* tslint:disable:no-console */
 
-import { Bezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/Polynomials";
+import { Bezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";
 import { GrowableFloat64Array } from "../GrowableArray";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
@@ -36,7 +36,7 @@ function testBezier(ck: Checker, bezier: BezierCoffs) {
     const bezier1 = Bezier.create(bezier);
     ck.testExactNumber(bezier.order, bezier1.order, "general clone order");
     const basisFunctions1 = bezier1.basisFunctions(f);
-    const diff = NumberArray.maxAbsDiff(basisFunctions, basisFunctions1);
+    const diff = NumberArray.maxAbsDiffFloat64(basisFunctions, basisFunctions1);
     ck.testCoordinate(0.0, diff, "compare basisFunctions with generic Bezier");
   }
 }
@@ -55,9 +55,6 @@ describe("Bezier.HelloWorld", () => {
     const bez5 = new Order5Bezier(1, 2, 5, 6, 8);
     testBezier(ck, bez5);
 
-    // general root finder is not implemented . . .
-    const bezN = new Bezier(6);
-    ck.testUndefined(bezN.roots(1.0, true));
     ck.checkpoint("Order2Bezier");
     expect(ck.getNumErrors()).equals(0);
   });

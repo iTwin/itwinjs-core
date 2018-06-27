@@ -168,6 +168,8 @@ export abstract class Target extends RenderTarget {
   private _spfSum: number = 0;
   private _renderSpfTimes: number[] = [];
   private _renderSpfSum: number = 0;
+  private _loadTileTimes: number[] = [];
+  private _loadTileSum: number = 0;
   private static _fpsTimer: StopWatch = new StopWatch(undefined, true);
   private static _fpsTimerStart: number = 0;
   protected _dcAssigned: boolean = false;
@@ -311,7 +313,10 @@ export abstract class Target extends RenderTarget {
     return 0; // ###TODO
   }
 
-  public changeDecorations(decs: Decorations): void { this._decorations = decs; }
+  public changeDecorations(decs: Decorations): void {
+    this._decorations.dispose();
+    this._decorations = decs;
+  }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
     // ###TODO active volume
@@ -497,13 +502,13 @@ export abstract class Target extends RenderTarget {
     }
   }
 
-  public drawFrame(sceneSecondsElapsed?: number): void {
+  public drawFrame(sceneMilSecElapsed?: number): void {
     assert(System.instance.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
-    this.paintScene(sceneSecondsElapsed);
+    this.paintScene(sceneMilSecElapsed);
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
@@ -558,7 +563,7 @@ export abstract class Target extends RenderTarget {
   private _doDebugPaint: boolean = false;
   protected debugPaint(): void { }
 
-  private paintScene(sceneSecondsElapsed?: number): void {
+  private paintScene(sceneMilSecElapsed?: number): void {
     if (this._doDebugPaint) {
       this.debugPaint();
       return;
@@ -568,7 +573,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.setFrameTime(sceneSecondsElapsed);
+    this.setFrameTime(sceneMilSecElapsed);
     this._beginPaint();
 
     const gl = System.instance.context;
@@ -602,10 +607,18 @@ export abstract class Target extends RenderTarget {
       if (this._renderSpfTimes[this._curSpfTimeIndex]) this._renderSpfSum -= this._renderSpfTimes[this._curSpfTimeIndex];
       this._renderSpfSum += renderTimeElapsed;
       this._renderSpfTimes[this._curSpfTimeIndex++] = renderTimeElapsed;
-      if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
+
+      if (sceneMilSecElapsed !== undefined) {
+        if (this._loadTileTimes[this._curSpfTimeIndex]) this._loadTileSum -= this._loadTileTimes[this._curSpfTimeIndex];
+        this._loadTileSum += sceneMilSecElapsed;
+        this._loadTileTimes[this._curSpfTimeIndex++] = sceneMilSecElapsed;
+        if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
+      }
+
       if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
-        "Average FPS: " + (this._spfTimes.length / this._spfSum).toFixed(5)
-        + "<br />Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2);
+        "Avg. FPS (ms): " + (this._spfTimes.length / this._spfSum).toFixed(2)
+        + " Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2)
+        + "<br />Scene Time (ms): " + (this._loadTileSum / this._loadTileTimes.length).toFixed(2);
       Target._fpsTimerStart = Target._fpsTimer.currentSeconds;
     }
     if (this._gatherFrameTimings) {
@@ -774,7 +787,7 @@ export class OnScreenTarget extends Target {
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColor);
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     return undefined !== this._blitGeom;
   }
 

@@ -39,11 +39,15 @@ Syntax: `<Schema name or alias>.<Class name>`
 
 The following examples are equivalent. This one uses the schema name:
 
-`SELECT Model, CodeValue, Parent FROM BisCore.Element`
+```sql
+SELECT Model, CodeValue, Parent FROM BisCore.Element
+```
 
 And this one uses the schema alias:
 
-`SELECT Model, CodeValue, Parent FROM bis.Element`
+```sql
+SELECT Model, CodeValue, Parent FROM bis.Element
+```
 
 ## ECSQL Parameters
 
@@ -57,9 +61,13 @@ Parameter type | Description
 
 ### Example
 
-`SELECT ECInstanceId FROM bis.GeometricElement3d WHERE Model=? AND LastMod>=?`
+```sql
+SELECT ECInstanceId FROM bis.GeometricElement3d WHERE Model=? AND LastMod>=?
+```
 
-`SELECT ECInstanceId FROM bis.GeometricElement3d LIMIT :pagesize OFFSET (:pageno * :pagesize)`
+```sql
+SELECT ECInstanceId FROM bis.GeometricElement3d LIMIT :pagesize OFFSET (:pageno * :pagesize)
+```
 
 See also sections [ECInstanceId and ECClassId](#ecinstanceid-and-ecclassid) and [LIMIT and OFFSET](#limit-and-offset).
 
@@ -76,7 +84,9 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 
 ### Example
 
-`SELECT Parent, ECClassId FROM bis.Element WHERE ECInstanceId=123`
+```sql
+SELECT Parent, ECClassId FROM bis.Element WHERE ECInstanceId=123
+```
 
 ## Basic data types in ECSQL
 
@@ -88,16 +98,24 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 
 #### Examples
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn = True`
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn = True
+```
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn = False`
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn = False
+```
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
 boolean value already. So the above examples can also be written like this:
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn`
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE IsCameraOn
+```
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE NOT IsCameraOn`
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE NOT IsCameraOn
+```
 
 ### DateTime
 
@@ -122,11 +140,17 @@ Function | Description
 
 #### Example
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod > DATE '2018-01-01'`
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod > DATE '2018-01-01'
+```
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod < TIMESTAMP '2017-07-15T12:00:00.000Z'`
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod < TIMESTAMP '2017-07-15T12:00:00.000Z'`
+```
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod BETWEEN :startperiod AND :endperiod`
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod BETWEEN :startperiod AND :endperiod`
+```
 
 ### Points
 
@@ -143,9 +167,12 @@ Z | Z coordinate of the Point3d
 
 #### Example
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.GeometricElement3d
+```sql
+SELECT ECInstanceId, Model, CodeValue FROM bis.GeometricElement3d
 WHERE Origin.X BETWEEN 3500000.0 AND 3500500.0 AND
-Origin.Y BETWEEN 5700000.0 AND 5710000.0 AND Origin.Z BETWEEN 0 AND 100.0`
+Origin.Y BETWEEN 5700000.0 AND 5710000.0 AND
+Origin.Z BETWEEN 0 AND 100.0
+```
 
 ## Structs
 
@@ -249,17 +276,23 @@ If [navigation properties](#navigation-properties) are defined for the ECRelatio
 
 Without navigation property (2 JOINs needed):
 
-`SELECT e.CodeValue,e.UserLabel FROM bis.Element driver JOIN bis.ElementDrivesElement ede ON driver.ECInstanceId=ede.SourceECInstanceId JOIN bis.Element driven ON driven.ECInstanceId=ede.TargetECInstanceId WHERE driven.ECInstanceId=? AND ede.Status=?`
+```sql
+SELECT e.CodeValue,e.UserLabel FROM bis.Element driver JOIN bis.ElementDrivesElement ede ON driver.ECInstanceId=ede.SourceECInstanceId JOIN bis.Element driven ON driven.ECInstanceId=ede.TargetECInstanceId WHERE driven.ECInstanceId=? AND ede.Status=?
+```
 
 With navigation property (Element.Model):
 
 Return the CodeValue and UserLabel of all Elements in the Model with the specified condition (1 JOIN needed):
 
-`SELECT e.CodeValue,e.UserLabel FROM bis.Element e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.Name=?`
+```sql
+SELECT e.CodeValue,e.UserLabel FROM bis.Element e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.Name=?
+```
 
 Return the Model for an Element with the specified condition (No join needed):
 
-`SELECT Model FROM bis.Element WHERE ECInstanceId=?`
+```sql
+SELECT Model FROM bis.Element WHERE ECInstanceId=?
+```
 
 ## Polymorphic Queries
 
@@ -284,11 +317,15 @@ returned.
 
 Return only the first 50 matching Elements:
 
-`SELECT ECInstanceId,CodeValue,Parent FROM BisCore.Element WHERE Model=? LIMIT 50`
+```sql
+SELECT ECInstanceId,CodeValue,Parent FROM BisCore.Element WHERE Model=? LIMIT 50
+```
 
 Return the 201st through 250th matching Element:
 
-`SELECT ECInstanceId,CodeValue,Parent FROM BisCore.Element WHERE Model=? LIMIT 50 OFFSET 200`
+```sql
+SELECT ECInstanceId,CodeValue,Parent FROM BisCore.Element WHERE Model=? LIMIT 50 OFFSET 200
+```
 
 ## SQL Functions
 
@@ -296,9 +333,13 @@ SQL functions, either built into SQLite or custom SQL functions, can be used in 
 
 ### Examples
 
-`SELECT substr(CodeValue,1,5) FROM bis.Element WHERE Model=?`
+```sql
+SELECT substr(CodeValue,1,5) FROM bis.Element WHERE Model=?`
+```
 
-`SELECT ECInstanceId FROM bis.Element WHERE lower(UserLabel)=?`
+```sql
+SELECT ECInstanceId FROM bis.Element WHERE lower(UserLabel)=?`
+```
 
 See also [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html).
 

@@ -308,6 +308,22 @@ export class Checker {
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
 
+  // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
+  public testContainsCoordinate(dataA: GrowableFloat64Array, dataB: number, ...params: any[]): boolean {
+    for (let i = 0; i < dataA.length; i++)
+      if (Geometry.isSameCoordinate(dataA.at(i), dataB)) {
+        return this.announceOK();
+      }
+    return this.announceError("Expect containsCoordinate", dataA, dataB, params);
+  }
+  public testArrayContainsCoordinate(dataA: Float64Array | number[], dataB: number, ...params: any[]): boolean {
+    // simple number array.
+    for (const a of dataA)
+      if (Geometry.isSameCoordinate(a, dataB)) {
+        return this.announceOK();
+      }
+    return this.announceError("Expect containsCoordinate", dataA, dataB, params);
+  }
   // return true if dataA and dataB are almost equal as Segment1d.
   public testSegment1d(dataA: Segment1d, dataB: Segment1d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB))
@@ -388,7 +404,7 @@ export class Checker {
   }
 
   public static clearGeometry(name: string, outDir: string) {
-    GeometryCoreTestIO.saveGeometry (Checker.cache, outDir, name);
+    GeometryCoreTestIO.saveGeometry(Checker.cache, outDir, name);
 
     Checker.cache.length = 0;
     // Checker.lowerRightBaseIndex = 0;  // First index of "lower right" range

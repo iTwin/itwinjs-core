@@ -430,10 +430,9 @@ export class ToolAdmin {
   private readonly _toolEvents = new BeEventList();
   public currentInputState = new CurrentInputState();
   public readonly toolState = new ToolState();
-  // @ts-ignore
-  private _suspended?: SuspendedToolState;
+  private suspendedByViewTool?: SuspendedToolState;
+  public suspendedByInputCollector?: SuspendedToolState;
   public lastWheelEvent?: BeWheelEvent;
-  public inputCollectorSave?: SuspendedToolState;
   public cursorInView = true;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
@@ -1090,38 +1089,6 @@ export class ToolAdmin {
     return activeTool.onKeyTransition(wentDown, key, current.isShiftDown, current.isControlDown);
   }
 
-  public setPrimitiveTool(primitiveTool?: PrimitiveTool) {
-    const newTool = primitiveTool;  // in case we're restarting the same tool
-
-    if (undefined !== this.primitiveTool) {
-      IModelApp.viewManager.endDynamicsMode();
-
-      this.primitiveTool.onCleanup();
-      this.primitiveTool = undefined;
-    }
-
-    if (undefined !== this.lastWheelEvent)
-      this.lastWheelEvent.invalidate();
-
-    this.primitiveTool = newTool;
-  }
-
-  public startInputCollector(_newTool: InputCollector): void {
-    if (undefined !== this.inputCollector)
-      this.setInputCollector(undefined);
-    else
-      this.inputCollectorSave = new SuspendedToolState();
-  }
-
-  public exitInputCollector() {
-    this.inputCollectorSave = undefined;
-    this.setInputCollector(undefined);
-    // if (this.inputCollectorSave)
-    //   this.inputCollectorSave.stop();
-    // this.inputCollectorSave = undefined;
-    // this.setInputCollector(undefined);
-  }
-
   /** @hidden */
   public setInputCollector(newTool?: InputCollector) {
     if (undefined !== this.inputCollector) {
@@ -1134,7 +1101,22 @@ export class ToolAdmin {
     this.inputCollector = newTool;
   }
 
-  /** @hidden Invoked by ViewTool.installToolImplementation */
+  /** @hidden */
+  public exitInputCollector() {
+    if (this.suspendedByInputCollector)
+      this.suspendedByInputCollector.stop();
+    this.suspendedByInputCollector = undefined;
+    this.setInputCollector(undefined);
+  }
+
+  public startInputCollector(_newTool: InputCollector): void {
+    if (undefined !== this.inputCollector)
+      this.setInputCollector(undefined);
+    else
+      this.suspendedByInputCollector = new SuspendedToolState();
+  }
+
+  /** @hidden */
   public setViewTool(newTool?: ViewTool) {
     if (undefined !== this.viewTool) {
       this.viewTool.onCleanup();
@@ -1147,14 +1129,14 @@ export class ToolAdmin {
     this.viewTool = newTool;
   }
 
-  /** @hidden Invoked by ViewTool.exitTool */
+  /** @hidden */
   public exitViewTool() {
     if (undefined === this.viewTool)
       return;
 
-    if (undefined !== this._suspended) {
-      this._suspended.stop();
-      this._suspended = undefined; // Restore state of suspended tool...
+    if (undefined !== this.suspendedByViewTool) {
+      this.suspendedByViewTool.stop();
+      this.suspendedByViewTool = undefined; // Restore state of suspended tool...
     }
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
@@ -1178,7 +1160,7 @@ export class ToolAdmin {
     if (undefined !== this.viewTool)
       this.setViewTool(undefined);
     else
-      this._suspended = new SuspendedToolState();
+      this.suspendedByViewTool = new SuspendedToolState();
 
     viewManager.invalidateDecorationsAllViews();
 
@@ -1190,6 +1172,23 @@ export class ToolAdmin {
     this.setCursor(BeCursor.CrossHair);
 
     // we don't actually start the tool here...
+  }
+
+  /** @hidden */
+  public setPrimitiveTool(primitiveTool?: PrimitiveTool) {
+    const newTool = primitiveTool;  // in case we're restarting the same tool
+
+    if (undefined !== this.primitiveTool) {
+      IModelApp.viewManager.endDynamicsMode();
+
+      this.primitiveTool.onCleanup();
+      this.primitiveTool = undefined;
+    }
+
+    if (undefined !== this.lastWheelEvent)
+      this.lastWheelEvent.invalidate();
+
+    this.primitiveTool = newTool;
   }
 
   public startPrimitiveTool(newTool: PrimitiveTool) {
@@ -1213,8 +1212,6 @@ export class ToolAdmin {
     IModelApp.accuSnap.onStartTool();
 
     this.setCursor(newTool.getCursor());
-
-    // we don't actually start the tool here...
   }
 
   /**

@@ -53,57 +53,95 @@ export class SyncFlags {
   public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.redrawPending = other.redrawPending; }
 }
 
-/** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view. */
+/** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view.
+ *
+ * Increasing **x** moves from left to right, and increasing **y** moves from top to bottom.
+ */
 export class ViewRect {
   private _left!: number;
   private _top!: number;
   private _right!: number;
   private _bottom!: number;
 
+  /** Construct a new ViewRect. */
   public constructor(left = 0, top = 0, right = 0, bottom = 0) { this.init(left, top, right, bottom); }
-
+  /** The leftmost side of this ViewRect.  */
   public get left(): number { return this._left; }
   public set left(val: number) { this._left = Math.floor(val); }
+  /** The topmost side of this ViewRect. */
   public get top(): number { return this._top; }
   public set top(val: number) { this._top = Math.floor(val); }
+  /** The rightmost side of this ViewRect. */
   public get right(): number { return this._right; }
   public set right(val: number) { this._right = Math.floor(val); }
+  /** The bottommost side of this ViewRect. */
   public get bottom(): number { return this._bottom; }
   public set bottom(val: number) { this._bottom = Math.floor(val); }
-
+  /** True if this ViewRect has an area > 0. */
   public get isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
+  /** True if `!isNull` */
   public get isValid(): boolean { return !this.isNull; }
-
+  /** The width (right-left) of this ViewRect. */
   public get width() { return this.right - this.left; }
   public set width(width: number) { this.right = this.left + width; }
+  /** The height (bottom-top) of this ViewRect. */
   public get height() { return this.bottom - this.top; }
   public set height(height: number) { this.bottom = this.top + height; }
+  /** The aspect ratio (width/height) of this ViewRect. */
   public get aspect() { return this.isNull ? 1.0 : this.width / this.height; }
+  /** The area (width*height) of this ViewRect. */
   public get area() { return this.isNull ? 0 : this.width * this.height; }
-
+  /** Initialize this ViewRect from its left/top/right/bottom parameters. */
   public init(left: number, top: number, right: number, bottom: number) { this.left = left; this.bottom = bottom, this.right = right; this.top = top; }
-  public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
-  public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
-
-  public equals(rhs: ViewRect): boolean { return this.left === rhs.left && this.right === rhs.right && this.bottom === rhs.bottom && this.top === rhs.top; }
+  /** Initialize this ViewRect from two points.
+   * @param topLeft The top-left corner.
+   * @param bottomRight The bottom-right corner.
+   */
+  public initFromPoints(topLeft: XAndY, bottomRight: XAndY): void { this.init(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y); }
+  /** Initialize this ViewRect from a range.
+   * @param input The Range to use. `input.low` defines the top-left and `input.high` defines the bottom-right.
+   */
+  public initFromRange(input: LowAndHighXY): void { this.initFromPoints(input.low, input.high); }
+  /** Return true is this ViewRect is exactly equal to another ViewRect.
+   * @param other The other ViewRect to compare
+   */
+  public equals(other: ViewRect): boolean { return this.left === other.left && this.right === other.right && this.bottom === other.bottom && this.top === other.top; }
+  /** Initialize this ViewRect from another ViewRect. */
   public copyFrom(other: ViewRect): void { this.init(other.left, other.top, other.right, other.bottom); }
-  public clone(out?: ViewRect): ViewRect {
-    if (undefined !== out) {
-      out.copyFrom(this);
-      return out;
+  /** Duplicate this ViewRect.
+   * @param result Optional ViewRect for result. If undefined, a new ViewRect is created.
+   */
+  public clone(result?: ViewRect): ViewRect {
+    if (undefined !== result) {
+      result.copyFrom(this);
+      return result;
     }
     return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
 
-  /** Determine if this ViewRect is contained entirely within the bounds of another ViewRect. */
-  public isContained(other: ViewRect): boolean {
-    return this.left >= other.left && this.right <= other.right && this.bottom <= other.bottom && this.top >= other.top;
-  }
+  /** Inset this ViewRect by the same value in all directions.
+   * @param offset The distance to inset this ViewRect. Positive values will make this ViewRect smaller and negative values will make it larger.
+   * @note The inset operation can cause a previously valid ViewRect to become invalid.
+   */
+  public inset(offset: number): void { this.left += offset; this.top += offset; this.right -= offset; this.bottom -= offset; }
 
-  public containsPoint(point: XAndY): boolean {
-    return point.x >= this.left && point.x < this.right && point.y >= this.top && point.y < this.bottom;
-  }
+  /** Inset this ViewRect by a percentage of its current width.
+   * @param percent The percentage of this ViewRect's width to inset in all directions.
+   * @note The ViewRect will become smaller (or larger, if percent is negative) by `percent * width * 2` in each direction, since each side is moved by that distance.
+   * @see [[inset]]
+   */
+  public insetByPercent(percent: number): void { this.inset(this.width * percent); }
 
+  /** Determine if this ViewRect is entirely contained within the bounds of another ViewRect. */
+  public isContained(other: ViewRect): boolean { return this.left >= other.left && this.right <= other.right && this.bottom <= other.bottom && this.top >= other.top; }
+
+  /** Return true if the supplied point is contained in this ViewRect.
+   * @param point The point to test.
+   * @note if the point is exactly on the left or top edges, this method returns true. If the point is exactly on the right or bottom edge, it returns false.
+   */
+  public containsPoint(point: XAndY): boolean { return point.x >= this.left && point.x < this.right && point.y >= this.top && point.y < this.bottom; }
+
+  /** Return the rectangle that is the overlap (intersection) of this ViewRect and another ViewRect. */
   public overlaps(other: ViewRect, overlap?: ViewRect): boolean {
     const maxOrgX = Math.max(this.left, other.left);
     const maxOrgY = Math.max(this.top, other.top);
@@ -123,6 +161,9 @@ export class ViewRect {
     return true;
   }
 
+  /** Return a ViewRect that is the overlap (intersection) of this ViewRect and another ViewRect.
+   * If the two ViewRects are equal, their value is the result. Otherwise, the result will always be smaller than either of them.
+   */
   public computeOverlap(other: ViewRect, out?: ViewRect): ViewRect | undefined {
     const result = undefined !== out ? out : new ViewRect();
     return this.overlaps(other, result) ? result : undefined;
@@ -132,12 +173,12 @@ export class ViewRect {
 /**
  * The minimum and maximum values for the z-depth of a rectangle of screen space.
  *
- * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0
+ * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
  */
 export class DepthRangeNpc {
   /**
-   * @param minimum The lowest (closest to back) value
-   * @param maximum The highest (closest to the front) value
+   * @param minimum The lowest (closest to back) value.
+   * @param maximum The highest (closest to the front) value.
    */
   constructor(public minimum = 0, public maximum = 1.0) { }
 
@@ -157,31 +198,37 @@ export const enum CoordSystem {
   View,
 
   /**
-   * Coordinates are in [normalized plane coordinates]($docs/learning/glossary.md#npc)
-   * NPC is a coordinate system for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
+   * Coordinates are in [Normalized Plane Coordinates]($docs/learning/glossary.md#npc). NPC is a coordinate system
+   * for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
    * [0,0,0] corresponds to the left-bottom-rear and [1,1,1] to the right-top-front of the frustum.
    */
   Npc,
 
   /**
    * Coordinates are in the coordinate system of the models in the view. For SpatialViews, this is the iModel's spatial coordinate system.
-   * For 2d views, it is the coordinate system of the 2d model that the view shows.
+   * For 2d views, it is the coordinate system of the GeometricModel2d] that the view shows.
    */
   World,
 }
 
-/** Object to animate frustum transition of a viewport */
+/** Object to animate a Frustum transition of a viewport. The Viewport will show as many frames as necessary during the supplied duration. */
 class Animator {
-  private currFrustum = new Frustum();
+  private readonly currFrustum = new Frustum();
   private startTime?: BeTimePoint;
 
+  /** Construct a new Animator.
+   * @param totalTime The duration of the animation.
+   * @param viewport The Viewport to animate.
+   * @param startFrustum The Viewport's starting Frustum at the beginning of the animation.
+   * @param endFrustum The Viewport's ending Frustum after the animation.
+   */
   public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
-  public interpolateFrustum(fraction: number): void {
+  private interpolateFrustum(fraction: number): void {
     for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
     }
-    this.viewport.setupFromFrustum(this.currFrustum);
+    this.viewport.setupViewFromFrustum(this.currFrustum);
   }
 
   private moveToTime(time: number) {
@@ -198,19 +245,19 @@ class Animator {
     if (!this.startTime)
       this.startTime = currTime;
 
-    const totalTime = this.totalTime;
-    const endTime = this.startTime.milliseconds + totalTime.milliseconds;
+    const totalTimeMillis = this.totalTime.milliseconds;
+    const endTime = this.startTime.milliseconds + totalTimeMillis;
 
     if (endTime <= currTime.milliseconds) {
-      this.moveToTime(totalTime.milliseconds);
+      this.moveToTime(totalTimeMillis);
       return true;
     }
 
     let done = false;
     let index = currTime.milliseconds - this.startTime.milliseconds;
-    if (index > totalTime.milliseconds) {
+    if (index > totalTimeMillis) {
       done = true;
-      index = totalTime.milliseconds;
+      index = totalTimeMillis;
     }
 
     this.moveToTime(index);
@@ -219,10 +266,8 @@ class Animator {
 
   /** Abort this animation, moving to the final frame. */
   public interrupt(): void {
-    if (this.startTime) {
-      // We've been interrupted after animation began. Skip to the final animation state
-      this.moveToTime(this.totalTime.milliseconds);
-    }
+    if (this.startTime)
+      this.moveToTime(this.totalTime.milliseconds); // We've been interrupted after animation began. Skip to the final animation state
   }
 }
 
@@ -318,14 +363,15 @@ export class Viewport {
   private readonly forwardStack: ViewState[] = [];
   private readonly backStack: ViewState[] = [];
   private currentBaseline?: ViewState;
-  private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
+  /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
+  public static nearScale24 = 0.0003;
   private _evController?: EventController;
   private _view!: ViewState;
   /** @hidden */
   public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   /** @hidden */
-  public readonly sync: SyncFlags = new SyncFlags();
+  public readonly sync = new SyncFlags();
   /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
   /** View delta, potentially expanded */
@@ -519,27 +565,23 @@ export class Viewport {
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
 
-  private static readonly fullRangeNpc = new Range3d(0, 0, 0, 1, 1, 1); // full range of view (used in determineVisibleDepthNpcRange to avoid reinitializing)
-  private static readonly depthRect = new ViewRect(); // used in determineVisibleDepthNpcRange to avoid reinitializing
   /**
-   * Computes the range of depth values for a region of the screen
-   * @param subRectView the subrange in view coordinates we wish to view
+   * Computes the range of npc depth values for a region of the screen
+   * @param rect the rectangle to test. If undefined, test entire view
    * @param result optional DepthRangeNpc to store the result
    * @returns the minimum and maximum depth values within the region, or undefined.
    */
-  public determineVisibleDepthNpcRange(subRectView?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
+  public determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined {
     if (result) { // Null result if given
       result.minimum = 1;
       result.maximum = 0;
     }
 
     // Default to a (0, 0, 0) to (1, 1, 1) range if no range was provided
-    subRectView = subRectView ? subRectView : Viewport.fullRangeNpc;
+    rect = (rect && rect.isValid) ? rect : this.viewRect;
 
     // Determine the screen rectangle in which to query visible depth min + max
-    const newViewRect = Viewport.depthRect;
-    newViewRect.initFromPoint(subRectView.low, subRectView.high);
-    const readRect = newViewRect.computeOverlap(this.viewRect);
+    const readRect = rect.computeOverlap(this.viewRect);
     if (undefined === readRect)
       return undefined;
 
@@ -551,8 +593,8 @@ export class Viewport {
     let minimum = 1;
     const npc = Point3d.create();
     const testPoint = Point2d.create();
-    for (testPoint.x = readRect.left; testPoint.x < readRect.right; testPoint.x++) {
-      for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; testPoint.y++) {
+    for (testPoint.x = readRect.left; testPoint.x < readRect.right; ++testPoint.x) {
+      for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; ++testPoint.y) {
         if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
           minimum = Math.min(minimum, npc.z);
           maximum = Math.max(maximum, npc.z);
@@ -560,18 +602,17 @@ export class Viewport {
       }
     }
 
-    if (maximum > 0) {
-      if (undefined === result) {
-        result = new DepthRangeNpc(minimum, maximum);
-      } else {
-        result.minimum = minimum;
-        result.maximum = maximum;
-      }
-
-      return result;
-    } else {
+    if (maximum <= 0)
       return undefined;
+
+    if (undefined === result) {
+      result = new DepthRangeNpc(minimum, maximum);
+    } else {
+      result.minimum = minimum;
+      result.maximum = maximum;
     }
+
+    return result;
   }
 
   private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
@@ -600,6 +641,10 @@ export class Viewport {
     return npcZ;
   }
 
+  /** Turn the camera on if it is currently off. If the camera is already on, adjust it to use the supplied lens angle.
+   * @param lensAngle The lens angle for the camera. If undefined, use view.camera.lens.
+   * @note This method will fail if the ViewState is not 3d.
+   */
   public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
     if (!view.is3d())
@@ -615,7 +660,7 @@ export class Viewport {
 
     // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
     // We use the depth of the center of the view for that.
-    let depthRange = this.determineVisibleDepthNpcRange();
+    let depthRange = this.determineVisibleDepthRange();
     if (!depthRange)
       depthRange = new DepthRangeNpc();
     const middle = depthRange.middle();
@@ -688,6 +733,7 @@ export class Viewport {
   }
 
   private readonly _viewRange: ViewRect = new ViewRect();
+
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
@@ -702,24 +748,6 @@ export class Viewport {
     this.currentBaseline = undefined;
     this.forwardStack.length = 0;
     this.backStack.length = 0;
-  }
-
-  public setRotationAboutPoint(rotation: RotMatrix, center?: Point3d): void {
-    if (undefined === center) {
-      center = this.view.getTargetPoint();
-      const visible = this.determineNearestVisibleGeometryPoint(center, 20.0);
-      if (undefined !== visible)
-        center = visible;
-    }
-    const inverse = rotation.clone().inverse();
-    if (undefined === inverse)
-      return;
-    const targetMatrix = inverse.multiplyMatrixMatrix(this.view.getRotation());
-    const worldTransform = Transform.createFixedPointAndMatrix(center, targetMatrix);
-    const frustum = this.getWorldFrustum();
-    frustum.multiply(worldTransform);
-    this.setupFromFrustum(frustum);
-    this.synchWithView(true);
   }
 
   public setStandardRotation(id: StandardViewId): void {
@@ -806,7 +834,7 @@ export class Viewport {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
+    const frustFraction = this.computeRootToNpc(this.rootToNpc, origin, delta);
     if (frustFraction === undefined)
       return ViewStatus.InvalidViewport;
 
@@ -821,7 +849,7 @@ export class Viewport {
   }
 
   /** Compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
-  private rootToNpcFromViewDef(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
+  private computeRootToNpc(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
     const view = this.view;
     const viewRot = this.rotMatrix;
     const xVector = viewRot.rowX();
@@ -880,7 +908,7 @@ export class Viewport {
       this.fromView(origin);  // Rotate back to root coordinates
       origin.plus(camera.eye, origin); // Add the eye point.
     } else {
-      origin = inOrigin.clone();
+      origin = inOrigin;
       xExtent = xVector.scale(delta.x);
       yExtent = yVector.scale(delta.y);
       zExtent = zVector.scale(delta.z);
@@ -900,7 +928,7 @@ export class Viewport {
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
    * If so, save a *clone* of the previous state in the view undo stack to permit View Undo.
    */
-  private saveViewUndo(): void {
+  public saveViewUndo(): void {
     if (!this._view)
       return;
 
@@ -1016,11 +1044,11 @@ export class Viewport {
   public pixelsFromInches(inches: number): number { return inches * this.pixelsPerInch; }
 
   /**
-   * Get an 8-point frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
+   * Get an 8-point Frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
+   *
    * There are two sets of corners that may be of interest.
    * The "adjusted" box is the one that is computed by examining the "viewed extents" and moving
-   * the front and back planes to enclose everything in the view [N.B. this is the way that views implement
-   * the concept of "no front/back clipping", since there always must be a view frustum].
+   * the front and back planes to enclose everything in the view.
    * The "unadjusted" box is the one that is stored in the ViewState.
    * @param sys Coordinate system for points
    * @param adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
@@ -1037,9 +1065,8 @@ export class Viewport {
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
       const ueRootToNpc = Map4d.createIdentity();
-      const compression = this.rootToNpcFromViewDef(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
-      if (!compression)
-        return box;
+      if (undefined === this.computeRootToNpc(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded))
+        return box; // invalid frustum
 
       // get the root corners of the unexpanded box
       const ueRootBox = new Frustum();
@@ -1065,7 +1092,7 @@ export class Viewport {
     return box;
   }
 
-  /** get a copy of the current (adjusted) frustum of this viewport, in world coordinates. */
+  /** Get a copy of the current (adjusted) frustum of this viewport, in world coordinates. */
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
 
   /**
@@ -1190,16 +1217,14 @@ export class Viewport {
   }
 
   /**
-   * Set up this Viewport's viewing parameters based on a Frustum
+   * Shortcut to call view.setupFromFrustum and then [[setupFromView]]
    * @param inFrustum the new viewing frustum
-   * @returns true if successful
+   * @returns true if both steps were successful
    */
-  public setupFromFrustum(inFrustum: Frustum): boolean {
+  public setupViewFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
-    if (this.setupFromView() !== ViewStatus.Success)
-      return false;
-    this.view.setRotation(this.rotMatrix);  // Is this redundant, occurring in setupFromView?..
-    return validSize === ViewStatus.Success;
+    // note: always call setupFromView, even if setupFromFrustum failed
+    return (ViewStatus.Success === this.setupFromView() && ViewStatus.Success === validSize);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
@@ -1212,30 +1237,6 @@ export class Viewport {
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const viewRange = this.view.computeFitRange();
-
-    // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
-    // const geomRange = this.geometry.range;
-    // const geomMatrix = this.geometry.modelMatrix;
-    // geomMatrix.multiply(geomRange.low);
-    // geomMatrix.multiply(geomRange.high);
-    // const center = geomRange.getCenter();
-    // const high = geomRange.high;
-    // const delta = Cartesian3.fromDifferenceOf(high, center);
-
-    // //addDebugRange(this, center, delta);
-
-    // const geomScale = Matrix3.fromScaleFactors(delta.x, delta.y, delta.z);
-    // const modelMatrix = Matrix4.fromRotationTranslation(geomScale, center);
-
-    // const scaleFactor = 1.0;
-    // const range = new Range3(new Cartesian3(-scaleFactor, -scaleFactor, -scaleFactor), new Cartesian3(scaleFactor, scaleFactor, scaleFactor));
-    // modelMatrix.multiplyByPoint(range.low, range.low);
-    // modelMatrix.multiplyByPoint(range.high, range.high);
-
-    // const rangeBox = range.get8Corners();
-    // this.rotMatrix.multiplyArray(rangeBox);
-
-    // const viewRange = Range3.fromArray(rangeBox);
 
     return viewRange;
   }
@@ -1287,7 +1288,7 @@ export class Viewport {
   /** @hidden */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
     if (!animationTime || 0.0 >= animationTime.milliseconds) {
-      this.setupFromFrustum(end);
+      this.setupViewFromFrustum(end);
       return;
     }
 
@@ -1587,7 +1588,7 @@ export class Viewport {
 
     timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame(timer.elapsedSeconds);
+      target.drawFrame(timer.elapsed.milliseconds);
 
     return true;
   }

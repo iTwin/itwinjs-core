@@ -322,18 +322,41 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
-   * Gets a reality data root document json
+   * Gets reality data corresponding to given url
+   * @param token Delegation token of the authorized user issued for this service.
+   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @param tileRequest method to fetch tile data from (either getTileJson or getTileContent)
+   * @returns tile data json
+   */
+  private async getTileDataFromUrl(token: AccessToken, url: string, tileRequest: (token: AccessToken, projectId: string, tilesId: string, name: string) => Promise<any>): Promise<any> {
+    try {
+      const urlParts = url.split("/");
+      const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
+      const tilesId = urlParts.find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
+      const modelName = urlParts[urlParts.length - 1];
+      return tileRequest(token, projectId, tilesId!, modelName);
+    } catch (ex) {
+      throw new Error(ex);
+    }
+  }
+
+  /**
+   * Gets a reality data tile json corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
    * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
    * @returns tile data json
    */
-  public async getRootDocumentJsonFromUrl(token: AccessToken, url: string): Promise<any> {
-    try {
-      const projectId = url.split("/").find((val: string) => val.includes("--"))!.split("--")[1];
-      const tilesId = url.split("/").find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
-      return this.getRootDocumentJson(token, projectId, tilesId!);
-    } catch (ex) {
-      throw new Error(ex);
-    }
+  public async getTileJsonFromUrl(token: AccessToken, url: string): Promise<any> {
+    return this.getTileDataFromUrl(token, url, this.getTileJson.bind(this));
+  }
+
+  /**
+   * Gets a reality data tile content corresponding to given url
+   * @param token Delegation token of the authorized user issued for this service.
+   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @returns tile data content
+   */
+  public async getTileContentFromUrl(token: AccessToken, url: string): Promise<any> {
+    return this.getTileDataFromUrl(token, url, this.getTileContent.bind(this));
   }
 }

@@ -124,7 +124,7 @@ export namespace ScalableMeshTileTree {
       const accessToken: AccessToken = await realityDataServiceClient.getAccessToken(authToken);
       const projectId = url.split("/").find((val: string) => val.includes("--"))!.split("--")[1];
       const tilesId = url.split("/").find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
-      const json = await realityDataServiceClient.getRootDocumentJsonFromUrl(accessToken, url);
+      const json = await realityDataServiceClient.getTileJsonFromUrl(accessToken, url);
 
       return new ScalableMeshTileTreeProps(json, realityDataServiceClient, accessToken, projectId, tilesId, ecefToDb);
     } else {

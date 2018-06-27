@@ -64,7 +64,7 @@ vec4 computeColor() {
   float r = TEXTURE(u_revealage, v_texCoord).r;
 
   vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
-  return vec4(1.0 - transparent.a) * transparent + transparent.a * opaque;
+  return (1.0 - transparent.a) * transparent + transparent.a * opaque;
 }`;
 
 const computeTranslucentBaseColor = `return computeColor();`;
