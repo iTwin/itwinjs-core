@@ -15,7 +15,8 @@ export default class PropertyCategory extends SchemaItem {
   get priority() { return this._priority; }
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.PropertyCategory);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.PropertyCategory;
   }
 
   public async fromJson(jsonObj: any) {

@@ -33,7 +33,8 @@ export default class KindOfQuantity extends SchemaItem {
   set persistenceUnit(persistenceUnit: LazyLoadedUnit| LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = persistenceUnit; }
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.KindOfQuantity);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.KindOfQuantity;
     this._presentationUnits = [];
   }
 

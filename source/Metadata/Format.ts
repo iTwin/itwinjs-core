@@ -291,7 +291,8 @@ export default class Format extends SchemaItem {
   protected _formatTraits = 0x0;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.Format);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.Format;
   }
 
   get roundFactor(): number { return this._roundFactor; }

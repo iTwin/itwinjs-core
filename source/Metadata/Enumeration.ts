@@ -40,7 +40,8 @@ export default class Enumeration extends SchemaItem {
   get isStrict() { return this._isStrict; }
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
-    super(schema, name, SchemaItemType.Enumeration);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.Enumeration;
     this._primitiveType = primitiveType;
     this._isStrict = true;
     this._enumerators = [];

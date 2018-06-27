@@ -10,8 +10,8 @@ import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 import ECClass, { MutableClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
-import { SchemaItemType } from "../../source/ECObjects";
 import * as sinon from "sinon";
+import { SchemaItemType } from "../../source/ECObjects";
 
 describe("ECClass", () => {
   let schema: Schema;
@@ -302,10 +302,17 @@ describe("ECClass", () => {
 
   describe("fromJson", () => {
     let testClass: ECClass;
-    class MockECClass extends ECClass {}
+    class MockECClass extends ECClass {
+      public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
+      constructor(newSchema: Schema, name: string) {
+        super(newSchema, name);
+        this.schemaItemType = SchemaItemType.EntityClass;
+      }
+      public async accept() {}
+    }
 
     beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass", SchemaItemType.EntityClass);
+      testClass = new MockECClass(schema, "TestClass");
     });
 
     it("should throw for invalid modifier", async () => {
@@ -329,7 +336,7 @@ describe("ECClass", () => {
     class MockECClass extends ECClass {}
 
     beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass", SchemaItemType.EntityClass);
+      testClass = new MockECClass(schema, "TestClass");
     });
 
     it("should call visitClass on a SchemaItemVisitor object", async () => {

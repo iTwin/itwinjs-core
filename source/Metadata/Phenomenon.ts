@@ -12,7 +12,8 @@ export default class Phenomenon extends SchemaItem {
   protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.Phenomenon);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.Phenomenon;
     this._definition = "";
   }
 

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import SchemaItem from "../../source/Metadata/SchemaItem";
-import { SchemaItemType, SchemaKey, SchemaItemKey } from "../../source/ECObjects";
+import { SchemaKey, SchemaItemKey, SchemaItemType } from "../../source/ECObjects";
 
 describe("SchemaItem", () => {
   describe("fromJson", () => {
@@ -16,17 +16,19 @@ describe("SchemaItem", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       class MockSchemaItem extends SchemaItem {
-        constructor(name: string) { super(schema, name, SchemaItemType.EntityClass); }
+        public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
+        constructor(name: string) {
+          super(schema, name);
+          this.schemaItemType = SchemaItemType.EntityClass;
+        }
         public async accept() {}
       }
       testItem = new MockSchemaItem("BadSchemaItem");
     });
-
     it("should throw for missing schemaItemType", async () => {
       expect(testItem).to.exist;
       await expect(testItem.fromJson({})).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadSchemaItem is missing the required schemaItemType property.`);
     });
-
     it("should throw for invalid schemaItemType", async () => {
       expect(testItem).to.exist;
       const json: any = { schemaItemType: 0 };
@@ -61,25 +63,16 @@ describe("SchemaItemKey", () => {
     const schemaKeyA = new SchemaKey("SchemaTest", 1, 2, 3);
     const schemaKeyB = new SchemaKey("OtherTestSchema", 1, 2, 3);
 
-    const typeA = SchemaItemType.Mixin;
-    const typeB = SchemaItemType.EntityClass;
-
     it("should return false if names do not match", () => {
-      expect(new SchemaItemKey("MixinA", typeA, schemaKeyA).matches(new SchemaItemKey("MixinB", typeA, schemaKeyA))).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinB", schemaKeyA))).to.be.false;
     });
 
     it("should return false if types do not match", () => {
-      expect(new SchemaItemKey("Name", typeA, schemaKeyA).matches(new SchemaItemKey("Name", typeB, schemaKeyA))).to.be.false;
-      expect(() => (new SchemaItemKey("Name", typeA, schemaKeyA).matches(new SchemaItemKey("Name", undefined, schemaKeyA)))).to.throw(ECObjectsError, "The SchemaItemKey Name does not have a SchemaItemType.");
-      expect(() => (new SchemaItemKey("Name", undefined, schemaKeyA).matches(new SchemaItemKey("Name", typeA, schemaKeyA)))).to.throw(ECObjectsError, "The SchemaItemKey Name does not have a SchemaItemType.");
-    });
-
-    it("should return false if types do not match", () => {
-      expect(new SchemaItemKey("Name", typeA, schemaKeyA).matches(new SchemaItemKey("Name", typeA, schemaKeyB))).to.be.false;
+      expect(new SchemaItemKey("Name", schemaKeyA).matches(new SchemaItemKey("Name", schemaKeyB))).to.be.false;
     });
 
     it("should return true if keys match", () => {
-      expect(new SchemaItemKey("MixinA", typeA, schemaKeyA).matches(new SchemaItemKey("MixinA", typeA, schemaKeyA))).to.be.true;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinA", schemaKeyA))).to.be.true;
     });
   });
 });

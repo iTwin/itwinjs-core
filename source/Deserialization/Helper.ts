@@ -394,7 +394,7 @@ export default class SchemaReadHelper {
       return schemaItem;
     }
 
-    if (undefined === await this._context.getSchemaItem(new SchemaItemKey(itemName, undefined, new SchemaKey(schemaName))))
+    if (undefined === await this._context.getSchemaItem(new SchemaItemKey(itemName, new SchemaKey(schemaName))))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
 
     return undefined;
@@ -605,7 +605,7 @@ export default class SchemaReadHelper {
       return schemaItem;
     }
 
-    if (undefined === this._context.getSchemaItemSync(new SchemaItemKey(itemName, undefined, new SchemaKey(schemaName))))
+    if (undefined === this._context.getSchemaItemSync(new SchemaItemKey(itemName, new SchemaKey(schemaName))))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
 
     return undefined;

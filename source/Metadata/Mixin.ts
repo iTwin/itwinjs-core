@@ -24,7 +24,8 @@ export default class Mixin extends ECClass {
   }
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.Mixin, ECClassModifier.Abstract);
+    super(schema, name, ECClassModifier.Abstract);
+    this.schemaItemType = SchemaItemType.Mixin;
   }
 
   /**

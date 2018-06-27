@@ -10,7 +10,8 @@ export default class UnitSystem extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.UnitSystem; // tslint:disable-line
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.UnitSystem);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.UnitSystem;
   }
 
   public async accept(visitor: SchemaItemVisitor) {

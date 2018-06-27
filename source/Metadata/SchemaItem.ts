@@ -11,17 +11,16 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
  * An abstract class that supplies all of the common parts of a SchemaItem.
  */
 export default abstract class SchemaItem {
+  public readonly schemaItemType!: SchemaItemType; // allow the derived classes to define their own schemaItemType
   public readonly schema: Schema;
   protected _key: SchemaItemKey;
   protected _description?: string;
   protected _label?: string;
 
-  constructor(schema: Schema, name: string, type: SchemaItemType) {
-    this._key = new SchemaItemKey(name, type, schema.schemaKey);
+  constructor(schema: Schema, name: string) {
+    this._key = new SchemaItemKey(name, schema.schemaKey);
     this.schema = schema;
   }
-
-  public get schemaItemType(): SchemaItemType { return this.key.type; }
 
   get name() { return this.key.name; }
 

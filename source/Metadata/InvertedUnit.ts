@@ -20,7 +20,8 @@ export default class InvertedUnit extends SchemaItem {
   protected _unitSystem?: LazyLoadedUnitSystem; // required
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.InvertedUnit);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.InvertedUnit;
   }
 
   get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }

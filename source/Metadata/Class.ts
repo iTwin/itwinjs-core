@@ -35,8 +35,8 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
-  constructor(schema: Schema, name: string, type: SchemaItemType, modifier?: ECClassModifier) {
-    super(schema, name, type);
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
+    super(schema, name);
 
     if (modifier)
       this._modifier = modifier;
@@ -434,7 +434,8 @@ export class StructClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.StructClass; // tslint:disable-line
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, SchemaItemType.StructClass, modifier);
+    super(schema, name, modifier);
+    this.schemaItemType = SchemaItemType.StructClass;
   }
 }
 

@@ -615,24 +615,16 @@ export class SchemaKey {
  */
 export class SchemaItemKey {
   private _name: ECName;
-  protected _type?: SchemaItemType;
   protected _schemaKey: SchemaKey;
 
-  constructor(name: string, type: SchemaItemType, schema: SchemaKey);
-  constructor(name: string, type: SchemaItemType | undefined, schema: SchemaKey); // tslint:disable-line
-  constructor(name: string, type: SchemaItemType | undefined, schema: SchemaKey) {
+  constructor(name: string, schema: SchemaKey);
+  constructor(name: string, schema: SchemaKey); // tslint:disable-line
+  constructor(name: string, schema: SchemaKey) {
     this._name = new ECName(name);
     this._schemaKey = schema;
-    if (undefined !== type)
-      this._type = type;
   }
 
   get schemaKey() { return this._schemaKey; }
-  get type(): SchemaItemType {
-    if (undefined === this._type)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `The SchemaItemKey ${this.name} does not have a SchemaItemType.`);
-    return this._type;
-  }
   get name() { return this._name.name; }
   get schemaName() { return this.schemaKey.name; }
 
@@ -643,9 +635,6 @@ export class SchemaItemKey {
   // TODO: Need to add a match type
   public matches(rhs: SchemaItemKey): boolean {
     if (rhs.name !== this.name)
-      return false;
-
-    if (this.type === undefined || rhs.type !== this.type)
       return false;
 
     if (!rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))

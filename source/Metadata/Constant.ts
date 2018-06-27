@@ -20,8 +20,9 @@ export default class Constant extends SchemaItem {
   protected _denominator = 1.0;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.Constant);
+    super(schema, name);
     this._definition = "";
+    this.schemaItemType = SchemaItemType.Constant;
   }
 
   get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }

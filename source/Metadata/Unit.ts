@@ -26,7 +26,8 @@ export default class Unit extends SchemaItem {
   protected _offset = 0.0;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.Unit);
+    super(schema, name);
+    this.schemaItemType = SchemaItemType.Unit;
     this._definition = "";
   }
 
