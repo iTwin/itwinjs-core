@@ -1,11 +1,11 @@
 # Executing ECSQL with the iModelJs Backend
 
-ECSQL by itself is described in detail here: [ECSQL](../ECSQL)
+ECSQL by itself is described in detail here: [ECSQL](../ECSQL.md)
 
 Executing an ECSQL statement typically consists of these steps:
 
 1. Prepare the ECSQL
-1. Bind values to the [ECSQL parameters](../ECSQL#ecsql-parameters) (if parameters are used)
+1. Bind values to the [ECSQL parameters](../ECSQL.md#ecsql-parameters) (if parameters are used)
 1. Execute the ECSQL and iterate the query results (for ECSQL SELECT statements).
 1. Reset the statement and clear its parameter bindings, if the statement should be executed again.
 
@@ -19,6 +19,6 @@ There are two ways to execute an ECSQL statement:
   e.g. when iterating over the query results. Use [IModelDb.withPreparedStatement]($backend)
   or [ECDb.withPreparedStatement]($backend) in that case.
 
-See [Code Examples](./ECSQLCodeExamples) for examples of how the API is used.
+See [Code Examples](./ECSQLCodeExamples.md) for examples of how the API is used.
 
 See [frequently used ECSQL queries](./ECSQL-queries.md) for the specific ECSQL queries that app backends and services often run.
