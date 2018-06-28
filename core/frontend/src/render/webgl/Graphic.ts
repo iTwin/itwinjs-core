@@ -131,17 +131,14 @@ class OvrNonUniform {
   }
 
   public update(map: FeatureTable, lut: TextureHandle, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
-    // ###TODO - make conditionally update tex!!!
-    if (undefined === ovrs) {
-      const updater = new TextureDataUpdater(lut.dataBytes!);
+    const updater = new TextureDataUpdater(lut.dataBytes!);
+
+    if (undefined === ovrs)
       this.updateFlashedAndHilited(updater, map, hilites, flashedElemId);
-      lut.update(updater.data);
-    } else {
-      const data = new Uint8Array(lut.width * lut.height * 4);
-      const updater = new TextureDataUpdater(data);
+    else
       this.buildLookupTable(updater, map, ovrs, hilites, flashedElemId);
-      lut.update(data);
-    }
+
+    lut.update(updater);
   }
 
   private buildLookupTable(data: TextureDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
@@ -150,6 +147,15 @@ class OvrNonUniform {
     let nHidden = 0;
     let nOverridden = 0;
 
+    // NB: We currently use 2 RGBA values per feature as follows:
+    //  [0]
+    //      R = override flags (see FeatureOverrides::Flags)
+    //      G = line weight
+    //      B = line code
+    //      A = unused
+    //  [1]
+    //      RGB = rgb
+    //      A = alpha
     const arr: Array<IndexedValue<Feature>> = map.getArray();
     for (const kvp of arr) {
       const feature = kvp.value;
