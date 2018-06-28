@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, IDisposable } from "@bentley/bentleyjs-core";
+import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
@@ -15,7 +15,6 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
 import { IModelTileIO } from "./IModelTileIO";
-import { dispose } from "../render/webgl/Disposable";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);

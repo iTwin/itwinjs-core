@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, BeDuration, StopWatch, IDisposable } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -27,7 +27,6 @@ import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
-import { dispose } from "./Disposable";
 
 export const enum FrustumUniformType {
   TwoDee,

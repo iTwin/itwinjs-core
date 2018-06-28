@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { assert, Id64, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -27,7 +27,6 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
-import { dispose } from "./webgl/Disposable";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.

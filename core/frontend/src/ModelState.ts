@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
@@ -15,7 +15,6 @@ import { DecorateContext } from "./ViewContext";
 import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/System";
-import { dispose } from "./render/webgl/Disposable";
 
 /** The state of a Model */
 export class ModelState extends EntityState implements ModelProps {
