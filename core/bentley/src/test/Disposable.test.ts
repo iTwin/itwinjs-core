@@ -45,6 +45,41 @@ describe("Disposable", () => {
       assert.isTrue(disposed);
     });
 
+    it("Calls dispose after async callback function resolves", async () => {
+      let disposed = false;
+      const disposable = new CallbackDisposable(() => {
+        disposed = true;
+      });
+      await using(disposable, () => {
+        return new Promise<void>((resolve: () => void, _reject: () => void) => {
+          setTimeout(() => {
+            resolve();
+            assert.isFalse(disposed);
+          }, 0);
+        });
+      });
+      assert.isTrue(disposed);
+    });
+
+    it("Calls dispose after async callback function rejects and rethrows", async () => {
+      let disposed = false;
+      const disposable = new CallbackDisposable(() => {
+        disposed = true;
+      });
+      const result = using(disposable, () => {
+        return new Promise<void>((_resolve: () => void, reject: () => void) => {
+          setTimeout(() => {
+            reject();
+            assert.isFalse(disposed);
+          }, 0);
+        });
+      });
+      await result.then(() => {
+        assert.fail(undefined, undefined, "Expected result to be rejected");
+      }, () => { });
+      assert.isTrue(disposed);
+    });
+
     it("Calls dispose on all disposables", () => {
       let disposed1 = false;
       const disposable1 = new CallbackDisposable(() => {

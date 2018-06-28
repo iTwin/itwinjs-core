@@ -10,7 +10,8 @@ export interface IDisposable {
   dispose(): void;
 }
 
-/** A 'using' function which is a substitution for .NET's using statement. It makes sure that 'dispose'
+/**
+ * A 'using' function which is a substitution for .NET's using statement. It makes sure that 'dispose'
  * is called on the resource no matter if the func returns or throws. If func returns, the return value
  * of this function is equal to return value of func. If func throws, this function also throws (after
  * disposing the resource).
@@ -18,10 +19,20 @@ export interface IDisposable {
 export function using<TDisposable extends IDisposable, TResult>(resources: TDisposable | TDisposable[], func: (...resources: TDisposable[]) => TResult): TResult {
   if (!Array.isArray(resources))
     return using([resources], func);
+
+  const doDispose = () => resources.forEach((disposable) => disposable.dispose());
+  let shouldDisposeImmediately = true;
+
   try {
-    return func.apply(undefined, resources);
+    const result = func.apply(undefined, resources);
+    if (result && result.then) {
+      shouldDisposeImmediately = false;
+      result.then(doDispose, doDispose);
+    }
+    return result;
   } finally {
-    resources.forEach((disposable) => disposable.dispose());
+    if (shouldDisposeImmediately)
+      doDispose();
   }
 }
 
