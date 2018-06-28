@@ -4,6 +4,7 @@
 
 /** @module CartesianGeometry */
 
+/** Commonly used constant values. */
 export class Constant {
   public static readonly oneMillimeter: number = 0.001;
   public static readonly oneCentimeter: number = 0.01;

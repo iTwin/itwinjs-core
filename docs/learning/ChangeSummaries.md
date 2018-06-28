@@ -13,7 +13,7 @@ iModelJs persists the generated Change Summaries in a local ECDb file called **C
 
 ## Working with Change Summaries
 
-Working with Change Summaries really means to unleash the power of ECSQL. Change Summaries by itself are just ECInstances of the built-in ECSchemas **ECDbChange** and **IModelChange**. That means you can simply use [ECSQL](./ECSQL) and all its flexibility to retrieve just that information from the Change Summaries which you are interested in.
+Working with Change Summaries really means to unleash the power of ECSQL. Change Summaries by itself are just ECInstances of the built-in ECSchemas **ECDbChange** and **IModelChange**. That means you can simply use [ECSQL](./ECSQL.md) and all its flexibility to retrieve just that information from the Change Summaries which you are interested in.
 
 ### Attaching the Change Cache file to the local briefcase
 

@@ -22,7 +22,6 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
 * `package.json`
   * Private, not published
   * Provides the npm scripts to work with this repository
-  * Identifies the overall devDependencies (union of backend, frontend, and test devDependencies). Many devDependencies are in common between backend and frontend, so consolidating them makes them easier to manage.
 * `core/bentley/package.json`
   * Controls the version number and package dependencies for **@bentley/bentleyjs-core**
 * `core/geometry/package.json`
@@ -38,6 +37,9 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Controls the version number and package dependencies for **@bentley/imodeljs-frontend**
 * `core/i18n/package.json`
   * Controls the version number and package dependencies for **@bentley/imodeljs-i18n**
+* `simpleviewtest/package.json`
+  * Private, not published
+  * Test application for graphics visualization
 * `testbed/package.json`
   * Private, not published
   * Testbed application for testing frontend/backend interaction
@@ -92,15 +94,15 @@ The full list of npm scripts can be found in the root `package.json` file.
 The single `rush install` command run at the root of the repository installs devDependencies at the root and iterates into common, backend, frontend, and testbed to install dependencies.
 After a successful install, you will notice multiple **node_modules** directories:
 
-| node_modules Directory      | Contents                |
-|-----------------------------|-------------------------|
-| node_modules/               | Overall devDependencies
-| core/bentley/node_modules/  | @bentley/bentleyjs-core dependencies
-| core/geometry/node_modules/ | @bentley/geometry-core dependencies
-| core/common/node_modules/   | @bentley/imodeljs-common dependencies
-| core/backend/node_modules/  | Backend dependencies
-| core/frontend/node_modules/ | Frontend dependencies
-| testbed/node_modules/       | Testbed dependencies
+| node_modules Directory       | Contents                |
+|------------------------------|-------------------------|
+| core/bentley/node_modules/   | @bentley/bentleyjs-core dependencies
+| core/geometry/node_modules/  | @bentley/geometry-core dependencies
+| core/common/node_modules/    | @bentley/imodeljs-common dependencies
+| core/backend/node_modules/   | Backend dependencies
+| core/frontend/node_modules/  | Frontend dependencies
+| simpleviewtest/node_modules/ | simpleviewtest dependencies
+| testbed/node_modules/        | Testbed dependencies
 
 With Rush, the node_modules directories listed above are symbolic links to a *common* package managed by Rush.
 

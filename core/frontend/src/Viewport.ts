@@ -271,10 +271,11 @@ class Animator {
   }
 }
 
+/** Status for [[ViewportAnimator.animate]]. */
 export const enum RemoveMe { No = 0, Yes = 1 }
 
 /**
- * An object to animate a transition of viewport.
+ * An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new
  * animator replaces any existing animator.
  * The animator's animate() function will be invoked just prior to the rendering of each frame.
@@ -283,7 +284,7 @@ export const enum RemoveMe { No = 0, Yes = 1 }
  * the viewport is closed, or its view controller changed, etc.
  */
 export interface ViewportAnimator {
-  /** Apply animation to the viewport. Return RemoveMe.Yes when animation is completed, causing the animator to be removed from the viewport. */
+  /** Apply animation to the viewport. Return `RemoveMe.Yes` when animation is completed, causing the animator to be removed from the viewport. */
   animate(viewport: Viewport): RemoveMe;
 
   /**
