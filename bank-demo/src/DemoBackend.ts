@@ -63,24 +63,24 @@ export class DemoBackend {
   public async createNamedVersion(changeSetId: string, versionName: string, context: IModelAccessContext, accessToken: AccessToken) {
     BriefcaseManager.setContext(context);
 
-    await BriefcaseManager.hubClient.Versions().create(accessToken, context.iModelId, changeSetId, versionName);
+    await BriefcaseManager.imodelClient.Versions().create(accessToken, context.iModelId, changeSetId, versionName);
   }
 
   public async logChangeSets(context: IModelAccessContext, accessToken: AccessToken) {
     BriefcaseManager.setContext(context);
 
     console.log("\niModel:");
-    const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, context.projectId, new IModelQuery().byId(context.iModelId)))[0];
+    const iModel: HubIModel = (await BriefcaseManager.imodelClient.IModels().get(accessToken, context.projectId, new IModelQuery().byId(context.iModelId)))[0];
     DemoBackend.displayIModelInfo(iModel);
 
     console.log("\nChangeSets:");
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, context.iModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, context.iModelId);
     for (const changeSet of changeSets) {
       DemoBackend.displayChangeSet(changeSet);
     }
 
     console.log("\nVersions:");
-    const versions: Version[] = await BriefcaseManager.hubClient.Versions().get(accessToken, context.iModelId);
+    const versions: Version[] = await BriefcaseManager.imodelClient.Versions().get(accessToken, context.iModelId);
     for (const version of versions) {
       DemoBackend.displayVersion(version);
     }

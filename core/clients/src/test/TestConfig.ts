@@ -4,8 +4,10 @@
 import { DeploymentEnv } from "../Client";
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { IModelHubClient, Version, IModel, VersionQuery, IModelQuery } from "../imodelhub";
+import { IModelClient } from "../IModelClient";
+import { Version, IModel, VersionQuery, IModelQuery } from "../imodelhub";
 import { ConnectClient, Project } from "../ConnectClients";
+import { IModelHubClient } from "..";
 import { expect } from "chai";
 
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
@@ -56,7 +58,7 @@ export class TestConfig {
   /** Query for the test file from connect/hub */
   public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModel, version?: Version }> {
     const connectClient = new ConnectClient(deploymentEnv);
-    const imodelHubClient: IModelHubClient = new IModelHubClient(deploymentEnv);
+    const imodelHubClient: IModelClient = new IModelHubClient(deploymentEnv);
 
     const project: Project | undefined = await connectClient.getProject(accessToken, {
       $select: "*",

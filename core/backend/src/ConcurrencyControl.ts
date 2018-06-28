@@ -205,7 +205,7 @@ export class ConcurrencyControl {
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
   private async reserveCodes2(request: HubCode[], briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
-    return await BriefcaseManager.hubClient.Codes().update(accessToken, briefcaseEntry.iModelId, request);
+    return await BriefcaseManager.imodelClient.Codes().update(accessToken, briefcaseEntry.iModelId, request);
   }
 
   /** process the Code-specific part of the request. */
@@ -242,7 +242,7 @@ export class ConcurrencyControl {
     }
     */
 
-    return BriefcaseManager.hubClient.Codes().get(accessToken, this._iModel.briefcase.iModelId, query);
+    return BriefcaseManager.imodelClient.Codes().get(accessToken, this._iModel.briefcase.iModelId, query);
   }
 
   /** Abandon any pending requests for locks or codes. */
@@ -265,7 +265,7 @@ export class ConcurrencyControl {
     if (!hubCodes)
       return true;
 
-    const codesHandler = BriefcaseManager.hubClient.Codes();
+    const codesHandler = BriefcaseManager.imodelClient.Codes();
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));

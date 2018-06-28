@@ -5,11 +5,12 @@ import * as deepAssign from "deep-assign";
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
-import { WsgRequestOptions, IModelServerHandler } from "./../WsgClient";
+import { WsgRequestOptions } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { Query } from "./Query";
+import { IModelBaseHandler } from "./BaseHandler";
 import { IModelHubRequestError, isBriefcaseIdValid, AggregateResponseError, IModelHubError } from "./index";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -279,14 +280,14 @@ export class CodeQuery extends Query {
  * Handler for all methods related to @see Code instances.
  */
 export class CodeHandler {
-  private _handler: IModelServerHandler;
+  private _handler: IModelBaseHandler;
   private static _defaultUpdateOptionsProvider: DefaultCodeUpdateOptionsProvider;
 
   /**
-   * Constructor for CodeHandler. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for CodeHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelServerHandler) {
+  constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 

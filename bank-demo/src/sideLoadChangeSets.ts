@@ -12,7 +12,7 @@ async function pushChangeSet(iModelId: string, accessToken: AccessToken, changeS
 
   // let postedChangeSet: ChangeSet | undefined;
   try {
-    /* postedChangeSet = */ await BriefcaseManager.hubClient.ChangeSets().create(accessToken, iModelId, changeSet, csfilename);
+    /* postedChangeSet = */ await BriefcaseManager.imodelClient.ChangeSets().create(accessToken, iModelId, changeSet, csfilename);
   } catch (error) {
     // If ChangeSet already exists, updating codes and locks might have timed out.
     if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
@@ -61,6 +61,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use se
 // tslint:disable-next-line:no-var-requires
 const iModelInfo = require("../assets/imodel.json");
 const theAccessToken = NonBentleyProject.getAccessToken();
-NonBentleyProject.getIModelAccessContext(iModelInfo.wsgId, "", theAccessToken)
+NonBentleyProject.getIModelAccessContext(iModelInfo.wsgId, "")
   .then((context: IModelAccessContext) => sideLoadChangeSets(context, theAccessToken))
   .then(() => process.exit(0));

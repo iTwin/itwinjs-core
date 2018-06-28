@@ -8,10 +8,10 @@ import * as deepAssign from "deep-assign";
 
 import { TestConfig } from "../TestConfig";
 
-import { AccessToken } from "../../";
+import { AccessToken, IModelClient } from "../../";
 import {
   IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubRequestError, Version,
-} from "../../imodelhub";
+} from "../../";
 
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
@@ -24,7 +24,7 @@ describe("iModelHub ChangeSetHandler", () => {
   let iModelId: string;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients ChangeSets test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   const cumulativeChangeSetBackwardVersionId = "CumulativeChangeSet-backward-Version.Id";
   const cumulativeChangeSetBackwardChangeSetId = "CumulativeChangeSet-backward-ChangeSet.Id";

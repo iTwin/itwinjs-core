@@ -9,8 +9,6 @@ import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { Logger, HttpStatus, WSStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 import { DefaultRequestOptionsProvider, AuthenticationError, Client, DeploymentEnv } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
-import { FileHandler } from "./FileHandler";
-import * as https from "https";
 
 const loggingCategory = "imodeljs-clients.Clients";
 
@@ -462,90 +460,4 @@ export abstract class WsgClient extends Client {
     Logger.logTrace(loggingCategory, `Successful GET request to ${url}`);
     return Promise.resolve(typedInstances);
   }
-}
-
-/**
- * Interface that must be implemented iModel server Handlers.
- */
-export interface IModelServerHandler {
-
-  /**
-   * Gets the agenet used for imodelhub connection pooling.
-   * @returns The agenet used for imodelhub connection pooling.
-   */
-  getAgent(): https.Agent;
-
-  /** Gets the file upload/download handler. */
-  getFileHandler(): FileHandler | undefined;
-
-  /** Get the token that grants this user access to this (e.g., iModelHub) service. */
-  getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken>;
-
-  /**
-   * Gets the URL of the service.
-   * Attempts to discover and cache the URL from the URL Discovery Service. If not
-   * found uses the default URL provided by client implementations. Note that for consistency
-   * sake, the URL is stripped of any trailing "/"
-   * @returns URL for the service
-   */
-  getUrl(): Promise<string>;
-
-  /**
-   * Used by clients to send delete requests without body.
-   * @param token Delegation token
-   * @param relativeUrlPath Relative path to the REST resource.
-   * @returns Promise resolves after successfully deleting REST resource at the specified path.
-   */
-  delete(token: AccessToken, relativeUrlPath: string): Promise<void>;
-
-  /**
-   * Used by clients to delete strongly typed instances through the standard WSG REST API
-   * @param token Delegation token
-   * @param relativeUrlPath Relative path to the REST resource.
-   * @param instance Instance to be deleted.
-   * @returns Promise resolves after successfully deleting instance.
-   */
-  deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T): Promise<void>;
-
-  /**
-   * Used by clients to post strongly typed instances through standard WSG REST API
-   * @param typedConstructor Used by clients to post a strongly typed instance through the REST API that's expected to return a standard response.
-   * @param token Delegation token
-   * @param relativeUrlPath Relative path to the REST resource.
-   * @param instance Strongly typed instance to be posted.
-   * @param requestOptions WSG options for the request.
-   * @returns The posted instance that's returned back from the server.
-   */
-  postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
-
-  /**
-   * Used by clients to post multiple strongly typed instances through standard WSG REST API
-   * @param typedConstructor Used by clients to post a strongly typed instances through the REST API that's expected to return a standard response.
-   * @param token Delegation token
-   * @param relativeUrlPath Relative path to the REST resource.
-   * @param instances Strongly typed instances to be posted.
-   * @param requestOptions WSG options for the request.
-   * @returns The posted instances that's returned back from the server.
-   */
-  postInstances<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]>;
-
-  /**
-   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
-   * @param typedConstructor Constructor function for the type
-   * @param token Delegation token
-   * @param relativeUrlPath Relative path to the REST resource.
-   * @param queryOptions Query options.
-   * @returns Array of strongly typed instances.
-   */
-  getInstances<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
-
-  /**
-   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
-   * @param typedConstructor Constructor function for the type
-   * @param token Delegation token
-   * @param relativeUrlPath Relative path to the REST resource.
-   * @param queryOptions Query options.
-   * @returns Array of strongly typed instances.
-   */
-  postQuery<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]>;
 }

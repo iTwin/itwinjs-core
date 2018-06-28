@@ -12,9 +12,9 @@ export class NonBentleyProject {
   }
 
   // Deploy and start up an iModelBank server for this iModel
-  public static async getIModelAccessContext(imodelid: string, _projectid: string, accs: AccessToken): Promise<IModelAccessContext> {
+  public static async getIModelAccessContext(imodelid: string, _projectid: string): Promise<IModelAccessContext> {
     // WIP DEMO WIP - we currently always use a single server, and it supports only one iModel!
-    return new IModelBankIModelAccessContext(imodelid, accs, "https://localhost:3001");
+    return new IModelBankIModelAccessContext(imodelid, "https://localhost:3001");
   }
 
 }

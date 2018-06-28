@@ -12,7 +12,7 @@ export class TestData {
   };
 
   public static connectClient = new ConnectClient("QA");
-  public static hubClient = new IModelHubClient("QA");
+  public static imodelClient = new IModelHubClient("QA");
   public static accessToken: AccessToken;
   public static testProjectId: string;
   public static testIModelId: string;
@@ -44,7 +44,7 @@ export class TestData {
   }
 
   public static async getTestIModelId(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
-    const iModels = await TestData.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
+    const iModels = await TestData.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 

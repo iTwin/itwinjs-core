@@ -10,7 +10,8 @@ import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { isBriefcaseIdValid, AggregateResponseError, Query } from "./index";
 import { IModelHubRequestError, IModelHubError } from "./Errors";
-import { WsgRequestOptions, IModelServerHandler } from "../WsgClient";
+import { IModelBaseHandler } from "./BaseHandler";
+import { WsgRequestOptions } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -295,14 +296,14 @@ export class LockQuery extends Query {
  * Handler for all methods related to @see Lock instances.
  */
 export class LockHandler {
-  private _handler: IModelServerHandler;
+  private _handler: IModelBaseHandler;
   private static _defaultUpdateOptionsProvider: DefaultLockUpdateOptionsProvider;
 
   /**
-   * Constructor for LockHandler. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for LockHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelServerHandler) {
+  constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 

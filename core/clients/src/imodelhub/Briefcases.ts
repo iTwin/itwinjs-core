@@ -10,7 +10,7 @@ import { Config } from "../Config";
 import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
-import { IModelServerHandler } from "../WsgClient";
+import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -114,15 +114,15 @@ export function isBriefcaseIdValid(briefcaseId: number): boolean {
  * Handler for all methods related to @see Briefcase instances.
  */
 export class BriefcaseHandler {
-  private _handler: IModelServerHandler;
+  private _handler: IModelBaseHandler;
   private _fileHandler?: FileHandler;
 
   /**
-   * Constructor for BriefcaseHandler. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for BriefcaseHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
-  constructor(handler: IModelServerHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }

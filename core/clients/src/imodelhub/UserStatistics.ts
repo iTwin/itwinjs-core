@@ -4,7 +4,8 @@
 import { ECJsonTypeMap } from "./../ECJsonTypeMap";
 import { UserInfo } from "./Users";
 import { InstanceIdQuery, IModelHubRequestError } from "./index";
-import { AccessToken, IModelServerHandler } from "..";
+import { AccessToken } from "..";
+import { IModelBaseHandler } from "./BaseHandler";
 import { Logger } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -95,12 +96,12 @@ export class UserStatisticsQuery extends InstanceIdQuery {
 }
 
 export class UserStatisticsHandler {
-  private _handler: IModelServerHandler;
+  private _handler: IModelBaseHandler;
   /**
-   * Constructor for UserStatistics. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for UserStatistics. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelServerHandler) {
+  constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 

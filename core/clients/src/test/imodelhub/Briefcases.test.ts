@@ -7,9 +7,10 @@ import * as path from "path";
 
 import { AccessToken } from "../../";
 
+import { IModelClient } from "../../";
 import {
   IModelHubClient, Briefcase, IModelHubRequestError, BriefcaseQuery, AzureFileHandler,
-} from "../../imodelhub";
+} from "../../";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -52,7 +53,7 @@ describe("iModelHub BriefcaseHandler", () => {
   const imodelName = "imodeljs-clients Briefcases test";
   let briefcaseId: number;
   let acquiredBriefcaseId: number;
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
     accessToken = await utils.login();

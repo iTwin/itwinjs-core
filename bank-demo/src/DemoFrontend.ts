@@ -37,8 +37,8 @@ export class DemoFrontend {
 
   public async getIModelAccessContext(iModelId: string): Promise<IModelAccessContext> {
     if (this.useIModelHub)
-      return BentleyCloudProject.getIModelAccessContext(iModelId, this.projectId, this.accessToken);
+      return BentleyCloudProject.getIModelAccessContext(iModelId, this.projectId);
 
-    return NonBentleyProject.getIModelAccessContext(iModelId, this.projectId, this.accessToken);
+    return NonBentleyProject.getIModelAccessContext(iModelId, this.projectId);
   }
 }

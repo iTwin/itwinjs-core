@@ -7,7 +7,7 @@ import { CodeState } from "./Codes";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription } from "./EventsBase";
-import { IModelServerHandler } from "../WsgClient";
+import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -218,13 +218,13 @@ export class EventSAS extends BaseEventSAS {
  * Handler for all methods related to @see EventSubscription instances.
  */
 export class EventSubscriptionHandler {
-  private _handler: IModelServerHandler;
+  private _handler: IModelBaseHandler;
 
   /**
    * Constructor for EventSubscriptionHandler. Should use @see EventHandler instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelServerHandler) {
+  constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 
@@ -297,10 +297,10 @@ export class EventHandler extends EventBaseHandler {
   private _subscriptionHandler: EventSubscriptionHandler | undefined;
 
   /**
-   * Constructor for EventHandler. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for EventHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelServerHandler) {
+  constructor(handler: IModelBaseHandler) {
     super();
     this._handler = handler;
   }

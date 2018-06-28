@@ -4,9 +4,9 @@
 /** @module iModels */
 
 import {
-  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet, IModel as HubIModel,
+  AccessToken, Briefcase as HubBriefcase, IModelClient, IModelHubClient, ConnectClient, ChangeSet, IModel as HubIModel,
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelServerHandler,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -206,41 +206,42 @@ export abstract class IModelAccessContext {
   public iModelId: string;
   public projectId: string;
   constructor(id: string, pid: string) { this.iModelId = id; this.projectId = pid; }
-  public abstract get serverHandler(): IModelServerHandler | undefined;
+  public abstract get client(): IModelClient | undefined;
 }
 
 /** Utility to manage briefcases */
 export class BriefcaseManager {
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static isCacheInitialized?: boolean;
-  private static _hubClient?: IModelHubClient;
-  private static _handler?: IModelServerHandler;
+  private static _defaultHubClient?: IModelHubClient;
+  private static _imodelClient?: IModelClient;
 
-  /** IModelHub Client to be used for all briefcase operations */
-  public static get hubClient(): IModelHubClient {
-    if (!BriefcaseManager._hubClient) {
-      if (!IModelHost.configuration)
-        throw new Error("IModelHost.startup() should be called before any backend operations");
-      // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-      const fileHandler = (this._handler === undefined) ? new AzureFileHandler(false) : this._handler.getFileHandler();
-      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.hubDeploymentEnv, fileHandler, this._handler);
+  /** IModel Server Client to be used for all briefcase operations */
+  public static get imodelClient(): IModelClient {
+    if (!this._imodelClient) {
+      if (!this._defaultHubClient) {
+        if (!IModelHost.configuration)
+          throw new Error("IModelHost.startup() should be called before any backend operations");
+        // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
+        this._defaultHubClient = new IModelHubClient(IModelHost.configuration.hubDeploymentEnv, new AzureFileHandler(false));
+      }
+      this._imodelClient = this._defaultHubClient!;
     }
-    return BriefcaseManager._hubClient;
+    return this._imodelClient;
   }
 
   /** Make sure that BriefcaseManager is configured to access iModels in the specified context. */
   public static setContext(context: IModelAccessContext) {
-    const handler = context.serverHandler;
-    if (handler === this._handler)
+    const client = context.client;
+    if (client === this._imodelClient)
       return;
 
-    if (handler !== undefined) {
+    if (client !== undefined) {
       // This context requires a custom handler. Force a switch to a new IModelHubClient that is based on this handler.
-      this._hubClient = undefined;
-      this._handler = handler;
+      this._imodelClient = client;
     } else {
       // This context requires the standard iModelHub handler. Force a switch to a new IModelHubClient that is based on iModelHub.
-      this._handler = undefined;
+      this._imodelClient = this._defaultHubClient!;
     }
   }
 
@@ -299,7 +300,7 @@ export class BriefcaseManager {
 
   private static onIModelHostShutdown() {
     BriefcaseManager.clearCache();
-    BriefcaseManager._hubClient = undefined;
+    BriefcaseManager._imodelClient = undefined;
     BriefcaseManager._connectClient = undefined;
     BriefcaseManager._cacheDir = undefined;
     IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.onIModelHostShutdown);
@@ -329,7 +330,7 @@ export class BriefcaseManager {
       if (briefcase.reversedChangeSetId)
         briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, briefcase.iModelId, briefcase.reversedChangeSetId);
       if (briefcase.briefcaseId !== BriefcaseId.Standalone) {
-        const hubBriefcases: HubBriefcase[] = await BriefcaseManager.hubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
+        const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
         if (hubBriefcases.length === 0)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase ${briefcase.briefcaseId}:${briefcase.pathname} on the Hub (for the current user)`);
         briefcase.userId = hubBriefcases[0].userId;
@@ -460,7 +461,7 @@ export class BriefcaseManager {
     if (changeSetId === "")
       return 0; // the first version
     try {
-      const changeSet: ChangeSet = (await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
+      const changeSet: ChangeSet = (await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
       return +changeSet.index!;
     } catch (err) {
       assert(false, "Could not determine index of change set");
@@ -471,9 +472,9 @@ export class BriefcaseManager {
   /** Open a briefcase */
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
     await BriefcaseManager.memoizedInitCache(accessToken);
-    assert(!!BriefcaseManager.hubClient);
+    assert(!!BriefcaseManager.imodelClient);
 
-    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.hubClient);
+    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.imodelClient);
 
     let changeSetIndex: number;
     if (changeSetId === "") {
@@ -548,7 +549,7 @@ export class BriefcaseManager {
 
   /** Get the change set from the specified id */
   private static async getChangeSetFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<ChangeSet> {
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId));
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId));
     if (changeSets.length > 0)
       return changeSets[0];
 
@@ -663,7 +664,7 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
-    const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
+    const iModel: HubIModel = (await BriefcaseManager.imodelClient.IModels().get(accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
 
     const briefcase = new BriefcaseEntry();
     briefcase.iModelId = iModelId;
@@ -699,7 +700,7 @@ export class BriefcaseManager {
 
   /** Acquire a briefcase */
   private static async acquireBriefcase(accessToken: AccessToken, iModelId: string): Promise<HubBriefcase> {
-    const briefcase: HubBriefcase = await BriefcaseManager.hubClient.Briefcases().create(accessToken, iModelId);
+    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(accessToken, iModelId);
     if (!briefcase) {
       Logger.logError(loggingCategory, "Could not acquire briefcase"); // Could well be that the current user does not have the appropriate access
       return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire));
@@ -711,7 +712,7 @@ export class BriefcaseManager {
   private static async downloadBriefcase(briefcase: Briefcase, seedPathname: string): Promise<void> {
     if (IModelJsFs.existsSync(seedPathname))
       return;
-    return BriefcaseManager.hubClient.Briefcases().download(briefcase, seedPathname)
+    return BriefcaseManager.imodelClient.Briefcases().download(briefcase, seedPathname)
       .catch(() => {
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
       });
@@ -721,7 +722,7 @@ export class BriefcaseManager {
   private static async downloadSeedFile(accessToken: AccessToken, imodelId: string, seedPathname: string): Promise<void> {
     if (IModelJsFs.existsSync(seedPathname))
       return;
-    return BriefcaseManager.hubClient.IModels().download(accessToken, imodelId, seedPathname)
+    return BriefcaseManager.imodelClient.IModels().download(accessToken, imodelId, seedPathname)
       .catch(() => {
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
       });
@@ -740,12 +741,12 @@ export class BriefcaseManager {
       return;
 
     try {
-      await BriefcaseManager.hubClient.Briefcases().get(accessToken, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
+      await BriefcaseManager.imodelClient.Briefcases().get(accessToken, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
     } catch (err) {
       return; // Briefcase does not exist on the hub, or cannot be accessed
     }
 
-    await BriefcaseManager.hubClient.Briefcases().delete(accessToken, briefcase.iModelId, briefcase.briefcaseId)
+    await BriefcaseManager.imodelClient.Briefcases().delete(accessToken, briefcase.iModelId, briefcase.briefcaseId)
       .catch(() => {
         Logger.logError(loggingCategory, "Could not delete the acquired briefcase"); // Could well be that the current user does not have the appropriate access
       });
@@ -779,7 +780,7 @@ export class BriefcaseManager {
       query.fromId(fromChangeSetId);
     if (includeDownloadLink)
       query.selectDownloadUrl();
-    const allChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId, query);
+    const allChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, query);
 
     const changeSets = new Array<ChangeSet>();
     for (const changeSet of allChangeSets) {
@@ -803,7 +804,7 @@ export class BriefcaseManager {
 
     // download
     if (changeSetsToDownload.length > 0) {
-      await BriefcaseManager.hubClient.ChangeSets().download(changeSetsToDownload, changeSetsPath)
+      await BriefcaseManager.imodelClient.ChangeSets().download(changeSetsToDownload, changeSetsPath)
         .catch(() => {
           return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
         });
@@ -1003,7 +1004,7 @@ export class BriefcaseManager {
     if (briefcase.changeSetIndex === undefined)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file"));
 
-    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(accessToken, briefcase.iModelId, BriefcaseManager.hubClient);
+    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(accessToken, briefcase.iModelId, BriefcaseManager.imodelClient);
     const targetChangeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(accessToken, briefcase.iModelId, targetChangeSetId);
     if (targetChangeSetIndex === undefined)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Could not determine change set information from the Hub"));
@@ -1174,7 +1175,7 @@ export class BriefcaseManager {
     pendingChangeSets = pendingChangeSets.slice(0, 100);
 
     const query = new ChangeSetQuery().filter(`$id+in+[${pendingChangeSets.map((value: string) => `'${value}'`).join(",")}]`).selectDownloadUrl();
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, briefcase.iModelId, query);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, briefcase.iModelId, query);
 
     await BriefcaseManager.downloadChangeSetsInternal(briefcase.iModelId, changeSets);
 
@@ -1183,7 +1184,7 @@ export class BriefcaseManager {
     for (const token of changeSetTokens) {
       try {
         const codes = BriefcaseManager.extractCodesFromFile(briefcase, [token]);
-        await BriefcaseManager.hubClient.Codes().update(accessToken, briefcase.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
+        await BriefcaseManager.imodelClient.Codes().update(accessToken, briefcase.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
         BriefcaseManager.removePendingChangeSet(briefcase, token.id);
       } catch (error) {
         if (error instanceof ConflictingCodesError) {
@@ -1234,7 +1235,7 @@ export class BriefcaseManager {
 
     let failedUpdating = false;
     try {
-      await BriefcaseManager.hubClient.Codes().update(accessToken, briefcase.iModelId, BriefcaseManager.extractCodes(briefcase), { deniedCodes: true, continueOnConflict: true });
+      await BriefcaseManager.imodelClient.Codes().update(accessToken, briefcase.iModelId, BriefcaseManager.extractCodes(briefcase), { deniedCodes: true, continueOnConflict: true });
     } catch (error) {
       if (error instanceof ConflictingCodesError) {
         const msg = `Found conflicting codes when pushing briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} changes.`;
@@ -1248,8 +1249,8 @@ export class BriefcaseManager {
     // Cannot retry relinquishing later, ignore error
     try {
       if (relinquishCodesLocks) {
-        await BriefcaseManager.hubClient.Codes().deleteAll(accessToken, briefcase.iModelId, briefcase.briefcaseId);
-        await BriefcaseManager.hubClient.Locks().deleteAll(accessToken, briefcase.iModelId, briefcase.briefcaseId);
+        await BriefcaseManager.imodelClient.Codes().deleteAll(accessToken, briefcase.iModelId, briefcase.briefcaseId);
+        await BriefcaseManager.imodelClient.Locks().deleteAll(accessToken, briefcase.iModelId, briefcase.briefcaseId);
       }
     } catch (error) {
       const msg = `Relinquishing codes or locks has failed with: ${error}`;
@@ -1310,7 +1311,7 @@ export class BriefcaseManager {
 
     let postedChangeSet: ChangeSet | undefined;
     try {
-      postedChangeSet = await BriefcaseManager.hubClient.ChangeSets().create(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
+      postedChangeSet = await BriefcaseManager.imodelClient.ChangeSets().create(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
     } catch (error) {
       // If ChangeSet already exists, updating codes and locks might have timed out.
       if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
@@ -1375,7 +1376,7 @@ export class BriefcaseManager {
   /** Create an iModel on iModelHub */
   public static async create(accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<string> {
     await BriefcaseManager.memoizedInitCache(accessToken);
-    assert(!!BriefcaseManager.hubClient);
+    assert(!!BriefcaseManager.imodelClient);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
@@ -1405,18 +1406,18 @@ export class BriefcaseManager {
   private static async upload(accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
     hubName = hubName || path.basename(pathname, ".bim");
 
-    const iModel: HubIModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
+    const iModel: HubIModel = await BriefcaseManager.imodelClient.IModels().create(accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
     return iModel.wsgId;
   }
 
   /** @hidden */
   public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
-    if (BriefcaseManager.hubClient === undefined)
+    if (BriefcaseManager.imodelClient === undefined)
       return;
     const promises = new Array<Promise<void>>();
-    const briefcases = await BriefcaseManager.hubClient.Briefcases().get(accessToken, iModelId);
+    const briefcases = await BriefcaseManager.imodelClient.Briefcases().get(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(BriefcaseManager.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
+      promises.push(BriefcaseManager.imodelClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
     });
     return Promise.all(promises);
   }

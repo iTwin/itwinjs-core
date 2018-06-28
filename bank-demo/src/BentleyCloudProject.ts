@@ -1,4 +1,4 @@
-import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv, IModelServerHandler } from "@bentley/imodeljs-clients";
+import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv, IModelClient } from "@bentley/imodeljs-clients";
 import { BriefcaseManager, IModelAccessContext } from "@bentley/imodeljs-backend/lib/backend";
 
 export class IModelHubIModelAccessContext extends IModelAccessContext {
@@ -7,7 +7,7 @@ export class IModelHubIModelAccessContext extends IModelAccessContext {
     super(id, pid);
   }
 
-  public get serverHandler(): IModelServerHandler | undefined { return undefined; } // use the default iModelHub server handler
+  public get client(): IModelClient | undefined { return undefined; } // use the default iModelHub server handler
 }
 
 export class BentleyCloudProject {
@@ -17,7 +17,7 @@ export class BentleyCloudProject {
     return await (new ImsDelegationSecureTokenClient(deploymentEnv)).getToken(authToken!);
   }
 
-  public static async getIModelAccessContext(imodelid: string, projectid: string, _accs: AccessToken): Promise<IModelAccessContext> {
+  public static async getIModelAccessContext(imodelid: string, projectid: string): Promise<IModelAccessContext> {
     // TODO: deploy and start up a separate instance of iModelBank for each iModel
     return new IModelHubIModelAccessContext(imodelid, projectid);
   }

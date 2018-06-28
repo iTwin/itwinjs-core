@@ -4,12 +4,12 @@
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
-import { AccessToken } from "../../";
+import { AccessToken, IModelClient } from "../../";
 
 import {
-  IModelHubClient, CodeState, Code, AggregateResponseError, ConflictingCodesError, CodeQuery,
+  CodeState, Code, AggregateResponseError, ConflictingCodesError, CodeQuery,
   IModelHubRequestError,
-} from "../../imodelhub";
+} from "../../";
 
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -23,7 +23,7 @@ describe("iModelHub CodeHandler", () => {
   let briefcaseId: number;
   let briefcaseId2: number;
   const imodelName = "imodeljs-clients Codes test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
   const continueOptions = { CustomOptions: { ConflictStrategy: "Continue" } };
 
   before(async () => {

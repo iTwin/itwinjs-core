@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { UrlDescriptor, DeploymentEnv } from "../Client";
-import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions, IModelServerHandler } from "../WsgClient";
+import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
 import { RequestOptions, RequestQueryOptions } from "../Request";
 import { WsgInstance } from "../ECJsonTypeMap";
 import { IModelHubError } from "./Errors";
@@ -26,11 +26,12 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 /**
  * This class acts as the WsgClient for other iModel Hub Handlers.
  */
-export class IModelHubBaseHandler extends WsgClient implements IModelServerHandler {
+export class IModelBaseHandler extends WsgClient {
+  protected url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
-  private _agent: https.Agent;
-  private _fileHandler: FileHandler | undefined;
+  protected _agent: https.Agent;
+  protected _fileHandler: FileHandler | undefined;
 
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
@@ -40,7 +41,7 @@ export class IModelHubBaseHandler extends WsgClient implements IModelServerHandl
   };
 
   /**
-   * Creates an instance of IModelHubBaseHandler.
+   * Creates an instance of IModelBaseHandler.
    * @param deploymentEnv Deployment environment.
    */
   public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {
@@ -70,7 +71,7 @@ export class IModelHubBaseHandler extends WsgClient implements IModelServerHandl
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
-    return IModelHubBaseHandler.searchKey;
+    return IModelBaseHandler.searchKey;
   }
 
   /**
@@ -78,7 +79,7 @@ export class IModelHubBaseHandler extends WsgClient implements IModelServerHandl
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelHubBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
+    return IModelBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { IModelHubClient, Version } from "../imodelhub";
+import { Version } from "../imodelhub";
 import { TilesGeneratorClient, Job } from "../TilesGeneratorClient";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
@@ -10,6 +10,7 @@ import { RequestQueryOptions } from "../Request";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
+import { IModelHubClient } from "..";
 chai.should();
 
 export class RealityDataUrlMock {

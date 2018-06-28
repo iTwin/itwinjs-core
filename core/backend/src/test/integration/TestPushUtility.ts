@@ -180,8 +180,8 @@ export class TestPushUtility {
   }
 
   private async createNamedVersion() {
-    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(this.accessToken!, this.iModelId!, BriefcaseManager.hubClient);
-    await BriefcaseManager.hubClient.Versions().create(this.accessToken!, this.iModelId!, changeSetId, TestPushUtility.getVersionName(this.currentLevel));
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(this.accessToken!, this.iModelId!, BriefcaseManager.imodelClient);
+    await BriefcaseManager.imodelClient.Versions().create(this.accessToken!, this.iModelId!, changeSetId, TestPushUtility.getVersionName(this.currentLevel));
   }
 
 }

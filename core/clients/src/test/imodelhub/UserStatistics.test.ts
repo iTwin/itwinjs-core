@@ -5,13 +5,12 @@ import * as chai from "chai";
 
 import { TestConfig } from "../TestConfig";
 
-import { IModelHubClient } from "../../imodelhub/Client";
+import { IModelHubRequestError, IModelClient } from "../..";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { UserStatisticsQuery, UserStatistics } from "../../imodelhub/UserStatistics";
 import { TestUsers } from "../TestConfig";
-import { IModelHubRequestError } from "../..";
 import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 chai.should();
@@ -58,7 +57,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   let iModelId: string;
 
   const imodelName = "imodeljs-clients Statistics test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   const user1BriefcasesCount = 2;
   const user1OwnedLocksCount = 1;
