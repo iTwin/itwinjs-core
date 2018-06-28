@@ -50,6 +50,8 @@ export abstract class CachedGeometry {
   public abstract dispose(): void;
   protected _isDisposed: boolean = true;  // should be set to false when an extending class creates WebGL resources
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   // Intended to be overridden by specific subclasses
   public get material(): Material | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }

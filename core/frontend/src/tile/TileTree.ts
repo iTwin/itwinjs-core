@@ -89,6 +89,8 @@ export class Tile implements IDisposable {
     this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
   public dispose() {
     if (!this._isDisposed) {
@@ -287,8 +289,7 @@ export class Tile implements IDisposable {
     if (undefined === children) {
       this.dispose();   // we are at a leaf.. dispose of WebGL resources before being lost when resetting children array (should only affect our RenderGraphic)
       return;
-    }
-    else if (this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
+    } else if (this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
       // this node has been used recently. Keep it, but potentially unload its grandchildren.
       for (const child of children)
         child.unloadChildren(olderThan);
@@ -458,6 +459,8 @@ export class TileTree implements IDisposable {
     this._isDisposed = false;
     this.loader = props.loader;
   }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
     if (!this._isDisposed)

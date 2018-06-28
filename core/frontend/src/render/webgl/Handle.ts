@@ -18,6 +18,7 @@ export type BufferData = ArrayBufferView | ArrayBuffer;
  */
 export class BufferHandle implements IDisposable {
   private _glBuffer: WebGLBuffer | undefined;
+  private _isDisposed: boolean;
 
   /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */
   public constructor() {
@@ -26,8 +27,10 @@ export class BufferHandle implements IDisposable {
     // gl.createBuffer() returns WebGLBuffer | null...
     if (null !== glBuffer) {
       this._glBuffer = glBuffer;
+      this._isDisposed = false;
     } else {
       this._glBuffer = undefined;
+      this._isDisposed = true;
     }
 
     assert(this.isValid);
@@ -35,9 +38,11 @@ export class BufferHandle implements IDisposable {
 
   public get isValid() { return undefined !== this._glBuffer; }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   /** Frees the WebGL buffer */
   public dispose(): void {
-    if (undefined !== this._glBuffer && null !== this._glBuffer) {
+    if (!this._isDisposed && undefined !== this._glBuffer && null !== this._glBuffer) {
       System.instance.context.deleteBuffer(this._glBuffer);
       this._glBuffer = undefined;
     }

@@ -25,6 +25,9 @@ export class FrameBuffer implements IDisposable {
   private readonly colorTextures: TextureHandle[] = [];
   private readonly colorAttachments: GLenum[] = [];
   public readonly depthBuffer?: DepthBuffer;
+  private _isDisposed: boolean;
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
@@ -36,6 +39,7 @@ export class FrameBuffer implements IDisposable {
 
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
     this._fbo = fbo;
+    this._isDisposed = false;
     const gl: WebGLRenderingContext = System.instance.context;
 
     this.bind(false);
@@ -76,10 +80,11 @@ export class FrameBuffer implements IDisposable {
 
   public dispose(): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
-    if (undefined !== this._fbo) {
+    if (!this._isDisposed && this._fbo !== undefined) {
       System.instance.context.deleteFramebuffer(this._fbo);
       this._fbo = undefined;
     }
+    this._isDisposed = true;
   }
 
   private getDebugAttachmentsString(): string {

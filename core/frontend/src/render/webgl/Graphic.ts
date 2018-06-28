@@ -277,6 +277,8 @@ export class FeatureOverrides implements IDisposable {
     return new FeatureOverrides(target);
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose() {
     if (!this._isDisposed)
       this.lut!.dispose();   // disposing of an already disposed of texture-handle has no effect

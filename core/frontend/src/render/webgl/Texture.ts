@@ -98,17 +98,23 @@ interface TextureImageProperties {
 }
 
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture. */
-export class Texture extends RenderTexture {
+export class Texture extends RenderTexture implements IDisposable {
   public readonly texture: TextureHandle;
+  private _isDisposed: boolean;
 
   public constructor(params: RenderTexture.Params, texture: TextureHandle) {
     super(params);
     this.texture = texture;
+    this._isDisposed = false;
   }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   /** Free this object in the WebGL wrapper. */
   public dispose() {
-    this.texture.dispose(); // Disposing of an already disposed texture has no effect
+    if (!this._isDisposed)
+      this.texture.dispose();
+    this._isDisposed = true;
   }
 
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
@@ -194,6 +200,7 @@ export class TextureHandle implements IDisposable {
   public readonly dataType: GL.Texture.DataType;
   public readonly dataBytes?: Uint8Array;
   private _glTexture?: WebGLTexture;
+  private _isDisposed: boolean;
 
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }
 
@@ -249,11 +256,14 @@ export class TextureHandle implements IDisposable {
     return true;
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose() {
-    if (undefined !== this._glTexture) {
+    if (!this._isDisposed && undefined !== this._glTexture) {
       System.instance.context.deleteTexture(this._glTexture);
       this._glTexture = undefined;
     }
+    this._isDisposed = true;
   }
 
   private static create(params: TextureCreateParams): TextureHandle | undefined {
@@ -289,6 +299,7 @@ export class TextureHandle implements IDisposable {
   private static readonly _maxDebugId = 0xffffff;
   private constructor(glTexture: WebGLTexture, params: TextureCreateParams) {
     this._glTexture = glTexture;
+    this._isDisposed = false;
     this.width = params.width;
     this.height = params.height;
     this.format = params.format;

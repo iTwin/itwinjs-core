@@ -64,6 +64,7 @@ export namespace VertexLUT {
     public readonly qOrigin: Float32Array;  // Origin of quantized positions
     public readonly qScale: Float32Array;   // Scale of quantized positions
     public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
+    private _isDisposed: boolean;
 
     public static create(params: Params, qparams: QParams3d, uvParams?: QParams2d) {
       const texture = params.toTexture();
@@ -72,6 +73,7 @@ export namespace VertexLUT {
 
     private constructor(texture: TextureHandle, params: Params, qparams: QParams3d, uvParams?: QParams2d) {
       this.texture = texture;
+      this._isDisposed = false;
       this.numVertices = params.numVertices;
       this.numRgbaPerVertex = params.numRgbaPerVertex;
       this.colorInfo = params.colorInfo;
@@ -82,8 +84,12 @@ export namespace VertexLUT {
       }
     }
 
+    public isDisposed(): boolean { return this._isDisposed; }
+
     public dispose() {
-      this.texture.dispose(); // Redisposing of already disposed of texture has no effect...
+      if (!this._isDisposed)
+        this.texture.dispose();
+      this._isDisposed = true;
     }
   }
 

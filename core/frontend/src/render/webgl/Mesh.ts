@@ -62,6 +62,7 @@ export class MeshData extends MeshInfo implements IDisposable {
   public readonly lut: VertexLUT.Data;
   public readonly material?: Material;
   public readonly animation: any; // should be a AnimationLookupTexture;
+  private _isDisposed: boolean;
 
   public static create(params: MeshParams): MeshData | undefined {
     const lut = params.lutParams.toData(params.vertexParams, params.uvParams);
@@ -71,12 +72,17 @@ export class MeshData extends MeshInfo implements IDisposable {
   private constructor(lut: VertexLUT.Data, params: MeshParams) {
     super(params.type, params.edgeWidth, params.edgeLineCode, params.fillFlags, params.isPlanar, params.features, params.texture);
     this.lut = lut;
+    this._isDisposed = false;   // if we created a MeshData successfully, we created WebGL resources
     this.material = params.material;
     this.animation = undefined;
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose() {
-    this.lut.dispose(); // Has no effect if lut has already been disposed
+    if (!this._isDisposed)
+      this.lut.dispose(); // Has no effect if lut has already been disposed
+    this._isDisposed = true;
   }
 }
 

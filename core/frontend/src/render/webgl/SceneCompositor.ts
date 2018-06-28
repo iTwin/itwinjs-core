@@ -28,6 +28,8 @@ class Textures implements IDisposable {
   public hilite?: TextureHandle;
   private _isDisposed: boolean = true;
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose() {
     if (!this._isDisposed) {
       dispose(this.accumulation);
@@ -163,6 +165,8 @@ class FrameBuffers implements IDisposable {
       && undefined !== this.hilite;
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose() {
     if (!this._isDisposed) {
       dispose(this.opaqueAll);
@@ -206,6 +210,8 @@ class Geometry implements IDisposable {
     this._isDisposed = false;
     return undefined !== this.composite && undefined !== this.copyPickBuffers && undefined !== this.clearTranslucent && undefined !== this.clearPickAndColor;
   }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
     if (!this._isDisposed) {
@@ -514,6 +520,8 @@ export class SceneCompositor implements IDisposable {
   public get elementId0(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
     if (!this._isDisposed) {

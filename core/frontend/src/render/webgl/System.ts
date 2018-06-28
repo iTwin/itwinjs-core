@@ -195,6 +195,7 @@ export class IdMap implements IDisposable {
     this.materialMap = new Map<string, RenderMaterial>();
     this.textureMap = new Map<string, RenderTexture>();
     this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+    this._isDisposed = true;  // no resources allocated.. yet
   }
 
   /** Returns true if all of the WebGL resources within this IdMap have been disposed. */
@@ -398,6 +399,8 @@ export class System extends RenderSystem implements IDisposable {
 
     return new System(canvas, context, techniques, capabilities);
   }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
   public dispose() {

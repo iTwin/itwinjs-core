@@ -42,10 +42,13 @@ export class SingularTechnique implements Technique {
   public readonly program: ShaderProgram;
   private _isDisposed: boolean;
 
+  // Note: Technique assumes ownership of a program
   public constructor(program: ShaderProgram) { this.program = program; this._isDisposed = false; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
   public compileShaders(): boolean { return this.program.compile(); }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose(): void {
     if (!this._isDisposed)
@@ -75,6 +78,8 @@ export abstract class VariedTechnique implements Technique {
     return allCompiled;
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose(): void {
     if (!this._isDisposed) {
       for (const program of this._programs) { // Looping over already disposed programs and calling dispose() has no effect..
@@ -86,7 +91,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected constructor(numPrograms: number) {
     this._programs.length = numPrograms;
-    this._isDisposed = (numPrograms > 0) ? true : false;
+    this._isDisposed = (numPrograms === 0) ? true : false;
   }
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
@@ -433,6 +438,8 @@ export class Techniques implements IDisposable {
       }
     });
   }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose(): void {
     if (!this._isDisposed) {

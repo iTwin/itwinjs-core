@@ -73,6 +73,7 @@ export abstract class RenderGraphic {
 
   constructor(iModel: IModelConnection) { this.iModel = iModel; }
 
+  public isDisposed(): boolean { return this._isDisposed; }
   public abstract dispose(): void;
 }
 
@@ -83,6 +84,8 @@ export class Decoration implements IDisposable {
   public readonly graphic: RenderGraphic;
   public readonly overrides?: FeatureSymbology.Appearance;
   private _isDisposed: boolean;
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public constructor(graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance) {
     this.graphic = graphic;
@@ -99,6 +102,8 @@ export class Decoration implements IDisposable {
 
 export class DecorationList extends Array<Decoration> implements IDisposable {
   private _isDisposed: boolean = false;   // assume non-disposed to start, in case initializing a DecorationList with starting Decorations
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   // Note: This does not delete any decorations, but rather frees the contained WebGL resources
   public dispose() {
@@ -126,22 +131,21 @@ export class Decorations implements IDisposable {
   private _worldOverlay?: DecorationList; // drawn in overlay mode, world units
   private _viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 
-  // Getters
+  // Getters & Setters - dispose of members before resetting
   public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
-  public get normal(): GraphicList | undefined { return this._normal; }
-  public get world(): DecorationList | undefined { return this._world; }
-  public get worldOverlay(): DecorationList | undefined { return this._worldOverlay; }
-  public get viewOverlay(): DecorationList | undefined { return this._viewOverlay; }
-  // Setters - disposes of members before re-setting
   public set viewBackground(viewBackground: RenderGraphic | undefined) { dispose(this._viewBackground); this._viewBackground = viewBackground; }
+  public get normal(): GraphicList | undefined { return this._normal; }
   public set normal(normal: GraphicList | undefined) {
     if (this._normal)
       for (const graphic of this._normal)
         graphic.dispose();
     this._normal = normal;
   }
+  public get world(): DecorationList | undefined { return this._world; }
   public set world(world: DecorationList | undefined) { dispose(this._world); this._world = world; }
+  public get worldOverlay(): DecorationList | undefined { return this._worldOverlay; }
   public set worldOverlay(worldOverlay: DecorationList | undefined) { dispose(this._worldOverlay); this._worldOverlay = worldOverlay; }
+  public get viewOverlay(): DecorationList | undefined { return this._viewOverlay; }
   public set viewOverlay(viewOverlay: DecorationList | undefined) { dispose(this._viewOverlay); this._viewOverlay = viewOverlay; }
 
   // Decorations does not track whether or not it has been disposed... catch this within the member methods
@@ -155,6 +159,15 @@ export class Decorations implements IDisposable {
         graphic.dispose();
     this._viewBackground = this._normal = this._world = this._worldOverlay = this._viewOverlay = undefined;
   }
+
+  // Only way to check if disposed is to test if all members are undefined
+  public isDisposed(): boolean {
+    return this._viewBackground === undefined
+      && this._normal === undefined
+      && this._world === undefined
+      && this._worldOverlay === undefined
+      && this._viewOverlay === undefined;
+  }
 }
 
 export class GraphicBranch implements IDisposable {
@@ -164,6 +177,8 @@ export class GraphicBranch implements IDisposable {
   private _isDisposed: boolean;
 
   public constructor() { this._isDisposed = true; }
+
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
     if (!this._isDisposed)
@@ -246,7 +261,11 @@ export namespace Pixel {
  * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
  * Every DgnViewport holds a reference to a RenderTarget.
  */
-export abstract class RenderTarget implements IDisposable {
+export abstract class RenderTarget {
+  protected _isDisposed: boolean = true;  // we have a disposed target up until we add/create any non-disposed WebGL items
+
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public static get frustumDepth2d(): number { return 1.0; } // one meter
 
   public abstract get renderSystem(): RenderSystem;

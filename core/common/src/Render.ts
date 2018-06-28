@@ -198,6 +198,7 @@ export abstract class RenderTexture {
 
   protected constructor(params: RenderTexture.Params) { this.params = params; }
   public abstract dispose(): void;
+  public abstract isDisposed(): boolean;
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }

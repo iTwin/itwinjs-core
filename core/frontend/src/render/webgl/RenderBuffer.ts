@@ -9,6 +9,7 @@ import { System } from "./System";
 
 export class RenderBuffer implements IDisposable {
   private _glBuffer?: WebGLRenderbuffer;
+  private _isDisposed: boolean;
 
   public getHandle() { return this._glBuffer; }
 
@@ -28,11 +29,14 @@ export class RenderBuffer implements IDisposable {
     return new RenderBuffer(glBuffer);
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose(): void {
-    if (undefined !== this._glBuffer) {
+    if (!this._isDisposed && undefined !== this._glBuffer) {
       System.instance.context.deleteRenderbuffer(this._glBuffer);
       this._glBuffer = undefined;
     }
+    this._isDisposed = true;
   }
 
   public bind() {
@@ -42,7 +46,7 @@ export class RenderBuffer implements IDisposable {
     }
   }
 
-  private constructor(glBuffer: WebGLRenderbuffer) { this._glBuffer = glBuffer; }
+  private constructor(glBuffer: WebGLRenderbuffer) { this._glBuffer = glBuffer; this._isDisposed = false; }
 
   private static bindBuffer(glBuffer: WebGLRenderbuffer | null) { System.instance.context.bindRenderbuffer(GL.RenderBuffer.TARGET, glBuffer); }
   private static unbind() { this.bindBuffer(null); }

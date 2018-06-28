@@ -140,6 +140,7 @@ export class ShaderProgram implements IDisposable {
   private readonly _programUniforms = new Array<ProgramUniform>();
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attributes = new Array<Attribute>();
+  private _isDisposed: boolean;
 
   public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string) {
     this._description = description;
@@ -148,13 +149,16 @@ export class ShaderProgram implements IDisposable {
 
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;
+    this._isDisposed = (null === glProgram) ? true : false;
 
     // ###TODO: Silencing 'unused variable' warnings temporarily...
     assert(undefined !== this._description);
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose(): void {
-    if (undefined !== this._glProgram && null !== this._glProgram) {
+    if (!this._isDisposed && undefined !== this._glProgram && null !== this._glProgram) {
       assert(!this._inUse);
       System.instance.context.deleteProgram(this._glProgram);
       this._glProgram = undefined;
@@ -295,7 +299,7 @@ export class ShaderProgram implements IDisposable {
 // Context in which ShaderPrograms are executed. Avoids switching shaders unnecessarily.
 // Ensures shader programs are compiled before use and un-bound when scope is disposed.
 // This class must *only* be used inside a using() function!
-export class ShaderProgramExecutor implements IDisposable {
+export class ShaderProgramExecutor {
   private _program?: ShaderProgram;
   private _params: ShaderProgramParams;
 
@@ -304,8 +308,7 @@ export class ShaderProgramExecutor implements IDisposable {
     this.changeProgram(program);
   }
 
-  // Note: This only changes the program, and does not actually dispose of WebGL resources
-  // ShaderPrograms are owned by the Technique wrapper classes
+  /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
   public dispose() { this.changeProgram(undefined); }
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }
