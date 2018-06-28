@@ -228,7 +228,6 @@ export class TextureHandle implements IDisposable {
     uniform.setUniform1i(unit - TextureUnit.Zero);
   }
 
-  // public update(data: Uint8Array): boolean {
   public update(updater: TextureDataUpdater): boolean {
     if (0 === this.width || 0 === this.height || undefined === this.dataBytes || 0 === this.dataBytes.length) {
       assert(false);
