@@ -683,7 +683,7 @@ export namespace GltfTileIO {
           return undefined;
 
         const params = new RenderTexture.Params(undefined, false, false, false);
-        const targetSize = 512; // TBD... base this on tile tolerance.
+        const targetSize = 1024; // TBD... base this on tile tolerance.
         return this.system.createTextureFromImageSource(imageSource, targetSize, targetSize, this.model.iModel, params);
       } catch (e) { return undefined; }
     }

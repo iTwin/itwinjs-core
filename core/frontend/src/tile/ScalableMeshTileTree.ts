@@ -6,7 +6,7 @@
 import { } from "./TileTree";
 import { ElementProps, RelatedElement, TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { Id64Props, Id64, BentleyStatus } from "@bentley/bentleyjs-core";
+import { Id64Props, Id64, BentleyStatus, assert } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken } from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "@bentley/imodeljs-clients/lib/test/TestConfig";
@@ -29,7 +29,7 @@ namespace CesiumUtils {
     return Range3d.createArray(corners);
   }
   export function maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
-    const minToleranceRatio = 256.0;   // Nominally the screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
+    const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
   export function transformFromJson(jTrans: number[] | undefined): Transform {
@@ -95,17 +95,20 @@ export class ScalableMeshTileLoader {
   }
   private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<ScalableMeshTileProps | undefined> {
     const separatorIndex = id.indexOf("_");
-    const childId = (separatorIndex < 0) ? id : id.substring(0, separatorIndex - 1);
+    const childId = (separatorIndex < 0) ? id : id.substring(0, separatorIndex);
     const childIndex = parseInt(childId, 10);
 
-    if (isNaN(childIndex) || tilesetJson === undefined || tilesetJson.children === undefined || childIndex >= tilesetJson.children.length)
+    if (isNaN(childIndex) || tilesetJson === undefined || tilesetJson.children === undefined || childIndex >= tilesetJson.children.length) {
+      assert(false, "scalable mesh child not found.");
       return undefined;
+    }
 
     const foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
-    if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex), thisParentId); }
+    if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
 
     const content = await this.tree.client.getTileContent(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
+    assert(content !== undefined, "scalable mesh tile content not found.");
     return new ScalableMeshTileProps(foundChild, thisParentId, this.tree, content);
   }
 }

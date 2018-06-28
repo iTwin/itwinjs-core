@@ -307,7 +307,7 @@ export class Tile {
         }
 
         IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
+      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; this._children = undefined; });
     }
 
     return this._childrenLoadStatus;

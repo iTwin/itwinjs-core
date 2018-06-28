@@ -77,7 +77,6 @@ export namespace B3dmTileIO {
         undefined !== materialJson.values.tex) {
         textureMapping = this.readTexture(materialJson.values.tex);
       }
-
       const grey: ColorDef = new ColorDef(0x77777777);
       return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, true, textureMapping);
     }
