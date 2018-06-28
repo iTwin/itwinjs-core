@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, BeDuration, StopWatch } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch, IDisposable } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -13,7 +13,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations, FeatureOverrides, PickTable } from "./Graphic";
+import { Branch, WorldDecorations, FeatureOverrides, PickTable, Batch } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
 import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -140,7 +140,7 @@ export class Clips {
   public get isValid(): boolean { return this.length > 0; }
 }
 
-export abstract class Target extends RenderTarget {
+export abstract class Target extends RenderTarget implements IDisposable {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
   private _decorations = new Decorations();
@@ -190,6 +190,8 @@ export abstract class Target extends RenderTarget {
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
+  private _batches: Batch[] = [];
+  private _isDisposed: boolean = false;
 
   protected constructor() {
     super();
@@ -288,6 +290,18 @@ export abstract class Target extends RenderTarget {
 
   public pushActiveVolume(): void { } // ###TODO
   public popActiveVolume(): void { } // ###TODO
+
+  public addBatch(batch: Batch) {
+    assert(this._batches.indexOf(batch) < 0);
+    this._batches.push(batch);
+  }
+
+  public onBatchDestroyed(batch: Batch) {
+    const index = this._batches.indexOf(batch);
+    assert(index > -1);
+    this._batches[index].dispose();
+    this._batches.splice(index, 1);
+  }
 
   public setFrameTime(sceneTime = 0.0) {
     if (this._gatherFrameTimings) {
@@ -512,7 +526,16 @@ export abstract class Target extends RenderTarget {
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
-  public onDestroy(): void { } // ###TODO
+  public get isDisposed() { return this._isDisposed; }
+
+  public dispose() {
+    for (const batch of this._batches)
+      batch.onTargetDestroyed(this);
+    this._batches = [];
+    this._renderCommands.clear();
+    this._isDisposed = true;
+  }
+
   public queueReset(): void {
     this.reset();
   }
