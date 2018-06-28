@@ -24,7 +24,7 @@ Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the specific EC
 
 ### Binding to all parameters at once
 
-See section "[ECSQL parameter types in iModelJs](../ECSQLParameterTypes)" to learn which types to use for the parameters when binding all
+See section "[ECSQL parameter types in iModelJs](../ECSQLParameterTypes.md)" to learn which types to use for the parameters when binding all
 parameters at once.
 
 #### Positional parameters
@@ -41,7 +41,7 @@ parameters at once.
 
 ### Navigation properties
 
-[Navigation properties](../ECSQL#navigation-properties) are structs made up of the Id of the related instance and the backing
+[Navigation properties](../ECSQL.md#navigation-properties) are structs made up of the Id of the related instance and the backing
 ECRelationshipClass. The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
 
 ```ts
@@ -65,9 +65,9 @@ this by specifying the **Id** member of a navigation property.
 
 ### Struct properties
 
-You can either parameterize a struct property as a whole or parameterize individual members of the struct. See "[Struct properties in ECSQL](../ECSQL#structs)" for the ECSQL background.
+You can either parameterize a struct property as a whole or parameterize individual members of the struct. See "[Struct properties in ECSQL](../ECSQL.md#structs)" for the ECSQL background.
 
-> The ECSQL examples used in this section refer to the sample ECSchema in "[Struct properties in ECSQL](../ECSQL#structs)".
+> The ECSQL examples used in this section refer to the sample ECSchema in "[Struct properties in ECSQL](../ECSQL.md#structs)".
 
 #### Binding structs as a whole
 
@@ -93,9 +93,9 @@ You can either parameterize a struct property as a whole or parameterize individ
 
 ### Array properties
 
-See "[Array properties in ECSQL](../ECSQL#arrays)" for the ECSQL background.
+See "[Array properties in ECSQL](../ECSQL.md#arrays)" for the ECSQL background.
 
-> The ECSQL examples used in this section refer to the sample ECSchema in "[Array properties in ECSQL](../ECSQL#arrays)".
+> The ECSQL examples used in this section refer to the sample ECSchema in "[Array properties in ECSQL](../ECSQL.md#arrays)".
 
 ```ts
 [[include:ExecuteECSql_Binding_Array_ByParameter]]
@@ -109,16 +109,16 @@ See "[Array properties in ECSQL](../ECSQL#arrays)" for the ECSQL background.
 
 The current row of the query result can be retrieved in two ways:
 
-- as a whole as JavaScript literal (adhering to the [ECSQL row format](../ECSQLRowFormat))
+- as a whole as JavaScript literal (adhering to the [ECSQL row format](../ECSQLRowFormat.md))
 - column by column (using the [ECSqlValue]($backend) API as returned from [ECSqlStatement.getValue]($backend))
 
 > The column by column approach is more low-level, but gives you more flexible access to the data in the row. For example,
-> [ECClassIds](../ECSQL#ECInstanceId-and-ECClassId) are turned into class names in the [ECSQL row format](../ECSQLRowFormat).
+> [ECClassIds](../ECSQL.md#ECInstanceId-and-ECClassId) are turned into class names in the [ECSQL row format](../ECSQLRowFormat.md).
 > Using the [ECSqlValue]($backend) API allows you to retrieve ECClassIds as Id64s.
 
 ### Rows as a whole
 
-The following example is intended to illustrate the [ECSQL row format](../ECSQLRowFormat):
+The following example is intended to illustrate the [ECSQL row format](../ECSQLRowFormat.md):
 
 ```ts
 [[include:ExecuteECSql_GetRow_IllustrateRowFormat]]
@@ -135,7 +135,7 @@ The following example is intended to illustrate the [ECSQL row format](../ECSQLR
 ```
 
 > Note how the ECProperties used in the ECSQL are converted to members of the JavaScript literal and how their names are
-> transformed according to the rules described in the [ECSQL row format](../ECSQLRowFormat#property-names).
+> transformed according to the rules described in the [ECSQL row format](../ECSQLRowFormat.md#property-names).
 
 The following example illustrates how to work with the ECSQL row JavaScript literal:
 
@@ -145,12 +145,11 @@ The following example illustrates how to work with the ECSQL row JavaScript lite
 
 #### Output
 
-```txt
-ECInstanceId | ClassName               | Parent Id | Parent RelClassName                      | LastMod
-0x312        | StructuralPhysical.Slab | 0x433     | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
-0x313        | StructuralPhysical.Slab | 0x5873    | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
-...
-```
+ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod
+--- | --- | --- | --- | ---
+0x312 | StructuralPhysical.Slab | 0x433 | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
+0x313 | StructuralPhysical.Slab | 0x5873 | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
+... | | | |
 
 ### Column by column
 
@@ -160,16 +159,15 @@ ECInstanceId | ClassName               | Parent Id | Parent RelClassName        
 
 #### Output
 
-```txt
-ECInstanceId | ClassName               | Parent Id | Parent RelClassName                      | LastMod
-0x312        | StructuralPhysical.Slab | 0x433     | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
-0x313        | StructuralPhysical.Slab | 0x5873    | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
-...
-```
+ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod
+--- | --- | --- | --- | ---
+0x312 | StructuralPhysical.Slab | 0x433 | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
+0x313 | StructuralPhysical.Slab | 0x5873 | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
+... | | | |
 
 > The sample is code is intentionally verbose to better illustrate the semantics of the API.
 
-The following example illustrates the flexibility of the column by column approach by preserving the [ECClassId](../ECSQL#ECInstanceId-and-ECClassId)
+The following example illustrates the flexibility of the column by column approach by preserving the [ECClassId](../ECSQL.md#ECInstanceId-and-ECClassId)
 as id instead of having it converted to a class name.
 
 ```ts
@@ -178,9 +176,8 @@ as id instead of having it converted to a class name.
 
 #### Output
 
-```txt
 ECClassId | Parent RelECClassId
-0x120     | 0x154
-0x120     | 0x154
-...
-```
+--- | ---
+0x120 | 0x154
+0x120 | 0x154
+... |

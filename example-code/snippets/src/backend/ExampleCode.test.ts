@@ -6,7 +6,7 @@ import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyCon
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
+import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
@@ -21,11 +21,6 @@ describe("Example Code", () => {
   after(() => {
     iModel.closeStandalone();
   });
-
-  /** Gives example code something to call. */
-  const doSomethingWithString = (s: string) => {
-    assert.exists(s);
-  };
 
   // __PUBLISH_EXTRACT_START__ IModelDb.Models.createModel.example-code
   function createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
@@ -70,19 +65,13 @@ describe("Example Code", () => {
 
   it("should extract working example code", async () => {
     // __PUBLISH_EXTRACT_START__ BisCore.registerSchemaAndGetClass
-    // Register any schemas that will be used directly
-    BisCore.registerSchema();
 
-    // Get the class for the specified class name
-    const elementClass = BisCore.getClass(Element.name, iModel);
-    if (elementClass === undefined) {
-      assert.fail();
-      return;
-    }
+    // Make sure somewhere in your startup code you call: IModelHost.startup()
 
-    // Do something with the returned element class
-    doSomethingWithString(elementClass.schema.name);
-    doSomethingWithString(elementClass.name);
+    // Get the JavaScript class for the "Element" ECClass
+    const elementClass = BisCore.getClass("Element", iModel)!;
+    assert.equal("BisCore", elementClass.schema.name);
+    assert.equal("Element", elementClass.name);
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ ConcurrencyControl.setPolicy
@@ -109,7 +98,7 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ ConcurrencyControl.request
     // Now acquire all locks and reserve all codes needed.
-    // This is a *prequisite* to saving local changes.
+    // This is a *perquisite* to saving local changes.
     try {
       await iModel.concurrencyControl.request(accessToken);
     } catch (err) {

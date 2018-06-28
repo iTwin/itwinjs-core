@@ -86,7 +86,7 @@ export interface FilePropertyProps {
   subId?: number;
 }
 
-/** Represents an iModel. */
+/** Represents an iModel in JavaScript. */
 export abstract class IModel implements IModelProps {
   /** The Id of the repository model. */
   public static readonly repositoryModelId = new Id64("0x1");
@@ -111,6 +111,7 @@ export abstract class IModel implements IModelProps {
   /** Set the [EcefLocation]($docs/learning/glossary#ecefLocation) for this iModel. */
   public setEcefLocation(ecef: EcefLocationProps) { this._ecefLocation = new EcefLocation(ecef); this._ecefTrans = undefined; }
 
+  /** @hidden */
   public toJSON(): any {
     const out: any = {};
     out.name = this.name;

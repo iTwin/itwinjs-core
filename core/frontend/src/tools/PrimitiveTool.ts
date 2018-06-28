@@ -266,7 +266,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
   //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
 
   /**
-   * ( was called GetDynamicsStarted )
    * Call to find out of complex dynamics are currently active.
    */
   public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }

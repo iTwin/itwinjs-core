@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
-import { Viewport, CoordSystem, DepthRangeNpc } from "../Viewport";
+import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -663,6 +663,7 @@ export abstract class ViewManip extends ViewTool {
 
   public invalidateTargetCenter() { this.targetCenterValid = false; }
 
+  /** Determine whether the supplied point is visible in this Viewport. */
   public isPointVisible(testPt: Point3d): boolean {
     const vp = this.viewport;
     if (!vp)
@@ -1752,11 +1753,9 @@ export class WindowAreaTool extends ViewTool {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
 
-      const windowRange = Range3d.createArray(windowArray);
-      const windowRangeScale = 0.9;   // Inset 90% avoid geometry at window edges
-      windowRange.scaleAboutCenterInPlace(windowRangeScale);
+      const windowRange = new ViewRect(windowArray[0].x, windowArray[0].y, windowArray[1].x, windowArray[1].y);
 
-      let npcZValues = vp.determineVisibleDepthNpcRange(windowRange);
+      let npcZValues = vp.determineVisibleDepthRange(windowRange);
       if (!npcZValues)
         npcZValues = new DepthRangeNpc(0, vp.getFocusPlaneNpc());  // Just use the focus plane
 

@@ -463,7 +463,7 @@ describe("MiscAngles", () => {
     ck.testFalse(sweepE.isAlmostEqualNoPeriodShift(fullRadiansA));
     sweepE.setStartEndDegrees(); // full circle default
     ck.testTrue(sweepE.isAlmostEqualAllowPeriodShift(fullDegreesA));
-    const sweepF = AngleSweep.createStartSweepDegrees ();
+    const sweepF = AngleSweep.createStartSweepDegrees();
     ck.testTrue(sweepF.isAlmostEqualAllowPeriodShift(fullDegreesA));
 
     expect(ck.getNumErrors()).equals(0);

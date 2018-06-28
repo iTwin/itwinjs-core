@@ -36,6 +36,7 @@ export const enum Npc {
   CORNER_COUNT = 8,
 }
 
+/** The 8 corners of an [[Npc]] Frustum. */
 // tslint:disable-next-line:variable-name
 export const NpcCorners = [
   new Point3d(0.0, 0.0, 0.0),
@@ -56,7 +57,8 @@ Object.freeze(NpcCenter);
 
 /**
  * The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
- * It is stored as 8 points, in [[NpcCorners]] order, that must define a truncated pyramid.
+ *
+ * It is stored as 8 points, in [[Npc]] order, that must define a truncated pyramid.
  */
 export class Frustum {
   public readonly points: Point3d[] = [];
