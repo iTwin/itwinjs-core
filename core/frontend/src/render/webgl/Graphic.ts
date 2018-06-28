@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue } from "@bentley/bentleyjs-core";
+import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, FeatureTable, Feature, ColorDef } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
@@ -254,7 +254,7 @@ class OvrNonUniform {
   }
 }
 
-export class FeatureOverrides {
+export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
   public readonly target: Target;
   public dimension: LUTDimension = LUTDimension.Uniform;
@@ -265,6 +265,8 @@ export class FeatureOverrides {
   private _lastOverridesUpdated: BeTimePoint = BeTimePoint.now();
   private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
   private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
+
+  private _isDisposed: boolean = false;
 
   private constructor(target: Target) {
     this.target = target;
@@ -339,6 +341,16 @@ export class FeatureOverrides {
       this._lastFlashUpdated = flashLastUpdated;
       this._lastHiliteUpdated = hiliteLastUpdated;
     }
+  }
+
+  public get isDisposed() { return this._isDisposed; }
+
+  public dispose() {
+    if (this.lut !== undefined) {
+      this.lut.dispose();
+      this.lut = undefined;
+    }
+    this._isDisposed = true;
   }
 }
 
@@ -452,7 +464,7 @@ export class Batch extends Graphic {
     if (undefined === ret) {
       ret = FeatureOverrides.createFromTarget(target);
       this._overrides.push(ret);
-      // ###TODO target.addBatch(*this);
+      target.addBatch(this);
       ret.initFromMap(this.featureTable);
     }
 
@@ -460,13 +472,27 @@ export class Batch extends Graphic {
     return ret;
   }
 
-  public onTargetDestroyed(_target: Target) {
-    // ###TODO
-    // this._overrides.erase(target);
+  public onTargetDestroyed(target: Target) {
+    let index = 0;
+    let foundIndex = -1;
+
+    for (const ovr of this._overrides) {
+      if (ovr.target === target) {
+        foundIndex = index;
+        break;
+      }
+      index++;
+    }
+
+    if (foundIndex > -1) {
+      this._overrides[foundIndex].dispose();
+      this._overrides.splice(foundIndex, 1);
+    }
   }
 
   public dispose(): void {
-    // ###TODO
+    for (const ovr of this._overrides)
+      ovr.dispose();
   }
 }
 

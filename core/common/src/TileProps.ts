@@ -39,8 +39,10 @@ export interface TileProps {
   childIds: string[];
   /** Optional scaling factor applied to this tile's maximum size */
   zoomFactor?: number;
-  /** WIP: base-64-encoded binary tile geometry data; or undefined if no geometry */
-  geometry?: string;
+  /** Optional - set to True for Y Axis Up */
+  yAxisUp: boolean;
+  /** WIP: base-64-encoded binary tile geometry data, ArrayBuffer or undefined if no geometry */
+  geometry?: any;
 }
 
 /** The metdata describing a TileTree */
