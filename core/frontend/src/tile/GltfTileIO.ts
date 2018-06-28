@@ -8,12 +8,12 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair, ElementAlignedBox3d, TextureMapping, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
-import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
+import { Range3d, Point2d, Point3d, Vector3d, Transform, RotMatrix, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
-import { RenderGraphic } from "../render/System";
+import { RenderGraphic, GraphicBranch } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 
 /** Provides facilities for deserializing glTF tile data. */
@@ -187,9 +187,10 @@ export namespace GltfTileIO {
       public readonly scene: any,
       public readonly meshes: any,
       public readonly materials: any,
-      public readonly extensions: any) { }
+      public readonly extensions: any,
+      public readonly yAxisUp: boolean) { }
 
-    public static create(buffer: TileIO.StreamBuffer): ReaderProps | undefined {
+    public static create(buffer: TileIO.StreamBuffer, yAxisUp: boolean = false): ReaderProps | undefined {
       const header = new Header(buffer);
       if (!header.isValid)
         return undefined;
@@ -212,7 +213,7 @@ export namespace GltfTileIO {
         if (undefined === materialValues || undefined === meshes || undefined === accessors || undefined === bufferViews)
           return undefined;
 
-        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions);
+        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, yAxisUp);
       } catch (e) {
         return undefined;
       }
@@ -235,6 +236,7 @@ export namespace GltfTileIO {
     protected readonly model: GeometricModelState;
     protected readonly system: RenderSystem;
     protected readonly returnToCenter: number[] | undefined;
+    protected readonly yAxisUp: boolean;
 
     public abstract read(): ReaderResult;
 
@@ -259,8 +261,17 @@ export namespace GltfTileIO {
           }
           renderGraphic = this.system.createGraphicList(renderGraphicList, this.model.iModel);
         }
-        if (undefined !== renderGraphic)
+        if (undefined !== renderGraphic) {
           renderGraphic = this.system.createBatch(renderGraphic, featureTable);
+          if (undefined !== this.returnToCenter || this.yAxisUp) {
+            const branch = new GraphicBranch();
+            branch.add(renderGraphic);
+            let transform = (undefined === this.returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this.returnToCenter[0], this.returnToCenter[1], this.returnToCenter[2]);
+            if (this.yAxisUp) transform = transform.multiplyTransformRotMatrix(RotMatrix.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as RotMatrix);
+
+            renderGraphic = this.system.createBranch(branch, this.model.iModel, transform);
+          }
+        }
       }
       return {
         readStatus,
@@ -311,8 +322,8 @@ export namespace GltfTileIO {
       this.bufferViews = props.bufferViews;
       this.meshes = props.meshes;
       this.materialValues = props.materials;
+      this.yAxisUp = props.yAxisUp;
       this.returnToCenter = this.extractReturnToCenter(props.extensions);
-
       this.textures = props.scene.textures;
       this.images = props.scene.images;
 
@@ -426,13 +437,6 @@ export namespace GltfTileIO {
       if (undefined === rangeMin || undefined === rangeMax)
         return false;
 
-      if (this.returnToCenter !== undefined) {
-        for (let i = 0; i < 3; i++) {
-          rangeMin[i] += this.returnToCenter[i];
-          rangeMax[i] += this.returnToCenter[i];
-        }
-      }
-
       const buffer = view.toBufferData(DataType.UnsignedShort);
       if (undefined === buffer)
         return false;
@@ -515,13 +519,40 @@ export namespace GltfTileIO {
     }
 
     protected readUVParams(params: Point2d[], json: any, accessorName: string): boolean {
-      const data = this.readBufferDataFloat(json, accessorName);
-      if (undefined === data)
-        return false;
+      const view = this.getBufferView(json, accessorName);
+      let data: any;
 
-      for (let i = 0; i < data.count; i++) {
-        const index = 2 * i; // 2 float per param...
-        params.push(new Point2d(data.buffer[index], data.buffer[index + 1]));
+      if (view === undefined) { return false; }
+      switch (view.type) {
+        case DataType.Float: {
+          data = this.readBufferDataFloat(json, accessorName);
+
+          for (let i = 0; i < data.count; i++) {
+            const index = 2 * i; // 2 float per param...
+            params.push(new Point2d(data.buffer[index], data.buffer[index + 1]));
+          }
+          break;
+        }
+
+        case DataType.UnsignedShort: {
+          // TBD.   Support quantized UVParams in shaders rather than expanding here.
+          const extensions = JsonUtils.asObject(view.accessor.extensions);
+          const quantized = undefined !== extensions ? JsonUtils.asObject(extensions.WEB3D_quantized_attributes) : undefined;
+          if (undefined === quantized)
+            return false;
+
+          const decodeMatrix = JsonUtils.asArray(quantized.decodeMatrix);
+          if (undefined === decodeMatrix) { return false; }
+
+          const qData = view.toBufferData(DataType.UnsignedShort);
+          if (undefined === qData) { return false; }
+
+          for (let i = 0; i < view.count; i++) {
+            const index = 2 * i; // 3 uint16 per QPoint3d...
+            params.push(new Point2d(qData.buffer[index] * decodeMatrix[0] + decodeMatrix[6], qData.buffer[index + 1] * decodeMatrix[4] + decodeMatrix[7]));
+          }
+          break;
+        }
       }
 
       return true;
@@ -629,6 +660,41 @@ export namespace GltfTileIO {
       }
 
       return true;
+    }
+    protected readImage(imageJson: any): RenderTexture | undefined {
+      try {
+        const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
+        const bufferView = this.bufferViews[binaryImageJson.bufferView];
+        const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
+        let imageSource;
+
+        const offset = bufferView.byteOffset;
+        const bytes = this.binaryData.subarray(offset, offset + bufferView.byteLength);
+        switch (mimeType) {
+          case "image/jpeg":
+            imageSource = new ImageSource(bytes, ImageSourceFormat.Jpeg);
+            break;
+          case "image/png":
+            imageSource = new ImageSource(bytes, ImageSourceFormat.Png);
+            break;
+
+        }
+        if (imageSource === undefined)
+          return undefined;
+
+        const params = new RenderTexture.Params(undefined, false, false, false);
+        const targetSize = 512; // TBD... base this on tile tolerance.
+        return this.system.createTextureFromImageSource(imageSource, targetSize, targetSize, this.model.iModel, params);
+      } catch (e) { return undefined; }
+    }
+
+    protected readTexture(textureId: string): TextureMapping | undefined {
+      const texture = JsonUtils.asObject(this.textures[textureId]);
+      if (texture === undefined) { return undefined; }
+      const image = this.readImage(this.images[texture.source]);
+      if (image === undefined) { return undefined; }
+
+      return new TextureMapping(image, new TextureMapping.Params());
     }
   }
 }

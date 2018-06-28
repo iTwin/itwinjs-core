@@ -42,6 +42,7 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
   public rootTile: TileProps;
   public location: TransformProps;
   public tilesetJson: object;
+  public yAxisUp: boolean = false;
   constructor(json: any, public client: RealityDataServicesClient, public accessToken: AccessToken, public projectId: string, public tilesId: string, ecefToDb: Transform) {
     this.tilesetJson = json.root;
     this.id = new Id64();
@@ -50,6 +51,8 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
     const tileToDb = Transform.createIdentity();
     tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
     this.location = tileToDb.toJSON();
+    if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
+      this.yAxisUp = true;
   }
 }
 
@@ -60,10 +63,12 @@ class ScalableMeshTileProps implements TileProps {
   public maximumSize: number;
   public childIds: string[];
   public geometry?: string | ArrayBuffer;
+  public yAxisUp: boolean;
   constructor(json: any, thisId: string, public tree: ScalableMeshTileTreeProps, geometry: ArrayBuffer | undefined) {
     this.id = new TileId(new Id64(), thisId);
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
     this.maximumSize = 0.0; // nonzero only if content present.   CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
+    this.yAxisUp = tree.yAxisUp;
     this.childIds = [];
     const prefix = thisId.length ? thisId + "_" : "";
     for (let i = 0; i < json.children.length; i++)

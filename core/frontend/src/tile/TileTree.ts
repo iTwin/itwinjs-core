@@ -51,6 +51,7 @@ export class Tile {
   public readonly center: Point3d;
   public readonly radius: number;
   public readonly zoomFactor?: number;
+  private readonly yAxisUp: boolean;
   private readonly _childIds: string[];
   private _childrenLastUsed: BeTimePoint;
   private _childrenLoadStatus: TileTree.LoadStatus;
@@ -71,6 +72,7 @@ export class Tile {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
+    this.yAxisUp = props.yAxisUp;
 
     // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
     this.loadGraphics(props.geometry);
@@ -94,9 +96,8 @@ export class Tile {
     const format = streamBuffer.nextUint32;
     let reader: GltfTileIO.Reader | undefined;
     streamBuffer.rewind(4);
-
     if (format === TileIO.Format.B3dm) {
-      reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem);
+      reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
     } else {
       reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem);
     }
@@ -393,6 +394,7 @@ export namespace Tile {
       public readonly range: ElementAlignedBox3d,
       public readonly maximumSize: number,
       public readonly childIds: string[],
+      public readonly yAxisUp: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
       public readonly zoomFactor?: number,
@@ -408,7 +410,7 @@ export namespace Tile {
         tileBytes = new Uint8Array(props.geometry as ArrayBuffer);
       } else { tileBytes = undefined; }
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, tileBytes);
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, props.yAxisUp, parent, contentRange, props.zoomFactor, tileBytes);
     }
   }
 }

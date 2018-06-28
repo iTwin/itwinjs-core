@@ -5,7 +5,7 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
@@ -41,12 +41,12 @@ export namespace B3dmTileIO {
 
   /** Deserializes an B3DM tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
 
-      const props = GltfTileIO.ReaderProps.create(stream);
+      const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
       return undefined !== props ? new Reader(props, model, system, range) : undefined;
     }
     private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, private range: ElementAlignedBox3d) {
@@ -71,11 +71,15 @@ export namespace B3dmTileIO {
       colorTable.insert(0x777777);
       return true;
     }
-    protected createDisplayParams(json: any): DisplayParams | undefined {
-      // Wip.
-      if (json === undefined) { }
+    protected createDisplayParams(materialJson: any): DisplayParams | undefined {
+      let textureMapping: TextureMapping | undefined;
+      if (undefined !== materialJson &&
+        undefined !== materialJson.values.tex) {
+        textureMapping = this.readTexture(materialJson.values.tex);
+      }
+
       const grey: ColorDef = new ColorDef(0x77777777);
-      return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, true);
+      return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, true, textureMapping);
     }
     protected extractReturnToCenter(extensions: any): number[] | undefined {
       if (extensions === undefined) { return undefined; }
