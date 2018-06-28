@@ -14,7 +14,7 @@ import { ViewTool, ViewManip } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { DecorateContext } from "../ViewContext";
+import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
@@ -552,6 +552,24 @@ export class ToolAdmin {
 
   private static scratchButtonEvent1 = new BeButtonEvent();
   private static scratchButtonEvent2 = new BeButtonEvent();
+
+  /** @hidden */
+  public updateDynamics(ev?: BeButtonEvent): void {
+    if (!IModelApp.viewManager.inDynamicsMode || undefined === this.activeTool)
+      return;
+
+    if (undefined === ev) {
+      ev = ToolAdmin.scratchButtonEvent2;
+      this.fillEventFromCursorLocation(ev);
+    }
+
+    if (undefined === ev.viewport)
+      return;
+
+    const context = new DynamicsContext(ev.viewport);
+    this.activeTool.onDynamicFrame(ev, context);
+  }
+
   /**
    * This is invoked on each frame to update current input state and forward model motion events to tools.
    */
@@ -592,9 +610,7 @@ export class ToolAdmin {
       }
     }
 
-    if (tool && tool instanceof PrimitiveTool)
-      tool.updateDynamics(ev);
-
+    this.updateDynamics(ev);
     ev.reset();
     return !wasMotion;  // return value unused...
   }
@@ -642,11 +658,7 @@ export class ToolAdmin {
       }
 
       tool.onModelMotion(ev);
-
-      // Don't use the old value of tool since _OnModelMotion may restart the tool using a new tool object.
-      const primitiveTool = this.activeTool;
-      if (undefined !== primitiveTool && primitiveTool instanceof PrimitiveTool)
-        primitiveTool.updateDynamics(ev);
+      this.updateDynamics(ev);
     }
 
     if (this.isLocateCircleOn)
@@ -761,15 +773,14 @@ export class ToolAdmin {
 
     IModelApp.tentativePoint.onButtonEvent();
     IModelApp.accuDraw.onPostDataButton(ev);
-    if (!(tool instanceof PrimitiveTool))
-      return;
 
-    tool.autoLockTarget(); // lock tool to target model of this view...
+    if (tool instanceof PrimitiveTool)
+      tool.autoLockTarget(); // lock tool to target model of this view...
 
     // Don't use input event, need to account for point location adjusted to hit point on element by tools...
     const scratchEv = ToolAdmin.scratchButtonEvent2;
     current.toEventFromLastDataPoint(scratchEv);
-    tool.updateDynamics(scratchEv);
+    this.updateDynamics(scratchEv);
   }
 
   /** return true to filter (ignore) the given button event */
@@ -1058,12 +1069,7 @@ export class ToolAdmin {
     if (!changed)
       return;
 
-    // Give active tool a chance to update its dynamics...
-    if (activeTool instanceof PrimitiveTool) {
-      const ev = ToolAdmin.scratchButtonEvent1;
-      this.fillEventFromCursorLocation(ev);
-      activeTool.updateDynamics(ev);
-    }
+    this.updateDynamics();
   }
 
   private static getModifierKeyFromVirtualKey(key: BeVirtualKey): BeModifierKey {
@@ -1103,17 +1109,35 @@ export class ToolAdmin {
 
   /** @hidden */
   public exitInputCollector() {
-    if (this.suspendedByInputCollector)
+    if (undefined === this.inputCollector)
+      return;
+    let unsuspend = false;
+    if (this.suspendedByInputCollector) {
       this.suspendedByInputCollector.stop();
-    this.suspendedByInputCollector = undefined;
+      this.suspendedByInputCollector = undefined;
+      unsuspend = true;
+    }
+
+    IModelApp.viewManager.invalidateDecorationsAllViews();
     this.setInputCollector(undefined);
+    if (unsuspend) {
+      const tool = this.activeTool;
+      if (tool)
+        tool.onUnsuspend();
+    }
   }
 
   public startInputCollector(_newTool: InputCollector): void {
-    if (undefined !== this.inputCollector)
+    if (undefined !== this.inputCollector) {
       this.setInputCollector(undefined);
-    else
+    } else {
+      const tool = this.activeTool;
+      if (tool)
+        tool.onSuspend();
       this.suspendedByInputCollector = new SuspendedToolState();
+    }
+
+    IModelApp.viewManager.invalidateDecorationsAllViews();
   }
 
   /** @hidden */
@@ -1125,7 +1149,6 @@ export class ToolAdmin {
 
     if (undefined !== this.lastWheelEvent)
       this.lastWheelEvent.invalidate();
-
     this.viewTool = newTool;
   }
 
@@ -1133,23 +1156,23 @@ export class ToolAdmin {
   public exitViewTool() {
     if (undefined === this.viewTool)
       return;
-
+    let unsuspend = false;
     if (undefined !== this.suspendedByViewTool) {
-      this.suspendedByViewTool.stop();
-      this.suspendedByViewTool = undefined; // Restore state of suspended tool...
+      this.suspendedByViewTool.stop(); // Restore state of suspended tool...
+      this.suspendedByViewTool = undefined;
+      unsuspend = true;
     }
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
     this.setViewTool(undefined);
+    if (unsuspend) {
+      const tool = this.activeTool;
+      if (tool)
+        tool.onUnsuspend();
+    }
 
     IModelApp.accuDraw.onViewToolExit();
-
-    const tool = this.activeTool;
-    if (tool && tool instanceof PrimitiveTool) {
-      const ev = ToolAdmin.scratchButtonEvent1;
-      this.fillEventFromCursorLocation(ev);
-      tool.updateDynamics(ev);
-    }
+    this.updateDynamics();
   }
 
   public startViewTool() {
@@ -1157,10 +1180,14 @@ export class ToolAdmin {
 
     accuDraw.onViewToolInstall();
 
-    if (undefined !== this.viewTool)
+    if (undefined !== this.viewTool) {
       this.setViewTool(undefined);
-    else
+    } else {
+      const tool = this.activeTool;
+      if (tool)
+        tool.onSuspend();
       this.suspendedByViewTool = new SuspendedToolState();
+    }
 
     viewManager.invalidateDecorationsAllViews();
 
@@ -1170,8 +1197,6 @@ export class ToolAdmin {
     accuSnap.onStartTool();
 
     this.setCursor(BeCursor.CrossHair);
-
-    // we don't actually start the tool here...
   }
 
   /** @hidden */
@@ -1341,10 +1366,7 @@ export class ToolAdmin {
     this.wheelEventProcessor.ev = ev;
     const result = this.wheelEventProcessor.process(doUpdate);
     this.wheelEventProcessor.ev = undefined;
-
-    if (undefined !== this.primitiveTool)
-      this.primitiveTool.updateDynamics(ev);
-
+    this.updateDynamics(ev);
     IModelApp.viewManager.invalidateDecorationsAllViews();
     return result;
   }
