@@ -15,6 +15,7 @@ import { DecorateContext } from "./ViewContext";
 import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/System";
+import { dispose } from "./render/webgl/Disposable";
 
 /** The state of a Model */
 export class ModelState extends EntityState implements ModelProps {
@@ -49,6 +50,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
+
+  /** Runs when the iModel this iModelState represents closes. */
+  public onIModelConnectionClose() { }
 }
 
 /** The state of a geometric model */
@@ -97,6 +101,11 @@ export abstract class GeometricModelState extends ModelState {
   private setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
+  }
+
+  public onIModelConnectionClose() {
+    dispose(this._tileTree);  // we do not track if we are disposed... catch this at the tiletree level
+    super.onIModelConnectionClose();
   }
 }
 

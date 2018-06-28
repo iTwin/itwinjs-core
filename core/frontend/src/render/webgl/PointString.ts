@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { Primitive } from "./Primitive";
@@ -31,7 +31,7 @@ export class PointStringInfo {
   }
 }
 
-export class PointStringGeometry extends LUTGeometry {
+export class PointStringGeometry extends LUTGeometry implements IDisposable {
   public readonly pointString: PointStringInfo;
   public readonly lut: VertexLUT.Data;
   public readonly indices: BufferHandle;
@@ -43,6 +43,7 @@ export class PointStringGeometry extends LUTGeometry {
     this.indices = indices;
     this.lut = lut;
     this.pointString = info;
+    this._isDisposed = false;
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
@@ -74,6 +75,14 @@ export class PointStringGeometry extends LUTGeometry {
       }
     }
     return undefined;
+  }
+
+  public dispose() {
+    if (!this._isDisposed) {
+      this.lut.dispose();
+      this.indices.dispose();
+    }
+    this._isDisposed = true;
   }
 }
 

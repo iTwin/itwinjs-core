@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
@@ -24,13 +24,20 @@ function wantLighting(vf: ViewFlags) {
   return RenderMode.SmoothShade === vf.renderMode && (vf.showSourceLights() || vf.showCameraLights() || vf.showSolarLight());
 }
 
-export class SurfaceGeometry extends MeshGeometry {
+export class SurfaceGeometry extends MeshGeometry implements IDisposable {
   private readonly _indices: BufferHandle;
 
   public static create(mesh: MeshData, indices: number[]): SurfaceGeometry | undefined {
     const indexBytes = VertexLUT.convertIndicesToTriplets(indices);
     const indexBuffer = BufferHandle.createArrayBuffer(indexBytes);
     return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
+  }
+
+  public dispose() {
+    if (!this._isDisposed) {
+      this._indices.dispose();
+      super.dispose();
+    }
   }
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
@@ -177,6 +184,7 @@ export class SurfaceGeometry extends MeshGeometry {
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {
     super(mesh, numIndices);
     this._indices = indices;
+    this._isDisposed = false;
   }
 
   private wantTextures(target: Target): boolean {
@@ -196,7 +204,7 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 }
 
-export class SurfacePrimitive extends MeshPrimitive {
+export class SurfacePrimitive extends MeshPrimitive implements IDisposable {
   public static create(args: MeshArgs, mesh: MeshGraphic): SurfacePrimitive | undefined {
     if (undefined === args.vertIndices) {
       assert(false);
@@ -209,6 +217,12 @@ export class SurfacePrimitive extends MeshPrimitive {
 
   private constructor(cachedGeom: SurfaceGeometry, mesh: MeshGraphic) {
     super(cachedGeom, mesh);
+  }
+
+  public dispose() {
+    if (!this._isDisposed)
+      super.dispose();
+    this._isDisposed = true;
   }
 
   public get renderOrder(): RenderOrder {

@@ -108,7 +108,7 @@ export class Texture extends RenderTexture {
 
   /** Free this object in the WebGL wrapper. */
   public dispose() {
-    this.texture.dispose();
+    this.texture.dispose(); // Disposing of an already disposed texture has no effect
   }
 
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }

@@ -266,14 +266,22 @@ export class FeatureOverrides implements IDisposable {
   private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
   private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
 
-  private _isDisposed: boolean = false;
+  private _isDisposed: boolean;
 
   private constructor(target: Target) {
     this.target = target;
+    this._isDisposed = true;  // atleast until a texture handle is created
   }
 
   public static createFromTarget(target: Target) {
     return new FeatureOverrides(target);
+  }
+
+  public dispose() {
+    if (!this._isDisposed)
+      this.lut!.dispose();   // disposing of an already disposed of texture-handle has no effect
+    this.lut = undefined;
+    this._isDisposed = true;
   }
 
   public get isNonUniform(): boolean { return LUTDimension.NonUniform === this.dimension; }
@@ -312,6 +320,7 @@ export class FeatureOverrides implements IDisposable {
     if (1 < nFeatures) {
       this._nonUniform = new OvrNonUniform();
       this.lut = this._nonUniform.initialize(map, ovrs, hilite, this.target.flashedElemId);
+      this._isDisposed = false;
       this.dimension = LUTDimension.NonUniform;
     } else {
       this._uniform = new OvrUniform();
@@ -344,14 +353,6 @@ export class FeatureOverrides implements IDisposable {
   }
 
   public get isDisposed() { return this._isDisposed; }
-
-  public dispose() {
-    if (this.lut !== undefined) {
-      this.lut.dispose();
-      this.lut = undefined;
-    }
-    this._isDisposed = true;
-  }
 }
 
 export interface UniformPickTable {
@@ -430,19 +431,19 @@ export abstract class Graphic extends RenderGraphic {
   // public abstract setIsPixelMode(): void;
 }
 
-export class Batch extends Graphic {
+export class Batch extends Graphic implements IDisposable {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: FeatureTable;
   public readonly range: ElementAlignedBox3d;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
-  private _isDisposed: boolean = false;
 
   public constructor(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d) {
     super(graphic.iModel);
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
+    this._isDisposed = false;   // Assume non-disposed graphic given to start
   }
 
   public get pickTable(): PickTable | undefined {
@@ -468,6 +469,8 @@ export class Batch extends Graphic {
       ret = FeatureOverrides.createFromTarget(target);
       this._overrides.push(ret);
       target.addBatch(this);
+      this._isDisposed = false;
+      // ###TODO target.addBatch(*this);
       ret.initFromMap(this.featureTable);
     }
 
@@ -496,6 +499,7 @@ export class Batch extends Graphic {
   public get isDisposed() { return this._isDisposed; }
 
   public dispose(): void {
+    this.graphic.dispose();
     for (const ovr of this._overrides) {
       ovr.target.onBatchDisposed(this);
       ovr.dispose();
@@ -505,7 +509,7 @@ export class Batch extends Graphic {
   }
 }
 
-export class Branch extends Graphic {
+export class Branch extends Graphic implements IDisposable {
   public readonly branch: GraphicBranch;
   public readonly localToWorldTransform: Transform;
   public readonly clips?: Clip.Volume;
@@ -517,6 +521,16 @@ export class Branch extends Graphic {
     this.clips = Clip.getClipVolume(clips, iModel);
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
+    if (branch.entries.length > 0)
+      this._isDisposed = false; // assume GraphicBranch list contains non-disposed graphics
+  }
+
+  // Note: This does not empty the GraphicBranch array, but rather just disposes of contained WebGL resources
+  public dispose() {
+    if (!this._isDisposed) {
+      this.branch.dispose();
+    }
+    this._isDisposed = true;
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
@@ -525,13 +539,9 @@ export class Branch extends Graphic {
       (entry as Graphic).assignUniformFeatureIndices(index);
     }
   }
-
-  public dispose(): void {
-    // ###TODO
-  }
 }
 
-export class WorldDecorations extends Branch {
+export class WorldDecorations extends Branch implements IDisposable {
   public readonly overrides: Array<FeatureSymbology.Appearance | undefined> = [];
 
   public constructor(iModel: IModelConnection, viewFlags: ViewFlags) { super(iModel, new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
@@ -543,11 +553,22 @@ export class WorldDecorations extends Branch {
       this.branch.add(dec.graphic);
       this.overrides.push(dec.overrides);
     }
+    if (decs.length > 0)
+      this._isDisposed = false; // assume decoration graphics given are not disposed
   }
 }
 
-export class GraphicsList extends Graphic {
-  constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); }
+export class GraphicsList extends Graphic implements IDisposable {
+  // Note: We assume the graphics array we get contains undisposed graphics to start
+  constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); this._isDisposed = false; }
+
+  public dispose() {
+    if (!this._isDisposed) {
+      for (const graphic of this.graphics)
+        graphic.dispose();
+    }
+    this._isDisposed = true;
+  }
 
   public addCommands(commands: RenderCommands): void {
     for (const graphic of this.graphics) {
@@ -565,9 +586,5 @@ export class GraphicsList extends Graphic {
     for (const gf of this.graphics) {
       (gf as Graphic).assignUniformFeatureIndices(index);
     }
-  }
-
-  public dispose(): void {
-    // ###TODO
   }
 }

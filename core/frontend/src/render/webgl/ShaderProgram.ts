@@ -304,6 +304,8 @@ export class ShaderProgramExecutor implements IDisposable {
     this.changeProgram(program);
   }
 
+  // Note: This only changes the program, and does not actually dispose of WebGL resources
+  // ShaderPrograms are owned by the Technique wrapper classes
   public dispose() { this.changeProgram(undefined); }
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }

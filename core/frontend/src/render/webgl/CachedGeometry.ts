@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
@@ -46,6 +46,9 @@ export abstract class CachedGeometry {
   public abstract bindVertexArray(handle: AttributeHandle): void;
   // Draws this geometry
   public abstract draw(): void;
+
+  public abstract dispose(): void;
+  protected _isDisposed: boolean = true;  // should be set to false when an extending class creates WebGL resources
 
   // Intended to be overridden by specific subclasses
   public get material(): Material | undefined { return undefined; }
@@ -125,6 +128,11 @@ export class IndexedGeometryParams {
   public static createFromList(positions: QPoint3dList, indices: Uint32Array) {
     return IndexedGeometryParams.create(positions.toTypedArray(), positions.params, indices);
   }
+
+  public dispose() {
+    this.positions.dispose();
+    this.indices.dispose();
+  }
 }
 
 // A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
@@ -134,6 +142,14 @@ export abstract class IndexedGeometry extends CachedGeometry {
   protected constructor(params: IndexedGeometryParams) {
     super();
     this._params = params;
+  }
+
+  // called by sub-classes
+  public dispose() {
+    if (!this._isDisposed) {
+      this._params.dispose();
+    }
+    this._isDisposed = true;
   }
 
   public bindVertexArray(attr: AttributeHandle): void {
@@ -296,7 +312,7 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
   }
 }
 
-export class PolylineBuffers {
+export class PolylineBuffers implements IDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
@@ -306,5 +322,13 @@ export class PolylineBuffers {
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
     this.distances = distances;
+  }
+
+  public dispose() {
+    // Disposing of an already disposed buffer should have no effect...
+    this.indices.dispose();
+    this.prevIndices.dispose();
+    this.nextIndicesAndParams.dispose();
+    this.distances.dispose();
   }
 }

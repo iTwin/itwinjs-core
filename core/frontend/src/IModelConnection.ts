@@ -172,6 +172,7 @@ export class IModelConnection extends IModel {
       return;
     RpcRequest.notFoundHandlers.removeListener(this.reopenConnectionHandler);
     IModelConnection.onClose.raiseEvent(this);
+    this.models.onIModelConnectionClose();  // will free WebGL resources for each model if rendering
     try {
       await IModelReadRpcInterface.getClient().close(accessToken, this.iModelToken);
     } finally {
@@ -380,6 +381,13 @@ export namespace IModelConnection {
         params.where += "IsTemplate=FALSE ";
       }
       return await IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
+    }
+
+    /** Code to run when the IModelConnection has closed. */
+    public onIModelConnectionClose() {
+      this.loaded.forEach((value: ModelState) => {
+        value.onIModelConnectionClose();
+      });
     }
   }
 

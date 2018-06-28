@@ -21,6 +21,7 @@ import { ColorInfo } from "./ColorInfo";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
+import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 
 export class PolylineInfo {
   public vertexParams: QParams3d;
@@ -228,18 +229,27 @@ export class PolylineTesselator {
   }
 }
 
-export class PolylineGeometry extends LUTGeometry {
+export class PolylineGeometry extends LUTGeometry implements IDisposable {
   public polyline: PolylineInfo;
   public lut: VertexLUT.Data;
   public numIndices: number;
   private buffers: PolylineBuffers;
 
-  public constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
+  private constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
     super();
     this.polyline = info;
     this.lut = lut;
     this.numIndices = numIndices;
     this.buffers = buffers;
+    this._isDisposed = false;
+  }
+
+  public dispose() {
+    if (!this._isDisposed) {
+      this.lut.dispose();
+      this.buffers.dispose();
+    }
+    this._isDisposed = true;
   }
 
   public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }

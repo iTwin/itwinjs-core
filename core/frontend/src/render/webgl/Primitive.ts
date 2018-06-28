@@ -84,7 +84,13 @@ export abstract class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(iModel); this.cachedGeometry = cachedGeom; }
+  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(iModel); this.cachedGeometry = cachedGeom; this._isDisposed = false; }
+
+  public dispose() {
+    if (!this._isDisposed)
+      this.cachedGeometry.dispose();
+    this._isDisposed = true;
+  }
 
   public getRenderPass(target: Target) {
     if (this.isPixelMode)
@@ -133,10 +139,6 @@ export abstract class Primitive extends Graphic {
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 
   public get debugString(): string { return this.cachedGeometry.debugString; }
-
-  public dispose(): void {
-    // ###TODO
-  }
 }
 
 export class PointCloudPrimitive extends Primitive {

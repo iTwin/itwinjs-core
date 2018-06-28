@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, BeDuration, StopWatch } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch, IDisposable } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -27,6 +27,7 @@ import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
+import { dispose } from "./Disposable";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -187,8 +188,8 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  public readonly environmentMap?: TextureHandle; // ###TODO: for IBL
-  public readonly diffuseMap?: TextureHandle; // ###TODO: for IBL
+  public readonly environmentMap?: TextureHandle; // ###TODO: for IBL (make sure that upon setting, Target has _isDisposed=false state to avoid memleaks)
+  public readonly diffuseMap?: TextureHandle; // ###TODO: for IBL (make sure that upon setting, Target has _isDisposed=false state to avoid memleaks)
   public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
@@ -204,7 +205,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this.compositor = new SceneCompositor(this);
+    this.compositor = new SceneCompositor(this);  // compositor is created but not yet initialized... we are still undisposed
   }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
@@ -232,7 +233,6 @@ export abstract class Target extends RenderTarget {
   public get shaderLights(): ShaderLights | undefined { return this._shaderLights; }
 
   public get scene(): GraphicList { return this._scene; }
-  public get decorations(): Decorations { return this._decorations; }
   public get dynamics(): DecorationList | undefined { return this._dynamics; }
   public getWorldDecorations(decs: DecorationList): WorldDecorations {
     if (undefined === this._worldDecorations) {
@@ -249,9 +249,12 @@ export abstract class Target extends RenderTarget {
       }
 
       this._worldDecorations = new WorldDecorations(decs[0].graphic.iModel, vf);
+    } else {
+      this._worldDecorations.dispose();
     }
 
     this._worldDecorations.init(decs);
+    this._isDisposed = false; // assume world decorations given are non-disposed
     return this._worldDecorations;
   }
 
@@ -266,11 +269,27 @@ export abstract class Target extends RenderTarget {
   public set clipMask(mask: TextureHandle | undefined) {
     assert(!this.hasClipMask);
     assert(this.is2d);
+    dispose(this._clipMask);
     this._clipMask = mask;
+    this._isDisposed = false; // assume given TextureHandle is undisposed
   }
 
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
+
+  // called by sub-classes
+  public dispose() {
+    if (!this._isDisposed) {
+      this._decorations.dispose();
+      dispose(this._dynamics);
+      dispose(this._worldDecorations);
+      this.compositor.dispose();
+      dispose(this._clipMask);
+      dispose(this.environmentMap);
+      dispose(this.diffuseMap);
+    }
+    this._isDisposed = true;
+  }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
     this._stack.pushBranch(branch);
@@ -332,8 +351,10 @@ export abstract class Target extends RenderTarget {
   }
 
   public changeDecorations(decs: Decorations): void {
+    // Although we dispose of the old decorations, we assume the new decorations will be non-disposed, and thus _isDisposed should remain false
     this._decorations.dispose();
     this._decorations = decs;
+    this._isDisposed = false;
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
@@ -343,6 +364,7 @@ export abstract class Target extends RenderTarget {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
     // See IModelConnection.transientIds
     this._dynamics = dynamics;
+    this._isDisposed = false; // assume dynamics given are non-disposed
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this._stack.setSymbologyOverrides(ovr);
@@ -376,6 +398,7 @@ export abstract class Target extends RenderTarget {
     if (this._dcAssigned && plan.is3d !== this.is3d) {
       // changed the dimensionality of the Target. World decorations no longer valid.
       // (lighting is enabled or disabled based on 2d vs 3d).
+      dispose(this._worldDecorations);
       this._worldDecorations = undefined;
     }
 
@@ -544,8 +567,9 @@ export abstract class Target extends RenderTarget {
     this.reset();
   }
   public reset(): void {
+    this.dispose();
+    this._isDisposed = true;
     this._scene.length = 0;
-    this._decorations.reset();
     this._dynamics = undefined;
     // ###TODO this._activeVolume = undefined;
   }
@@ -613,7 +637,8 @@ export abstract class Target extends RenderTarget {
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
     this.setFrameTime();
-    this.compositor.draw(this._renderCommands);
+    this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
+    this._isDisposed = false;
 
     this.setFrameTime();
     this._stack.pushState(this.decorationState);
@@ -757,7 +782,8 @@ export abstract class Target extends RenderTarget {
     }
 
     // Draw the scene
-    this.compositor.drawForReadPixels(this._renderCommands);
+    this.compositor.drawForReadPixels(this._renderCommands);  // compositor gets disposed and re-initialized... target remains undisposed
+    this._isDisposed = false;
 
     // Restore the state
     this._stack.pop();
@@ -773,7 +799,7 @@ export abstract class Target extends RenderTarget {
 }
 
 /** A Target which renders to a canvas on the screen */
-export class OnScreenTarget extends Target {
+export class OnScreenTarget extends Target implements IDisposable {
   private readonly _viewRect = new ViewRect();
   private readonly _canvas: HTMLCanvasElement;
   private _fbo?: FrameBuffer;
@@ -783,6 +809,15 @@ export class OnScreenTarget extends Target {
   public constructor(canvas: HTMLCanvasElement) {
     super();
     this._canvas = canvas;
+  }
+
+  public dispose() {
+    if (!this._isDisposed) {
+      dispose(this._fbo);
+      dispose(this._blitGeom);
+      super.dispose();
+    }
+    this._isDisposed = true;
   }
 
   public get viewRect(): ViewRect {
@@ -803,9 +838,11 @@ export class OnScreenTarget extends Target {
     }
 
     this._fbo = FrameBuffer.create([color]);
+    color.dispose();  // dispose of the texture (it is not used anymore)
     if (undefined === this._fbo) {
       return false;
     }
+    this._isDisposed = false; // have a valid created FrameBuffer
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
@@ -883,6 +920,7 @@ export class OnScreenTarget extends Target {
   }
   public onResized(): void {
     this._dcAssigned = false;
+    dispose(this._fbo);
     this._fbo = undefined;
   }
 }
@@ -910,7 +948,7 @@ export class OffScreenTarget extends Target {
 
     this._dcAssigned = false;
     // ###TODO this._fbo = undefined;
-    this.compositor.reset();
+    this.compositor.dispose();
   }
 
   // ###TODO...

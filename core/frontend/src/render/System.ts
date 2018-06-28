@@ -27,6 +27,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
+import { dispose } from "./webgl/Disposable";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
@@ -67,8 +68,9 @@ export class RenderPlan {
 /**
  * A renderer-specific object that can be placed into a display list.
  */
-export abstract class RenderGraphic implements IDisposable {
+export abstract class RenderGraphic {
   public readonly iModel: IModelConnection;
+  protected _isDisposed: boolean = true;  // we have a disposed graphic up until we add/create any non-disposed WebGL items
 
   constructor(iModel: IModelConnection) { this.iModel = iModel; }
 
@@ -78,18 +80,40 @@ export abstract class RenderGraphic implements IDisposable {
 export type GraphicList = RenderGraphic[];
 
 /** A graphic used for decorations, optionally with symbology overrides. */
-export class Decoration {
+export class Decoration implements IDisposable {
   public readonly graphic: RenderGraphic;
   public readonly overrides?: FeatureSymbology.Appearance;
+  private _isDisposed: boolean;
 
   public constructor(graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance) {
     this.graphic = graphic;
     this.overrides = overrides;
+    this._isDisposed = false; // assume given graphics are non-disposed
+  }
+
+  public dispose() {
+    if (!this._isDisposed)
+      this.graphic.dispose();
+    this._isDisposed = true;
   }
 }
 
-export class DecorationList extends Array<Decoration> {
-  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) { this.push(new Decoration(graphic, ovrs)); }
+export class DecorationList extends Array<Decoration> implements IDisposable {
+  private _isDisposed: boolean = false;   // assume non-disposed to start, in case initializing a DecorationList with starting Decorations
+
+  // Note: This does not delete any decorations, but rather frees the contained WebGL resources
+  public dispose() {
+    if (!this._isDisposed) {
+      for (const decoration of this)
+        decoration.dispose();
+    }
+    this._isDisposed = true;
+  }
+
+  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) {
+    this.push(new Decoration(graphic, ovrs));
+    this._isDisposed = false; // assume added graphic is not disposed
+  }
 }
 
 /**
@@ -97,52 +121,75 @@ export class DecorationList extends Array<Decoration> {
  * in addition to the Scene.
  */
 export class Decorations implements IDisposable {
-  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
+  private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
+  private _world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  private _worldOverlay?: DecorationList; // drawn in overlay mode, world units
+  private _viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 
-  public reset(): void {
-    this.viewBackground = undefined;
-    this.normal = undefined;
-    this.world = this.worldOverlay = this.viewOverlay = undefined;
-  }
-
-  /** Dispose of all of the contained RenderGraphics and WebGL resources corresponding to these decorations. */
-  public dispose(): void {
-    if (this.viewBackground)
-      this.viewBackground.dispose();
-    if (this.normal)
-      for (const graphic of this.normal)
+  // Getters
+  public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
+  public get normal(): GraphicList | undefined { return this._normal; }
+  public get world(): DecorationList | undefined { return this._world; }
+  public get worldOverlay(): DecorationList | undefined { return this._worldOverlay; }
+  public get viewOverlay(): DecorationList | undefined { return this._viewOverlay; }
+  // Setters - disposes of members before re-setting
+  public set viewBackground(viewBackground: RenderGraphic | undefined) { dispose(this._viewBackground); this._viewBackground = viewBackground; }
+  public set normal(normal: GraphicList | undefined) {
+    if (this._normal)
+      for (const graphic of this._normal)
         graphic.dispose();
-    if (this.world)
-      for (const decoration of this.world)
-        decoration.graphic.dispose();
-    if (this.worldOverlay)
-      for (const decoration of this.worldOverlay)
-        decoration.graphic.dispose();
-    if (this.viewOverlay)
-      for (const decoration of this.viewOverlay)
-        decoration.graphic.dispose();
+    this._normal = normal;
+  }
+  public set world(world: DecorationList | undefined) { dispose(this._world); this._world = world; }
+  public set worldOverlay(worldOverlay: DecorationList | undefined) { dispose(this._worldOverlay); this._worldOverlay = worldOverlay; }
+  public set viewOverlay(viewOverlay: DecorationList | undefined) { dispose(this._viewOverlay); this._viewOverlay = viewOverlay; }
+
+  // Decorations does not track whether or not it has been disposed... catch this within the member methods
+  public dispose() {
+    dispose(this._viewBackground);
+    dispose(this._world);
+    dispose(this._worldOverlay);
+    dispose(this._viewOverlay);
+    if (this._normal)
+      for (const graphic of this._normal)
+        graphic.dispose();
+    this._viewBackground = this._normal = this._world = this._worldOverlay = this._viewOverlay = undefined;
   }
 }
 
-export class GraphicBranch {
+export class GraphicBranch implements IDisposable {
   public readonly entries: RenderGraphic[] = [];
   private _viewFlagOverrides = new ViewFlag.Overrides();
   public symbologyOverrides?: FeatureSymbology.Overrides;
+  private _isDisposed: boolean;
 
-  public constructor() { }
+  public constructor() { this._isDisposed = true; }
 
-  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
-  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
+  public dispose() {
+    if (!this._isDisposed)
+      for (const graphic of this.entries)
+        graphic.dispose();
+    this._isDisposed = true;
+  }
+
+  public add(graphic: RenderGraphic): void {
+    this.entries.push(graphic);
+    this._isDisposed = false;
+  }
+  public addRange(graphics: RenderGraphic[]): void {
+    graphics.forEach(this.add);
+    this._isDisposed = false;
+  }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
-  public clear() { this.entries.length = 0; }
+  public clear() {
+    this.dispose();
+    this.entries.length = 0;
+  }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 

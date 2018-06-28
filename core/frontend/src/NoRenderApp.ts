@@ -27,6 +27,7 @@ export class NullTarget extends RenderTarget {
   public setViewRect(): void { }
   public queueReset(): void { }
   public onResized(): void { }
+  public dispose(): void { }
   public updateViewRect(): boolean { return false; }
   public readPixels() { return undefined; }
 }

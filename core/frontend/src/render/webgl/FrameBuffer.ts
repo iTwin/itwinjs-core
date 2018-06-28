@@ -158,6 +158,7 @@ interface Binding {
 }
 
 export class FrameBufferStack {
+  // FrameBuffers within this array are not owned, as this is only a storage device holding references
   private readonly _stack: Binding[] = [];
 
   private get top() { return !this.isEmpty ? this._stack[this._stack.length - 1] : undefined; }

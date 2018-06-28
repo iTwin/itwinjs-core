@@ -12,7 +12,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert, Dictionary } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Dictionary, IDisposable } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
@@ -180,7 +180,7 @@ export class Capabilities {
 }
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
-export class IdMap {
+export class IdMap implements IDisposable {
   /** Mapping of materials by their key values. */
   public readonly materialMap: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
@@ -189,11 +189,29 @@ export class IdMap {
   public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
   /** Array of textures without key values (unnamed). */
   public readonly keylessTextures: RenderTexture[] = [];
+  private _isDisposed: boolean = true;
 
   public constructor() {
     this.materialMap = new Map<string, RenderMaterial>();
     this.textureMap = new Map<string, RenderTexture>();
     this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+  }
+
+  /** Returns true if all of the WebGL resources within this IdMap have been disposed. */
+  public isDisposed(): boolean { return this._isDisposed; }
+
+  // Note: This does not remove the textures from the map, but rather only deletes the WebGL resources they hold
+  // Will have no effect on already disposed textures, although the only way they should be disposed is through this IdMap..
+  public dispose() {
+    if (!this._isDisposed) {
+      const textureArr = Array.from(this.textureMap.values());
+      const gradientArr = this.gradientMap.extractArrays().values;
+      for (const texture of textureArr)
+        texture.dispose();
+      for (const gradient of gradientArr)
+        gradient.dispose();
+    }
+    this._isDisposed = true;
   }
 
   /** Add a material to the material map, given that it has a valid key. */
@@ -262,6 +280,7 @@ export class IdMap {
       this.textureMap.set(params.key, texture);
     else
       this.keylessTextures.push(texture);
+    this._isDisposed = false;
     return texture;
   }
 
@@ -281,6 +300,7 @@ export class IdMap {
       this.textureMap.set(params.key, texture);
     else
       this.keylessTextures.push(texture);
+    this._isDisposed = false;
     return texture;
   }
 
@@ -328,18 +348,19 @@ export class IdMap {
     if (!textureHandle)
       return undefined;
     const texture = new Texture(Texture.Params.defaults, textureHandle);
+    this._isDisposed = false;
     this.addGradient(grad, texture);
     return texture;
   }
 }
 
-export class System extends RenderSystem {
+export class System extends RenderSystem implements IDisposable {
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
-  public readonly frameBufferStack = new FrameBufferStack();
-
+  public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
+  private _isDisposed: boolean;
 
   public readonly drawBuffersExtension?: WEBGL_draw_buffers;
 
@@ -378,9 +399,23 @@ export class System extends RenderSystem {
     return new System(canvas, context, techniques, capabilities);
   }
 
+  // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
+  public dispose() {
+    if (!this._isDisposed) {
+      this.techniques.dispose();
+
+      // We must attempt to dispose of each idmap in the rendercache (if idmap is already disposed, has no effect)
+      const idMaps = this.renderCache.extractArrays().values;
+      for (const idMap of idMaps)
+        idMap.dispose();
+    }
+    this._isDisposed = true;
+  }
+
   public onInitialized(): void {
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+    this._isDisposed = false;
   }
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
@@ -403,6 +438,7 @@ export class System extends RenderSystem {
   }
 
   public createDepthBuffer(width: number, height: number): DepthBuffer | undefined {
+    // Note: The buffer/texture created here have ownership passed to the caller (system will not dispose of these)
     switch (this.capabilities.maxDepthType) {
       case DepthType.RenderBufferUnsignedShort16: {
         return RenderBuffer.create(width, height);
@@ -446,14 +482,7 @@ export class System extends RenderSystem {
     const idMap = this.renderCache.get(imodel);
     if (idMap === undefined)
       return;
-    const textureArr = Array.from(idMap.textureMap.values()).concat(idMap.keylessTextures);
-    const gradientArr = idMap.gradientMap.extractArrays().values;
-    for (const texture of textureArr) {
-      texture.dispose();
-    }
-    for (const gradient of gradientArr) {
-      gradient.dispose();
-    }
+    idMap.dispose();
     this.renderCache.delete(imodel);
   }
 
@@ -464,14 +493,7 @@ export class System extends RenderSystem {
     // First, 'free' all textures that are used by a WebGL wrapper
     const imodelArr = this.renderCache.extractArrays().values;
     for (const idMap of imodelArr) {
-      const textureArr = Array.from(idMap.textureMap.values()).concat(idMap.keylessTextures);
-      const gradientArr = idMap.gradientMap.extractArrays().values;
-      for (const texture of textureArr) {
-        texture.dispose();
-      }
-      for (const gradient of gradientArr) {
-        gradient.dispose();
-      }
+      idMap.dispose();
     }
 
     this.renderCache.clear();
@@ -488,7 +510,10 @@ export class System extends RenderSystem {
       idMap = new IdMap();
       this.renderCache.insert(imodel, idMap);
     }
-    return idMap.getMaterial(params);
+    const material = idMap.getMaterial(params);
+    if (this._isDisposed)
+      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+    return material;
   }
 
   /** Searches through the iModel's render map for a material, given its key. Returns undefined if none found. */
@@ -499,43 +524,43 @@ export class System extends RenderSystem {
     return idMap.findMaterial(key);
   }
 
-  /**
-   * Creates a texture using an ImageBuffer and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
-   * If no render map exists for the imodel, returns undefined.
-   */
+  /** Creates a texture using an ImageBuffer and adds it to the iModel's render map. If the texture already exists in the map, simply return it. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();
       this.renderCache.insert(imodel, idMap);
     }
-    return idMap.getTexture(image, params);
+    const texture = idMap.getTexture(image, params);
+    if (this._isDisposed)
+      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+    return texture;
   }
 
-  /**
-   * Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
-   * If no render map exists for the imodel, returns undefined.
-   */
+  /** Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it. */
   public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();
       this.renderCache.insert(imodel, idMap);
     }
-    return idMap.getTextureFromImageSource(source, width, height, params);
+    const texture = idMap.getTextureFromImageSource(source, width, height, params);
+    if (this._isDisposed)
+      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+    return texture;
   }
 
-  /**
-   * Creates a texture using gradient symbology and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
-   * If no render map exists for the imodel, returns undefined.
-   */
+  /** Creates a texture using gradient symbology and adds it to the iModel's render map. If the texture already exists in the map, simply return it. */
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();
       this.renderCache.insert(imodel, idMap);
     }
-    return idMap.getGradient(symb);
+    const texture = idMap.getGradient(symb);
+    if (this._isDisposed)
+      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+    return texture;
   }
 
   /** Searches through the iModel's render map for a texture, given its key. Returns undefined if none found. */
@@ -550,6 +575,7 @@ export class System extends RenderSystem {
     super(canvas);
     this.context = context;
     this.techniques = techniques;
+    this._isDisposed = false; // if we reached the private constructor, we have created built-in techniques holding WebGL resources
     this.capabilities = capabilities;
     this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this.renderCache = new Dictionary<IModelConnection, IdMap>((lhs: IModelConnection, rhs: IModelConnection): number => {
