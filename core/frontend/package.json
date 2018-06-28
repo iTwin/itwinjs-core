@@ -40,6 +40,10 @@
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-i18n": "0",
+    "@types/i18next": "^8.4.2",
+    "@types/i18next-browser-languagedetector": "^2.0.1",
+    "@types/i18next-xhr-backend": "^1.4.1",
+    "@types/js-base64": "^2.3.1",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.9.0",
@@ -47,7 +51,6 @@
     "typescript": "~2.7.2"
   },
   "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-frontend",
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
