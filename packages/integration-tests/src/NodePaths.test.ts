@@ -7,6 +7,7 @@ import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { InstanceKey, PresentationRuleSet } from "@bentley/ecpresentation-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import "@helpers/Snapshots";
 
 before(() => {
   initialize();
