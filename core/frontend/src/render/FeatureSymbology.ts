@@ -266,7 +266,7 @@ export namespace FeatureSymbology {
       if (replaceExisting || !appearance.overridesSymbology) this._defaultOverrides = appearance.clone();
     }
 
-    public async updateFromIModel(_iModel: IModelConnection, view: ViewState): Promise<void> {
+    public updateFromIModel(_iModel: IModelConnection, view: ViewState) {
       // Features are defined by subcategory, which only implies category...
       // A subcategory is visible if it belongs to a viewed category and its appearance's visibility flag is set
 
@@ -288,10 +288,9 @@ export namespace FeatureSymbology {
           }
         }
       }
-      return Promise.resolve();
     }
 
-    public async initFromView(view: ViewState): Promise<void> {
+    public initFromView(view: ViewState) {
       const { alwaysDrawn, neverDrawn, viewFlags, iModel } = view;
       const { constructions, dimensions, patterns } = viewFlags;
 
@@ -303,7 +302,7 @@ export namespace FeatureSymbology {
       this._patterns = patterns;
       this._lineWeights = viewFlags.showWeights(); // #TODO make showWeights a property
 
-      await this.updateFromIModel(iModel, view);
+      this.updateFromIModel(iModel, view);
     }
 
     constructor(view?: ViewState) { if (undefined !== view) this.initFromView(view); }
