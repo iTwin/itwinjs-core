@@ -60,7 +60,7 @@ export class Tile {
   private _graphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
-  protected _maxDepth: number = 2;
+  protected _maxDepth: number = 20;
   public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
@@ -283,7 +283,6 @@ export class Tile {
     }
   }
 
-  protected _doCulling: boolean = false;
   private static scratchWorldFrustum = new Frustum();
   private static scratchRootFrustum = new Frustum();
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
@@ -292,7 +291,7 @@ export class Tile {
     const isOutside = FrustumPlanes.Containment.Outside === args.context.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
     const isCulled = isOutside || isClipped;
-    return this._doCulling && isCulled;
+    return isCulled;
   }
 
   private loadChildren(): TileTree.LoadStatus {
