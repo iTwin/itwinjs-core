@@ -820,6 +820,7 @@ export namespace FrustumPlanes {
 
   export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance: number = 1.0e-6): void {
     const normal = Vector3d.createCrossProductToPoints(points[i2], points[i1], points[i0]);
+    normal.normalizeInPlace();
     const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[i0]) - expandPlaneDistance);
     if (undefined !== plane) {
       planes.push(plane);
