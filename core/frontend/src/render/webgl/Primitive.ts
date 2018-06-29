@@ -89,7 +89,6 @@ export abstract class Primitive extends Graphic {
   protected doDispose() {
     if (!this._isDisposed) {
       this.cachedGeometry.dispose();
-      super.dispose();
       this._isDisposed = true;
     }
   }

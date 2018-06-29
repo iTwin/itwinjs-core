@@ -110,7 +110,6 @@ export class Texture extends RenderTexture {
   /** Free this object in the WebGL wrapper. */
   protected doDispose() {
     this.texture.dispose();
-    super.dispose();
     this._isDisposed = true;
   }
 
