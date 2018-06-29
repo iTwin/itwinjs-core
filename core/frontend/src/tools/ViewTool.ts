@@ -815,7 +815,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.viewport = vp;
 
     if (this.handleMask & ViewHandleType.Rotate) {
-      // Setup intial view ball size and location...
+      // Setup initial view ball size and location...
       this.synchViewBallInfo(true);
       this.viewHandles.add(new ViewRotate(this));
     }
