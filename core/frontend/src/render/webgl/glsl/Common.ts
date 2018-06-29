@@ -84,13 +84,14 @@ export namespace GLSLCommon {
   // Taking the fractional part yields 0.5##...
   // Multiplying by 2.0 and taking the floor yields 1.0 or 0.0
   export const extractNthBit = `
-    float extractNthBit(float flags, float n) {
-      float denom = pow(2.0, n+1.0);
-      return floor(fract(flags/denom)*2.0);
-    }`;
+float extractNthBit(float flags, float n) {
+  float denom = pow(2.0, n+1.0);
+  return floor(fract(flags/denom)*2.0);
+}
+`;
 
   // TFS#794899 and related...float values of 0.0 or 1.0 used to indicate false/true apparently do not
   // get precisely preserved when interpolated to fragment shader despite all triangles producing
   // same values. Use this to work around it and make it clear what the code is actually doing.
-  export const floatToBool = `bool floatToBool(float f) { return floor(f + 0.5) > 0.0; }`;
+  export const floatToBool = "\nbool floatToBool(float f) { return floor(f + 0.5) > 0.0; }\n";
 }

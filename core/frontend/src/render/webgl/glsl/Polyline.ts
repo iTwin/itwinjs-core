@@ -25,27 +25,27 @@ import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { addHiliter } from "./FeatureSymbology";
 
-const checkForDiscard = `return discardByLineCode;`;
+const checkForDiscard = "return discardByLineCode;";
 
 const applyLineCode = `
-if (v_texc.x >= 0.0) { // v_texc = (-1,-1) for solid lines - don't bother with any of this
-  vec4 texColor = TEXTURE(u_lineCodeTexture, v_texc);
-  discardByLineCode = (0.0 == texColor.r);
-}
+  if (v_texc.x >= 0.0) { // v_texc = (-1,-1) for solid lines - don't bother with any of this
+    vec4 texColor = TEXTURE(u_lineCodeTexture, v_texc);
+    discardByLineCode = (0.0 == texColor.r);
+  }
 
-if (v_lnInfo.w > 0.5) { // line needs pixel trimming
-  // calculate pixel distance from pixel center to expected line center, opposite dir from major
-  vec2 dxy = gl_FragCoord.xy - v_lnInfo.xy;
-  if (v_lnInfo.w < 1.5)  // not x-major
-    dxy = dxy.yx;
+  if (v_lnInfo.w > 0.5) { // line needs pixel trimming
+    // calculate pixel distance from pixel center to expected line center, opposite dir from major
+    vec2 dxy = gl_FragCoord.xy - v_lnInfo.xy;
+    if (v_lnInfo.w < 1.5)  // not x-major
+      dxy = dxy.yx;
 
-  float dist = v_lnInfo.z * dxy.x - dxy.y;
-  float distA = abs(dist);
-  if (distA > 0.5 || (distA == 0.5 && dist < 0.0))
-    discardByLineCode = true;  // borrow this flag to force discard
-}
+    float dist = v_lnInfo.z * dxy.x - dxy.y;
+    float distA = abs(dist);
+    if (distA > 0.5 || (distA == 0.5 && dist < 0.0))
+      discardByLineCode = true;  // borrow this flag to force discard
+  }
 
-return baseColor;
+  return baseColor;
 `;
 
 const computeTextureCoord = `
@@ -229,137 +229,137 @@ function addCommon(prog: ProgramBuilder, clip: WithClipVolume) {
 }
 
 const decodeAdjacentPositions = `
-float index;
-vec2 tc;
-vec4 e0, e1;
-vec3 qpos;
+  float index;
+  vec2 tc;
+  vec4 e0, e1;
+  vec3 qpos;
 
-index = decodeUInt32(a_prevIndex);
-tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
-e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-tc += g_vert_stepX;
-e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-g_prevPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+  index = decodeUInt32(a_prevIndex);
+  tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
+  e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc += g_vert_stepX;
+  e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
+  g_prevPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
 
-index = decodeUInt32(a_nextIndex);
-tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
-e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-tc += g_vert_stepX;
-e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-g_nextPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+  index = decodeUInt32(a_nextIndex);
+  tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
+  e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc += g_vert_stepX;
+  e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
+  g_nextPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
 `;
 
 const computePosition = `
-const float kNone = 0.0,
-            kSquare = 1.0*3.0,
-            kMiter = 2.0*3.0,
-            kMiterInsideOnly = 3.0*3.0,
-            kJointBase = 4.0*3.0,
-            kNegatePerp = 8.0*3.0,
-            kNegateAlong = 16.0*3.0,
-            kNoneAdjWt = 32.0*3.0;
+  const float kNone = 0.0,
+              kSquare = 1.0*3.0,
+              kMiter = 2.0*3.0,
+              kMiterInsideOnly = 3.0*3.0,
+              kJointBase = 4.0*3.0,
+              kNegatePerp = 8.0*3.0,
+              kNegateAlong = 16.0*3.0,
+              kNoneAdjWt = 32.0*3.0;
 
-v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
+  v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
 
-vec4 pos = u_mvp * rawPos;
+  vec4 pos = u_mvp * rawPos;
 
-vec4 next = g_nextPos;
-g_windowPos = modelToWindowCoordinates(rawPos, next);
+  vec4 next = g_nextPos;
+  g_windowPos = modelToWindowCoordinates(rawPos, next);
 
-if (g_windowPos.w == 0.0)
-  return g_windowPos;
+  if (g_windowPos.w == 0.0)
+    return g_windowPos;
 
-float param = a_param;
-float weight = ComputeLineWeight();
-float scale = 1.0, directionScale = 1.0;
+  float param = a_param;
+  float weight = ComputeLineWeight();
+  float scale = 1.0, directionScale = 1.0;
 
-if (param >= kNoneAdjWt)
-  param -= kNoneAdjWt;
+  if (param >= kNoneAdjWt)
+    param -= kNoneAdjWt;
 
-if (param >= kNegateAlong) {
-  directionScale = -directionScale;
-  param -= kNegateAlong;
-}
-
-if (param >= kNegatePerp) {
-  scale = -1.0;
-  param -= kNegatePerp;
-}
-
-vec4 projNext = modelToWindowCoordinates(next, rawPos);
-g_windowDir = projNext.xy - g_windowPos.xy;
-
-if (param < kJointBase) {
-  vec2 dir = (directionScale > 0.0) ? g_windowDir : -g_windowDir;
-  vec2 pos = (directionScale > 0.0) ? g_windowPos.xy : projNext.xy;
-  adjustWidth(weight, dir, pos);
-}
-
-if (kNone != param) {
-  vec2 delta = vec2(0.0);
-  vec4 prev   = g_prevPos;
-  vec4 projPrev = modelToWindowCoordinates(prev, rawPos);
-  vec2 prevDir   = g_windowPos.xy - projPrev.xy;
-  float thisLength = sqrt(g_windowDir.x * g_windowDir.x + g_windowDir.y * g_windowDir.y);
-  const float s_minNormalizeLength = 1.0E-5;  // avoid normalizing zero length vectors.
-  float dist = weight / 2.0;
-
-  if (thisLength > s_minNormalizeLength) {
-    g_windowDir /= thisLength;
-
-    float prevLength = sqrt(prevDir.x * prevDir.x + prevDir.y * prevDir.y);
-
-    if (prevLength > s_minNormalizeLength) {
-      prevDir /= prevLength;
-      const float     s_minParallelDot= -.9999, s_maxParallelDot = .9999;
-      float           prevNextDot  = dot(prevDir, g_windowDir);
-
-      if (prevNextDot < s_minParallelDot || prevNextDot > s_maxParallelDot)    // No miter if parallel or antiparallel.
-        param = kSquare;
-    } else
-      param = kSquare;
-  } else {
-    g_windowDir = -normalize(prevDir);
-    param = kSquare;
+  if (param >= kNegateAlong) {
+    directionScale = -directionScale;
+    param -= kNegateAlong;
   }
 
-  vec2 perp = scale * vec2(-g_windowDir.y, g_windowDir.x);
+  if (param >= kNegatePerp) {
+    scale = -1.0;
+    param -= kNegatePerp;
+  }
 
-  if (param == kSquare) {
-    delta = perp;
-  } else {
-    vec2 bisector = normalize(prevDir - g_windowDir);
-    float dotP = dot (bisector, perp);
+  vec4 projNext = modelToWindowCoordinates(next, rawPos);
+  g_windowDir = projNext.xy - g_windowPos.xy;
 
-    if (dotP != 0.0) { // Should never occur - but avoid divide by zero.
-      const float maxMiter = 3.0;
-      float miterDistance = 1.0/dotP;
+  if (param < kJointBase) {
+    vec2 dir = (directionScale > 0.0) ? g_windowDir : -g_windowDir;
+    vec2 pos = (directionScale > 0.0) ? g_windowPos.xy : projNext.xy;
+    adjustWidth(weight, dir, pos);
+  }
 
-      if (param == kMiter) { // Straight miter.
-        delta = (abs(miterDistance) > maxMiter) ? perp : bisector * miterDistance;
+  if (kNone != param) {
+    vec2 delta = vec2(0.0);
+    vec4 prev   = g_prevPos;
+    vec4 projPrev = modelToWindowCoordinates(prev, rawPos);
+    vec2 prevDir   = g_windowPos.xy - projPrev.xy;
+    float thisLength = sqrt(g_windowDir.x * g_windowDir.x + g_windowDir.y * g_windowDir.y);
+    const float s_minNormalizeLength = 1.0E-5;  // avoid normalizing zero length vectors.
+    float dist = weight / 2.0;
 
-      } else if (param == kMiterInsideOnly) { // Miter at inside, square at outside (to make room for joint).
-        delta = (dotP  > 0.0 || abs(miterDistance) > maxMiter) ? perp : bisector * miterDistance;
+    if (thisLength > s_minNormalizeLength) {
+      g_windowDir /= thisLength;
 
-      } else {
-        const float jointTriangleCount = 3.0;
-        float ratio = (param - kJointBase) / jointTriangleCount; // 3 triangles per half-joint as defined in Graphics.cpp
-        delta = normalize((1.0 - ratio) * bisector + (dotP < 0.0 ? -ratio : ratio) * perp); // Miter/Straight combination.
+      float prevLength = sqrt(prevDir.x * prevDir.x + prevDir.y * prevDir.y);
+
+      if (prevLength > s_minNormalizeLength) {
+        prevDir /= prevLength;
+        const float     s_minParallelDot= -.9999, s_maxParallelDot = .9999;
+        float           prevNextDot  = dot(prevDir, g_windowDir);
+
+        if (prevNextDot < s_minParallelDot || prevNextDot > s_maxParallelDot)    // No miter if parallel or antiparallel.
+          param = kSquare;
+      } else
+        param = kSquare;
+    } else {
+      g_windowDir = -normalize(prevDir);
+      param = kSquare;
+    }
+
+    vec2 perp = scale * vec2(-g_windowDir.y, g_windowDir.x);
+
+    if (param == kSquare) {
+      delta = perp;
+    } else {
+      vec2 bisector = normalize(prevDir - g_windowDir);
+      float dotP = dot (bisector, perp);
+
+      if (dotP != 0.0) { // Should never occur - but avoid divide by zero.
+        const float maxMiter = 3.0;
+        float miterDistance = 1.0/dotP;
+
+        if (param == kMiter) { // Straight miter.
+          delta = (abs(miterDistance) > maxMiter) ? perp : bisector * miterDistance;
+
+        } else if (param == kMiterInsideOnly) { // Miter at inside, square at outside (to make room for joint).
+          delta = (dotP  > 0.0 || abs(miterDistance) > maxMiter) ? perp : bisector * miterDistance;
+
+        } else {
+          const float jointTriangleCount = 3.0;
+          float ratio = (param - kJointBase) / jointTriangleCount; // 3 triangles per half-joint as defined in Graphics.cpp
+          delta = normalize((1.0 - ratio) * bisector + (dotP < 0.0 ? -ratio : ratio) * perp); // Miter/Straight combination.
+        }
       }
     }
+
+    miterAdjust = dot(g_windowDir, delta) * dist; // Not actually used for hilite shader but meh.
+    pos.x += dist * delta.x * 2.0 * pos.w / u_viewport.z;
+    pos.y += dist * delta.y * 2.0 * pos.w / u_viewport.w;
   }
 
-  miterAdjust = dot(g_windowDir, delta) * dist; // Not actually used for hilite shader but meh.
-  pos.x += dist * delta.x * 2.0 * pos.w / u_viewport.z;
-  pos.y += dist * delta.y * 2.0 * pos.w / u_viewport.w;
-}
-
-return pos;
+  return pos;
 `;
 
-const lineCodeArgs = `g_windowDir, g_windowPos, miterAdjust`;
+const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
 export function createPolylineBuilder(clip: WithClipVolume): ProgramBuilder {
   const builder = new ProgramBuilder(true);

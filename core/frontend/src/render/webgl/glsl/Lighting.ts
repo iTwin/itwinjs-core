@@ -114,7 +114,8 @@ vec3 computeSourceLighting (vec3 normal, vec3 toEye, vec3 position, float specul
     total /= (-u_fstop + 1.0);
 
   return total;
-}`;
+}
+`;
 */
 
 /* ###TODO: IBL
@@ -128,18 +129,20 @@ vec3 sampleRGBM (in sampler2D map, in vec3 dir) { // Normalized direction.
   uv.x = .25 - atan(dir.y, dir.x) / (2.0 * 3.141592); // To match crazy skybox code.
   uv.y =  .5 - asin(dir.z) / 3.141592;
   return  decodeRGBM(TEXTURE(map, uv));
-}`;
+}
+`;
 
 const applyReflection = `
-vec3 toScreen(in vec3 linear) { return pow (linear, vec3(1.0/2.2)); }
+  vec3 toScreen(in vec3 linear) { return pow (linear, vec3(1.0/2.2)); }
 
-vec3 applyReflection(in vec3 inColor, in vec3 normal, in vec4 reflectivity) {
-  if (!isSurfaceBitSet(kSurfaceBit_EnvironmentMap) || reflectivity.a <= 0.0)
-    return inColor;
-  vec3 reflWorld  = normalize(reflect(v_pos.xyz, normal.xyz)) * u_nmx;
-  vec3 environmentMapColor = reflectivity.rgb * toScreen(sampleRGBM(u_environmentMap, reflWorld));
-  return mix (inColor, environmentMapColor, reflectivity.a);
-}`;
+  vec3 applyReflection(in vec3 inColor, in vec3 normal, in vec4 reflectivity) {
+    if (!isSurfaceBitSet(kSurfaceBit_EnvironmentMap) || reflectivity.a <= 0.0)
+      return inColor;
+    vec3 reflWorld  = normalize(reflect(v_pos.xyz, normal.xyz)) * u_nmx;
+    vec3 environmentMapColor = reflectivity.rgb * toScreen(sampleRGBM(u_environmentMap, reflWorld));
+    return mix (inColor, environmentMapColor, reflectivity.a);
+  }
+`;
 */
 
 const computeSimpleLighting = `
@@ -148,7 +151,8 @@ void computeSimpleLight (inout float diffuse, inout float specular, vec3 normal,
   vec3 toReflectedLight = normalize(reflect(lightDir, normal));
   float specularDot = max(dot(toReflectedLight, toEye), 0.0);
   specular += lightIntensity * pow(specularDot, specularExponent);
-}`;
+}
+`;
 
 /* ###TODO
 #ifdef PBR_WIP

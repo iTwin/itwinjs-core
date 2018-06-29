@@ -18,7 +18,8 @@ bool isEdgePixel(float xOffset, float yOffset) {
   vec2 t = windowCoordsToTexCoords(gl_FragCoord.xy + vec2(xOffset, yOffset));
   vec4 texel = TEXTURE(u_hilite, t);
   return 0.0 != texel.r;
-}`;
+}
+`;
 
 const isOutlined = `
 bool isOutlined() {
@@ -40,22 +41,24 @@ bool isOutlined() {
     || isEdgePixel(-2.0, 0.0) || isEdgePixel(2.0, 0.0)
     || isEdgePixel(-2.0, 1.0) || isEdgePixel(2.0, 1.0)
     || isEdgePixel(-2.0, 2.0) || isEdgePixel(-1.0, 2.0) || isEdgePixel(0.0, 2.0) || isEdgePixel(1.0, 2.0) || isEdgePixel(2.0, 2.0);
-}`;
+}
+`;
 
-const isInHiliteRegion = `bool isInHiliteRegion() { return 0.0 != TEXTURE(u_hilite, v_texCoord).r; }`;
+const isInHiliteRegion = "\nbool isInHiliteRegion() { return 0.0 != TEXTURE(u_hilite, v_texCoord).r; }\n";
 
-const computeHiliteColor = `vec4 computeColor() { return TEXTURE(u_opaque, v_texCoord); }`;
+const computeHiliteColor = "\nvec4 computeColor() { return TEXTURE(u_opaque, v_texCoord); }\n";
 
 const computeHiliteBaseColor = `
-bool isHilite = isInHiliteRegion();
-if (isHilite || !isOutlined()) {
-  float ratio = isHilite ? u_hilite_settings.y : 0.0;
-  vec4 baseColor = computeColor();
-  baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, ratio);
-  return baseColor;
-} else {
-  return vec4(u_hilite_color.rgb, 1.0);
-}`;
+  bool isHilite = isInHiliteRegion();
+  if (isHilite || !isOutlined()) {
+    float ratio = isHilite ? u_hilite_settings.y : 0.0;
+    vec4 baseColor = computeColor();
+    baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, ratio);
+    return baseColor;
+  } else {
+    return vec4(u_hilite_color.rgb, 1.0);
+  }
+`;
 
 const computeTranslucentColor = `
 vec4 computeColor() {
@@ -65,9 +68,10 @@ vec4 computeColor() {
 
   vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
   return (1.0 - transparent.a) * transparent + transparent.a * opaque;
-}`;
+}
+`;
 
-const computeTranslucentBaseColor = `return computeColor();`;
+const computeTranslucentBaseColor = "return computeColor();";
 
 export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext): ShaderProgram {
   assert(CompositeFlags.None !== flags);
