@@ -8,8 +8,7 @@ import { ElementProps, RelatedElement, TileTreeProps, TileProps, TileId, IModelE
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64, BentleyStatus, assert } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
-import { RealityDataServicesClient, AuthorizationToken, AccessToken } from "@bentley/imodeljs-clients";
-import { TestConfig, TestUsers } from "@bentley/imodeljs-clients/lib/test/TestConfig";
+import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient } from "@bentley/imodeljs-clients";
 
 namespace CesiumUtils {
   export function rangeFromBoundingVolume(boundingVolume: any): Range3d {
@@ -127,7 +126,7 @@ export namespace ScalableMeshTileTree {
 
     if (undefined !== url) {
       // ###TODO determine apropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
-      const authToken: AuthorizationToken = await TestConfig.login(TestUsers.regular);
+      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
       const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient("QA");
       const accessToken: AccessToken = await realityDataServiceClient.getAccessToken(authToken);
       const projectId = url.split("/").find((val: string) => val.includes("--"))!.split("--")[1];
