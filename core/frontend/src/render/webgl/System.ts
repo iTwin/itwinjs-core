@@ -211,8 +211,8 @@ export class IdMap implements IDisposable {
         texture.dispose();
       for (const gradient of gradientArr)
         gradient.dispose();
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   /** Add a material to the material map, given that it has a valid key. */
@@ -411,8 +411,9 @@ export class System extends RenderSystem implements IDisposable {
       const idMaps = this.renderCache.extractArrays().values;
       for (const idMap of idMaps)
         idMap.dispose();
+
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   public onInitialized(): void {

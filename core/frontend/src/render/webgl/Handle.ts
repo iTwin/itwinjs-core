@@ -45,6 +45,7 @@ export class BufferHandle implements IDisposable {
     if (!this._isDisposed && undefined !== this._glBuffer && null !== this._glBuffer) {
       System.instance.context.deleteBuffer(this._glBuffer);
       this._glBuffer = undefined;
+      this._isDisposed = true;
     }
   }
 

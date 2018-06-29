@@ -87,9 +87,10 @@ export namespace VertexLUT {
     public isDisposed(): boolean { return this._isDisposed; }
 
     public dispose() {
-      if (!this._isDisposed)
+      if (!this._isDisposed) {
         this.texture.dispose();
-      this._isDisposed = true;
+        this._isDisposed = true;
+      }
     }
   }
 

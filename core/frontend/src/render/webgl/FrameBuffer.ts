@@ -83,8 +83,8 @@ export class FrameBuffer implements IDisposable {
     if (!this._isDisposed && this._fbo !== undefined) {
       System.instance.context.deleteFramebuffer(this._fbo);
       this._fbo = undefined;
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   private getDebugAttachmentsString(): string {

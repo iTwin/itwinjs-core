@@ -37,6 +37,7 @@ export class SurfaceGeometry extends MeshGeometry implements IDisposable {
     if (!this._isDisposed) {
       this._indices.dispose();
       super.dispose();
+      this._isDisposed = true;
     }
   }
 
@@ -204,7 +205,7 @@ export class SurfaceGeometry extends MeshGeometry implements IDisposable {
   }
 }
 
-export class SurfacePrimitive extends MeshPrimitive implements IDisposable {
+export class SurfacePrimitive extends MeshPrimitive {
   public static create(args: MeshArgs, mesh: MeshGraphic): SurfacePrimitive | undefined {
     if (undefined === args.vertIndices) {
       assert(false);
@@ -217,12 +218,6 @@ export class SurfacePrimitive extends MeshPrimitive implements IDisposable {
 
   private constructor(cachedGeom: SurfaceGeometry, mesh: MeshGraphic) {
     super(cachedGeom, mesh);
-  }
-
-  public dispose() {
-    if (!this._isDisposed)
-      super.dispose();
-    this._isDisposed = true;
   }
 
   public get renderOrder(): RenderOrder {

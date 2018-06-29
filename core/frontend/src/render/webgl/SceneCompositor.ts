@@ -39,15 +39,15 @@ class Textures implements IDisposable {
       dispose(this.idHigh);
       dispose(this.depthAndOrder);
       dispose(this.hilite);
+      this.accumulation = undefined;
+      this.revealage = undefined;
+      this.color = undefined;
+      this.idLow = undefined;
+      this.idHigh = undefined;
+      this.depthAndOrder = undefined;
+      this.hilite = undefined;
+      this._isDisposed = true;
     }
-    this.accumulation = undefined;
-    this.revealage = undefined;
-    this.color = undefined;
-    this.idLow = undefined;
-    this.idHigh = undefined;
-    this.depthAndOrder = undefined;
-    this.hilite = undefined;
-    this._isDisposed = true;
   }
 
   public init(width: number, height: number): boolean {
@@ -178,17 +178,17 @@ class FrameBuffers implements IDisposable {
       dispose(this.translucent);
       dispose(this.clearTranslucent);
       dispose(this.hilite);
+      this.opaqueAll = undefined;
+      this.opaqueColor = undefined;
+      this.opaqueAndCompositeAll = undefined;
+      this.opaqueAndCompositeColor = undefined;
+      this.depthAndOrder = undefined;
+      this.pingPong = undefined;
+      this.translucent = undefined;
+      this.clearTranslucent = undefined;
+      this.hilite = undefined;
+      this._isDisposed = true;
     }
-    this.opaqueAll = undefined;
-    this.opaqueColor = undefined;
-    this.opaqueAndCompositeAll = undefined;
-    this.opaqueAndCompositeColor = undefined;
-    this.depthAndOrder = undefined;
-    this.pingPong = undefined;
-    this.translucent = undefined;
-    this.clearTranslucent = undefined;
-    this.hilite = undefined;
-    this._isDisposed = true;
   }
 }
 
@@ -219,12 +219,12 @@ class Geometry implements IDisposable {
       dispose(this.composite);
       dispose(this.clearTranslucent);
       dispose(this.clearPickAndColor);
+      this.copyPickBuffers = undefined;
+      this.composite = undefined;
+      this.clearTranslucent = undefined;
+      this.clearPickAndColor = undefined;
+      this._isDisposed = true;
     }
-    this.copyPickBuffers = undefined;
-    this.composite = undefined;
-    this.clearTranslucent = undefined;
-    this.clearPickAndColor = undefined;
-    this._isDisposed = true;
   }
 }
 
@@ -529,9 +529,9 @@ export class SceneCompositor implements IDisposable {
       this._textures.dispose();
       this._fbos.dispose();
       this._geometry.dispose();
+      this._depth = undefined;
+      this._isDisposed = true;
     }
-    this._depth = undefined;
-    this._isDisposed = true;
   }
 
   private init(): boolean {

@@ -98,9 +98,9 @@ export class Tile implements IDisposable {
       if (this._children)
         for (const child of this._children)
           child.dispose();
+      this._graphic = undefined;
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
-    this._graphic = undefined;
   }
 
   private loadGraphics(blob?: Uint8Array): void {
@@ -463,9 +463,10 @@ export class TileTree implements IDisposable {
   public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
-    if (!this._isDisposed)
+    if (!this._isDisposed) {
       this.rootTile.dispose();
-    this._isDisposed = true;
+      this._isDisposed = true;
+    }
   }
 
   public get is3d(): boolean { return this.model.is3d; }

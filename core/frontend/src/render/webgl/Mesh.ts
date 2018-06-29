@@ -80,9 +80,10 @@ export class MeshData extends MeshInfo implements IDisposable {
   public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
-    if (!this._isDisposed)
-      this.lut.dispose(); // Has no effect if lut has already been disposed
-    this._isDisposed = true;
+    if (!this._isDisposed) {
+      this.lut.dispose();
+      this._isDisposed = true;
+    }
   }
 }
 
@@ -141,7 +142,7 @@ export enum MeshGraphicType {
   kCOUNT,
 }
 
-export class MeshGraphic extends Graphic implements IDisposable {
+export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: MeshPrimitive[] = [];
 
@@ -189,8 +190,9 @@ export class MeshGraphic extends Graphic implements IDisposable {
       this.meshData.dispose();
       for (const primitive of this._primitives)
         primitive.dispose();
+      super.dispose();
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
@@ -231,12 +233,12 @@ export abstract class MeshGeometry extends LUTGeometry {
     this.mesh = mesh;
   }
 
-  // called from sub-classes
   public dispose() {
     if (!this._isDisposed) {
       this.mesh.dispose();
+      super.dispose();
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   protected computeEdgeWeight(params: ShaderProgramParams): number { return params.target.getEdgeWeight(params, this.edgeWidth); }
@@ -269,8 +271,8 @@ export abstract class MeshPrimitive extends Primitive {
     if (!this._isDisposed) {
       this.mesh.dispose();
       super.dispose();
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   public assignUniformFeatureIndices(_index: number) { assert(false); } // handled by MeshGraphic...
@@ -289,7 +291,7 @@ export class EdgeBytes {
   }
 }
 
-export class EdgeGeometry extends MeshGeometry implements IDisposable {
+export class EdgeGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
   private readonly _endPointAndQuadIndices: BufferHandle;
 
@@ -376,6 +378,7 @@ export class EdgeGeometry extends MeshGeometry implements IDisposable {
       this._indices.dispose();
       this._endPointAndQuadIndices.dispose();
       super.dispose();
+      this._isDisposed = true;
     }
   }
 
@@ -405,7 +408,7 @@ export class EdgeGeometry extends MeshGeometry implements IDisposable {
   }
 }
 
-export class EdgePrimitive extends MeshPrimitive implements IDisposable {
+export class EdgePrimitive extends MeshPrimitive {
   public static create(args: EdgeArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
     if (undefined === args.edges) {
       assert(false);
@@ -425,13 +428,6 @@ export class EdgePrimitive extends MeshPrimitive implements IDisposable {
   }
 
   private constructor(cachedGeom: EdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
-
-  public dispose() {
-    if (!this._isDisposed) {
-      super.dispose();
-    }
-    this._isDisposed = true;
-  }
 
   public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public get isEdge(): boolean { return true; }
@@ -480,6 +476,7 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     if (!this._isDisposed) {
       this._normalPairs.dispose();
       super.dispose();
+      this._isDisposed = true;
     }
   }
 
@@ -493,7 +490,7 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
   }
 }
 
-export class SilhouetteEdgePrimitive extends MeshPrimitive implements IDisposable {
+export class SilhouetteEdgePrimitive extends MeshPrimitive {
   public static create(args: SilhouetteEdgeArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
     if (undefined === args.edges || undefined === args.normals) {
       assert(false);
@@ -503,19 +500,13 @@ export class SilhouetteEdgePrimitive extends MeshPrimitive implements IDisposabl
     return undefined !== geom ? new SilhouetteEdgePrimitive(geom, mesh) : undefined;
   }
 
-  public dispose() {
-    if (!this._isDisposed)
-      super.dispose();
-    this._isDisposed = true;
-  }
-
   private constructor(cachedGeom: EdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
 
   public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
   public get isEdge(): boolean { return true; }
 }
 
-export class PolylineEdgeGeometry extends MeshGeometry implements IDisposable {
+export class PolylineEdgeGeometry extends MeshGeometry {
   private _buffers: PolylineBuffers;
 
   public static create(mesh: MeshData, args: MeshArgs): PolylineEdgeGeometry | undefined {
@@ -538,6 +529,7 @@ export class PolylineEdgeGeometry extends MeshGeometry implements IDisposable {
     if (!this._isDisposed) {
       this._buffers.dispose();
       super.dispose();
+      this._isDisposed = true;
     }
   }
 
@@ -565,7 +557,7 @@ export class PolylineEdgeGeometry extends MeshGeometry implements IDisposable {
   }
 }
 
-export class PolylineEdgePrimitive extends MeshPrimitive implements IDisposable {
+export class PolylineEdgePrimitive extends MeshPrimitive {
   public static create(args: MeshArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
     if (undefined === args.edges) {
       assert(false);
@@ -576,12 +568,6 @@ export class PolylineEdgePrimitive extends MeshPrimitive implements IDisposable 
   }
 
   private constructor(cachedGeom: PolylineEdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
-
-  public dispose() {
-    if (!this._isDisposed)
-      super.dispose();
-    this._isDisposed = true;
-  }
 
   public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public get isEdge(): boolean { return true; }

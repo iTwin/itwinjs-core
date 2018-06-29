@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -193,12 +193,13 @@ export class PolylineEdgeArgs {
 }
 
 /** A Texture for rendering */
-export abstract class RenderTexture {
+export abstract class RenderTexture implements IDisposable {
   public readonly params: RenderTexture.Params;
+  protected _isDisposed: boolean = true;  // until WebGL resources are created, stays true
 
   protected constructor(params: RenderTexture.Params) { this.params = params; }
-  public abstract dispose(): void;
-  public abstract isDisposed(): boolean;
+  public dispose() { };
+  public isDisposed(): boolean { return this._isDisposed; }
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }

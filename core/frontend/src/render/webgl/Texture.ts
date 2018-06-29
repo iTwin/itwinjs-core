@@ -98,9 +98,8 @@ interface TextureImageProperties {
 }
 
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture. */
-export class Texture extends RenderTexture implements IDisposable {
+export class Texture extends RenderTexture {
   public readonly texture: TextureHandle;
-  private _isDisposed: boolean;
 
   public constructor(params: RenderTexture.Params, texture: TextureHandle) {
     super(params);
@@ -108,13 +107,13 @@ export class Texture extends RenderTexture implements IDisposable {
     this._isDisposed = false;
   }
 
-  public isDisposed(): boolean { return this._isDisposed; }
-
   /** Free this object in the WebGL wrapper. */
   public dispose() {
-    if (!this._isDisposed)
+    if (!this._isDisposed) {
       this.texture.dispose();
-    this._isDisposed = true;
+      super.dispose();
+      this._isDisposed = true;
+    }
   }
 
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
@@ -262,8 +261,8 @@ export class TextureHandle implements IDisposable {
     if (!this._isDisposed && undefined !== this._glTexture) {
       System.instance.context.deleteTexture(this._glTexture);
       this._glTexture = undefined;
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   private static create(params: TextureCreateParams): TextureHandle | undefined {

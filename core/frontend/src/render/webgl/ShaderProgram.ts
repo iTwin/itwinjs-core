@@ -163,6 +163,7 @@ export class ShaderProgram implements IDisposable {
       System.instance.context.deleteProgram(this._glProgram);
       this._glProgram = undefined;
       this._status = CompileStatus.Uncompiled;
+      this._isDisposed = true;
     }
   }
 

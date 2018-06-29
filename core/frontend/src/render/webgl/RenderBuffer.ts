@@ -35,8 +35,8 @@ export class RenderBuffer implements IDisposable {
     if (!this._isDisposed && undefined !== this._glBuffer) {
       System.instance.context.deleteRenderbuffer(this._glBuffer);
       this._glBuffer = undefined;
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   public bind() {

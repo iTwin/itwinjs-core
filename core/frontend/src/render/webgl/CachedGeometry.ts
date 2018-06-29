@@ -21,7 +21,7 @@ import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
-export abstract class CachedGeometry {
+export abstract class CachedGeometry implements IDisposable {
   // Returns true if white portions of this geometry should render as black on white background
   protected _wantWoWReversal(_target: Target): boolean { return false; }
   // Returns the edge/line weight used to render this geometry
@@ -47,7 +47,7 @@ export abstract class CachedGeometry {
   // Draws this geometry
   public abstract draw(): void;
 
-  public abstract dispose(): void;
+  public dispose() { };
   protected _isDisposed: boolean = true;  // should be set to false when an extending class creates WebGL resources
 
   public isDisposed(): boolean { return this._isDisposed; }
@@ -105,15 +105,17 @@ export abstract class LUTGeometry extends CachedGeometry {
 }
 
 // Parameters used to construct an IndexedGeometry
-export class IndexedGeometryParams {
+export class IndexedGeometryParams implements IDisposable {
   public readonly positions: QBufferHandle3d;
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
+  private _isDisposed: boolean;
 
   protected constructor(positions: QBufferHandle3d, indices: BufferHandle, numIndices: number) {
     this.positions = positions;
     this.indices = indices;
     this.numIndices = numIndices;
+    this._isDisposed = false; // just created buffer handle
   }
 
   public static create(positions: Uint16Array, qparams: QParams3d, indices: Uint32Array) {
@@ -131,9 +133,14 @@ export class IndexedGeometryParams {
     return IndexedGeometryParams.create(positions.toTypedArray(), positions.params, indices);
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose() {
-    this.positions.dispose();
-    this.indices.dispose();
+    if (!this._isDisposed) {
+      this.positions.dispose();
+      this.indices.dispose();
+      this._isDisposed = true;
+    }
   }
 }
 
@@ -150,8 +157,9 @@ export abstract class IndexedGeometry extends CachedGeometry {
   public dispose() {
     if (!this._isDisposed) {
       this._params.dispose();
+      super.dispose();
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   public bindVertexArray(attr: AttributeHandle): void {
@@ -319,18 +327,25 @@ export class PolylineBuffers implements IDisposable {
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
   public distances: BufferHandle;
+  private _isDisposed: boolean;
+
   public constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
     this.distances = distances;
+    this._isDisposed = false; // assume we received undisposed BufferHandles
   }
 
+  public isDisposed(): boolean { return this._isDisposed; }
+
   public dispose() {
-    // Disposing of an already disposed buffer should have no effect...
-    this.indices.dispose();
-    this.prevIndices.dispose();
-    this.nextIndicesAndParams.dispose();
-    this.distances.dispose();
+    if (!this._isDisposed) {
+      this.indices.dispose();
+      this.prevIndices.dispose();
+      this.nextIndicesAndParams.dispose();
+      this.distances.dispose();
+      this._isDisposed = true;
+    }
   }
 }

@@ -51,9 +51,10 @@ export class SingularTechnique implements Technique {
   public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose(): void {
-    if (!this._isDisposed)
+    if (!this._isDisposed) {
       this.program.dispose();
-    this._isDisposed = true;
+      this._isDisposed = true;
+    }
   }
 }
 
@@ -82,11 +83,11 @@ export abstract class VariedTechnique implements Technique {
 
   public dispose(): void {
     if (!this._isDisposed) {
-      for (const program of this._programs) { // Looping over already disposed programs and calling dispose() has no effect..
+      for (const program of this._programs) {
         program.dispose();
       }
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   protected constructor(numPrograms: number) {
@@ -443,13 +444,12 @@ export class Techniques implements IDisposable {
 
   public dispose(): void {
     if (!this._isDisposed) {
-      for (const tech of this._list) {  // looping over already disposed techniques and calling dispose has no effect..
+      for (const tech of this._list) {
         tech.dispose();
       }
+      this._list.length = 0;
+      this._isDisposed = true;
     }
-
-    this._isDisposed = true;
-    this._list.length = 0;
   }
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.

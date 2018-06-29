@@ -67,14 +67,14 @@ export class RenderPlan {
 /**
  * A renderer-specific object that can be placed into a display list.
  */
-export abstract class RenderGraphic {
+export abstract class RenderGraphic implements IDisposable {
   public readonly iModel: IModelConnection;
   protected _isDisposed: boolean = true;  // we have a disposed graphic up until we add/create any non-disposed WebGL items
 
   constructor(iModel: IModelConnection) { this.iModel = iModel; }
 
   public isDisposed(): boolean { return this._isDisposed; }
-  public abstract dispose(): void;
+  public dispose() { };
 }
 
 export type GraphicList = RenderGraphic[];
@@ -94,9 +94,10 @@ export class Decoration implements IDisposable {
   }
 
   public dispose() {
-    if (!this._isDisposed)
+    if (!this._isDisposed) {
       this.graphic.dispose();
-    this._isDisposed = true;
+      this._isDisposed = true;
+    }
   }
 }
 
@@ -110,8 +111,8 @@ export class DecorationList extends Array<Decoration> implements IDisposable {
     if (!this._isDisposed) {
       for (const decoration of this)
         decoration.dispose();
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) {
@@ -181,10 +182,11 @@ export class GraphicBranch implements IDisposable {
   public isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
-    if (!this._isDisposed)
+    if (!this._isDisposed) {
       for (const graphic of this.entries)
         graphic.dispose();
-    this._isDisposed = true;
+      this._isDisposed = true;
+    }
   }
 
   public add(graphic: RenderGraphic): void {
