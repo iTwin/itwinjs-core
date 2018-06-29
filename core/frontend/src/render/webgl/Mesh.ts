@@ -188,7 +188,8 @@ export class MeshGraphic extends Graphic {
   protected doDispose() {
     this.meshData.dispose();
     for (const primitive of this._primitives)
-      primitive.dispose();
+      if (primitive !== undefined)  // array sometimes has gaps..?
+        primitive.dispose();
     this._isDisposed = true;
   }
 
@@ -251,20 +252,13 @@ export abstract class MeshGeometry extends LUTGeometry {
 }
 
 export abstract class MeshPrimitive extends Primitive {
-  public readonly mesh: MeshGraphic;
+  public readonly mesh: MeshGraphic;  // is not owned (mesh is the owner of THIS object)
 
   public get meshData(): MeshData { return this.mesh.meshData; }
 
   protected constructor(cachedGeom: MeshGeometry, mesh: MeshGraphic) {
     super(cachedGeom, mesh.iModel);
     this.mesh = mesh;
-  }
-
-  // called by sub-classes
-  protected doDispose() {
-    this.mesh.dispose();
-    super.dispose();
-    this._isDisposed = true;
   }
 
   public assignUniformFeatureIndices(_index: number) { assert(false); } // handled by MeshGraphic...

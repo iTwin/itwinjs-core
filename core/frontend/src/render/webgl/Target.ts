@@ -353,7 +353,7 @@ export abstract class Target extends RenderTarget {
 
   public changeDecorations(decs: Decorations): void {
     // Although we dispose of the old decorations, we assume the new decorations will be non-disposed, and thus _isDisposed should remain false
-    this._decorations.dispose();
+    // this._decorations.dispose();
     this._decorations = decs;
     this._isDisposed = false;
   }
@@ -552,14 +552,6 @@ export abstract class Target extends RenderTarget {
 
     this.paintScene(sceneMilSecElapsed);
     assert(System.instance.frameBufferStack.isEmpty);
-  }
-
-  public dispose() {
-    for (const batch of this._batches)
-      batch.onTargetDisposed(this);
-    this._batches = [];
-    this._renderCommands.clear();
-    this._isDisposed = true;
   }
 
   public queueReset(): void {
@@ -836,7 +828,7 @@ export class OnScreenTarget extends Target implements IDisposable {
     }
 
     this._fbo = FrameBuffer.create([color]);
-    color.dispose();  // dispose of the texture (it is not used anymore)
+    // color.dispose();  // dispose of the texture (it is not used anymore)...?
     if (undefined === this._fbo) {
       return false;
     }

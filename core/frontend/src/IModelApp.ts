@@ -106,6 +106,16 @@ export class IModelApp {
     IModelApp.tentativePoint.onInitialized();
   }
 
+  /** Dispose of and re-create the render system only (useful if switching between iModels). */
+  public static resetRenderSystem() { // ###TODO: Find a way to enforce this call, and disallow dispose() through IModelApp.renderSystem.dispose()
+    if (IModelApp._renderSystem) {
+      IModelApp._renderSystem.dispose();
+      IModelApp._renderSystem = undefined;
+    }
+    IModelApp._renderSystem = this.supplyRenderSystem();
+    IModelApp._renderSystem.onInitialized();
+  }
+
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
     IModelApp._renderSystem!.dispose();

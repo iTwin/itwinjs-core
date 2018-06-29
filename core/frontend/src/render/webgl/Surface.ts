@@ -36,7 +36,6 @@ export class SurfaceGeometry extends MeshGeometry {
   protected doDispose() {
     if (!this._isDisposed) {
       this._indices.dispose();
-      super.doDispose();
       this._isDisposed = true;
     }
   }
