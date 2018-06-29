@@ -198,7 +198,7 @@ export abstract class RenderTexture implements IDisposable {
   protected _isDisposed: boolean = true;  // until WebGL resources are created, stays true
 
   protected constructor(params: RenderTexture.Params) { this.params = params; }
-  public dispose() { };
+  public dispose() { }
   public isDisposed(): boolean { return this._isDisposed; }
 
   public get key(): string | undefined { return this.params.key; }
