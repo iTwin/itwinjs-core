@@ -71,8 +71,10 @@ class ScalableMeshTileProps implements TileProps {
     this.yAxisUp = tree.yAxisUp;
     this.childIds = [];
     const prefix = thisId.length ? thisId + "_" : "";
-    for (let i = 0; i < json.children.length; i++)
-      this.childIds.push(prefix + i);
+    if (Array.isArray(json.children))
+      for (let i = 0; i < json.children.length; i++)
+        this.childIds.push(prefix + i);
+
     if (geometry !== undefined) {
       this.contentRange = json.content.boundingVolume && CesiumUtils.rangeFromBoundingVolume(json.content.boundingVolume);
       this.maximumSize = CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
@@ -86,11 +88,11 @@ export class ScalableMeshTileLoader {
 
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: ScalableMeshTileProps[] = [];
-    for (const tileId of tileIds) {
+    await Promise.all(tileIds.map(async (tileId) => {
       const tile = await this.findTileInJson(this.tree.tilesetJson, tileId, "");
       if (tile !== undefined)
         props.push(tile);
-    }
+    }));
     return props;
   }
   private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<ScalableMeshTileProps | undefined> {
@@ -103,9 +105,14 @@ export class ScalableMeshTileLoader {
       return undefined;
     }
 
-    const foundChild = tilesetJson.children[childIndex];
+    let foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
+    if (foundChild.content.url.endsWith("json")) {
+      const subTree = await this.tree.client.getTileJson(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
+      foundChild = subTree.root;
+      tilesetJson.children[childIndex] = subTree.root;
+    }
 
     const content = await this.tree.client.getTileContent(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
     assert(content !== undefined, "scalable mesh tile content not found.");

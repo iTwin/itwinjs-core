@@ -292,18 +292,26 @@ export namespace GltfTileIO {
           return undefined;
 
         const type = accessor.componentType as DataType;
+        let dataSize = 0;
         switch (type) {
           case DataType.UnsignedByte:
+            dataSize = 1;
+            break;
           case DataType.UnsignedShort:
+            dataSize = 2;
+            break;
           case DataType.UInt32:
           case DataType.Float:
+            dataSize = 4;
             break;
           default:
             return undefined;
         }
 
         const offset = bufferView.byteOffset + accessor.byteOffset;
-        const bytes = this.binaryData.subarray(offset, offset + bufferView.byteLength);
+        // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
+        // assert(0 === offset % dataSize);
+        const bytes = (0 === (this.binaryData.byteOffset + offset) % dataSize) ? this.binaryData.subarray(offset, offset + bufferView.byteLength) : this.binaryData.slice(offset, offset + bufferView.byteLength);
         return new BufferView(bytes, accessor.count as number, type, accessor);
       } catch (e) {
         return undefined;
@@ -661,7 +669,7 @@ export namespace GltfTileIO {
 
       return true;
     }
-    protected readImage(imageJson: any): RenderTexture | undefined {
+    protected readTextureImage(imageJson: any): RenderTexture | undefined {
       try {
         const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
         const bufferView = this.bufferViews[binaryImageJson.bufferView];
@@ -682,8 +690,8 @@ export namespace GltfTileIO {
         if (imageSource === undefined)
           return undefined;
 
+        const targetSize = 512;
         const params = new RenderTexture.Params(undefined, false, false, false);
-        const targetSize = 1024; // TBD... base this on tile tolerance.
         return this.system.createTextureFromImageSource(imageSource, targetSize, targetSize, this.model.iModel, params);
       } catch (e) { return undefined; }
     }
@@ -691,7 +699,7 @@ export namespace GltfTileIO {
     protected readTexture(textureId: string): TextureMapping | undefined {
       const texture = JsonUtils.asObject(this.textures[textureId]);
       if (texture === undefined) { return undefined; }
-      const image = this.readImage(this.images[texture.source]);
+      const image = this.readTextureImage(this.images[texture.source]);
       if (image === undefined) { return undefined; }
 
       return new TextureMapping(image, new TextureMapping.Params());
