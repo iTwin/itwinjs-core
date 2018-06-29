@@ -42,8 +42,6 @@ describe("FeatureOverrides tests", () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    const vpView = spatialView.clone<SpatialViewState>();
-    vp = new TestViewport(canvas!, vpView);
   });
 
   after(async () => {
@@ -52,6 +50,13 @@ describe("FeatureOverrides tests", () => {
   });
 
   it("should create a uniform feature overrides object", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    const vpView = spatialView.clone<SpatialViewState>();
+    vp = new TestViewport(canvas!, vpView);
+
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
     const tbl = new FeatureTable(1);
@@ -71,6 +76,13 @@ describe("FeatureOverrides tests", () => {
   });
 
   it("should create a non-uniform feature overrides object", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    const vpView = spatialView.clone<SpatialViewState>();
+    vp = new TestViewport(canvas!, vpView);
+
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
     const tbl = new FeatureTable(2);
