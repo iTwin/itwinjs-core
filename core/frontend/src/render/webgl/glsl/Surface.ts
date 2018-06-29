@@ -30,30 +30,31 @@ import { Material } from "../Material";
 import { System } from "../System";
 
 const applyMaterialOverrides = `
-bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
-bool useTextureWeight = isTextured && u_textureWeight < 1.0;
-bool useMatColor = !isSurfaceBitSet(kSurfaceBit_IgnoreMaterial) && (!isTextured || useTextureWeight);
+  bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
+  bool useTextureWeight = isTextured && u_textureWeight < 1.0;
+  bool useMatColor = !isSurfaceBitSet(kSurfaceBit_IgnoreMaterial) && (!isTextured || useTextureWeight);
 
-if (useMatColor) {
-  // u_matRgb.a = 1.0 if color overridden by material, 0.0 otherwise.
-  if (u_matRgb.a > 0.5)
-    baseColor.rgb = u_matRgb.rgb * baseColor.a;
+  if (useMatColor) {
+    // u_matRgb.a = 1.0 if color overridden by material, 0.0 otherwise.
+    if (u_matRgb.a > 0.5)
+      baseColor.rgb = u_matRgb.rgb * baseColor.a;
 
-  // u_matAlpha.y = 1.0 if alpha overridden by material.
-  if (u_matAlpha.y > 0.5)
-    baseColor = adjustPreMultipliedAlpha(baseColor, u_matAlpha.x);
-}
+    // u_matAlpha.y = 1.0 if alpha overridden by material.
+    if (u_matAlpha.y > 0.5)
+      baseColor = adjustPreMultipliedAlpha(baseColor, u_matAlpha.x);
+  }
 
-if (useTextureWeight) {
-  vec4 texColor = TEXTURE(s_texture, v_texCoord);
-  baseColor = mix(baseColor, texColor, u_textureWeight);
+  if (useTextureWeight) {
+    vec4 texColor = TEXTURE(s_texture, v_texCoord);
+    baseColor = mix(baseColor, texColor, u_textureWeight);
 
-  // Textures do NOT contain premultiplied alpha. Multiply here.
-  // ###TODO: This won't produce correct results if u_textureWeight < 1.0 and baseColor.a < 1.0 - handle.
-  return applyPreMultipliedAlpha(baseColor);
-}
+    // Textures do NOT contain premultiplied alpha. Multiply here.
+    // ###TODO: This won't produce correct results if u_textureWeight < 1.0 and baseColor.a < 1.0 - handle.
+    return applyPreMultipliedAlpha(baseColor);
+  }
 
-return baseColor;`;
+  return baseColor;
+`;
 
 export function addMaterial(frag: FragmentShaderBuilder): void {
   // ###TODO: We could pack rgb, alpha, and override flags into two floats.
@@ -83,11 +84,12 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 }
 
 const computePosition = `
-// ###TODO if (u_animParams.z > 0.0)
-// ###TODO   rawPos.xyz += computeAnimatedDisplacement(u_animValue * u_animParams.z).xyz;
-vec4 pos = u_mv * rawPos;
-v_pos = pos.xyz;
-return u_proj * pos;`;
+  // ###TODO if (u_animParams.z > 0.0)
+  // ###TODO   rawPos.xyz += computeAnimatedDisplacement(u_animValue * u_animParams.z).xyz;
+  vec4 pos = u_mv * rawPos;
+  v_pos = pos.xyz;
+  return u_proj * pos;
+`;
 
 function createCommon(clip: WithClipVolume): ProgramBuilder {
   const builder = new ProgramBuilder(true);
@@ -114,9 +116,8 @@ export function createSurfaceHiliter(clip: WithClipVolume): ProgramBuilder {
 
 // nvidia hardware incorrectly interpolates varying floats when we send the same exact value for every vertex...
 const isSurfaceBitSet = `
-bool isSurfaceBitSet(float flag) {
-  return 0.0 != extractNthBit(floor(v_surfaceFlags + 0.5), flag);
-}`;
+bool isSurfaceBitSet(float flag) { return 0.0 != extractNthBit(floor(v_surfaceFlags + 0.5), flag); }
+`;
 
 function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBit_HasTexture", VariableType.Float, "0.0");
@@ -142,18 +143,19 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addFunction(isSurfaceBitSet);
 }
 
-const getSurfaceFlags = `return u_surfaceFlags;`;
+const getSurfaceFlags = "return u_surfaceFlags;";
+
 const computeSurfaceFlags = `
-float flags = u_surfaceFlags;
-if (feature_ignore_material) {
-  bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
-  if (hasTexture)
-    flags -= kSurfaceMask_HasTexture;
+  float flags = u_surfaceFlags;
+  if (feature_ignore_material) {
+    bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
+    if (hasTexture)
+      flags -= kSurfaceMask_HasTexture;
 
-  flags += kSurfaceMask_IgnoreMaterial;
-}
+    flags += kSurfaceMask_IgnoreMaterial;
+  }
 
-return flags;
+  return flags;
 `;
 
 export const octDecodeNormal = `
@@ -165,68 +167,76 @@ vec3 octDecodeNormal(vec2 e) {
     n.xy = (1.0 - abs(n.yx)) * signNotZero;
   }
 
-return normalize(n);
-}`;
+  return normalize(n);
+}
+`;
 
 const computeNormal = `
-if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
-  return vec3(0.0);
+  if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
+    return vec3(0.0);
 
-vec2 normal = g_vertexData2;
-if (isSurfaceBitSet(kSurfaceBit_HasColorAndNormal)) {
-  vec2 tc = g_vertexBaseCoords;
-  tc.x += 3.0 * g_vert_stepX;
-  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  normal = enc.xy;
-}
+  vec2 normal = g_vertexData2;
+  if (isSurfaceBitSet(kSurfaceBit_HasColorAndNormal)) {
+    vec2 tc = g_vertexBaseCoords;
+    tc.x += 3.0 * g_vert_stepX;
+    vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    normal = enc.xy;
+  }
 
-return normalize(u_nmx * octDecodeNormal(normal));`;
+  return normalize(u_nmx * octDecodeNormal(normal));
+`;
 
 const isBelowTransparencyThreshold = `
-return alpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);`;
+  return alpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
+`;
 
 const applyBackgroundColor = `
-if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
-  baseColor.rgb = u_bgColor.rgb;
+  if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
+    baseColor.rgb = u_bgColor.rgb;
 
-return baseColor;`;
+  return baseColor;
+`;
 
 const computeTexCoord = `
-if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
-  return vec2(0.0);
+  if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
+    return vec2(0.0);
 
-// ###TODO if (u_animParams.w > 0.0)
-  // ###TODO return computeAnimatedTextureParam(u_animValue * u_animParams.w);
+  // ###TODO if (u_animParams.w > 0.0)
+  // ###TODO   return computeAnimatedTextureParam(u_animValue * u_animParams.w);
 
-vec2 tc = g_vertexBaseCoords;
-tc.x += 3.0 * g_vert_stepX;
-vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
-return unquantize2d(qcoords, u_qTexCoordParams);`;
+  vec2 tc = g_vertexBaseCoords;
+  tc.x += 3.0 * g_vert_stepX;
+  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
+  return unquantize2d(qcoords, u_qTexCoordParams);
+`;
 
-const getSurfaceColor = `vec4 getSurfaceColor() { return v_color; }`;
+const getSurfaceColor = `
+vec4 getSurfaceColor() { return v_color; }
+`;
 
 const computeBaseColor = `
-if (isSurfaceBitSet(kSurfaceBit_HasTexture) && u_textureWeight >= 1.0) {
-  // if a glyph texture, must mix getSurfaceColor() with texCol so texCol.a is applied 100% and
-  // surfCol.rgb is scaled by texCol.rgb (texCol.rgb = full white originally but stretched via mipMapping)
-  if (u_applyGlyphTex > 0) {
-    vec4 surfCol = getSurfaceColor();
-    const vec3 white = vec3(1.0);
-    const vec3 epsilon = vec3(0.0001);
-    vec3 color = surfCol.a > 0.0 ? surfCol.rgb / surfCol.a : surfCol.rgb; // revert premultiplied alpha
-    vec3 delta = (color + epsilon) - white;
-    if (u_reverseWhiteOnWhite > 0.5 && delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
-      surfCol.rgb = vec3(0.0);
+  if (isSurfaceBitSet(kSurfaceBit_HasTexture) && u_textureWeight >= 1.0) {
+    // if a glyph texture, must mix getSurfaceColor() with texCol so texCol.a is applied 100% and
+    // surfCol.rgb is scaled by texCol.rgb (texCol.rgb = full white originally but stretched via mipMapping)
+    if (u_applyGlyphTex > 0) {
+      vec4 surfCol = getSurfaceColor();
+      const vec3 white = vec3(1.0);
+      const vec3 epsilon = vec3(0.0001);
+      vec3 color = surfCol.a > 0.0 ? surfCol.rgb / surfCol.a : surfCol.rgb; // revert premultiplied alpha
+      vec3 delta = (color + epsilon) - white;
+      if (u_reverseWhiteOnWhite > 0.5 && delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
+        surfCol.rgb = vec3(0.0);
 
-    vec4 texCol = TEXTURE(s_texture, v_texCoord);
-    return vec4(surfCol.rgb * texCol.rgb, texCol.a);
+      vec4 texCol = TEXTURE(s_texture, v_texCoord);
+      return vec4(surfCol.rgb * texCol.rgb, texCol.a);
+    } else {
+      return TEXTURE(s_texture, v_texCoord);
+    }
   } else {
-    return TEXTURE(s_texture, v_texCoord);
+    return getSurfaceColor(); // if textured, compute surface/material color first then mix with texture in applyMaterialOverrides...
   }
-} else {
-  return getSurfaceColor(); // if textured, compute surface/material color first then mix with texture in applyMaterialOverrides...
-}`;
+`;
 
 function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean) {
   builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", withFeatureOverrides ? computeSurfaceFlags : getSurfaceFlags);

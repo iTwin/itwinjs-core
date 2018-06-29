@@ -8,9 +8,9 @@ import { ShaderProgram } from "../ShaderProgram";
 import { GLSLFragment } from "./Fragment";
 import { addModelViewProjectionMatrix } from "./Vertex";
 
-const computePosition = `return u_mvp * rawPos;`;
+const computePosition = "return u_mvp * rawPos;";
 
-const computeBaseColor = `return vec4(1.0);`;
+const computeBaseColor = "return vec4(1.0);";
 
 export function createClipMaskProgram(context: WebGLRenderingContext): ShaderProgram {
   const builder = new ProgramBuilder(false);

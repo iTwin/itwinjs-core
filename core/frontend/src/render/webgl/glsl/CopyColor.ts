@@ -11,9 +11,9 @@ import { TextureHandle } from "../Texture";
 import { GLSLFragment } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
-const computeColor = `return TEXTURE(u_color, v_texCoord);`;
+const computeColor = "return TEXTURE(u_color, v_texCoord);";
 
-const computeColorNoAlpha = `return vec4(TEXTURE(u_color, v_texCoord).rgb, 1.0);`;
+const computeColorNoAlpha = "return vec4(TEXTURE(u_color, v_texCoord).rgb, 1.0);";
 
 export function createCopyColorProgram(context: WebGLRenderingContext, copyAlpha: boolean = true): ShaderProgram {
   const builder = createViewportQuadBuilder(true);

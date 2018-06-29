@@ -10,7 +10,7 @@ import { Matrix3 } from "../Matrix";
 */
 
 export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
-  const windowCoordsToTexCoords = `vec2 windowCoordsToTexCoords(vec2 wc) { return wc * u_invScreenSize; }`;
+  const windowCoordsToTexCoords = `\nvec2 windowCoordsToTexCoords(vec2 wc) { return wc * u_invScreenSize; }\n`;
   frag.addFunction(windowCoordsToTexCoords);
   frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
     prog.addProgramUniform("u_invScreenSize", (uniform, params) => {
@@ -55,54 +55,57 @@ const reverseWhiteOnWhite = `
     if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
       baseColor.rgb = vec3(0.0);
   }
-
   return baseColor;
 `;
 
 export namespace GLSLFragment {
-  export const assignFragColor = `FragColor = baseColor;`;
+  export const assignFragColor = "FragColor = baseColor;";
 
-  export const assignFragColorNoAlpha = `FragColor = vec4(baseColor.rgb, 1.0);`;
+  export const assignFragColorNoAlpha = "FragColor = vec4(baseColor.rgb, 1.0);";
 
   export const assignFragData = `
-    FragColor0 = baseColor;
-    FragColor1 = v_element_id0;
-    FragColor2 = v_element_id1;
+  FragColor0 = baseColor;
+  FragColor1 = v_element_id0;
+  FragColor2 = v_element_id1;
 
-    float linearDepth = computeLinearDepth(v_eyeSpace.z);
-    FragColor3 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0`;
+  float linearDepth = computeLinearDepth(v_eyeSpace.z);
+  FragColor3 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
+`;
 
   export const revertPreMultipliedAlpha = `
-    vec4 revertPreMultipliedAlpha(vec4 rgba) {
-      if (0.0 < rgba.a)
-        rgba.rgb /= rgba.a;
-
-      return rgba;
-    }`;
+vec4 revertPreMultipliedAlpha(vec4 rgba) {
+  if (0.0 < rgba.a)
+    rgba.rgb /= rgba.a;
+  return rgba;
+}
+`;
 
   export const applyPreMultipliedAlpha = `
-    vec4 applyPreMultipliedAlpha(vec4 rgba) {
-      rgba.rgb *= rgba.a;
-      return rgba;
-    }`;
+vec4 applyPreMultipliedAlpha(vec4 rgba) {
+  rgba.rgb *= rgba.a;
+  return rgba;
+}
+`;
 
   export const adjustPreMultipliedAlpha = `
-    vec4 adjustPreMultipliedAlpha(vec4 rgba, float newAlpha) {
-      float oldAlpha = rgba.a;
-      if (0.0 < oldAlpha)
-        rgba.rgb /= oldAlpha;
+vec4 adjustPreMultipliedAlpha(vec4 rgba, float newAlpha) {
+  float oldAlpha = rgba.a;
+  if (0.0 < oldAlpha)
+    rgba.rgb /= oldAlpha;
 
-      rgba.rgb *= newAlpha;
-      rgba.a = newAlpha;
-      return rgba;
-    }`;
+  rgba.rgb *= newAlpha;
+  rgba.a = newAlpha;
+  return rgba;
+}
+`;
 
   export const computeLinearDepth = `
-    float computeLinearDepth(float eyeSpaceZ) {
-      float eyeZ = -eyeSpaceZ;
-      float near = u_frustum.x, far = u_frustum.y;
-      float depthRange = far - near;
-      float linearDepth = (eyeZ - near) / depthRange;
-      return 1.0 - linearDepth;
-    }`;
+float computeLinearDepth(float eyeSpaceZ) {
+  float eyeZ = -eyeSpaceZ;
+  float near = u_frustum.x, far = u_frustum.y;
+  float depthRange = far - near;
+  float linearDepth = (eyeZ - near) / depthRange;
+  return 1.0 - linearDepth;
+}
+`;
 }
