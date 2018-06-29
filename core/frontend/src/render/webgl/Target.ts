@@ -140,6 +140,21 @@ export class Clips {
   public get isValid(): boolean { return this.length > 0; }
 }
 
+export class PerformanceMetrics {
+  public frameTimes: BeTimePoint[] = [];
+  public curFrameTimeIndex = 0;
+  public gatherFrameTimings = true;
+  public curSpfTimeIndex = 0;
+  public spfTimes: number[] = [];
+  public spfSum: number = 0;
+  public renderSpfTimes: number[] = [];
+  public renderSpfSum: number = 0;
+  public loadTileTimes: number[] = [];
+  public loadTileSum: number = 0;
+  public fpsTimer: StopWatch = new StopWatch(undefined, true);
+  public fpsTimerStart: number = 0;
+}
+
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
@@ -160,18 +175,7 @@ export abstract class Target extends RenderTarget {
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
-  private _frameTimes: BeTimePoint[] = [];
-  private _curFrameTimeIndex = 0;
-  private _gatherFrameTimings = true;
-  private _curSpfTimeIndex = 0;
-  private _spfTimes: number[] = [];
-  private _spfSum: number = 0;
-  private _renderSpfTimes: number[] = [];
-  private _renderSpfSum: number = 0;
-  private _loadTileTimes: number[] = [];
-  private _loadTileSum: number = 0;
-  private static _fpsTimer: StopWatch = new StopWatch(undefined, true);
-  private static _fpsTimerStart: number = 0;
+  private _performanceMetrics = new PerformanceMetrics();
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -303,21 +307,22 @@ export abstract class Target extends RenderTarget {
   }
 
   public setFrameTime(sceneTime = 0.0) {
-    if (this._gatherFrameTimings) {
+    if (this._performanceMetrics.gatherFrameTimings) {
       if (sceneTime > 0.0) {
-        this._frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
-        this._frameTimes[1] = BeTimePoint.now();
-        this._curFrameTimeIndex = 2;
-      } else if (this._curFrameTimeIndex < 12)
-        this._frameTimes[this._curFrameTimeIndex++] = BeTimePoint.now();
+        this._performanceMetrics.frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
+        this._performanceMetrics.frameTimes[1] = BeTimePoint.now();
+        this._performanceMetrics.curFrameTimeIndex = 2;
+      } else if (this._performanceMetrics.curFrameTimeIndex < 12)
+        this._performanceMetrics.frameTimes[this._performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
     }
   }
   public get frameTimings(): number[] {
     const timings: number[] = [];
     for (let i = 0; i < 11; ++i)
-      timings[i] = (this._frameTimes[i + 1].milliseconds - this._frameTimes[i].milliseconds);
+      timings[i] = (this._performanceMetrics.frameTimes[i + 1].milliseconds - this._performanceMetrics.frameTimes[i].milliseconds);
     return timings;
   }
+  public get performanceMetrics(): PerformanceMetrics { return this._performanceMetrics; }
 
   // ---- Implementation of RenderTarget interface ---- //
 
@@ -619,31 +624,27 @@ export abstract class Target extends RenderTarget {
     this._endPaint();
     this.setFrameTime();
 
-    if (this.currentViewFlags.continuousRendering) {
-      const fpsTimerElapsed = Target._fpsTimer.currentSeconds - Target._fpsTimerStart;
-      if (this._spfTimes[this._curSpfTimeIndex]) this._spfSum -= this._spfTimes[this._curSpfTimeIndex];
-      this._spfSum += fpsTimerElapsed;
-      this._spfTimes[this._curSpfTimeIndex] = fpsTimerElapsed;
+    if (sceneMilSecElapsed !== undefined) {
+      const perfMet = this._performanceMetrics;
+      const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
+      if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
+      perfMet.spfSum += fpsTimerElapsed;
+      perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
 
-      const renderTimeElapsed = (this._frameTimes[10].milliseconds - this._frameTimes[1].milliseconds);
-      if (this._renderSpfTimes[this._curSpfTimeIndex]) this._renderSpfSum -= this._renderSpfTimes[this._curSpfTimeIndex];
-      this._renderSpfSum += renderTimeElapsed;
-      this._renderSpfTimes[this._curSpfTimeIndex++] = renderTimeElapsed;
+      const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
+      if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
+      perfMet.renderSpfSum += renderTimeElapsed;
+      perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
 
       if (sceneMilSecElapsed !== undefined) {
-        if (this._loadTileTimes[this._curSpfTimeIndex]) this._loadTileSum -= this._loadTileTimes[this._curSpfTimeIndex];
-        this._loadTileSum += sceneMilSecElapsed;
-        this._loadTileTimes[this._curSpfTimeIndex++] = sceneMilSecElapsed;
-        if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
+        if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
+        perfMet.loadTileSum += sceneMilSecElapsed;
+        perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
+        if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
       }
-
-      if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
-        "Avg. FPS (ms): " + (this._spfTimes.length / this._spfSum).toFixed(2)
-        + " Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2)
-        + "<br />Scene Time (ms): " + (this._loadTileSum / this._loadTileTimes.length).toFixed(2);
-      Target._fpsTimerStart = Target._fpsTimer.currentSeconds;
+      perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
     }
-    if (this._gatherFrameTimings) {
+    if (this._performanceMetrics.gatherFrameTimings) {
       gl.finish();
       this.setFrameTime();
     }
@@ -709,7 +710,6 @@ export abstract class Target extends RenderTarget {
     vf.setShowGrid(false);
     vf.setMonochrome(false);
     vf.setShowMaterials(false);
-    vf.setDoContinuousRendering(false);
 
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);
