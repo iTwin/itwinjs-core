@@ -435,6 +435,7 @@ export class Batch extends Graphic {
   public readonly featureTable: FeatureTable;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
+  private _isDisposed: boolean = false;
 
   public constructor(graphic: RenderGraphic, features: FeatureTable) {
     super(graphic.iModel);
@@ -472,7 +473,7 @@ export class Batch extends Graphic {
     return ret;
   }
 
-  public onTargetDestroyed(target: Target) {
+  public onTargetDisposed(target: Target) {
     let index = 0;
     let foundIndex = -1;
 
@@ -490,9 +491,15 @@ export class Batch extends Graphic {
     }
   }
 
+  public get isDisposed() { return this._isDisposed; }
+
   public dispose(): void {
-    for (const ovr of this._overrides)
+    for (const ovr of this._overrides) {
+      ovr.target.onBatchDisposed(this);
       ovr.dispose();
+    }
+    this._overrides = [];
+    this._isDisposed = true;
   }
 }
 
