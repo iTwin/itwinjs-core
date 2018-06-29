@@ -9,6 +9,7 @@ import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import { FeatureTable, Feature } from "@bentley/imodeljs-common/lib/Render";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { WebGLTestContext } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -38,7 +39,7 @@ describe("FeatureOverrides tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
+    WebGLTestContext.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -46,7 +47,7 @@ describe("FeatureOverrides tests", () => {
 
   after(async () => {
     if (imodel) await imodel.closeStandalone();
-    IModelApp.shutdown();
+    WebGLTestContext.shutdown();
   });
 
   it("should create a uniform feature overrides object", () => {
