@@ -1296,66 +1296,10 @@ export class YawPitchRollAngles {
       result,
     );
   }
-  /**
-   * Expand the angles into a rotation matrix with a specified axis ordering for rotations
-   * @param axisOrder optional ordering of axis rotations (defaults to XYZ)
-   * @param result optional pre-allocated `RotMatrix`
-   */
-  public toRotMatrixOrderedRotations(axisOrder: AxisOrder = AxisOrder.XYZ, result?: RotMatrix) {
-    const rot = result !== undefined ? result : new RotMatrix();
-    const x = this.roll, y = this.pitch, z = this.yaw;
-    const a = Math.cos(x.radians), b = Math.sin(x.radians);
-    const c = Math.cos(y.radians), d = Math.sin(y.radians);
-    const e = Math.cos(z.radians), f = Math.sin(z.radians);
-
-    if (axisOrder === AxisOrder.XYZ) {
-      const ae = a * e, af = a * f, be = b * e, bf = b * f;
-      rot.setRowValues(
-        c * e, af + be * d, bf - ae * d,
-        -c * f, ae - bf * d, be + af * d,
-        d, -b * c, a * c,
-      );
-    } else if (axisOrder === AxisOrder.YXZ) {
-      const ce = c * e, cf = c * f, de = d * e, df = d * f;
-      rot.setRowValues(
-        ce + df * b, a * f, cf * b - de,
-        de * b - cf, a * e, df + ce * b,
-        a * d, -b, a * c,
-      );
-    } else if (axisOrder === AxisOrder.ZXY) {
-      const ce = c * e, cf = c * f, de = d * e, df = d * f;
-      rot.setRowValues(
-        ce - df * b, cf + de * b, -a * d,
-        -a * f, a * e, b,
-        de + cf * b, df - ce * b, a * c,
-      );
-    } else if (axisOrder === AxisOrder.ZYX) {
-      const ae = a * e, af = a * f, be = b * e, bf = b * f;
-      rot.setRowValues(
-        c * e, c * f, -d,
-        be * d - af, bf * d + ae, b * c,
-        ae * d + bf, af * d - be, a * c,
-      );
-    } else if (axisOrder === AxisOrder.YZX) {
-      const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-      rot.setRowValues(
-        c * e, f, -d * e,
-        bd - ac * f, a * e, ad * f + bc,
-        bc * f + ad, -b * e, ac - bd * f,
-      );
-    } else if (axisOrder === AxisOrder.XZY) {
-      const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-      rot.setRowValues(
-        c * e, ac * f + bd, bc * f - ad,
-        -f, a * e, b * e,
-        ad * f - bc, ad * f - bc, bd * f + ac,
-      );
-    }
-
-    return rot;
+  /** @returns Return the largest angle in radians */
+  public maxAbsRadians(): number {
+    return Geometry.maxAbsXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
   }
-  /** Return the largest angle in radians */
-  public maxAbsRadians(): number { return Geometry.maxAbsXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians); }
 
   /** Return the sum of the angles in squared radians */
   public sumSquaredRadians(): number {
@@ -1442,85 +1386,147 @@ export class YawPitchRollAngles {
     return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
   }
 
-  /**
-   * Create a YawPitchRollAngles from a RotMatrix with ordered rotations
-   * * Assumes that the matrix is a pure rotational matrix, and is unscaled
-   * @param rot the input matrix
-   * @param axisOrder optional ordering of axis rotations (defaults to XYZ)
-   * @param result optional pre-allocated `YawPitchRollAngles`
-   */
-  public static createFromRotMatrixOrderedRotations(rot: RotMatrix, axisOrder: AxisOrder = AxisOrder.XYZ, result?: YawPitchRollAngles): YawPitchRollAngles {
-    const angles = result ? result : new YawPitchRollAngles();
-    const m11 = rot.coffs[0], m12 = rot.coffs[4], m13 = rot.coffs[8];
-    const m21 = rot.coffs[1], m22 = rot.coffs[5], m23 = rot.coffs[9];
-    const m31 = rot.coffs[2], m32 = rot.coffs[6], m33 = rot.coffs[10];
+}
 
-    if (axisOrder === AxisOrder.XYZ) {
-      angles.pitch.setRadians(Math.asin(Math.max(-1, Math.min(1, m13))));
+/** OrderedRotationAngles represents a non-trivial rotation using three simple axis rotation angles, and an order in which to apply them. */
+export class OrderedRotationAngles {
+  private x: Angle;
+  private y: Angle;
+  private z: Angle;
+  private _order: AxisOrder;
+
+  private constructor(x: Angle, y: Angle, z: Angle, axisOrder: AxisOrder) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this._order = axisOrder;
+  }
+
+  // Getters and setters
+  public get order(): AxisOrder { return this._order; }
+  public get xAngle(): Angle { return this.x.clone(); }
+  public get yAngle(): Angle { return this.y.clone(); }
+  public get zAngle(): Angle { return this.z.clone(); }
+  public get xDegrees(): number { return this.x.degrees; }
+  public get xRadians(): number { return this.x.radians; }
+  public get yDegrees(): number { return this.y.degrees; }
+  public get yRadians(): number { return this.y.radians; }
+  public get zDegrees(): number { return this.z.degrees; }
+  public get zRadians(): number { return this.z.radians; }
+
+  /** Create an OrderedRotationAngles from three angles and an ordering in which to apply them when rotating. */
+  public static createAngles(x: Angle, y: Angle, z: Angle, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
+    if (result) {
+      result.x.setFrom(x);
+      result.y.setFrom(y);
+      result.z.setFrom(z);
+      result._order = order;
+      return result;
+    }
+    return new OrderedRotationAngles(x.clone(), y.clone(), z.clone(), order);
+  }
+
+  /** Create an OrderedRotationAngles from three angles (in radians) and an ordering in which to apply them when rotating. */
+  public static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
+    if (result) {
+      result.x.setRadians(xRadians);
+      result.y.setRadians(yRadians);
+      result.z.setRadians(zRadians);
+      result._order = order;
+      return result;
+    }
+    return new OrderedRotationAngles(Angle.createRadians(xRadians), Angle.createRadians(yRadians), Angle.createRadians(zRadians), order);
+  }
+
+  /** Create an OrderedRotationAngles from three angles (in degrees) and an ordering in which to apply them when rotating. */
+  public static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
+    if (result) {
+      result.x.setDegrees(xDegrees);
+      result.y.setDegrees(yDegrees);
+      result.z.setDegrees(zDegrees);
+      result._order = order;
+      return result;
+    }
+    return new OrderedRotationAngles(Angle.createRadians(xDegrees), Angle.createRadians(yDegrees), Angle.createRadians(zDegrees), order);
+  }
+
+  /** Create an OrderedRotationAngles from a 3x3 rotational matrix, given the ordering of axis rotations that the matrix derives from. */
+  public static createFromRotMatrix(matrix: RotMatrix, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
+    const m11 = matrix.coffs[0], m12 = matrix.coffs[4], m13 = matrix.coffs[8];
+    const m21 = matrix.coffs[1], m22 = matrix.coffs[5], m23 = matrix.coffs[9];
+    const m31 = matrix.coffs[2], m32 = matrix.coffs[6], m33 = matrix.coffs[10];
+
+    let xRad: number;
+    let yRad: number;
+    let zRad: number;
+
+    if (order === AxisOrder.XYZ) {
+      yRad = Math.asin(Math.max(-1, Math.min(1, m13)));
 
       if (Math.abs(m13) < 0.99999) {
-
-        angles.roll.setRadians(Math.atan2(- m23, m33));
-        angles.yaw.setRadians(Math.atan2(- m12, m11));
-
+        xRad = Math.atan2(- m23, m33);
+        zRad = Math.atan2(- m12, m11);
       } else {
-
-        angles.roll.setRadians(Math.atan2(m32, m22));
-        angles.yaw.setRadians(0);
-
+        xRad = Math.atan2(m32, m22);
+        zRad = 0;
       }
-    } else if (axisOrder === AxisOrder.YXZ) {
-      angles.roll.setRadians(Math.asin(-Math.max(-1, Math.min(1, m23))));
+    } else if (order === AxisOrder.YXZ) {
+      xRad = Math.asin(-Math.max(-1, Math.min(1, m23)));
 
       if (Math.abs(m23) < 0.99999) {
-        angles.pitch.setRadians(Math.atan2(m13, m33));
-        angles.yaw.setRadians(Math.atan2(m21, m22));
+        yRad = Math.atan2(m13, m33);
+        zRad = Math.atan2(m21, m22);
       } else {
-        angles.pitch.setRadians(Math.atan2(-m31, m11));
-        angles.yaw.setRadians(0);
+        yRad = Math.atan2(-m31, m11);
+        zRad = 0;
       }
-    } else if (axisOrder === AxisOrder.ZXY) {
-      angles.roll.setRadians(Math.asin(Math.max(-1, Math.min(1, m32))));
+    } else if (order === AxisOrder.ZXY) {
+      xRad = Math.asin(Math.max(-1, Math.min(1, m32)));
 
       if (Math.abs(m32) < 0.99999) {
-        angles.pitch.setRadians(Math.atan2(-m31, m33));
-        angles.yaw.setRadians(Math.atan2(-m12, m22));
+        yRad = Math.atan2(-m31, m33);
+        zRad = Math.atan2(-m12, m22);
       } else {
-        angles.pitch.setRadians(0);
-        angles.yaw.setRadians(Math.atan2(m21, m11));
+        yRad = 0;
+        zRad = Math.atan2(m21, m11);
       }
-    } else if (axisOrder === AxisOrder.ZYX) {
-      angles.pitch.setRadians(-Math.asin(Math.max(-1, Math.min(1, m31))));
+    } else if (order === AxisOrder.ZYX) {
+      yRad = -Math.asin(Math.max(-1, Math.min(1, m31)));
 
       if (Math.abs(m31) < 0.99999) {
-        angles.roll.setRadians(Math.atan2(m32, m33));
-        angles.yaw.setRadians(Math.atan2(m21, m11));
+        xRad = Math.atan2(m32, m33);
+        zRad = Math.atan2(m21, m11);
       } else {
-        angles.roll.setRadians(0);
-        angles.yaw.setRadians(Math.atan2(-m12, m22));
+        xRad = 0;
+        zRad = Math.atan2(-m12, m22);
       }
-    } else if (axisOrder === AxisOrder.YZX) {
-      angles.yaw.setRadians(Math.asin(Math.max(-1, Math.min(1, m21))));
+    } else if (order === AxisOrder.YZX) {
+      zRad = Math.asin(Math.max(-1, Math.min(1, m21)));
 
       if (Math.abs(m21) < 0.99999) {
-        angles.roll.setRadians(Math.atan2(-m23, m22));
-        angles.pitch.setRadians(Math.atan2(-m31, m11));
+        xRad = Math.atan2(-m23, m22);
+        yRad = Math.atan2(-m31, m11);
       } else {
-        angles.roll.setRadians(0);
-        angles.pitch.setRadians(Math.atan2(m13, m33));
+        xRad = 0;
+        yRad = Math.atan2(m13, m33);
       }
-    } else if (axisOrder === AxisOrder.XZY) {
-      angles.yaw.setRadians(-Math.asin(Math.max(-1, Math.min(1, m12))));
+    } else {
+      zRad = -Math.asin(Math.max(-1, Math.min(1, m12)));
 
       if (Math.abs(m12) < 0.99999) {
-        angles.roll.setRadians(Math.atan2(m32, m22));
-        angles.pitch.setRadians(Math.atan2(m13, m11));
+        xRad = Math.atan2(m32, m22);
+        yRad = Math.atan2(m13, m11);
       } else {
-        angles.roll.setRadians(Math.atan2(-m23, m33));
-        angles.pitch.setRadians(0);
+        xRad = Math.atan2(-m23, m33);
+        yRad = 0;
       }
     }
-    return angles;
+    return OrderedRotationAngles.createRadians(xRad, yRad, zRad, order, result);
+  }
+
+  /** Create a 3x3 rotational matrix from this OrderedRotationAngles. */
+  public toRotMatrix(result?: RotMatrix): RotMatrix {
+    return RotMatrix.createFromOrderedRotationAngles(this, result);
   }
 }
 

@@ -7,7 +7,7 @@
 import { Geometry, Angle, AxisOrder, BeJSONFunctions } from "./Geometry";
 import { Point4d } from "./numerics/Geometry4d";
 import { Range3d } from "./Range";
-import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
+import { Point2d, Point3d, Vector3d, XYAndZ, OrderedRotationAngles } from "./PointVector";
 import { XAndY, XYZ, RotMatrixProps, TransformProps } from "./PointVector";
 /* tslint:disable:variable-name jsdoc-format*/
 /** A RotMatrix is tagged indicating one of the following states:
@@ -272,6 +272,76 @@ export class RotMatrix implements BeJSONFunctions {
     }
     return result;
   }
+
+  /**
+   * Create a rotational matrix from a set of three rotational angles, which define an order
+   * for applying axis rotations.
+   * @param result optional pre-allocated `RotMatrix`
+   */
+  public static createFromOrderedRotationAngles(angles: OrderedRotationAngles, result?: RotMatrix): RotMatrix {
+    const rot = result !== undefined ? result : new RotMatrix();
+    const axisOrder = angles.order;
+    const x = angles.xAngle, y = angles.yAngle, z = angles.zAngle;
+    const a = x.cos(), b = x.sin();
+    const c = y.cos(), d = y.sin();
+    const e = z.cos(), f = z.sin();
+
+    if (axisOrder === AxisOrder.XYZ) {
+      const ae = a * e, af = a * f, be = b * e, bf = b * f;
+      rot.setRowValues(
+        c * e, af + be * d, bf - ae * d,
+        -c * f, ae - bf * d, be + af * d,
+        d, -b * c, a * c,
+      );
+    } else if (axisOrder === AxisOrder.YXZ) {
+      const ce = c * e, cf = c * f, de = d * e, df = d * f;
+      rot.setRowValues(
+        ce + df * b, a * f, cf * b - de,
+        de * b - cf, a * e, df + ce * b,
+        a * d, -b, a * c,
+      );
+    } else if (axisOrder === AxisOrder.ZXY) {
+      const ce = c * e, cf = c * f, de = d * e, df = d * f;
+      rot.setRowValues(
+        ce - df * b, cf + de * b, -a * d,
+        -a * f, a * e, b,
+        de + cf * b, df - ce * b, a * c,
+      );
+    } else if (axisOrder === AxisOrder.ZYX) {
+      const ae = a * e, af = a * f, be = b * e, bf = b * f;
+      rot.setRowValues(
+        c * e, c * f, -d,
+        be * d - af, bf * d + ae, b * c,
+        ae * d + bf, af * d - be, a * c,
+      );
+    } else if (axisOrder === AxisOrder.YZX) {
+      const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+      rot.setRowValues(
+        c * e, f, -d * e,
+        bd - ac * f, a * e, ad * f + bc,
+        bc * f + ad, -b * e, ac - bd * f,
+      );
+    } else if (axisOrder === AxisOrder.XZY) {
+      const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+      rot.setRowValues(
+        c * e, ac * f + bd, bc * f - ad,
+        -f, a * e, b * e,
+        ad * f - bc, ad * f - bc, bd * f + ac,
+      );
+    }
+
+    return rot;
+  }
+
+  /**
+   * Create a set of three ordered rotational angles from this matrix. Optionally define an order for which
+   * the axis rotations were applied, otherwise it will be assumed that the rotation derives from order 'XYZ'.
+   * @param result optional pre-allocated `OrderedRotationAngles`
+   */
+  public toOrderedRotationAngles(axisOrder: AxisOrder = AxisOrder.XYZ, result?: OrderedRotationAngles): OrderedRotationAngles {
+    return OrderedRotationAngles.createFromRotMatrix(this, axisOrder, result);
+  }
+
   /**
    *  set all entries in the matrix from call parameters appearing in row-major order.
    * @param axx Row x, column x (0,0) entry
