@@ -296,10 +296,9 @@ export abstract class Target extends RenderTarget {
     this._batches.push(batch);
   }
 
-  public onBatchDestroyed(batch: Batch) {
+  public onBatchDisposed(batch: Batch) {
     const index = this._batches.indexOf(batch);
     assert(index > -1);
-    this._batches[index].dispose();
     this._batches.splice(index, 1);
   }
 
@@ -530,7 +529,7 @@ export abstract class Target extends RenderTarget {
 
   public dispose() {
     for (const batch of this._batches)
-      batch.onTargetDestroyed(this);
+      batch.onTargetDisposed(this);
     this._batches = [];
     this._renderCommands.clear();
     this._isDisposed = true;

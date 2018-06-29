@@ -886,12 +886,19 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
  */
 export abstract class ViewState3d extends ViewState {
-  protected cameraOn: boolean;  // if true, camera is valid.
-  public readonly origin: Point3d;        // The lower left back corner of the view frustum.
-  public readonly extents: Vector3d;      // The extent of the view frustum.
-  public readonly rotation: RotMatrix;    // Rotation of the view frustum.
-  public readonly camera: Camera;         // The camera used for this view.
-  public forceMinFrontDist = 0.0;         // minimum distance for front plane
+  /** True if the camera is valid. */
+  protected cameraOn: boolean;
+  /** The lower left back corner of the view frustum. */
+  public readonly origin: Point3d;
+  /** The extent of the view frustum. */
+  public readonly extents: Vector3d;
+  /** Rotation of the view frustum. */
+  public readonly rotation: RotMatrix;
+  /** The camera used for this view. */
+  public readonly camera: Camera;
+  /** Minimum distance for front plane */
+  public forceMinFrontDist = 0.0;
+  /** @hidden */
   public static get className() { return "ViewDefinition3d"; }
   public onRenderFrame(): void { }
   public allow3dManipulations(): boolean { return true; }

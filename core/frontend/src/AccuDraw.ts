@@ -17,7 +17,6 @@ import { AuxCoordSystemState } from "./AuxCoordSys";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
-import { PrimitiveTool } from "./tools/PrimitiveTool";
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -2614,19 +2613,15 @@ export class AccuDraw {
 
     vp.invalidateDecorations();
 
-    // Make sure active tool updates its dynamics. NOTE: Can't just call UpdateDynamics, need point adjusted for new locks, etc.
+    // Make sure active tool updates its dynamics. NOTE: Can't just call updateDynamics, need point adjusted for new locks, etc.
     const tool = IModelApp.toolAdmin.activeTool;
-    if (!tool || !(tool instanceof PrimitiveTool))
+    if (!tool)
       return;
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-
-    // NOTE: Can't call DgnTool::OnMouseMotion since it can cause AccuDraw to move focus...
-    const uorPoint = ev.point;
-    IModelApp.toolAdmin.adjustPoint(uorPoint, ev.viewport!);
-    ev.point = uorPoint;
-    tool.updateDynamics(ev);
+    IModelApp.toolAdmin.adjustPoint(ev.point, ev.viewport!);
+    IModelApp.toolAdmin.updateDynamics(ev);
   }
 
   public onBeginDynamics(): boolean {

@@ -127,7 +127,7 @@ export class GeometricModel3dState extends GeometricModelState {
  * The state of a SheetModel.
  *
  * A SheetModel is a GeometricModel2d that has the following characteristics:
- * * Has finite extents, specified in meters.
+ * * Has finite extents, specified in meters (the *page size*.)
  * * Can contain views of other models, like pictures pasted on a photo album.
  */
 export class SheetModelState extends GeometricModel2dState {
@@ -142,7 +142,9 @@ export class SheetModelState extends GeometricModel2dState {
 
 /** The state of a SpatialModel */
 export class SpatialModelState extends GeometricModel3dState { }
+
 /** The state of a DrawingModel */
 export class DrawingModelState extends GeometricModel2dState { }
+
 /** The state of a SectionDrawingModel */
 export class SectionDrawingModelState extends DrawingModelState { }

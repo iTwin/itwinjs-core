@@ -5,7 +5,6 @@
 
 import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
-import { PrimitiveTool } from "./PrimitiveTool";
 import { HitDetail, HitSource, SnapDetail, HitPriority } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 
@@ -108,13 +107,8 @@ export class IdleTool extends InteractiveTool {
       IModelApp.accuDraw.onTentative();
     }
 
-    // NOTE: Need to synch tool dynamics because of UpdateDynamics call in _ExitViewTool from OnMiddleButtonUp before point was adjusted. :(
-    if (currTool && currTool instanceof PrimitiveTool) {
-      const tmpEv = new BeButtonEvent();
-      IModelApp.toolAdmin.fillEventFromCursorLocation(tmpEv);
-      currTool.updateDynamics(tmpEv);
-    }
-
+    // NOTE: Need to synch tool dynamics because of updateDynamics call in _ExitViewTool before point was adjusted.
+    IModelApp.toolAdmin.updateDynamics();
     return true;
   }
 

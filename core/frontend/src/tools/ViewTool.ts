@@ -815,7 +815,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.viewport = vp;
 
     if (this.handleMask & ViewHandleType.Rotate) {
-      // Setup intial view ball size and location...
+      // Setup initial view ball size and location...
       this.synchViewBallInfo(true);
       this.viewHandles.add(new ViewRotate(this));
     }
@@ -1139,7 +1139,7 @@ class NavigateMotion {
 
   public getViewDirection(result?: Vector3d): Vector3d {
     const forward = this.viewport.rotMatrix.getRow(2, result);
-    forward.scale(-1); // positive z is out of the screen, but we want direction into the screen
+    forward.scale(-1, forward); // positive z is out of the screen, but we want direction into the screen
     return forward;
   }
 
@@ -1199,9 +1199,21 @@ class NavigateMotion {
   }
 
   public generateTranslationTransform(velocity: Vector3d, isConstrainedToXY: boolean, result?: Transform) {
-    const rMatrix = this.viewport.rotMatrix;
-    const xDir = rMatrix.getRow(0);
-    const yDir = rMatrix.getRow(1);
+    const points: Point3d[] = new Array<Point3d>(3);
+    points[0] = new Point3d(0, 0, 0);
+    points[1] = new Point3d(1, 0, 0);
+    points[2] = new Point3d(0, 1, 0);
+    if (this.viewport.isCameraOn()) {
+      this.viewport.viewToNpcArray(points);
+      points[0].z = points[1].z = points[2].z = this.viewport.getFocusPlaneNpc(); // use the focal plane for z coordinates
+      this.viewport.npcToViewArray(points);
+    }
+    this.viewport.viewToWorldArray(points);
+    const xDir = Vector3d.createStartEnd(points[0], points[1]);
+    xDir.normalizeInPlace();
+    const yDir = Vector3d.createStartEnd(points[0], points[2]);
+    yDir.normalizeInPlace();
+
     const zDir = this.getViewDirection();
 
     if (isConstrainedToXY) {
@@ -1509,11 +1521,11 @@ class ViewWalk extends ViewNavigate {
     motion.init(elapsedTime);
     switch (this.getNavigateMode()) {
       case NavigateMode.Pan:
-        input.scale(this.getMaxLinearVelocity());
+        input.scale(this.getMaxLinearVelocity(), input);
         motion.pan(input.x, input.y);
         break;
       case NavigateMode.Look:
-        input.scale(-this.getMaxAngularVelocity());
+        input.scale(-this.getMaxAngularVelocity(), input);
         motion.look(input.x, input.y);
         break;
       case NavigateMode.Travel:
