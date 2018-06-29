@@ -60,7 +60,7 @@ export class Tile {
   private _graphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
-  protected _maxDepth: number = 20;
+  protected _maxDepth: number = 2;
   public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
