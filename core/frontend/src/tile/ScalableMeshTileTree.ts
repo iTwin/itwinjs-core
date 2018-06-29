@@ -6,9 +6,13 @@
 import { } from "./TileTree";
 import { ElementProps, RelatedElement, TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { Id64Props, Id64, BentleyStatus, assert } from "@bentley/bentleyjs-core";
+import { Id64Props, Id64, BentleyStatus, assert, StopWatch } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient } from "@bentley/imodeljs-clients";
+
+function debugPrint(str: string): void {
+  console.log(str); // tslint:disable-line:no-console
+}
 
 namespace CesiumUtils {
   export function rangeFromBoundingVolume(boundingVolume: any): Range3d {
@@ -87,11 +91,20 @@ export class ScalableMeshTileLoader {
 
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: ScalableMeshTileProps[] = [];
+    const stopWatch = new StopWatch("", true);
+    debugPrint("requesting " + tileIds.length + " tiles");
     await Promise.all(tileIds.map(async (tileId) => {
       const tile = await this.findTileInJson(this.tree.tilesetJson, tileId, "");
       if (tile !== undefined)
         props.push(tile);
     }));
+
+    let totalBytes = 0;
+    for (const prop of props) {
+      totalBytes += (prop.geometry as ArrayBuffer).byteLength;
+    }
+    debugPrint("returning " + props.length + " tiles, Size: " + totalBytes + " Elapsed time: " + stopWatch.elapsedSeconds);
+
     return props;
   }
   private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<ScalableMeshTileProps | undefined> {
@@ -108,7 +121,9 @@ export class ScalableMeshTileLoader {
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (foundChild.content.url.endsWith("json")) {
+      debugPrint("requesting Subtree");
       const subTree = await this.tree.client.getTileJson(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
+      debugPrint("returning Subtree");
       foundChild = subTree.root;
       tilesetJson.children[childIndex] = subTree.root;
     }
