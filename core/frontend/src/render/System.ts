@@ -389,5 +389,4 @@ export abstract class RenderSystem extends Disposable {
   public idle(): void { }
 
   public onInitialized(): void { }
-  public onShutDown(): void { }
 }

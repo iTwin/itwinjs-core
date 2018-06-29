@@ -32,7 +32,8 @@ import * as idleTool from "./tools/IdleTool";
  */
 export class IModelApp {
   protected static _initialized = false;
-  public static renderSystem: RenderSystem;
+  private static _renderSystem?: RenderSystem;
+  public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; } // object should not be undefined if accessed by other classes
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
   public static toolAdmin: ToolAdmin;
@@ -54,7 +55,7 @@ export class IModelApp {
       this._iModelHubClient = new IModelHubClient(this.hubDeploymentEnv);
     return this._iModelHubClient;
   }
-  public static get hasRenderSystem() { return this.renderSystem.isValid(); }
+  public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid(); }
 
   /**
    * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp
@@ -87,7 +88,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.renderSystem) IModelApp.renderSystem = this.supplyRenderSystem();
+    if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
     if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
@@ -96,7 +97,7 @@ export class IModelApp {
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
-    IModelApp.renderSystem.onInitialized();
+    IModelApp._renderSystem.onInitialized();
     IModelApp.viewManager.onInitialized();
     IModelApp.toolAdmin.onInitialized();
     IModelApp.accuDraw.onInitialized();
@@ -107,7 +108,8 @@ export class IModelApp {
 
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
-    IModelApp.renderSystem.onShutDown();
+    IModelApp._renderSystem!.dispose();
+    IModelApp._renderSystem = undefined;
     IModelApp.toolAdmin.onShutDown();
     IModelApp._initialized = false;
   }

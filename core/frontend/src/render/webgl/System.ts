@@ -408,6 +408,8 @@ export class System extends RenderSystem {
       for (const idMap of idMaps)
         idMap.dispose();
 
+      this.renderCache.clear();
+      IModelConnection.onClose.removeListener(this.removeIModelMap);
       this._isDisposed = true;
     }
   }
@@ -484,20 +486,6 @@ export class System extends RenderSystem {
       return;
     idMap.dispose();
     this.renderCache.delete(imodel);
-  }
-
-  /**
-   * Actions to perform when the IModelApp shuts down. Release all imodel apps that were involved in the shutdown.
-   */
-  public onShutDown() {
-    // First, 'free' all textures that are used by a WebGL wrapper
-    const imodelArr = this.renderCache.extractArrays().values;
-    for (const idMap of imodelArr) {
-      idMap.dispose();
-    }
-
-    this.renderCache.clear();
-    IModelConnection.onClose.removeListener(this.removeIModelMap);
   }
 
   /**
