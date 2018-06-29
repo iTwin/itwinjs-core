@@ -13,7 +13,7 @@ import { WebGLTestContext } from "./WebGLTestContext";
 export class FakeGraphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
 
-  public dispose(): void { }
+  protected doDispose(): void { }
 }
 
 function withinTol(x: number, y: number): boolean {

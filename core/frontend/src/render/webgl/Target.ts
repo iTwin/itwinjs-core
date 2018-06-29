@@ -195,7 +195,6 @@ export abstract class Target extends RenderTarget {
   private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
-  private _isDisposed: boolean = false;
 
   protected constructor() {
     super();
@@ -235,7 +234,7 @@ export abstract class Target extends RenderTarget {
   public get dynamics(): DecorationList | undefined { return this._dynamics; }
   public getWorldDecorations(decs: DecorationList): WorldDecorations {
     if (undefined === this._worldDecorations) {
-      assert(0 < decs.length);
+      assert(0 < decs.list.length);
 
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
       const vf = new ViewFlags();
@@ -247,7 +246,7 @@ export abstract class Target extends RenderTarget {
         vf.setShowSolarLight(false);
       }
 
-      this._worldDecorations = new WorldDecorations(decs[0].graphic.iModel, vf);
+      this._worldDecorations = new WorldDecorations(decs.list[0].graphic.iModel, vf);
     } else {
       this._worldDecorations.dispose();
     }
@@ -276,17 +275,20 @@ export abstract class Target extends RenderTarget {
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
-  // called by sub-classes
-  public dispose() {
-    if (!this._isDisposed) {
-      this._decorations.dispose();
-      dispose(this._dynamics);
-      dispose(this._worldDecorations);
-      this.compositor.dispose();
-      dispose(this._clipMask);
-      dispose(this.environmentMap);
-      dispose(this.diffuseMap);
-    }
+  // called also by sub-classes
+  protected doDispose() {
+    this._decorations.dispose();
+    dispose(this._dynamics);
+    dispose(this._worldDecorations);
+    this.compositor.dispose();
+    dispose(this._clipMask);
+    dispose(this.environmentMap);
+    dispose(this.diffuseMap);
+
+    for (const batch of this._batches)
+      batch.onTargetDisposed(this);
+    this._batches = [];
+    this._renderCommands.clear();
     this._isDisposed = true;
   }
 
@@ -552,8 +554,6 @@ export abstract class Target extends RenderTarget {
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
-  public get isDisposed() { return this._isDisposed; }
-
   public dispose() {
     for (const batch of this._batches)
       batch.onTargetDisposed(this);
@@ -567,7 +567,6 @@ export abstract class Target extends RenderTarget {
   }
   public reset(): void {
     this.dispose();
-    this._isDisposed = true;
     this._scene.length = 0;
     this._dynamics = undefined;
     // ###TODO this._activeVolume = undefined;
@@ -810,7 +809,7 @@ export class OnScreenTarget extends Target implements IDisposable {
     this._canvas = canvas;
   }
 
-  public dispose() {
+  protected doDispose() {
     if (!this._isDisposed) {
       dispose(this._fbo);
       dispose(this._blitGeom);

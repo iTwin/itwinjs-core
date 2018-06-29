@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Disposable, dispose } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -64,59 +64,60 @@ export class RenderPlan {
   }
 }
 
-/**
- * A renderer-specific object that can be placed into a display list.
- */
-export abstract class RenderGraphic implements IDisposable {
+/** A renderer-specific object that can be placed into a display list. */
+export abstract class RenderGraphic extends Disposable {
   public readonly iModel: IModelConnection;
   protected _isDisposed: boolean = true;  // we have a disposed graphic up until we add/create any non-disposed WebGL items
 
-  constructor(iModel: IModelConnection) { this.iModel = iModel; }
+  constructor(iModel: IModelConnection) {
+    super();
+    this.iModel = iModel;
+  }
 
-  public isDisposed(): boolean { return this._isDisposed; }
-  public dispose() { };
+  public get isDisposed(): boolean { return this._isDisposed; }
+  protected abstract doDispose(): void;
 }
 
 export type GraphicList = RenderGraphic[];
 
 /** A graphic used for decorations, optionally with symbology overrides. */
-export class Decoration implements IDisposable {
+export class Decoration extends Disposable {
   public readonly graphic: RenderGraphic;
   public readonly overrides?: FeatureSymbology.Appearance;
   private _isDisposed: boolean;
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
   public constructor(graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance) {
+    super();
     this.graphic = graphic;
     this.overrides = overrides;
     this._isDisposed = false; // assume given graphics are non-disposed
   }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this.graphic.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.graphic.dispose();
+    this._isDisposed = true;
   }
 }
 
-export class DecorationList extends Array<Decoration> implements IDisposable {
+export class DecorationList extends Disposable {
+  public readonly list: Decoration[];
   private _isDisposed: boolean = false;   // assume non-disposed to start, in case initializing a DecorationList with starting Decorations
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public constructor() { super(); this.list = []; }
+
+  public get isDisposed(): boolean { return this._isDisposed; }
 
   // Note: This does not delete any decorations, but rather frees the contained WebGL resources
-  public dispose() {
-    if (!this._isDisposed) {
-      for (const decoration of this)
-        decoration.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    for (const decoration of this.list)
+      decoration.dispose();
+    this._isDisposed = true;
   }
 
   public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) {
-    this.push(new Decoration(graphic, ovrs));
+    this.list.push(new Decoration(graphic, ovrs));
     this._isDisposed = false; // assume added graphic is not disposed
   }
 }
@@ -125,7 +126,7 @@ export class DecorationList extends Array<Decoration> implements IDisposable {
  * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
  * in addition to the Scene.
  */
-export class Decorations implements IDisposable {
+export class Decorations extends Disposable {
   private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
   private _world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
@@ -150,7 +151,7 @@ export class Decorations implements IDisposable {
   public set viewOverlay(viewOverlay: DecorationList | undefined) { dispose(this._viewOverlay); this._viewOverlay = viewOverlay; }
 
   // Decorations does not track whether or not it has been disposed... catch this within the member methods
-  public dispose() {
+  protected doDispose() {
     dispose(this._viewBackground);
     dispose(this._world);
     dispose(this._worldOverlay);
@@ -162,7 +163,7 @@ export class Decorations implements IDisposable {
   }
 
   // Only way to check if disposed is to test if all members are undefined
-  public isDisposed(): boolean {
+  public get isDisposed(): boolean {
     return this._viewBackground === undefined
       && this._normal === undefined
       && this._world === undefined
@@ -171,22 +172,20 @@ export class Decorations implements IDisposable {
   }
 }
 
-export class GraphicBranch implements IDisposable {
+export class GraphicBranch extends Disposable {
   public readonly entries: RenderGraphic[] = [];
   private _viewFlagOverrides = new ViewFlag.Overrides();
   public symbologyOverrides?: FeatureSymbology.Overrides;
   private _isDisposed: boolean;
 
-  public constructor() { this._isDisposed = true; }
+  public constructor() { super(); this._isDisposed = true; }
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      for (const graphic of this.entries)
-        graphic.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    for (const graphic of this.entries)
+      graphic.dispose();
+    this._isDisposed = true;
   }
 
   public add(graphic: RenderGraphic): void {
@@ -263,10 +262,8 @@ export namespace Pixel {
  * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
  * Every DgnViewport holds a reference to a RenderTarget.
  */
-export abstract class RenderTarget {
+export abstract class RenderTarget extends Disposable {
   protected _isDisposed: boolean = true;  // we have a disposed target up until we add/create any non-disposed WebGL items
-
-  public isDisposed(): boolean { return this._isDisposed; }
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
 
@@ -277,7 +274,8 @@ export abstract class RenderTarget {
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
-  public dispose() { }
+  protected abstract doDispose(): void;
+  public get isDisposed(): boolean { return this._isDisposed; }
   public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
@@ -300,16 +298,20 @@ export abstract class RenderTarget {
  * A RenderSystem is the renderer-specific factory for creating Render::Graphics, Render::Textures, and Render::Materials.
  * @note The methods of this class may be called from any thread.
  */
-export abstract class RenderSystem {
+export abstract class RenderSystem extends Disposable {
   protected _nowPainting?: RenderTarget;
   public readonly canvas: HTMLCanvasElement;
   public get isPainting(): boolean { return !!this._nowPainting; }
   public checkPainting(target?: RenderTarget): boolean { return target === this._nowPainting; }
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
   public nowPainting() { this._nowPainting = undefined; }
+  protected _isDisposed: boolean = true; // is disposed until subclass creates WebGL resources
 
+  public get isDisposed(): boolean { return this._isDisposed; }
   public isValid(): boolean { return this.canvas !== undefined; }
-  public constructor(canvas: HTMLCanvasElement) { this.canvas = canvas; }
+  public constructor(canvas: HTMLCanvasElement) { super(); this.canvas = canvas; }
+
+  protected abstract doDispose(): void;
 
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;

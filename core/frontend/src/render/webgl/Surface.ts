@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
@@ -24,7 +24,7 @@ function wantLighting(vf: ViewFlags) {
   return RenderMode.SmoothShade === vf.renderMode && (vf.showSourceLights() || vf.showCameraLights() || vf.showSolarLight());
 }
 
-export class SurfaceGeometry extends MeshGeometry implements IDisposable {
+export class SurfaceGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
 
   public static create(mesh: MeshData, indices: number[]): SurfaceGeometry | undefined {
@@ -33,10 +33,10 @@ export class SurfaceGeometry extends MeshGeometry implements IDisposable {
     return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
   }
 
-  public dispose() {
+  protected doDispose() {
     if (!this._isDisposed) {
       this._indices.dispose();
-      super.dispose();
+      super.doDispose();
       this._isDisposed = true;
     }
   }

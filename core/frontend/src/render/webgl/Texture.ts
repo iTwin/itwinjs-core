@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Disposable } from "@bentley/bentleyjs-core";
 import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -108,12 +108,10 @@ export class Texture extends RenderTexture {
   }
 
   /** Free this object in the WebGL wrapper. */
-  public dispose() {
-    if (!this._isDisposed) {
-      this.texture.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.texture.dispose();
+    super.dispose();
+    this._isDisposed = true;
   }
 
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
@@ -192,7 +190,7 @@ class TextureCreateParams {
 }
 
 /** Wraps a WebGLTextureHandle */
-export class TextureHandle implements IDisposable {
+export class TextureHandle extends Disposable {
   public readonly width: number;
   public readonly height: number;
   public readonly format: GL.Texture.Format;
@@ -255,10 +253,10 @@ export class TextureHandle implements IDisposable {
     return true;
   }
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
-  public dispose() {
-    if (!this._isDisposed && undefined !== this._glTexture) {
+  protected doDispose() {
+    if (undefined !== this._glTexture) {
       System.instance.context.deleteTexture(this._glTexture);
       this._glTexture = undefined;
       this._isDisposed = true;
@@ -297,6 +295,7 @@ export class TextureHandle implements IDisposable {
   private static _debugId: number = 0;
   private static readonly _maxDebugId = 0xffffff;
   private constructor(glTexture: WebGLTexture, params: TextureCreateParams) {
+    super();
     this._glTexture = glTexture;
     this._isDisposed = false;
     this.width = params.width;

@@ -241,7 +241,7 @@ export class RenderCommands {
 
   public addDecorations(dec: DecorationList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
-    for (const entry of dec) {
+    for (const entry of dec.list) {
       this.addDecoration(entry.graphic as Graphic, entry.overrides);
     }
 
@@ -421,7 +421,7 @@ export class RenderCommands {
     this.addBackground(dec.viewBackground as Graphic);
     this.addGraphics(scene);
 
-    if (undefined !== dynamics && 0 < dynamics.length) {
+    if (undefined !== dynamics && 0 < dynamics.list.length) {
       this.addDecorations(dynamics);
     }
 
@@ -429,16 +429,16 @@ export class RenderCommands {
       this.addGraphics(dec.normal);
     }
 
-    if (undefined !== dec.world && 0 < dec.world.length) {
+    if (undefined !== dec.world && 0 < dec.world.list.length) {
       this.addWorldDecorations(dec.world);
     }
 
     this._stack.pushState(this.target.decorationState);
-    if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
+    if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.list.length) {
       this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
     }
 
-    if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
+    if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.list.length) {
       this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
     }
 

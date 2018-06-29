@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Disposable } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
@@ -19,7 +19,7 @@ export const enum FrameBufferBindState {
   Suspended,
 }
 
-export class FrameBuffer implements IDisposable {
+export class FrameBuffer extends Disposable {
   private _fbo?: WebGLFramebuffer;
   private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
   private readonly colorTextures: TextureHandle[] = [];
@@ -27,7 +27,7 @@ export class FrameBuffer implements IDisposable {
   public readonly depthBuffer?: DepthBuffer;
   private _isDisposed: boolean;
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
@@ -38,6 +38,7 @@ export class FrameBuffer implements IDisposable {
   }
 
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
+    super();
     this._fbo = fbo;
     this._isDisposed = false;
     const gl: WebGLRenderingContext = System.instance.context;
@@ -78,9 +79,9 @@ export class FrameBuffer implements IDisposable {
     return new FrameBuffer(fbo, colorTextures, depthBuffer);
   }
 
-  public dispose(): void {
+  protected doDispose(): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
-    if (!this._isDisposed && this._fbo !== undefined) {
+    if (this._fbo !== undefined) {
       System.instance.context.deleteFramebuffer(this._fbo);
       this._fbo = undefined;
       this._isDisposed = true;

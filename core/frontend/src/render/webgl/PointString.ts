@@ -77,13 +77,11 @@ export class PointStringGeometry extends LUTGeometry {
     return undefined;
   }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this.lut.dispose();
-      this.indices.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.lut.dispose();
+    this.indices.dispose();
+    super.dispose();
+    this._isDisposed = true;
   }
 }
 

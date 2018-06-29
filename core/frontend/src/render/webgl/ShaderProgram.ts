@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Disposable } from "@bentley/bentleyjs-core";
 import { UniformHandle, AttributeHandle } from "./Handle";
 import { ShaderProgramParams, DrawParams } from "./DrawCommand";
 import { GL } from "./GL";
@@ -130,7 +130,7 @@ export const enum CompileStatus {
   Uncompiled, // No attempt has yet been made to compile the program.
 }
 
-export class ShaderProgram implements IDisposable {
+export class ShaderProgram extends Disposable {
   private _description: string; // for debugging purposes...
   public readonly vertSource: string;
   public readonly fragSource: string;
@@ -143,6 +143,7 @@ export class ShaderProgram implements IDisposable {
   private _isDisposed: boolean;
 
   public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string) {
+    super();
     this._description = description;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
@@ -155,10 +156,10 @@ export class ShaderProgram implements IDisposable {
     assert(undefined !== this._description);
   }
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
-  public dispose(): void {
-    if (!this._isDisposed && undefined !== this._glProgram && null !== this._glProgram) {
+  protected doDispose(): void {
+    if (undefined !== this._glProgram && null !== this._glProgram) {
       assert(!this._inUse);
       System.instance.context.deleteProgram(this._glProgram);
       this._glProgram = undefined;

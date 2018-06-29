@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Id64, BeTimePoint, IndexedValue, Disposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
@@ -254,7 +254,7 @@ class OvrNonUniform {
   }
 }
 
-export class FeatureOverrides implements IDisposable {
+export class FeatureOverrides extends Disposable {
   public lut?: TextureHandle;
   public readonly target: Target;
   public dimension: LUTDimension = LUTDimension.Uniform;
@@ -269,6 +269,7 @@ export class FeatureOverrides implements IDisposable {
   private _isDisposed: boolean;
 
   private constructor(target: Target) {
+    super();
     this.target = target;
     this._isDisposed = true;  // atleast until a texture handle is created
   }
@@ -277,14 +278,12 @@ export class FeatureOverrides implements IDisposable {
     return new FeatureOverrides(target);
   }
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this.lut!.dispose();
-      this.lut = undefined;
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.lut!.dispose();
+    this.lut = undefined;
+    this._isDisposed = true;
   }
 
   public get isNonUniform(): boolean { return LUTDimension.NonUniform === this.dimension; }
@@ -447,6 +446,17 @@ export class Batch extends Graphic {
     this._isDisposed = false;   // Assume non-disposed graphic given to start
   }
 
+  // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
+  protected doDispose() {
+    this.graphic.dispose();
+    for (const over of this._overrides) {
+      over.target.onBatchDisposed(this);
+      over.dispose();
+    }
+    this._overrides = [];
+    this._isDisposed = true;
+  }
+
   public get pickTable(): PickTable | undefined {
     if (undefined === this._pickTable)
       this._pickTable = createPickTable(this.featureTable);
@@ -496,16 +506,6 @@ export class Batch extends Graphic {
       this._overrides.splice(foundIndex, 1);
     }
   }
-
-  public dispose(): void {
-    this.graphic.dispose();
-    for (const ovr of this._overrides) {
-      ovr.target.onBatchDisposed(this);
-      ovr.dispose();
-    }
-    this._overrides = [];
-    this._isDisposed = true;
-  }
 }
 
 export class Branch extends Graphic {
@@ -525,12 +525,9 @@ export class Branch extends Graphic {
   }
 
   // Note: This does not empty the GraphicBranch array, but rather just disposes of contained WebGL resources
-  public dispose() {
-    if (!this._isDisposed) {
-      this.branch.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.branch.dispose();
+    this._isDisposed = true;
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
@@ -549,11 +546,11 @@ export class WorldDecorations extends Branch {
   public init(decs: DecorationList): void {
     this.branch.clear();
     this.overrides.length = 0;
-    for (const dec of decs) {
+    for (const dec of decs.list) {
       this.branch.add(dec.graphic);
       this.overrides.push(dec.overrides);
     }
-    if (decs.length > 0)
+    if (decs.list.length > 0)
       this._isDisposed = false; // assume decoration graphics given are not disposed
   }
 }
@@ -562,13 +559,10 @@ export class GraphicsList extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
   constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); this._isDisposed = false; }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      for (const graphic of this.graphics)
-        graphic.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    for (const graphic of this.graphics)
+      graphic.dispose();
+    this._isDisposed = true;
   }
 
   public addCommands(commands: RenderCommands): void {

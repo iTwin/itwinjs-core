@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Disposable } from "@bentley/bentleyjs-core";
 import { SurfaceType, RenderPass, RenderOrder } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
@@ -38,7 +38,7 @@ import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
 import { PolylineTesselator, TesselatedPolyline } from "./Polyline";
 
-export class MeshInfo {
+export class MeshInfo extends Disposable {
   public readonly edgeWidth: number;
   public features?: FeaturesInfo;
   public readonly texture?: Texture;
@@ -46,8 +46,10 @@ export class MeshInfo {
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
+  protected _isDisposed: boolean = true;  // MeshInfo is always disposed unless extending classes (MeshData) start storing resources
 
   protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: RenderTexture) {
+    super();
     this.edgeWidth = edgeWidth;
     this.features = features;
     this.texture = texture as Texture;
@@ -56,13 +58,15 @@ export class MeshInfo {
     this.edgeLineCode = lineCode;
     this.isPlanar = isPlanar;
   }
+
+  public get isDisposed(): boolean { return this._isDisposed; }
+  protected doDispose() { }  // MeshInfo itself owns no disposable items
 }
 
-export class MeshData extends MeshInfo implements IDisposable {
+export class MeshData extends MeshInfo {
   public readonly lut: VertexLUT.Data;
   public readonly material?: Material;
   public readonly animation: any; // should be a AnimationLookupTexture;
-  private _isDisposed: boolean;
 
   public static create(params: MeshParams): MeshData | undefined {
     const lut = params.lutParams.toData(params.vertexParams, params.uvParams);
@@ -77,13 +81,9 @@ export class MeshData extends MeshInfo implements IDisposable {
     this.animation = undefined;
   }
 
-  public isDisposed(): boolean { return this._isDisposed; }
-
-  public dispose() {
-    if (!this._isDisposed) {
-      this.lut.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.lut.dispose();
+    this._isDisposed = true;
   }
 }
 
@@ -185,14 +185,11 @@ export class MeshGraphic extends Graphic {
   }
 
   // Note: This does not delete primitives from the member array.. only frees up WebGL resources
-  public dispose() {
-    if (!this._isDisposed) {
-      this.meshData.dispose();
-      for (const primitive of this._primitives)
-        primitive.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.meshData.dispose();
+    for (const primitive of this._primitives)
+      primitive.dispose();
+    this._isDisposed = true;
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
@@ -233,12 +230,9 @@ export abstract class MeshGeometry extends LUTGeometry {
     this.mesh = mesh;
   }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this.mesh.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.mesh.dispose();
+    this._isDisposed = true;
   }
 
   protected computeEdgeWeight(params: ShaderProgramParams): number { return params.target.getEdgeWeight(params, this.edgeWidth); }
@@ -267,12 +261,10 @@ export abstract class MeshPrimitive extends Primitive {
   }
 
   // called by sub-classes
-  public dispose() {
-    if (!this._isDisposed) {
-      this.mesh.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.mesh.dispose();
+    super.dispose();
+    this._isDisposed = true;
   }
 
   public assignUniformFeatureIndices(_index: number) { assert(false); } // handled by MeshGraphic...
@@ -373,13 +365,11 @@ export class EdgeGeometry extends MeshGeometry {
     return undefined;
   }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this._indices.dispose();
-      this._endPointAndQuadIndices.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this._indices.dispose();
+    this._endPointAndQuadIndices.dispose();
+    super.dispose();
+    this._isDisposed = true;
   }
 
   public bindVertexArray(attr: AttributeHandle): void {
@@ -472,12 +462,10 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     return undefined;
   }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this._normalPairs.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this._normalPairs.dispose();
+    super.dispose();
+    this._isDisposed = true;
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.SilhouetteEdge; }
@@ -525,12 +513,10 @@ export class PolylineEdgeGeometry extends MeshGeometry {
     return undefined;
   }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this._buffers.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this._buffers.dispose();
+    super.dispose();
+    this._isDisposed = true;
   }
 
   public _wantWoWReversal(_target: Target): boolean { return true; }

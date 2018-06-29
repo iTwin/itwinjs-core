@@ -243,13 +243,10 @@ export class PolylineGeometry extends LUTGeometry {
     this._isDisposed = false;
   }
 
-  public dispose() {
-    if (!this._isDisposed) {
-      this.lut.dispose();
-      this.buffers.dispose();
-      super.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    this.lut.dispose();
+    this.buffers.dispose();
+    this._isDisposed = true;
   }
 
   public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }

@@ -3,12 +3,24 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
+import { assert } from "./Assert";
+
 /** An interface for disposable objects. Users of such objects should
  * call the dispose method when the object is not needed.
  */
 export interface IDisposable {
   dispose(): void;
-  isDisposed?(): boolean;
+}
+
+export abstract class Disposable implements IDisposable {
+  public abstract get isDisposed(): boolean;
+  protected abstract doDispose(): void; // is called internally
+  public dispose(): void {
+    if (!this.isDisposed) {
+      this.doDispose();
+      assert(this.isDisposed);
+    }
+  }
 }
 
 /** Function for disposing of a disposable object that may be undefined. */

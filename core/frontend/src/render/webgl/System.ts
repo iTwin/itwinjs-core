@@ -12,7 +12,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert, Dictionary, IDisposable } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Dictionary, Disposable } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
@@ -180,7 +180,7 @@ export class Capabilities {
 }
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
-export class IdMap implements IDisposable {
+export class IdMap extends Disposable {
   /** Mapping of materials by their key values. */
   public readonly materialMap: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
@@ -192,6 +192,7 @@ export class IdMap implements IDisposable {
   private _isDisposed: boolean = true;
 
   public constructor() {
+    super();
     this.materialMap = new Map<string, RenderMaterial>();
     this.textureMap = new Map<string, RenderTexture>();
     this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
@@ -199,20 +200,18 @@ export class IdMap implements IDisposable {
   }
 
   /** Returns true if all of the WebGL resources within this IdMap have been disposed. */
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
   // Note: This does not remove the textures from the map, but rather only deletes the WebGL resources they hold
   // Will have no effect on already disposed textures, although the only way they should be disposed is through this IdMap..
-  public dispose() {
-    if (!this._isDisposed) {
-      const textureArr = Array.from(this.textureMap.values());
-      const gradientArr = this.gradientMap.extractArrays().values;
-      for (const texture of textureArr)
-        texture.dispose();
-      for (const gradient of gradientArr)
-        gradient.dispose();
-      this._isDisposed = true;
-    }
+  protected doDispose() {
+    const textureArr = Array.from(this.textureMap.values());
+    const gradientArr = this.gradientMap.extractArrays().values;
+    for (const texture of textureArr)
+      texture.dispose();
+    for (const gradient of gradientArr)
+      gradient.dispose();
+    this._isDisposed = true;
   }
 
   /** Add a material to the material map, given that it has a valid key. */
@@ -355,13 +354,12 @@ export class IdMap implements IDisposable {
   }
 }
 
-export class System extends RenderSystem implements IDisposable {
+export class System extends RenderSystem {
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
-  private _isDisposed: boolean;
 
   public readonly drawBuffersExtension?: WEBGL_draw_buffers;
 
@@ -400,10 +398,8 @@ export class System extends RenderSystem implements IDisposable {
     return new System(canvas, context, techniques, capabilities);
   }
 
-  public isDisposed(): boolean { return this._isDisposed; }
-
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
-  public dispose() {
+  protected doDispose() {
     if (!this._isDisposed) {
       this.techniques.dispose();
 
@@ -516,7 +512,7 @@ export class System extends RenderSystem implements IDisposable {
     }
     const material = idMap.getMaterial(params);
     if (this._isDisposed)
-      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+      this._isDisposed = idMap.isDisposed;   // If the cache created items and system was previously disposed, system becomes non-disposed
     return material;
   }
 
@@ -537,7 +533,7 @@ export class System extends RenderSystem implements IDisposable {
     }
     const texture = idMap.getTexture(image, params);
     if (this._isDisposed)
-      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+      this._isDisposed = idMap.isDisposed;   // If the cache created items and system was previously disposed, system becomes non-disposed
     return texture;
   }
 
@@ -550,7 +546,7 @@ export class System extends RenderSystem implements IDisposable {
     }
     const texture = idMap.getTextureFromImageSource(source, width, height, params);
     if (this._isDisposed)
-      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+      this._isDisposed = idMap.isDisposed;   // If the cache created items and system was previously disposed, system becomes non-disposed
     return texture;
   }
 
@@ -563,7 +559,7 @@ export class System extends RenderSystem implements IDisposable {
     }
     const texture = idMap.getGradient(symb);
     if (this._isDisposed)
-      this._isDisposed = idMap.isDisposed();   // If the cache created items and system was previously disposed, system becomes non-disposed
+      this._isDisposed = idMap.isDisposed;   // If the cache created items and system was previously disposed, system becomes non-disposed
     return texture;
   }
 

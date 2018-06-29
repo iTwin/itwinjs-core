@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Disposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
@@ -16,12 +16,13 @@ export type BufferData = ArrayBufferView | ArrayBuffer;
  * A handle to a WebGLBuffer, such as a vertex or index buffer.
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  */
-export class BufferHandle implements IDisposable {
+export class BufferHandle extends Disposable {
   private _glBuffer: WebGLBuffer | undefined;
   private _isDisposed: boolean;
 
   /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */
   public constructor() {
+    super();
     const glBuffer = System.instance.context.createBuffer();
 
     // gl.createBuffer() returns WebGLBuffer | null...
@@ -38,11 +39,11 @@ export class BufferHandle implements IDisposable {
 
   public get isValid() { return undefined !== this._glBuffer; }
 
-  public isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._isDisposed; }
 
   /** Frees the WebGL buffer */
-  public dispose(): void {
-    if (!this._isDisposed && undefined !== this._glBuffer && null !== this._glBuffer) {
+  protected doDispose(): void {
+    if (undefined !== this._glBuffer && null !== this._glBuffer) {
       System.instance.context.deleteBuffer(this._glBuffer);
       this._glBuffer = undefined;
       this._isDisposed = true;
