@@ -33,7 +33,7 @@ import * as idleTool from "./tools/IdleTool";
 export class IModelApp {
   protected static _initialized = false;
   private static _renderSystem?: RenderSystem;
-  public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; } // object should not be undefined if accessed by other classes
+  public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
   public static toolAdmin: ToolAdmin;
@@ -104,16 +104,6 @@ export class IModelApp {
     IModelApp.accuSnap.onInitialized();
     IModelApp.locateManager.onInitialized();
     IModelApp.tentativePoint.onInitialized();
-  }
-
-  /** Dispose of and re-create the render system only (useful if switching between iModels). */
-  public static resetRenderSystem() { // ###TODO: Find a way to enforce this call, and disallow dispose() through IModelApp.renderSystem.dispose()
-    if (IModelApp._renderSystem) {
-      IModelApp._renderSystem.dispose();
-      IModelApp._renderSystem = undefined;
-    }
-    IModelApp._renderSystem = this.supplyRenderSystem();
-    IModelApp._renderSystem.onInitialized();
   }
 
   /** Should be called before the application exits to release any held resources. */
