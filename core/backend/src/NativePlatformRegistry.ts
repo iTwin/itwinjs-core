@@ -28,9 +28,7 @@ export class NativePlatformRegistry {
   }
 
   /** @hidden */
-  public static isNativePlatformLoaded(): boolean {
-    return NativePlatformRegistry._platform !== undefined;
-  }
+  public static isNativePlatformLoaded(): boolean { return NativePlatformRegistry._platform !== undefined; }
 
   /** @hidden */
   public static register(platform: any): void {
@@ -40,7 +38,6 @@ export class NativePlatformRegistry {
       return;
 
     NativePlatformRegistry.checkNativePlatformVersion();
-
     NativePlatformRegistry._platform.logger = Logger;
   }
 

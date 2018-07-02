@@ -27,7 +27,7 @@
     "rimraf": "^2.6.2",
     "ts-node": "^6.0.3",
     "tsconfig-paths": "^3.3.2",
-    "tslint": "^5.9.0",
+    "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
     "yargs": "^11.0.0",

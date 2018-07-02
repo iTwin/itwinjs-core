@@ -13,24 +13,25 @@ import { ProgramBuilder, VertexShaderComponent, VariableType, FragmentShaderComp
 import { WithClipVolume } from "../TechniqueFlags";
 
 const computePosition = `
-float lineWeight = ComputeLineWeight();
-if (lineWeight > 4.0)
-  lineWeight += 0.5; // ###TODO: Fudge factor for rounding fat points...
+  float lineWeight = ComputeLineWeight();
+  if (lineWeight > 4.0)
+    lineWeight += 0.5; // ###TODO: Fudge factor for rounding fat points...
 
-gl_PointSize = lineWeight;
-return u_mvp * rawPos;`;
-
-const roundCorners = `
-// gl_PointSize specifies coordinates of this fragment within the point in range [0,1].
-// This should be the most precise of the many approaches we've tried, but it still yields some asymmetry...
-// Discarding if it meets radius precisely seems to reduce that slightly...
-// ###TODO try point sprites?
-const vec2 center = vec2(0.5, 0.5);
-vec2 vt = gl_PointCoord - center;
-return dot(vt, vt) * v_roundCorners >= 0.25; // meets or exceeds radius of circle
+  gl_PointSize = lineWeight;
+  return u_mvp * rawPos;
 `;
 
-const computeRoundCorners = "v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;";
+const roundCorners = `
+  // gl_PointSize specifies coordinates of this fragment within the point in range [0,1].
+  // This should be the most precise of the many approaches we've tried, but it still yields some asymmetry...
+  // Discarding if it meets radius precisely seems to reduce that slightly...
+  // ###TODO try point sprites?
+  const vec2 center = vec2(0.5, 0.5);
+  vec2 vt = gl_PointCoord - center;
+  return dot(vt, vt) * v_roundCorners >= 0.25; // meets or exceeds radius of circle
+`;
+
+const computeRoundCorners = "  v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;";
 
 function createBase(clip: WithClipVolume): ProgramBuilder {
   const builder = new ProgramBuilder(true);

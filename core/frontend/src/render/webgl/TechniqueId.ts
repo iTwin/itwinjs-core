@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+/** Technique enumeration */
 export const enum TechniqueId {
   // Techniques with many different variations
   Invalid = -1,

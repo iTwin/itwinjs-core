@@ -10,10 +10,10 @@ import { CopyPickBufferGeometry } from "../CachedGeometry";
 import { TextureHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
-const computeBaseColor = `return vec4(1.0);`;
+const computeBaseColor = "return vec4(1.0);";
 
-const assignFragData =
-  `FragColor0 = TEXTURE(u_pickElementId0, v_texCoord);
+const assignFragData = `
+  FragColor0 = TEXTURE(u_pickElementId0, v_texCoord);
   FragColor1 = TEXTURE(u_pickElementId1, v_texCoord);
   FragColor2 = TEXTURE(u_pickDepthAndOrder, v_texCoord);
 `;

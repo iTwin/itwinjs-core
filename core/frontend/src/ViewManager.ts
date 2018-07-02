@@ -26,7 +26,6 @@ export class ViewManager {
   private _selectedView?: Viewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
-  private _doContinuousRendering = false;
 
   public onInitialized(): void { }
 
@@ -70,8 +69,6 @@ export class ViewManager {
   public doesHostHaveFocus(): boolean { return true; } // NEEDS_WORK
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
-
-  public set doContinuousRendering(doContRend: boolean) { this._doContinuousRendering = doContRend; }
 
   public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
     //   if (this.doesHostHaveFocus())
@@ -191,7 +188,7 @@ export class ViewManager {
 
     if (this._skipSceneCreation)
       this.validateViewportScenes();
-    else if (this._invalidateScenes || this._doContinuousRendering)
+    else if (this._invalidateScenes)
       this.invalidateViewportScenes();
 
     this._invalidateScenes = false;

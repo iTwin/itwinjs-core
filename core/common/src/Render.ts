@@ -563,7 +563,6 @@ export class ViewFlags {
   public showStyles() { return this.styles; }
   public showTextures() { return this.textures; }
   public showTransparency() { return this.transparency; }
-  public doContinuousRendering() { return this.continuousRendering; }
   public showVisibleEdges() { return this.visibleEdges; }
   public showWeights() { return this.weights; }
   public useHlineMaterialColors() { return this.hLineMaterialColors; }
@@ -587,7 +586,6 @@ export class ViewFlags {
   public setShowStyles(val: boolean) { this.styles = val; }
   public setShowTextures(val: boolean) { this.textures = val; }
   public setShowTransparency(val: boolean) { this.transparency = val; }
-  public setDoContinuousRendering(val: boolean) { this.continuousRendering = val; }
   public setShowVisibleEdges(val: boolean) { this.visibleEdges = val; }
   public setShowWeights(val: boolean) { this.weights = val; }
   public setUseHlineMaterialColors(val: boolean) { this.hLineMaterialColors = val; }
@@ -658,7 +656,6 @@ export namespace ViewFlag {
     public setShowWeights(val: boolean) { this.values.setShowWeights(val); this.setPresent(PresenceFlag.kWeights); }
     public setShowStyles(val: boolean) { this.values.setShowStyles(val); this.setPresent(PresenceFlag.kStyles); }
     public setShowTransparency(val: boolean) { this.values.setShowTransparency(val); this.setPresent(PresenceFlag.kTransparency); }
-    public setDoContinuousRendering(val: boolean) { this.values.setDoContinuousRendering(val); this.setPresent(PresenceFlag.kContinuousRendering); }
     public setShowFill(val: boolean) { this.values.setShowFill(val); this.setPresent(PresenceFlag.kFill); }
     public setShowTextures(val: boolean) { this.values.setShowTextures(val); this.setPresent(PresenceFlag.kTextures); }
     public setShowMaterials(val: boolean) { this.values.setShowMaterials(val); this.setPresent(PresenceFlag.kMaterials); }
@@ -688,7 +685,6 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kWeights)) base.setShowWeights(this.values.showWeights());
       if (this.isPresent(PresenceFlag.kStyles)) base.setShowStyles(this.values.showStyles());
       if (this.isPresent(PresenceFlag.kTransparency)) base.setShowTransparency(this.values.showTransparency());
-      if (this.isPresent(PresenceFlag.kContinuousRendering)) base.setDoContinuousRendering(this.values.doContinuousRendering());
       if (this.isPresent(PresenceFlag.kFill)) base.setShowFill(this.values.showFill());
       if (this.isPresent(PresenceFlag.kTextures)) base.setShowTextures(this.values.showTextures());
       if (this.isPresent(PresenceFlag.kMaterials)) base.setShowMaterials(this.values.showMaterials());
@@ -820,6 +816,7 @@ export namespace FrustumPlanes {
 
   export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance: number = 1.0e-6): void {
     const normal = Vector3d.createCrossProductToPoints(points[i2], points[i1], points[i0]);
+    normal.normalizeInPlace();
     const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[i0]) - expandPlaneDistance);
     if (undefined !== plane) {
       planes.push(plane);
@@ -944,13 +941,13 @@ export namespace Gradient {
 
   /** Multi-color area fill defined by a range of colors that vary by position */
   export interface SymbProps {
-    /** Gradient type, must be set to something other than [[Mode.None]] in order to display fill */
+    /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
     mode: Mode;
     /** Gradient flags to enable outline display and invert color fractions, Flags.None if undefined */
     flags?: Flags;
     /** Gradient rotation angle, 0.0 if undefined */
     angle?: AngleProps;
-    /** Gradient tint value from 0.0 to 1.0, only used when [[KeyColorProps]] size is 1, 0.0 if undefined */
+    /** Gradient tint value from 0.0 to 1.0, only used when [[Gradient.KeyColorProps]] size is 1, 0.0 if undefined */
     tint?: number;
     /** Gradient shift value from 0.0 to 1.0, 0.0 if undefined */
     shift?: number;

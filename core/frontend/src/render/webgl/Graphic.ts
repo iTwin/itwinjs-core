@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue } from "@bentley/bentleyjs-core";
+import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, FeatureTable, Feature, ColorDef } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
@@ -131,17 +131,14 @@ class OvrNonUniform {
   }
 
   public update(map: FeatureTable, lut: TextureHandle, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
-    // ###TODO - make conditionally update tex!!!
-    if (undefined === ovrs) {
-      const updater = new TextureDataUpdater(lut.dataBytes!);
+    const updater = new TextureDataUpdater(lut.dataBytes!);
+
+    if (undefined === ovrs)
       this.updateFlashedAndHilited(updater, map, hilites, flashedElemId);
-      lut.update(updater.data);
-    } else {
-      const data = new Uint8Array(lut.width * lut.height * 4);
-      const updater = new TextureDataUpdater(data);
+    else
       this.buildLookupTable(updater, map, ovrs, hilites, flashedElemId);
-      lut.update(data);
-    }
+
+    lut.update(updater);
   }
 
   private buildLookupTable(data: TextureDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
@@ -150,6 +147,15 @@ class OvrNonUniform {
     let nHidden = 0;
     let nOverridden = 0;
 
+    // NB: We currently use 2 RGBA values per feature as follows:
+    //  [0]
+    //      R = override flags (see FeatureOverrides::Flags)
+    //      G = line weight
+    //      B = line code
+    //      A = unused
+    //  [1]
+    //      RGB = rgb
+    //      A = alpha
     const arr: Array<IndexedValue<Feature>> = map.getArray();
     for (const kvp of arr) {
       const feature = kvp.value;
@@ -248,7 +254,7 @@ class OvrNonUniform {
   }
 }
 
-export class FeatureOverrides {
+export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
   public readonly target: Target;
   public dimension: LUTDimension = LUTDimension.Uniform;
@@ -259,6 +265,8 @@ export class FeatureOverrides {
   private _lastOverridesUpdated: BeTimePoint = BeTimePoint.now();
   private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
   private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
+
+  private _isDisposed: boolean = false;
 
   private constructor(target: Target) {
     this.target = target;
@@ -333,6 +341,16 @@ export class FeatureOverrides {
       this._lastFlashUpdated = flashLastUpdated;
       this._lastHiliteUpdated = hiliteLastUpdated;
     }
+  }
+
+  public get isDisposed() { return this._isDisposed; }
+
+  public dispose() {
+    if (this.lut !== undefined) {
+      this.lut.dispose();
+      this.lut = undefined;
+    }
+    this._isDisposed = true;
   }
 }
 
@@ -417,6 +435,7 @@ export class Batch extends Graphic {
   public readonly featureTable: FeatureTable;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
+  private _isDisposed: boolean = false;
 
   public constructor(graphic: RenderGraphic, features: FeatureTable) {
     super(graphic.iModel);
@@ -446,7 +465,7 @@ export class Batch extends Graphic {
     if (undefined === ret) {
       ret = FeatureOverrides.createFromTarget(target);
       this._overrides.push(ret);
-      // ###TODO target.addBatch(*this);
+      target.addBatch(this);
       ret.initFromMap(this.featureTable);
     }
 
@@ -454,13 +473,33 @@ export class Batch extends Graphic {
     return ret;
   }
 
-  public onTargetDestroyed(_target: Target) {
-    // ###TODO
-    // this._overrides.erase(target);
+  public onTargetDisposed(target: Target) {
+    let index = 0;
+    let foundIndex = -1;
+
+    for (const ovr of this._overrides) {
+      if (ovr.target === target) {
+        foundIndex = index;
+        break;
+      }
+      index++;
+    }
+
+    if (foundIndex > -1) {
+      this._overrides[foundIndex].dispose();
+      this._overrides.splice(foundIndex, 1);
+    }
   }
 
+  public get isDisposed() { return this._isDisposed; }
+
   public dispose(): void {
-    // ###TODO
+    for (const ovr of this._overrides) {
+      ovr.target.onBatchDisposed(this);
+      ovr.dispose();
+    }
+    this._overrides = [];
+    this._isDisposed = true;
   }
 }
 

@@ -228,19 +228,14 @@ export class TextureHandle implements IDisposable {
     uniform.setUniform1i(unit - TextureUnit.Zero);
   }
 
-  public update(data: Uint8Array): boolean {
-    // ###TODO - make conditionally update texture only if nothing changed
+  public update(updater: TextureDataUpdater): boolean {
     if (0 === this.width || 0 === this.height || undefined === this.dataBytes || 0 === this.dataBytes.length) {
       assert(false);
       return false;
     }
 
-    if (data.length !== this.dataBytes.length)
+    if (!updater.modified)
       return false;
-
-    for (let i = 0; i < this.dataBytes.length; i++) {
-      this.dataBytes[i] = data[i];
-    }
 
     const tex = this.getHandle()!;
     if (undefined === tex)

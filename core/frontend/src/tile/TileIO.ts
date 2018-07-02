@@ -101,7 +101,7 @@ export namespace TileIO {
   }
 
   /** The base header preceding tile data, identifying the tile format and version of that format. */
-  export class Header {
+  export abstract class Header {
     private _format: Format;
     public readonly version: number;
 
@@ -111,7 +111,7 @@ export namespace TileIO {
     }
 
     public get format(): Format { return this._format; }
-    public get isValid(): boolean { return Format.Unknown !== this.format; }
+    public abstract get isValid(): boolean;
 
     protected invalidate(): void { this._format = Format.Unknown; }
   }

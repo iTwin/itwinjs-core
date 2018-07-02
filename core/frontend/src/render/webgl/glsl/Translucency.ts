@@ -15,18 +15,20 @@ float computeAlphaWeight(float a) {
 
   float z = isShaderBitSet(kShaderBit_OITFlatAlphaWeight) ? 1.0 : 1.0 - gl_FragCoord.z / gl_FragCoord.w;
   return pow(a + 0.01, 4.0) + max(1e-2, 3.0 * 1e3 * pow(z, 3.0));
-}`;
+}
+`;
 
 const assignFragData = `
-vec3 Ci = baseColor.rgb;
-float ai = min(0.99, baseColor.a); // OIT algorithm does not nicely handle a=1
-float wzi = computeAlphaWeight(ai);
+  vec3 Ci = baseColor.rgb;
+  float ai = min(0.99, baseColor.a); // OIT algorithm does not nicely handle a=1
+  float wzi = computeAlphaWeight(ai);
 
-// If we are scaling output into the 0 to 1 range, we use the maximum output of the alpha weight function.
-float outputScale = isShaderBitSet(kShaderBit_OITScaleOutput) ? 1.0 / 3001.040604 : 1.0;
+  // If we are scaling output into the 0 to 1 range, we use the maximum output of the alpha weight function.
+  float outputScale = isShaderBitSet(kShaderBit_OITScaleOutput) ? 1.0 / 3001.040604 : 1.0;
 
-FragColor0 = vec4(Ci * wzi * outputScale, ai);
-FragColor1 = vec4(ai * wzi * outputScale);`;
+  FragColor0 = vec4(Ci * wzi * outputScale, ai);
+  FragColor1 = vec4(ai * wzi * outputScale);
+`;
 
 export function addTranslucency(frag: FragmentShaderBuilder): void {
   frag.addDrawBuffersExtension();

@@ -102,7 +102,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * @param buffer untyped array
    * @return a new Range3d object
    */
-  public static fromArrayBuffer(buffer: ArrayBuffer) {return this.fromFloat64Array(new Float64Array(buffer)); }
+  public static fromArrayBuffer(buffer: ArrayBuffer) { return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
   public constructor(lowx: number = RangeBase.EXTREME_POSITIVE, lowy: number = RangeBase.EXTREME_POSITIVE, lowz: number = RangeBase.EXTREME_POSITIVE,
@@ -906,7 +906,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
    * @param buffer untyped array
    * @return a new Range2d object
    */
-  public static fromArrayBuffer(buffer: ArrayBuffer) {return this.fromFloat64Array(new Float64Array(buffer)); }
+  public static fromArrayBuffer(buffer: ArrayBuffer) { return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
   public constructor(lowx = Range2d.EXTREME_POSITIVE, lowy = Range2d.EXTREME_POSITIVE, highx = Range2d.EXTREME_NEGATIVE, highy = Range2d.EXTREME_NEGATIVE) {

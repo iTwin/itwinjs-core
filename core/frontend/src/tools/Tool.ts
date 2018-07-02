@@ -5,7 +5,7 @@
 
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
-import { DecorateContext } from "../ViewContext";
+import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
@@ -451,6 +451,16 @@ export abstract class InteractiveTool extends Tool {
   /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
   public onCleanup(): void { }
 
+  /** Notification of a ViewTool or InputCollector starting and this tool is being suspended.
+   * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
+   */
+  public onSuspend(): void { }
+
+  /** Notification of a vViewTool or InputCollector exiting and this tool is being unsuspended.
+   *  @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
+   */
+  public onUnsuspend(): void { }
+
   /**
    * Called to allow an active tool to display non-element decorations in overlay mode.
    * This method is NOT called while the tool is suspended by a viewing tool or input collector.
@@ -564,6 +574,18 @@ export abstract class InteractiveTool extends Tool {
   public getCurrentButtonEvent(ev: BeButtonEvent): void {
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
   }
+
+  /** Call to find out if dynamics are currently active. */
+  public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
+
+  /** Call to initialize dynamics mode. While dynamics are active onDynamicFrame will be called. Dynamics are typically only used by a PrimitiveTool that creates or modifies geometric elements. */
+  public beginDynamics(): void { IModelApp.toolAdmin.beginDynamics(); }
+
+  /** Call to terminate dynamics mode. */
+  public endDynamics(): void { IModelApp.toolAdmin.endDynamics(); }
+
+  /** Called to allow tool to display dynamic elements. */
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
 }
 
 export abstract class InputCollector extends InteractiveTool {

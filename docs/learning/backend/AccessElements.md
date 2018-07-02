@@ -11,7 +11,7 @@ Every iModel contains a single "root" element that is the parent of all partitio
 [[include:Elements.getRootSubject]]
 ```
 
-You can look up all other elements in various ways. As described in BIS Element Fundamentals, an element is identified by a unique ID and may also have a Code and/or a FederationGuid. If you know one of these identifiers, you can look up an element very efficiently. The [Elements.getElement]($backend) method makes that easy.
+You can look up all other elements in various ways. As described in BIS Element Fundamentals, an element is identified by a unique ID and may also have a Code and/or a FederationGuid. If you know one of these identifiers, you can look up an element very efficiently. The [IModelDb.Elements.getElement]($backend) method makes that easy.
 
 *Example:*
 ``` ts

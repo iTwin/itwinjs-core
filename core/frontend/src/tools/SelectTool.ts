@@ -7,16 +7,15 @@ import { Point3d, Point2d, Range2d } from "@bentley/geometry-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
-import { IModelConnection } from "../IModelConnection";
-import { SelectEventType } from "../SelectionSet";
 import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, InputCollector, BeModifierKey } from "./Tool";
+import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKey } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { Id64Arg, Id64 } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { ViewRect } from "../Viewport";
 import { Pixel } from "../rendering";
+import { EditManipulator } from "./EditManipulator";
 
 /** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
@@ -46,84 +45,14 @@ export const enum SelectionProcessing {
   ReplaceSelectionWithElement,
 }
 
-export class EditManipulatorTool extends InputCollector {
-  public static toolId = "Select.Manipulator";
-  public static hidden = true;
-  public constructor(public manipulator: EditManipulatorProvider) { super(); }
-
-  protected accept(_ev: BeButtonEvent): boolean { return false; }
-  public onPostInstall(): void { super.onPostInstall(); IModelApp.toolAdmin.currentInputState.buttonDownTool = this; IModelApp.accuSnap.enableLocate(false); IModelApp.accuSnap.enableSnap(true); }
-  public onModelMotion(ev: BeButtonEvent) { if (ev.viewport) ev.viewport.invalidateDecorations(); }
-  public onDataButtonDown(ev: BeButtonEvent): boolean { const changed = this.accept(ev); this.exitTool(); if (changed) this.manipulator.accept(); return false; }
-  public onResetButtonUp(_ev: BeButtonEvent): boolean { this.exitTool(); this.manipulator.cancel(); return true; }
-}
-
-export class EditManipulatorProvider {
-  public isActive = false;
-  public constructor(public iModel: IModelConnection) { }
-  public hasTransientControls(): boolean { return false; }
-
-  protected createControls(): boolean { return false; } // Provider is responsible for checking if modification is allowed. May wish to present controls for "transient" geometry in non-read/write applications.
-  protected cleanupControls(): void { }
-  protected drawControls(_context: DecorateContext): void { }
-  protected selectControls(_ev: BeButtonEvent): boolean { return false; }
-  protected modifyControls(_ev: BeButtonEvent): boolean { return false; } // run EditManipulatorTool to handle drag/click modification.
-  protected onDoubleClick(_ev: BeButtonEvent): boolean { return false; } // IModelApp.locateManager.currHit is located element or pickable decoration
-
-  public onButtonEvent(ev: BeButtonEvent): boolean {
-    if (ev.isDoubleClick)
-      return this.onDoubleClick(ev);
-
-    if (!this.isActive)
-      return false;
-
-    if (BeButton.Data !== ev.button)
-      return false;
-
-    const isDragging = ev.isDown && IModelApp.toolAdmin.currentInputState.isDragging(BeButton.Data);
-
-    if (isDragging && ev.isControlKey)
-      return false; // Don't select or modify controls with ctrl+drag...
-
-    if ((ev.isDown && !isDragging) || !this.selectControls(ev))
-      return false; // Select controls on up event or down event only after drag started...
-
-    if (ev.isControlKey)
-      return true; // Support ctrl+click to select multiple controls...
-
-    return this.modifyControls(ev); // Handle modification. Install InputCollector to modify using hold+drag, release or click+click.
-  }
-
-  public onGestureEvent(_ev: BeGestureEvent): boolean { return false; }
-  public onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void { if (this.iModel === iModel) this.synch(); }
-  public decorate(context: DecorateContext): void { if (this.isActive) this.drawControls(context); }
-  public accept(): void { this.synch(); } // Called by InputCollector after successful modification.
-  public cancel(): void { this.synch(); } // Called by InputCollector after cancelled modification.
-  public synch(): void { this.isActive = this.createControls(); IModelApp.viewManager.invalidateDecorationsAllViews(); }
-  public stop(): void { if (!this.isActive) return; this.cleanupControls(); this.isActive = false; IModelApp.viewManager.invalidateDecorationsAllViews(); }
-}
-
-/* export class TestEditManipulatorTool extends EditManipulatorTool {
-  protected accept(_ev: BeButtonEvent): boolean { console.log("Accept"); return true; }
-  public decorate(_context: DecorateContext): void { console.log("Decorate"); }
-} */
-
 /*
-    // NOTE: By default, handle drag for "vertex" type handles should honor all locks...
-    //       Moved (from Topaz) before _OnPreModify to more easily allow manipulators to
-    //       ignore incompatible locks when setting up button event/anchor point.
-    const toolState = IModelApp.toolAdmin.toolState;
-    const saveCoordLockOvr = toolState.coordLockOvr;
-    toolState.coordLockOvr = CoordinateLockOverrides.None;
-    if (!this.manipulator.onPreModify(ev)) {
-      toolState.coordLockOvr = saveCoordLockOvr;
-      return false;
-    }
-    this.manipulator.onModifyStart(ev);
-    this.beginDynamics();
-*/
+export class TestEditManipulatorTool extends EditManipulator.Tool {
+  protected init(): void { super.init(); this.beginDynamics(); }
+  protected accept(_ev: BeButtonEvent): boolean { return true; }
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { console.log("Dynamics"); }
+}
 
-/* export class TestEditManipulatorProvider extends EditManipulatorProvider {
+export class TestEditManipulatorProvider extends EditManipulator.Provider {
   protected createControls(): boolean {
     return 1 === this.iModel.selectionSet.size;
   }
@@ -135,7 +64,15 @@ export class EditManipulatorProvider {
     const manipTool = new TestEditManipulatorTool(this);
     return manipTool.run();
   }
-} */
+  protected drawControls(_context: DecorateContext): void {
+    console.log("Decorate");
+  }
+  public onManipulatorEvent(eventType: EditManipulator.EventType): void {
+    super.onManipulatorEvent(eventType);
+    console.log("Event " + eventType);
+  }
+}
+*/
 
 /** Tool for picking a set of elements of interest, selected by the user. */
 export class SelectionTool extends PrimitiveTool {
@@ -143,29 +80,17 @@ export class SelectionTool extends PrimitiveTool {
   public static toolId = "Select";
   public isSelectByPoints = false;
   public readonly points: Point3d[] = [];
-  public removeListener?: () => void;
-  public manipulator?: EditManipulatorProvider;
+  public manipulator?: EditManipulator.Provider;
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
 
-  protected getManipulator(): EditManipulatorProvider | undefined { return undefined; } // Override to create sub-class of EditManipulatorProvider...
-  //  protected getManipulator(): EditManipulatorProvider | undefined { return new TestEditManipulatorProvider(this.iModel); }
+  // protected getManipulator(): EditManipulator.Provider | undefined { return new TestEditManipulatorProvider(this.iModel); } // NEEDSWORK: Testing...
+  protected getManipulator(): EditManipulator.Provider | undefined { return undefined; } // Override to create sub-class of EditManipulatorProvider...
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; } // NEEDSWORK: Setting...
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace; } // NEEDSWORK: Settings...
-  protected wantToolSettings(): boolean {
-    if (!IModelApp.features.check("SelectionTool.ShowToolSettingInReadonlyFile")) {
-      if (this.iModel.isReadonly())
-        return false; // Tool can't show settings when iModel is read only.
-
-      // IBriefcaseManager:: Request req;
-      // req.Locks().Insert(GetDgnDb(), LockLevel:: Shared);
-      // if (!GetDgnDb().BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
-      //   return false;   // another briefcase has locked the db for editing
-    }
-    return true;
-  }
+  protected wantToolSettings(): boolean { return true; } // NEEDSWORK: Settings...
 
   protected initSelectTool(): void {
     this.isSelectByPoints = false;
@@ -175,9 +100,10 @@ export class SelectionTool extends PrimitiveTool {
     IModelApp.toolAdmin.setLocateCircleOn(true);
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     IModelApp.locateManager.initToolLocate();
-    IModelApp.locateManager.options.allowDecorations = (undefined !== this.manipulator && this.manipulator.hasTransientControls());
+    IModelApp.locateManager.options.allowDecorations = (undefined !== this.manipulator && this.manipulator.allowTransientControls());
     IModelApp.accuSnap.enableLocate(enableLocate);
     IModelApp.accuSnap.enableSnap(false);
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
   }
 
   public processSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
@@ -354,7 +280,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public onModelEndDrag(ev: BeButtonEvent): boolean {
-    // NOTE: If manipulator installed an input collector, it will get the end drag event, we don't need to pass it along...
+    // NOTE: If manipulator installed an input collector, it would get the end drag event directly...
     this.selectByPointsEnd(ev);
     return false;
   }
@@ -375,7 +301,7 @@ export class SelectionTool extends PrimitiveTool {
       return false;
     }
 
-    // NOTE: Non-element hits are handled by manipulator that specificially requested them, can be ignored here...
+    // NOTE: Non-element hits are only handled by a manipulator that specificially requested them, can be ignored here...
     const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
     if (hit && hit.isElementHit()) {
       switch (this.getSelectionMode()) {
@@ -459,15 +385,7 @@ export class SelectionTool extends PrimitiveTool {
     return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator...
   }
 
-  public decorateSuspended(context: DecorateContext): void {
-    // NOTE: Still want manipulator controls to display when select tool is suspended by a viewing tool or input collector.
-    if (this.manipulator)
-      this.manipulator.decorate(context);
-  }
-
   public decorate(context: DecorateContext): void {
-    if (this.manipulator)
-      this.manipulator.decorate(context);
     this.selectByPointsDecorate(context);
   }
 
@@ -488,11 +406,6 @@ export class SelectionTool extends PrimitiveTool {
     return (SelectionMode.Add === mode ? !isSelected : isSelected);
   }
 
-  protected onSelectionChanged(iModel: IModelConnection, eventType: SelectEventType, ids?: Set<string>): void {
-    if (undefined !== this.manipulator)
-      this.manipulator.onSelectionChanged(iModel, eventType, ids);
-  }
-
   public onRestartTool(): void {
     this.exitTool();
   }
@@ -500,25 +413,19 @@ export class SelectionTool extends PrimitiveTool {
   public onCleanup(): void {
     super.onCleanup();
     if (this.manipulator) {
-      this.manipulator.stop();
+      this.manipulator.clear();
       this.manipulator = undefined;
-    }
-    if (this.removeListener) {
-      this.removeListener();
-      this.removeListener = undefined;
     }
   }
 
   public onPostInstall(): void {
     super.onPostInstall();
-    this.initSelectTool();
     if (!this.targetView)
       return;
-    this.removeListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
     this.manipulator = this.getManipulator();
     if (this.manipulator)
-      this.manipulator.synch(); // create controls for an existing selection set...
+      this.manipulator.init(); // create controls for an existing selection set...
+    this.initSelectTool();
   }
 
   public static startTool(): boolean {

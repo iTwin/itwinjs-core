@@ -199,7 +199,7 @@ export namespace Pixel {
  * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
  * Every DgnViewport holds a reference to a RenderTarget.
  */
-export abstract class RenderTarget {
+export abstract class RenderTarget implements IDisposable {
   public static get frustumDepth2d(): number { return 1.0; } // one meter
 
   public abstract get renderSystem(): RenderSystem;
@@ -209,7 +209,7 @@ export abstract class RenderTarget {
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
-  public abstract onDestroy(): void;
+  public dispose() { }
   public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;

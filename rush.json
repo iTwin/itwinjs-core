@@ -1,51 +1,59 @@
 {
-  "rushVersion": "4.3.2",
+  "rushVersion": "5.0.0",
   "npmVersion": "5.5.1",
   "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
   "projects": [
     {
-      "packageName": "imodeljs-core",
-      "projectFolder": ".",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@bentley/bentleyjs-tools",
       "projectFolder": "tools/bentley",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/bentleyjs-core",
       "projectFolder": "core/bentley",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/geometry-core",
       "projectFolder": "core/geometry",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/imodeljs-common",
       "projectFolder": "core/common",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/imodeljs-backend",
       "projectFolder": "core/backend",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/imodeljs-clients",
       "projectFolder": "core/clients",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/imodeljs-frontend",
       "projectFolder": "core/frontend",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "imodeljs-core-testbed",
-      "projectFolder": "testbed",
+      "packageName": "@bentley/imodeljs-i18n",
+      "projectFolder": "core/i18n",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "bemetalsmith",
+      "projectFolder": "tools/bemetalsmith",
       "shouldPublish": false
     },
     {
@@ -64,9 +72,9 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/imodeljs-i18n",
-      "projectFolder": "core/i18n",
-      "shouldPublish": true
+      "packageName": "testbed",
+      "projectFolder": "testbed",
+      "shouldPublish": false
     }
   ]
 }

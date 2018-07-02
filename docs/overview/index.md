@@ -1,8 +1,10 @@
-# The iModelJs Library
 
+<p style="text-align: center;">
 ![](./imodeljs.ico)
-
-The iModelJs  library is a JavaScript API for creating, querying, displaying, and modifying iModels.
+</p>
+<p style="text-align: center;">
+<b>iModelJs</b> is a JavaScript API for creating, querying, displaying, and modifying iModels.
+</p>
 
 ## Documentation Overview
 
@@ -54,9 +56,9 @@ The iModelJs library is divided into these npm packages in the `@bentley` scope:
 
 |Package Name|Description
 |---|---
-|**bentleyjs-core**|General utilities that can be run in either the frontend or the backend.
+|**bentleyjs-core**|General classes and utilities that are not specific to iModelJs.
 |**geometry-core**|Operations on 2d and 3d geometry.
 |**imodeljs-backend**|Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface.
-|**imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tool) that modify iModels.
+|**imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tools) that modify iModels.
 |**imodeljs-common**|Classes that are shared between the frontend and backend.
-|**imodeljs-native**|Performs low-level I/O to an iModel. `imodeljs-backend` depends on this package.
+|**imodeljs-native**|Performs low-level I/O to an iModel. Runs only on backends, and `imodeljs-backend` depends on this package.

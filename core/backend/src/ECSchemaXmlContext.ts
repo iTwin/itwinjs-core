@@ -10,6 +10,7 @@ import { NativeECSchemaXmlContext } from "./imodeljs-native-platform-api";
 export type SchemaKey = NativeECSchemaXmlContext.SchemaKey;
 export type SchemaMatchType = NativeECSchemaXmlContext.SchemaMatchType;
 
+/** @hidden */
 export class ECSchemaXmlContext {
   private _nativeContext: NativeECSchemaXmlContext | undefined;
 

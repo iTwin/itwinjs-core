@@ -344,6 +344,7 @@ export class DecorationAnimator implements ViewportAnimator {
  * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
  */
 export class Viewport {
+  private _doContinuousRendering = false;
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
@@ -426,6 +427,12 @@ export class Viewport {
     this.setCursor();
     this.saveViewUndo();
   }
+
+  /** Determine whether continuous rendering is enabled. */
+  public get continuousRendering(): boolean { return this._doContinuousRendering; }
+
+  /** Set whether or not continuous rendering is enabled. */
+  public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
@@ -1526,7 +1533,7 @@ export class Viewport {
     // Allow ViewState instance to change any state which might affect logic below...
     view.onRenderFrame();
 
-    let isRedrawNeeded = sync.isRedrawPending;
+    let isRedrawNeeded = sync.isRedrawPending || this._doContinuousRendering;
     sync.invalidateRedrawPending();
 
     if (target.updateViewRect()) {
@@ -1589,7 +1596,7 @@ export class Viewport {
 
     timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame(timer.elapsed.milliseconds);
+      target.drawFrame(this._doContinuousRendering ? timer.elapsed.milliseconds : undefined);
 
     return true;
   }

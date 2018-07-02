@@ -15,17 +15,20 @@ vec2 computeLUTCoords(float index, vec2 dimensions, vec2 center, float mult) {
   float xId = baseIndex - dimensions.x * yId; // replaces mod()...
 
   return center + vec2(xId/dimensions.x, yId/dimensions.y);
-}`;
+}
+`;
 
 const computeCoordsTemplate = `
 vec2 compute_{LUTNAME}_coords(float index) {
   return computeLUTCoords(index, u_{LUTNAME}Params.xy, g_{LUTNAME}_center, {MULT});
-}`;
+}
+`;
 
 const initializerTemplate = `
   {LUTSTEPX} = 1.0 / {LUTPARAMS}.x;
   {LUTSTEPY} = 1.0 / {LUTPARAMS}.y;
-  {LUTCENTER} = vec2(0.5*{LUTSTEPX}, 0.5*{LUTSTEPY});`;
+  {LUTCENTER} = vec2(0.5*{LUTSTEPX}, 0.5*{LUTSTEPY});
+`;
 
 export function addLookupTable(sb: ShaderBuilder, lutName: string, mult: string = "1.0") {
   sb.addFunction(computeLUTCoords);

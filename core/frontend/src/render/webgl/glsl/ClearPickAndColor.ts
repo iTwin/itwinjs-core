@@ -8,13 +8,14 @@ import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { FloatRgba } from "../FloatRGBA";
 
-const computeBaseColor = `return u_bgColor;`;
+const computeBaseColor = "return u_bgColor;";
 
 const assignFragData = `
   FragColor0 = baseColor;
   FragColor1 = vec4(0.0);
   FragColor2 = vec4(0.0);
-  FragColor3 = vec4(0.0);`;
+  FragColor3 = vec4(0.0);
+`;
 
 export function createClearPickAndColorProgram(context: WebGLRenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);

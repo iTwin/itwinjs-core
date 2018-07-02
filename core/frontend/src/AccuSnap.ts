@@ -6,7 +6,7 @@
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
-import { SnapStatus, LocateAction, LocateResponse, HitListHolder, TestHitStatus, ElementLocateManager } from "./ElementLocateManager";
+import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager } from "./ElementLocateManager";
 import { SpriteLocation, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
@@ -51,7 +51,6 @@ export class AccuSnap {
   public currHit?: HitDetail;                            // currently active hit
   public aSnapHits?: HitList;                            // current list of hits.
   private tempSnap?: SnapDetail;
-  public readonly retestList = new HitList();
   public readonly needFlash = new Set<Viewport>();       // views that need to be flashed
   public readonly areFlashed = new Set<Viewport>();      // views that are already flashed
   public readonly cross = new SpriteLocation();          // the "+" that indicates where the snap point is
@@ -96,7 +95,6 @@ export class AccuSnap {
   public destroy(): void {
     this.currHit = undefined;
     this.aSnapHits = undefined;
-    this.retestList.empty();
   }
   private doSnapping(): boolean { return this.isSnapEnabled() && this.userWantsSnaps() && !this.isSnapSuspended(); }
   private isSnapSuspended(): boolean { return (0 !== this.suppressed || 0 !== this.toolState.suspended); }
@@ -241,7 +239,7 @@ export class AccuSnap {
         const aperture = (this.getStickyFactor() * vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
 
         // see if he came back somewhere near the currently snapped element
-        if (TestHitStatus.IsOn !== IModelApp.locateManager.getElementPicker().testHit(tpHit, undefined, vp, uorPt, aperture, IModelApp.locateManager.options))
+        if (!IModelApp.locateManager.getElementPicker().testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
           return;
 
         timeout = 3;
@@ -588,11 +586,7 @@ export class AccuSnap {
     // NOTE: Since TestHit will use the same HitSource as the input hit we only need to sets this for DoPick...
     options.hitSource = this.isSnapEnabled() ? HitSource.AccuSnap : HitSource.MotionLocate;
 
-    // see if we should keep the current hit
     let aperture = (vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
-    const canBeSticky = !force && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && this.currHit.priority < HitPriority.PlanarSurface);
-    const keepCurrentHit = (canBeSticky && TestHitStatus.IsOn === picker.testHit(this.currHit!, this.retestList, vp, testPoint, this.getStickyFactor() * aperture, options));
-
     this.initializeForCheckMotion();
     aperture *= this.getSearchDistance();
 
@@ -603,16 +597,17 @@ export class AccuSnap {
 
     this.aSnapHits = picker.getHitList(true); // take ownership of the pickElem hit list.
 
-    // if "stickiness" causes us to keep the current hit, remove any other hits in the current HitList that pertain to
-    // that element, and then insert the retested hit at the front of the list. This is so if/when the user presses reset,
-    // they'll get the next most reasonable hit.
-    if (keepCurrentHit) {
-      const theHit = this.retestList.getHit(0);
-      if (theHit && theHit.sourceId) {
-        this.aSnapHits.removeHitsFrom(theHit.sourceId);
-        this.aSnapHits.insertHit(0, theHit);
+    // see if we should keep the current hit
+    const canBeSticky = !force && this.aSnapHits.length > 1 && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && this.currHit.priority < HitPriority.PlanarSurface);
+    if (canBeSticky) {
+      for (let iHit = 1; iHit < this.aSnapHits.length; ++iHit) {
+        const thisHit = this.aSnapHits.hits[iHit];
+        if (!thisHit.isSameHit(this.currHit))
+          continue;
+        this.aSnapHits.removeHit(iHit);
+        this.aSnapHits.insertHit(0, thisHit);
+        break;
       }
-      this.retestList.empty();
     }
 
     return SnapStatus.Success;

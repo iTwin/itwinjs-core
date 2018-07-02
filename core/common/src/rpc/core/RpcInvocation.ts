@@ -114,6 +114,7 @@ export class RpcInvocation {
   }
 
   private fulfillResolved(value: any): RpcRequestFulfillment {
+    this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
 
     const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
@@ -121,6 +122,7 @@ export class RpcInvocation {
   }
 
   private fulfillRejected(reason: any): RpcRequestFulfillment {
+    this._timeOut = new Date().getTime();
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
@@ -149,7 +151,6 @@ export class RpcInvocation {
       interfaceName: this.operation.interfaceDefinition.name,
     };
 
-    this._timeOut = new Date().getTime();
     return fulfillment;
   }
 

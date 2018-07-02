@@ -23,40 +23,40 @@ import { addNormalMatrix } from "./Vertex";
 import { octDecodeNormal } from "./Surface";
 
 const decodeEndPointAndQuadIndices = `
-float index = decodeUInt32(a_endPointAndQuadIndices.xyz);
-vec2 tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
-vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-tc.x += g_vert_stepX;
-vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
-g_quadIndex = a_endPointAndQuadIndices.w;
+  float index = decodeUInt32(a_endPointAndQuadIndices.xyz);
+  vec2 tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
+  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += g_vert_stepX;
+  vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
+  g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+  g_quadIndex = a_endPointAndQuadIndices.w;
 `;
 
 const checkForSilhouetteDiscard = `
-vec3 n0 = u_nmx * octDecodeNormal(a_normals.xy);
-vec3 n1 = u_nmx * octDecodeNormal(a_normals.zw);
+  vec3 n0 = u_nmx * octDecodeNormal(a_normals.xy);
+  vec3 n1 = u_nmx * octDecodeNormal(a_normals.zw);
 
-if (0.0 == u_mvp[0].w) {
-  return n0.z * n1.z > 0.0;           // orthographic.
-} else {
-  vec4  viewPos = u_mv * rawPos;     // perspective
-  vec3  toEye = normalize(viewPos.xyz);
-  float dot0 = dot(n0, toEye);
-  float dot1 = dot(n1, toEye);
+  if (0.0 == u_mvp[0].w) {
+    return n0.z * n1.z > 0.0;           // orthographic.
+  } else {
+    vec4  viewPos = u_mv * rawPos;     // perspective
+    vec3  toEye = normalize(viewPos.xyz);
+    float dot0 = dot(n0, toEye);
+    float dot1 = dot(n1, toEye);
 
-  if (dot0 * dot1 > 0.0)
-    return true;
+    if (dot0 * dot1 > 0.0)
+      return true;
 
-  // Need to discard if either is non-silhouette.
-  vec4 otherPosition = g_otherPos;
-  viewPos = u_mv * otherPosition;
-  toEye = normalize(viewPos.xyz);
-  dot0 = dot(n0, toEye);
-  dot1 = dot(n1, toEye);
+    // Need to discard if either is non-silhouette.
+    vec4 otherPosition = g_otherPos;
+    viewPos = u_mv * otherPosition;
+    toEye = normalize(viewPos.xyz);
+    dot0 = dot(n0, toEye);
+    dot1 = dot(n1, toEye);
 
-  return dot0 * dot1 > 0.0;
-}
+    return dot0 * dot1 > 0.0;
+  }
 `;
 
 const computePosition = `
@@ -105,7 +105,7 @@ const computePosition = `
   return pos;
 `;
 
-const lineCodeArgs = `g_windowDir, g_windowPos, 0.0`;
+const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
 function createBase(isSilhouette: boolean, clip: WithClipVolume): ProgramBuilder {
   const builder = new ProgramBuilder(true);
