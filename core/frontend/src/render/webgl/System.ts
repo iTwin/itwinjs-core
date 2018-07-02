@@ -188,7 +188,7 @@ export class IdMap {
   /** Mapping of textures using gradient symbology. */
   public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
   /** Array of textures without key values (unnamed). */
-  public keylessTextures: RenderTexture[] = [];
+  public readonly keylessTextures: RenderTexture[] = [];
 
   public constructor() {
     this.materialMap = new Map<string, RenderMaterial>();
