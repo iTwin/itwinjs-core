@@ -348,7 +348,7 @@ export class SceneCompositor implements IDisposable {
     const width = rect.width;
     const height = rect.height;
 
-    if (width === this._width && height === this._height) {
+    if (this._textures.accumulation !== undefined && width === this._width && height === this._height) {
       return true;
     }
 
