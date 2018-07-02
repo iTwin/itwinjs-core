@@ -86,7 +86,7 @@ export abstract class Primitive extends Graphic {
 
   public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(iModel); this.cachedGeometry = cachedGeom; this._isDisposed = false; }
 
-  protected doDispose() {
+  public dispose() {
     if (!this._isDisposed) {
       this.cachedGeometry.dispose();
       this._isDisposed = true;

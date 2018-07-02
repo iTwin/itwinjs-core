@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Disposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { UniformHandle, AttributeHandle } from "./Handle";
 import { ShaderProgramParams, DrawParams } from "./DrawCommand";
 import { GL } from "./GL";
@@ -130,7 +130,7 @@ export const enum CompileStatus {
   Uncompiled, // No attempt has yet been made to compile the program.
 }
 
-export class ShaderProgram extends Disposable {
+export class ShaderProgram implements IDisposable {
   private _description: string; // for debugging purposes...
   public readonly vertSource: string;
   public readonly fragSource: string;
@@ -140,31 +140,27 @@ export class ShaderProgram extends Disposable {
   private readonly _programUniforms = new Array<ProgramUniform>();
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attributes = new Array<Attribute>();
-  private _isDisposed: boolean;
 
   public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string) {
-    super();
     this._description = description;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
 
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;
-    this._isDisposed = (null === glProgram) ? true : false;
 
     // ###TODO: Silencing 'unused variable' warnings temporarily...
     assert(undefined !== this._description);
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._glProgram === undefined || this._glProgram === null; }
 
-  protected doDispose(): void {
-    if (undefined !== this._glProgram && null !== this._glProgram) {
+  public dispose(): void {
+    if (this.isDisposed) {
       assert(!this._inUse);
-      System.instance.context.deleteProgram(this._glProgram);
+      System.instance.context.deleteProgram(this._glProgram!);
       this._glProgram = undefined;
       this._status = CompileStatus.Uncompiled;
-      this._isDisposed = true;
     }
   }
 

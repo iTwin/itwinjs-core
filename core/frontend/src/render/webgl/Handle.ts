@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Disposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
@@ -16,37 +16,30 @@ export type BufferData = ArrayBufferView | ArrayBuffer;
  * A handle to a WebGLBuffer, such as a vertex or index buffer.
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  */
-export class BufferHandle extends Disposable {
-  private _glBuffer: WebGLBuffer | undefined;
-  private _isDisposed: boolean;
+export class BufferHandle implements IDisposable {
+  private _glBuffer?: WebGLBuffer;
 
   /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */
   public constructor() {
-    super();
     const glBuffer = System.instance.context.createBuffer();
 
     // gl.createBuffer() returns WebGLBuffer | null...
     if (null !== glBuffer) {
       this._glBuffer = glBuffer;
-      this._isDisposed = false;
     } else {
       this._glBuffer = undefined;
-      this._isDisposed = true;
     }
 
-    assert(this.isValid);
+    assert(!this.isDisposed);
   }
 
-  public get isValid() { return undefined !== this._glBuffer; }
-
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._glBuffer === undefined || this._glBuffer === null; }
 
   /** Frees the WebGL buffer */
-  protected doDispose(): void {
-    if (undefined !== this._glBuffer && null !== this._glBuffer) {
-      System.instance.context.deleteBuffer(this._glBuffer);
+  public dispose(): void {
+    if (!this.isDisposed) {
+      System.instance.context.deleteBuffer(this._glBuffer!);
       this._glBuffer = undefined;
-      this._isDisposed = true;
     }
   }
 
@@ -70,7 +63,7 @@ export class BufferHandle extends Disposable {
   /** Creates a BufferHandle and binds its data */
   public static createBuffer(target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
     const handle = new BufferHandle();
-    if (!handle.isValid) {
+    if (handle.isDisposed) {
       return undefined;
     }
 
@@ -141,7 +134,7 @@ export class QBufferHandle2d extends BufferHandle {
 
   public static create(params: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
     const handle = new QBufferHandle2d(params);
-    if (!handle.isValid) {
+    if (handle.isDisposed) {
       return undefined;
     }
 
@@ -165,7 +158,7 @@ export class QBufferHandle3d extends BufferHandle {
 
   public static create(params: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(params);
-    if (!handle.isValid) {
+    if (handle.isDisposed) {
       return undefined;
     }
 

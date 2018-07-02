@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Disposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -108,9 +108,11 @@ export class Texture extends RenderTexture {
   }
 
   /** Free this object in the WebGL wrapper. */
-  protected doDispose() {
-    this.texture.dispose();
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      this.texture.dispose();
+      this._isDisposed = true;
+    }
   }
 
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
@@ -189,14 +191,13 @@ class TextureCreateParams {
 }
 
 /** Wraps a WebGLTextureHandle */
-export class TextureHandle extends Disposable {
+export class TextureHandle implements IDisposable {
   public readonly width: number;
   public readonly height: number;
   public readonly format: GL.Texture.Format;
   public readonly dataType: GL.Texture.DataType;
   public readonly dataBytes?: Uint8Array;
   private _glTexture?: WebGLTexture;
-  private _isDisposed: boolean;
 
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }
 
@@ -252,13 +253,12 @@ export class TextureHandle extends Disposable {
     return true;
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._glTexture === undefined || this._glTexture === null; }
 
-  protected doDispose() {
-    if (undefined !== this._glTexture) {
-      System.instance.context.deleteTexture(this._glTexture);
+  public dispose() {
+    if (!this.isDisposed) {
+      System.instance.context.deleteTexture(this._glTexture!);
       this._glTexture = undefined;
-      this._isDisposed = true;
     }
   }
 
@@ -294,9 +294,7 @@ export class TextureHandle extends Disposable {
   private static _debugId: number = 0;
   private static readonly _maxDebugId = 0xffffff;
   private constructor(glTexture: WebGLTexture, params: TextureCreateParams) {
-    super();
     this._glTexture = glTexture;
-    this._isDisposed = false;
     this.width = params.width;
     this.height = params.height;
     this.format = params.format;

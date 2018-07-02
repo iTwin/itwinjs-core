@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue, Disposable } from "@bentley/bentleyjs-core";
+import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
@@ -254,7 +254,7 @@ class OvrNonUniform {
   }
 }
 
-export class FeatureOverrides extends Disposable {
+export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
   public readonly target: Target;
   public dimension: LUTDimension = LUTDimension.Uniform;
@@ -269,7 +269,6 @@ export class FeatureOverrides extends Disposable {
   private _isDisposed: boolean;
 
   private constructor(target: Target) {
-    super();
     this.target = target;
     this._isDisposed = true;  // atleast until a texture handle is created
   }
@@ -280,10 +279,12 @@ export class FeatureOverrides extends Disposable {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose() {
-    this.lut!.dispose();
-    this.lut = undefined;
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      this.lut!.dispose();
+      this.lut = undefined;
+      this._isDisposed = true;
+    }
   }
 
   public get isNonUniform(): boolean { return LUTDimension.NonUniform === this.dimension; }
@@ -447,14 +448,16 @@ export class Batch extends Graphic {
   }
 
   // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
-  protected doDispose() {
-    this.graphic.dispose();
-    for (const over of this._overrides) {
-      over.target.onBatchDisposed(this);
-      over.dispose();
+  public dispose() {
+    if (!this._isDisposed) {
+      this.graphic.dispose();
+      for (const over of this._overrides) {
+        over.target.onBatchDisposed(this);
+        over.dispose();
+      }
+      this._overrides = [];
+      this._isDisposed = true;
     }
-    this._overrides = [];
-    this._isDisposed = true;
   }
 
   public get pickTable(): PickTable | undefined {
@@ -525,9 +528,11 @@ export class Branch extends Graphic {
   }
 
   // Note: This does not empty the GraphicBranch array, but rather just disposes of contained WebGL resources
-  protected doDispose() {
-    this.branch.dispose();
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      this.branch.dispose();
+      this._isDisposed = true;
+    }
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
@@ -559,10 +564,12 @@ export class GraphicsList extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
   constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); this._isDisposed = false; }
 
-  protected doDispose() {
-    for (const graphic of this.graphics)
-      graphic.dispose();
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      for (const graphic of this.graphics)
+        graphic.dispose();
+      this._isDisposed = true;
+    }
   }
 
   public addCommands(commands: RenderCommands): void {

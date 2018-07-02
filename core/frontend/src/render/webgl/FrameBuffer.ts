@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Disposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
@@ -19,15 +19,14 @@ export const enum FrameBufferBindState {
   Suspended,
 }
 
-export class FrameBuffer extends Disposable {
+export class FrameBuffer implements IDisposable {
   private _fbo?: WebGLFramebuffer;
   private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
   private readonly colorTextures: TextureHandle[] = [];
   private readonly colorAttachments: GLenum[] = [];
   public readonly depthBuffer?: DepthBuffer;
-  private _isDisposed: boolean;
 
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._fbo === undefined || this._fbo === null; }
 
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
@@ -38,9 +37,7 @@ export class FrameBuffer extends Disposable {
   }
 
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
-    super();
     this._fbo = fbo;
-    this._isDisposed = false;
     const gl: WebGLRenderingContext = System.instance.context;
 
     this.bind(false);
@@ -79,12 +76,11 @@ export class FrameBuffer extends Disposable {
     return new FrameBuffer(fbo, colorTextures, depthBuffer);
   }
 
-  protected doDispose(): void {
+  public dispose(): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
-    if (this._fbo !== undefined) {
-      System.instance.context.deleteFramebuffer(this._fbo);
+    if (!this.isDisposed) {
+      System.instance.context.deleteFramebuffer(this._fbo!);
       this._fbo = undefined;
-      this._isDisposed = true;
     }
   }
 

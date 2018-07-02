@@ -12,7 +12,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert, Dictionary, Disposable } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Dictionary, IDisposable } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
@@ -180,7 +180,7 @@ export class Capabilities {
 }
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
-export class IdMap extends Disposable {
+export class IdMap implements IDisposable {
   /** Mapping of materials by their key values. */
   public readonly materialMap: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
@@ -192,7 +192,6 @@ export class IdMap extends Disposable {
   private _isDisposed: boolean = true;
 
   public constructor() {
-    super();
     this.materialMap = new Map<string, RenderMaterial>();
     this.textureMap = new Map<string, RenderTexture>();
     this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
@@ -204,14 +203,16 @@ export class IdMap extends Disposable {
 
   // Note: This does not remove the textures from the map, but rather only deletes the WebGL resources they hold
   // Will have no effect on already disposed textures, although the only way they should be disposed is through this IdMap..
-  protected doDispose() {
-    const textureArr = Array.from(this.textureMap.values());
-    const gradientArr = this.gradientMap.extractArrays().values;
-    for (const texture of textureArr)
-      texture.dispose();
-    for (const gradient of gradientArr)
-      gradient.dispose();
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      const textureArr = Array.from(this.textureMap.values());
+      const gradientArr = this.gradientMap.extractArrays().values;
+      for (const texture of textureArr)
+        texture.dispose();
+      for (const gradient of gradientArr)
+        gradient.dispose();
+      this._isDisposed = true;
+    }
   }
 
   /** Add a material to the material map, given that it has a valid key. */
@@ -399,17 +400,19 @@ export class System extends RenderSystem {
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
-  protected doDispose() {
-    this.techniques.dispose();
+  public dispose() {
+    if (!this._isDisposed) {
+      this.techniques.dispose();
 
-    // We must attempt to dispose of each idmap in the rendercache (if idmap is already disposed, has no effect)
-    const idMaps = this.renderCache.extractArrays().values;
-    for (const idMap of idMaps)
-      idMap.dispose();
+      // We must attempt to dispose of each idmap in the rendercache (if idmap is already disposed, has no effect)
+      const idMaps = this.renderCache.extractArrays().values;
+      for (const idMap of idMaps)
+        idMap.dispose();
 
-    this.renderCache.clear();
-    IModelConnection.onClose.removeListener(this.removeIModelMap);
-    this._isDisposed = true;
+      this.renderCache.clear();
+      IModelConnection.onClose.removeListener(this.removeIModelMap);
+      this._isDisposed = true;
+    }
   }
 
   public onInitialized(): void {

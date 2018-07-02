@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, using, Disposable } from "@bentley/bentleyjs-core";
+import { assert, using, IDisposable } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags, WithClipVolume, FeatureMode } from "./TechniqueFlags";
@@ -30,32 +30,31 @@ import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 
 // Defines a rendering technique implemented using one or more shader programs.
-export interface Technique {
+export interface Technique extends IDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
   compileShaders(): boolean;
-
-  // all techniques will have a dispose method, since all techniques are disposables
-  dispose(): void;
 }
 
 // A rendering technique implemented using a single shader program, typically for some specialized purpose.
-export class SingularTechnique extends Disposable implements Technique {
+export class SingularTechnique implements Technique {
   public readonly program: ShaderProgram;
   private _isDisposed: boolean;
 
   // Note: Technique assumes ownership of a program
-  public constructor(program: ShaderProgram) { super(); this.program = program; this._isDisposed = false; }
+  public constructor(program: ShaderProgram) { this.program = program; this._isDisposed = false; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
   public compileShaders(): boolean { return this.program.compile(); }
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose(): void {
-    this.program.dispose();
-    this._isDisposed = true;
+  public dispose(): void {
+    if (!this._isDisposed) {
+      this.program.dispose();
+      this._isDisposed = true;
+    }
   }
 }
 
@@ -66,7 +65,7 @@ const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides]
 const scratchTechniqueFlags = new TechniqueFlags();
 
 // A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
-export abstract class VariedTechnique extends Disposable implements Technique {
+export abstract class VariedTechnique implements Technique {
   private readonly _programs: ShaderProgram[] = [];
   private _isDisposed: boolean;
 
@@ -82,15 +81,16 @@ export abstract class VariedTechnique extends Disposable implements Technique {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose(): void {
-    for (const program of this._programs) {
-      program.dispose();
+  public dispose(): void {
+    if (!this._isDisposed) {
+      for (const program of this._programs) {
+        program.dispose();
+      }
+      this._isDisposed = true;
     }
-    this._isDisposed = true;
   }
 
   protected constructor(numPrograms: number) {
-    super();
     this._programs.length = numPrograms;
     this._isDisposed = (numPrograms === 0) ? true : false;
   }
@@ -368,7 +368,7 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 // A collection of rendering techniques accessed by ID.
-export class Techniques extends Disposable {
+export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
   private _isDisposed: boolean;
@@ -442,12 +442,14 @@ export class Techniques extends Disposable {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose(): void {
-    for (const tech of this._list) {
-      tech.dispose();
+  public dispose(): void {
+    if (!this._isDisposed) {
+      for (const tech of this._list) {
+        tech.dispose();
+      }
+      this._list.length = 0;
+      this._isDisposed = true;
     }
-    this._list.length = 0;
-    this._isDisposed = true;
   }
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
@@ -464,7 +466,6 @@ export class Techniques extends Disposable {
   }
 
   private constructor() {
-    super();
     this._isDisposed = true;  // atleast until we add techniques to the list...
   }
 

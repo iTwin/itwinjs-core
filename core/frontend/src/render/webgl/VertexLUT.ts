@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Disposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex, QPoint2d, QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { LUTDimensions } from "./FeatureDimensions";
 import { ColorInfo } from "./ColorInfo";
@@ -56,7 +56,7 @@ export namespace VertexLUT {
   }
 
   /** Represents the finished lookup table ready for submittal to GPU. */
-  export class Data extends Disposable {
+  export class Data implements IDisposable {
     public readonly texture: TextureHandle; // Texture containing vertex data
     public readonly numVertices: number;
     public readonly numRgbaPerVertex: number;
@@ -72,7 +72,6 @@ export namespace VertexLUT {
     }
 
     private constructor(texture: TextureHandle, params: Params, qparams: QParams3d, uvParams?: QParams2d) {
-      super();
       this.texture = texture;
       this._isDisposed = false;
       this.numVertices = params.numVertices;
@@ -87,9 +86,11 @@ export namespace VertexLUT {
 
     public get isDisposed(): boolean { return this._isDisposed; }
 
-    protected doDispose() {
-      this.texture.dispose();
-      this._isDisposed = true;
+    public dispose() {
+      if (!this._isDisposed) {
+        this.texture.dispose();
+        this._isDisposed = true;
+      }
     }
   }
 

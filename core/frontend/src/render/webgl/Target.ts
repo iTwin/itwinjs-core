@@ -276,20 +276,22 @@ export abstract class Target extends RenderTarget {
   public get is3d(): boolean { return !this.is2d; }
 
   // called also by sub-classes
-  protected doDispose() {
-    this._decorations.dispose();
-    dispose(this._dynamics);
-    dispose(this._worldDecorations);
-    this.compositor.dispose();
-    dispose(this._clipMask);
-    dispose(this.environmentMap);
-    dispose(this.diffuseMap);
+  public dispose() {
+    if (!this._isDisposed) {
+      this._decorations.dispose();
+      dispose(this._dynamics);
+      dispose(this._worldDecorations);
+      this.compositor.dispose();
+      dispose(this._clipMask);
+      dispose(this.environmentMap);
+      dispose(this.diffuseMap);
 
-    for (const batch of this._batches)
-      batch.onTargetDisposed(this);
-    this._batches = [];
-    this._renderCommands.clear();
-    this._isDisposed = true;
+      for (const batch of this._batches)
+        batch.onTargetDisposed(this);
+      this._batches = [];
+      this._renderCommands.clear();
+      this._isDisposed = true;
+    }
   }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
@@ -702,7 +704,6 @@ export abstract class Target extends RenderTarget {
 
       fbo.dispose();
     }
-
     texture.dispose();
 
     return result;
@@ -801,11 +802,13 @@ export class OnScreenTarget extends Target {
     this._canvas = canvas;
   }
 
-  protected doDispose() {
-    this._fbo = dispose(this._fbo);
-    this._blitGeom = dispose(this._blitGeom);
-    super.doDispose();
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      this._fbo = dispose(this._fbo);
+      this._blitGeom = dispose(this._blitGeom);
+      super.dispose();
+      this._isDisposed = true;
+    }
   }
 
   public get viewRect(): ViewRect {

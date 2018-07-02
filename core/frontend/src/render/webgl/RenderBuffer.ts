@@ -3,13 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Disposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { System } from "./System";
 
-export class RenderBuffer extends Disposable {
+export class RenderBuffer implements IDisposable {
   private _glBuffer?: WebGLRenderbuffer;
-  private _isDisposed: boolean;
 
   public getHandle() { return this._glBuffer; }
 
@@ -29,13 +28,12 @@ export class RenderBuffer extends Disposable {
     return new RenderBuffer(glBuffer);
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean { return this._glBuffer === undefined || this._glBuffer === null; }
 
-  protected doDispose(): void {
-    if (undefined !== this._glBuffer) {
-      System.instance.context.deleteRenderbuffer(this._glBuffer);
+  public dispose(): void {
+    if (!this.isDisposed) {
+      System.instance.context.deleteRenderbuffer(this._glBuffer!);
       this._glBuffer = undefined;
-      this._isDisposed = true;
     }
   }
 
@@ -46,7 +44,7 @@ export class RenderBuffer extends Disposable {
     }
   }
 
-  private constructor(glBuffer: WebGLRenderbuffer) { super(); this._glBuffer = glBuffer; this._isDisposed = false; }
+  private constructor(glBuffer: WebGLRenderbuffer) { this._glBuffer = glBuffer; }
 
   private static bindBuffer(glBuffer: WebGLRenderbuffer | null) { System.instance.context.bindRenderbuffer(GL.RenderBuffer.TARGET, glBuffer); }
   private static unbind() { this.bindBuffer(null); }

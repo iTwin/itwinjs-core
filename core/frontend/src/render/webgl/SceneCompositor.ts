@@ -12,13 +12,13 @@ import { TechniqueId } from "./TechniqueId";
 import { System, RenderType } from "./System";
 import { Pixel } from "../System";
 import { ViewRect } from "../../Viewport";
-import { assert, Id64, Disposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, DrawParams } from "./DrawCommand";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 
-class Textures extends Disposable {
+class Textures implements IDisposable {
   public accumulation?: TextureHandle;
   public revealage?: TextureHandle;
   public color?: TextureHandle;
@@ -30,22 +30,24 @@ class Textures extends Disposable {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose() {
-    dispose(this.accumulation);
-    dispose(this.revealage);
-    dispose(this.color);
-    dispose(this.idLow);
-    dispose(this.idHigh);
-    dispose(this.depthAndOrder);
-    dispose(this.hilite);
-    this.accumulation = undefined;
-    this.revealage = undefined;
-    this.color = undefined;
-    this.idLow = undefined;
-    this.idHigh = undefined;
-    this.depthAndOrder = undefined;
-    this.hilite = undefined;
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      dispose(this.accumulation);
+      dispose(this.revealage);
+      dispose(this.color);
+      dispose(this.idLow);
+      dispose(this.idHigh);
+      dispose(this.depthAndOrder);
+      dispose(this.hilite);
+      this.accumulation = undefined;
+      this.revealage = undefined;
+      this.color = undefined;
+      this.idLow = undefined;
+      this.idHigh = undefined;
+      this.depthAndOrder = undefined;
+      this.hilite = undefined;
+      this._isDisposed = true;
+    }
   }
 
   public init(width: number, height: number): boolean {
@@ -98,7 +100,7 @@ class Textures extends Disposable {
   }
 }
 
-class FrameBuffers extends Disposable {
+class FrameBuffers implements IDisposable {
   public opaqueAll?: FrameBuffer;
   public opaqueColor?: FrameBuffer;
   public opaqueAndCompositeAll?: FrameBuffer;
@@ -165,30 +167,32 @@ class FrameBuffers extends Disposable {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose() {
-    dispose(this.opaqueAll);
-    dispose(this.opaqueColor);
-    dispose(this.opaqueAndCompositeAll);
-    dispose(this.opaqueAndCompositeColor);
-    dispose(this.depthAndOrder);
-    dispose(this.pingPong);
-    dispose(this.translucent);
-    dispose(this.clearTranslucent);
-    dispose(this.hilite);
-    this.opaqueAll = undefined;
-    this.opaqueColor = undefined;
-    this.opaqueAndCompositeAll = undefined;
-    this.opaqueAndCompositeColor = undefined;
-    this.depthAndOrder = undefined;
-    this.pingPong = undefined;
-    this.translucent = undefined;
-    this.clearTranslucent = undefined;
-    this.hilite = undefined;
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      dispose(this.opaqueAll);
+      dispose(this.opaqueColor);
+      dispose(this.opaqueAndCompositeAll);
+      dispose(this.opaqueAndCompositeColor);
+      dispose(this.depthAndOrder);
+      dispose(this.pingPong);
+      dispose(this.translucent);
+      dispose(this.clearTranslucent);
+      dispose(this.hilite);
+      this.opaqueAll = undefined;
+      this.opaqueColor = undefined;
+      this.opaqueAndCompositeAll = undefined;
+      this.opaqueAndCompositeColor = undefined;
+      this.depthAndOrder = undefined;
+      this.pingPong = undefined;
+      this.translucent = undefined;
+      this.clearTranslucent = undefined;
+      this.hilite = undefined;
+      this._isDisposed = true;
+    }
   }
 }
 
-class Geometry extends Disposable {
+class Geometry implements IDisposable {
   public copyPickBuffers?: CopyPickBufferGeometry;
   public composite?: CompositeGeometry;
   public clearTranslucent?: ViewportQuadGeometry;
@@ -209,16 +213,18 @@ class Geometry extends Disposable {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose() {
-    dispose(this.copyPickBuffers);
-    dispose(this.composite);
-    dispose(this.clearTranslucent);
-    dispose(this.clearPickAndColor);
-    this.copyPickBuffers = undefined;
-    this.composite = undefined;
-    this.clearTranslucent = undefined;
-    this.clearPickAndColor = undefined;
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      dispose(this.copyPickBuffers);
+      dispose(this.composite);
+      dispose(this.clearTranslucent);
+      dispose(this.clearPickAndColor);
+      this.copyPickBuffers = undefined;
+      this.composite = undefined;
+      this.clearTranslucent = undefined;
+      this.clearPickAndColor = undefined;
+      this._isDisposed = true;
+    }
   }
 }
 
@@ -375,7 +381,7 @@ class PixelBuffer implements Pixel.Buffer {
   }
 }
 
-export class SceneCompositor extends Disposable {
+export class SceneCompositor implements IDisposable {
   private _target: Target;
   private _width: number = -1;
   private _height: number = -1;
@@ -390,7 +396,6 @@ export class SceneCompositor extends Disposable {
   private _isDisposed: boolean;
 
   public constructor(target: Target) {
-    super();
     this._target = target;
 
     this._opaqueRenderState.flags.depthTest = true;
@@ -518,13 +523,15 @@ export class SceneCompositor extends Disposable {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose() {
-    dispose(this._depth);
-    this._textures.dispose();
-    this._fbos.dispose();
-    this._geometry.dispose();
-    this._depth = undefined;
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      dispose(this._depth);
+      this._textures.dispose();
+      this._fbos.dispose();
+      this._geometry.dispose();
+      this._depth = undefined;
+      this._isDisposed = true;
+    }
   }
 
   private init(): boolean {

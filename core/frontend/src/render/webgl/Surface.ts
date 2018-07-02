@@ -33,7 +33,7 @@ export class SurfaceGeometry extends MeshGeometry {
     return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
   }
 
-  protected doDispose() {
+  public dispose() {
     if (!this._isDisposed) {
       this._indices.dispose();
       this._isDisposed = true;

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, Disposable } from "@bentley/bentleyjs-core";
+import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
@@ -40,7 +40,7 @@ export class TileRequests {
   }
 }
 
-export class Tile extends Disposable {
+export class Tile implements IDisposable {
   public readonly root: TileTree;
   public readonly range: ElementAlignedBox3d;
   public readonly parent: Tile | undefined;
@@ -63,7 +63,6 @@ export class Tile extends Disposable {
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
 
   public constructor(props: Tile.Params, private _maxDepth = 32) {
-    super();
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
@@ -93,13 +92,15 @@ export class Tile extends Disposable {
   public get isDisposed(): boolean { return this._isDisposed; }
 
   // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
-  protected doDispose() {
-    dispose(this._graphic);
-    if (this._children)
-      for (const child of this._children)
-        child.dispose();
-    this._graphic = undefined;
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      dispose(this._graphic);
+      if (this._children)
+        for (const child of this._children)
+          child.dispose();
+      this._graphic = undefined;
+      this._isDisposed = true;
+    }
   }
 
   private loadGraphics(blob?: Uint8Array): void {
@@ -434,7 +435,7 @@ export namespace Tile {
   }
 }
 
-export class TileTree extends Disposable {
+export class TileTree implements IDisposable {
   public readonly model: GeometricModelState;
   public readonly location: Transform;
   public readonly rootTile: Tile;
@@ -447,7 +448,6 @@ export class TileTree extends Disposable {
   private _isDisposed: boolean;
 
   public constructor(props: TileTree.Params) {
-    super();
     this.model = props.model;
     this.id = props.id;
     this.location = props.location;
@@ -462,9 +462,11 @@ export class TileTree extends Disposable {
 
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  protected doDispose() {
-    this.rootTile.dispose();
-    this._isDisposed = true;
+  public dispose() {
+    if (!this._isDisposed) {
+      this.rootTile.dispose();
+      this._isDisposed = true;
+    }
   }
 
   public get is3d(): boolean { return this.model.is3d; }
