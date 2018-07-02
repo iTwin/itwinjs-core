@@ -2200,7 +2200,6 @@ export class ViewChangeRenderModeTool extends ViewTool {
     viewflags.setMonochrome(this.renderOptions.get("monochrome")!);
     viewflags.setShowConstructions(this.renderOptions.get("constructions")!);
     viewflags.setShowTransparency(this.renderOptions.get("transparency")!);
-    viewflags.setDoContinuousRendering(this.renderOptions.get("continuousRendering")!);
     viewflags.setShowHiddenEdges(this.renderOptions.get("hiddenEdges")!);
     viewflags.setShowWeights(this.renderOptions.get("weights")!);
     viewflags.setShowStyles(this.renderOptions.get("styles")!);

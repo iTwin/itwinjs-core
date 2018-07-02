@@ -67,6 +67,7 @@ export class Dictionary<K, V> {
     const bound = this.lowerBound(key);
     if (bound.equal) {
       this._values.splice(bound.index, 1);
+      this._keys.splice(bound.index, 1);
     }
   }
 

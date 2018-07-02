@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
+import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
@@ -49,6 +50,7 @@ let curModelPropIndices: number[] = [];
 let curNumModels = 0;
 const curCategories: Set<string> = new Set<string>();
 let configuration = {} as SVTConfiguration;
+let curFPSIntervalId: NodeJS.Timer;
 
 interface SVTConfiguration {
   filename: string;
@@ -396,7 +398,6 @@ function updateRenderModeOptionsMap() {
   updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions.flags);
   updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions.flags);
   updateRenderModeOption("transparency", viewflags.showTransparency(), renderModeOptions.flags);
-  updateRenderModeOption("continuousRendering", viewflags.doContinuousRendering(), renderModeOptions.flags);
 
   renderModeOptions.mode = viewflags.getRenderMode();
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.getRenderMode());
@@ -409,6 +410,7 @@ async function openView(state: SimpleViewState) {
   if (htmlCanvas) {
     theViewport = new Viewport(htmlCanvas, state.viewState!);
     await _changeView(state.viewState!);
+    theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
     IModelApp.viewManager.addViewport(theViewport);
   }
 }
@@ -479,7 +481,6 @@ async function resetStandaloneIModel(filename: string) {
 
   spinner.style.display = "block";
   IModelApp.viewManager.dropViewport(theViewport!);
-  IModelApp.renderSystem.onShutDown();
   await clearViews();
   await openStandaloneIModel(activeViewState, filename);
   await buildViewList(activeViewState);
@@ -506,6 +507,14 @@ function doUndo(_event: any) {
 // redo view manipulation
 function doRedo(_event: any) {
   IModelApp.tools.run("View.Redo", theViewport!);
+}
+
+function setFpsInfo() {
+  const perfMet = (theViewport!.target as Target).performanceMetrics;
+  if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
+    "Avg. FPS (ms): " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
+    + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
+    + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2);
 }
 
 function addRenderModeHandler(id: string) {
@@ -556,10 +565,17 @@ function wireIconsToFunctions() {
   addRenderModeHandler("styles");
   addRenderModeHandler("transparency");
   document.getElementById("continuousRendering")!.addEventListener("click", () => {
-    IModelApp.viewManager.doContinuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
-    applyRenderModeChange("continuousRendering");
+    const checked: boolean = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
+    if (theViewport)
+      theViewport!.continuousRendering = checked;
+    if (checked) {
+      curFPSIntervalId = setInterval(setFpsInfo, 500);
+      document.getElementById("showfps")!.style.display = "inline";
+    } else {
+      document.getElementById("showfps")!.style.display = "none";
+      clearInterval(curFPSIntervalId);
+    }
   });
-
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 }
 
