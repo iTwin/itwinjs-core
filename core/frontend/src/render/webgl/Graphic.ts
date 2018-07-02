@@ -511,10 +511,7 @@ export class Branch extends Graphic {
       branch.setViewFlags(viewFlags);
   }
 
-  // Note: This does not empty the GraphicBranch array, but rather just disposes of contained WebGL resources
-  public dispose() {
-    dispose(this.branch);
-  }
+  public dispose() { }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public assignUniformFeatureIndices(index: number): void {

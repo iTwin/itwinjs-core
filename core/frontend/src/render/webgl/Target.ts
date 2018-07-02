@@ -158,7 +158,7 @@ export class PerformanceMetrics {
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
-  private _decorations = new Decorations();
+  private _decorations?: Decorations;
   private _dynamics?: DecorationList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
@@ -353,7 +353,7 @@ export abstract class Target extends RenderTarget {
   }
 
   public changeDecorations(decs: Decorations): void {
-    // ###TODO: dispose(this._decorations);
+    this._decorations = dispose(this._decorations);
     this._decorations = decs;
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {

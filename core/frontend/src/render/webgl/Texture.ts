@@ -249,7 +249,7 @@ export class TextureHandle implements IDisposable {
     return true;
   }
 
-  public get isDisposed(): boolean { return this._glTexture === undefined || this._glTexture === null; }
+  public get isDisposed(): boolean { return this._glTexture === undefined; }
 
   public dispose() {
     if (!this.isDisposed) {

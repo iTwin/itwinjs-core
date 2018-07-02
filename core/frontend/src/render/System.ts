@@ -160,18 +160,12 @@ export class Decorations implements IDisposable {
   }
 }
 
-export class GraphicBranch implements IDisposable {
+export class GraphicBranch {
   public readonly entries: RenderGraphic[] = [];
   private _viewFlagOverrides = new ViewFlag.Overrides();
   public symbologyOverrides?: FeatureSymbology.Overrides;
 
   public constructor() { }
-
-  public dispose() {
-    for (const graphic of this.entries)
-      dispose(graphic);
-    this.entries.length = 0;
-  }
 
   public add(graphic: RenderGraphic): void {
     this.entries.push(graphic);
@@ -185,7 +179,6 @@ export class GraphicBranch implements IDisposable {
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
   public clear() {
-    this.dispose();
     this.entries.length = 0;
   }
   public get isEmpty(): boolean { return 0 === this.entries.length; }

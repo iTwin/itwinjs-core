@@ -33,7 +33,7 @@ export class BufferHandle implements IDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._glBuffer === undefined || this._glBuffer === null; }
+  public get isDisposed(): boolean { return this._glBuffer === undefined; }
 
   /** Frees the WebGL buffer */
   public dispose(): void {

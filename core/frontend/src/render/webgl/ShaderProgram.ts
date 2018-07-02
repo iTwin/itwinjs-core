@@ -153,7 +153,7 @@ export class ShaderProgram implements IDisposable {
     assert(undefined !== this._description);
   }
 
-  public get isDisposed(): boolean { return this._glProgram === undefined || this._glProgram === null; }
+  public get isDisposed(): boolean { return this._glProgram === undefined; }
 
   public dispose(): void {
     if (this.isDisposed) {

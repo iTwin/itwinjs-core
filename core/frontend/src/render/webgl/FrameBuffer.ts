@@ -26,7 +26,7 @@ export class FrameBuffer implements IDisposable {
   private readonly colorAttachments: GLenum[] = [];
   public readonly depthBuffer?: DepthBuffer;
 
-  public get isDisposed(): boolean { return this._fbo === undefined || this._fbo === null; }
+  public get isDisposed(): boolean { return this._fbo === undefined; }
 
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
