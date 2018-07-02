@@ -58,7 +58,6 @@ export class Tile implements IDisposable {
   private _children?: Tile[];
   private readonly _contentRange?: ElementAlignedBox3d;
   private _graphic?: RenderGraphic;
-  private _isDisposed: boolean;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
 
@@ -74,7 +73,6 @@ export class Tile implements IDisposable {
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
     this.yAxisUp = props.yAxisUp;
-    this._isDisposed = true;  // will most-likely be set to false when loading graphics or children
 
     // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
     this.loadGraphics(props.geometry);
@@ -89,18 +87,13 @@ export class Tile implements IDisposable {
     this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
   public dispose() {
-    if (!this._isDisposed) {
-      dispose(this._graphic);
-      if (this._children)
-        for (const child of this._children)
-          child.dispose();
-      this._graphic = undefined;
-      this._isDisposed = true;
-    }
+    this._graphic = dispose(this._graphic);
+    if (this._children)
+      for (const child of this._children)
+        dispose(child);
+    this._children = undefined;
   }
 
   private loadGraphics(blob?: Uint8Array): void {
@@ -122,7 +115,6 @@ export class Tile implements IDisposable {
       const result = reader.read();
       if (undefined !== result) {
         this._graphic = result.renderGraphic;
-        this._isDisposed = false;
       }
     }
   }
@@ -328,8 +320,6 @@ export class Tile implements IDisposable {
       }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; this._children = undefined; });
     }
 
-    if (this._children && this._children.length > 0)
-      this._isDisposed = false;
     return this._childrenLoadStatus;
   }
 }
@@ -445,7 +435,6 @@ export class TileTree implements IDisposable {
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
   public readonly loader: TileLoader;
-  private _isDisposed: boolean;
 
   public constructor(props: TileTree.Params) {
     this.model = props.model;
@@ -456,17 +445,11 @@ export class TileTree implements IDisposable {
     this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
-    this._isDisposed = false;
     this.loader = props.loader;
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose() {
-    if (!this._isDisposed) {
-      this.rootTile.dispose();
-      this._isDisposed = true;
-    }
+    dispose(this.rootTile);
   }
 
   public get is3d(): boolean { return this.model.is3d; }

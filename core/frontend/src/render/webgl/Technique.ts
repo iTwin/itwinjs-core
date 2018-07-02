@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, using, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags, WithClipVolume, FeatureMode } from "./TechniqueFlags";
@@ -40,21 +40,15 @@ export interface Technique extends IDisposable {
 // A rendering technique implemented using a single shader program, typically for some specialized purpose.
 export class SingularTechnique implements Technique {
   public readonly program: ShaderProgram;
-  private _isDisposed: boolean;
 
   // Note: Technique assumes ownership of a program
-  public constructor(program: ShaderProgram) { this.program = program; this._isDisposed = false; }
+  public constructor(program: ShaderProgram) { this.program = program; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
   public compileShaders(): boolean { return this.program.compile(); }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose(): void {
-    if (!this._isDisposed) {
-      this.program.dispose();
-      this._isDisposed = true;
-    }
+    dispose(this.program);
   }
 }
 
@@ -67,7 +61,6 @@ const scratchTechniqueFlags = new TechniqueFlags();
 // A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
 export abstract class VariedTechnique implements Technique {
   private readonly _programs: ShaderProgram[] = [];
-  private _isDisposed: boolean;
 
   public getShader(flags: TechniqueFlags): ShaderProgram { return this._programs[this.getShaderIndex(flags)]; }
   public compileShaders(): boolean {
@@ -79,20 +72,14 @@ export abstract class VariedTechnique implements Technique {
     return allCompiled;
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose(): void {
-    if (!this._isDisposed) {
-      for (const program of this._programs) {
-        program.dispose();
-      }
-      this._isDisposed = true;
-    }
+    for (const program of this._programs)
+      dispose(program);
+    this._programs.length = 0;
   }
 
   protected constructor(numPrograms: number) {
     this._programs.length = numPrograms;
-    this._isDisposed = (numPrograms === 0) ? true : false;
   }
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
@@ -104,7 +91,6 @@ export abstract class VariedTechnique implements Technique {
     const index = this.getShaderIndex(flags);
     assert(undefined === this._programs[index], "program already exists");
     this._programs[index] = program;
-    this._isDisposed = false;
   }
 
   protected addHiliteShader(clip: WithClipVolume, gl: WebGLRenderingContext, create: (clip: WithClipVolume) => ProgramBuilder): void {
@@ -371,7 +357,6 @@ class PointCloudTechnique extends VariedTechnique {
 export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
-  private _isDisposed: boolean;
 
   public static create(gl: WebGLRenderingContext) {
     const techs = new Techniques();
@@ -392,7 +377,6 @@ export class Techniques implements IDisposable {
 
     this._dynamicTechniqueIds.push(name);
     this._list.push(technique);
-    this._isDisposed = false;
     return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length - 1;
   }
 
@@ -440,16 +424,10 @@ export class Techniques implements IDisposable {
     });
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose(): void {
-    if (!this._isDisposed) {
-      for (const tech of this._list) {
-        tech.dispose();
-      }
-      this._list.length = 0;
-      this._isDisposed = true;
-    }
+    for (const tech of this._list)
+      dispose(tech);
+    this._list.length = 0;
   }
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
@@ -465,9 +443,7 @@ export class Techniques implements IDisposable {
     return allCompiled;
   }
 
-  private constructor() {
-    this._isDisposed = true;  // atleast until we add techniques to the list...
-  }
+  private constructor() { }
 
   private initializeBuiltIns(gl: WebGLRenderingContext): boolean {
     this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
@@ -487,7 +463,6 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
-    this._isDisposed = false;
     return true;
   }
 }

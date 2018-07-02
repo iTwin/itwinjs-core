@@ -21,6 +21,7 @@ import { ColorInfo } from "./ColorInfo";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
+import { dispose } from "../../../../bentley/lib/Disposable";
 
 export class PolylineInfo {
   public vertexParams: QParams3d;
@@ -240,15 +241,11 @@ export class PolylineGeometry extends LUTGeometry {
     this.lut = lut;
     this.numIndices = numIndices;
     this.buffers = buffers;
-    this._isDisposed = false;
   }
 
   public dispose() {
-    if (!this._isDisposed) {
-      this.lut.dispose();
-      this.buffers.dispose();
-      this._isDisposed = true;
-    }
+    dispose(this.lut);
+    dispose(this.buffers);
   }
 
   public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }

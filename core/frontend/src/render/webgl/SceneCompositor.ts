@@ -26,28 +26,15 @@ class Textures implements IDisposable {
   public idHigh?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public hilite?: TextureHandle;
-  private _isDisposed: boolean = true;
-
-  public get isDisposed(): boolean { return this._isDisposed; }
 
   public dispose() {
-    if (!this._isDisposed) {
-      dispose(this.accumulation);
-      dispose(this.revealage);
-      dispose(this.color);
-      dispose(this.idLow);
-      dispose(this.idHigh);
-      dispose(this.depthAndOrder);
-      dispose(this.hilite);
-      this.accumulation = undefined;
-      this.revealage = undefined;
-      this.color = undefined;
-      this.idLow = undefined;
-      this.idHigh = undefined;
-      this.depthAndOrder = undefined;
-      this.hilite = undefined;
-      this._isDisposed = true;
-    }
+    this.accumulation = dispose(this.accumulation);
+    this.revealage = dispose(this.revealage);
+    this.color = dispose(this.color);
+    this.idLow = dispose(this.idLow);
+    this.idHigh = dispose(this.idHigh);
+    this.depthAndOrder = dispose(this.depthAndOrder);
+    this.hilite = dispose(this.hilite);
   }
 
   public init(width: number, height: number): boolean {
@@ -79,17 +66,6 @@ class Textures implements IDisposable {
     this.idHigh = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
-    // We must check if any one of the textures were created for disposal-tracking purposes
-    if (undefined !== this.accumulation
-      || undefined !== this.revealage
-      || undefined !== this.color
-      || undefined !== this.idLow
-      || undefined !== this.idHigh
-      || undefined !== this.depthAndOrder
-      || undefined !== this.hilite) {
-      this._isDisposed = false;
-    }
-
     return undefined !== this.accumulation
       && undefined !== this.revealage
       && undefined !== this.color
@@ -110,7 +86,6 @@ class FrameBuffers implements IDisposable {
   public translucent?: FrameBuffer;
   public clearTranslucent?: FrameBuffer;
   public hilite?: FrameBuffer;
-  private _isDisposed: boolean = true;
 
   public init(textures: Textures, depth: DepthBuffer): boolean {
     assert(undefined === this.opaqueAll);
@@ -141,19 +116,6 @@ class FrameBuffers implements IDisposable {
     const pingPong = [textures.accumulation!, textures.hilite!, textures.revealage!];
     this.pingPong = FrameBuffer.create(pingPong);
 
-    // We must check if any one of the FrameBuffers were created for disposal-tracking purposes
-    if (undefined !== this.opaqueAll
-      || undefined !== this.opaqueColor
-      || undefined !== this.opaqueAndCompositeAll
-      || undefined !== this.opaqueAndCompositeColor
-      || undefined !== this.depthAndOrder
-      || undefined !== this.pingPong
-      || undefined !== this.translucent
-      || undefined !== this.clearTranslucent
-      || undefined !== this.hilite) {
-      this._isDisposed = false;
-    }
-
     return undefined !== this.opaqueAll
       && undefined !== this.opaqueColor
       && undefined !== this.opaqueAndCompositeAll
@@ -165,30 +127,16 @@ class FrameBuffers implements IDisposable {
       && undefined !== this.hilite;
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose() {
-    if (!this._isDisposed) {
-      dispose(this.opaqueAll);
-      dispose(this.opaqueColor);
-      dispose(this.opaqueAndCompositeAll);
-      dispose(this.opaqueAndCompositeColor);
-      dispose(this.depthAndOrder);
-      dispose(this.pingPong);
-      dispose(this.translucent);
-      dispose(this.clearTranslucent);
-      dispose(this.hilite);
-      this.opaqueAll = undefined;
-      this.opaqueColor = undefined;
-      this.opaqueAndCompositeAll = undefined;
-      this.opaqueAndCompositeColor = undefined;
-      this.depthAndOrder = undefined;
-      this.pingPong = undefined;
-      this.translucent = undefined;
-      this.clearTranslucent = undefined;
-      this.hilite = undefined;
-      this._isDisposed = true;
-    }
+    this.opaqueAll = dispose(this.opaqueAll);
+    this.opaqueColor = dispose(this.opaqueColor);
+    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
+    this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
+    this.depthAndOrder = dispose(this.depthAndOrder);
+    this.pingPong = dispose(this.pingPong);
+    this.translucent = dispose(this.translucent);
+    this.clearTranslucent = dispose(this.clearTranslucent);
+    this.hilite = dispose(this.hilite);
   }
 }
 
@@ -197,7 +145,6 @@ class Geometry implements IDisposable {
   public composite?: CompositeGeometry;
   public clearTranslucent?: ViewportQuadGeometry;
   public clearPickAndColor?: ViewportQuadGeometry;
-  private _isDisposed: boolean = true;
 
   public init(textures: Textures): boolean {
     assert(undefined === this.copyPickBuffers);
@@ -207,24 +154,14 @@ class Geometry implements IDisposable {
     this.clearTranslucent = ViewportQuadGeometry.create(TechniqueId.OITClearTranslucent);
     this.clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
 
-    this._isDisposed = false;
     return undefined !== this.composite && undefined !== this.copyPickBuffers && undefined !== this.clearTranslucent && undefined !== this.clearPickAndColor;
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose() {
-    if (!this._isDisposed) {
-      dispose(this.copyPickBuffers);
-      dispose(this.composite);
-      dispose(this.clearTranslucent);
-      dispose(this.clearPickAndColor);
-      this.copyPickBuffers = undefined;
-      this.composite = undefined;
-      this.clearTranslucent = undefined;
-      this.clearPickAndColor = undefined;
-      this._isDisposed = true;
-    }
+    this.copyPickBuffers = dispose(this.copyPickBuffers);
+    this.composite = dispose(this.composite);
+    this.clearTranslucent = dispose(this.clearTranslucent);
+    this.clearPickAndColor = dispose(this.clearPickAndColor);
   }
 }
 
@@ -393,7 +330,6 @@ export class SceneCompositor implements IDisposable {
   private _opaqueRenderState = new RenderState();
   private _translucentRenderState = new RenderState();
   private _noDepthMaskRenderState = new RenderState();
-  private _isDisposed: boolean;
 
   public constructor(target: Target) {
     this._target = target;
@@ -405,7 +341,6 @@ export class SceneCompositor implements IDisposable {
     this._translucentRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
 
     this._noDepthMaskRenderState.flags.depthMask = false;
-    this._isDisposed = true;  // textures, geometry, and fbos members have not created WebGL resources yet
   }
 
   public update(): boolean {
@@ -492,8 +427,7 @@ export class SceneCompositor implements IDisposable {
     const fbo = FrameBuffer.create([tex]);
     const result = this.readFrameBuffer(rect, fbo);
 
-    if (undefined !== fbo)
-      fbo.dispose();
+    dispose(fbo);
 
     return result;
   }
@@ -521,23 +455,16 @@ export class SceneCompositor implements IDisposable {
   public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose() {
-    if (!this._isDisposed) {
-      dispose(this._depth);
-      this._textures.dispose();
-      this._fbos.dispose();
-      this._geometry.dispose();
-      this._depth = undefined;
-      this._isDisposed = true;
-    }
+    this._depth = dispose(this._depth);
+    dispose(this._textures);
+    dispose(this._fbos);
+    dispose(this._geometry);
   }
 
   private init(): boolean {
     this._depth = System.instance.createDepthBuffer(this._width, this._height);
     if (this._depth !== undefined) {
-      this._isDisposed = false;
       return this._textures.init(this._width, this._height) && this._fbos.init(this._textures, this._depth) && this._geometry.init(this._textures);
     }
     return false;

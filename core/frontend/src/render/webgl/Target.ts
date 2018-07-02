@@ -187,8 +187,8 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  public readonly environmentMap?: TextureHandle; // ###TODO: for IBL (make sure that upon setting, Target has _isDisposed=false state to avoid memleaks)
-  public readonly diffuseMap?: TextureHandle; // ###TODO: for IBL (make sure that upon setting, Target has _isDisposed=false state to avoid memleaks)
+  private _environmentMap?: TextureHandle; // ###TODO: for IBL
+  private _diffuseMap?: TextureHandle; // ###TODO: for IBL
   public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
@@ -248,11 +248,10 @@ export abstract class Target extends RenderTarget {
 
       this._worldDecorations = new WorldDecorations(decs.list[0].graphic.iModel, vf);
     } else {
-      this._worldDecorations.dispose();
+      dispose(this._worldDecorations);
     }
 
     this._worldDecorations.init(decs);
-    this._isDisposed = false; // assume world decorations given are non-disposed
     return this._worldDecorations;
   }
 
@@ -269,29 +268,28 @@ export abstract class Target extends RenderTarget {
     assert(this.is2d);
     dispose(this._clipMask);
     this._clipMask = mask;
-    this._isDisposed = false; // assume given TextureHandle is undisposed
   }
+
+  public get environmentMap(): TextureHandle | undefined { return this._environmentMap; }
+  public get diffuseMap(): TextureHandle | undefined { return this._diffuseMap; }
 
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
   // called also by sub-classes
   public dispose() {
-    if (!this._isDisposed) {
-      this._decorations.dispose();
-      dispose(this._dynamics);
-      dispose(this._worldDecorations);
-      this.compositor.dispose();
-      dispose(this._clipMask);
-      dispose(this.environmentMap);
-      dispose(this.diffuseMap);
+    dispose(this._decorations);
+    dispose(this.compositor);
+    this._dynamics = dispose(this._dynamics);
+    this._worldDecorations = dispose(this._worldDecorations);
+    this._clipMask = dispose(this._clipMask);
+    this._environmentMap = dispose(this._environmentMap);
+    this._diffuseMap = dispose(this._diffuseMap);
 
-      for (const batch of this._batches)
-        batch.onTargetDisposed(this);
-      this._batches = [];
-      this._renderCommands.clear();
-      this._isDisposed = true;
-    }
+    for (const batch of this._batches)
+      batch.onTargetDisposed(this);
+    this._batches = [];
+    this._renderCommands.clear();
   }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
@@ -354,10 +352,8 @@ export abstract class Target extends RenderTarget {
   }
 
   public changeDecorations(decs: Decorations): void {
-    // Although we dispose of the old decorations, we assume the new decorations will be non-disposed, and thus _isDisposed should remain false
-    // this._decorations.dispose();
+    dispose(this._decorations);
     this._decorations = decs;
-    this._isDisposed = false;
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
@@ -366,8 +362,8 @@ export abstract class Target extends RenderTarget {
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
     // See IModelConnection.transientIds
+    dispose(this._dynamics);
     this._dynamics = dynamics;
-    this._isDisposed = false; // assume dynamics given are non-disposed
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this._stack.setSymbologyOverrides(ovr);
@@ -630,7 +626,6 @@ export abstract class Target extends RenderTarget {
 
     this.setFrameTime();
     this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
-    this._isDisposed = false;
 
     this.setFrameTime();
     this._stack.pushState(this.decorationState);
@@ -702,9 +697,9 @@ export abstract class Target extends RenderTarget {
         result = this.readPixelsFromFbo(rect, selector);
       });
 
-      fbo.dispose();
+      dispose(fbo);
     }
-    texture.dispose();
+    dispose(texture);
 
     return result;
   }
@@ -774,7 +769,6 @@ export abstract class Target extends RenderTarget {
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands);  // compositor gets disposed and re-initialized... target remains undisposed
-    this._isDisposed = false;
 
     // Restore the state
     this._stack.pop();
@@ -803,12 +797,9 @@ export class OnScreenTarget extends Target {
   }
 
   public dispose() {
-    if (!this._isDisposed) {
-      this._fbo = dispose(this._fbo);
-      this._blitGeom = dispose(this._blitGeom);
-      super.dispose();
-      this._isDisposed = true;
-    }
+    this._fbo = dispose(this._fbo);
+    this._blitGeom = dispose(this._blitGeom);
+    super.dispose();
   }
 
   public get viewRect(): ViewRect {
@@ -833,7 +824,6 @@ export class OnScreenTarget extends Target {
     if (undefined === this._fbo) {
       return false;
     }
-    this._isDisposed = false; // have a valid created FrameBuffer
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
@@ -939,7 +929,7 @@ export class OffScreenTarget extends Target {
 
     this._dcAssigned = false;
     // ###TODO this._fbo = undefined;
-    this.compositor.dispose();
+    dispose(this.compositor);
   }
 
   // ###TODO...

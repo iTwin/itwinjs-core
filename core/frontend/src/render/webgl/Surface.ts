@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
@@ -34,10 +34,7 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public dispose() {
-    if (!this._isDisposed) {
-      this._indices.dispose();
-      this._isDisposed = true;
-    }
+    dispose(this._indices);
   }
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
@@ -184,7 +181,6 @@ export class SurfaceGeometry extends MeshGeometry {
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {
     super(mesh, numIndices);
     this._indices = indices;
-    this._isDisposed = false;
   }
 
   private wantTextures(target: Target): boolean {

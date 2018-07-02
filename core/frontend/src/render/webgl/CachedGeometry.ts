@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
@@ -47,10 +47,7 @@ export abstract class CachedGeometry implements IDisposable {
   // Draws this geometry
   public abstract draw(): void;
 
-  protected _isDisposed: boolean = true;  // should be set to false when an extending class creates WebGL resources
-
   public abstract dispose(): void;
-  public get isDisposed(): boolean { return this._isDisposed; }
 
   // Intended to be overridden by specific subclasses
   public get material(): Material | undefined { return undefined; }
@@ -109,13 +106,11 @@ export class IndexedGeometryParams implements IDisposable {
   public readonly positions: QBufferHandle3d;
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
-  private _isDisposed: boolean;
 
   protected constructor(positions: QBufferHandle3d, indices: BufferHandle, numIndices: number) {
     this.positions = positions;
     this.indices = indices;
     this.numIndices = numIndices;
-    this._isDisposed = false; // just created buffer handle
   }
 
   public static create(positions: Uint16Array, qparams: QParams3d, indices: Uint32Array) {
@@ -133,14 +128,9 @@ export class IndexedGeometryParams implements IDisposable {
     return IndexedGeometryParams.create(positions.toTypedArray(), positions.params, indices);
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose() {
-    if (!this._isDisposed) {
-      this.positions.dispose();
-      this.indices.dispose();
-      this._isDisposed = true;
-    }
+    dispose(this.positions);
+    dispose(this.indices);
   }
 }
 
@@ -154,10 +144,7 @@ export abstract class IndexedGeometry extends CachedGeometry {
   }
 
   public dispose() {
-    if (!this._isDisposed) {
-      this._params.dispose();
-      this._isDisposed = true;
-    }
+    dispose(this._params);
   }
 
   public bindVertexArray(attr: AttributeHandle): void {
@@ -325,25 +312,18 @@ export class PolylineBuffers implements IDisposable {
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
   public distances: BufferHandle;
-  private _isDisposed: boolean;
 
   public constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
     this.distances = distances;
-    this._isDisposed = false; // assume we received undisposed BufferHandles
   }
 
-  public get isDisposed(): boolean { return this._isDisposed; }
-
   public dispose() {
-    if (!this._isDisposed) {
-      this.indices.dispose();
-      this.prevIndices.dispose();
-      this.nextIndicesAndParams.dispose();
-      this.distances.dispose();
-      this._isDisposed = true;
-    }
+    dispose(this.indices);
+    dispose(this.prevIndices);
+    dispose(this.nextIndicesAndParams);
+    dispose(this.distances);
   }
 }
