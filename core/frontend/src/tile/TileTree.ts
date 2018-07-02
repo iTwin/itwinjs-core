@@ -60,8 +60,8 @@ export class Tile {
   private _graphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
-  protected _maxDepth: number = 2;
-  public constructor(props: Tile.Params) {
+
+  public constructor(props: Tile.Params, private _maxDepth = 32) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
@@ -302,7 +302,7 @@ export class Tile {
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
           for (const prop of props)
-            this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this)));
+            this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth()));
         }
 
         IModelApp.viewManager.onNewTilesReady();
@@ -474,9 +474,11 @@ export class TileTree {
 
 export abstract class TileLoader {
   public abstract async getTileProps(ids: string[]): Promise<TileProps[]>;
+  public abstract getMaxDepth(): number;
 }
 export class IModelTileLoader {
   constructor(private iModel: IModelConnection, private rootId: Id64) { }
+  public getMaxDepth(): number { return 2; }  // Can be removed when element tile selector is working.
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {
     const tileIds: TileId[] = ids.map((id: string) => new TileId(this.rootId, id));

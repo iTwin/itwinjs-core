@@ -88,6 +88,7 @@ class ScalableMeshTileProps implements TileProps {
 
 export class ScalableMeshTileLoader {
   constructor(private tree: ScalableMeshTileTreeProps) { }
+  public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
 
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: ScalableMeshTileProps[] = [];
@@ -121,9 +122,7 @@ export class ScalableMeshTileLoader {
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (foundChild.content.url.endsWith("json")) {
-      debugPrint("requesting Subtree");
       const subTree = await this.tree.client.getTileJson(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
-      debugPrint("returning Subtree");
       foundChild = subTree.root;
       tilesetJson.children[childIndex] = subTree.root;
     }
@@ -146,6 +145,7 @@ export namespace ScalableMeshTileTree {
       ecefToDb = dbToEcef.inverse() as Transform;
     }
 
+    // url = "https://qa-connect-realitydataservices.bentley.com/v2.8/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/67fc2f1e-1d8f-49ca-9fc3-39cb2d46f98e/3dtiles/altenburg_inSaltLake.xyz.json";
     if (undefined !== url) {
       // ###TODO determine apropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
       const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
