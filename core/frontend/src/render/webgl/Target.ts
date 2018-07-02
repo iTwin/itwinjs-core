@@ -276,7 +276,6 @@ export abstract class Target extends RenderTarget {
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
-  // called also by sub-classes
   public dispose() {
     dispose(this._decorations);
     dispose(this.compositor);
@@ -289,6 +288,8 @@ export abstract class Target extends RenderTarget {
     for (const batch of this._batches)
       batch.onTargetDisposed(this);
     this._batches = [];
+
+    this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
     this._renderCommands.clear();
   }
 
@@ -352,7 +353,7 @@ export abstract class Target extends RenderTarget {
   }
 
   public changeDecorations(decs: Decorations): void {
-    dispose(this._decorations);
+    // ###TODO: dispose(this._decorations);
     this._decorations = decs;
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
