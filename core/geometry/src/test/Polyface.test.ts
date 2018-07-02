@@ -539,6 +539,51 @@ it("facets from sweep contour", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("facets for ACS", () => {
+  const ck = new Checker();
+  const savedMeshes = [];
+  let counter0 = 0;
+  for (const a of [4.5, 4.1, 3.5, 3]) {
+    // sawtooth. Triangulate leading portions that are valid polygons (edge from origin does not cross)
+    const basePoints = [
+      Point3d.create(0, 1, 0),
+      Point3d.create(4, 1, 0),
+      Point3d.create(a, 0, 0),
+      Point3d.create(6, 2, 0),
+      Point3d.create(a, 4, 0),
+      Point3d.create(4, 3, 0),
+      Point3d.create(0, 3, 0)];
+    let counter1 = 0;
+    for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
+      const arrowPoints = [];
+      for (let j = 0; j < basePoints.length; j++)
+        arrowPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+      const loop = Loop.createPolygon(arrowPoints);
+      const sweepContour = SweepContour.createForLinearSweep(loop);
+
+      const options = new StrokeOptions();
+      options.needNormals = false;
+      options.needParams = false;
+      const builder = PolyfaceBuilder.create(options);
+
+      sweepContour!.emitFacets(builder, options, false);
+      const polyface = builder.claimPolyface(true);
+      if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, "Triangle count in arrow " + counter0 + "." + counter1)) {
+        console.log(" Triangulation From Start index " + startIndex);
+        const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
+        console.log(prettyPrint(arrowPoints));
+        console.log(prettyPrint(jsPolyface));
+      }
+      polyface.tryTranslateInPlace(counter1 * 10, counter0 * 10, 0);
+      savedMeshes.push(polyface);
+      counter1++;
+    }
+    counter0++;
+  }
+  GeometryCoreTestIO.saveGeometry(savedMeshes, "Polyface", "ACSArrows");;
+  expect(ck.getNumErrors()).equals(0);
+});
+
 it("facets from sweep contour with holes", () => {
   const ck = new Checker();
   const region = ParityRegion.create(

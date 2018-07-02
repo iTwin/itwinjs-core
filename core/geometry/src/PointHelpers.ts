@@ -497,7 +497,29 @@ export class PolygonOps {
     // console.log ("polygon area ", s, points);
     return s;
   }
-
+  /** Sum areas of triangles from points[0] to each far edge.
+  * * Consider triangles from points[0] to each edge.
+  * * Sum the areas(absolute, without regard to orientation) all these triangles.
+  * @returns sum of absolute triangle areas.
+  */
+ public static sumTriangleAreasXY(points: Point3d[]): number {
+  let s = 0.0;
+  const n = points.length;
+  if (n >= 3) {
+    const origin = points[0];
+    const vector0 = origin.vectorTo(points[1]);
+    let vector1 = Vector3d.create();
+    // This will work with or without closure edge.  If closure is given, the last vector is 000.
+    for (let i = 2; i < n; i++) {
+      vector1 = origin.vectorTo(points[i], vector1);
+      s += vector0.crossProductXY(vector1);
+      vector0.setFrom(vector1);
+    }
+  }
+  s *= 0.5;
+  // console.log ("polygon area ", s, points);
+  return s;
+}
   /** These values are the integrated area moment products [xx,xy,xz, x]
    * for a right triangle in the first quadrant at the origin -- (0,0),(1,0),(0,1)
    */
