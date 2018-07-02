@@ -400,18 +400,16 @@ export class System extends RenderSystem {
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
   protected doDispose() {
-    if (!this._isDisposed) {
-      this.techniques.dispose();
+    this.techniques.dispose();
 
-      // We must attempt to dispose of each idmap in the rendercache (if idmap is already disposed, has no effect)
-      const idMaps = this.renderCache.extractArrays().values;
-      for (const idMap of idMaps)
-        idMap.dispose();
+    // We must attempt to dispose of each idmap in the rendercache (if idmap is already disposed, has no effect)
+    const idMaps = this.renderCache.extractArrays().values;
+    for (const idMap of idMaps)
+      idMap.dispose();
 
-      this.renderCache.clear();
-      IModelConnection.onClose.removeListener(this.removeIModelMap);
-      this._isDisposed = true;
-    }
+    this.renderCache.clear();
+    IModelConnection.onClose.removeListener(this.removeIModelMap);
+    this._isDisposed = true;
   }
 
   public onInitialized(): void {
@@ -467,7 +465,7 @@ export class System extends RenderSystem {
   public createIModelMap(imodel: IModelConnection): IdMap | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      if (!imodel.iModelToken.iModelId)
+      if (imodel.iModelToken === undefined || imodel.iModelToken.iModelId === undefined)
         return undefined;
       idMap = new IdMap();  // This currently starts empty, no matter the current contents of the imodel
       this.renderCache.set(imodel, idMap);
@@ -495,8 +493,9 @@ export class System extends RenderSystem {
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      idMap = new IdMap();
-      this.renderCache.insert(imodel, idMap);
+      idMap = this.createIModelMap(imodel);
+      if (idMap === undefined)
+        return undefined;
     }
     const material = idMap.getMaterial(params);
     if (this._isDisposed)
@@ -516,8 +515,9 @@ export class System extends RenderSystem {
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      idMap = new IdMap();
-      this.renderCache.insert(imodel, idMap);
+      idMap = this.createIModelMap(imodel);
+      if (idMap === undefined)
+        return undefined;
     }
     const texture = idMap.getTexture(image, params);
     if (this._isDisposed)
@@ -529,8 +529,9 @@ export class System extends RenderSystem {
   public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      idMap = new IdMap();
-      this.renderCache.insert(imodel, idMap);
+      idMap = this.createIModelMap(imodel);
+      if (idMap === undefined)
+        return undefined;
     }
     const texture = idMap.getTextureFromImageSource(source, width, height, params);
     if (this._isDisposed)
@@ -542,8 +543,9 @@ export class System extends RenderSystem {
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      idMap = new IdMap();
-      this.renderCache.insert(imodel, idMap);
+      idMap = this.createIModelMap(imodel);
+      if (idMap === undefined)
+        return undefined;
     }
     const texture = idMap.getGradient(symb);
     if (this._isDisposed)
