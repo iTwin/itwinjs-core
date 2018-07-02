@@ -555,7 +555,7 @@ export class System extends RenderSystem {
       return 0;
     });
     // Make this System a subscriber to the the IModelConnection onClose event
-    IModelConnection.onClose.addListener(() => this.removeIModelMap);
+    IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
   }
 }
 
