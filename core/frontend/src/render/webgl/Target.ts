@@ -984,7 +984,7 @@ function interpolatePoint(p0: Point3d, fraction: number, p1: Point3d, out: Point
     z = p0.z + fraction * (p1.z - p0.z);
   } else {
     const t = fraction - 1.0;
-    x = p1.x + t * (p1.y - p0.x);
+    x = p1.x + t * (p1.x - p0.x);
     y = p1.y + t * (p1.y - p0.y);
     z = p1.z + t * (p1.z - p0.z);
   }
