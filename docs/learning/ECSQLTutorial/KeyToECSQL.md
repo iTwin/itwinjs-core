@@ -53,4 +53,4 @@ That abstraction is a huge simplification for ECSQL users. The database schema o
 
 ---
 
-[**< Previous**](./index.md)  &nbsp; | &nbsp; [**Next >**](./FirstExamples)
+[**< Previous**](./index.md)  &nbsp; | &nbsp; [**Next >**](./FirstExamples.md)
