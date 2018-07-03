@@ -163,12 +163,26 @@ function startCategorySelection(_event: any) {
 // build list of models; enables them all
 async function buildModelMenu(state: SimpleViewState) {
   const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+  const modelButton = document.getElementById("startToggleModel")!;
+  const spatialView = undefined !== state.viewState && state.viewState instanceof SpatialViewState ? state.viewState as SpatialViewState : undefined;
+  if (undefined === spatialView) {
+    modelMenu.style.display = modelButton.style.display = "none";
+    return;
+  }
+
+  modelButton.style.display = "inline";
   const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
   curModelProps = await state.iModelConnection!.models.queryProps(modelQueryParams);
   curModelPropIndices = [];
   modelMenu.innerHTML = "";
+
+  // ###TODO: Load models on demand when they are enabled in the dialog - not all up front like this...super-inefficient...
   let i = 0;
   for (const modelProp of curModelProps) {
+    const model = spatialView.iModel.models.getLoaded(modelProp.id!.toString());
+    if (undefined === model)
+      await spatialView.iModel.models.load(modelProp.id!.toString());
+
     modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
     curModelPropIndices.push(i);
     i++;
@@ -177,7 +191,8 @@ async function buildModelMenu(state: SimpleViewState) {
   curNumModels = i;
   for (let c = 0; c < curNumModels; c++) {
     const cbxName = "cbxModel" + c;
-    updateCheckboxToggleState(cbxName, true);
+    const enabled = spatialView.modelSelector.has(curModelProps[c].id!.toString());
+    updateCheckboxToggleState(cbxName, enabled);
     addModelToggleHandler(cbxName);
   }
 
