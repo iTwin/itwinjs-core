@@ -1,6 +1,3 @@
----
-ignore: true
----
 # First Examples
 
 We will start off the tutorial by a simple ECSQL example:

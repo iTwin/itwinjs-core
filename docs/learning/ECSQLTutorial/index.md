@@ -1,7 +1,6 @@
----
-ignore: true
----
 # Learning ECSQL
+
+> The tutorial is still a **work in progress**. The iModelConsole and the sample iModel used in the tutorial are not yet publicly available. However, you can still use the tutorial and learn ECSQL. You won't be able to run and experiment with the examples though.
 
 This tutorial allows you to learn how to use ECSQL to read and query the business data in your iModels.
 

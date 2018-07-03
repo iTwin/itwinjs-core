@@ -1,6 +1,3 @@
----
-ignore: true
----
 # Spatial Queries
 
 Every instance of the `SpatialElement` ECClass in an iModel is spatially indexed. The spatial index allows fast look-ups by spatial criteria. Each row in the spatial index is conceptually a bounding cube, plus the ECInstanceId of an element that is enclosed by it.

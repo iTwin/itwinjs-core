@@ -1,6 +1,3 @@
----
-ignore: true
----
 # Querying Change Summaries
 
 *Change Summaries* are summaries of changes of ECInstances in an *iModel Changeset*. **Please read [Change Summaries](../ChangeSummaries) first, before doing this section of the tutorial.**
