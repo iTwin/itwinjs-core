@@ -172,22 +172,22 @@ export class Frustum {
   public getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet {
     const convexSet = ConvexClipPlaneSet.createEmpty();
 
-    const scratchNormal = Vector3d.createCrossProductToPoints(this.points[5], this.points[3], this.points[1]);
-    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[1]) - expandPlaneDistance));
-    Vector3d.createCrossProductToPoints(this.points[2], this.points[4], this.points[0], scratchNormal);
-    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
-    Vector3d.createCrossProductToPoints(this.points[3], this.points[6], this.points[2], scratchNormal);
-    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[2]) - expandPlaneDistance));
-    Vector3d.createCrossProductToPoints(this.points[4], this.points[1], this.points[0], scratchNormal);
-    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+    const normal = Vector3d.createCrossProductToPoints(this.points[5], this.points[3], this.points[1]);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(normal, normal.dotProduct(this.points[1]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[2], this.points[4], this.points[0], normal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(normal, normal.dotProduct(this.points[0]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[3], this.points[6], this.points[2], normal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(normal, normal.dotProduct(this.points[2]) - expandPlaneDistance));
+    Vector3d.createCrossProductToPoints(this.points[4], this.points[1], this.points[0], normal);
+    convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(normal, normal.dotProduct(this.points[0]) - expandPlaneDistance));
 
     if (clipBack) {
-      Vector3d.createCrossProductToPoints(this.points[1], this.points[2], this.points[0], scratchNormal);
-      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+      Vector3d.createCrossProductToPoints(this.points[1], this.points[2], this.points[0], normal);
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(normal, normal.dotProduct(this.points[0]) - expandPlaneDistance));
     }
     if (clipFront) {
-      Vector3d.createCrossProductToPoints(this.points[6], this.points[5], this.points[4], scratchNormal);
-      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[4]) - expandPlaneDistance));
+      Vector3d.createCrossProductToPoints(this.points[6], this.points[5], this.points[4], normal);
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(normal, normal.dotProduct(this.points[4]) - expandPlaneDistance));
     }
     return convexSet;
   }

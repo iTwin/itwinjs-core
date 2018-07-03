@@ -78,7 +78,7 @@ class Geometry4dTests {
 
     const pointZ = Point4d.fromJSON([]);
     ck.testExactNumber(0, pointZ.maxAbs(), "default fromJSON");
-    ck.testExactNumber(0, Point4d.fromJSON(4.0).maxAbs());
+    ck.testExactNumber(0, Point4d.fromJSON([4.0]).maxAbs());
     const hPointA = Point4d.create(1, 2, 3, 4);
     // const hPointA1 = hPointA.normalizeWeight();
     const hpointANeg = hPointA.negate();
@@ -255,7 +255,7 @@ describe("Matrix4d", () => {
     const ck = new bsiChecker.Checker();
     const zero = Matrix4d.createZero();
     const zeroA = Matrix4d.createIdentity();
-    zeroA.setFromJSON([1, 2]);
+    zeroA.setFromJSON([[1], [2]]);
     ck.testMatrix4d(zero, zeroA, "setFromJSON defaults to zero matrix");
     ck.checkpoint("Matrix4d.set");
     expect(ck.getNumErrors()).equals(0);

@@ -162,6 +162,8 @@ export declare class NativeDgnDb {
    */
   public isChangeCacheAttached(): boolean;
 
+  public detachChangeCache(): number;
+
   /** Extracts a change summary from the specified Changeset file
    * @param changeCacheFile The change cache ECDb file where the extracted change summary will be persisted
    * @param changesetFilePath The full path to the SQLite changeset file in the local file system
@@ -898,8 +900,8 @@ export declare class NativeECSchemaXmlContext {
   public readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
 }
 
-export declare class NativeElementLocateManager {
+export declare class SnapRequest {
   constructor();
-  public doLocate(db: NativeDgnDb, point: any, callback: (result: ErrorStatusOrResult<IModelStatus, string>) => void): void;
-  public cancelLocate(): void;
+  public doSnap(db: NativeDgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
+  public cancelSnap(): void;
 }
