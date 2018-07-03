@@ -580,7 +580,7 @@ it("facets for ACS", () => {
     }
     counter0++;
   }
-  GeometryCoreTestIO.saveGeometry(savedMeshes, "Polyface", "ACSArrows");;
+  GeometryCoreTestIO.saveGeometry(savedMeshes, "Polyface", "ACSArrows");
   expect(ck.getNumErrors()).equals(0);
 });
 
