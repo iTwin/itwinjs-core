@@ -544,7 +544,7 @@ export declare class NativeECSqlStatement implements IDisposable {
 
   /**
    * Prepare an ECSQL statement.
-   * @param db The native DgnDb object
+   * @param db The NativeDgnDb or NativeECDb object
    * @param ecsql The ECSQL to prepare
    * @return Returns the Zero status in case of success. Non-zero error status in case of failure. The error's message property will contain additional information.
    */
@@ -739,7 +739,7 @@ export declare class NativeECSqlValue {
   public getColumnInfo(): NativeECSqlColumnInfo;
 
   public isNull(): boolean;
-  /** Get value as a BLOB, formatted as Base64-encoded string. */
+  /** Get value as a BLOB. */
   public getBlob(): ArrayBuffer;
   /** Get value as boolean. */
   public getBoolean(): boolean;
@@ -789,6 +789,119 @@ export declare class NativeECSqlValueIterator {
    * Get the ECSqlValue the iterator is currently pointing to.
    */
   public getCurrent(): NativeECSqlValue;
+}
+
+/**
+ * The NativeSqliteStatement class that is projected by IModelJsNative.
+ * @hidden
+ */
+export declare class NativeSqliteStatement implements IDisposable {
+  constructor();
+
+  /**
+   * Prepare a SQLite SQL statement.
+   * @param db The NativeDgnDb or NativeECDb object
+   * @param sql The SQL to prepare
+   * @return Returns the Zero status in case of success. Non-zero error status in case of failure. The error's message property will contain additional information.
+   */
+  public prepare(db: NativeDgnDb | NativeECDb, sql: string): StatusCodeWithMessage<DbResult>;
+
+  /** Reset the statement to just before the first row.
+   * @return Returns non-zero error status in case of failure.
+   */
+  public reset(): DbResult;
+
+  /** Dispose of the NativeSqliteStatement object - call this when finished stepping a statement, but only if the statement is not shared. */
+  public dispose(): void;
+
+  /** Binds null to the specified SQL parameter.
+   * @param param Index (1-based) or name (without leading colon) of the parameter.
+   * @return non-zero error status in case of failure.
+   */
+  public bindNull(param: number | string): DbResult;
+
+  /** Binds a BLOB to the specified SQL parameter.
+   * @param param Index (1-based) or name (without leading colon) of the parameter.
+   * @param val BLOB value
+   * @return non-zero error status in case of failure.
+   */
+  public bindBlob(param: number | string, val: ArrayBuffer | SharedArrayBuffer): DbResult;
+
+  /** Binds a double to the specified SQL parameter.
+   * @param param Index (1-based) or name (without leading colon) of the parameter.
+   * @param val Double value
+   * @return non-zero error status in case of failure.
+   */
+  public bindDouble(param: number | string, val: number): DbResult;
+
+  /** Binds an integer to the specified SQL parameter.
+   * @param param Index (1-based) or name (without leading colon) of the parameter.
+   * @param val Integral value, either as number or as decimal or hexadecimal string (for the case
+   * where the integer is larger than the JS accuracy threshold)
+   * @return non-zero error status in case of failure.
+   */
+  public bindInteger(param: number | string, val: number | string): DbResult;
+
+  /** Binds a string to the specified SQL parameter.
+   * @param param Index (1-based) or name (without leading colon) of the parameter.
+   * @param val String value
+   * @return non-zero error status in case of failure.
+   */
+  public bindString(param: number | string, val: string): DbResult;
+
+  /** Clear the bindings of this statement.
+   * @return Returns a non-zero error status in case of failure.
+   */
+  public clearBindings(): DbResult;
+
+  /** Step this statement to move to the next row.
+   * @return Returns BE_SQLITE_ROW if the step moved to a new row. Returns BE_SQLITE_DONE if the step failed because there is no next row. Another non-zero error status if step failed because of an error.
+   */
+  public step(): DbResult;
+
+  /**
+   * Get the number of SQL columns in the result set after calling step on a SELECT statement.
+   * @return Returns the SQL value of the specified column for the current row
+   */
+  public getColumnCount(): number;
+
+  /**
+   * Get the data type of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   * @return Returns the data type of the specified column for the current row (as values of the DbValueType enum in native BeSQLite)
+   */
+  public getColumnType(columnIndex: number): number;
+
+  /**
+   * Get the name of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   * @return Returns the name of the specified column for the current row
+   */
+  public getColumnName(columnIndex: number): string;
+
+  /**
+   * Indicates whether the value of the specified column for the current row is null or not.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   * @return Returns true if the value of the specified column for the current row is null. false otherwise.
+   */
+  public isValueNull(columnIndex: number): boolean;
+  /**
+   * Get value as a BLOB of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   */
+  public getValueBlob(columnIndex: number): ArrayBuffer;
+  /** Get value as boolean of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   */
+  public getValueDouble(columnIndex: number): number;
+  /** Get value as GUID, formatted as GUID string of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   */
+  public getValueInteger(columnIndex: number): number;
+  /** Get value as string of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   */
+  public getValueString(columnIndex: number): string;
 }
 
 /**
