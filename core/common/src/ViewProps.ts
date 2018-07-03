@@ -5,7 +5,7 @@
 
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
-import { AngleProps, XYZProps, XYProps, YawPitchRollProps, TransformProps, Matrix4d } from "@bentley/geometry-core";
+import { AngleProps, XYZProps, XYProps, YawPitchRollProps, Matrix4d, Matrix4dProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps } from "./ElementProps";
 
 /** properties that define a ModelSelector */
@@ -91,7 +91,7 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
 export interface SnapRequestProps {
   id: Id64Props;
   closePoint: XYZProps;
-  worldToView: TransformProps;
+  worldToView: Matrix4dProps;
   viewFlags?: any;
   snapMode?: number;
   snapAperture?: number;

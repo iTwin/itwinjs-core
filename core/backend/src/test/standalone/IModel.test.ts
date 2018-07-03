@@ -4,7 +4,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64, BeEvent } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, Range3d, Angle } from "@bentley/geometry-core";
+import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
@@ -730,9 +730,9 @@ describe("iModel", () => {
   });
 
   it.only("snapping", async () => {
-    const worldToView = Transform.createIdentity();
-    const response = await imodel2.requestSnap("0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView });
-    assert.isDefined(response.snapPoint);
+    const worldToView = Matrix4d.createIdentity();
+    const response = await imodel2.requestSnap("0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    assert.isDefined(response.status);
   });
 
   it("should import schemas", () => {
