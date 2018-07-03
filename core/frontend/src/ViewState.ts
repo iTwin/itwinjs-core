@@ -1297,7 +1297,11 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    this.drawSkyBox(context);
+    const useOldSkyBox = true;
+    if (useOldSkyBox)
+      this.drawSkyBox(context);
+    else
+      this.drawRealSkyBox(context); // ###TODO - WIP!
     this.drawGroundPlane(context);
   }
 
@@ -1323,6 +1327,23 @@ export abstract class ViewState3d extends ViewState {
     const altitude = Math.atan2(zValue, radius);
 
     return Point2d.create(0.5 - altitude / (Math.PI * 2), 0.25 - azimuth);
+  }
+
+  private drawSkyBoxMesh(builder: GraphicBuilder, _viewport: Viewport) {
+    // ###TODO - Calculate meshes for each side of the skyBox.  Currently only calculates one side (front).
+
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    strokeOptions.needNormals = true;
+    strokeOptions.shouldTriangulate = false;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+
+    const points = [Point3d.create(-100, -100, 0), Point3d.create(100, -100, 0), Point3d.create(100, 100, 0), Point3d.create(-100, 100, 0)];
+    const params = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    polyfaceBuilder.addQuadFacet(points, params, undefined);
+
+    const polyface = polyfaceBuilder.claimPolyface(false);
+    builder.addPolyface(polyface, true);
   }
 
   /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
@@ -1383,6 +1404,34 @@ export abstract class ViewState3d extends ViewState {
 
     const polyface = polyfaceBuilder.claimPolyface(false);
     builder.addPolyface(polyface, true);
+  }
+
+  /** @hidden */
+  protected drawRealSkyBox(context: DecorateContext) {
+    const style3d = this.getDisplayStyle3d();
+    if (!style3d.getEnvironment().sky.display)
+      return;
+
+    const vp = context.viewport;
+    style3d.loadSkyBoxTextures(vp.target.renderSystem);
+
+    if (style3d.skyBoxTextures.length > 0) {
+      // Create graphics for the skybox textures
+      const skyBoxGraphic = context.createViewBackground();
+      const params = new GraphicParams();
+
+      const matParams = new RenderMaterial.Params();
+      matParams.textureMapping = new TextureMapping(style3d.skyBoxTextures[0], new TextureMapping.Params());
+      params.material = vp.target.renderSystem.createMaterial(matParams, this.iModel);
+
+      skyBoxGraphic.activateGraphicParams(params);
+
+      // create a mesh for a cube that represents the skybox
+      this.drawSkyBoxMesh(skyBoxGraphic, vp);
+      context.setViewBackground(skyBoxGraphic.finish());
+    } else {
+      // Skybox material failed to load. Resort to drawing some kind of fake version.
+    }
   }
 
   /** @hidden */
