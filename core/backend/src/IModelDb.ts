@@ -828,7 +828,7 @@ export class IModelDb extends IModel {
       request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
         this._snaps.delete(connectionId);
         if (ret.error !== undefined)
-          reject(new IModelError(ret.error.status, ret.error.message));
+          reject(new Error(ret.error.message));
         else
           return resolve(ret.result);
       });
