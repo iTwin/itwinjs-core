@@ -467,7 +467,15 @@ export class AccuSnap {
     return thisHit;
   }
 
-  public async snapToHit(_thisHit: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
+  public async snapToHit(thisHit: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
+    try {
+      const snapResult = await thisHit.viewport.iModel.requestSnap({ closePoint: thisHit.hitPoint, id: thisHit.sourceId, worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON() });
+      if (snapResult.snapPoint === undefined)
+        return undefined;
+    } catch (error) {
+      return undefined;
+    }
+
     // NEEDSWORK: Call SnapContext::DoSnap through backend...
     //
     //   if (!Application.locateManager.isSnappableModel(thisHit.getModel())   {

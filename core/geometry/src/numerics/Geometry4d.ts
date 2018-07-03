@@ -8,6 +8,9 @@ import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "../PointVector";
 import { RotMatrix, Transform } from "../Transform";
 
+export type Point4dProps = number[];
+export type Matrix4dProps = Point4dProps[];
+
 /** Minimal object containing x,y,z and operations that are meaningful without change in both point and vector. */
 export class Point4d implements BeJSONFunctions {
   public xyzw: Float64Array;
@@ -54,13 +57,13 @@ export class Point4d implements BeJSONFunctions {
   public clone(result?: Point4d): Point4d {
     return result ? result.setFrom(this) : new Point4d(this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]);
   }
-  public setFromJSON(json?: any) {
+  public setFromJSON(json?: Point4dProps) {
     if (Geometry.isNumberArray(json, 4))
-      this.set(json[0], json[1], json[2], json[3]);
+      this.set(json![0], json![1], json![2], json![3]);
     else
       this.set(0, 0, 0, 0);
   }
-  public static fromJSON(json?: any): Point4d {
+  public static fromJSON(json?: Point4dProps): Point4d {
     const result = new Point4d();
     result.setFromJSON(json);
     return result;
@@ -75,7 +78,7 @@ export class Point4d implements BeJSONFunctions {
    * Convert an Angle to a JSON object.
    * @return {*} [[x,y,z,w]
    */
-  public toJSON(): any {
+  public toJSON(): Point4dProps {
     return [this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]];
   }
   /** Return the distance from this point to other */
@@ -456,10 +459,12 @@ export class Matrix4d implements BeJSONFunctions {
     }
     return undefined;
   }
-  public setFromJSON(json?: any) {
-    if (Geometry.isNumberArray(json, 16))
-      for (let i = 0; i < 16; i++)
-        this.coffs[i] = json[i];
+  public setFromJSON(json?: Matrix4dProps) {
+    if (Geometry.isArrayOfNumberArray(json, 4, 4))
+      for (let i = 0; i < 4; ++i) {
+        for (let j = 0; j < 4; ++j)
+          this.coffs[i * 4 + j] = json![i][j];
+      }
     else
       this.setZero();
   }
@@ -487,16 +492,17 @@ export class Matrix4d implements BeJSONFunctions {
     return Geometry.isSmallMetricDistance(this.maxDiff(other));
   }
   /**
-   * Convert an Matrix4d to a JSON array.
-   * @return {*} [axx,axy, axz, axw, ayx, ...]
+   * Convert an Matrix4d to a Matrix4dProps.
    */
-  public toJSON(): any {
+  public toJSON(): Matrix4dProps {
     const value = [];
-    let c;
-    for (c of this.coffs) value.push(c);
+    for (let i = 0; i < 4; ++i) {
+      const row = i * 4;
+      value.push([this.coffs[row], this.coffs[row + 1], this.coffs[row + 2], this.coffs[row + 3]]);
+    }
     return value;
   }
-  public static fromJSON(json?: any) {
+  public static fromJSON(json?: Matrix4dProps) {
     const result = new Matrix4d();
     result.setFromJSON(json);
     return result;

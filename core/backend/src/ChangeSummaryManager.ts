@@ -303,7 +303,6 @@ export class ChangeSummaryManager {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel but be open.");
 
-    assert(iModel.nativeDb);
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changeCacheFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Failed to create Change Cache file at '" + changeCacheFilePath + "'.");

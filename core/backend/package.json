@@ -60,10 +60,11 @@
     "mocha": "^5.2.0",
     "nyc": "^11.8.0",
     "rimraf": "^2.6.2",
-    "source-map-support": "^0.5.0",
+    "source-map-support": "^0.5.6",
     "ts-node": "^6.0.3",
-    "tslint": "^5.9.0",
+    "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
     "typescript": "~2.7.2",
     "webpack": "^3.10.0",
@@ -76,7 +77,7 @@
     "@bentley/imodeljs-native-platform-api": "~22.1.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
-    "js-base64": "^2.4.0",
+    "js-base64": "^2.4.5",
     "semver": "^5.5.0"
   },
   "nyc": {

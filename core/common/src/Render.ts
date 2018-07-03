@@ -941,13 +941,13 @@ export namespace Gradient {
 
   /** Multi-color area fill defined by a range of colors that vary by position */
   export interface SymbProps {
-    /** Gradient type, must be set to something other than [[Mode.None]] in order to display fill */
+    /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
     mode: Mode;
     /** Gradient flags to enable outline display and invert color fractions, Flags.None if undefined */
     flags?: Flags;
     /** Gradient rotation angle, 0.0 if undefined */
     angle?: AngleProps;
-    /** Gradient tint value from 0.0 to 1.0, only used when [[KeyColorProps]] size is 1, 0.0 if undefined */
+    /** Gradient tint value from 0.0 to 1.0, only used when [[Gradient.KeyColorProps]] size is 1, 0.0 if undefined */
     tint?: number;
     /** Gradient shift value from 0.0 to 1.0, 0.0 if undefined */
     shift?: number;
