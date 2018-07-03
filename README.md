@@ -76,6 +76,8 @@ That part of the command is optional depending on the desired verbosity level.
 Note that all build instructions are designed to run from the imodeljs-core root directory.
 The above commands iterate and perform their action against each package in the monorepo.
 
+For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
+
 Note that it is a good idea to `rush install` after each `git pull` as dependencies may have changed.
 
 ## Source Code Edit Workflow
@@ -84,7 +86,7 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 2. Ensure unit tests pass when run locally: `npm test -s`
 3. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
 4. Add changelog entry: `rush change`
-5. Follow prompts to enter a change description or press ENTER if change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented.
+5. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented.
 6. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
 7. Stage these new files: `git stage` (or use the Visual Studio Code user interface)
 8. In order to keep the Git history clean, amend the prior commit: `git commit --amend --no-edit` (or use the **Commit All (Amend)** menu item in Visual Studio Code)
