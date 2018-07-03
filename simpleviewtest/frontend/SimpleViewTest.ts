@@ -163,6 +163,14 @@ function startCategorySelection(_event: any) {
 // build list of models; enables them all
 async function buildModelMenu(state: SimpleViewState) {
   const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+  const modelButton = document.getElementById("startToggleModel")!;
+  const spatialView = undefined !== state.viewState && state.viewState instanceof SpatialViewState ? state.viewState as SpatialViewState : undefined;
+  if (undefined === spatialView) {
+    modelMenu.style.display = modelButton.style.display = "none";
+    return;
+  }
+
+  modelButton.style.display = "inline";
   const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
   curModelProps = await state.iModelConnection!.models.queryProps(modelQueryParams);
   curModelPropIndices = [];
