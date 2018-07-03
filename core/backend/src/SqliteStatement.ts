@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module SQL */
+/** @module SQLite */
 
 import { DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
@@ -89,7 +89,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  String | string
    *  BLOB | ArrayBuffer or SharedArrayBuffer
    *
-   *  @param parameter Index (1-based) or name of the parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param value Value to bind.
    *  @throws [IModelError]($common) if the value is of an unsupported type or in
    *  case of other binding errors.
@@ -121,6 +121,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
+   * See [SqliteStatement.bindValue]($backend) for details on the supported types.
    */
   public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
@@ -173,7 +174,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of SQL column in query result (0-based)
    */
-  public getValue(columnIx: number): SqlValue { return new SqlValue(this._stmt!, columnIx); }
+  public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
@@ -182,37 +183,37 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *
    * SQLite Type | JavaScript Type
    * --- | ---
-   * [SqlValueType.Null]($backend) | undefined
-   * [SqlValueType.Integer]($backend) | number
-   * [SqlValueType.Double]($backend) | number
-   * [SqlValueType.String]($backend) | string
-   * [SqlValueType.Blob]($backend) | ArrayBuffer
+   * [SqliteValueType.Null]($backend) | undefined
+   * [SqliteValueType.Integer]($backend) | number
+   * [SqliteValueType.Double]($backend) | number
+   * [SqliteValueType.String]($backend) | string
+   * [SqliteValueType.Blob]($backend) | ArrayBuffer
    */
   public getRow(): any {
     const colCount: number = this.getColumnCount();
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      const sqlValue: SqlValue = this.getValue(i);
-      if (!sqlValue.isNull()) {
-        const propName: string = SqlStatement.determineResultRowPropertyName(duplicatePropNames, sqlValue);
+      const sqliteValue: SqliteValue = this.getValue(i);
+      if (!sqliteValue.isNull()) {
+        const propName: string = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
         let val: any;
-        switch (sqlValue.type) {
-          case SqlValueType.Blob:
-            val = sqlValue.getBlob();
+        switch (sqliteValue.type) {
+          case SqliteValueType.Blob:
+            val = sqliteValue.getBlob();
             break;
-          case SqlValueType.Double:
-            val = sqlValue.getDouble();
+          case SqliteValueType.Double:
+            val = sqliteValue.getDouble();
             break;
-          case SqlValueType.Integer:
-            val = sqlValue.getInteger();
+          case SqliteValueType.Integer:
+            val = sqliteValue.getInteger();
             break;
-          case SqlValueType.String:
-            val = sqlValue.getString();
+          case SqliteValueType.String:
+            val = sqliteValue.getString();
             break;
 
           default:
-            throw new Error("Unsupport SqlValueType");
+            throw new Error("Unsupported SqliteValueType");
         }
 
         Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
@@ -221,8 +222,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     return row;
   }
 
-  private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, sqlValue: SqlValue): string {
-    let jsName: string = ECJsNames.toJsName(sqlValue.columnName);
+  private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, sqliteValue: SqliteValue): string {
+    let jsName: string = ECJsNames.toJsName(sqliteValue.columnName);
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
     let suffix: number | undefined = duplicatePropNames.get(jsName);
@@ -283,10 +284,10 @@ export enum SqliteValueType {
  * - [SqliteStatement.getValue]($backend)
  */
 export class SqliteValue {
-  private readonly _stmt: NativeSqlStatement;
+  private readonly _stmt: NativeSqliteStatement;
   private readonly _colIndex: number;
 
-  public constructor(stmt: NativeSqlStatement, colIndex: number) {
+  public constructor(stmt: NativeSqliteStatement, colIndex: number) {
     this._stmt = stmt;
     this._colIndex = colIndex;
   }
