@@ -239,6 +239,7 @@ export class Environment {
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3dState extends DisplayStyleState {
   public skyboxMaterial: RenderMaterial | undefined;
+  public skyBoxTextures: RenderTexture[] = []; // ###TODO: make this a cubemap if possible
   public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
@@ -282,6 +283,33 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
+
+  /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
+  public loadSkyBoxTextures(system: RenderSystem): boolean {
+    if (this.skyBoxTextures.length > 0)
+      return true;  // skybox textures have already been loaded
+
+    // const env = this.getEnvironment();
+    // ###TODO - Use actual textures - just defining our own textures for now (different colors to distinguish them); can key off env.sky.jpegFile (needs more than one file though!)
+
+    // ###TODO - If possible, use a cubemap texture to store all six images in one fell swoop (better use of GPU resources)
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // front
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // back
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // top
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // bottom
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // left
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // right
+
+    // ###TODO - if any image buffer or texture fails to load, bail out.
+
+    return true;
+  }
 
   /** Attempts to create a texture and material for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
   public loadSkyBoxMaterial(system: RenderSystem): boolean {
