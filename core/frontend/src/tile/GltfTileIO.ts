@@ -262,7 +262,7 @@ export namespace GltfTileIO {
           renderGraphic = this.system.createGraphicList(renderGraphicList, this.model.iModel);
         }
         if (undefined !== renderGraphic) {
-          renderGraphic = this.system.createBatch(renderGraphic, featureTable);
+          renderGraphic = this.system.createBatch(renderGraphic, featureTable, contentRange);
           if (undefined !== this.returnToCenter || this.yAxisUp) {
             const branch = new GraphicBranch();
             branch.add(renderGraphic);

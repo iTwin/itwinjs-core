@@ -5,7 +5,7 @@
 
 import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
-import { ViewFlags, FeatureTable, Feature, ColorDef } from "@bentley/imodeljs-common";
+import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
@@ -433,14 +433,16 @@ export abstract class Graphic extends RenderGraphic {
 export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: FeatureTable;
+  public readonly range: ElementAlignedBox3d;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
   private _isDisposed: boolean = false;
 
-  public constructor(graphic: RenderGraphic, features: FeatureTable) {
+  public constructor(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d) {
     super(graphic.iModel);
     this.graphic = graphic;
     this.featureTable = features;
+    this.range = range;
   }
 
   public get pickTable(): PickTable | undefined {

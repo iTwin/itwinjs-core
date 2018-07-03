@@ -20,6 +20,7 @@ import {
   ImageSource,
   FeatureTable,
   Gradient,
+  ElementAlignedBox3d,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -292,7 +293,7 @@ export abstract class RenderSystem {
   // public abstract getMaxFeaturesPerBatch(): number;
 
   /** Create a Graphic consisting of batched Features. */
-  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
   public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
