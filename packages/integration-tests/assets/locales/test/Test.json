@@ -1,0 +1,6 @@
+{
+  "string": "_test_ string",
+  "nested": {
+    "string": "_test_ nested string"
+  }
+}
