@@ -1,0 +1,9 @@
+[
+  {
+    "policyName": "prerelease-monorepo-lockStep",
+    "definitionName": "lockStepVersion",
+    "version": "0.1.0-0",
+    "nextBump": "prerelease",
+    "mainProject": "@bentley/imodeljs-common"
+  }
+]

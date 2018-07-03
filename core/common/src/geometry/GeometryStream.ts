@@ -404,7 +404,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   }
 
   /** Advance to next displayable geometric entry while updating the current [[GeometryParams]] from appearance related entries.
-   * Geometric entries are [[TextString]], [[GeometryQuery]], [[GeometryPart]], and [[DataProps]].
+   * Geometric entries are [[TextString]], [[GeometryQuery]], [[GeometryPart]], and [[BRepEntity.DataProps]].
    */
   public next(): IteratorResult<GeometryStreamIteratorEntry> {
     this.entry.partToLocal = this.entry.partId = this.entry.geometryQuery = this.entry.textString = this.entry.brep = undefined; // NOTE: localRange remains valid until new subRange entry is encountered

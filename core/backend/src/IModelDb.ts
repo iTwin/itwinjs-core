@@ -825,7 +825,7 @@ export namespace IModelDb {
     }
 
     /** Get the sub-model of the specified Element.
-     * See [[Elements.queryElementIdByCode]] for more on how to find an element by Code.
+     * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
      * @throws [[IModelError]]
      */

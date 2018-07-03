@@ -187,6 +187,8 @@ export class IdMap {
   public readonly textureMap: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
   public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
+  /** Array of textures without key values (unnamed). */
+  public readonly keylessTextures: RenderTexture[] = [];
 
   public constructor() {
     this.materialMap = new Map<string, RenderMaterial>();
@@ -204,6 +206,8 @@ export class IdMap {
   public addTexture(texture: RenderTexture) {
     if (texture.key)
       this.textureMap.set(texture.key, texture);
+    else
+      this.keylessTextures.push(texture);
   }
 
   /** Add a texture to the gradient symbology map. */
@@ -256,6 +260,8 @@ export class IdMap {
     const texture = new Texture(params, textureHandle);
     if (params.key)
       this.textureMap.set(params.key, texture);
+    else
+      this.keylessTextures.push(texture);
     return texture;
   }
 
@@ -273,6 +279,8 @@ export class IdMap {
     const texture = new Texture(params, textureHandle);
     if (params.key)
       this.textureMap.set(params.key, texture);
+    else
+      this.keylessTextures.push(texture);
     return texture;
   }
 
@@ -438,7 +446,7 @@ export class System extends RenderSystem {
     const idMap = this.renderCache.get(imodel);
     if (idMap === undefined)
       return;
-    const textureArr = Array.from(idMap.textureMap.values());
+    const textureArr = Array.from(idMap.textureMap.values()).concat(idMap.keylessTextures);
     const gradientArr = idMap.gradientMap.extractArrays().values;
     for (const texture of textureArr) {
       texture.dispose();
@@ -456,7 +464,7 @@ export class System extends RenderSystem {
     // First, 'free' all textures that are used by a WebGL wrapper
     const imodelArr = this.renderCache.extractArrays().values;
     for (const idMap of imodelArr) {
-      const textureArr = Array.from(idMap.textureMap.values());
+      const textureArr = Array.from(idMap.textureMap.values()).concat(idMap.keylessTextures);
       const gradientArr = idMap.gradientMap.extractArrays().values;
       for (const texture of textureArr) {
         texture.dispose();
@@ -555,7 +563,7 @@ export class System extends RenderSystem {
       return 0;
     });
     // Make this System a subscriber to the the IModelConnection onClose event
-    IModelConnection.onClose.addListener(() => this.removeIModelMap);
+    IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
   }
 }
 

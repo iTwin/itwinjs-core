@@ -7,14 +7,14 @@ The software architecture of iModelJs was driven by the following goals:
 - Re-use business logic across web, desktop, and mobile apps
 - Re-use HTML GUI across web, desktop, and mobile apps
 
-[Backend](../learning/backend) Architecture Layers:
+[Backend](../learning/backend/index) Architecture Layers:
 
 - Application Backend (TypeScript)
 - iModelJs Backend Framework (TypeScript)
 - JavaScript Runtime with C++ Interoperability
 - iModelJs Native Libraries (C++)
 
-[Frontend](../learning/frontend) Architecture Layers:
+[Frontend](../learning/frontend/index) Architecture Layers:
 
 - Application Frontend (TypeScript)
 - iModelJs Frontend Framework (TypeScript)

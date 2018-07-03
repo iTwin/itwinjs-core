@@ -481,7 +481,6 @@ async function resetStandaloneIModel(filename: string) {
 
   spinner.style.display = "block";
   IModelApp.viewManager.dropViewport(theViewport!);
-  IModelApp.renderSystem.onShutDown();
   await clearViews();
   await openStandaloneIModel(activeViewState, filename);
   await buildViewList(activeViewState);
