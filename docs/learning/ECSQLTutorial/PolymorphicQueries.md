@@ -124,7 +124,7 @@ Let's go back to explore more how to work with the ECClassId to tell between sub
 > A-1 | MyDomain.Story
 > A-2 | MyDomain.Story
 
-As usually the class ids are not known, you need to look them up first. You can do so by joining to the `ECDbMeta` ECSchema. This allows you to specify the subclasses by name rather than by id. The `ECDbMeta` ECSchema is covered in more detail in the advanced lesson about [Meta queries](./MetaQueries).
+As usually the class ids are not known, you need to look them up first. You can do so by joining to the [ECDbMeta ECSchema](../ECDbMeta.ecschema.md). This allows you to specify the subclasses by name rather than by id. The [ECDbMeta ECSchema](../ECDbMeta.ecschema.md) is covered in more detail in the advanced lesson about [Meta queries](./MetaQueries.md).
 
 > **Try it yourself**
 >

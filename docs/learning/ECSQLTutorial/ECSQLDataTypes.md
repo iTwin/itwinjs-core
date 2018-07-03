@@ -2,7 +2,7 @@
 
 ## ECInstanceId and ECClassId
 
-ECSQL defines a set of built-in system properties. They don't have to be defined in the ECSchemas (see also [ECSQL reference](../ECSQL#ecinstanceid-and-ecclassid)).
+ECSQL defines a set of built-in system properties. They don't have to be defined in the ECSchemas (see also [ECSQL reference](../ECSQL.md#ecinstanceid-and-ecclassid)).
 
 Property | Description
 --- | ---
@@ -252,15 +252,15 @@ In ECSQL you can refer to a struct ECProperty either as a whole or by just refer
 The operator for referencing members of structs in an ECSQL is the '.'.
 
 > As there are no struct properties in the sample iModel (structs are generally rarely used), you cannot try that out with this
-> tutorial. However, you will find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL#structs).
+> tutorial. However, you will find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#structs).
 
 ## Arrays
 
 In ECSQL you can refer to Array ECProperties only as a whole.
 
 > The sample iModel does not use array properties for its data. However, arrays are used when querying ECSchemas.
-> That topic is covered as advanced lesson: [Querying ECSchemas (Meta queries)](./MetaQueries)
-> You will also find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL#arrays).
+> That topic is covered as advanced lesson: [Querying ECSchemas (Meta queries)](./MetaQueries.md)
+> You will also find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
 
 ---
 
