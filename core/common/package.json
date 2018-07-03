@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.95.0",
+  "version": "0.95.1",
   "description": "iModelJs components common to frontend and backend",
   "license": "MIT",
   "main": "lib/common.js",
@@ -28,9 +28,7 @@
     "NOTE: these dependencies are specific to imodeljs-common",
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
   ],
-  "dependencies": {
-    "uuid": "^3.2.1"
-  },
+  "dependencies": {},
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
@@ -50,10 +48,10 @@
     "@bentley/imodeljs-clients": "6",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
-    "tslint": "^5.9.0",
+    "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
-    "typescript": "~2.7.2",
-    "@types/uuid": "^3.4.3"
+    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typescript": "~2.7.2"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

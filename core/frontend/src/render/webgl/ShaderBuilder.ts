@@ -236,15 +236,22 @@ export class SourceBuilder {
 
   /**
    * Construct a function definition given the function signature and body. For example:
-   *  buildFunctionDefintion("float average(float a, float b)", "return (a + b) / 2.0;");
+   * buildFunctionDefintion("float average(float a, float b)", "\n  return (a + b) / 2.0;\n");
    * will produce:
-   *  "float average(float a, float b)
-   *     {
+   *  "float average(float a, float b) {
    *     return (a + b) / 2.0;
-   *     }"
+   *   }"
+   * For an inline function:
+   * buildFunctionDefintion("float average(float a, float b)", "return (a + b) / 2.0;");
+   * will produce:
+   *  "float average(float a, float b) { return (a + b) / 2.0; }"
    */
   public static buildFunctionDefinition(declaration: string, implementation: string): string {
-    return declaration + "\n{\n" + implementation + "\n}\n\n";
+    // If implementation does not start with a newline then assume it is an inline function & add spaces between braces.
+    if ("\n" === implementation.charAt(0))
+      return declaration + " {" + implementation + "}\n\n";
+    else
+      return declaration + " { " + implementation + " }\n\n";
   }
 
   /** Constructs a function definition as described by buildFunctionDefinition() and appends it to the glsl source. */
@@ -284,7 +291,7 @@ export class ShaderBuilder extends ShaderVariables {
   public addFunction(declarationOrFull: string, implementation?: string): void {
     let def = declarationOrFull;
     if (undefined !== implementation) {
-      def = SourceBuilder.buildFunctionDefinition(declarationOrFull, implementation);
+      def = SourceBuilder.buildFunctionDefinition("\n" + declarationOrFull, implementation);
     }
 
     if (undefined === this.findFunction(def)) {
@@ -320,8 +327,10 @@ export class ShaderBuilder extends ShaderVariables {
 
     // Header comment
     src.newline();
-    src.addline(this.headerComment);
-    src.newline();
+    if ("" !== this.headerComment) {
+      src.addline(this.headerComment);
+      src.newline();
+    }
 
     // Extensions
     let needMultiDrawBuffers = false;
@@ -369,6 +378,8 @@ export class ShaderBuilder extends ShaderVariables {
     for (const func of this._functions) {
       src.add(func);
     }
+    if (0 !== this._functions.length)
+      src.newline();
 
     return src;
   }
@@ -423,6 +434,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
   public buildSource(): string {
     const prelude = this.buildPrelude();
     const main = new SourceBuilder();
+    main.newline();
 
     const computePosition = this.get(VertexShaderComponent.ComputePosition);
     assert(undefined !== computePosition);
@@ -433,10 +445,10 @@ export class VertexShaderBuilder extends ShaderBuilder {
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
-      main.addline("{\n" + init + "\n}");
+      main.addline("  {" + init + "  }\n");
     }
 
-    main.addline("vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
+    main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
 
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
@@ -447,7 +459,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
     if (undefined !== computeFeatureOverrides) {
       prelude.addFunction("void computeFeatureOverrides()", computeFeatureOverrides);
-      main.addline("computeFeatureOverrides();");
+      main.addline("  computeFeatureOverrides();");
     }
 
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
@@ -459,18 +471,18 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
     if (undefined !== calcClipDist) {
       prelude.addFunction("void calcClipDist(vec4 rawPos)", calcClipDist);
-      main.addline("calcClipDist(rawPosition);");
+      main.addline("  calcClipDist(rawPosition);");
     }
 
     const compElemId = this.get(VertexShaderComponent.AddComputeElementId);
     if (undefined !== compElemId) {
-      main.addline("computeElementId();");
+      main.addline("  computeElementId();");
     }
 
-    main.addline("gl_Position = computePosition(rawPosition);");
+    main.addline("  gl_Position = computePosition(rawPosition);");
 
     for (const comp of this._computedVarying) {
-      main.addline("\n" + comp);
+      main.addline("  " + comp);
     }
 
     prelude.addMain(main.source);
@@ -548,84 +560,85 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     }
 
     const main = new SourceBuilder();
+    main.newline();
     const checkForEarlyDiscard = this.get(FragmentShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard()", checkForEarlyDiscard);
-      main.addline("if (checkForEarlyDiscard()) { discard; return; }");
+      main.addline("  if (checkForEarlyDiscard()) { discard; return; }");
     }
 
     const applyClipping = this.get(FragmentShaderComponent.ApplyClipping);
     if (undefined !== applyClipping) {
       prelude.addFunction("void applyClipping()", applyClipping);
-      main.addline("applyClipping();");
+      main.addline("  applyClipping();");
     }
 
-    main.addline("vec4 baseColor = computeBaseColor();");
+    main.addline("  vec4 baseColor = computeBaseColor();");
 
     const applyMaterialOverrides = this.get(FragmentShaderComponent.ApplyMaterialOverrides);
     if (undefined !== applyMaterialOverrides) {
       prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
-      main.addline("baseColor = applyMaterialOverrides(baseColor);");
+      main.addline("  baseColor = applyMaterialOverrides(baseColor);");
     }
 
     const applyFeatureColor = this.get(FragmentShaderComponent.ApplyFeatureColor);
     if (undefined !== applyFeatureColor) {
       prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
-      main.addline("baseColor = applyFeatureColor(baseColor);");
+      main.addline("  baseColor = applyFeatureColor(baseColor);");
     }
 
     const finalize = this.get(FragmentShaderComponent.FinalizeBaseColor);
     if (undefined !== finalize) {
       prelude.addFunction("vec4 finalizeBaseColor(vec4 baseColor)", finalize);
-      main.addline("baseColor = finalizeBaseColor(baseColor);");
+      main.addline("  baseColor = finalizeBaseColor(baseColor);");
     }
 
     const checkForDiscard = this.get(FragmentShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard(vec4 baseColor)", checkForDiscard);
-      main.addline("if (checkForDiscard(baseColor)) { discard; return; }");
+      main.addline("  if (checkForDiscard(baseColor)) { discard; return; }");
     }
 
     const discardByAlpha = this.get(FragmentShaderComponent.DiscardByAlpha);
     if (undefined !== discardByAlpha) {
       prelude.addFunction("bool discardByAlpha(float alpha)", discardByAlpha);
-      main.addline("if (discardByAlpha(baseColor.a)) { discard; return; }");
+      main.addline("  if (discardByAlpha(baseColor.a)) { discard; return; }");
     }
 
     if (undefined !== applyLighting) {
       prelude.addFunction("vec4 applyLighting(vec4 baseColor)", applyLighting);
-      main.addline("baseColor = applyLighting(baseColor);");
+      main.addline("  baseColor = applyLighting(baseColor);");
     }
 
     const applyMonochrome = this.get(FragmentShaderComponent.ApplyMonochrome);
     if (undefined !== applyMonochrome) {
       prelude.addFunction("vec4 applyMonochrome(vec4 baseColor)", applyMonochrome);
-      main.addline("baseColor = applyMonochrome(baseColor);");
+      main.addline("  baseColor = applyMonochrome(baseColor);");
     }
 
     const reverseWoW = this.get(FragmentShaderComponent.ReverseWhiteOnWhite);
     if (undefined !== reverseWoW) {
       prelude.addFunction("vec4 reverseWhiteOnWhite(vec4 baseColor)", reverseWoW);
-      main.addline("baseColor = reverseWhiteOnWhite(baseColor);");
+      main.addline("  baseColor = reverseWhiteOnWhite(baseColor);");
     }
 
     const applyFlash = this.get(FragmentShaderComponent.ApplyFlash);
     if (undefined !== applyFlash) {
       prelude.addFunction("vec4 applyFlash(vec4 baseColor)", applyFlash);
-      main.addline("baseColor = applyFlash(baseColor);");
+      main.addline("  baseColor = applyFlash(baseColor);");
     }
 
     const applyDebug = this.get(FragmentShaderComponent.ApplyDebugColor);
     if (undefined !== applyDebug) {
       prelude.addFunction("vec4 applyDebugColor(vec4 baseColor)", applyDebug);
-      main.addline("baseColor = applyDebugColor(baseColor);");
+      main.addline("  baseColor = applyDebugColor(baseColor);");
     }
 
     const assignFragData = this.get(FragmentShaderComponent.AssignFragData);
     assert(undefined !== assignFragData);
     if (undefined !== assignFragData) {
       prelude.addFunction("void assignFragData(vec4 baseColor)", assignFragData);
-      main.addline("assignFragData(baseColor);");
+      main.addline("  assignFragData(baseColor);");
     }
 
     prelude.addMain(main.source);
@@ -682,7 +695,7 @@ export class ProgramBuilder {
     this.vert.addComputedVarying(name, type, inlineComputation);
   }
   public addFunctionComputedVarying(name: string, type: VariableType, funcName: string, funcBody: string) {
-    let funcDecl = Convert.typeToString(type) + " " + funcName + "()";
+    let funcDecl = "\n" + Convert.typeToString(type) + " " + funcName + "()";
     funcDecl = SourceBuilder.buildFunctionDefinition(funcDecl, funcBody);
 
     const funcCall = funcName + "()";
@@ -690,7 +703,7 @@ export class ProgramBuilder {
   }
   public addFunctionComputedVaryingWithArgs(name: string, type: VariableType, funcCall: string, funcDef: string) {
     this.vert.addFunction(funcDef);
-    const computation = name + " = " + funcCall + ";\n";
+    const computation = name + " = " + funcCall + ";";
     this.addInlineComputedVarying(name, type, computation);
   }
 

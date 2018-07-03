@@ -36,7 +36,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
-  public isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
+  public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
 
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);

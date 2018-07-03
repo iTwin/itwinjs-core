@@ -48,11 +48,6 @@ export const enum SnapStatus {
   FilteredByAppQuietly = 700,
 }
 
-export const enum TestHitStatus {
-  NotOn = 0,
-  IsOn = 1,
-}
-
 export class LocateOptions {
   public disableIModelFilter = false;
   public allowDecorations = false;
@@ -201,27 +196,15 @@ export class ElementPicker {
     return this.hitList!.length;
   }
 
-  /**
-   * test a (previously generated) hit against a new datapoint (presumes same view)
-   * @return true if the point is on the element
-   */
-  public testHit(hit: HitDetail, hitList: HitList | undefined, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): TestHitStatus {
-    // if they didn't supply a hit list, and we don't have one, create one.
-    if (!hitList && !this.hitList)
-      this.empty();
-
-    if (!this.doPick(vp, pickPointWorld, pickRadiusView, options) || undefined === this.hitList)
-      return TestHitStatus.NotOn;
-
-    for (let i = 0; i < this.hitList.length; i++) {
-      const thisHit = this.hitList.getHit(i);
-      if (!hit.isSameHit(thisHit))
-        continue;
-      if (hitList)
-        hitList = this.getHitList(true);
-      return TestHitStatus.IsOn;
+  public testHit(hit: HitDetail, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
+    if (0 === this.doPick(vp, pickPointWorld, pickRadiusView, options))
+      return false;
+    for (let iHit = 0; iHit < this.hitList!.length; ++iHit) {
+      const thisHit = this.hitList!.getHit(iHit);
+      if (hit.isSameHit(thisHit))
+        return true;
     }
-    return TestHitStatus.NotOn;
+    return false;
   }
 }
 

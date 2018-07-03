@@ -133,6 +133,10 @@ export abstract class Primitive extends Graphic {
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 
   public get debugString(): string { return this.cachedGeometry.debugString; }
+
+  public dispose(): void {
+    // ###TODO
+  }
 }
 
 export class PointCloudPrimitive extends Primitive {

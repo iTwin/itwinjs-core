@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
@@ -11,7 +11,7 @@ import {
   IModelNotFoundResponse, EcefLocation,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
-import { Element, Subject, Sheet } from "./Element";
+import { Element, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
@@ -631,7 +631,7 @@ export class IModelDb extends IModel {
     return new Id64(result);
   }
 
-  /** deprecated */
+  /** @hidden @deprecated */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this._newNotOpenError();
@@ -795,7 +795,7 @@ export namespace IModelDb {
     }
 
     /** Get the sub-model of the specified Element.
-     * See [[Elements.queryElementIdByCode]] for more on how to find an element by Code.
+     * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
      * @throws [[IModelError]]
      */
@@ -969,17 +969,16 @@ export namespace IModelDb {
     }
 
     /**
-     * Delete an element from this iModel.
-     * @param id The Id of the element to be deleted
+     * Delete one or more elements from this iModel.
+     * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
      */
-    public deleteElement(id: Id64): void {
-      if (!this._iModel.briefcase)
-        throw this._iModel._newNotOpenError();
-
-      const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteElement(id.value);
-      if (error !== IModelStatus.Success)
-        throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+    public deleteElement(ids: Id64Arg): void {
+      Id64.toIdSet(ids).forEach((id) => {
+        const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteElement(id);
+        if (error !== IModelStatus.Success)
+          throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+      });
     }
 
     /** Query for the child elements of the specified element.
@@ -1076,11 +1075,7 @@ export namespace IModelDb {
       if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined) {
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
       } else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        // If we have 2d sheet view, pass along the sheet size stored on element of id basemodelid
-        const sheetElement = elements.getElementProps(viewDefinitionElement.baseModelId) as Sheet;
-        viewStateData.sheetProps = {};
-        viewStateData.sheetProps.width = sheetElement.width;
-        viewStateData.sheetProps.height = sheetElement.height;
+        viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId); // For SheetViewDefinition, include sheetProps
       }
       return viewStateData;
     }

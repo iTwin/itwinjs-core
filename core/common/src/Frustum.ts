@@ -36,6 +36,7 @@ export const enum Npc {
   CORNER_COUNT = 8,
 }
 
+/** The 8 corners of an [[Npc]] Frustum. */
 // tslint:disable-next-line:variable-name
 export const NpcCorners = [
   new Point3d(0.0, 0.0, 0.0),
@@ -56,24 +57,39 @@ Object.freeze(NpcCenter);
 
 /**
  * The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
- * It is stored as 8 points, in [[NpcCorners]] order, that must define a truncated pyramid.
+ *
+ * It is stored as 8 points, in [[Npc]] order, that must define a truncated pyramid.
  */
 export class Frustum {
+  /** Array of the 8 points of this Frustum. */
   public readonly points: Point3d[] = [];
-  /** constructor for Frustum. Members are initialized to the Npc cube. */
+  /** Constructor for Frustum. Members are initialized to the Npc cube. */
   public constructor() { for (let i = 0; i < 8; ++i) this.points[i] = NpcCorners[i].clone(); }
+  /** Initialize this Frustum to the 8 corners of the NPC cube. */
   public initNpc() { for (let i = 0; i < 8; ++i) Point3d.createFrom(NpcCorners[i], this.points[i]); return this; }
+  /** Get a corner Point from this Frustum. */
   public getCorner(i: number) { return this.points[i]; }
+  /** Get the point at the center of this Frustum (halfway between RightTopFront and LeftBottomRear. */
   public getCenter(): Point3d { return this.getCorner(Npc.RightTopFront).interpolate(0.5, this.getCorner(Npc.LeftBottomRear)); }
+  /** Get the distance between two corners of this Frustum. */
   public distance(corner1: number, corner2: number): number { return this.getCorner(corner1).distance(this.getCorner(corner2)); }
+  /** Get the ratio of the length of the diagonal of the front plane to the diagonal of the back plane. */
   public getFraction(): number { return Geometry.safeDivideFraction(this.distance(Npc.LeftTopFront, Npc.RightBottomFront), this.distance(Npc.LeftTopRear, Npc.RightBottomRear), 0); }
+  /** Multiply all the points of this Frustum by a Transform, in place. */
   public multiply(trans: Transform): void { trans.multiplyPoint3dArrayInPlace(this.points); }
+  /** Offset all of the points of this Frustum by a vector. */
   public translate(offset: Vector3d): void { for (const pt of this.points) pt.plus(offset); }
+  /** Transform all the points of this Frustum and return the result in another Frustum. */
   public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
+  /** Calculate a bounding range from the 8 points in this Frustum. */
   public toRange(range?: Range3d): Range3d { range = range ? range : new Range3d(); Range3d.createArray(this.points, range); return range; }
+  /** Make a copy of this Frustum.
+   * @param result Optional Frustum for copy. If undefined allocate a new Frustum.
+   */
   public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); result.setFrom(this); return result; }
+  /** Set the points of this Frustum to be copies of the points in another Frustum. */
   public setFrom(other: Frustum) { for (let i = 0; i < 8; ++i) { this.points[i].setFrom(other.points[i]); } }
-  public isSame(other: Frustum): boolean { for (let i = 0; i < 8; ++i) { if (!this.points[i].isAlmostEqual(other.points[i])) return false; } return true; }
+  /** Scale this Frustum, in place, about its center by a scale factor. */
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
     const f = 0.5 * (1.0 + scale);
@@ -87,7 +103,8 @@ export class Frustum {
     orig.points[Npc._000].interpolate(f, orig.points[Npc._111], this.points[Npc._111]);
   }
 
-  public toDMap4d(): Map4d | undefined {
+  /** Create a Map4d that converts world coordinates to/from [[Npc]] coordinates of this Frustum. */
+  public toMap4d(): Map4d | undefined {
     const org = this.getCorner(Npc.LeftBottomRear);
     const xVec = org.vectorTo(this.getCorner(Npc.RightBottomRear));
     const yVec = org.vectorTo(this.getCorner(Npc.LeftTopRear));
@@ -95,7 +112,9 @@ export class Frustum {
     return Map4d.createVectorFrustum(org, xVec, yVec, zVec, this.getFraction());
   }
 
+  /** Invalidate this Frustum by setting all 8 points to zero. */
   public invalidate(): void { for (let i = 0; i < 8; ++i) this.points[i].set(0, 0, 0); }
+  /** Return true if this Frustum is equal to another Frustum */
   public equals(rhs: Frustum): boolean {
     for (let i = 0; i < 8; ++i) {
       if (!this.points[i].isExactEqual(rhs.points[i]))
@@ -103,6 +122,10 @@ export class Frustum {
     }
     return true;
   }
+  /** Return true if all of the points in this Frustum are *almost* the same as the points in another Frustum.
+   * @see [[equals]], [XYZ.isAlmostEqual]($geometry)
+   */
+  public isSame(other: Frustum): boolean { for (let i = 0; i < 8; ++i) { if (!this.points[i].isAlmostEqual(other.points[i])) return false; } return true; }
 
   /** Initialize this Frustum from a Range */
   public initFromRange(range: LowAndHighXYZ | LowAndHighXY): void {
@@ -122,6 +145,8 @@ export class Frustum {
     frustum.initFromRange(range);
     return frustum;
   }
+
+  /** Return true if this Frustum has a mirror (is not in the correct order.) */
   public hasMirror(): boolean {
     const pts = this.points;
     const u = pts[Npc._000].vectorTo(pts[Npc._001]);
@@ -129,9 +154,8 @@ export class Frustum {
     const w = pts[Npc._000].vectorTo(pts[Npc._100]);
     return (u.tripleProduct(v, w) > 0);
   }
-
-  /** make sure the frustum point order does not include mirroring. If so, reverse the order. */
-  public fixPointOrder() {
+  /** Make sure the frustum point order does not include mirroring. If so, reverse the order. */
+  public fixPointOrder(): void {
     if (!this.hasMirror())
       return;
 
@@ -144,7 +168,7 @@ export class Frustum {
     }
   }
 
-  /** Get a convex set of clipping planes bounding the region contained by this frustum. */
+  /** Get a convex set of clipping planes bounding the region contained by this Frustum. */
   public getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet {
     const convexSet = ConvexClipPlaneSet.createEmpty();
 

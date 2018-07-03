@@ -4,7 +4,9 @@
 
 /** @module Serialization */
 
-/* tslint:disable: object-literal-key-quotes*/
+/* tslint:disable: object-literal-key-quotes */
+
+/** Comparison utilities */
 export class DeepCompare {
   public typeCounts = {
     "numbers": 0,

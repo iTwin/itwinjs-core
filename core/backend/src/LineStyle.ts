@@ -21,17 +21,17 @@ export namespace LineStyleDefinition {
 
   /** Line style component type identifiers */
   export enum ComponentType {
-    /** Component type for [[PointSymbolProps]] */
+    /** Component type for [[LineStyleDefinition.PointSymbolProps]] */
     PointSymbol = 1,
-    /** Component type for [[CompoundProps]] */
+    /** Component type for [[LineStyleDefinition.CompoundProps]] */
     Compound = 2,
-    /** Component type for [[StrokePatternProps]] */
+    /** Component type for [[LineStyleDefinition.StrokePatternProps]] */
     StrokePattern = 3,
-    /** Component type for [[StrokePointProps]] */
+    /** Component type for [[LineStyleDefinition.StrokePointProps]] */
     StrokePoint = 4,
     /** Component type for [[LinePixels]], never saved as a file property */
     Internal = 6,
-    /** Component type for [[RasterImageProps]] */
+    /** Component type for [[LineStyleDefinition.RasterImageProps]] */
     RasterImage = 7,
   }
 
@@ -43,7 +43,7 @@ export namespace LineStyleDefinition {
     Dash = 0x01,
     /** Treat stroke as rigid and continue past a corner to complete the stroke as opposed to breaking at the corner */
     Ray = 0x02,
-    /** Stroke length can be stretched when [[StrokePatternOptions.Iteration]] and [[StrokePatternOptions.AutoPhase]] options are set, applicable to both Gap and Dash strokes */
+    /** Stroke length can be stretched when [[LineStyleDefinition.StrokePatternOptions.Iteration]] and [[LineStyleDefinition.StrokePatternOptions.AutoPhase]] options are set, applicable to both Gap and Dash strokes */
     Scale = 0x04,
     /** Invert stroke in first stroke pattern */
     FirstInvert = 0x08,
@@ -55,11 +55,11 @@ export namespace LineStyleDefinition {
   export enum StrokeWidth {
     /** Stroke draws as one pixel wide line */
     None = 0,
-    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to left side of stroke */
+    /** Half [[LineStyleDefinition.StrokeProps.orgWidth]] and [[LineStyleDefinition.StrokeProps.endWidth]] applied to left side of stroke */
     Left = 1,
-    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to right side of stroke */
+    /** Half [[LineStyleDefinition.StrokeProps.orgWidth]] and [[LineStyleDefinition.StrokeProps.endWidth]] applied to right side of stroke */
     Right = 2,
-    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to both sides of stroke */
+    /** Half [[LineStyleDefinition.StrokeProps.orgWidth]] and [[LineStyleDefinition.StrokeProps.endWidth]] applied to both sides of stroke */
     Full = 3,
   }
 
@@ -87,9 +87,9 @@ export namespace LineStyleDefinition {
   export interface StrokeProps {
     /** Length of stroke in meters */
     length: number;
-    /** Width at start of stroke. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
+    /** Width at start of stroke. Behavior controlled by [[LineStyleDefinition.StrokeWidth]], choose value other than [[LineStyleDefinition.StrokeWidth.None]] */
     orgWidth?: number;
-    /** Width at end of stroke, same as start width if not present. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
+    /** Width at end of stroke, same as start width if not present. Behavior controlled by [[LineStyleDefinition.StrokeWidth]], choose value other than [[LineStyleDefinition.StrokeWidth.None]] */
     endWidth?: number;
     /** Type and behavior of stroke */
     strokeMode?: StrokeMode;
@@ -105,9 +105,9 @@ export namespace LineStyleDefinition {
   export enum StrokePatternOptions {
     /** Use default stroke behavior */
     None = 0x00,
-    /** [[StrokePatternProps.phase]] represents fractional distance into first stroke of pattern */
+    /** [[LineStyleDefinition.StrokePatternProps.phase]] represents fractional distance into first stroke of pattern */
     AutoPhase = 0x01,
-    /** Use [[StrokePatternProps.maxIter]] to limit the number of iterations of the stroke pattern */
+    /** Use [[LineStyleDefinition.StrokePatternProps.maxIter]] to limit the number of iterations of the stroke pattern */
     Iteration = 0x08,
     /** Single segment mode restarts the stroke pattern at corners instead of continuing around corners */
     Segment = 0x10,
@@ -115,18 +115,18 @@ export namespace LineStyleDefinition {
     CenterStretch = 0x20,
   }
 
-  /** Stroke pattern component definition [[ComponentType.StrokePattern]].
+  /** Stroke pattern component definition [[LineStyleDefinition.ComponentType.StrokePattern]].
    * A stroke pattern component consists of a series of dashes and gaps having specified lengths and widths in meters. Simple dash-dot type line styles that do not
    * include point symbols can be created by referencing a stroke pattern component by its file property id.
    */
   export interface StrokePatternProps {
     /** Name for this stroke pattern */
     descr: string;
-    /** Skip into the pattern before starting to draw. Value treated as fraction of the first stroke when [[StrokePatternOptions.AutoPhase]] set. Value used as distance when [[StrokePatternOptions.CenterStretch]] is not set. */
+    /** Skip into the pattern before starting to draw. Value treated as fraction of the first stroke when [[LineStyleDefinition.StrokePatternOptions.AutoPhase]] set. Value used as distance when [[LineStyleDefinition.StrokePatternOptions.CenterStretch]] is not set. */
     phase?: number;
     /** Options mask for this stroke pattern */
     options?: StrokePatternOptions;
-    /** The entire stroke pattern will be repeated no more than maxIter on curve or segment when [[StrokePatternOptions.Iteration]] is set and stroke pattern includes stretchable strokes. */
+    /** The entire stroke pattern will be repeated no more than maxIter on curve or segment when [[LineStyleDefinition.StrokePatternOptions.Iteration]] is set and stroke pattern includes stretchable strokes. */
     maxIter?: number;
     /** Array of strokes, maximum number that will be used is 32 */
     strokes: Strokes;
@@ -142,8 +142,8 @@ export namespace LineStyleDefinition {
     NoScale = 0x02,
   }
 
-  /** Point symbol component definition [[ComponentType.PointSymbol]].
-   * A point symbol component identifies a GeometryPart for reference by a [[SymbolProps]].
+  /** Point symbol component definition [[LineStyleDefinition.ComponentType.PointSymbol]].
+   * A point symbol component identifies a GeometryPart for reference by a [[LineStyleDefinition.SymbolProps]].
    */
   export interface PointSymbolProps {
     /** GeometryPart Id to use as a pattern symbol */
@@ -202,11 +202,11 @@ export namespace LineStyleDefinition {
 
   /** Identifies a symbol and its location and orientation relative to a stroke pattern */
   export interface SymbolProps {
-    /** The file property id of the symbol component, assumed to be [[ComponentType.PointSymbol]] if symType is undefined. */
+    /** The file property id of the symbol component, assumed to be [[LineStyleDefinition.ComponentType.PointSymbol]] if symType is undefined. */
     symId: number;
-    /** The component type, leave undefined if symId is a [[ComponentType.PointSymbol]] */
+    /** The component type, leave undefined if symId is a [[LineStyleDefinition.ComponentType.PointSymbol]] */
     symType?: ComponentType;
-    /** The 0 based stroke index for base stroke pattern [[ComponentType.StrokePattern]] component */
+    /** The 0 based stroke index for base stroke pattern [[LineStyleDefinition.ComponentType.StrokePattern]] component */
     strokeNum?: number;
     /** Symbol x offset distance in meters */
     xOffset?: number;
@@ -214,27 +214,27 @@ export namespace LineStyleDefinition {
     yOffset?: number;
     /** Symbol rotation in radians */
     angle?: number;
-    /** Must set location for symbol as default value is [[SymbolOptions.None]] */
+    /** Must set location for symbol as default value is [[LineStyleDefinition.SymbolOptions.None]] */
     mod1?: SymbolOptions;
   }
 
   export type Symbols = SymbolProps[];
 
-  /** Stroke point component definition [[ComponentType.StrokePoint]].
+  /** Stroke point component definition [[LineStyleDefinition.ComponentType.StrokePoint]].
    * A stroke point component identifies the locations of point symbol components relative to a base stroke pattern component.
    */
   export interface StrokePointProps {
     /** Name for this stroke point component */
     descr: string;
-    /** The file property id of the stroke component, assumed to be [[ComponentType.StrokePattern]] if lcType is undefined */
+    /** The file property id of the stroke component, assumed to be [[LineStyleDefinition.ComponentType.StrokePattern]] if lcType is undefined */
     lcId: number;
-    /** The component type, leave undefined if lcId is a [[ComponentType.StrokePattern]] */
+    /** The component type, leave undefined if lcId is a [[LineStyleDefinition.ComponentType.StrokePattern]] */
     lcType?: ComponentType;
     /** Array of symbols */
     symbols: Symbols;
   }
 
-  /** Raster component defintion [[ComponentType.RasterImage]].
+  /** Raster component defintion [[LineStyleDefinition.ComponentType.RasterImage]].
    * A raster component identifies a texture for a line style.
    */
   export interface RasterImageProps {
@@ -254,7 +254,7 @@ export namespace LineStyleDefinition {
 
   /** Identifies a component by file property id and type */
   export interface ComponentProps {
-    /** The file property id of [[ComponentType.StrokePattern]] or [[ComponentType.StrokePoint]] component */
+    /** The file property id of [[LineStyleDefinition.ComponentType.StrokePattern]] or [[LineStyleDefinition.ComponentType.StrokePoint]] component */
     id: number;
     /** The type of component for specified file property id */
     type: ComponentType;
@@ -264,7 +264,7 @@ export namespace LineStyleDefinition {
 
   export type Components = ComponentProps[];
 
-  /** Compound component definition [[ComponentType.Compound]].
+  /** Compound component definition [[LineStyleDefinition.ComponentType.Compound]].
    * A compound component is used to link stroke pattern and stroke point components to create a style that displays dashes, gaps, and symbols.
    */
   export interface CompoundProps {
@@ -285,11 +285,11 @@ export namespace LineStyleDefinition {
 
   /** The line style definition element data */
   export interface StyleProps {
-    /** The file property id for either a [[ComponentType.StrokePattern]] or [[ComponentType.Compound]] component */
+    /** The file property id for either a [[LineStyleDefinition.ComponentType.StrokePattern]] or [[LineStyleDefinition.ComponentType.Compound]] component */
     compId: number;
     /** The type of component for specified file property id */
     compType: ComponentType;
-    /** Style behavior flags. Defaults to [[StyleFlags.NoSnap]] if left undefined */
+    /** Style behavior flags. Defaults to [[LineStyleDefinition.StyleFlags.NoSnap]] if left undefined */
     flags?: StyleFlags;
     /** Style scale, defaults to 1 */
     unitDef?: number;
@@ -381,7 +381,7 @@ export namespace LineStyleDefinition {
     /** Query for a continuous line style that can be used to create curves with physical width instead of weight in pixels and create one if it does not already exist.
      * There are 2 ways to define a continuous line style:
      * - Width is not specified in the style itself and instead will be supplied as an override for each curve that is drawn.
-     *  - Defined using [[ComponentType.Internal]] with component id 0 [[LinePixels::Solid] which has special behavior of being affected by width overrides.
+     *  - Defined using [[LineStyleDefinition.ComponentType.Internal]] with component id 0 [[LinePixels::Solid] which has special behavior of being affected by width overrides.
      * - Width is specified in the style.
      *  - Defined using a single stroke component that is a long dash.
      *
@@ -408,7 +408,7 @@ export namespace LineStyleDefinition {
 
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.
      * Most applications should instead use [[createStrokePatternComponent]] to define a style with physical dash and gap lengths.
-     * Unlike other components, [[ComponentType.Internal]] uses the line code as the compId instead of a file property id.
+     * Unlike other components, [[LineStyleDefinition.ComponentType.Internal]] uses the line code as the compId instead of a file property id.
      * @throws [[IModelError]] if supplied an invalid [[LinePixels]] value or if unable to insert the line style definition element.
      */
     public static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64, linePixels: LinePixels): Id64 {

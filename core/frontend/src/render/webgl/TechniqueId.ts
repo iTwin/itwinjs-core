@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+/** Technique enumeration */
 export const enum TechniqueId {
   // Techniques with many different variations
   Invalid = -1,
@@ -20,6 +21,7 @@ export const enum TechniqueId {
   OITClearTranslucent,
   CopyPickBuffers,
   CopyColor,
+  CopyColorNoAlpha,
   ClearPickAndColor,
   ClipMask,
 

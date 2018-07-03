@@ -1,0 +1,19 @@
+{
+  "name": "bemetalsmith",
+  "//private": "NOTE: this is a private package that is never published",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "",
+    "buildDocSite": "node buildDocSite --rootDir=../..",
+    "clean": "",
+    "docs": "",
+    "lint": ""
+  },
+  "repository": {},
+  "dependencies": {},
+  "devDependencies": {
+    "@bentley/bemetalsmith": "^2.5.27",
+    "fs-extra": "^6.0.1"
+  }
+}

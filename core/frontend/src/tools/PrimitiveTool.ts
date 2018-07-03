@@ -4,13 +4,12 @@
 /** @module Tools */
 
 import { CoordinateLockOverrides } from "./ToolAdmin";
-import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
+import { BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
-import { DynamicsContext } from "../ViewContext";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
@@ -159,18 +158,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /**  Returns the prompt based on the tool's current state. */
   public getPrompt(): string { return ""; }
 
-  /** Notifies the tool that a view tool is starting. */
-  public onStartViewTool(_tool: Tool): void { }
-
-  /** Notifies the tool that a view tool is exiting. Return true if handled. */
-  public onExitViewTool(): void { }
-
-  /** Notifies the tool that an input collector is starting. */
-  public onStartInputCollector(_tool: Tool): void { }
-
-  /** Notifies the tool that an input collector is exiting. */
-  public onExitInputCollector(): void { }
-
   /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
   public requireWriteableTarget(): boolean { return true; }
 
@@ -231,10 +218,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return false;
 
     AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
-
-    const ev = new BeButtonEvent();
-    this.getCurrentButtonEvent(ev);
-    this.updateDynamics(ev);
+    IModelApp.toolAdmin.updateDynamics();
 
     return true;
   }
@@ -264,28 +248,4 @@ export abstract class PrimitiveTool extends InteractiveTool {
   // //! Acquires any locks and/or codes required to perform the specified operation on the element
   // //! If your tool operates on more than one element it should batch all such requests rather than calling this convenience function repeatedly.
   //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
-
-  /**
-   * ( was called GetDynamicsStarted )
-   * Call to find out of complex dynamics are currently active.
-   */
-  public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
-
-  /** Call to initialize dynamics mode. */
-  public beginDynamics(): void { IModelApp.toolAdmin.beginDynamics(); }
-
-  /** Call to terminate dynamics mode. */
-  public endDynamics(): void { IModelApp.toolAdmin.endDynamics(); }
-
-  /** Called to display dynamic elements. */
-  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
-
-  /** Invoked to allow a tool to update any view decorations it may have created */
-  public updateDynamics(ev: BeButtonEvent): void {
-    if (undefined === ev.viewport || !IModelApp.viewManager.inDynamicsMode)
-      return;
-
-    const context = new DynamicsContext(ev.viewport); // used to pass Render::Task::Priority::Highest
-    this.onDynamicFrame(ev, context);
-  }
 }

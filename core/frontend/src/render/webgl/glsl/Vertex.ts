@@ -11,18 +11,17 @@ import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 
 const initializeVertLUTCoords = `
-g_vertexLUTIndex = decodeUInt32(a_pos);
-g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);`;
+  g_vertexLUTIndex = decodeUInt32(a_pos);
+  g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);
+`;
 
 const unquantizePosition = `
-vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) {
-  return vec4(origin + scale * pos, 1.0);
-}`;
+vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) { return vec4(origin + scale * pos, 1.0); }
+`;
 
 const unquantizeVertexPosition = `
-vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) {
-  return unquantizePosition(pos, origin, scale);
-}`;
+vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
+`;
 
 const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
@@ -41,7 +40,8 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   g_vertexData2 = enc2.zw;
 
   return unquantizePosition(qpos, origin, scale);
-}`;
+}
+`;
 
 const scratchMVPMatrix = new Matrix4();
 
@@ -148,22 +148,26 @@ export function addAlpha(vert: VertexShaderBuilder): void {
 }
 
 export namespace GLSLVertex {
-  export const earlyDiscard =
-    `if (checkForEarlyDiscard(rawPosition)) {
-      // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
-      // Also place it outside NDC range (for GL_POINTS)
-      gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-      return;
-    }`;
+  export const earlyDiscard = `
+  if (checkForEarlyDiscard(rawPosition)) {
+    // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
+    // Also place it outside NDC range (for GL_POINTS)
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
 
-  export const discard =
-    `if (checkForDiscard()) {
-      // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
-      // Also place it outside NDC range (for GL_POINTS)
-      gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-      return;
-    }`;
+`;
 
-  export const computeLineWeight = `float ComputeLineWeight() { return u_lineWeight; }`;
-  export const computeLineCode = `float ComputeLineCode() { return u_lineCode; }`;
+  export const discard = `
+  if (checkForDiscard()) {
+    // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
+    // Also place it outside NDC range (for GL_POINTS)
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
+
+`;
+
+  export const computeLineWeight = "\nfloat ComputeLineWeight() { return u_lineWeight; }\n";
+  export const computeLineCode = "\nfloat ComputeLineCode() { return u_lineCode; }\n";
 }

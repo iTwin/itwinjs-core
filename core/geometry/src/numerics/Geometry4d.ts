@@ -8,7 +8,11 @@ import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "../PointVector";
 import { RotMatrix, Transform } from "../Transform";
 
-/** Minimal object containing x,y,z and operations that are meaningful without change in both point and vector. */
+/** 4 Dimensional point (x,y,z,w) used in perspective calculations.
+ * * the coordinates are stored in a Float64Array of length 4.
+ * * properties `x`, `y`, `z`, `w` access array members.
+ * *
+ */
 export class Point4d implements BeJSONFunctions {
   public xyzw: Float64Array;
   /** Set x,y,z,w of this point.  */
@@ -78,7 +82,9 @@ export class Point4d implements BeJSONFunctions {
   public toJSON(): any {
     return [this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]];
   }
-  /** Return the distance from this point to other */
+  /** Return the 4d distance from this point to other, with all 4 components squared into the hypotenuse.
+   * * x,y,z,w all participate without normalization.
+   */
   public distanceXYZW(other: Point4d): number {
     return Geometry.hypotenuseXYZW(
       other.xyzw[0] - this.xyzw[0],
@@ -87,7 +93,9 @@ export class Point4d implements BeJSONFunctions {
       other.xyzw[3] - this.xyzw[3]);
   }
 
-  /** Return the distance from this point to other */
+  /** Return the squared 4d distance from this point to other, with all 4 components squared into the hypotenuse.
+   * * x,y,z,w all participate without normalization.
+   */
   public distanceSquaredXYZW(other: Point4d): number {
     return Geometry.hypotenuseSquaredXYZW(
       other.xyzw[0] - this.xyzw[0],
@@ -96,7 +104,9 @@ export class Point4d implements BeJSONFunctions {
       other.xyzw[3] - this.xyzw[3]);
   }
 
-  /** Return the largest absolute distance between corresponding components */
+  /** Return the largest absolute distance between corresponding components
+   * * x,y,z,w all participate without normalization.
+   */
   public maxDiff(other: Point4d): number {
     return Math.max(
       Math.abs(other.xyzw[0] - this.xyzw[0]),

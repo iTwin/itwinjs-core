@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { assert, Id64, IDisposable } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -66,10 +66,12 @@ export class RenderPlan {
 /**
  * A renderer-specific object that can be placed into a display list.
  */
-export abstract class RenderGraphic {
+export abstract class RenderGraphic implements IDisposable {
   public readonly iModel: IModelConnection;
 
   constructor(iModel: IModelConnection) { this.iModel = iModel; }
+
+  public abstract dispose(): void;
 }
 
 export type GraphicList = RenderGraphic[];
@@ -93,7 +95,7 @@ export class DecorationList extends Array<Decoration> {
  * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
  * in addition to the Scene.
  */
-export class Decorations {
+export class Decorations implements IDisposable {
   public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
   public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
@@ -104,6 +106,24 @@ export class Decorations {
     this.viewBackground = undefined;
     this.normal = undefined;
     this.world = this.worldOverlay = this.viewOverlay = undefined;
+  }
+
+  /** Dispose of all of the contained RenderGraphics and WebGL resources corresponding to these decorations. */
+  public dispose(): void {
+    if (this.viewBackground)
+      this.viewBackground.dispose();
+    if (this.normal)
+      for (const graphic of this.normal)
+        graphic.dispose();
+    if (this.world)
+      for (const decoration of this.world)
+        decoration.graphic.dispose();
+    if (this.worldOverlay)
+      for (const decoration of this.worldOverlay)
+        decoration.graphic.dispose();
+    if (this.viewOverlay)
+      for (const decoration of this.viewOverlay)
+        decoration.graphic.dispose();
   }
 }
 
@@ -179,7 +199,7 @@ export namespace Pixel {
  * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
  * Every DgnViewport holds a reference to a RenderTarget.
  */
-export abstract class RenderTarget {
+export abstract class RenderTarget implements IDisposable {
   public static get frustumDepth2d(): number { return 1.0; } // one meter
 
   public abstract get renderSystem(): RenderSystem;
@@ -189,13 +209,13 @@ export abstract class RenderTarget {
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
-  public abstract onDestroy(): void;
+  public dispose() { }
   public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
-  public abstract drawFrame(sceneSecondsElapsed?: number): void;
+  public abstract drawFrame(sceneMilSecElapsed?: number): void;
   public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
   public abstract setHiliteSet(hilited: Set<string>): void;
   public abstract setFlashed(elementId: Id64, intensity: number): void;

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.96.0",
+  "version": "0.96.3",
   "description": "iModelJs frontend components",
   "main": "lib/frontend.js",
   "typings": "lib/frontend",
@@ -40,14 +40,18 @@
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-i18n": "0",
+    "@types/i18next": "^8.4.2",
+    "@types/i18next-browser-languagedetector": "^2.0.1",
+    "@types/i18next-xhr-backend": "^1.4.1",
+    "@types/js-base64": "^2.3.1",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
-    "tslint": "^5.9.0",
+    "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
     "typescript": "~2.7.2"
   },
   "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-frontend",
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
@@ -56,6 +60,6 @@
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
     "i18next-xhr-backend": "^1.5.1",
-    "js-base64": "^2.4.0"
+    "js-base64": "^2.4.5"
   }
 }

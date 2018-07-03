@@ -13,7 +13,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations, FeatureOverrides, PickTable } from "./Graphic";
+import { Branch, WorldDecorations, FeatureOverrides, PickTable, Batch } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
 import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -140,6 +140,21 @@ export class Clips {
   public get isValid(): boolean { return this.length > 0; }
 }
 
+export class PerformanceMetrics {
+  public frameTimes: BeTimePoint[] = [];
+  public curFrameTimeIndex = 0;
+  public gatherFrameTimings = true;
+  public curSpfTimeIndex = 0;
+  public spfTimes: number[] = [];
+  public spfSum: number = 0;
+  public renderSpfTimes: number[] = [];
+  public renderSpfSum: number = 0;
+  public loadTileTimes: number[] = [];
+  public loadTileSum: number = 0;
+  public fpsTimer: StopWatch = new StopWatch(undefined, true);
+  public fpsTimerStart: number = 0;
+}
+
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
@@ -160,16 +175,7 @@ export abstract class Target extends RenderTarget {
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
-  private _frameTimes: BeTimePoint[] = [];
-  private _curFrameTimeIndex = 0;
-  private _gatherFrameTimings = true;
-  private _curSpfTimeIndex = 0;
-  private _spfTimes: number[] = [];
-  private _spfSum: number = 0;
-  private _renderSpfTimes: number[] = [];
-  private _renderSpfSum: number = 0;
-  private static _fpsTimer: StopWatch = new StopWatch(undefined, true);
-  private static _fpsTimerStart: number = 0;
+  private _performanceMetrics = new PerformanceMetrics();
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -188,6 +194,8 @@ export abstract class Target extends RenderTarget {
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
+  private _batches: Batch[] = [];
+  private _isDisposed: boolean = false;
 
   protected constructor() {
     super();
@@ -287,22 +295,34 @@ export abstract class Target extends RenderTarget {
   public pushActiveVolume(): void { } // ###TODO
   public popActiveVolume(): void { } // ###TODO
 
+  public addBatch(batch: Batch) {
+    assert(this._batches.indexOf(batch) < 0);
+    this._batches.push(batch);
+  }
+
+  public onBatchDisposed(batch: Batch) {
+    const index = this._batches.indexOf(batch);
+    assert(index > -1);
+    this._batches.splice(index, 1);
+  }
+
   public setFrameTime(sceneTime = 0.0) {
-    if (this._gatherFrameTimings) {
+    if (this._performanceMetrics.gatherFrameTimings) {
       if (sceneTime > 0.0) {
-        this._frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
-        this._frameTimes[1] = BeTimePoint.now();
-        this._curFrameTimeIndex = 2;
-      } else if (this._curFrameTimeIndex < 12)
-        this._frameTimes[this._curFrameTimeIndex++] = BeTimePoint.now();
+        this._performanceMetrics.frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
+        this._performanceMetrics.frameTimes[1] = BeTimePoint.now();
+        this._performanceMetrics.curFrameTimeIndex = 2;
+      } else if (this._performanceMetrics.curFrameTimeIndex < 12)
+        this._performanceMetrics.frameTimes[this._performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
     }
   }
   public get frameTimings(): number[] {
     const timings: number[] = [];
     for (let i = 0; i < 11; ++i)
-      timings[i] = (this._frameTimes[i + 1].milliseconds - this._frameTimes[i].milliseconds);
+      timings[i] = (this._performanceMetrics.frameTimes[i + 1].milliseconds - this._performanceMetrics.frameTimes[i].milliseconds);
     return timings;
   }
+  public get performanceMetrics(): PerformanceMetrics { return this._performanceMetrics; }
 
   // ---- Implementation of RenderTarget interface ---- //
 
@@ -311,7 +331,10 @@ export abstract class Target extends RenderTarget {
     return 0; // ###TODO
   }
 
-  public changeDecorations(decs: Decorations): void { this._decorations = decs; }
+  public changeDecorations(decs: Decorations): void {
+    this._decorations.dispose();
+    this._decorations = decs;
+  }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
     // ###TODO active volume
@@ -497,17 +520,26 @@ export abstract class Target extends RenderTarget {
     }
   }
 
-  public drawFrame(sceneSecondsElapsed?: number): void {
+  public drawFrame(sceneMilSecElapsed?: number): void {
     assert(System.instance.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
-    this.paintScene(sceneSecondsElapsed);
+    this.paintScene(sceneMilSecElapsed);
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
-  public onDestroy(): void { } // ###TODO
+  public get isDisposed() { return this._isDisposed; }
+
+  public dispose() {
+    for (const batch of this._batches)
+      batch.onTargetDisposed(this);
+    this._batches = [];
+    this._renderCommands.clear();
+    this._isDisposed = true;
+  }
+
   public queueReset(): void {
     this.reset();
   }
@@ -558,7 +590,7 @@ export abstract class Target extends RenderTarget {
   private _doDebugPaint: boolean = false;
   protected debugPaint(): void { }
 
-  private paintScene(sceneSecondsElapsed?: number): void {
+  private paintScene(sceneMilSecElapsed?: number): void {
     if (this._doDebugPaint) {
       this.debugPaint();
       return;
@@ -568,7 +600,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.setFrameTime(sceneSecondsElapsed);
+    this.setFrameTime(sceneMilSecElapsed);
     this._beginPaint();
 
     const gl = System.instance.context;
@@ -592,23 +624,27 @@ export abstract class Target extends RenderTarget {
     this._endPaint();
     this.setFrameTime();
 
-    if (this.currentViewFlags.continuousRendering) {
-      const fpsTimerElapsed = Target._fpsTimer.currentSeconds - Target._fpsTimerStart;
-      if (this._spfTimes[this._curSpfTimeIndex]) this._spfSum -= this._spfTimes[this._curSpfTimeIndex];
-      this._spfSum += fpsTimerElapsed;
-      this._spfTimes[this._curSpfTimeIndex] = fpsTimerElapsed;
+    if (sceneMilSecElapsed !== undefined) {
+      const perfMet = this._performanceMetrics;
+      const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
+      if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
+      perfMet.spfSum += fpsTimerElapsed;
+      perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
 
-      const renderTimeElapsed = (this._frameTimes[10].milliseconds - this._frameTimes[1].milliseconds);
-      if (this._renderSpfTimes[this._curSpfTimeIndex]) this._renderSpfSum -= this._renderSpfTimes[this._curSpfTimeIndex];
-      this._renderSpfSum += renderTimeElapsed;
-      this._renderSpfTimes[this._curSpfTimeIndex++] = renderTimeElapsed;
-      if (this._curSpfTimeIndex >= 50) this._curSpfTimeIndex = 0;
-      if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
-        "Average FPS: " + (this._spfTimes.length / this._spfSum).toFixed(5)
-        + "<br />Render Time (ms): " + (this._renderSpfSum / this._renderSpfTimes.length).toFixed(2);
-      Target._fpsTimerStart = Target._fpsTimer.currentSeconds;
+      const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
+      if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
+      perfMet.renderSpfSum += renderTimeElapsed;
+      perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
+
+      if (sceneMilSecElapsed !== undefined) {
+        if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
+        perfMet.loadTileSum += sceneMilSecElapsed;
+        perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
+        if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+      }
+      perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
     }
-    if (this._gatherFrameTimings) {
+    if (this._performanceMetrics.gatherFrameTimings) {
       gl.finish();
       this.setFrameTime();
     }
@@ -674,7 +710,6 @@ export abstract class Target extends RenderTarget {
     vf.setShowGrid(false);
     vf.setMonochrome(false);
     vf.setShowMaterials(false);
-    vf.setDoContinuousRendering(false);
 
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);
@@ -774,7 +809,7 @@ export class OnScreenTarget extends Target {
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColor);
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     return undefined !== this._blitGeom;
   }
 

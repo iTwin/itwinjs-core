@@ -80,7 +80,7 @@ export class Appearance {
   }
 }
 
-/** the SubCategory appearance overrides for a view */
+/** The SubCategory appearance overrides for a view */
 export class SubCategoryOverride {
   private readonly _value = new Appearance();
   private _invisible?: boolean;
@@ -120,7 +120,7 @@ export class SubCategoryOverride {
     if (this._transp) appear.transparency = this._value.transparency;
   }
 
-  /** convert this SubCategoryOverride to a JSON object */
+  /** Convert this SubCategoryOverride to a JSON object */
   public toJSON(): any {
     const val: any = {};
     if (this._invisible) val.invisible = this._value.invisible;
@@ -150,10 +150,14 @@ export class SubCategoryOverride {
   }
 }
 
-/** the rank for a Category */
+/** The *rank* for a Category */
 export const enum Rank {
-  System = 0,       // This category is predefined by the system
-  Domain = 1,       // This category is defined by a schema. Elements in this category may be unknown to system functionality.
-  Application = 2,  // This category is defined by an application. Elements in this category may be unknown to system and schema functionality.
-  User = 3,         // This category is defined by a user. Elements in this category may be unknown to system, schema, and application functionality.
+  /** This category is predefined by the system */
+  System = 0,
+  /** This category is defined by a schema. Elements in this category are not recognized by system classes. */
+  Domain = 1,
+  /** This category is defined by an application. Elements in this category are not recognized by system and schema classes. */
+  Application = 2,
+  /** This category is defined by a user. Elements in this category are not recognized by system, schema, and application classes. */
+  User = 3,
 }

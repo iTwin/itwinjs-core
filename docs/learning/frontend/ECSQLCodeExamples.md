@@ -95,9 +95,8 @@ The following example illustrates how to work with the ECSQL row JavaScript lite
 
 ### Output
 
-```txt
-ECInstanceId | ClassName               | Parent Id | Parent RelClassName                      | LastMod
-0x312        | StructuralPhysical.Slab | 0x433     | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
-0x313        | StructuralPhysical.Slab | 0x5873    | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
-...
-```
+ECInstanceId | ClassName  | Parent Id | Parent RelClassName | LastMod
+--- | --- | --- | --- | ---
+0x312 | StructuralPhysical.Slab | 0x433 | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
+0x313 | StructuralPhysical.Slab | 0x5873 | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
+... | | | |

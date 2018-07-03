@@ -16,7 +16,7 @@ import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/System";
 
-/** the state of a Model */
+/** The state of a Model */
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -47,17 +47,20 @@ export class ModelState extends EntityState implements ModelProps {
   }
   public getExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
 
+  /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
 }
 
-/** the state of a geometric model */
+/** The state of a geometric model */
 export abstract class GeometricModelState extends ModelState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
 
   public abstract get is3d(): boolean;
   public get is2d(): boolean { return !this.is3d; }
+  /** @hidden */
   public get tileTree(): TileTree | undefined { return this._tileTree; }
+  /** Override of ModelState method, returns true */
   public get isGeometricModel(): boolean { return true; }
 
   public getOrLoadTileTree(): TileTree | undefined {
@@ -67,12 +70,13 @@ export abstract class GeometricModelState extends ModelState {
     return this.tileTree;
   }
 
+  /** @hidden */
   public loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
       this._loadStatus = TileTree.LoadStatus.Loading;
       if (this.classFullName === "ScalableMesh:ScalableMeshModel") {
         ScalableMeshTileTree.getTileTreeProps(this.modeledElement, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
-          this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps.tilesetJson));
+          this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
           IModelApp.viewManager.onNewTilesReady();
         }).catch((_err) => {
           this._loadStatus = TileTree.LoadStatus.NotFound;
@@ -90,15 +94,13 @@ export abstract class GeometricModelState extends ModelState {
     return this._loadStatus;
   }
 
-  protected constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
-
   private setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
 }
 
-/** the state of a 2d Geometric Model */
+/** The state of a 2d Geometric Model */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   public readonly globalOrigin: Point2d;
   constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
@@ -115,16 +117,17 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   }
 }
 
-/** the state of a 3d geometric model */
+/** The state of a 3d Geometric Model */
 export class GeometricModel3dState extends GeometricModelState {
+  /** Returns true. */
   public get is3d(): boolean { return true; }
-
-  public constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
 /**
- * SheetModel is a GeometricModel2d that has the following characteristics:
- * * Has finite extents, specified in meters.
+ * The state of a SheetModel.
+ *
+ * A SheetModel is a GeometricModel2d that has the following characteristics:
+ * * Has finite extents, specified in meters (the *page size*.)
  * * Can contain views of other models, like pictures pasted on a photo album.
  */
 export class SheetModelState extends GeometricModel2dState {
@@ -137,7 +140,11 @@ export class SheetModelState extends GeometricModel2dState {
   }
 }
 
+/** The state of a SpatialModel */
 export class SpatialModelState extends GeometricModel3dState { }
+
+/** The state of a DrawingModel */
 export class DrawingModelState extends GeometricModel2dState { }
+
+/** The state of a SectionDrawingModel */
 export class SectionDrawingModelState extends DrawingModelState { }
-export class WebMercatorModel extends SpatialModelState { }

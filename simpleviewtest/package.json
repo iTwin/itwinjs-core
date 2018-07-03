@@ -37,8 +37,10 @@
     "electron": "2.0.1",
     "electron-builder": "^20.13.3",
     "node-glob": "^1.2.0",
+    "null-loader": "^0.1.1",
     "rimraf": "^2.6.2",
-    "tslint": "^5.9.0",
+    "source-map-loader": "^0.2.3",
+    "tslint": "^5.10.0",
     "typescript": "~2.7.2",
     "webpack": "^3.10.0"
   },

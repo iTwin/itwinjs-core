@@ -9,30 +9,32 @@ import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
 
 const calcClipDist = `
-if (u_numClips > 0) {
-  vec4 camPos = u_mv * rawPos;
-  v_clipDist[0] = dot(camPos, u_clipPlane[0]);
-  v_clipDist[1] = (u_numClips > 1) ? dot(camPos, u_clipPlane[1]) : 0.0;
-  v_clipDist[2] = (u_numClips > 2) ? dot(camPos, u_clipPlane[2]) : 0.0;
-  v_clipDist[3] = (u_numClips > 3) ? dot(camPos, u_clipPlane[3]) : 0.0;
-  v_clipDist[4] = (u_numClips > 4) ? dot(camPos, u_clipPlane[4]) : 0.0;
-  v_clipDist[5] = (u_numClips > 5) ? dot(camPos, u_clipPlane[5]) : 0.0;
-}`;
+  if (u_numClips > 0) {
+    vec4 camPos = u_mv * rawPos;
+    v_clipDist[0] = dot(camPos, u_clipPlane[0]);
+    v_clipDist[1] = (u_numClips > 1) ? dot(camPos, u_clipPlane[1]) : 0.0;
+    v_clipDist[2] = (u_numClips > 2) ? dot(camPos, u_clipPlane[2]) : 0.0;
+    v_clipDist[3] = (u_numClips > 3) ? dot(camPos, u_clipPlane[3]) : 0.0;
+    v_clipDist[4] = (u_numClips > 4) ? dot(camPos, u_clipPlane[4]) : 0.0;
+    v_clipDist[5] = (u_numClips > 5) ? dot(camPos, u_clipPlane[5]) : 0.0;
+  }
+`;
 
 const applyClipping = `
-if (u_numClips > 0) {
-  for (int i = 0; i < 6; i++) {
-    if (v_clipDist[i] < 0.0)
+  if (u_numClips > 0) {
+    for (int i = 0; i < 6; i++) {
+      if (v_clipDist[i] < 0.0)
+        discard;
+    }
+  }
+
+  if (u_clipMask > 0) {
+    vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
+    vec4 texel = TEXTURE(s_clipMask, tc);
+    if (texel.r < 0.5)
       discard;
   }
-}
-
-if (u_clipMask > 0) {
-  vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec4 texel = TEXTURE(s_clipMask, tc);
-  if (texel.r < 0.5)
-    discard;
-}`;
+`;
 
 export function addClipping(builder: ProgramBuilder): void {
   const frag = builder.frag;

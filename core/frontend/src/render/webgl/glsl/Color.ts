@@ -14,22 +14,23 @@ import { addRenderPass } from "./RenderPass";
 
 // Vertex
 const computeColor = `
-vec4 color = u_color;
-if (isShaderBitSet(kShaderBit_NonUniformColor)) {
-  // Color table is appended to vertex data. Compute the index of the vertex one-past-the-end of the vertex data
-  float colorTableStart = u_vertParams.z * u_vertParams.w; // num rgba per-vertex times num vertices
-  float colorIndex = decodeUInt16(g_vertexData2);
-  vec2 tc = computeLUTCoords(colorTableStart+colorIndex, u_vertParams.xy, g_vert_center, 1.0);
-  color = TEXTURE(u_vertLUT, tc);
-}
+  vec4 color = u_color;
+  if (isShaderBitSet(kShaderBit_NonUniformColor)) {
+    // Color table is appended to vertex data. Compute the index of the vertex one-past-the-end of the vertex data
+    float colorTableStart = u_vertParams.z * u_vertParams.w; // num rgba per-vertex times num vertices
+    float colorIndex = decodeUInt16(g_vertexData2);
+    vec2 tc = computeLUTCoords(colorTableStart+colorIndex, u_vertParams.xy, g_vert_center, 1.0);
+    color = TEXTURE(u_vertLUT, tc);
+  }
 
-if (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass)
-  color = adjustPreMultipliedAlpha(color, 1.0);
+  if (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass)
+    color = adjustPreMultipliedAlpha(color, 1.0);
 
-return color;`;
+  return color;
+`;
 
 // Fragment
-const computeBaseColor = `return v_color;`;
+const computeBaseColor = "return v_color;";
 
 export function addColor(builder: ProgramBuilder) {
   // ShaderSource::AddRenderPass

@@ -6,11 +6,9 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels, TextureMapping, ImageSource, RenderTexture, RenderMaterial, Gradient } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { RenderGraphic } from "../render/System";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
 
@@ -27,6 +25,7 @@ export namespace IModelTileIO {
     public readonly flags: Flags;
     public readonly contentRange: ElementAlignedBox3d;
     public readonly length: number;
+    public get isValid(): boolean { return TileIO.Format.IModel === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
@@ -52,15 +51,6 @@ export namespace IModelTileIO {
       public readonly count: number) { }
   }
 
-  /** The result of Reader.read(). */
-  export interface Result {
-    readStatus: TileIO.ReadStatus;
-    isLeaf: boolean;
-    contentRange?: ElementAlignedBox3d;
-    geometry?: TileIO.GeometryCollection;
-    renderGraphic?: RenderGraphic;
-  }
-
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
@@ -77,6 +67,7 @@ export namespace IModelTileIO {
       return undefined !== props ? new Reader(props, model, system) : undefined;
     }
 
+    protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }  // Original IModel Tile creator set RTC unnecessarily and incorrectly.
     private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
       const startPos = stream.curPos;
       const header = FeatureTableHeader.readFrom(stream);
@@ -86,7 +77,7 @@ export namespace IModelTileIO {
       return undefined !== header;
     }
 
-    public read(): Result {
+    public read(): GltfTileIO.ReaderResult {
       // ###TODO don't re-read the headers...
       this.buffer.reset();
       const header = new Header(this.buffer);
@@ -101,32 +92,7 @@ export namespace IModelTileIO {
 
       const isComplete = Flags.None === (header.flags & Flags.Incomplete);
       const isCurved = Flags.None !== (header.flags & Flags.ContainsCurves);
-      const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
-      const readStatus = this.readGltf(geometry);
-      let renderGraphic: RenderGraphic | undefined;
-      if (!geometry.isEmpty) {
-        const meshGraphicArgs = new MeshGraphicArgs();
-        if (1 === geometry.meshes.length) {
-          renderGraphic = geometry.meshes[0].getGraphics(meshGraphicArgs, this.system, this.model.iModel);
-        } else {
-          const renderGraphicList: RenderGraphic[] = [];
-          for (const mesh of geometry.meshes) {
-            renderGraphic = mesh.getGraphics(meshGraphicArgs, this.system, this.model.iModel);
-            if (undefined !== renderGraphic)
-              renderGraphicList.push(renderGraphic);
-          }
-          renderGraphic = this.system.createGraphicList(renderGraphicList, this.model.iModel);
-        }
-        if (undefined !== renderGraphic)
-          renderGraphic = this.system.createBatch(renderGraphic, featureTable);
-      }
-      return {
-        readStatus,
-        isLeaf,
-        contentRange: header.contentRange,
-        geometry,
-        renderGraphic,
-      };
+      return this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange);
     }
 
     private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem) {

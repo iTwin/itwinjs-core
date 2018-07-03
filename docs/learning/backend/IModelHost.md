@@ -7,6 +7,6 @@ A backend may need to set [IModelHostConfiguration.briefcaseCacheDir]($backend) 
 A backend may need to set [IModelHostConfiguration.appAssetsDir]($backend) to identify its own assets directory. This would be needed, for example, if the app needs to [import ECSchemas](SchemasAndElementsInTypeScript.md) that it delivers.
 
 *Example:*
- ``` ts
+ ```ts
  [[include:IModelHost.startup]]
  ```

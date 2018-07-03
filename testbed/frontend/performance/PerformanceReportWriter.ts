@@ -2,20 +2,35 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as Excel from "exceljs";
+import * as path from "path";
+import * as fs from "fs";
 import { PerformanceDataEntry } from "./PerformanceInterface";
 
-export class PerformanceReportWriter {
-  public static output: string = "c:/performanceResults.xlsx";
-  public static input: string = "c:/performanceResults.xlsx";
-  public static dataArray: number[][] = [];
+// default file location is ./testbed/frontend/performance/performanceResults.xlsx
+const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performanceResults.xlsx");
 
-  public static async startup(inputPath?: string, outputPath?: string, isNew?: boolean): Promise<void> {
+/**
+ * class encapsulates methods to write performance results to an excel file
+ */
+export class PerformanceReportWriter {
+  public static output: string = defaultFileLocation; // file location of excel file to write to
+  public static input: string = defaultFileLocation; // file location of excel file to read from
+  public static dataArray: number[][] = []; // data rows of the performance series
+
+  /**
+   * starts a performance result series
+   * resets the series's data array and updates the input/output locations of the active workbook
+   * @param inputPath the path to an excel file to read get excel workbook from, (if doesn't exist, then the column headers are writen) (defaults to defaultFileLocation)
+   * @param outputPath the path to an excel file to write the updated workbook to (defaults to input)
+   */
+  public static async startup(inputPath?: string, outputPath?: string): Promise<void> {
     if (undefined !== inputPath)
       PerformanceReportWriter.input = inputPath;
     if (undefined !== inputPath || undefined !== outputPath)
-      PerformanceReportWriter.input = undefined !== outputPath ? outputPath : inputPath!;
+      PerformanceReportWriter.output = undefined !== outputPath ? outputPath : inputPath!;
 
-    const doSetupNewFile = (undefined !== isNew) ? isNew : true;
+    // if file doesn't exist, do setup a new file by writing column headers
+    const doSetupNewFile = !fs.existsSync(PerformanceReportWriter.input);
 
     PerformanceReportWriter.dataArray = [];
 
@@ -50,6 +65,10 @@ export class PerformanceReportWriter {
     return Promise.resolve();
   }
 
+  /**
+   * apply a routine to an excel worksheet
+   * @param fnc routine to execute against the worksheet read from the input. once this routine is finished, the workbook is then written to output
+   */
   public static async applyToWorksheet(fnc: (worksheet: Excel.Worksheet) => void): Promise<void> {
     const workbook = new Excel.Workbook();
     return workbook.xlsx.readFile(PerformanceReportWriter.input)
@@ -59,6 +78,10 @@ export class PerformanceReportWriter {
       });
   }
 
+  /**
+   * writes row data for a performance result series in excel worksheet
+   * @param entry row of data for the performance result series
+   */
   public static async addEntry(entry: PerformanceDataEntry): Promise<void> {
     return PerformanceReportWriter.applyToWorksheet((ws: Excel.Worksheet) => {
       const pd = entry.data;
@@ -83,6 +106,9 @@ export class PerformanceReportWriter {
     });
   }
 
+  /**
+   * wraps up a performance result series by writing the min values for each column of data to a new row annotated as 'Min Time'
+   */
   public static async finishSeries(): Promise<void> {
     return PerformanceReportWriter.applyToWorksheet((ws: Excel.Worksheet) => {
       if (undefined !== ws.lastRow) {

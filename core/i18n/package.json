@@ -31,9 +31,13 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "5",
+    "@types/i18next": "^8.4.2",
+    "@types/i18next-browser-languagedetector": "^2.0.1",
+    "@types/i18next-xhr-backend": "^1.4.1",
     "rimraf": "^2.6.2",
-    "tslint": "^5.9.0",
+    "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
     "typescript": "~2.7.2"
   },
   "//dependencies": [

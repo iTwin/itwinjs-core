@@ -5,12 +5,11 @@
 
 import { IModelError } from "../../IModelError";
 import { IModelToken } from "../../IModel";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Guid } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcRegistry, OPERATION, POLICY } from "./RpcRegistry";
 import { RpcRequestTokenSupplier_T, RpcRequestIdSupplier_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestCallback_T } from "./RpcRequest";
 import { RpcInvocationCallback_T } from "./RpcInvocation";
-import * as uuidv4 from "uuid/v4";
 
 /** The policy for an RPC operation. */
 export class RpcOperationPolicy {
@@ -18,7 +17,7 @@ export class RpcOperationPolicy {
   public token: RpcRequestTokenSupplier_T = (request) => request.findParameterOfType(IModelToken);
 
   /** Supplies the unique identifier for an operation request.  */
-  public requestId: RpcRequestIdSupplier_T = (_request) => uuidv4();
+  public requestId: RpcRequestIdSupplier_T = (_request) => Guid.createValue();
 
   /** Supplies the initial retry interval for an operation request. */
   public retryInterval: RpcRequestInitialRetryIntervalSupplier_T = (configuration) => configuration.pendingOperationRetryInterval;

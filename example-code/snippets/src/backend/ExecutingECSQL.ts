@@ -14,8 +14,7 @@ function executeECSql_Binding(iModel: IModelDb) {
     stmt.bindDateTime(2, "2018-01-01T12:00:00");
 
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const row = stmt.getRow();
-      console.log(row);
+      // do something with the query result
     }
   });
   // __PUBLISH_EXTRACT_END__
@@ -26,46 +25,43 @@ function executeECSql_Binding(iModel: IModelDb) {
     stmt.bindDateTime("lastmod", "2018-01-01T12:00:00");
 
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const row = stmt.getRow();
-      console.log(row);
+      // do something with the query result
     }
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Positional
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
-  (stmt: ECSqlStatement) => {
-    stmt.bindValues(["MyCode", {type: ECSqlStringType.DateTime, value: "2018-01-01T12:00:00"}]);
+    (stmt: ECSqlStatement) => {
+      stmt.bindValues(["MyCode", { type: ECSqlStringType.DateTime, value: "2018-01-01T12:00:00" }]);
 
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const row = stmt.getRow();
-      console.log(row);
-    }
-  });
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        // do something with the query result
+      }
+    });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Named
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
     (stmt: ECSqlStatement) => {
-      stmt.bindValues({code: "MyCode", lastmod: {type: ECSqlStringType.DateTime, value: "2018-01-01T12:00:00"}});
+      stmt.bindValues({ code: "MyCode", lastmod: { type: ECSqlStringType.DateTime, value: "2018-01-01T12:00:00" } });
 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const row = stmt.getRow();
-        console.log(row);
+        // do something with the query result
       }
-  });
+    });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation_ByParameter
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
-    stmt.bindNavigation(1, {id: new Id64("0x132") });
+    stmt.bindNavigation(1, { id: new Id64("0x132") });
     // ...
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Navigation
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([{id: new Id64("0x132") }]);
+    stmt.bindValues([{ id: new Id64("0x132") }]);
     // ...
   });
   // __PUBLISH_EXTRACT_END__
@@ -86,14 +82,14 @@ function executeECSql_Binding(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Struct_ByParameter
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location=?", (stmt: ECSqlStatement) => {
-    stmt.bindStruct(1, {street: "7123 Main Street", zip: 30211 });
+    stmt.bindStruct(1, { street: "7123 Main Street", zip: 30211 });
     // ...
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Struct
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([{street: "7123 Main Street", zip: 30211 }]);
+    stmt.bindValues([{ street: "7123 Main Street", zip: 30211 }]);
     // ...
   });
   // __PUBLISH_EXTRACT_END__

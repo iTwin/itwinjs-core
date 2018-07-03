@@ -69,20 +69,25 @@ float getFeatureIndex() {
   vec2 tc = g_featureIndexCoords;
   vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   return decodeUInt32(enc.xyz);
-}`;
+}
+`;
 
 // Returns 1.0 if the specified flag is not globally overridden and is set in flags
 const extractNthLinearFeatureBit = `
 float extractNthFeatureBit(float flags, float n) {
   return 0.0 == extractNthBit(u_globalOvrFlags, n) ? extractNthBit(flags, n) : 0.0;
-}`;
+}
+`;
 
 const extractNthSurfaceFeatureBit = `
 float extractNthFeatureBit(float flags, float n) {
   return extractNthBit(flags, n);
-}`;
+}
+`;
 
-const computeFeatureTextureCoords = `vec2 computeFeatureTextureCoords() { return compute_feature_coords(getFeatureIndex()); }`;
+const computeFeatureTextureCoords = `
+vec2 computeFeatureTextureCoords() { return compute_feature_coords(getFeatureIndex()); }
+`;
 
 const getFirstFeatureRgba = `
 vec4 getFirstFeatureRgba() {
@@ -91,7 +96,8 @@ vec4 getFirstFeatureRgba() {
 
   feature_texCoord = computeFeatureTextureCoords();
   return TEXTURE(u_featureLUT, feature_texCoord);
-}`;
+}
+`;
 
 const getSecondFeatureRgba = `
 vec4 getSecondFeatureRgba() {
@@ -101,17 +107,20 @@ vec4 getSecondFeatureRgba() {
   vec2 coord = feature_texCoord;
   coord.x += g_feature_stepX;
   return TEXTURE(u_featureLUT, coord);
-}`;
+}
+`;
 
 const computeLineWeight = `
 float ComputeLineWeight() {
   return 1.0 == linear_feature_overrides.x ? linear_feature_overrides.y : u_lineWeight;
-}`;
+}
+`;
 
 const computeLineCode = `
 float ComputeLineCode() {
   return 1.0 == linear_feature_overrides.z ? linear_feature_overrides.w : u_lineCode;
-}`;
+}
+`;
 
 function addFeatureIndex(vert: VertexShaderBuilder): void {
   addDimensionConstants(vert);
@@ -148,19 +157,19 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa
 // (The latter occurs when some translucent feature is overridden to be opaque, or vice-versa)
 const checkVertexDiscard = `
-if (feature_invisible)
-  return true;
+  if (feature_invisible)
+    return true;
 
-bool hasAlpha = 1.0 == u_hasAlpha;
-if (v_feature_alpha_flashed.y > 0.0) {
-  const float s_minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
-  const float s_maxAlpha = (255.0 - s_minTransparency) / 255.0;
-  hasAlpha = v_feature_alpha_flashed.x < s_maxAlpha;
-}
+  bool hasAlpha = 1.0 == u_hasAlpha;
+  if (v_feature_alpha_flashed.y > 0.0) {
+    const float s_minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
+    const float s_maxAlpha = (255.0 - s_minTransparency) / 255.0;
+    hasAlpha = v_feature_alpha_flashed.x < s_maxAlpha;
+  }
 
-bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
-bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
-return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
+  bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
+  bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
+  return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
 function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions): boolean {
@@ -285,22 +294,20 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
 }
 
 // If feature is not hilited, discard it.
-const checkVertexHiliteDiscard = `return 0.0 == v_feature_hilited;`;
+const checkVertexHiliteDiscard = "return 0.0 == v_feature_hilited;";
 
 // The result is a mask in which each highlighted pixel is white, all other pixels are black.
-const computeHiliteColor = `return vec4(ceil(v_feature_hilited));`;
+const computeHiliteColor = "return vec4(ceil(v_feature_hilited));";
 
-const computeHiliteOverrides =
-  `
-vec4 value = getFirstFeatureRgba();
-float flags = value.r * 256.0;
-feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
-v_feature_hilited = extractNthFeatureBit(flags, kOvrBit_Hilited);
+const computeHiliteOverrides = `
+  vec4 value = getFirstFeatureRgba();
+  float flags = value.r * 256.0;
+  feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
+  v_feature_hilited = extractNthFeatureBit(flags, kOvrBit_Hilited);
 `;
 
-const computeHiliteOverridesWithWeight = computeHiliteOverrides +
-  `
-linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
+const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
+  linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
   value.g * 256.0,
   1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
   value.b * 256.0);
@@ -350,88 +357,90 @@ vec2 readDepthAndOrder(vec2 tc) {
   vec4 pdo = TEXTURE(u_pickDepthAndOrder, tc);
   float order = floor(pdo.x * 16.0 + 0.5);
   return vec2(order, decodeDepthRgb(pdo.yzw));
-}`;
+}
+`;
 
-export const computeEyeSpace = `v_eyeSpace = (u_mv * rawPosition).xyz;`;
+export const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition).xyz;";
 
 const checkForEarlySurfaceDiscard = `
-if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
-  return false;
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
+    return false;
 
-vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-vec2 depthAndOrder = readDepthAndOrder(tc);
-float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
-return depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5;`;
+  vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
+  vec2 depthAndOrder = readDepthAndOrder(tc);
+  float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
+  return depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5;
+`;
 
 const checkForEarlySurfaceDiscardWithElemID = `
-if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
-  return false;
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
+    return false;
 
-if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
-  return false; // no normal == never-lit geometry == never rendered with edges == don't have to test further
+  if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
+    return false; // no normal == never-lit geometry == never rendered with edges == don't have to test further
 
-vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-vec2 depthAndOrder = readDepthAndOrder(tc);
-if (depthAndOrder.x <= u_renderOrder)
-  return false; // just do normal z-testing.
+  vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
+  vec2 depthAndOrder = readDepthAndOrder(tc);
+  if (depthAndOrder.x <= u_renderOrder)
+    return false; // just do normal z-testing.
 
-// Calculate depthTolerance for letting edges show through their own surfaces
-vec3 eyeDir;
-float dtWidthFactor;
-if (u_frustum.z == kFrustumType_Perspective) {
-  eyeDir = normalize(-v_eyeSpace);
-  dtWidthFactor = -v_eyeSpace.z * u_pixelWidthFactor;
-} else {
-  eyeDir = vec3(0.0, 0.0, 1.0);
-  dtWidthFactor = u_pixelWidthFactor;
-}
+  // Calculate depthTolerance for letting edges show through their own surfaces
+  vec3 eyeDir;
+  float dtWidthFactor;
+  if (u_frustum.z == kFrustumType_Perspective) {
+    eyeDir = normalize(-v_eyeSpace);
+    dtWidthFactor = -v_eyeSpace.z * u_pixelWidthFactor;
+  } else {
+    eyeDir = vec3(0.0, 0.0, 1.0);
+    dtWidthFactor = u_pixelWidthFactor;
+  }
 
-// Compute depth tolerance based on angle of triangle to screen
-float dSq = dot(eyeDir, v_n);
-if (depthAndOrder.x == kRenderOrder_Silhouette) // curved surface
-  dSq *= 0.5;
-else
-  dSq *= 0.9;
+  // Compute depth tolerance based on angle of triangle to screen
+  float dSq = dot(eyeDir, v_n);
+  if (depthAndOrder.x == kRenderOrder_Silhouette) // curved surface
+    dSq *= 0.5;
+  else
+    dSq *= 0.9;
 
-dSq = dSq * dSq;
-dSq = max(dSq, 0.0001);
-dSq = min(dSq, 0.999);
+  dSq = dSq * dSq;
+  dSq = max(dSq, 0.0001);
+  dSq = min(dSq, 0.999);
 
-float depthTolerance = dtWidthFactor * v_lineWeight * sqrt((1.0 - dSq) / dSq);
-if (depthAndOrder.x == kRenderOrder_Silhouette) // curved surface
-  depthTolerance = depthTolerance * 1.333;
+  float depthTolerance = dtWidthFactor * v_lineWeight * sqrt((1.0 - dSq) / dSq);
+  if (depthAndOrder.x == kRenderOrder_Silhouette) // curved surface
+    depthTolerance = depthTolerance * 1.333;
 
-// Make sure stuff behind camera doesn't get pushed in front of it
-depthTolerance = max(depthTolerance, 0.0);
+  // Make sure stuff behind camera doesn't get pushed in front of it
+  depthTolerance = max(depthTolerance, 0.0);
 
-// Convert depthTolerance from eye space to linear depth
-depthTolerance /= (u_frustum.y - u_frustum.x);
+  // Convert depthTolerance from eye space to linear depth
+  depthTolerance /= (u_frustum.y - u_frustum.x);
 
-float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
-float depthDelta = abs(depthAndOrder.y - surfaceDepth);
-if (depthDelta > depthTolerance)
-  return false; // don't discard and let normal z-testing happen
+  float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
+  float depthDelta = abs(depthAndOrder.y - surfaceDepth);
+  if (depthDelta > depthTolerance)
+    return false; // don't discard and let normal z-testing happen
 
-// Does pick buffer contain same element?
-vec4 elemId0 = TEXTURE(u_pickElementId0, tc);
+  // Does pick buffer contain same element?
+  vec4 elemId0 = TEXTURE(u_pickElementId0, tc);
 
-// Converting to ints to test since varying floats can be interpolated incorrectly
-ivec4 elemId0_i = ivec4(elemId0 * 255.0 + 0.5);
-ivec4 v_element_id0_i = ivec4(v_element_id0 * 255.0 + 0.5);
-bool isSameElement = elemId0_i == v_element_id0_i;
-if (isSameElement) {
-  vec4 elemId1 = TEXTURE(u_pickElementId1, tc);
-  ivec4 elemId1_i = ivec4(elemId1 * 255.0 + 0.5);
-  ivec4 v_element_id1_i = ivec4(v_element_id1 * 255.0 + 0.5);
-  isSameElement = elemId1_i == v_element_id1_i;
-}
-if (!isSameElement) {
-  // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
-  // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
-  return (depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5));
-}
+  // Converting to ints to test since varying floats can be interpolated incorrectly
+  ivec4 elemId0_i = ivec4(elemId0 * 255.0 + 0.5);
+  ivec4 v_element_id0_i = ivec4(v_element_id0 * 255.0 + 0.5);
+  bool isSameElement = elemId0_i == v_element_id0_i;
+  if (isSameElement) {
+    vec4 elemId1 = TEXTURE(u_pickElementId1, tc);
+    ivec4 elemId1_i = ivec4(elemId1 * 255.0 + 0.5);
+    ivec4 v_element_id1_i = ivec4(v_element_id1 * 255.0 + 0.5);
+    isSameElement = elemId1_i == v_element_id1_i;
+  }
+  if (!isSameElement) {
+    // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
+    // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
+    return (depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5));
+  }
 
-return true; // discard surface in favor of pick buffer contents.
+  return true; // discard surface in favor of pick buffer contents.
 `;
 
 function addEdgeWidth(builder: ShaderBuilder) {
@@ -445,15 +454,16 @@ function addEdgeWidth(builder: ShaderBuilder) {
 }
 
 export const computeElementId = `
-if (u_featureInfo.x <= kFeatureDimension_SingleUniform) {
-  v_element_id0 = u_element_id0;
-  v_element_id1 = u_element_id1;
-} else {
-  vec2 texc = computeElementIdTextureCoords();
-  v_element_id0 = TEXTURE(u_elementIdLUT, texc);
-  texc.x += g_elementId_stepX;
-  v_element_id1 = TEXTURE(u_elementIdLUT, texc);
-}`;
+  if (u_featureInfo.x <= kFeatureDimension_SingleUniform) {
+    v_element_id0 = u_element_id0;
+    v_element_id1 = u_element_id1;
+  } else {
+    vec2 texc = computeElementIdTextureCoords();
+    v_element_id0 = TEXTURE(u_elementIdLUT, texc);
+    texc.x += g_elementId_stepX;
+    v_element_id1 = TEXTURE(u_elementIdLUT, texc);
+  }
+`;
 
 function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_None", VariableType.Float, "0.0");
@@ -514,7 +524,8 @@ function addPixelWidthFactor(builder: ShaderBuilder) {
 const computeElementIdTextureCoords = `
 vec2 computeElementIdTextureCoords() {
   return compute_elementId_coords(getFeatureIndex());
-}`;
+}
+`;
 
 export function addElementId(builder: ProgramBuilder) {
   builder.addVarying("v_element_id0", VariableType.Vec4);
@@ -587,7 +598,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithElemID);
 
     builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
-    builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, `v_lineWeight = ComputeLineWeight();`);
+    builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = ComputeLineWeight();");
     addElementId(builder);
   }
 
@@ -600,70 +611,70 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
 // varying vec4 v_feature_alpha_flashed; // y > 0.0 if overridden. z > 0.0 if flashed. w > 0.0 if hilited.
 // vec4 linear_feature_overrides; // x: weight overridden y: weight z: line code overridden w: line code
 const computeFeatureOverrides = `
-v_feature_rgb = vec4(1.0);
-v_feature_alpha_flashed = vec4(1.0);
-vec4 value = getFirstFeatureRgba();
+  v_feature_rgb = vec4(1.0);
+  v_feature_alpha_flashed = vec4(1.0);
+  vec4 value = getFirstFeatureRgba();
 
-// 2 RGBA values per feature - first R is override flags mask
-if (0.0 == value.r) {
-  v_feature_rgb.a = 0.0;
-  v_feature_alpha_flashed.yzw = vec3(0.0);
-  return; // nothing overridden for this feature
-}
+  // 2 RGBA values per feature - first R is override flags mask
+  if (0.0 == value.r) {
+    v_feature_rgb.a = 0.0;
+    v_feature_alpha_flashed.yzw = vec3(0.0);
+    return; // nothing overridden for this feature
+  }
 
-float flags = value.r * 256.0;
-feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
-if (feature_invisible)
-  return;
+  float flags = value.r * 256.0;
+  feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
+  if (feature_invisible)
+    return;
 
-v_feature_rgb.a = extractNthFeatureBit(flags, kOvrBit_Rgb);
-v_feature_alpha_flashed.y = extractNthFeatureBit(flags, kOvrBit_Alpha);
-if (v_feature_alpha_flashed.y > 0.0 || v_feature_rgb.a > 0.0) {
-  vec4 rgba = getSecondFeatureRgba();
-  v_feature_rgb.rgb = rgba.rgb;
-  v_feature_alpha_flashed.x = rgba.a;
-}
+  v_feature_rgb.a = extractNthFeatureBit(flags, kOvrBit_Rgb);
+  v_feature_alpha_flashed.y = extractNthFeatureBit(flags, kOvrBit_Alpha);
+  if (v_feature_alpha_flashed.y > 0.0 || v_feature_rgb.a > 0.0) {
+    vec4 rgba = getSecondFeatureRgba();
+    v_feature_rgb.rgb = rgba.rgb;
+    v_feature_alpha_flashed.x = rgba.a;
+  }
 
-linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
-                                value.g * 256.0,
-                                1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
-                                value.b * 256.0);
+  linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
+                                  value.g * 256.0,
+                                  1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
+                                  value.b * 256.0);
 
-feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
-v_feature_alpha_flashed.z = extractNthFeatureBit(flags, kOvrBit_Flashed);
-v_feature_alpha_flashed.w = extractNthFeatureBit(flags, kOvrBit_Hilited);
+  feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
+  v_feature_alpha_flashed.z = extractNthFeatureBit(flags, kOvrBit_Flashed);
+  v_feature_alpha_flashed.w = extractNthFeatureBit(flags, kOvrBit_Hilited);
 `;
 
 const applyFeatureColor = `
-if (floatToBool(v_feature_rgb.a))
-  baseColor.rgb = v_feature_rgb.rgb * baseColor.a;
+  if (floatToBool(v_feature_rgb.a))
+    baseColor.rgb = v_feature_rgb.rgb * baseColor.a;
 
-if (floatToBool(v_feature_alpha_flashed.y))
-  baseColor = adjustPreMultipliedAlpha(baseColor, v_feature_alpha_flashed.x);
+  if (floatToBool(v_feature_alpha_flashed.y))
+    baseColor = adjustPreMultipliedAlpha(baseColor, v_feature_alpha_flashed.x);
 
-return baseColor;
+  return baseColor;
 `;
 
 const applyFlash = `
-float isFlashed = floatToBool(v_feature_alpha_flashed.z) ? 1.0 : 0.0;
-float isHilited = floatToBool(v_feature_alpha_flashed.w) ? 1.0 : 0.0;
+  float isFlashed = floatToBool(v_feature_alpha_flashed.z) ? 1.0 : 0.0;
+  float isHilited = floatToBool(v_feature_alpha_flashed.w) ? 1.0 : 0.0;
 
-float hiliteRatio = u_hilite_settings.x * isHilited;
-baseColor = revertPreMultipliedAlpha(baseColor);
-baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, hiliteRatio);
+  float hiliteRatio = u_hilite_settings.x * isHilited;
+  baseColor = revertPreMultipliedAlpha(baseColor);
+  baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, hiliteRatio);
 
-if (u_hilite_color.a == 1.0) { // .a indicates lit geometry - brighten it
-  const float maxBrighten = 0.2;
-  float brighten = u_flash_intensity * maxBrighten;
-  baseColor.rgb += isFlashed * brighten;
-} else { // unlit geometry - tween it toward flash color
-  float maxTween = 0.75;
-  float hiliteFraction = u_flash_intensity * isFlashed * maxTween;
-  baseColor.rgb *= (1.0 - hiliteFraction);
-  baseColor.rgb += u_hilite_color.rgb * hiliteFraction;
-}
+  if (u_hilite_color.a == 1.0) { // .a indicates lit geometry - brighten it
+    const float maxBrighten = 0.2;
+    float brighten = u_flash_intensity * maxBrighten;
+    baseColor.rgb += isFlashed * brighten;
+  } else { // unlit geometry - tween it toward flash color
+    float maxTween = 0.75;
+    float hiliteFraction = u_flash_intensity * isFlashed * maxTween;
+    baseColor.rgb *= (1.0 - hiliteFraction);
+    baseColor.rgb += u_hilite_color.rgb * hiliteFraction;
+  }
 
-return applyPreMultipliedAlpha(baseColor);
+  return applyPreMultipliedAlpha(baseColor);
 `;
 
 export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions): void {

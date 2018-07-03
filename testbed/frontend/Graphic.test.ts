@@ -12,6 +12,8 @@ import { WebGLTestContext } from "./WebGLTestContext";
 
 export class FakeGraphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
+
+  public dispose(): void { }
 }
 
 function withinTol(x: number, y: number): boolean {
@@ -230,12 +232,12 @@ describe("createTriMesh", () => {
 
     const args = new MeshArgs();
 
-    const points = [ new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0) ];
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
     args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
       args.points.add(point);
 
-    args.vertIndices = [ 0, 1, 2 ];
+    args.vertIndices = [0, 1, 2];
     args.colors.initUniform(ColorByName.tan);
 
     const graphic = IModelApp.renderSystem.createTriMesh(args, imodel);

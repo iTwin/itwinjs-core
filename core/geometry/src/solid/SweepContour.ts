@@ -16,6 +16,7 @@ import { Triangulator } from "../topology/Triangulation";
 import { LineString3d } from "../curve/LineString3d";
 import { AnyCurve, Loop, ParityRegion } from "../curve/CurveChain";
 import { StrokeOptions } from "../curve/StrokeOptions";
+import { PolygonOps } from "../PointHelpers";
 
 /**
  * Sweepable contour with Transform for local to world interaction.
@@ -81,6 +82,8 @@ export class SweepContour {
           const linestring = children[0] as LineString3d;
           const points = linestring.points;
           this.localToWorld.multiplyInversePoint3dArrayInPlace(points);
+          if (PolygonOps.sumTriangleAreasXY (points) < 0)
+            points.reverse ();
           const graph = Triangulator.earcutFromPoints(points);
           const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph);
           this.facets = unflippedPoly;

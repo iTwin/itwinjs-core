@@ -12,6 +12,8 @@ import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
+import { GltfTileIO } from "./GltfTileIO";
+import { B3dmTileIO } from "./B3dmTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
@@ -49,6 +51,7 @@ export class Tile {
   public readonly center: Point3d;
   public readonly radius: number;
   public readonly zoomFactor?: number;
+  private readonly yAxisUp: boolean;
   private readonly _childIds: string[];
   private _childrenLastUsed: BeTimePoint;
   private _childrenLoadStatus: TileTree.LoadStatus;
@@ -57,8 +60,8 @@ export class Tile {
   private _graphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
-  protected _maxDepth: number = 2;
-  public constructor(props: Tile.Params) {
+
+  public constructor(props: Tile.Params, private _maxDepth = 32) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
@@ -69,6 +72,7 @@ export class Tile {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
+    this.yAxisUp = props.yAxisUp;
 
     // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
     this.loadGraphics(props.geometry);
@@ -88,7 +92,16 @@ export class Tile {
     if (undefined === blob)
       return;
 
-    const reader = IModelTileIO.Reader.create(new TileIO.StreamBuffer(blob.buffer), this.root.model, IModelApp.renderSystem);
+    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    const format = streamBuffer.nextUint32;
+    let reader: GltfTileIO.Reader | undefined;
+    streamBuffer.rewind(4);
+    if (format === TileIO.Format.B3dm) {
+      reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
+    } else {
+      reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem);
+    }
+
     if (undefined !== reader) {
       const result = reader.read();
       if (undefined !== result)
@@ -270,7 +283,6 @@ export class Tile {
     }
   }
 
-  protected _doCulling: boolean = false;
   private static scratchWorldFrustum = new Frustum();
   private static scratchRootFrustum = new Frustum();
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
@@ -279,7 +291,7 @@ export class Tile {
     const isOutside = FrustumPlanes.Containment.Outside === args.context.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
     const isCulled = isOutside || isClipped;
-    return this._doCulling && isCulled;
+    return isCulled;
   }
 
   private loadChildren(): TileTree.LoadStatus {
@@ -290,11 +302,11 @@ export class Tile {
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
           for (const prop of props)
-            this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this)));
+            this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth()));
         }
 
         IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
+      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; this._children = undefined; });
     }
 
     return this._childrenLoadStatus;
@@ -381,6 +393,7 @@ export namespace Tile {
       public readonly range: ElementAlignedBox3d,
       public readonly maximumSize: number,
       public readonly childIds: string[],
+      public readonly yAxisUp: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
       public readonly zoomFactor?: number,
@@ -389,9 +402,14 @@ export namespace Tile {
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
       // ###TODO: We should be requesting the geometry separately, when needed
       // ###TODO: Transmit as binary, not base-64
-      const tileBytes = undefined !== props.geometry ? new Uint8Array(atob(props.geometry).split("").map((c) => c.charCodeAt(0))) : undefined;
+      let tileBytes: Uint8Array | undefined;
+      if (typeof props.geometry === "string") {
+        tileBytes = new Uint8Array(atob(props.geometry as string).split("").map((c) => c.charCodeAt(0)));
+      } else if (props.geometry instanceof ArrayBuffer) {
+        tileBytes = new Uint8Array(props.geometry as ArrayBuffer);
+      } else { tileBytes = undefined; }
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, tileBytes);
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, props.yAxisUp, parent, contentRange, props.zoomFactor, tileBytes);
     }
   }
 }
@@ -456,9 +474,11 @@ export class TileTree {
 
 export abstract class TileLoader {
   public abstract async getTileProps(ids: string[]): Promise<TileProps[]>;
+  public abstract getMaxDepth(): number;
 }
 export class IModelTileLoader {
   constructor(private iModel: IModelConnection, private rootId: Id64) { }
+  public getMaxDepth(): number { return 2; }  // Can be removed when element tile selector is working.
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {
     const tileIds: TileId[] = ids.map((id: string) => new TileId(this.rootId, id));

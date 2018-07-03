@@ -168,11 +168,16 @@ const enum HsvConstants {
   HSV_VALUE_WEIGHT = 2,
 }
 
-/** a color defined by Hue, Saturation, and Lightness */
+/** A color defined by Hue, Saturation, and Lightness.
+ * @see [here](https://en.wikipedia.org/wiki/HSL_and_HSV) for difference between HSL and HSV
+ */
 export class HSLColor {
-  public h = 0; // hue
-  public s = 0; // saturation
-  public l = 0; // lightness
+  /** Hue */
+  public h = 0;
+  /** Saturation */
+  public s = 0;
+  /** Lightness */
+  public l = 0;
   public clone(): HSLColor { const out = new HSLColor(); out.h = this.h; out.s = this.s; out.l = this.l; return out; }
   public toColorDef(out?: ColorDef): ColorDef { return ColorDef.fromHSL(this.h, this.s, this.l, out); }
   public static fromColorDef(val: ColorDef, out?: HSLColor) { return val.toHSL(out); }
@@ -180,12 +185,15 @@ export class HSLColor {
 
 /**
  * A color defined by Hue, Saturation, and Value
- * @see https://en.wikipedia.org/wiki/HSL_and_HSV for difference between HSL and HSV
+ * @see [here](https://en.wikipedia.org/wiki/HSL_and_HSV) for difference between HSL and HSV
  */
 export class HSVColor {
-  public h = 0; // hue
-  public s = 0; // saturation
-  public v = 0; // Value
+  /** Hue */
+  public h = 0;
+  /** Saturation */
+  public s = 0;
+  /** Value */
+  public v = 0;
   public clone(): HSVColor { const out = new HSVColor(); out.h = this.h; out.s = this.s; out.v = this.v; return out; }
   public toColorDef(out?: ColorDef): ColorDef { return ColorDef.fromHSV(this, out); }
   public static fromColorDef(val: ColorDef, out?: HSVColor) { return val.toHSV(out); }
@@ -219,40 +227,42 @@ export class HSVColor {
 const scratchBytes = new Uint8Array(4);
 const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
-/** a number in 0xTTBBGGRR format */
+/** A number in 0xTTBBGGRR format */
 export type ColorDefProps = number | ColorDef;
 
 /**
- * A integer representation of a color.
+ * An integer representation of a color.
+ *
  * Colors are stored as 4 components: Red, Blue, Green, and Transparency (0=fully opaque). Each is an 8-bit integer between 0-255.
  *
  * Much confusion results from attempting to interpret those 4 one-byte values as a 4 byte integer. There are generally two sources
  * of confusion:
- *  1. the order the Red, Green, and Blue bytes
- *  2. whether to specify transparency or opacity (sometimes referred to as "alpha")
+ *  1. The order the Red, Green, Blue bytes
+ *  2. Whether to specify transparency or opacity (sometimes referred to as "alpha")
  *
- * Generally, iModelJs prefers to use `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte) but this class provides methods
+ * Generally, iModelJs prefers to use `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte), but this class provides methods
  * to convert to `0xRRGGBB` (see [[getRgb]]) and `0xAABBGGRR` (red in the low byte, 0==fully transparent in high byte. see [[getAbgr]]).
+ *
  * The constructor also accepts strings in the common HTML formats.
  */
 export class ColorDef {
   private _tbgr: number;
 
-  /** swap the red and blue values of a 32-bit integer representing a color. Transparency and green are unchanged. */
+  /** Swap the red and blue values of a 32-bit integer representing a color. Transparency and green are unchanged. */
   public static rgb2bgr(val: number): number { scratchUInt32[0] = val; return scratchBytes[3] << 24 + scratchBytes[0] << 16 + scratchBytes[1] << 8 + scratchBytes[2]; }
 
   /**
-   * Ctor for ColorDef.
+   * Create a new ColorDef.
    * @param val value to use.
-   * if a number, it is interpreted as a 0xTTBBGGRR (Red in the low byte, high byte is transparency 0==fully opaque) value.
+   * If a number, it is interpreted as a 0xTTBBGGRR (Red in the low byte, high byte is transparency 0==fully opaque) value.
    *
-   * if a string, must be in one of the following forms:
-   * * "rgb(255,0,0)"
-   * * "rgba(255,0,0,255)"
-   * * "rgb(100%,0%,0%)"
-   * * "hsl(120,50%,50%)"
-   * * "#rrbbgg
-   * * "blanchedAlmond"(see possible values from ColorByName. Case insensitve.)
+   * If a string, must be in one of the following forms:
+   * *"rgb(255,0,0)"*
+   * *"rgba(255,0,0,255)"*
+   * *"rgb(100%,0%,0%)"*
+   * *"hsl(120,50%,50%)"*
+   * *"#rrbbgg"*
+   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case insensitve.
    */
   public constructor(val?: string | ColorDefProps) {
     this._tbgr = 0;
@@ -262,19 +272,19 @@ export class ColorDef {
     this.fromString(val);
   }
 
-  /** make a copy of this ColorDef */
+  /** Make a copy of this ColorDef */
   public clone(): ColorDef { return new ColorDef(this._tbgr); }
 
-  /** set the color of this ColorDef from another ColorDef */
+  /** Set the color of this ColorDef from another ColorDef */
   public setFrom(other: ColorDef) { this._tbgr = other._tbgr; }
 
-  /** convert this ColorDef to a 32 bit number representing the 0xTTBBGGRR value */
+  /** Convert this ColorDef to a 32 bit number representing the 0xTTBBGGRR value */
   public toJSON(): ColorDefProps { return this._tbgr; }
 
-  /** create a new ColorDef from a json object. If the json object is a number, it is assumed to be a 0xTTBBGGRR value. */
+  /** Create a new ColorDef from a json object. If the json object is a number, it is assumed to be a 0xTTBBGGRR value. */
   public static fromJSON(json?: any): ColorDef { return new ColorDef(json); }
 
-  /** initialize or create a ColorDef fromn Red,Green,Blue,Transparency values. All values should be between 0-255 */
+  /** Initialize or create a ColorDef fromn Red,Green,Blue,Transparency values. All values should be between 0-255 */
   public static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef): ColorDef {
     result = result ? result : new ColorDef();
     scratchBytes[0] = red;
@@ -285,39 +295,39 @@ export class ColorDef {
     return result;
   }
 
-  /** get the r,g,b,t values from this ColorDef. Returned as an object with {r, g, b, t} members. Values will be integers between 0-255. */
+  /** Get the r,g,b,t values from this ColorDef. Returned as an object with {r, g, b, t} members. Values will be integers between 0-255. */
   public get colors() { scratchUInt32[0] = this._tbgr; return { b: scratchBytes[2], g: scratchBytes[1], r: scratchBytes[0], t: scratchBytes[3] }; }
 
-  /** the color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
+  /** The color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
   public get tbgr(): number { return this._tbgr; }
   public set tbgr(tbgr: number) { scratchUInt32[0] = tbgr; this._tbgr = scratchUInt32[0]; } // force to be a 32 bit unsigned integer
 
-  /** get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
+  /** Get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
   public getAbgr(): number { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - scratchBytes[3]; return scratchUInt32[0]; }
 
-  /** get the RGB value of the color as a number in 0xRRGGBB format (i.e blue is in the low byte). Transparency is ignored. Value will be from 0 to 2^24 */
+  /** Get the RGB value of the color as a number in 0xRRGGBB format (i.e blue is in the low byte). Transparency is ignored. Value will be from 0 to 2^24 */
   public getRgb(): number { scratchUInt32[0] = this._tbgr; return (scratchBytes[0] << 16) + (scratchBytes[1] << 8) + scratchBytes[2]; }
 
-  /** change the alpha value for this ColorDef.
+  /** Change the alpha value for this ColorDef.
    * @param alpha the new alpha value. Must be between 0-255.
    */
   public setAlpha(alpha: number): void { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
-  /** get the alpha value for this ColorDef. Will be between 0-255 */
+  /** Get the alpha value for this ColorDef. Will be between 0-255 */
   public getAlpha(): number { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
-  /** get whether this ColorDef is fully opaque */
-  public get isOpaque() { return 255 === this.getAlpha(); }
-  /** change the transparency value for this ColorDef
+  /** True if this ColorDef is fully opaque */
+  public get isOpaque(): boolean { return 255 === this.getAlpha(); }
+  /** Change the transparency value for this ColorDef
    * @param transparency the new transparency value. Must be between 0-255, where 0 means 'fully opaque' and 255 means 'fully transparent'.
    */
   public setTransparency(transparency: number): void { this.setAlpha(255 - transparency); }
 
-  /** the "known name" for this ColorDef. Will be undefined if color value is not in #ColorByName list */
+  /** The "known name" for this ColorDef. Will be undefined if color value is not in [[ColorByName]] list */
   public get name(): string | undefined { return ColorByName[this._tbgr]; }
 
-  /** convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
+  /** Convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
   public toHexString(): string { return "#" + ("000000" + this.getRgb().toString(16)).slice(-6); }
 
-  /** convert this ColorDef to a string in the form "rgb(r,g,b)" where values are decimal digits of the respective colors */
+  /** Convert this ColorDef to a string in the form "rgb(r,g,b)" where values are decimal digits of the respective colors */
   public toRgbString(): string { const c = this.colors; return "rgb(" + (c.r | 0) + "," + (c.g | 0) + "," + (c.b | 0) + ")"; }
   private fromString(val: string): ColorDef {
     if (typeof val !== "string")
@@ -396,16 +406,21 @@ export class ColorDef {
     return this;
   }
 
-  public lerp(inCol: ColorDef, alpha: number): ColorDef {
-    const color = inCol.colors;
+  /** Create a ColorDef that is the linear interpolation of this ColorDef and another ColorDef, using a weighting factor.
+   * @param color2 The other color
+   * @param weight The weighting factor for color2. 0.0 = this color, 1.0 = color2.
+   * @param result Optional ColorDef to hold result. If undefined, a new ColorDef is created.
+   */
+  public lerp(color2: ColorDef, weight: number, result?: ColorDef): ColorDef {
+    const color = color2.colors;
     const c = this.colors;
-    c.r += (color.r - c.r) * alpha;
-    c.g += (color.g - c.g) * alpha;
-    c.b += (color.b - c.b) * alpha;
-    return ColorDef.from(c.r, c.g, c.b, c.t, this);
+    c.r += (color.r - c.r) * weight;
+    c.g += (color.g - c.g) * weight;
+    c.b += (color.b - c.b) * weight;
+    return ColorDef.from(c.r, c.g, c.b, c.t, result);
   }
 
-  /** create a ColorDef from hue, saturation, lightness values */
+  /** Create a ColorDef from hue, saturation, lightness values */
   public static fromHSL(h: number, s: number, l: number, out?: ColorDef): ColorDef {
     const torgb = (p1: number, q1: number, t: number) => {
       if (t < 0) t += 1;
@@ -435,6 +450,7 @@ export class ColorDef {
       hue2rgb(q, p, h - 1 / 3), 0, out);
   }
 
+  /** Create an [[HSLColor]] from this ColorDef */
   public toHSL(opt?: HSLColor): HSLColor {
     // h,s,l ranges are in 0.0 - 1.0
     const col = this.colors;
@@ -468,7 +484,7 @@ export class ColorDef {
     return hsl;
   }
 
-  /** create an HSVColor from this ColorDef */
+  /** Create an [[HSVColor]] from this ColorDef */
   public toHSV(out?: HSVColor): HSVColor {
     const hsv = out ? out : new HSVColor();
     const { r, g, b } = this.colors;
@@ -514,7 +530,7 @@ export class ColorDef {
     return hsv;
   }
 
-  /** create a ColorDef from an HSVColor */
+  /** Create a ColorDef from an HSVColor */
   public static fromHSV(hsv: HSVColor, out?: ColorDef): ColorDef {
     // Check for simple case first.
     if ((!hsv.s) || (hsv.h === -1)) {
@@ -588,11 +604,17 @@ export class ColorDef {
     return (bright.visibilityCheck(other) >= darker.visibilityCheck(other)) ? bright : darker;
   }
 
+  /** True if the value of this ColorDef is the same as another ColorDef. */
   public equals(other: ColorDef): boolean { return this._tbgr === other._tbgr; }
+  /** A black frozen ColorDef. */
   public static readonly black = new ColorDef(ColorByName.black);
+  /** A white frozen ColorDef. */
   public static readonly white = new ColorDef(ColorByName.white);
+  /** A red frozen ColorDef. */
   public static readonly red = new ColorDef(ColorByName.red);
+  /** A green frozen ColorDef. */
   public static readonly green = new ColorDef(ColorByName.green);
+  /** A blue frozen ColorDef. */
   public static readonly blue = new ColorDef(ColorByName.blue);
 }
 Object.freeze(ColorDef.black);
@@ -603,7 +625,11 @@ Object.freeze(ColorDef.blue);
 
 /** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255]. */
 export class RgbColor {
-  /** Constructs from red, green, and blue components. Any component not explicitly supplied defaults to zero. */
+  /** Constructs from red, green, and blue components.
+   * @param r Red
+   * @param g Green
+   * @param b Blue
+   */
   public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
     this.r = Math.max(0, Math.min(this.r, 0xff));
     this.g = Math.max(0, Math.min(this.g, 0xff));

@@ -1,6 +1,6 @@
-# Format of a row returned from an [ECSQL](./ECSQL) SELECT query
+# Format of a row returned from an [ECSQL](./ECSQL.md) SELECT query
 
-A row returned from an [ECSQL](./ECSQL) SELECT query is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
+A row returned from an [ECSQL](./ECSQL.md) SELECT query is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
 
 ## Property names
 
@@ -12,23 +12,23 @@ If the ECSQL select clause item
 
   System property | JavaScript Type
   --- | ---
-  [ECInstanceId](./ECSQL#ECInstanceId-and-ECClassId) | id
-  [ECClassId](./ECSQL#ECInstanceId-and-ECClassId) | className
-  [SourceECInstanceId](./ECSQL#ecrelationshipclasses) | sourceId
-  [SourceECClassId](./ECSQL#ecrelationshipclasses) | sourceClassName
-  [TargetECInstanceId](./ECSQL#ecrelationshipclasses) | targetId
-  [TargetECClassId](./ECSQL#ecrelationshipclasses) | targetClassName
+  [ECInstanceId](./ECSQL.md#ECInstanceId-and-ECClassId) | id
+  [ECClassId](./ECSQL.md#ECInstanceId-and-ECClassId) | className
+  [SourceECInstanceId](./ECSQL.md#ecrelationshipclasses) | sourceId
+  [SourceECClassId](./ECSQL.md#ecrelationshipclasses) | sourceClassName
+  [TargetECInstanceId](./ECSQ.mdL#ecrelationshipclasses) | targetId
+  [TargetECClassId](./ECSQL.md#ecrelationshipclasses) | targetClassName
 
   Navigation property member | JavaScript Type
   --- | ---
-  [Id](./ECSQL#navigation-properties) | id
-  [RelClassId](./ECSQL#navigation-properties) | relClassName
+  [Id](./ECSQL.md#navigation-properties) | id
+  [RelClassId](./ECSQL.md#navigation-properties) | relClassName
 
   Point property member | JavaScript Type
   --- | ---
-  [X](./ECSQL#points) | x
-  [Y](./ECSQL#points) | y
-  [Z](./ECSQL#points) | z
+  [X](./ECSQL.md#points) | x
+  [Y](./ECSQL.md#points) | y
+  [Z](./ECSQL.md#points) | z
 
 ## Property value types
 

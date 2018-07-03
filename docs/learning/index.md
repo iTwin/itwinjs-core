@@ -7,8 +7,8 @@ Helpful articles:
 * [Frontend classes](./frontend/index)
 * [Backend classes](./backend/index)
 * [Common classes](./common/index)
-* [ECSQL](./ECSQL)
-* [Change Summaries](./ChangeSummaries)
+* [ECSQL](./ECSQL.md)
+* [Change Summaries](./ChangeSummaries.md)
 * [Remote Procedure Call (RPC) Interfaces](./RpcInterface)
 
 Step by step instructions to:
