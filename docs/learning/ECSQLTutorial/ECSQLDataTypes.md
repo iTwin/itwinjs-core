@@ -1,6 +1,3 @@
----
-ignore: true
----
 # ECSQL Data Types
 
 ## ECInstanceId and ECClassId

@@ -1,6 +1,3 @@
----
-ignore: true
----
 # Key to ECSQL
 
 ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It sticks to

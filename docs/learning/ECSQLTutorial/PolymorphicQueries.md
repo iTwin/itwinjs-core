@@ -1,6 +1,3 @@
----
-ignore: true
----
 # Polymorphic Queries
 
 By default, any ECClass in the FROM or JOIN clause of an ECSQL is treated polymorphically. That means all the subclasses of the specified class are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.
