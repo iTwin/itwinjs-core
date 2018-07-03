@@ -335,7 +335,7 @@ export class DecorateContext extends RenderContext {
     }
 
     graphic.setBlankingFill(planeColor);
-    //    graphic.addShape(shapePoints);
+    graphic.addShape(shapePoints);
   }
 
   /** Private grid-specific function for computing intersections of a ray with a convex set of clipping planes. */
