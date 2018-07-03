@@ -68,15 +68,15 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 
 ## Tutorial Overview
 
-* [Lesson 1: Key to ECSQL](./KeyToECSQL)
-* [Lesson 2: The first examples](./FirstExamples)
-* [Lesson 3: ECSQL Data Types](./ECSQLDataTypes)
-* [Lesson 4: Relationships and Joins](./Joins)
-* [Lesson 5: Class Polymorphism](./PolymorphicQueries)
-* [Lesson 6: Spatial Queries](./SpatialQueries)
-* [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries)
-* [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries)
+* [Lesson 1: Key to ECSQL](./KeyToECSQL.md)
+* [Lesson 2: The first examples](./FirstExamples.md)
+* [Lesson 3: ECSQL Data Types](./ECSQLDataTypes.md)
+* [Lesson 4: Relationships and Joins](./Joins.md)
+* [Lesson 5: Class Polymorphism](./PolymorphicQueries.md)
+* [Lesson 6: Spatial Queries](./SpatialQueries.md)
+* [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
+* [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
 
 ---
 
-[**Next >**](./KeyToECSQL)
+[**Next >**](./KeyToECSQL.md)
