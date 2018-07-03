@@ -72,11 +72,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/imodeljs-i18n",
-      "projectFolder": "core/i18n",
-      "shouldPublish": true
-    },
-    {
       "packageName": "testbed",
       "projectFolder": "testbed",
       "shouldPublish": false
