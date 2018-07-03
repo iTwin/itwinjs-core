@@ -241,18 +241,18 @@ export class DecorateContext extends RenderContext {
       maxGridRefs = 10;
 
     // values are "per 1000 pixels"
-    const minGridSeperationPixels = 1000 / maxGridPts,
-      minRefSeperation = 1000 / maxGridRefs;
+    const minGridSeparationPixels = 1000 / maxGridPts,
+      minRefSeparation = 1000 / maxGridRefs;
     let uorPerPixel = vp.getPixelSizeAtPoint(testPt);
 
-    if ((refSpacing.x / uorPerPixel) < minRefSeperation || (refSpacing.y / uorPerPixel) < minRefSeperation)
+    if ((refSpacing.x / uorPerPixel) < minRefSeparation || (refSpacing.y / uorPerPixel) < minRefSeparation)
       gridsPerRef = 0;
 
-    // Avoid z fighting with coincident geometry...let the wookie win...
+    // Avoid z fighting with coincident geometry
     gridOrg.plusScaled(viewZ, uorPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
     uorPerPixel *= refScale;
 
-    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeperationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeperationPixels);
+    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeparationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeparationPixels);
     const graphic = this.createWorldDecoration();
 
     DecorateContext.drawGrid(graphic, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
@@ -260,7 +260,7 @@ export class DecorateContext extends RenderContext {
   }
 
   public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
-    const eyePoint = vp.rootToView.transform1.columnZ();
+    const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const viewZ = Vector3d.createFrom(eyePoint);
 
     const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);

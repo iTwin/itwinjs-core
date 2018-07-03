@@ -11,7 +11,6 @@
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test",
         "--debug"
       ],
@@ -26,7 +25,6 @@
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test/",
         "--debug",
         "--recursive",
@@ -46,7 +44,6 @@
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test/integration",
         "--debug"
       ],
@@ -61,7 +58,6 @@
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/perftest",
         "--debug",
         "--offline"
@@ -77,7 +73,6 @@
       "program": "${workspaceFolder}/core/clients/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/clients/lib/test",
         "--debug",
         "--offline",
@@ -94,7 +89,6 @@
       "program": "${workspaceFolder}/core/clients/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/clients/lib/test",
         "--debug"
       ],
@@ -109,7 +103,6 @@
       "program": "${workspaceFolder}/core/geometry/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
       "cwd": "${workspaceFolder}/core/geometry",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/geometry/lib/test",
         "--debug"
       ],
@@ -124,7 +117,6 @@
       "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
       "cwd": "${workspaceFolder}/core/bentley",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/bentley/lib/test",
         "--debug"
       ],
@@ -139,7 +131,6 @@
       "program": "${workspaceFolder}/example-code/snippets/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/snippets",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/example-code/snippets/lib/backend",
         "--debug"
       ],
@@ -154,7 +145,6 @@
       "program": "${workspaceFolder}/example-code/app/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/app",
       "args": [
-        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/example-code/app/lib/backend/test",
         "--debug"
       ],

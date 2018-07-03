@@ -729,6 +729,12 @@ describe("iModel", () => {
 
   });
 
+  it.only("snapping", async () => {
+    const worldToView = Transform.createIdentity();
+    const response = await imodel2.requestSnap("0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView });
+    assert.isDefined(response.snapPoint);
+  });
+
   it("should import schemas", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     imodel1.importSchema(schemaPathname); // will throw an exception if import fails
