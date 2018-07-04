@@ -1,6 +1,6 @@
 # Spatial Queries
 
-Every instance of the `SpatialElement` ECClass in an iModel is spatially indexed. The spatial index allows fast look-ups by spatial criteria. Each row in the spatial index is conceptually a bounding cube, plus the ECInstanceId of an element that is enclosed by it.
+Every instance of the [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement) ECClass in an iModel is spatially indexed. The spatial index allows fast look-ups by spatial criteria. Each row in the spatial index is conceptually a bounding cube, plus the ECInstanceId of an element that is enclosed by it.
 
 The index is exposed to ECSQL via the ECClass [BisCore.SpatialIndex](../../bis/domains/biscore/BisCore.ecschema.md#SpatialIndex). See [ECSQL Reference](../SpatialQueries.md) for details.
 
@@ -35,30 +35,30 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 > **Try it yourself**
 > The argument to the match function can only be passed via an ECSQL parameter. As the iModelConsole does not support parameter values, the following example cannot be tried out with the iModelConsole. You would have to put the sample code into your own playground.
 >
-> *Goal:* Return all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s that overlap the [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement) with id 444 and are in the Category with id 333.
+> *Goal:* Return all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s which overlap the [Space](./MyDomain.ecschema.md#Space) with id 0x10000000017 and which are in the [Category](../../bis/domains/biscore/BisCore.ecschema.md#Category) with id 0x10000000003.
 >
 > *ECSQL*
 > ```sql
-> SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=333
+> SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=0x10000000003
 > ```
 > *Sample code*
 > ```ts
-> const element444: SpatialElement = iModelDb.elements.getElement(444) as SpatialElement;
+> const spaceElement: SpatialElement = iModelDb.elements.getElement("0x10000000017") as SpatialElement;
 >
-> iModelDb.withPreparedStatement("SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=333",
+> iModelDb.withPreparedStatement("SELECT e.ECInstanceId, e.ECClassId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=0x10000000003",
 >    (stmt: ECSqlStatement) => {
->    stmt.bindRange3d(1, element444.placement.calculateRange());
->    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
->       const row: any = stmt.getRow();
->       console.log(row);
->    }
-> });
+>      stmt.bindRange3d(1, spaceElement.placement.calculateRange());
+>      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+>         const row: any = stmt.getRow();
+>         console.log(row);
+>      }
+>    });
 >```
 >
 > *Result*
 > ```ts
-> { id : 10, codeValue: "hhh" }
-> { id : 11, codeValue: "fff" }
+> { id : "0x10000000013", className: "MyDomain.Story", codeValue: "A-G" }
+> { id : "0x10000000016", className: "MyDomain.Story", codeValue: "A-1" }
 > ```
 
 ---

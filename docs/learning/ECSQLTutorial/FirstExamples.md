@@ -123,7 +123,7 @@ This query considers all kinds of [Element](../../bis/domains/biscore/BisCore.ec
 > --- |
 > 26 |
 
-Let's compute some more Element statistic with ECSQL. We want to find out how many [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s there are in the iModel per actual element type (where element type here refers to the subclasses of the Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) ECClass).
+Let's compute some more Element statistic with ECSQL. We want to find out how many [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s there are in the iModel per actual element type (where element type here refers to the subclasses of the [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) ECClass).
 
 > **Try it yourself**
 >
@@ -344,7 +344,8 @@ Note, that the `instr` function can be replaced by using the standard SQL `LIKE`
 
 > **Try it yourself**
 >
-> *Goal:* For all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'. >
+> *Goal:* For all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'.
+>
 > *ECSQL*
 > ```sql
 > SELECT ECInstanceId, CodeValue, replace(CodeValue,'DEV','Device') ReadableCode FROM bis.SpatialElement WHERE CodeValue LIKE '%DEV%' LIMIT 5
