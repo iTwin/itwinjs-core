@@ -26,6 +26,12 @@ export const enum SchemaItemType {
   Enumeration,
   KindOfQuantity,
   PropertyCategory,
+  Unit,
+  InvertedUnit,
+  Constant,
+  Phenomenon,
+  UnitSystem,
+  Format,
 }
 
 /**
@@ -147,6 +153,12 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
     case "enumeration": return SchemaItemType.Enumeration;
     case "kindofquantity": return SchemaItemType.KindOfQuantity;
     case "propertycategory": return SchemaItemType.PropertyCategory;
+    case "unit": return SchemaItemType.Unit;
+    case "invertedunit": return SchemaItemType.InvertedUnit;
+    case "constant": return SchemaItemType.Constant;
+    case "phenomenon": return SchemaItemType.Phenomenon;
+    case "unitsystem": return SchemaItemType.UnitSystem;
+    case "format": return SchemaItemType.Format;
   }
   return undefined;
 }
@@ -487,6 +499,14 @@ export class ECName {
     this._name = name;
   }
 
+  /**
+   * @param newName string to validate
+   * @return boolean whether newName is a valid ECName
+   */
+  public static validate(newName: string) {
+    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
+  }
+
   get name() { return this._name; }
 }
 
@@ -595,24 +615,16 @@ export class SchemaKey {
  */
 export class SchemaItemKey {
   private _name: ECName;
-  protected _type?: SchemaItemType;
   protected _schemaKey: SchemaKey;
 
-  constructor(name: string, type: SchemaItemType, schema: SchemaKey);
-  constructor(name: string, type: SchemaItemType | undefined, schema: SchemaKey); // tslint:disable-line
-  constructor(name: string, type: SchemaItemType | undefined, schema: SchemaKey) {
+  constructor(name: string, schema: SchemaKey);
+  constructor(name: string, schema: SchemaKey); // tslint:disable-line
+  constructor(name: string, schema: SchemaKey) {
     this._name = new ECName(name);
     this._schemaKey = schema;
-    if (undefined !== type)
-      this._type = type;
   }
 
   get schemaKey() { return this._schemaKey; }
-  get type(): SchemaItemType {
-    if (undefined === this._type)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `The SchemaItemKey ${this.name} does not have a SchemaItemType.`);
-    return this._type;
-  }
   get name() { return this._name.name; }
   get schemaName() { return this.schemaKey.name; }
 
@@ -623,9 +635,6 @@ export class SchemaItemKey {
   // TODO: Need to add a match type
   public matches(rhs: SchemaItemKey): boolean {
     if (rhs.name !== this.name)
-      return false;
-
-    if (this.type === undefined || rhs.type !== this.type)
       return false;
 
     if (!rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))

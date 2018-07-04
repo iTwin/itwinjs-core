@@ -10,14 +10,20 @@ import RelationshipClass from "./RelationshipClass";
 import SchemaItem from "./SchemaItem";
 import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
+import Unit from "./Unit";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
 import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
+import UnitSystem from "./UnitSystem";
+import Phenomenon from "./Phenomenon";
+import Format from "./Format";
+import Constant from "./Constant";
+import InvertedUnit from "./InvertedUnit";
 
-const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
+const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
 
 /**
  *
@@ -162,6 +168,78 @@ export default class Schema implements CustomAttributeContainerProps {
 
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
     return this.createItem<KindOfQuantity>(KindOfQuantity, name);
+  }
+
+  /**
+   * Creates a Constant with the provided name in this schema.
+   * @param name
+   */
+  protected async createConstant(name: string): Promise<Constant> {
+    return this.createItem<Constant>(Constant, name);
+  }
+
+  protected createConstantSync(name: string): Constant {
+    return this.createItem<Constant>(Constant, name);
+  }
+
+  /**
+   * Creates a Inverted Unit with the provided name in this schema.
+   * @param name
+   */
+  protected async createInvertedUnit(name: string): Promise<InvertedUnit> {
+    return this.createItem<InvertedUnit>(InvertedUnit, name);
+  }
+
+  protected createInvertedUnitSync(name: string): InvertedUnit {
+    return this.createItem<InvertedUnit>(InvertedUnit, name);
+  }
+
+  /**
+   * Creates an Format with the provided name in this schema.
+   * @param name
+   */
+  protected async createFormat(name: string): Promise<Format> {
+    return this.createItem<Format>(Format, name);
+  }
+
+  protected createFormatSync(name: string): Format {
+    return this.createItem<Format>(Format, name);
+  }
+
+  /**
+   * Creates a UnitSystem with the provided name in this schema.
+   * @param name
+   */
+  protected async createUnitSystem(name: string): Promise<UnitSystem> {
+    return this.createItem<UnitSystem>(UnitSystem, name);
+  }
+
+  protected createUnitSystemSync(name: string): UnitSystem {
+    return this.createItem<UnitSystem>(UnitSystem, name);
+  }
+
+  /**
+   * Creates a Phenomenon with the provided name in this schema.
+   * @param name
+   */
+  protected async createPhenomenon(name: string): Promise<Phenomenon> {
+    return this.createItem<Phenomenon>(Phenomenon, name);
+  }
+
+  protected createPhenomenonSync(name: string): Phenomenon {
+    return this.createItem<Phenomenon>(Phenomenon, name);
+  }
+
+  /**
+   * Creates a Unit with the provided name in this schema.
+   * @param name
+   */
+  protected async createUnit(name: string): Promise<Unit> {
+    return this.createItem<Unit>(Unit, name);
+  }
+
+  protected createUnitSync(name: string): Unit {
+    return this.createItem<Unit>(Unit, name);
   }
 
   /**
@@ -321,7 +399,10 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
-    return this.getReferenceSync<T>(refSchemaName);
+    if (this.references.length === 0)
+      return undefined;
+
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
   public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
@@ -351,8 +432,8 @@ export default class Schema implements CustomAttributeContainerProps {
    *
    * @param jsonObj
    */
-  private schemaFromJson(jsonObj: any): void {
-    if (SCHEMAURL3_1 !== jsonObj.$schema)
+  public schemaFromJson(jsonObj: any) {
+    if (SCHEMAURL3_2 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
     if (!this._schemaKey) {
@@ -452,6 +533,18 @@ export abstract class MutableSchema extends Schema {
   public abstract createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration;
   public abstract async createKindOfQuantity(name: string): Promise<KindOfQuantity>;
   public abstract createKindOfQuantitySync(name: string): KindOfQuantity;
+  public abstract async createUnit(name: string): Promise<Unit>;
+  public abstract createUnitSync(name: string): Unit;
+  public abstract async createConstant(name: string): Promise<Constant>;
+  public abstract createConstantSync(name: string): Constant;
+  public abstract async createInvertedUnit(name: string): Promise<InvertedUnit>;
+  public abstract createInvertedUnitSync(name: string): InvertedUnit;
+  public abstract async createPhenomenon(name: string): Promise<Phenomenon>;
+  public abstract createPhenomenonSync(name: string): Phenomenon;
+  public abstract async createFormat(name: string): Promise<Format>;
+  public abstract createFormatSync(name: string): Format;
+  public abstract async createUnitSystem(name: string): Promise<UnitSystem>;
+  public abstract createUnitSystemSync(name: string): UnitSystem;
   public abstract async createPropertyCategory(name: string): Promise<PropertyCategory>;
   public abstract createPropertyCategorySync(name: string): PropertyCategory;
   public abstract async addItem<T extends SchemaItem>(item: T): Promise<void>;

@@ -14,6 +14,12 @@ import CustomAttributeClass from "./Metadata/CustomAttributeClass";
 import Enumeration from "./Metadata/Enumeration";
 import KindOfQuantity from "./Metadata/KindOfQuantity";
 import PropertyCategory from "./Metadata/PropertyCategory";
+import Unit from "./Metadata/Unit";
+import InvertedUnit from "./Metadata/InvertedUnit";
+import Constant from "./Metadata/Constant";
+import Phenomenon from "./Metadata/Phenomenon";
+import UnitSystem from "./Metadata/UnitSystem";
+import Format from "./Metadata/Format";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
 
@@ -28,12 +34,24 @@ export type LazyLoadedEnumeration = LazyLoadedSchemaItem<Enumeration>;
 export type LazyLoadedKindOfQuantity = LazyLoadedSchemaItem<KindOfQuantity>;
 export type LazyLoadedPropertyCategory = LazyLoadedSchemaItem<PropertyCategory>;
 export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<EntityClass | Mixin | RelationshipClass>;
+export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
+export type LazyLoadedInvertedUnit = LazyLoadedSchemaItem<InvertedUnit>;
+export type LazyLoadedConstant = LazyLoadedSchemaItem<Constant>;
+export type LazyLoadedPhenomenon = LazyLoadedSchemaItem<Phenomenon>;
+export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
+export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
 export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
-export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
+export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
 
 export interface SchemaItemVisitor {
+  /* async */ visitFormat?: (format: Format) => Promise<void>;
+  /* async */ visitUnitSystem?: (unitSystem: UnitSystem) => Promise<void>;
+  /* async */ visitPhenomenon?: (phenomenon: Phenomenon) => Promise<void>;
+  /* async */ visitConstant?: (constant: Constant) => Promise<void>;
+  /* async */ visitInvertedUnit?: (invertedUnit: InvertedUnit) => Promise<void>;
   /* async */ visitEnumeration?: (enumeration: Enumeration) => Promise<void>;
+  /* async */ visitUnit?: (unit: Unit) => Promise<void>;
   /* async */ visitKindOfQuantity?: (koq: KindOfQuantity) => Promise<void>;
   /* async */ visitPropertyCategory?: (category: PropertyCategory) => Promise<void>;
   /* async */ visitClass?: (ecClass: AnyClass) => Promise<void>;
@@ -76,4 +94,41 @@ export interface SchemaDeserializationVisitor extends SchemaItemVisitor {
    * @param schema a fully-loaded Schema
    */
   /* async */ visitFullSchema?: (schema: Schema) => Promise<void>;
+
+  /**
+   * Called after a Unit has been deserialized.
+   * @param unit a fully-loaded Unit
+   */
+  /* async */ visitUnit?: (unit: Unit) => Promise<void>;
+
+  /**
+   * Called after an Inverted Unit has been deserialized.
+   * @param invertedUnit a fully-loaded InvertedUnit
+   */
+  /* async */ visitInvertedUnit?: (invertedUnit: InvertedUnit) => Promise<void>;
+
+  /**
+   * Called after a Constant has been deserialized.
+   * @param constant a fully-loaded Constant
+   */
+  /* async */ visitConstant?: (constant: Constant) => Promise<void>;
+
+  /**
+   * Called after a Phenomenon has been deserialized.
+   * @param phenomena fully-loaded Phenomenon
+   */
+  /* async */ visitPhenomenon?: (phenomena: Phenomenon) => Promise<void>;
+
+  /**
+   * Called after a UnitSystem has been deserialized.
+   * @param unitSystem fully-loaded UnitSystem
+   */
+  /* async */ visitUnitSystem?: (unitSystem: UnitSystem) => Promise<void>;
+
+  /**
+   * Called after a Format has been deserialized.
+   * @param format fully-loaded Format
+   */
+  /* async */ visitFormat?: (format: Format) => Promise<void>;
+
 }

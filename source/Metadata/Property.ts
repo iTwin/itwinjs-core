@@ -143,7 +143,6 @@ export abstract class Property {
 
     // TODO CustomAttributes
   }
-
   public fromJsonSync(jsonObj: any): void {
     if (undefined !== jsonObj.name) {
       if (typeof(jsonObj.name) !== "string")

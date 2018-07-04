@@ -10,8 +10,8 @@ import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 import ECClass, { MutableClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
-import { SchemaItemType } from "../../source/ECObjects";
 import * as sinon from "sinon";
+import { SchemaItemType } from "../../source/ECObjects";
 
 describe("ECClass", () => {
   let schema: Schema;
@@ -80,7 +80,7 @@ describe("ECClass", () => {
   describe("deserialization", () => {
     it("class with base class", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -108,7 +108,7 @@ describe("ECClass", () => {
 
     it("class with base class in reference schema", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         references: [
@@ -144,7 +144,7 @@ describe("ECClass", () => {
     // specific test files.
     it("with properties", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -199,7 +199,7 @@ describe("ECClass", () => {
   describe("deserialization sync", () => {
     it("class with base class", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -227,7 +227,7 @@ describe("ECClass", () => {
 
     it("class with base class in reference schema", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         references: [
@@ -263,7 +263,7 @@ describe("ECClass", () => {
     // specific test files.
     it("with properties", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -317,10 +317,17 @@ describe("ECClass", () => {
 
   describe("fromJson", () => {
     let testClass: ECClass;
-    class MockECClass extends ECClass {}
+    class MockECClass extends ECClass {
+      public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
+      constructor(newSchema: Schema, name: string) {
+        super(newSchema, name);
+        this.schemaItemType = SchemaItemType.EntityClass;
+      }
+      public async accept() {}
+    }
 
     beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass", SchemaItemType.EntityClass);
+      testClass = new MockECClass(schema, "TestClass");
     });
 
     it("should throw for invalid modifier", async () => {
@@ -344,7 +351,7 @@ describe("ECClass", () => {
     class MockECClass extends ECClass {}
 
     beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass", SchemaItemType.EntityClass);
+      testClass = new MockECClass(schema, "TestClass");
     });
 
     it("should call visitClass on a SchemaItemVisitor object", async () => {
@@ -373,7 +380,7 @@ describe("ECClass", () => {
       //        [    H    ]
       //
       const testSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "01.00.00",
         alias: "ts",

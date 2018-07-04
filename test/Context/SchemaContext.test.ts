@@ -57,6 +57,8 @@ describe("Schema Context", () => {
     context.addLocater(cache);
     expect(await context.getSchema(schema.schemaKey)).to.equal(schema);
     expect(await context.getSchema(schema.schemaKey, SchemaMatchType.Exact)).to.equal(schema);
+
+    // Check if the schema is found if it is added to the cache after the cache is added as a locater
     const cache2 = new SchemaCache();
     context.addLocater(cache2);
     const schema2 = new Schema("TestSchema", 1, 0, 10);

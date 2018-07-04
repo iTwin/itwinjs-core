@@ -20,15 +20,15 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  */
 export default class RelationshipClass extends ECClass {
   public readonly schema!: Schema; // tslint:disable-line
-  public readonly type!: SchemaItemType.RelationshipClass; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.RelationshipClass; // tslint:disable-line
   protected _strength: StrengthType = StrengthType.Referencing;
   protected _strengthDirection: StrengthDirection = StrengthDirection.Forward;
   protected _source: RelationshipConstraint;
   protected _target: RelationshipConstraint;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, SchemaItemType.RelationshipClass, modifier);
-
+    super(schema, name, modifier);
+    this.schemaItemType = SchemaItemType.RelationshipClass;
     this._source = new RelationshipConstraint(this, RelationshipEnd.Source);
     this._target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }
@@ -135,7 +135,7 @@ export class RelationshipConstraint {
    */
   public addClass(constraint: EntityClass | Mixin | RelationshipClass): void {
     // Ensure we don't start mixing constraint class types
-    if (this.constraintClasses && this.constraintClasses.length > 0 && this.constraintClasses[0].type !== constraint.key.type)
+    if (this.constraintClasses && this.constraintClasses.length > 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
     if (!this._constraintClasses)
@@ -204,7 +204,6 @@ export class RelationshipConstraint {
       constraintClasses.forEach((constraintClass: AnyConstraintClass) => this.addClass(constraintClass));
     }
   }
-
   /**
    * Populates this object with the provided json object.
    * @param jsonObj The json representation of an ECRelationshipConstraint using the ECSchemaJson format.

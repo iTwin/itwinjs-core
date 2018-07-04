@@ -11,7 +11,7 @@
   },
   "scripts": {
     "clean": "rimraf lib .nyc_output",
-    "lint": "node ./node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
+    "lint": "tslint --project . 1>&2",
     "prebuild": "npm run lint & npm run clean",
     "build": "tsc",
     "test": "betools test-tsnode --testDir=./test/ --tscPaths",
@@ -32,22 +32,22 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.21.6",
-    "@bentley/bentleyjs-tools": "^3.4.1",
+    "@bentley/bemetalsmith": "^2.5.26",
+    "@bentley/bentleyjs-tools": "^5.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7.1.0",
-    "@types/mocha": "^2.2.48",
-    "@types/sinon": "^4.3.3",
+    "@types/mocha": "^5.2.3",
+    "@types/sinon": "^5.0.1",
     "chai-as-promised": "^7.1.1",
-    "nyc": "^11.9.0",
+    "nyc": "^12.0.2",
     "rimraf": "^2.6.2",
-    "sinon": "^4.5.0",
+    "sinon": "^6.0.1",
     "ts-node": "^3.3.0",
-    "typescript": "^2.8.3"
+    "typescript": "^2.9.2",
+    "@types/glob": "^5.0.35"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^8.6.0",
-    "@types/glob": "^5.0.35"
+    "@bentley/bentleyjs-core": "^8.6.0"
   },
   "nyc": {
     "include": [

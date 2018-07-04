@@ -11,17 +11,16 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
  * An abstract class that supplies all of the common parts of a SchemaItem.
  */
 export default abstract class SchemaItem {
+  public readonly schemaItemType!: SchemaItemType; // allow the derived classes to define their own schemaItemType
   public readonly schema: Schema;
   protected _key: SchemaItemKey;
   protected _description?: string;
   protected _label?: string;
 
-  constructor(schema: Schema, name: string, type: SchemaItemType) {
-    this._key = new SchemaItemKey(name, type, schema.schemaKey);
+  constructor(schema: Schema, name: string) {
+    this._key = new SchemaItemKey(name, schema.schemaKey);
     this.schema = schema;
   }
-
-  public get type(): SchemaItemType { return this.key.type; }
 
   get name() { return this.key.name; }
 
@@ -33,15 +32,15 @@ export default abstract class SchemaItem {
 
   get description() { return this._description; }
 
-  private itemFromJson(jsonObj: any): void {
+  public itemFromJson(jsonObj: any) {
     if (undefined === jsonObj.schemaItemType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} is missing the required schemaItemType property.`);
 
     if (typeof(jsonObj.schemaItemType) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
-    if (parseSchemaItemType(jsonObj.schemaItemType) !== this.type)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.type)}", not "${jsonObj.schemaItemType}".`);
+    if (parseSchemaItemType(jsonObj.schemaItemType) !== this.schemaItemType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${jsonObj.schemaItemType}".`);
 
     if (undefined !== jsonObj.name) {
       if (typeof(jsonObj.name) !== "string")
