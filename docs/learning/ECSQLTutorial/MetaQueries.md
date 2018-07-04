@@ -55,7 +55,7 @@ Another advantage of accessing the schemas via ECSQL is that you can combine tha
 
 > **Try it yourself**
 >
-> *Goal:* Return only [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass `Building` or `Story`.
+> *Goal:* Return only [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass [Building](./MyDomain.ecschema.md#Building) or [Story](./MyDomain.ecschema.md#Story).
 >
 > *ECSQL*
 > ```sql
@@ -76,11 +76,11 @@ were a `Building` subclass in another schema, those instances would also be retu
 
 > **Try it yourself**
 >
-> *Goal:* Return only [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass `Building` or `Story` from the schema `MyDomain`.
+> *Goal:* Return only [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass [Building](./MyDomain.ecschema.md#Building) or [Story](./MyDomain.ecschema.md#Story) from the schema [MyDomain](./MyDomain.ecschema.md).
 >
 > *ECSQL*
 > ```sql
-> SELECT class.Name ClassName, element.ECInstanceId ElementId, element.CodeValue FROM bis.SpatialElement element JOIN meta.ECClassDef class ON element.ECClassId=class.ECInstanceId JOIN meta.ECSchemaDef schema ON schema.ECInstanceId=class.Schema.Id WHERE schema.Name = 'MyDomain' AND class.Name IN ('Building','Story')
+> SELECT class.Name ClassName, element.ECInstanceId ElementId, element.CodeValue FROM bis.SpatialElement element JOIN meta.ECClassDef class ON element.ECClassId=class.ECInstanceId JOIN meta.ECSchemaDef schema ON schema.ECInstanceId=class.Schema.Id WHERE schema.Name='MyDomain' AND class.Name IN ('Building','Story')
 > ```
 >
 > *Result*

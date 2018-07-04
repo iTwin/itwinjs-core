@@ -117,7 +117,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all devices (ECClass `MyDomain.Device`) which were modified before June, 1st, 2018.
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified before June, 1st, 2018.
 >
 > *ECSQL*
 > ```sql
@@ -136,7 +136,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all devices (ECClass `MyDomain.Device`) which were modified between 8am and 6pm UTC on May, 29th 2018.
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified between 8am and 6pm UTC on May, 29th 2018.
 >
 > *ECSQL*
 > ```sql
@@ -164,7 +164,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Find all devices (ECClass `MyDomain.Device`) whose origin lies within the cube with the
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s whose origin lies within the cube with the
 > lower corner point (50, 30, 10) and the upper corner point (70, 40, 20).
 >
 > *ECSQL*
@@ -199,7 +199,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the parent Element for the `Space` with code value *A-G-2*.
+> *Goal:* Return the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -215,7 +215,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id of the parent Element for the `Space` with code value *A-G-2*.
+> *Goal:* Return the id of the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -231,7 +231,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and RelECClassId of the parent Element separately for the `Space` with code value *A-G-2*.
+> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) separately for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql

@@ -71,7 +71,7 @@ As expected the query does not return anything, because [SpatialElement](../../b
 
 > **Try it yourself**
 >
-> *Goal:* Return the code of instances of only the `Device` class (which is a subclass of [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement))
+> *Goal:* Return the code of instances of only the [Device](./MyDomain.ecschema.md#Device) class (which is a subclass of [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement))
 >
 > *ECSQL*
 > ```sql
@@ -98,7 +98,7 @@ Let's go back to explore more how to work with the ECClassId to tell between sub
 
 > **Try it yourself**
 >
-> *Goal:* Return the code and class id of all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s that are either `Space` (ECClassId 244) or `Story` (ECClassId 245) classes.
+> *Goal:* Return the code and class id of all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s that are either [Space](./MyDomain.ecschema.md#Space) (ECClassId 244) or [Story](./MyDomain.ecschema.md#Story) (ECClassId 245) classes.
 >
 > *ECSQL*
 > ```sql
@@ -128,7 +128,7 @@ As usually the class ids are not known, you need to look them up first. You can 
 
 > **Try it yourself**
 >
-> *Goal:* Return the code and class id of all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s that are either `Space` or `Story` classes.
+> *Goal:* Return the code and class id of all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s that are either [Space](./MyDomain.ecschema.md#Space) or [Story](./MyDomain.ecschema.md#Story) classes.
 >
 > *ECSQL*
 > ```sql
