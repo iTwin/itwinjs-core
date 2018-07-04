@@ -41,7 +41,8 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 
 ### Step 1 - Start the iModelConsole
 
-> TBD
+1. Launch the console (TBD)
+1. Authenticate with your CONNECT credentials.
 
 ### Step 2 - Open the sample iModel
 
