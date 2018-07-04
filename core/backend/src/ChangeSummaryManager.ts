@@ -278,7 +278,7 @@ export class ChangeSummaryManager {
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
-      throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel but be open.");
+      throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel must be open.");
 
     const changesFile = new ECDb();
     const changeCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.briefcase.iModelId);
@@ -301,7 +301,7 @@ export class ChangeSummaryManager {
 
   private static createChangeCacheFile(iModel: IModelDb, changesFile: ECDb, changeCacheFilePath: string): void {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
-      throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel but be open.");
+      throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel must be open.");
 
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changeCacheFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
