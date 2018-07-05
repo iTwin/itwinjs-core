@@ -4,7 +4,7 @@
 /** @module Tile */
 
 import { } from "./TileTree";
-import { ElementProps, RelatedElement, TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
+import { TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64, BentleyStatus, assert, StopWatch } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
@@ -121,6 +121,9 @@ export class ScalableMeshTileLoader {
     let foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
+    if (undefined === foundChild.content)
+      return new ScalableMeshTileProps(foundChild, thisParentId, this.tree, undefined);
+
     if (foundChild.content.url.endsWith("json")) {
       const subTree = await this.tree.client.getTileJson(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
       foundChild = subTree.root;
@@ -134,9 +137,7 @@ export class ScalableMeshTileLoader {
 }
 
 export namespace ScalableMeshTileTree {
-  export async function getTileTreeProps(modeledElement: RelatedElement, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
-    const result: ElementProps[] = await iModel.elements.getProps(modeledElement.id);
-    const url = result[0].url;
+  export async function getTileTreeProps(url: string, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
     const ecefLocation = iModel.ecefLocation;
     let ecefToDb: Transform = Transform.createIdentity();
 
@@ -155,7 +156,7 @@ export namespace ScalableMeshTileTree {
       const tilesId = url.split("/").find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
       const json = await realityDataServiceClient.getTileJsonFromUrl(accessToken, url);
 
-      return new ScalableMeshTileTreeProps(json, realityDataServiceClient, accessToken, projectId, tilesId, ecefToDb);
+      return new ScalableMeshTileTreeProps(json, realityDataServiceClient, accessToken, projectId, tilesId as string, ecefToDb);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     }
