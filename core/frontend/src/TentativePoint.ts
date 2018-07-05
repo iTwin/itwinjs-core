@@ -268,7 +268,7 @@ export class TentativePoint {
 
     let thisHit: HitDetail | undefined;
     while (thisHit = this.tpHits!.getNextHit()) {
-      const snap = await IModelApp.accuSnap.snapToHit(thisHit, this.getTPSnapMode(), IModelApp.locateManager.getKeypointDivisor(), thisHit.viewport.pixelsFromInches(this.hotDistanceInches));
+      const snap = await IModelApp.accuSnap.requestSnap(thisHit, this.getTPSnapMode(), this.hotDistanceInches);
       if (snap) {
         // Original hit list is already sorted...preserve order...
         this.snapList.insertHit(-1, snap);
@@ -283,7 +283,7 @@ export class TentativePoint {
     return BentleyStatus.SUCCESS;
   }
 
-  private getSnaps(): SnapDetail | undefined {
+  private async getSnaps(): Promise<SnapDetail | undefined> {
     // clear any current snaps
     this.snapList.empty();
 
@@ -310,7 +310,7 @@ export class TentativePoint {
     // Construct each active point snap mode
     const snaps = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.TentativeSnap);
     for (const snap of snaps) {
-      this.testHitsForSnapMode(snap);
+      await this.testHitsForSnapMode(snap);
     }
 
     this.optimizeHitList();
@@ -331,7 +331,7 @@ export class TentativePoint {
     return pt1.distance(pt2) < aperture;
   }
 
-  public process(ev: BeButtonEvent): void {
+  public async process(ev: BeButtonEvent): Promise<void> {
     // remove the TP cross if it is already on the screen
     this.removeTentative();
 
@@ -346,7 +346,7 @@ export class TentativePoint {
     let snap: SnapDetail | undefined;
     const snapAgain = (this.isSnapped() && TentativePoint.arePointsCloseEnough(lastPtView, this.viewPt, this.viewport!.pixelsFromInches(IModelApp.locateManager.getApertureInches())));
 
-    snap = snapAgain ? this.getNextSnap() : this.getSnaps();
+    snap = snapAgain ? this.getNextSnap() : await this.getSnaps();
 
     // If the the previous snap was done in intersection mode,
     // we now want to try to find intersections with the previous snap.

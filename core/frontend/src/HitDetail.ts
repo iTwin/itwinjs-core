@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
-import { Point3d, Vector3d, CurvePrimitive } from "@bentley/geometry-core";
+import { Point3d, Vector3d, CurvePrimitive, XYZProps } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { DecorateContext } from "./frontend";
@@ -96,38 +96,38 @@ export class HitDetail {
 }
 
 export class SnapDetail extends HitDetail {
-  public snapMode: SnapMode;              // snap mode currently associated with this snap
-  public heat = SnapHeat.None;
   public sprite?: Sprite;
   public readonly snapPoint: Point3d;     // hitPoint adjusted by snap
-  public readonly adjustedPoint: Point3d; // sometimes accuSnap adjusts the point after the snap.
-  public geomType = HitGeomType.None;     // type of hit geometry (edge or interior)
+  private _adjustedPoint: Point3d; // sometimes accuSnap adjusts the point after the snap.
   public primitive?: CurvePrimitive;      // curve primitive for snap.
   public normal?: Vector3d;               // surface normal at snapPoint
 
-  public constructor(from: HitDetail) {
+  /** Constructor for SnapDetail.
+   * @param from The HitDetail that created this snap
+   * @param snapMode The SnapMode used to create this SnapDetail
+   * @param heat The SnapHeat of this SnapDetail
+   * @param snapPoint The snapped point in the element
+   * @param geomType the HitGeomType of this SnapDetail
+   */
+  public constructor(from: HitDetail, public snapMode: SnapMode, public heat: SnapHeat, snapPoint: XYZProps, public readonly geomType: HitGeomType) {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
-    this.snapMode = SnapMode.Nearest;
-    this.snapPoint = this.hitPoint.clone();
-    this.adjustedPoint = this.snapPoint.clone();
+    this.snapPoint = Point3d.fromJSON(snapPoint);
+    this._adjustedPoint = this.snapPoint;
   }
 
+  public get adjustedPoint(): Point3d { return this._adjustedPoint; }
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
   public isSnapDetail(): this is SnapDetail { return true; }
   public isHot(): boolean { return this.heat !== SnapHeat.None; }
-  public isPointAdjusted(): boolean { return !this.adjustedPoint.isAlmostEqual(this.snapPoint); }
-  public setAdjustedPoint(point: Point3d) { this.adjustedPoint.setFrom(point); }
-  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
+  public isPointAdjusted(): boolean { return this.adjustedPoint !== this.snapPoint; }
+  public setAdjustedPoint(point: Point3d) { this._adjustedPoint = point.clone(); }
 
   public clone(): SnapDetail {
-    const val = new SnapDetail(this);
-    val.snapMode = this.snapMode;
-    val.heat = this.heat;
+    const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint, this.geomType);
     val.sprite = this.sprite;
-    val.snapPoint.setFrom(this.snapPoint);
-    val.adjustedPoint.setFrom(this.adjustedPoint);
-    val.geomType = this.geomType;
+    if (this.isPointAdjusted())
+      val.setAdjustedPoint(this.adjustedPoint);
     if (undefined !== this.primitive)
       val.primitive = this.primitive.clone() as CurvePrimitive;
     if (undefined !== this.normal)
