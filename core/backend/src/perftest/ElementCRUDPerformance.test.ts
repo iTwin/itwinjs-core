@@ -10,7 +10,7 @@ import { ECSqlStatement } from "../ECSqlStatement";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "../test/IModelTestUtils";
-import { GeometricElementProps, Code, Appearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { Point3d, Arc3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -128,7 +128,7 @@ describe("PerformanceElementsTests", () => {
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
           if (undefined === spatialCategoryId) {
-            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
           }
 
           for (let m = 0; m < dbSize; ++m) {
@@ -159,7 +159,7 @@ describe("PerformanceElementsTests", () => {
           [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
           if (undefined === spatialCategoryId) {
-            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
           }
           let totalTime = 0.0;
           for (let m = 0; m < opCount; ++m) {

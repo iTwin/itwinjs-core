@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorByName, Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { ColorDef, ColorByName, SubCategoryAppearance, SubCategoryOverride } from "@bentley/imodeljs-common";
 
 // spell-checker: disable
 
 describe("Category tests", () => {
   it("Appearance should construct properly", () => {
-    const opts: AppearanceProps = {
+    const opts: SubCategoryAppearance.Props = {
       color: ColorByName.blue,
       weight: 3,
       priority: 4,
@@ -21,7 +21,7 @@ describe("Category tests", () => {
       dontSnap: true,
       invisible: true,
     };
-    let a1 = new Appearance({} as AppearanceProps);
+    let a1 = new SubCategoryAppearance({} as SubCategoryAppearance.Props);
     assert.isFalse(a1.dontLocate);
     assert.isFalse(a1.dontPlot);
     assert.isFalse(a1.dontSnap);
@@ -31,7 +31,7 @@ describe("Category tests", () => {
     assert.equal(a1.priority, 0);
     assert.isTrue(a1.color.equals(ColorDef.black));
 
-    a1 = new Appearance();
+    a1 = new SubCategoryAppearance();
     assert.isFalse(a1.dontLocate);
     assert.isFalse(a1.dontPlot);
     assert.isFalse(a1.dontSnap);
@@ -41,7 +41,7 @@ describe("Category tests", () => {
     assert.equal(a1.priority, 0);
     assert.isTrue(a1.color.equals(ColorDef.black));
 
-    a1 = new Appearance(opts);
+    a1 = new SubCategoryAppearance(opts);
     assert.isTrue(a1.dontPlot);
     assert.isTrue(a1.dontLocate);
     assert.isTrue(a1.dontSnap);
@@ -52,7 +52,7 @@ describe("Category tests", () => {
     assert.isTrue(a1.color.equals(ColorDef.blue));
 
     let json = JSON.stringify(a1);
-    const a2 = new Appearance(JSON.parse(json));
+    const a2 = new SubCategoryAppearance(JSON.parse(json));
     assert.isTrue(a1.equals(a2));
 
     const o1 = new SubCategoryOverride();

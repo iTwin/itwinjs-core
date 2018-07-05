@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride, Appearance as SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { Id64Set, Id64 } from "@bentley/bentleyjs-core";
 import { ViewState, SpecialElements, DrawnElementSets } from "../ViewState";
 import { IModelConnection } from "../IModelConnection";

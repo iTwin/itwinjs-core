@@ -6,22 +6,8 @@
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 
-/** Properties to create a SubCategory Appearance */
-export interface AppearanceProps {
-  color?: ColorDefProps;
-  invisible?: boolean;
-  dontPlot?: boolean;
-  dontSnap?: boolean;
-  dontLocate?: boolean;
-  weight?: number;
-  style?: Id64Props;
-  priority?: number;
-  material?: Id64Props;
-  transp?: number;
-}
-
 /** Parameters that define the way geometry on a SubCategory appears. */
-export class Appearance {
+export class SubCategoryAppearance {
   public color: ColorDef = ColorDef.black;
   public weight = 0;
   public priority = 0;
@@ -33,7 +19,7 @@ export class Appearance {
   public styleId: Id64;
   public materialId: Id64;
 
-  constructor(props?: AppearanceProps) {
+  constructor(props?: SubCategoryAppearance.Props) {
     if (!props) {
       this.styleId = new Id64();
       this.materialId = new Id64();
@@ -52,7 +38,7 @@ export class Appearance {
     this.transparency = JsonUtils.asInt(props.transp);
   }
 
-  public equals(other: Appearance): boolean {
+  public equals(other: SubCategoryAppearance): boolean {
     return this.invisible === other.invisible &&
       this.dontPlot === other.dontPlot &&
       this.dontSnap === other.dontSnap &&
@@ -65,8 +51,8 @@ export class Appearance {
       this.transparency === other.transparency;
   }
 
-  public toJSON(): AppearanceProps {
-    const val = { color: this.color.toJSON() } as AppearanceProps;
+  public toJSON(): SubCategoryAppearance.Props {
+    const val = { color: this.color.toJSON() } as SubCategoryAppearance.Props;
     if (this.invisible) val.invisible = true;
     if (this.dontPlot) val.dontPlot = true;
     if (this.dontSnap) val.dontSnap = true;
@@ -80,9 +66,25 @@ export class Appearance {
   }
 }
 
+export namespace SubCategoryAppearance {
+  /** Properties to create a SubCategoryAppearance */
+  export interface Props {
+    color?: ColorDefProps;
+    invisible?: boolean;
+    dontPlot?: boolean;
+    dontSnap?: boolean;
+    dontLocate?: boolean;
+    weight?: number;
+    style?: Id64Props;
+    priority?: number;
+    material?: Id64Props;
+    transp?: number;
+  }
+}
+
 /** The SubCategory appearance overrides for a view */
 export class SubCategoryOverride {
-  private readonly _value = new Appearance();
+  private readonly _value = new SubCategoryAppearance();
   private _invisible?: boolean;
   private _color?: boolean;
   private _weight?: boolean;
@@ -110,7 +112,7 @@ export class SubCategoryOverride {
   public setDisplayPriority(val: number) { this._priority = true; this._value.priority = val; }
   public setMaterial(val: Id64) { this._material = true; this._value.materialId = val; }
   public setTransparency(val: number) { this._transp = true; this._value.transparency = val; }
-  public applyTo(appear: Appearance): void {
+  public applyTo(appear: SubCategoryAppearance): void {
     if (this._invisible) appear.invisible = this._value.invisible;
     if (this._color) appear.color = this._value.color;
     if (this._weight) appear.weight = this._value.weight;
