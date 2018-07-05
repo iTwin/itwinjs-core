@@ -433,8 +433,9 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public schemaFromJson(jsonObj: any) {
-    if (SCHEMAURL3_2 !== jsonObj.$schema)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
+    if (SCHEMAURL3_2 !== jsonObj.$schema) {
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "Schema namespace '$(jsonObj.$schema)' is not supported.");
+    }
 
     if (!this._schemaKey) {
       if (undefined === jsonObj.name)

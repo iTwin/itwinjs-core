@@ -6,7 +6,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { BentleyError } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 export const enum ECObjectsStatus {
-  ECOBJECTS_ERROR_BASE = 0x10000,
+  ECOBJECTS_ERROR_BASE = 0x88EC,
   Success = 0,
   DuplicateItem = ECOBJECTS_ERROR_BASE + 1,
   DuplicateProperty = ECOBJECTS_ERROR_BASE + 2,
@@ -32,9 +32,9 @@ export const enum ECObjectsStatus {
 }
 
 export class ECObjectsError extends BentleyError {
-  public constructor(public readonly errorNumber: number | ECObjectsStatus, message?: string) {
+  public constructor(public readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
-    assert(errorNumber as number !== ECObjectsStatus.Success as number);
+    assert(errorNumber as number !== ECObjectsStatus.Success as number, message);
   }
 
   public toDebugString(): string {

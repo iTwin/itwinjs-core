@@ -107,6 +107,31 @@ describe("Mixin", () => {
       expect(navProp.direction).to.equal(StrengthDirection.Forward);
     });
 
+    it("should succeed with NavigationPropertySynchronously", () => {
+      const json = createSchemaJson({
+        appliesTo: "TestSchema.TestEntity",
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+        ],
+      });
+
+      const schema = Schema.fromJsonSync(json);
+      expect(schema).to.exist;
+
+      const mixin = schema.getItemSync<Mixin>("TestMixin");
+      expect(mixin).to.exist;
+
+      const navProp = mixin!.getPropertySync("testNavProp", false) as NavigationProperty;
+      expect(navProp).to.exist;
+      expect(navProp.isNavigation()).to.be.true;
+      expect(navProp.direction).to.equal(StrengthDirection.Forward);
+    });
+
     it("should throw for invalid appliesTo", async () => {
       const json = createSchemaJson({
         appliesTo: 0,
