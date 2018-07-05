@@ -117,6 +117,7 @@ export class FileAccessKey extends WsgInstance {
 export class RealityDataServicesClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";
   private blobUrl: any;
+  private blobRoot: undefined | string;
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-realitydataservices-eus.cloudapp.net",
     QA: "https://qa-connect-realitydataservices.bentley.com",
@@ -130,6 +131,24 @@ export class RealityDataServicesClient extends WsgClient {
    */
   public constructor(public deploymentEnv: DeploymentEnv) {
     super(deploymentEnv, "v2.5", RealityDataServicesClient.defaultUrlDescriptor[deploymentEnv] + "/");
+  }
+
+  /**
+   * Potentially a model name will be of this format: {{root}}/{{name}}
+   * When this occurs, the tile content requests will be made without the root portion prefixed, which results in 404's
+   * As a workaround, when the root document json is fetched, we can determine if a root name exists and if so,
+   * save it so we can conditionally prefix it the child tile names when they are requested
+   *
+   * This method is where we conditionally prefix that root into the name field
+   * @param name
+   */
+  private updateModelName(name: string): string {
+    // a compound name implies that it includes a forward slash or equivalent character
+    const isCompound = name.includes("/") || name.includes("~2F");
+
+    // if the name is already compound or the blobRoot is not set, then we do not prefix the model name as it would be redundant
+    // otherwise, we return the name prefixed with that value
+    return (!isCompound && !name.includes("%2F") && undefined !== this.blobRoot) ? this.blobRoot + "/" + name : name;
   }
 
   /**
@@ -179,7 +198,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns a string url
    */
   public async getFileAccessKey(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<FileAccessKey[]> {
-    const path = encodeURIComponent(tilesId + "/" + name).split("%").join("~");
+    const path = encodeURIComponent(tilesId + "/" + this.updateModelName(name)).split("%").join("~");
     return this.getInstances<FileAccessKey>(FileAccessKey, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/Document/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
   }
 
@@ -270,7 +289,7 @@ export class RealityDataServicesClient extends WsgClient {
     const url = await this.getBlobUrl(token, projectId, tilesId, name);
     const host = url.origin + url.pathname;
     const query = url.search;
-    return `${host}/${name}${query}`;
+    return `${host}/${this.updateModelName(name)}${query}`;
   }
 
   /**
@@ -334,6 +353,10 @@ export class RealityDataServicesClient extends WsgClient {
       const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
       const tilesId = urlParts.find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
       const modelName = url.split(tilesId + "/")[1];
+
+      // if the model is split by a forward slash, then we need to preserve the root so we can prefix it to the blob path used when requesting the tile content
+      this.blobRoot = modelName.includes("/") ? modelName.split("/")[0] : undefined;
+
       return tileRequest(token, projectId, tilesId!, modelName);
     } catch (ex) {
       throw new Error(ex);
