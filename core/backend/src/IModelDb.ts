@@ -16,6 +16,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
+import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import * as path from "path";
@@ -117,7 +118,8 @@ export class IModelDb extends IModel {
   public views = new IModelDb.Views(this);
   public tiles = new IModelDb.Tiles(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
-  private readonly statementCache = new ECSqlStatementCache();
+  private readonly _statementCache = new ECSqlStatementCache();
+  private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
@@ -333,6 +335,7 @@ export class IModelDb extends IModel {
   private onBriefcaseCloseHandler() {
     this.onBeforeClose.raiseEvent();
     this.clearStatementCache();
+    this.clearSqliteStatementCache();
   }
 
   private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.changeSetId; }
@@ -359,18 +362,17 @@ export class IModelDb extends IModel {
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStatement = this.statementCache.find(ecsql);
+    const cachedStatement = this._statementCache.find(ecsql);
     if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       cachedStatement.useCount++;
       return cachedStatement.statement;
     }
 
-    this.statementCache.removeUnusedStatementsIfNecessary();
+    this._statementCache.removeUnusedStatementsIfNecessary();
     const stmt = this.prepareStatement(ecsql);
-    this.statementCache.add(ecsql, stmt);
+    this._statementCache.add(ecsql, stmt);
     return stmt;
   }
-  private releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
 
   /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
    *
@@ -389,10 +391,10 @@ export class IModelDb extends IModel {
     const stmt = this.getPreparedStatement(ecsql);
     try {
       const val = callback(stmt);
-      this.releasePreparedStatement(stmt);
+      this._statementCache.release(stmt);
       return val;
     } catch (err) {
-      this.releasePreparedStatement(stmt); // always release statement
+      this._statementCache.release(stmt); // always release statement
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }
@@ -430,6 +432,58 @@ export class IModelDb extends IModel {
     });
   }
 
+  /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
+   *
+   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
+   * the already prepared statement from the cache will be reused.
+   *
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by cb
+   */
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    const stmt = this.getPreparedSqlStatement(sql);
+    try {
+      const val = callback(stmt);
+      this._sqliteStatementCache.release(stmt);
+      return val;
+    } catch (err) {
+      this._sqliteStatementCache.release(stmt); // always release statement
+      Logger.logError(loggingCategory, err.toString());
+      throw err;
+    }
+  }
+
+  /** Prepare an SQLite SQL statement.
+   * @param sql The SQLite SQL statement to prepare
+   * @throws [[IModelError]] if there is a problem preparing the statement.
+   */
+  public prepareSqliteStatement(sql: string): SqliteStatement {
+    if (!this.briefcase)
+      throw this._newNotOpenError();
+    const stmt = new SqliteStatement();
+    stmt.prepare(this.briefcase.nativeDb, sql);
+    return stmt;
+  }
+
+  /** Get a prepared SQLite SQL statement - may require preparing the statement, if not found in the cache.
+   * @param sql The SQLite SQL statement to prepare
+   * @returns the prepared statement
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   */
+  private getPreparedSqlStatement(sql: string): SqliteStatement {
+    const cachedStatement: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
+    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      cachedStatement.useCount++;
+      return cachedStatement.statement;
+    }
+
+    this._statementCache.removeUnusedStatementsIfNecessary();
+    const stmt: SqliteStatement = this.prepareSqliteStatement(sql);
+    this._sqliteStatementCache.add(sql, stmt);
+    return stmt;
+  }
+
   /**
    * Query for a set of entity ids, given an EntityQueryParams
    * @param params the EntityQueryParams for query
@@ -460,8 +514,11 @@ export class IModelDb extends IModel {
     return ids;
   }
 
-  /** Empty the [[ECSqlStatementCache]] for this iModel. */
-  public clearStatementCache(): void { this.statementCache.clear(); }
+  /** Empty the [ECSqlStatementCache]($backend) for this iModel. */
+  public clearStatementCache(): void { this._statementCache.clear(); }
+
+  /** Empty the [SqliteStatementCache]($backend) for this iModel. */
+  public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
   /** Get the GUID of this iModel.  */
   public getGuid(): Guid { return new Guid(this.nativeDb.getDbGuid()); }
@@ -771,7 +828,7 @@ export class IModelDb extends IModel {
       request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
         this._snaps.delete(connectionId);
         if (ret.error !== undefined)
-          reject(new IModelError(ret.error.status, ret.error.message));
+          reject(new Error(ret.error.message));
         else
           return resolve(ret.result);
       });

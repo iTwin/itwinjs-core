@@ -15,7 +15,7 @@ import { IModel, IModelToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
-import { SnapRequestProps, SnapResponseProps } from "../ViewProps";
+import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)

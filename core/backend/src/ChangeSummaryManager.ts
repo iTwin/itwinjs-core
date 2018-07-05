@@ -121,6 +121,7 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     iModel.clearStatementCache();
+    iModel.clearSqliteStatementCache();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
       throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.briefcase.pathname}.`);

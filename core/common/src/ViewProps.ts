@@ -5,7 +5,7 @@
 
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
-import { AngleProps, XYZProps, XYProps, YawPitchRollProps, Matrix4d, Matrix4dProps } from "@bentley/geometry-core";
+import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps } from "./ElementProps";
 
 /** properties that define a ModelSelector */
@@ -27,6 +27,56 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
   categorySelectorId: Id64Props;
   displayStyleId: Id64Props;
   description?: string;
+}
+
+/** Properties of [[ViewFlags]] */
+export interface ViewFlagProps {
+  /** If true, don't show construction class. */
+  noConstruct?: boolean;
+  /** If true, don't show dimension class. */
+  noDim?: boolean;
+  /** If true, don't show patterns. */
+  noPattern?: boolean;
+  /** If true, don't line weights. */
+  noWeight?: boolean;
+  /** If true, don't line styles. */
+  noStyle?: boolean;
+  /** If true, don't use transparency. */
+  noTransp?: boolean;
+  /** If true, use continuous rendering. */
+  contRend?: boolean;
+  /** If true, don't show filled regions. */
+  noFill?: boolean;
+  /** If true, show grids. */
+  grid?: boolean;
+  /** If true, show AuxCoordSystem. */
+  acs?: boolean;
+  /** If true, don't show textures. */
+  noTexture?: boolean;
+  /** If true, don't show materials. */
+  noMaterial?: boolean;
+  /** If true, don't use camera lights. */
+  noCameraLights?: boolean;
+  /** If true, don't use source lights. */
+  noSourceLights?: boolean;
+  /** If true, don't use solar lights. */
+  noSolarLight?: boolean;
+  /** If true, show visible edges. */
+  visEdges?: boolean;
+  /** If true, show hidden edges. */
+  hidEdges?: boolean;
+  /** If true, show shadows. */
+  shadows?: boolean;
+  /** If true, use clipping volume. */
+  clipVol?: boolean;
+  /** If true, use hidden line material colors. */
+  hlMatColors?: boolean;
+  /** If true, show view with monochrome settings. */
+  monochrome?: boolean;
+  /** Edge mask. 0=none, 1=generate mask, 2=use mask. */
+  edgeMask?: number;
+  /** [[RenderMode]] */
+  renderMode?: number;
 }
 
 /** properties of a camera */
@@ -86,28 +136,4 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   yaw?: AngleProps;  // in degrees
   pitch?: AngleProps; // in degrees
   roll?: AngleProps; // in degrees
-}
-
-export interface SnapRequestProps {
-  id: Id64Props;
-  closePoint: XYZProps;
-  worldToView: Matrix4dProps;
-  viewFlags?: any;
-  snapMode?: number;
-  snapAperture?: number;
-  snapDivisor?: number;
-  offSubCategories?: string[];
-}
-
-export interface SnapResponseProps {
-  status?: number;
-  heat?: number;
-  geomType?: number;
-  parentGeomType?: number;
-  subCategory?: string;
-  weight: number;
-  snapPoint?: XYZProps;
-  curve?: any;
-  localToWorld?: Matrix4d;
-  normal?: XYZProps;
 }
