@@ -115,7 +115,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
   return true;
 }
 
-describe.only("Disposal of WebGL Resources", () => {
+describe("Disposal of WebGL Resources", () => {
   before(async () => {
     canvas = document.createElement("canvas") as HTMLCanvasElement;
     assert(null !== canvas);
