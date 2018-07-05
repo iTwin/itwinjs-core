@@ -333,7 +333,7 @@ export class RealityDataServicesClient extends WsgClient {
       const urlParts = url.split("/");
       const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
       const tilesId = urlParts.find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
-      const modelName = urlParts[urlParts.length - 1];
+      const modelName = url.split(tilesId + "/")[1];
       return tileRequest(token, projectId, tilesId!, modelName);
     } catch (ex) {
       throw new Error(ex);
