@@ -9,7 +9,6 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
 import { remote } from "electron";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 // tslint:disable:no-console
 
@@ -209,16 +208,14 @@ function buildCategoryMenu(state: SimpleViewState) {
   curCategories.clear();
   for (const cat of view.categorySelector.categories) {
     curCategories.add(cat);
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-    categoryMenu.innerHTML += '<input id="cbxCat' + id.value + '" type="checkbox"> ' + cat + " (" + id.value + ")\n<br>\n";
+    categoryMenu.innerHTML += '<input id="cbxCat' + cat + '" type="checkbox"> ' + cat + "\n<br>\n";
   }
 
   updateCheckboxToggleState("cbxCatToggleAll", true);
   addCategoryToggleAllHandler();
 
   for (const cat of curCategories) {
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-    const cbxName = "cbxCat" + id.value;
+    const cbxName = "cbxCat" + cat;
     updateCheckboxToggleState(cbxName, true); // enable all categories
     addCategoryToggleHandler(cbxName);
   }
@@ -255,21 +252,13 @@ function applyModelToggleChange(_cbxModel: string) {
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
 }
 
-function toggleCategoryState(_invis: boolean, _cat: Id64, _origCat: Id64, view: ViewState) {
-  // Use overrides to toggle visibility
-  const ovr = view.getSubCategoryOverride(_cat);
-  if (_invis !== ovr.invisible) {
-    ovr.setInvisible(_invis);
-    view.overrideSubCategory(_cat, ovr); // sets feature overrides dirty
-  }
+function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
+  if (invis)
+    view.categorySelector.dropCategories(catId);
+  else
+    view.categorySelector.addCategories(catId);
 
-  // Use categorySelector to toggle visibility
-  // if (_invis) {
-  //   view.categorySelector.dropCategories(_origCat);
-  // } else {
-  //   view.categorySelector.addCategories(_origCat);
-  // }
-  // view.setFeatureOverridesDirty(); // add/dropCategories doesn't set feature overrides dirty
+  view.setFeatureOverridesDirty();
 }
 
 // apply a category checkbox state being changed
@@ -278,12 +267,10 @@ function applyCategoryToggleChange(_cbxCategory: string) {
 
   let allToggledOn = true;
   for (const cat of curCategories) {
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-
-    const cbxName = "cbxCat" + id.value;
+    const cbxName = "cbxCat" + cat;
     const isChecked = getCheckboxToggleState(cbxName);
     const invis = isChecked ? false : true;
-    toggleCategoryState(invis, id, new Id64(cat), view);
+    toggleCategoryState(invis, cat, view);
     if (invis)
       allToggledOn = false;
   }
@@ -300,13 +287,11 @@ function applyCategoryToggleAllChange() {
   const isChecked = getCheckboxToggleState("cbxCatToggleAll");
 
   for (const cat of curCategories) {
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-
-    const cbxName = "cbxCat" + id.value;
+    const cbxName = "cbxCat" + cat;
     updateCheckboxToggleState(cbxName, isChecked);
 
     const invis = isChecked ? false : true;
-    toggleCategoryState(invis, id, new Id64(cat), view);
+    toggleCategoryState(invis, cat, view);
   }
 
   const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;

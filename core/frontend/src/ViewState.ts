@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
-  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
+  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
   QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
@@ -161,6 +161,35 @@ export class SpecialElements implements DrawnElementSets {
   }
 }
 
+export class ViewSubCategories {
+  public readonly byCategoryId = new Map<string, Id64Set>();
+  public readonly appearances = new Map<string, SubCategoryAppearance>();
+
+  public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    const where = [...categoryIds].join(",");
+    if (0 === where.length)
+      return Promise.resolve();
+
+    const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
+    return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
+  }
+
+  private loadFromRows(rows: any[]): void {
+    for (const row of rows)
+      this.add(row.parentId as string, row.id as string, new SubCategoryAppearance(JSON.parse(row.appearance)));
+  }
+
+  private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+    let set = this.byCategoryId.get(categoryId);
+    if (undefined === set)
+      this.byCategoryId.set(categoryId, set = new Set<string>());
+
+    set.add(subCategoryId);
+
+    this.appearances.set(subCategoryId, appearance);
+  }
+}
+
 /**
  * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  * Subclasses of ViewDefinition determine which model(s) are viewed.
@@ -171,9 +200,10 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   protected _selectionSetDirty = true;
   private _noQuery: boolean = false;
   private _auxCoordSystem?: AuxCoordSystemState;
-  public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
+  public readonly subCategories = new ViewSubCategories();
+  public static get className() { return "ViewDefinition"; }
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
@@ -182,6 +212,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
+      this.subCategories = categorySelector.subCategories; // NB: This is a cache. No reason to deep-copy.
     }
   }
 
@@ -239,6 +270,8 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       const props = await this.iModel.elements.getProps(acsId);
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     }
+
+    return this.subCategories.load(this.categorySelector.categories, this.iModel);
   }
 
   /** Get the name of the ViewDefinition of this ViewState */

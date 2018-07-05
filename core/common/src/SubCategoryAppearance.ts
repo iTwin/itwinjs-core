@@ -64,6 +64,8 @@ export class SubCategoryAppearance {
     if (0.0 !== this.transparency) val.transp = this.transparency;
     return val;
   }
+
+  public clone(): SubCategoryAppearance { return new SubCategoryAppearance(this.toJSON()); }
 }
 
 export namespace SubCategoryAppearance {
