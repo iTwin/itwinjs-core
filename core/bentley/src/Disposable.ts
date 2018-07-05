@@ -12,9 +12,8 @@ export interface IDisposable {
 
 /** Function for disposing of a disposable object that may be undefined. */
 export function dispose(disposable?: IDisposable) {
-  if (undefined !== disposable) {
+  if (undefined !== disposable)
     disposable.dispose();
-  }
   return undefined;
 }
 
