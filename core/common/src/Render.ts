@@ -195,11 +195,9 @@ export class PolylineEdgeArgs {
 /** A Texture for rendering */
 export abstract class RenderTexture implements IDisposable {
   public readonly params: RenderTexture.Params;
-  protected _isDisposed: boolean = true;  // until WebGL resources are created, stays true
 
   protected constructor(params: RenderTexture.Params) { this.params = params; }
   public abstract dispose(): void;
-  public get isDisposed(): boolean { return this._isDisposed; }
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }

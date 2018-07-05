@@ -179,8 +179,7 @@ export class MeshGraphic extends Graphic {
   public dispose() {
     dispose(this.meshData);
     for (const primitive of this._primitives)
-      if (primitive !== undefined)  // array sometimes has gaps..?
-        dispose(primitive);
+      dispose(primitive);
     this._primitives.length = 0;
   }
 
@@ -222,10 +221,6 @@ export abstract class MeshGeometry extends LUTGeometry {
     this.mesh = mesh;
   }
 
-  public dispose() {
-    dispose(this.mesh);
-  }
-
   protected computeEdgeWeight(params: ShaderProgramParams): number { return params.target.getEdgeWeight(params, this.edgeWidth); }
   protected computeEdgeLineCode(params: ShaderProgramParams): number { return params.target.getEdgeLineCode(params, this.edgeLineCode); }
   protected computeEdgeColor(target: Target): ColorInfo { return target.isEdgeColorOverridden ? target.edgeColor : this.colorInfo; }
@@ -242,7 +237,7 @@ export abstract class MeshGeometry extends LUTGeometry {
 }
 
 export abstract class MeshPrimitive extends Primitive {
-  public readonly mesh: MeshGraphic;  // is not owned (mesh is the owner of THIS object)
+  public readonly mesh: MeshGraphic;  // is not owned (mesh is the owner of THIS MeshPrimitive)
 
   public get meshData(): MeshData { return this.mesh.meshData; }
 
@@ -352,7 +347,6 @@ export class EdgeGeometry extends MeshGeometry {
   public dispose() {
     dispose(this._indices);
     dispose(this._endPointAndQuadIndices);
-    super.dispose();
   }
 
   public bindVertexArray(attr: AttributeHandle): void {
@@ -497,7 +491,6 @@ export class PolylineEdgeGeometry extends MeshGeometry {
 
   public dispose() {
     dispose(this._buffers);
-    super.dispose();
   }
 
   public _wantWoWReversal(_target: Target): boolean { return true; }

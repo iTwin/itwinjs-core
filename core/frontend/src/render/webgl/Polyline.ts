@@ -291,12 +291,12 @@ export class PolylineGeometry extends LUTGeometry {
   public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
 
   public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this.buffers.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+    attr.enableArray(this.buffers!.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
 
   public draw(): void {
     const gl = System.instance.context;
-    this.buffers.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    this.buffers!.indices.bind(GL.Buffer.Target.ArrayBuffer);
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
   }
 

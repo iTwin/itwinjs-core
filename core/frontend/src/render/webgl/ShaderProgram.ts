@@ -156,7 +156,7 @@ export class ShaderProgram implements IDisposable {
   public get isDisposed(): boolean { return this._glProgram === undefined; }
 
   public dispose(): void {
-    if (this.isDisposed) {
+    if (!this.isDisposed) {
       assert(!this._inUse);
       System.instance.context.deleteProgram(this._glProgram!);
       this._glProgram = undefined;
@@ -164,7 +164,6 @@ export class ShaderProgram implements IDisposable {
     }
   }
 
-  public get isValid(): boolean { return undefined !== this.glProgram; }
   public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
   public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
 
@@ -202,7 +201,7 @@ export class ShaderProgram implements IDisposable {
       case CompileStatus.Failure: return false;
       case CompileStatus.Success: return true;
       default: {
-        if (!this.isValid) {
+        if (this.isDisposed) {
           this._status = CompileStatus.Failure;
           return false;
         }

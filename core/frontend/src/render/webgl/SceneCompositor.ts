@@ -352,8 +352,6 @@ export class SceneCompositor implements IDisposable {
       return true;
     }
 
-    this.dispose();
-
     this._width = width;
     this._height = height;
 
@@ -463,6 +461,7 @@ export class SceneCompositor implements IDisposable {
   }
 
   private init(): boolean {
+    this.dispose();
     this._depth = System.instance.createDepthBuffer(this._width, this._height);
     if (this._depth !== undefined) {
       return this._textures.init(this._width, this._height) && this._fbos.init(this._textures, this._depth) && this._geometry.init(this._textures);

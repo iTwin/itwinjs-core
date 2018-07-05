@@ -247,8 +247,6 @@ export abstract class Target extends RenderTarget {
       }
 
       this._worldDecorations = new WorldDecorations(decs.list[0].graphic.iModel, vf);
-    } else {
-      dispose(this._worldDecorations);
     }
 
     this._worldDecorations.init(decs);
@@ -355,6 +353,9 @@ export abstract class Target extends RenderTarget {
   public changeDecorations(decs: Decorations): void {
     this._decorations = dispose(this._decorations);
     this._decorations = decs;
+    for (let i = 0; i < 16; i++) {
+      System.instance.context.disableVertexAttribArray(i);
+    }
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
@@ -619,8 +620,6 @@ export abstract class Target extends RenderTarget {
     const gl = System.instance.context;
     const rect = this.viewRect;
     gl.viewport(0, 0, rect.width, rect.height);
-
-    // ###TODO? System.instance.garbage.execute();
 
     this.setFrameTime();
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);

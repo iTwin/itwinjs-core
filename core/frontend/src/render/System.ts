@@ -149,14 +149,14 @@ export class Decorations implements IDisposable {
   }
 
   public dispose() {
-    dispose(this._viewBackground);
-    dispose(this._world);
-    dispose(this._worldOverlay);
-    dispose(this._viewOverlay);
+    this._viewBackground = dispose(this._viewBackground);
+    this._world = dispose(this._world);
+    this._worldOverlay = dispose(this._worldOverlay);
+    this._viewOverlay = dispose(this._viewOverlay);
     if (this._normal)
       for (const graphic of this._normal)
         dispose(graphic);
-    this._viewBackground = this._normal = this._world = this._worldOverlay = this._viewOverlay = undefined;
+    this._normal = undefined;
   }
 }
 
