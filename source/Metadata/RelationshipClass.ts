@@ -9,7 +9,7 @@ import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import EntityClass, { createNavigationProperty } from "./EntityClass";
+import EntityClass, { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
 import Mixin from "./Mixin";
 import Schema from "./Schema";
 
@@ -49,6 +49,10 @@ export default class RelationshipClass extends ECClass {
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
+  }
+
+  protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
+    return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
   /**

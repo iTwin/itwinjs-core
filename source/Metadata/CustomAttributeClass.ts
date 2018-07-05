@@ -25,11 +25,9 @@ export default class CustomAttributeClass extends ECClass {
     this.schemaItemType = SchemaItemType.CustomAttributeClass;
   }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
+  private caFromJson(jsonObj: any): void {
     if (undefined === jsonObj.appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} is missing the required 'appliesTo' attribute.`);
+    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} is missing the required 'appliesTo' attribute.`);
 
     if (typeof(jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
@@ -38,5 +36,15 @@ export default class CustomAttributeClass extends ECClass {
     if (undefined === containerType)
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${containerType} is not a valid CustomAttributeContainerType.`);
     this._containerType = containerType;
+  }
+
+  public async fromJson(jsonObj: any): Promise<void> {
+    await super.fromJson(jsonObj);
+    this.caFromJson(jsonObj);
+  }
+
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+    this.caFromJson(jsonObj);
   }
 }

@@ -410,4 +410,78 @@ describe("ECClass", () => {
       expect(actualNames).to.eql(expectedNames);
     });
   });
+
+  describe("NavProperty on CustomAttributeClass", () => {
+    function createSchemaJsonWithItems(itemsJson: any): any {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          ...itemsJson,
+        },
+      };
+    }
+    function createSchemaJson(nestedJson: any): any {
+      return createSchemaJsonWithItems({
+        TestCA: {
+          schemaItemType: "CustomAttributeClass",
+          ...nestedJson,
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+        },
+        NavPropRelationship: {
+          schemaItemType: "RelationshipClass",
+          strength: "Embedding",
+          strengthDirection: "Forward",
+          modifier: "Sealed",
+          source: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Source RoleLabel",
+            constraintClasses: [ "TestSchema.TestEntity" ],
+          },
+          target: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Target RoleLabel",
+            constraintClasses: [ "TestSchema.TestEntity" ],
+          },
+        },
+      });
+    }
+
+    it("should throw", async () => {
+      const json = createSchemaJson({
+        appliesTo: "Any",
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+          ],
+        });
+
+      await assert.isRejected(Schema.fromJson(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
+    });
+
+    it("should throw synchronously", () => {
+      const json = createSchemaJson({
+        appliesTo: "Any",
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+          ],
+        });
+
+      assert.throw(() => Schema.fromJsonSync(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
+    });
+  });
 });
