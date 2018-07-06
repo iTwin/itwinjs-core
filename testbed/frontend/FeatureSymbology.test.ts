@@ -15,7 +15,7 @@ const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "testbed/node_
 
 describe("FeatureSymbology.Appearance", () => {
   it("default constructor works as expected", () => {
-    const app = new FeatureSymbology.Appearance();
+    const app = FeatureSymbology.Appearance.fromJSON();
     assert.isUndefined(app.rgb);
     assert.isUndefined(app.weight);
     assert.isUndefined(app.alpha);
@@ -26,7 +26,7 @@ describe("FeatureSymbology.Appearance", () => {
   it("AppearanceProps passed in constructor works as expected", () => {
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 200, linePixels: LinePixels.Code2, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 200, linePixels: LinePixels.Code2 } as FeatureSymbology.AppearanceProps;
-    let app = new FeatureSymbology.Appearance(props1);
+    let app = FeatureSymbology.Appearance.fromJSON(props1);
     assert.isTrue(app.overridesRgb);
     assert.isTrue(app.overridesWeight);
     assert.isTrue(app.overridesAlpha);
@@ -34,7 +34,7 @@ describe("FeatureSymbology.Appearance", () => {
     assert.isTrue(app.ignoresMaterial);
 
     // keep ignoresMaterial defined as false by default not undfined
-    app = new FeatureSymbology.Appearance(props2);
+    app = FeatureSymbology.Appearance.fromJSON(props2);
     assert.isFalse(app.ignoresMaterial);
     assert.exists(app.ignoresMaterial);
   });
@@ -43,10 +43,10 @@ describe("FeatureSymbology.Appearance", () => {
     const props1 = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { rgb: new RgbColor(250, 180, 150), weight: 1, alpha: 200, linePixels: LinePixels.Code3 } as FeatureSymbology.AppearanceProps;
     const expectedProps = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true, weight: 1, alpha: 200 } as FeatureSymbology.AppearanceProps;
-    const app1 = new FeatureSymbology.Appearance(props1);
-    const app2 = new FeatureSymbology.Appearance(props2);
-    app2.extend(app1);
-    const expected = new FeatureSymbology.Appearance(expectedProps);
+    let app1 = FeatureSymbology.Appearance.fromJSON(props1);
+    const app2 = FeatureSymbology.Appearance.fromJSON(props2);
+    app1  = app2.extendAppearance(app1);
+    const expected = FeatureSymbology.Appearance.fromJSON(expectedProps);
     assert.isTrue(expected.equals(app1));
   });
 });
@@ -185,101 +185,100 @@ describe("FeatureSymbology.Overrides", () => {
     const badModelProps = { ...props, alpha: 356 } as FeatureSymbology.AppearanceProps;
     const elemProps = { alpha: 200, linePixels: LinePixels.HiddenLine } as FeatureSymbology.AppearanceProps;
     const subCatProps = { linePixels: LinePixels.Code3, alpha: 90 } as FeatureSymbology.AppearanceProps;
-    let modelApp = new FeatureSymbology.Appearance(modelProps);
-    const elemApp = new FeatureSymbology.Appearance(elemProps);
-    const subCatApp = new FeatureSymbology.Appearance(subCatProps);
-    let appearance = new FeatureSymbology.Appearance(props);
-    let result: boolean;
+    let modelApp = FeatureSymbology.Appearance.fromJSON(modelProps);
+    const elemApp = FeatureSymbology.Appearance.fromJSON(elemProps);
+    const subCatApp = FeatureSymbology.Appearance.fromJSON(subCatProps);
+    let appearance: FeatureSymbology.Appearance | undefined;
 
     overrides.setNeverDrawn(elementId);
 
-    result = overrides.getAppearance(appearance, feature, id);
-    assert.isFalse(result, "returns false if feature id is in the never drawn set");
+    appearance = overrides.getAppearance(feature, id);
+    assert.isUndefined(appearance, "returns undefined if feature id is in the never drawn set");
 
     overrides = new FeatureSymbology.Overrides();
     overrides.setAlwaysDrawnExclusive();
 
-    result = overrides.getAppearance(appearance, feature, id);
-    assert.isFalse(result, "returns false if feature isn't in always drawn set, but alwaysDrawnExclusive flag is set");
+    appearance = overrides.getAppearance(feature, id);
+    assert.isUndefined(appearance, "returns false if feature isn't in always drawn set, but alwaysDrawnExclusive flag is set");
 
     overrides = new FeatureSymbology.Overrides();
-    result = overrides.getAppearance(appearance, feature, id);
-    assert.isFalse(result, "returns false if feature isn't in always drawn set nor subCategoryId in visibleSubCategories set");
+    appearance = overrides.getAppearance(feature, id);
+    assert.isUndefined(appearance, "returns false if feature isn't in always drawn set nor subCategoryId in visibleSubCategories set");
 
     overrides = new FeatureSymbology.Overrides();
     overrides.setAlwaysDrawn(elementId);
-    result = overrides.getAppearance(appearance, feature, id);
-    assert.isTrue(result, "return true if elementId is in always drawn set");
+    appearance = overrides.getAppearance(feature, id);
+    assert.isDefined(appearance, "return true if elementId is in always drawn set");
 
     const vf = new ViewFlags();
     vf.constructions = true;
     viewState.displayStyle.viewFlags = vf;
     overrides = new FeatureSymbology.Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
-    result = overrides.getAppearance(appearance, feature, id);
-    assert.isTrue(result, "return true if either elementId is in always drawn set or subCategoryId is visible as well as geometryClass is visible");
+    appearance = overrides.getAppearance(feature, id);
+    assert.isDefined(appearance, "return true if either elementId is in always drawn set or subCategoryId is visible as well as geometryClass is visible");
 
     overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
-    overrides.getAppearance(appearance, feature, id);
-    assert.isTrue(appearance.equals(new FeatureSymbology.Appearance()), "if neither elementId is in alwaysDrawn set nor subCategoryId in visibleSubCategory set nor id in modelOverrides map, then app is reset");
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
+    appearance = overrides.getAppearance(feature, id);
+    assert.isUndefined(appearance, "if neither elementId is in alwaysDrawn set nor subCategoryId in visibleSubCategory set nor id in modelOverrides map, then app is reset");
 
     overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
     overrides.setAlwaysDrawn(elementId);
-    overrides.getAppearance(appearance, feature, id);
+    appearance = overrides.getAppearance(feature, id);
     const msg = "if elementId in alwaysDrawn set, but id not in ModelOverrides map, nor elementId in elementOverrides map, nor subCategoryId in subCategoryOverrides, then app will be set to default overrides";
-    assert.isTrue(appearance.equals(overrides.defaultOverrides), msg);
+    assert.isTrue(appearance!.equals(overrides.defaultOverrides), msg);
 
     overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
     overrides.setAlwaysDrawn(elementId);
-    overrides.setModelOverrides(id, modelApp);
-    overrides.getAppearance(appearance, feature, id);
-    assert.isTrue(appearance.equals(modelApp), "if elementId in alwaysDrawn set and overrides has Model corresponding to id, then appearance will be set to the ModelApp");
+    overrides.overrideModel(id, modelApp);
+    appearance = overrides.getAppearance(feature, id);
+    assert.isTrue(appearance!.equals(modelApp), "if elementId in alwaysDrawn set and overrides has Model corresponding to id, then appearance will be set to the ModelApp");
 
     overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
-    modelApp = new FeatureSymbology.Appearance(badModelProps);
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
+    modelApp = FeatureSymbology.Appearance.fromJSON(badModelProps);
     overrides.setAlwaysDrawn(elementId);
-    overrides.setModelOverrides(id, modelApp);
-    result = overrides.getAppearance(appearance, feature, id);
-    assert.isFalse(result, "if appearance is set from model app and that app has an invalid alpha value, then getAppearance returns false");
+    overrides.overrideModel(id, modelApp);
+    appearance = overrides.getAppearance(feature, id);
+    assert.isUndefined(appearance, "if appearance is set from model app and that app has an invalid alpha value, then getAppearance returns false");
 
     overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
-    overrides.setElementOverrides(elementId, elemApp);
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
+    overrides.overrideElement(elementId, elemApp);
     overrides.setAlwaysDrawn(elementId);
-    overrides.getAppearance(appearance, feature, id);
-    assert.isTrue(appearance.equals(elemApp), "if elementId in alwaysDrawn set and overrides has Element corresponding to id but not Model nor SubCategory, then the app is set to the elemApp");
+    appearance = overrides.getAppearance(feature, id);
+    assert.isTrue(appearance!.equals(elemApp), "if elementId in alwaysDrawn set and overrides has Element corresponding to id but not Model nor SubCategory, then the app is set to the elemApp");
 
-    overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
-    overrides.setSubCategoryOverrides(subCategoryId, subCatApp);
+    overrides = new FeatureSymbology.Overrides(viewState);
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
     overrides.setVisibleSubCategory(subCategoryId);
-    overrides.getAppearance(appearance, feature, id);
-    assert.isTrue(appearance.equals(subCatApp), "if subCategoryId is in visible set and SubCategoryApp is found, absent element or model apps, the result app is equal to the app extended by the subCategoryApp");
+    overrides.overrideSubCategory(subCategoryId, subCatApp);
+    appearance = overrides.getAppearance(feature, id);
+    assert.isTrue(appearance!.equals(subCatApp), "if subCategoryId is in visible set and SubCategoryApp is found, absent element or model apps, the result app is equal to the app extended by the subCategoryApp");
 
-    overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
-    modelApp = new FeatureSymbology.Appearance(modelProps);
-    overrides.setModelOverrides(id, modelApp);
-    overrides.setSubCategoryOverrides(subCategoryId, subCatApp);
+    overrides = new FeatureSymbology.Overrides(viewState);
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
+    modelApp = FeatureSymbology.Appearance.fromJSON(modelProps);
+    overrides.overrideModel(id, modelApp);
     overrides.setVisibleSubCategory(subCategoryId);
-    overrides.getAppearance(appearance, feature, id);
-    let expected = subCatApp.extend(modelApp);
-    assert.isTrue(appearance.equals(expected), "if subCat and modelApp are found then the appearance is the extension of the subCatApp with the ModelApp");
-    overrides = new FeatureSymbology.Overrides();
-    appearance = new FeatureSymbology.Appearance(props);
-    modelApp = new FeatureSymbology.Appearance(modelProps);
-    overrides.setModelOverrides(id, modelApp);
-    overrides.setElementOverrides(elementId, elemApp);
-    overrides.setSubCategoryOverrides(subCategoryId, subCatApp);
+    overrides.overrideSubCategory(subCategoryId, subCatApp);
+    appearance = overrides.getAppearance(feature, id);
+    let expected = subCatApp.extendAppearance(modelApp);
+    assert.isTrue(appearance!.equals(expected), "if subCat and modelApp are found then the appearance is the extension of the subCatApp with the ModelApp");
+    overrides = new FeatureSymbology.Overrides(viewState);
+    appearance = FeatureSymbology.Appearance.fromJSON(props);
+    modelApp = FeatureSymbology.Appearance.fromJSON(modelProps);
+    overrides.overrideModel(id, modelApp);
+    overrides.overrideElement(elementId, elemApp);
     overrides.setVisibleSubCategory(subCategoryId);
-    overrides.getAppearance(appearance, feature, id);
-    expected = elemApp.extend(modelApp);
-    expected = subCatApp.extend(expected);
-    assert.isTrue(appearance.equals(expected), "if subCat, elemApp, and modelApp are found then the appearance is the extension of all three");
+    overrides.overrideSubCategory(subCategoryId, subCatApp);
+    appearance = overrides.getAppearance(feature, id);
+    expected = elemApp.extendAppearance(modelApp);
+    expected = subCatApp.extendAppearance(expected);
+    assert.isTrue(appearance!.equals(expected), "if subCat, elemApp, and modelApp are found then the appearance is the extension of all three");
   });
 
   it("overrideModel works as expected", () => {
@@ -287,8 +286,8 @@ describe("FeatureSymbology.Overrides", () => {
     const id = new Id64("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { ...props1, alpha: 200 } as FeatureSymbology.AppearanceProps;
-    const modelApp1 = new FeatureSymbology.Appearance(props1);
-    const modelApp2 = new FeatureSymbology.Appearance(props2);
+    const modelApp1 = FeatureSymbology.Appearance.fromJSON(props1);
+    const modelApp2 = FeatureSymbology.Appearance.fromJSON(props2);
     overrides.overrideModel(id, modelApp1);
     assert.exists(overrides.getModelOverrides(id));
 
@@ -307,8 +306,8 @@ describe("FeatureSymbology.Overrides", () => {
     const id = new Id64("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { ...props1, alpha: 200 } as FeatureSymbology.AppearanceProps;
-    const subCatApp1 = new FeatureSymbology.Appearance(props1);
-    const subCatApp2 = new FeatureSymbology.Appearance(props2);
+    const subCatApp1 = FeatureSymbology.Appearance.fromJSON(props1);
+    const subCatApp2 = FeatureSymbology.Appearance.fromJSON(props2);
 
     overrides.overrideSubCategory(id, subCatApp1);
     assert.isUndefined(overrides.getSubCategoryOverrides(id), "if subCategoryId not in subCategoryVisible set, then nothing is set");
@@ -329,8 +328,8 @@ describe("FeatureSymbology.Overrides", () => {
     const id = new Id64("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { ...props1, alpha: 200 } as FeatureSymbology.AppearanceProps;
-    const elemApp1 = new FeatureSymbology.Appearance(props1);
-    const elemApp2 = new FeatureSymbology.Appearance(props2);
+    const elemApp1 = FeatureSymbology.Appearance.fromJSON(props1);
+    const elemApp2 = FeatureSymbology.Appearance.fromJSON(props2);
 
     overrides.setNeverDrawn(id);
     overrides.overrideElement(id, elemApp1);
@@ -349,10 +348,10 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("setDefaultOverrides works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
-    assert.isTrue(overrides.defaultOverrides.equals(new FeatureSymbology.Appearance()), "initial default overrides are equivalent to default appearance instance");
+    assert.isTrue(overrides.defaultOverrides.equals(FeatureSymbology.Appearance.fromJSON()), "initial default overrides are equivalent to default appearance instance");
 
     const props = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
-    const app = new FeatureSymbology.Appearance(props);
+    const app = FeatureSymbology.Appearance.fromJSON(props);
     overrides.setDefaultOverrides(app);
     assert.isTrue(overrides.defaultOverrides.equals(app), "default overrides can be overriden");
   });
