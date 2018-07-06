@@ -281,8 +281,16 @@ export namespace FeatureSymbology {
           continue;
 
         for (const subCategoryId of subCategoryIds) {
-          // ###TODO: Ask DisplayStyle for the subcategory appearance so that it will include overrides...
-          this.visibleSubCategories.add(subCategoryId);
+          if (view.isSubCategoryVisible(subCategoryId)) {
+            this.visibleSubCategories.add(subCategoryId);
+            const ovr = view.getSubCategoryOverride(subCategoryId);
+            if (undefined !== ovr) {
+              const app = new Appearance();
+              app.initFrom(ovr);
+              if (app.overridesSymbology)
+                this.subCategoryOverrides.set(subCategoryId, app);
+            }
+          }
         }
       }
     }

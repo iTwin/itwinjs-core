@@ -356,7 +356,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64): SubCategoryOverride {
+  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
     return this.displayStyle.getSubCategoryOverride(id);
   }
 
@@ -367,16 +367,16 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       return SubCategoryAppearance.defaults;
 
     const ovr = this.getSubCategoryOverride(id);
-    return ovr.override(app);
+    return undefined !== ovr ? ovr.override(app) : app;
   }
 
-  public isSubCategoryVisible(id: Id64): boolean {
-    const app = this.subCategories.getSubCategoryAppearance(id.value);
+  public isSubCategoryVisible(id: Id64 | string): boolean {
+    const app = this.subCategories.getSubCategoryAppearance(id.toString());
     if (undefined === app || app.invisible)
       return false;
 
     const ovr = this.getSubCategoryOverride(id);
-    return !ovr.invisible;
+    return undefined === ovr || !ovr.invisible;
   }
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
