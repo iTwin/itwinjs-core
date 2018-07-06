@@ -14,6 +14,7 @@ import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
+import { PntsTileIO } from "./PntsTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
@@ -96,10 +97,20 @@ export class Tile {
     const format = streamBuffer.nextUint32;
     let reader: GltfTileIO.Reader | undefined;
     streamBuffer.rewind(4);
-    if (format === TileIO.Format.B3dm) {
-      reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
-    } else {
-      reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem);
+    switch (format) {
+      case TileIO.Format.B3dm:
+        reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
+        break;
+
+      case TileIO.Format.IModel:
+        reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem);
+        break;
+
+      case TileIO.Format.Pnts:
+        {
+          this._graphic = PntsTileIO.readPointCloud(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
+          return;
+        }
     }
 
     if (undefined !== reader) {

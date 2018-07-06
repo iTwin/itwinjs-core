@@ -10,6 +10,7 @@ import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert, Dictionary } from "@bentley/bentleyjs-core";
@@ -24,6 +25,7 @@ import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
+import { PointCloudGraphic } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 
@@ -393,6 +395,7 @@ export class System extends RenderSystem {
       return PolylinePrimitive.create(args, imodel);
   }
   public createTriMesh(args: MeshArgs, iModel: IModelConnection) { return MeshGraphic.create(args, iModel); }
+  public createPointCloud(args: PointCloudArgs, imodel: IModelConnection): RenderGraphic | undefined { return PointCloudGraphic.create(args, imodel); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic { return new Batch(graphic, features); }

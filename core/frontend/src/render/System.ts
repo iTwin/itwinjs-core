@@ -26,7 +26,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
-
+import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
  */
@@ -271,7 +271,7 @@ export abstract class RenderSystem {
   public createIndexedPolylines(_args: PolylineArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
   // /** Create a point cloud primitive */
-  // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
+  public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
   // /** Create polygons on a range for a sheet tile */
   // public abstract createSheetTilePolys(corners: GraphicBuilderTileCorners, clip: ClipVector, rangeOut: Range3d): PolyfaceHeader[];

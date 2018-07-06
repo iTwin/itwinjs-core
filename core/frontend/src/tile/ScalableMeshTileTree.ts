@@ -46,10 +46,10 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  constructor(json: any, public client: RealityDataServicesClient, public accessToken: AccessToken, public projectId: string, public tilesId: string, ecefToDb: Transform) {
+  constructor(json: any, public client: RealityDataServicesClient, public accessToken: AccessToken, public projectId: string, public tilesId: string, ecefToDb: Transform, rootContent: any) {
     this.tilesetJson = json.root;
     this.id = new Id64();
-    this.rootTile = new ScalableMeshTileProps(json.root, "", this, undefined);
+    this.rootTile = new ScalableMeshTileProps(json.root, "", this, rootContent);
     const tileToEcef = CesiumUtils.transformFromJson(json.root.transf);
     const tileToDb = Transform.createIdentity();
     tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
@@ -146,19 +146,23 @@ export namespace ScalableMeshTileTree {
       ecefToDb = dbToEcef.inverse() as Transform;
     }
 
-    // url = "https://qa-connect-realitydataservices.bentley.com/v2.8/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/67fc2f1e-1d8f-49ca-9fc3-39cb2d46f98e/3dtiles/altenburg_inSaltLake.xyz.json";
-    if (undefined !== url) {
+    if (undefined === url) {
+      throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
+    } else {
+
       // ###TODO determine apropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
       const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
-      const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient("QA");
-      const accessToken: AccessToken = await realityDataServiceClient.getAccessToken(authToken);
+      const client: RealityDataServicesClient = new RealityDataServicesClient("QA");
+      const accessToken: AccessToken = await client.getAccessToken(authToken);
       const projectId = url.split("/").find((val: string) => val.includes("--"))!.split("--")[1];
       const tilesId = url.split("/").find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
-      const json = await realityDataServiceClient.getTileJsonFromUrl(accessToken, url);
+      const json = await client.getTileJsonFromUrl(accessToken, url);
+      // Root tile...
+      let rootTileContent: any;
+      if (undefined !== json.root.content.url)
+        rootTileContent = await client.getTileContent(accessToken, projectId, tilesId as string, json.root.content.url);
 
-      return new ScalableMeshTileTreeProps(json, realityDataServiceClient, accessToken, projectId, tilesId as string, ecefToDb);
-    } else {
-      throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
+      return new ScalableMeshTileTreeProps(json, client, accessToken, projectId, tilesId as string, ecefToDb, rootTileContent);
     }
   }
 }

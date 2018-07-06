@@ -460,7 +460,7 @@ export class IModelDb extends IModel {
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
     if (!this.briefcase)
-      throw this._newNotOpenError();
+      throw this.newNotOpenError();
     const stmt = new SqliteStatement();
     stmt.prepare(this.briefcase.nativeDb, sql);
     return stmt;
@@ -1102,7 +1102,6 @@ export namespace IModelDb {
         aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
 
         const entity = this._iModel.constructEntity(aspectProps);
-        assert(entity instanceof ElementAspect);
         const aspect = entity as ElementAspect;
         aspects.push(aspect);
       }
