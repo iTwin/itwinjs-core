@@ -14,7 +14,7 @@ import {
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
 
-describe("IModelConnection", () => {
+describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
