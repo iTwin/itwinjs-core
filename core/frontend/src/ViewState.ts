@@ -17,7 +17,7 @@ import { ElementState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
@@ -161,10 +161,20 @@ export class SpecialElements implements DrawnElementSets {
   }
 }
 
+/**
+ * Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
+ */
 export class ViewSubCategories {
-  public readonly byCategoryId = new Map<string, Id64Set>();
-  public readonly appearances = new Map<string, SubCategoryAppearance>();
+  private readonly _byCategoryId = new Map<string, Id64Set>();
+  private readonly _appearances = new Map<string, SubCategoryAppearance>();
 
+  /** Get the IDs of all subcategories belonging to the category with the specified ID, or undefined if no such information is present. */
+  public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
+
+  /** Get the base appearance of the subcategory with the specified ID, or undefined if no such information is present. */
+  public getSubCategoryAppearance(subCategoryId: string): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId); }
+
+  /** Asynchronously populates this cache with information about subcategories belonging to the specified set of categories. */
   public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     const where = [...categoryIds].join(",");
     if (0 === where.length)
@@ -174,19 +184,38 @@ export class ViewSubCategories {
     return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
   }
 
+  /**
+   * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
+   * When the request completes, the ViewState's feature overrides will be marked dirty to indicate they must be updated.
+   */
+  public update(addedCategoryIds: Set<string>, view: ViewState): void {
+    let missing: Set<string> | undefined;
+    for (const catId of addedCategoryIds) {
+      if (undefined === this._byCategoryId.get(catId)) {
+        if (undefined === missing)
+          missing = new Set<string>();
+
+        missing.add(catId);
+      }
+    }
+
+    if (undefined !== missing)
+      this.load(missing, view.iModel).then(() => view.setFeatureOverridesDirty());
+  }
+
   private loadFromRows(rows: any[]): void {
     for (const row of rows)
       this.add(row.parentId as string, row.id as string, new SubCategoryAppearance(JSON.parse(row.appearance)));
   }
 
   private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
-    let set = this.byCategoryId.get(categoryId);
+    let set = this._byCategoryId.get(categoryId);
     if (undefined === set)
-      this.byCategoryId.set(categoryId, set = new Set<string>());
+      this._byCategoryId.set(categoryId, set = new Set<string>());
 
     set.add(subCategoryId);
 
-    this.appearances.set(subCategoryId, appearance);
+    this._appearances.set(subCategoryId, appearance);
   }
 }
 
@@ -333,6 +362,17 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
   public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
+
+  public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
+    if (add) {
+      this.categorySelector.addCategories(arg);
+      this.subCategories.update(Id64.toIdSet(arg), this);
+    } else {
+      this.categorySelector.dropCategories(arg);
+    }
+
+    this.setFeatureOverridesDirty();
+  }
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }

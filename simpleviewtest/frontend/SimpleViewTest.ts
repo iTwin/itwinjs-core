@@ -4,7 +4,18 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
+import {
+  ElectronRpcManager,
+  ElectronRpcConfiguration,
+  StandaloneIModelRpcInterface,
+  IModelTileRpcInterface,
+  IModelReadRpcInterface,
+  ViewQueryParams,
+  ViewDefinitionProps,
+  ModelProps,
+  ModelQueryParams,
+  RenderMode,
+} from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
@@ -159,7 +170,7 @@ function startCategorySelection(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-// build list of models; enables them all
+// build list of models; enables those defined in model selector
 async function buildModelMenu(state: SimpleViewState) {
   const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
   const modelButton = document.getElementById("startToggleModel")!;
@@ -198,25 +209,34 @@ async function buildModelMenu(state: SimpleViewState) {
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
 }
 
-// build list of categories; enables them all
-function buildCategoryMenu(state: SimpleViewState) {
-  const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  categoryMenu.innerHTML = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
+// build list of categories; enable those defined in category selector
+async function buildCategoryMenu(state: SimpleViewState) {
+  curCategories.clear();
+  let html = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
 
   const view = state.viewState!;
+  const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
+  const rows = await view.iModel.executeQuery(ecsql);
 
-  curCategories.clear();
-  for (const cat of view.categorySelector.categories) {
-    curCategories.add(cat);
-    categoryMenu.innerHTML += '<input id="cbxCat' + cat + '" type="checkbox"> ' + cat + "\n<br>\n";
+  for (const row of rows) {
+    let label = row.label as string;
+    if (undefined === label)
+      label = row.code;
+
+    const id = row.id as string;
+    curCategories.add(id);
+    html += '<input id="cbxCat' + id + '" type="checkbox"> ' + label + "\n<br>\n";
   }
 
-  updateCheckboxToggleState("cbxCatToggleAll", true);
+  const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  categoryMenu.innerHTML = html;
+
+  updateCheckboxToggleState("cbxCatToggleAll", curCategories.size === view.categorySelector.categories.size);
   addCategoryToggleAllHandler();
 
   for (const cat of curCategories) {
     const cbxName = "cbxCat" + cat;
-    updateCheckboxToggleState(cbxName, true); // enable all categories
+    updateCheckboxToggleState(cbxName, view.categorySelector.has(cat));
     addCategoryToggleHandler(cbxName);
   }
 }
@@ -253,12 +273,7 @@ function applyModelToggleChange(_cbxModel: string) {
 }
 
 function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
-  if (invis)
-    view.categorySelector.dropCategories(catId);
-  else
-    view.categorySelector.addCategories(catId);
-
-  view.setFeatureOverridesDirty();
+  view.changeCategoryDisplay(catId, !invis);
 }
 
 // apply a category checkbox state being changed
@@ -419,7 +434,7 @@ async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
-  buildCategoryMenu(activeViewState);
+  await buildCategoryMenu(activeViewState);
   updateRenderModeOptionsMap();
 }
 

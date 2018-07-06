@@ -278,7 +278,7 @@ export namespace FeatureSymbology {
       this._lineWeights = viewFlags.showWeights();
 
       for (const categoryId of view.categorySelector.categories) {
-        const subCategoryIds = view.subCategories.byCategoryId.get(categoryId);
+        const subCategoryIds = view.subCategories.getSubCategories(categoryId);
         if (undefined === subCategoryIds)
           continue;
 
