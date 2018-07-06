@@ -15,7 +15,7 @@ import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ViewState3d } from "./ViewState";
 
-const gridConstants = { maxGridDotsInRow: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225, maxGridPoints: 90, maxGridRefs: 40 };
+const gridConstants = { maxGridPoints: 50, maxGridRefs: 25, maxGridDotsInRow: 250, maxHorizonGrids: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225 };
 
 export class ViewContext {
   public readonly viewFlags: ViewFlags;
@@ -74,8 +74,8 @@ export class DecorateContext extends RenderContext {
   /** wrapped nRepetitions and min in object to preserve changes */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
     // initialized only to avoid warning.
-    let distLow = 0.0,
-      distHigh = 0.0;
+    let distLow = 0.0;
+    let distHigh = 0.0;
 
     for (let i = 0, n = points.length; i < n; ++i) {
       const distance = org.vectorTo(points[i]).dotProduct(dir);
@@ -101,7 +101,6 @@ export class DecorateContext extends RenderContext {
   }
 
   public static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[] {
-    const intersections: CurveLocationDetail[] = [];
     const limitRange = useProjectExtents && vp.view.isSpatialView();
     let range: Range3d = new Range3d();
 
@@ -138,6 +137,7 @@ export class DecorateContext extends RenderContext {
     if (undefined === plane)
       return [];
 
+    const intersections: CurveLocationDetail[] = [];
     for (let i = 0, n = index.length; i < n; ++i) {
       const corner1 = frust.getCorner(index[i][0]),
         corner2 = frust.getCorner(index[i][1]);
@@ -194,8 +194,8 @@ export class DecorateContext extends RenderContext {
     if (!vp.isCameraOn() && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
 
-    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef,
-      refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
+    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
+    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
 
     let gridOrg = new Point3d();
     let repetitions = new Point2d();
@@ -232,8 +232,8 @@ export class DecorateContext extends RenderContext {
 
     const testPt = gridOrg.plus2Scaled(gridX, repetitions.x / 2.0, gridY, repetitions.y / 2.0);
 
-    let maxGridPts = gridConstants.maxGridPoints,
-      maxGridRefs = gridConstants.maxGridRefs;
+    let maxGridPts = gridConstants.maxGridPoints;
+    let maxGridRefs = gridConstants.maxGridRefs;
 
     if (maxGridPts < 10)
       maxGridPts = 10;
@@ -335,7 +335,7 @@ export class DecorateContext extends RenderContext {
     }
 
     graphic.setBlankingFill(planeColor);
-    graphic.addShape(shapePoints);
+    //    graphic.addShape(shapePoints);
   }
 
   /** Private grid-specific function for computing intersections of a ray with a convex set of clipping planes. */
@@ -361,10 +361,7 @@ export class DecorateContext extends RenderContext {
     return clipDistance.min < clipDistance.max;
   }
 
-  private static drawGridDots(graphic: GraphicBuilder, doIsoGrid: boolean, origin: Point3d, rowVec: Vector3d, rowRepetitions: number, colVec: Vector3d, colRepetitions: number,
-    refSpacing: number, vp: Viewport) {
-
-    const maxHorizonGrids = 800.0;
+  private static drawGridDots(graphic: GraphicBuilder, doIsoGrid: boolean, origin: Point3d, rowVec: Vector3d, rowRepetitions: number, colVec: Vector3d, colRepetitions: number, refSpacing: number, vp: Viewport) {
     const colSpacing = colVec.magnitude();
     const colNormal = colVec.normalize();
     if (!colNormal)
@@ -380,7 +377,7 @@ export class DecorateContext extends RenderContext {
     if (cameraOn) {
       const view = vp.view as ViewState3d;
       const camera = view.camera;
-      const sizeLimit = maxHorizonGrids * colSpacing / vp.viewDelta.x;
+      const sizeLimit = gridConstants.maxHorizonGrids * colSpacing / vp.viewDelta.x;
 
       vp.rotMatrix.rowZ(viewZ);
       zCamera = viewZ.dotProduct(camera.getEyePoint());
@@ -389,14 +386,12 @@ export class DecorateContext extends RenderContext {
 
     const corners = vp.getFrustum();
     const clipPlanes: ConvexClipPlaneSet = corners.getRangePlanes(true, true, 0);
-
     const clipDistance = { min: 0, max: 0 };
     for (let i = 0; i < rowRepetitions; i++) {
-      if (refSpacing !== 0 && (i % refSpacing) !== 0)
+      if (0 !== refSpacing && 0 === (i % refSpacing))
         continue;
 
       const dotOrigin = origin.plusScaled(rowVec, i);
-
       if (DecorateContext.getClipPlaneIntersection(clipDistance, dotOrigin, colNormal, clipPlanes)) {
         if (cameraOn) {
           const startPoint = dotOrigin.plusScaled(colNormal, clipDistance.min);
@@ -405,6 +400,7 @@ export class DecorateContext extends RenderContext {
             continue;
         }
 
+        let nToDisplay = 0;
         let jMin = Math.floor(clipDistance.min / colSpacing);
         let jMax = Math.ceil(clipDistance.max / colSpacing);
 
@@ -413,27 +409,23 @@ export class DecorateContext extends RenderContext {
         jMax = jMax > colRepetitions ? colRepetitions : jMax;
 
         const isoOffset = doIsoGrid && (i & 1) ? 0.5 : 0.0;
-        for (let j = jMin; j <= jMax && points.length < gridConstants.maxGridDotsInRow; j++) {
+        for (let j = jMin; j <= jMax && nToDisplay < gridConstants.maxGridDotsInRow; j++) {
           if (0 !== refSpacing && 0 === (j % refSpacing))
             continue;
-
           const point = dotOrigin.plusScaled(colVec, j + isoOffset);
-
           if (cameraOn) {
             const pointZ = viewZ.dotProduct(point);
-
             if (pointZ < zCamera && pointZ > zCameraLimit)
               points.push(point);
           } else {
             points.push(point);
           }
+          nToDisplay++;
         }
-
-        if (points.length !== 0)
-          graphic.addPointString(points);
       }
-      points.length = 0;  // reuse the array, but reset it on each iteration
     }
+    if (points.length !== 0)
+      graphic.addPointString(points);
   }
 
   private static drawGridRefs(graphic: GraphicBuilder, org: Point3d, rowVec: Vector3d, colVec: Vector3d, rowRepetitions: number, colRepetitions: number) {

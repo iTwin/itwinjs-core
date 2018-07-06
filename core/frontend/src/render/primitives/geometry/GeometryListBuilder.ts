@@ -75,10 +75,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       this.accum.addPath(curve, displayParams, this.localToWorldTransform, false);
   }
 
+  /** take ownership of input points and add as a line string to this builder */
   public addLineString(points: Point3d[]): void {
-    // ###TODO: Still need to handle the case of a zero-length line segment (doing this should create a pointPrimitive)
-    const lineString: CurvePrimitive = LineString3d.create(points);
-    this.accum.addPath(Path.create(lineString), this.getLinearDisplayParams(), this.localToWorldTransform, false);  // possibly a zero-length line segment (== disjoint)...
+    if (2 === points.length && points[0].isAlmostEqual(points[1]))
+      this.accum.addPointString(points, this.getLinearDisplayParams(), this.localToWorldTransform);
+    else
+      this.accum.addLineString(points, this.getLinearDisplayParams(), this.localToWorldTransform);
   }
 
   public addLineString2d(points: Point2d[], zDepth: number): void {
@@ -86,6 +88,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.addLineString(pts3d);
   }
 
+  /** take ownership of input points and add as a point string to this builder */
   public addPointString(points: Point3d[]): void {
     this.accum.addPointString(points, this.getLinearDisplayParams(), this.localToWorldTransform);
   }
