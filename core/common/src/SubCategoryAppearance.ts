@@ -71,6 +71,8 @@ export class SubCategoryAppearance {
   }
 
   public clone(): SubCategoryAppearance { return new SubCategoryAppearance(this.toJSON()); }
+
+  public static defaults = new SubCategoryAppearance();
 }
 
 export namespace SubCategoryAppearance {
@@ -91,28 +93,13 @@ export namespace SubCategoryAppearance {
 
 /** Overrides selected aspects of a SubCategoryAppearance. */
 export class SubCategoryOverride {
-  private _color?: ColorDef;
-  private _invisible?: boolean;
-  private _weight?: number;
-  private _style?: Id64;
-  private _priority?: number;
-  private _material?: Id64;
-  private _transparency?: number;
-
-  public get invisible(): boolean | undefined { return this._invisible; }
-  public set invisible(invisible: boolean | undefined) { this._invisible = invisible; }
-  public get color(): ColorDef | undefined { return this._color; }
-  public set color(color: ColorDef | undefined) { this._color = undefined !== color ? color.clone() : undefined; }
-  public get weight(): number | undefined { return this._weight; }
-  public set weight(weight: number | undefined) { this._weight = weight; }
-  public get style(): Id64 | undefined { return this._style; }
-  public set style(styleId: Id64 | undefined) { this._style = styleId; }
-  public get priority(): number | undefined { return this._priority; }
-  public set priority(priority: number | undefined) { this._priority = priority; }
-  public get material(): Id64 | undefined { return this._material; }
-  public set material(materialId: Id64 | undefined) { this._material = materialId; }
-  public get transparency(): number | undefined { return this._transparency; }
-  public set transparency(transparency: number | undefined) { this._transparency = transparency; }
+  public readonly color?: ColorDef;
+  public readonly invisible?: boolean;
+  public readonly weight?: number;
+  public readonly style?: Id64;
+  public readonly priority?: number;
+  public readonly material?: Id64;
+  public readonly transparency?: number;
 
   public get anyOverridden(): boolean {
     return undefined !== this.invisible || undefined !== this.color || undefined !== this.weight || undefined !== this.style || undefined !== this.priority || undefined !== this.material || undefined !== this.transparency;
@@ -154,12 +141,11 @@ export class SubCategoryOverride {
   }
 
   /** Create a new SubCategoryOverride from a JSON object */
-  public static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride { return new SubCategoryOverride(json); }
+  public static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride {
+    return undefined !== json ? new SubCategoryOverride(json) : this.defaults;
+  }
 
-  public constructor(props?: SubCategoryAppearance.Props) {
-    if (undefined === props)
-      return;
-
+  private constructor(props: SubCategoryAppearance.Props) {
     if (undefined !== props.invisible) this.invisible = JsonUtils.asBool(props.invisible);
     if (undefined !== props.color) this.color = ColorDef.fromJSON(props.color);
     if (undefined !== props.weight) this.weight = JsonUtils.asInt(props.weight);
@@ -168,6 +154,8 @@ export class SubCategoryOverride {
     if (undefined !== props.priority) this.priority = JsonUtils.asInt(props.priority);
     if (undefined !== props.transp) this.transparency = JsonUtils.asDouble(props.transp);
   }
+
+  public static defaults = new SubCategoryOverride({});
 }
 
 /** The *rank* for a Category */

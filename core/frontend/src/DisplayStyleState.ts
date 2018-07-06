@@ -84,7 +84,7 @@ export abstract class DisplayStyleState extends ElementState {
 
   public getSubCategoryOverride(id: Id64): SubCategoryOverride {
     const ovr = this._subCategoryOverrides.get(id.value);
-    return undefined !== ovr ? ovr : new SubCategoryOverride();
+    return undefined !== ovr ? ovr : SubCategoryOverride.defaults;
   }
 
   public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
