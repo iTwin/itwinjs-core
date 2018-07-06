@@ -234,7 +234,6 @@ export class BeButtonEvent {
   public get isControlKey() { return 0 !== (this.keyModifiers & BeModifierKey.Control); }
   public get isShiftKey() { return 0 !== (this.keyModifiers & BeModifierKey.Shift); }
   public get isAltKey() { return 0 !== (this.keyModifiers & BeModifierKey.Alt); }
-  public reset() { this.viewport = undefined; }
 
   public setFrom(src: BeButtonEvent) {
     this.point = src.point;
@@ -568,12 +567,8 @@ export abstract class InteractiveTool extends Tool {
   //  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; } // NEEDSWORK
   public getInfoString(_hit: HitDetail, _delimiter: string): string { return ""; }
 
-  /**
-   * Fill the supplied button event from the current cursor location.
-   */
-  public getCurrentButtonEvent(ev: BeButtonEvent): void {
-    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-  }
+  /**   * Fill the supplied button event from the current cursor location.   */
+  public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
 
   /** Call to find out if dynamics are currently active. */
   public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }

@@ -44,6 +44,9 @@ export class IModelConnection extends IModel {
   public readonly transientIds = new TransientIdSequence();
   /** A unique Id of this IModelConnection. */
   public readonly connectionId = Guid.createValue();
+  /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
+  private static connectionTimeout: number = 5 * 60 * 1000;
+  private openAccessToken?: AccessToken;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -64,10 +67,6 @@ export class IModelConnection extends IModel {
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
-
-  /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static connectionTimeout: number = 5 * 60 * 1000;
-  private openAccessToken?: AccessToken;
 
   private constructor(iModel: IModel, openMode: OpenMode, accessToken?: AccessToken) {
     super(iModel.iModelToken);
@@ -291,8 +290,20 @@ export class IModelConnection extends IModel {
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
-  public requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
-  public cancelSnap(): Promise<void> { return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); }
+  private _snapPending = false;
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    this._snapPending = true; // save flag indicating we're in the process of generating a snap
+    const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
+    await response; // after snap completes, turn off flag
+    this._snapPending = false;
+    return response; // return fulfilled promise
+  }
+  public async cancelSnap(): Promise<void> {
+    if (this._snapPending) { // if we're waiting for a snap, cancel it.
+      this._snapPending = false;
+      return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
+    }
+  }
 }
 
 export namespace IModelConnection {

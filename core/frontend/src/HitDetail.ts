@@ -109,9 +109,9 @@ export class SnapDetail extends HitDetail {
    * @param snapPoint The snapped point in the element
    * @param geomType the HitGeomType of this SnapDetail
    */
-  public constructor(from: HitDetail, public snapMode: SnapMode, public heat: SnapHeat, snapPoint: XYZProps, public readonly geomType: HitGeomType) {
+  public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps, public readonly geomType: HitGeomType = HitGeomType.None) {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
-    this.snapPoint = Point3d.fromJSON(snapPoint);
+    this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this._adjustedPoint = this.snapPoint;
   }
 
@@ -122,6 +122,7 @@ export class SnapDetail extends HitDetail {
   public isHot(): boolean { return this.heat !== SnapHeat.None; }
   public isPointAdjusted(): boolean { return this.adjustedPoint !== this.snapPoint; }
   public setAdjustedPoint(point: Point3d) { this._adjustedPoint = point.clone(); }
+  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this._adjustedPoint = this.snapPoint; this.heat = heat; }
 
   public clone(): SnapDetail {
     const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint, this.geomType);
@@ -144,8 +145,8 @@ export class IntersectDetail extends SnapDetail {
  * The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
  *  are somehow "better" than those later on.
  */
-export class HitList {
-  public hits: HitDetail[] = [];
+export class HitList<T extends HitDetail> {
+  public hits: T[] = [];
   public currHit = -1;
   public get length(): number { return this.hits.length; }
   public empty(): void { this.hits.length = 0; this.currHit = -1; }
@@ -155,13 +156,13 @@ export class HitList {
    * get a hit from a particular index into a HitList
    * return the requested hit from the HitList or undefined
    */
-  public getHit(hitNum: number): HitDetail | undefined {
+  public getHit(hitNum: number): T | undefined {
     if (hitNum < 0) hitNum = this.length - 1;
     return (hitNum >= this.length) ? undefined : this.hits[hitNum];
   }
 
   /** When setting one or more indices to undefined you must call dropNulls afterwards */
-  public setHit(i: number, p: HitDetail | undefined): void {
+  public setHit(i: number, p: T | undefined): void {
     if (i < 0 || i >= this.length)
       return;
     this.hits[i] = p!;
@@ -174,10 +175,10 @@ export class HitList {
       this.hits.push(hit);
   }
 
-  public getNextHit(): HitDetail | undefined { this.currHit++; return this.getCurrentHit(); }
-  public getCurrentHit(): HitDetail | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
+  public getNextHit(): T | undefined { this.currHit++; return this.getCurrentHit(); }
+  public getCurrentHit(): T | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
 
-  public setCurrentHit(hit: HitDetail): void {
+  public setCurrentHit(hit: T): void {
     this.resetCurrentHit();
     for (let thisHit; undefined !== (thisHit = this.getNextHit());) {
       if (thisHit === hit)
@@ -261,7 +262,7 @@ export class HitList {
   }
 
   /** Add a new hit to the list. Hits are sorted according to their priority and distance. */
-  public addHit(newHit: HitDetail): number {
+  public addHit(newHit: T): number {
     if (0 === this.hits.length) {
       this.hits.push(newHit);
       return 0;
@@ -279,7 +280,7 @@ export class HitList {
   }
 
   /** Insert a new hit into the list at the supplied index. */
-  public insertHit(i: number, hit: HitDetail): void {
+  public insertHit(i: number, hit: T): void {
     if (i < 0 || i >= this.length)
       this.hits.push(hit);
     else

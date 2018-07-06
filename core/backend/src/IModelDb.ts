@@ -459,8 +459,6 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
     const stmt = new SqliteStatement();
     stmt.prepare(this.briefcase.nativeDb, sql);
     return stmt;

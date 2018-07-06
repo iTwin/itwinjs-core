@@ -46,24 +46,40 @@ class AccuSnapSettings {
   public popupDelay = 5; // delay before info balloon pops up - in 10th of a second
 }
 
-/** A aide for snapping to interesting points on elements as the cursor moves over them. */
+/** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap {
-  public currHit?: HitDetail;                            // currently active hit
-  public aSnapHits?: HitList;                            // current list of hits.
-  public readonly needFlash = new Set<Viewport>();       // views that need to be flashed
-  public readonly areFlashed = new Set<Viewport>();      // views that are already flashed
-  public readonly cross = new SpriteLocation();          // the "+" that indicates where the snap point is
-  public readonly icon = new SpriteLocation();           // the icon that indicates what type of snap is active
-  public readonly errorIcon = new SpriteLocation();      // the icon that indicates an error
-  public errorKey?: string;                              // reason key for last error
-  public explanation?: string;                           // localized message explaining why last error was generated.
-  private candidateSnapMode = SnapMode.Nearest;          // during snap creation: the snap to try
-  private suppressed = 0;                                // number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools
-  private noMotionCount = 0;                             // number of times "noMotion" has been called since last motion
-  private readonly infoPt = new Point3d();               // anchor point for infoWindow. window is cleared when cursor moves away from this point.
-  private readonly lastCursorPos = new Point2d();        // Location of cursor when we last checked for motion
-  private totalMotionSq = 0;                             // Accumulated distance (squared) the mouse has moved since we started checking for motion
-  private motionToleranceSq = 0;                         // How much mouse movement constitutes a "move" (squared)
+  /** Currently active hit */
+  public currHit?: HitDetail;
+  /** Current list of hits. */
+  public aSnapHits?: HitList<HitDetail>;
+  /** Views that need to be flashed */
+  public readonly needFlash = new Set<Viewport>();
+  /** Views that are already flashed */
+  public readonly areFlashed = new Set<Viewport>();
+  /** The "+" that indicates where the snap point is */
+  public readonly cross = new SpriteLocation();
+  /** The icon that indicates what type of snap is active */
+  public readonly icon = new SpriteLocation();
+  /** The icon that indicates an error */
+  public readonly errorIcon = new SpriteLocation();
+  /** Reason key for last error */
+  public errorKey?: string;
+  /** localized message explaining why last error was generated. */
+  public explanation?: string;
+  /** During snap creation: the snap to try */
+  private candidateSnapMode = SnapMode.Nearest;
+  /** Number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools */
+  private suppressed = 0;
+  /** Number of times "noMotion" has been called since last motion */
+  private noMotionCount = 0;
+  /** Anchor point for infoWindow. window is cleared when cursor moves away from this point. */
+  private readonly infoPt = new Point3d();
+  /** Location of cursor when we last checked for motion */
+  private readonly lastCursorPos = new Point2d();
+  /** Accumulated distance (squared) the mouse has moved since we started checking for motion */
+  private totalMotionSq = 0;
+  /** How much mouse movement constitutes a "move" (squared) */
+  private motionToleranceSq = 0;
   public readonly toolState = new AccuSnapToolState();
   private readonly defaultSettings = new AccuSnapSettings();
   private settings = this.defaultSettings;
@@ -453,7 +469,7 @@ export class AccuSnap {
     this.onEnabledStateChange(this.doSnapping(), previousDoSnapping);
   }
 
-  private getNextAccuSnappable(hitList: HitList): HitDetail | undefined {
+  private getNextAccuSnappable(hitList: HitList<HitDetail>): HitDetail | undefined {
     const thisHit = hitList.getNextHit();
     if (thisHit)
       this.explanation = "";
@@ -478,7 +494,7 @@ export class AccuSnap {
     return new SnapDetail(thisHit, snapMode, result.heat!, result.snapPoint!, result.geomType!);
   }
 
-  private async getAccuSnapDetail(hitList: HitList, out: LocateResponse): Promise<SnapDetail | undefined> {
+  private async getAccuSnapDetail(hitList: HitList<HitDetail>, out: LocateResponse): Promise<SnapDetail | undefined> {
     let bestDist = 1e200;
     let bestSnap: SnapDetail | undefined;
     let bestHit: HitDetail | undefined;
@@ -619,8 +635,7 @@ export class AccuSnap {
         hit = await this.getAccuSnapDetail(this.aSnapHits, out);
       }
     } else if (this.doLocateTesting()) {
-      // get next AccuSnap path (or nullptr)
-      hit = this.findLocatableHit(ev, false, out);
+      hit = this.findLocatableHit(ev, false, out); // get next AccuSnap path (or undefined)
     }
 
     // set the current hit
@@ -706,7 +721,7 @@ export class AccuSnap {
     There's nothing we can do about this here. The user may be able to choose one over the
     other by sneaking up from right or left. Otherwise, the first one in the list is chosen.
 */
-  private async getPreferredPointSnap(ev: BeButtonEvent, out: LocateResponse): Promise<SnapDetail | undefined> {
+  private async getPreferredSnap(ev: BeButtonEvent, out: LocateResponse): Promise<SnapDetail | undefined> {
     //    IModelApp.locateManager.setChosenSnapMode(SnapType.Points, SnapMode.Invalid);
     //    IModelApp.locateManager.setChosenSnapMode(SnapType.Constraints, SnapMode.Invalid);
 
@@ -755,6 +770,9 @@ export class AccuSnap {
     return preferred;
   }
 
+  /** Cancel any pending motion processing requests outstanding. */
+  public async cancelMotion(ev: BeButtonEvent): Promise<void> { return ev.viewport!.iModel.cancelSnap(); }
+
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
     const out = new LocateResponse();
@@ -766,7 +784,7 @@ export class AccuSnap {
     let hit: HitDetail | undefined;
     if (this.isActive()) {
       if (this.doSnapping()) {
-        hit = await this.getPreferredPointSnap(ev, out);
+        hit = await this.getPreferredSnap(ev, out);
       } else if (this.doLocateTesting()) {
         hit = this.findLocatableHit(ev, true, out);
       }
@@ -833,10 +851,10 @@ export class AccuSnap {
     }
   }
 
-  public enableLocate(yesNo: boolean) {
-    this.toolState.locate = yesNo;
-  }
+  /** Enable locating elements. */
+  public enableLocate(yesNo: boolean) { this.toolState.locate = yesNo; }
 
+  /** Called whenever a new [[Tool]] is started. */
   public onStartTool(): void {
     this.initCmdState();
     this.enableSnap(false);
