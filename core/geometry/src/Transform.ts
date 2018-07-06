@@ -275,7 +275,7 @@ export class RotMatrix implements BeJSONFunctions {
 
   /**
    * Create a rotational matrix from a set of three rotational angles, which define an order
-   * for applying axis rotations.
+   * for applying axis rotations. The resulting rotation is stored in column-major form.
    * @param result optional pre-allocated `RotMatrix`
    */
   public static createFromOrderedRotationAngles(angles: OrderedRotationAngles, result?: RotMatrix): RotMatrix {
@@ -326,7 +326,7 @@ export class RotMatrix implements BeJSONFunctions {
       rot.setRowValues(
         c * e, ac * f + bd, bc * f - ad,
         -f, a * e, b * e,
-        ad * f - bc, ad * f - bc, bd * f + ac,
+        d * e, ad * f - bc, bd * f + ac,
       );
     }
 

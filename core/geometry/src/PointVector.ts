@@ -1447,14 +1447,14 @@ export class OrderedRotationAngles {
       result._order = order;
       return result;
     }
-    return new OrderedRotationAngles(Angle.createRadians(xDegrees), Angle.createRadians(yDegrees), Angle.createRadians(zDegrees), order);
+    return new OrderedRotationAngles(Angle.createDegrees(xDegrees), Angle.createDegrees(yDegrees), Angle.createDegrees(zDegrees), order);
   }
 
   /** Create an OrderedRotationAngles from a 3x3 rotational matrix, given the ordering of axis rotations that the matrix derives from. */
   public static createFromRotMatrix(matrix: RotMatrix, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
-    const m11 = matrix.coffs[0], m12 = matrix.coffs[4], m13 = matrix.coffs[8];
-    const m21 = matrix.coffs[1], m22 = matrix.coffs[5], m23 = matrix.coffs[9];
-    const m31 = matrix.coffs[2], m32 = matrix.coffs[6], m33 = matrix.coffs[10];
+    const m11 = matrix.coffs[0], m12 = matrix.coffs[3], m13 = matrix.coffs[6];
+    const m21 = matrix.coffs[1], m22 = matrix.coffs[4], m23 = matrix.coffs[7];
+    const m31 = matrix.coffs[2], m32 = matrix.coffs[5], m33 = matrix.coffs[8];
 
     let xRad: number;
     let yRad: number;

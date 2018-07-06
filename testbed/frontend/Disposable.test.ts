@@ -23,6 +23,7 @@ const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "testbed/node_
 let canvas: HTMLCanvasElement;
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
+const itemsChecked: Object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
 
 /**
  * Class holding a RenderTarget that provides getters for all of a Target's typically private members, as well as members that may be set to undefined when disposing.
@@ -67,7 +68,6 @@ function allOverridesSharedWithTarget(target: Target, batches: Batch[]): boolean
   return true;
 }
 
-const itemsChecked: Object[] = [];  // This array is used internally by the disposedCheck function to avoid infinite loops over the same objects
 /**
  * For all members of the object given, if the member is a disposable object, ensure that it is disposed (recursive).
  * Optionally specify a list of property names to be ignored by the isDisposed checks.
@@ -79,7 +79,7 @@ function isDisposed(disposable: any, ignoredAttribs?: string[]): boolean {
   return disposedCheck(disposable, ignoredAttribs);
 }
 
-/** Private recursive worker method for checking if an item is disposed or not (not to be called directly - use isDisposed). */
+/** Private helper method for isDisposed. */
 function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
   if (disposable === undefined || disposable === null)
     return true;
@@ -109,9 +109,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
             return false;
       }
     }
-
   }
-
   return true;
 }
 
@@ -201,11 +199,15 @@ describe("Disposal of WebGL Resources", () => {
 
     meshGraphic0.dispose();
     meshGraphic1.dispose();
-    tileGraphic.dispose();
 
-    // Post-disposal (mesh data contained in CachedGeometry will still be disposed as a direct owned resource of Graphic)
+    // Post-disposal of graphic 0 and graphic 1
     assert.isTrue(isDisposed(meshGraphic0));
     assert.isTrue(isDisposed(meshGraphic1));
+    assert.isFalse(isDisposed(tileGraphic));
+
+    tileGraphic.dispose();
+
+    // Post-disposal of tileGraphic
     assert.isTrue(isDisposed(tileGraphic));
   });
 
@@ -275,7 +277,7 @@ describe("Disposal of WebGL Resources", () => {
       assert.isTrue(isDisposed(batches));
 
     // Post-disposal of target (only owned resource checks)
-    assert.isTrue(isDisposed(target, ["_batches"]));   // we have here specified the only non-owned/shared target items
+    assert.isTrue(isDisposed(target, ["_batches", "_scene"]));   // This test claims _batches and _scene are the only disposable target members that are NOT fully owned
     assert.isTrue(isDisposed(exposedTarget.decorations));
     assert.isTrue(isDisposed(target.compositor));
     assert.isTrue(isDisposed(dynamics));
