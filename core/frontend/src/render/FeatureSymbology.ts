@@ -3,10 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride, Appearance as SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { Id64Set, Id64 } from "@bentley/bentleyjs-core";
 import { ViewState, SpecialElements, DrawnElementSets } from "../ViewState";
-import { IModelConnection } from "../IModelConnection";
 
 export namespace FeatureSymbology {
   export interface AppearanceProps {
@@ -266,32 +265,8 @@ export namespace FeatureSymbology {
       if (replaceExisting || !appearance.overridesSymbology) this._defaultOverrides = appearance.clone();
     }
 
-    public updateFromIModel(_iModel: IModelConnection, view: ViewState) {
-      // Features are defined by subcategory, which only implies category...
-      // A subcategory is visible if it belongs to a viewed category and its appearance's visibility flag is set
-
-      // ###TODO:
-      // const ecsql = `SELECT ECInstanceId FROM BisCore.SubCategory`; // WHERE InVirtualSet(?, Parent.Id)`;
-      // const stmt = await iModel.executeQuery(ecsql);
-
-      for (const cat of view.categorySelector.categories) {
-        let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]); // ###TODO: Adding +1 to category largely works, but need to actually query subcategories as above.
-        const app = view.displayStyle.getSubCategoryAppearance(id);
-        if (!app.invisible) { // visible
-          this.setVisibleSubCategory(id);
-          const ovr = view.displayStyle.getSubCategoryOverride(id);
-          if (ovr.anyOverridden) {
-            const featApp: FeatureSymbology.Appearance = new FeatureSymbology.Appearance();
-            featApp.initFrom(ovr);
-            if (featApp.overridesSymbology)
-              this.subCategoryOverrides.set(id.value, featApp);
-          }
-        }
-      }
-    }
-
     public initFromView(view: ViewState) {
-      const { alwaysDrawn, neverDrawn, viewFlags, iModel } = view;
+      const { alwaysDrawn, neverDrawn, viewFlags } = view;
       const { constructions, dimensions, patterns } = viewFlags;
 
       this.copyAlwaysDrawn(alwaysDrawn);
@@ -300,9 +275,18 @@ export namespace FeatureSymbology {
       this._constructions = constructions;
       this._dimensions = dimensions;
       this._patterns = patterns;
-      this._lineWeights = viewFlags.showWeights(); // #TODO make showWeights a property
+      this._lineWeights = viewFlags.showWeights();
 
-      this.updateFromIModel(iModel, view);
+      for (const categoryId of view.categorySelector.categories) {
+        const subCategoryIds = view.subCategories.getSubCategories(categoryId);
+        if (undefined === subCategoryIds)
+          continue;
+
+        for (const subCategoryId of subCategoryIds) {
+          // ###TODO: Ask DisplayStyle for the subcategory appearance so that it will include overrides...
+          this.visibleSubCategories.add(subCategoryId);
+        }
+      }
     }
 
     constructor(view?: ViewState) { if (undefined !== view) this.initFromView(view); }

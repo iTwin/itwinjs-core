@@ -13,7 +13,7 @@ import {
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement,
+  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -827,7 +827,7 @@ describe("iModel", () => {
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: ColorByName.darkRed }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
       const updated = testImodel.elements.getElement(IModelDb.getDefaultSubCategoryId(spatialCategoryId)) as SubCategory;
       assert.equal(updated.appearance.color.tbgr, ColorByName.darkRed, "SubCategory appearance should be updated");
@@ -893,7 +893,7 @@ describe("iModel", () => {
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance());
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance());
     }
 
     const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";

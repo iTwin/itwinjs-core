@@ -11,7 +11,6 @@ import { RotMatrix, Transform } from "../Transform";
 export type Point4dProps = number[];
 export type Matrix4dProps = Point4dProps[];
 
-/** Minimal object containing x,y,z and operations that are meaningful without change in both point and vector. */
 /** 4 Dimensional point (x,y,z,w) used in perspective calculations.
  * * the coordinates are stored in a Float64Array of length 4.
  * * properties `x`, `y`, `z`, `w` access array members.
