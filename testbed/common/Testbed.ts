@@ -12,4 +12,5 @@ export const CONSTANTS = {
   SET_INCOMPATIBLE_INTERFACE_VERSION: "setIncompatibleInterfaceVersion",
   RESTORE_COMPATIBLE_INTERFACE_VERSION: "restoreIncompatibleInterfaceVersion",
   RESTART_BACKEND: "restartBackend",
+  RESET_OP8_INITIALIZER: "resetOp8Initializer",
 };
