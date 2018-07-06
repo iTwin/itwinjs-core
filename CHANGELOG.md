@@ -5,18 +5,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- Added Units as a first-class concept in a Schema
-- Added InvertedUnit class- a specific type of Unit that describes the inverse of a single Unit
-- Added Constant class- a specific type of Unit that represents a number
-- Added Phenomenon class
-- Added UnitSystem class
-- Added Formats as a first-class concept in a Schema; includes Composite, which defines additional information about a format
-- Added support for Format String- a short string-based representation of a Format, which allows overriding certain key properties of a Format.
+- Added EC3.2 support
+  - Hidden behind a feature flag on Schema
+    - Schema.ec32
+  - Details about the EC3.2 specification are available here, http://builds.bentley.com/prgbuilds/AzureBuilds/ECDocs/latest/public/proposals/spec-proposals/#ec-32-proposals.
+  - Adds 6 new SchemaItem types
+    - Unit
+    - InvertedUnit
+    - Constant
+    - Phenomenon
+    - UnitSystem
+    - Format
 
 ### Changed
-- KindOfQuantity now enables references to Units and Formats defined in schemas
-- Changed ECEnumerator specification and required attributes
-- ec-js now supports deserializing into DelayedPromise
+- Updated KindOfQuantity to support both the EC3.1 and EC3.2 spec.
+  - EC3.2 enables references to Units and Formats which are now defined within the Schema.
+- Added EC3.2 support to ECEnumerator.
 
 ## [0.6.1]  -  2018-06-21
 ### Fixed
