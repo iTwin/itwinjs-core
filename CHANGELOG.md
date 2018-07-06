@@ -21,9 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Getting inherited properties that are in mixins works in synchronous code, too. There were some missing sync methods.
 
-### Added
-- Added several new tests including some tests which load BIS Schemas.
-
 ### Removed
 - Removed SchemaReadHelper.to() and SchemaReadHelper.toSync() as public callers should go through Schema.fromJson() instead. SchemaReadHelper can still be constructed publicly to mimic the to() methods.
 - Removed some unused internal code
