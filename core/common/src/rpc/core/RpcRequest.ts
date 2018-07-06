@@ -188,6 +188,8 @@ export class RpcRequest<TResponse = any> {
   /** Override to supply response text. */
   public getResponseText(): string { return ""; }
 
+  protected setLastUpdatedTime() { this._lastUpdated = new Date().getTime(); }
+
   /* @hidden @internal */
   public submit(): void {
     if (!this._active)
@@ -282,7 +284,7 @@ export class RpcRequest<TResponse = any> {
       return;
 
     this._active = false;
-    this._lastUpdated = new Date().getTime();
+    this.setLastUpdatedTime();
     this._resolve(value);
     this.setStatus(RpcRequestStatus.Resolved);
 
@@ -298,7 +300,7 @@ export class RpcRequest<TResponse = any> {
       return;
 
     this._active = false;
-    this._lastUpdated = new Date().getTime();
+    this.setLastUpdatedTime();
     this._reject(reason);
     this.setStatus(RpcRequestStatus.Rejected);
     this.finalize();
@@ -326,7 +328,7 @@ export class RpcRequest<TResponse = any> {
     if (!this._active)
       return;
 
-    this._lastUpdated = new Date().getTime();
+    this.setLastUpdatedTime();
     this._extendedStatus = extendedStatus;
     this.setStatus(status);
     RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, this);
