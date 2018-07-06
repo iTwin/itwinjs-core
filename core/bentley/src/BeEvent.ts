@@ -81,7 +81,7 @@ export class BeEvent<T extends Listener> {
     this._insideRaiseEvent = true;
 
     const listeners = this._listeners;
-    const length = listeners.length;
+    let length = listeners.length;
     let dropped = false;
 
     for (let i = 0; i < length; ++i) {
@@ -100,6 +100,7 @@ export class BeEvent<T extends Listener> {
       if (dropped) {
         this._listeners.length = 0;
         listeners.forEach((ctx) => { if (ctx.listener) this._listeners.push(ctx); });
+        length = listeners.length;
       }
 
     }
