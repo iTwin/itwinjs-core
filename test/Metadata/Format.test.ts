@@ -1474,9 +1474,15 @@ describe("Format tests", () => {
   });
   describe("Async Tests with Composite", () => {
     beforeEach(() => {
+      Schema.ec32 = true;
       const schema = new Schema("TestSchema", 1, 0, 0);
       testFormat = new Format(schema, "AmerMYFI4");
     });
+
+    afterEach(() => {
+      Schema.ec32 = false;
+    });
+
     it("Basic test", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -1770,9 +1776,15 @@ describe("Format tests", () => {
   });
   describe("Sync Tests with Composite", () => {
     beforeEach(() => {
+      Schema.ec32 = true;
       const schema = new Schema("TestSchema", 1, 0, 0);
       testFormat = new Format(schema, "AmerMYFI4");
     });
+
+    afterEach(() => {
+      Schema.ec32 = false;
+    });
+
     it("Basic test", () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
