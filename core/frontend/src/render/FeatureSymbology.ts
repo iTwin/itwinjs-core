@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { Id64Set, Id64 } from "@bentley/bentleyjs-core";
 import { ViewState, SpecialElements, DrawnElementSets } from "../ViewState";
 
@@ -13,93 +13,91 @@ export namespace FeatureSymbology {
     weight?: number;
     alpha?: number;
     linePixels?: LinePixels;
-    ignoresMaterial?: boolean;
+    ignoresMaterial?: true | undefined;
   }
 
-  export class Appearance implements AppearanceProps, Cloneable<Appearance> {
+  /** Defines overrides for selected aspects of a Feature's symbology. */
+  export class Appearance {
     public rgb?: RgbColor;
     public weight?: number;
     public alpha?: number;
     public linePixels?: LinePixels;
-    public ignoresMaterial: boolean = false;
+    public ignoresMaterial: boolean;
 
-    constructor(props?: AppearanceProps) { if (undefined !== props) this.setFrom(props); }
+    public static defaults = new Appearance({});
 
-    public get overridesSymbology(): boolean {
-      return this.overridesRgb || this.overridesAlpha || this.overridesWeight || this.overridesLinePixels || this.ignoresMaterial;
+    public static fromJSON(props?: AppearanceProps) {
+      if (undefined === props || (undefined === props.rgb && undefined === props.weight && undefined === props.alpha && undefined === props.linePixels && !props.ignoresMaterial))
+        return this.defaults;
+      else
+        return new Appearance(props);
     }
+
+    /** Create an Appearance which overrides the RGB color of a Feature. */
+    public static fromRgb(color: ColorDef): Appearance { return this.fromJSON({ rgb: RgbColor.fromColorDef(color) }); }
+
+    /** Create an Appearance which overides the RGB and alpha of a Feature. */
+    public static fromRgba(color: ColorDef): Appearance {
+      return this.fromJSON({
+        rgb: RgbColor.fromColorDef(color),
+        alpha: color.getAlpha(),
+      });
+    }
+
+    /** Create an Appearance with overrides corresponding to those defined by the supplied SubCategoryOverride. */
+    public static fromSubCategoryOverride(ovr: SubCategoryOverride): Appearance {
+      const rgb = undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
+      const alpha = undefined !== ovr.transparency ? ovr.transparency : undefined;
+      const weight = undefined !== ovr.weight ? ovr.weight : undefined;
+      const ignoresMaterial = undefined !== ovr.material && !ovr.material.isValid ? true : undefined;
+      return this.fromJSON({ rgb, alpha, weight, ignoresMaterial });
+    }
+
     public get overridesRgb(): boolean { return undefined !== this.rgb; }
     public get overridesAlpha(): boolean { return undefined !== this.alpha; }
     public get overridesLinePixels(): boolean { return undefined !== this.linePixels; }
     public get overridesWeight(): boolean { return undefined !== this.weight; }
-
-    /** Apply any overrides from this Appearance to the base Appearance, if the base Appearance does not already override them. */
-    public extend(app: Appearance): Appearance {
-      const { rgb, weight, alpha, linePixels, ignoresMaterial } = this;
-      if (!app.overridesRgb) app.rgb = rgb;
-      if (!app.overridesAlpha) app.alpha = alpha;
-      if (!app.overridesWeight) app.weight = weight;
-      if (!app.overridesLinePixels) app.linePixels = linePixels;
-      if (!app.ignoresMaterial) app.ignoresMaterial = ignoresMaterial;
-      return app;
-    }
-
-    public setFrom(props: AppearanceProps): void {
-      const { rgb, weight, alpha, linePixels, ignoresMaterial } = props;
-      this.rgb = rgb;
-      this.alpha = alpha;
-      this.weight = weight;
-      this.linePixels = linePixels;
-      this.ignoresMaterial = ignoresMaterial || false;
-    }
-
-    private rgbIsEqual(rgb?: RgbColor): boolean { return undefined === this.rgb ? undefined === rgb ? true : false : undefined === rgb ? false : this.rgb.equals(rgb); }
+    public get overridesSymbology(): boolean { return this.overridesRgb || this.overridesAlpha || this.overridesWeight || this.overridesLinePixels || this.ignoresMaterial; }
 
     public equals(other: Appearance): boolean {
       const { rgb, weight, alpha, linePixels, ignoresMaterial } = other;
       return this.rgbIsEqual(rgb) && this.weight === weight && this.alpha === alpha && this.linePixels === linePixels && this.ignoresMaterial === ignoresMaterial;
     }
 
-    public reset(): void {
-      this.rgb = undefined;
-      this.alpha = undefined;
-      this.weight = undefined;
-      this.linePixels = undefined;
-      this.ignoresMaterial = false;
+    public toJSON(): AppearanceProps {
+      return {
+        rgb: this.rgb,
+        weight: this.weight,
+        alpha: this.alpha,
+        linePixels: this.linePixels,
+        ignoresMaterial: this.ignoresMaterial ? true : undefined,
+      };
     }
 
-    public clone(): Appearance { return new Appearance(this); }
+    /** Produce an Appearance from the supplied Appearance in which any aspect not defined by the base Appearance is overridden by this Appearance. */
+    public extendAppearance(base: Appearance): Appearance {
+      if (!this.overridesSymbology)
+        return base;
 
-    public static fromRgb(rgb: ColorDef): Appearance {
-      const app = new Appearance();
-      app.rgb = RgbColor.fromColorDef(rgb);
-      return app;
+      const props = base.toJSON();
+      if (undefined === props.rgb) props.rgb = this.rgb;
+      if (undefined === props.alpha) props.alpha = this.alpha;
+      if (undefined === props.linePixels) props.linePixels = this.linePixels;
+      if (undefined === props.weight) props.weight = this.weight;
+      if (undefined === props.ignoresMaterial && this.ignoresMaterial) props.ignoresMaterial = true;
+
+      return Appearance.fromJSON(props);
     }
 
-    public static fromRgba(rgba: ColorDef): Appearance {
-      const app = new Appearance();
-      app.rgb = RgbColor.fromColorDef(rgba);
-      app.alpha = rgba.getAlpha();
-      return app;
+    private constructor(props: AppearanceProps) {
+      this.rgb = props.rgb;
+      this.weight = props.weight;
+      this.alpha = props.alpha;
+      this.linePixels = props.linePixels;
+      this.ignoresMaterial = undefined !== props.ignoresMaterial && props.ignoresMaterial;
     }
 
-    public initFrom(ovr: SubCategoryOverride) {
-      this.weight = ovr.weight;
-      if (undefined !== ovr.weight)
-        this.weight = ovr.weight;
-
-      if (undefined !== ovr.transparency)
-        this.alpha = ovr.transparency;
-
-      if (undefined !== ovr.color)
-        this.rgb = RgbColor.fromColorDef(ovr.color);
-
-      if (undefined !== ovr.material) {
-        // assert(!ovr.material.isValid); // Disabling material is supported; swapping material is currently not
-        if (!ovr.material.isValid)
-          this.ignoresMaterial = true;
-      }
-    }
+    private rgbIsEqual(rgb?: RgbColor): boolean { return undefined === this.rgb ? undefined === rgb ? true : false : undefined === rgb ? false : this.rgb.equals(rgb); }
   }
 
   export class Overrides implements DrawnElementSets {
@@ -109,7 +107,7 @@ export namespace FeatureSymbology {
     public get alwaysDrawn(): Id64Set { return this._specialElements.alwaysDrawn; } // Get the list of elements that are always drawn
 
     /** Following properties are only mutable internally: */
-    private _defaultOverrides = new Appearance();
+    private _defaultOverrides = Appearance.defaults;
     private _constructions = false;
     private _dimensions = false;
     private _patterns = false;
@@ -144,22 +142,17 @@ export namespace FeatureSymbology {
     public getElementOverrides(id: Id64): Appearance | undefined { return this.elementOverrides.get(id.value); }
     public getSubCategoryOverrides(id: Id64): Appearance | undefined { return this.subCategoryOverrides.get(id.value); }
 
-    public setModelOverrides(id: Id64, app: Appearance): void { this.modelOverrides.set(id.value, app.clone()); }
-    public setElementOverrides(id: Id64, app: Appearance): void { this.elementOverrides.set(id.value, app.clone()); }
-    public setSubCategoryOverrides(id: Id64, app: Appearance): void { this.subCategoryOverrides.set(id.value, app.clone()); }
     public setVisibleSubCategory(id: Id64): void { this.visibleSubCategories.add(id.value); }
     public setNeverDrawn(id: Id64): void { this._specialElements.setNeverDrawn(id); }
     public setAlwaysDrawn(id: Id64): void { this._specialElements.setAlwaysDrawn(id); }
     public setAlwaysDrawnExclusive(exclusive: boolean = true): void { this._alwaysDrawnExclusive = exclusive; }
-    /**
-     * Returns false if the feature is invisible.
-     * Otherwise, populates the feature's Appearance overrides
-     */
-    public getAppearance(app: Appearance, feature: Feature, id: Id64): boolean {
-      const modelApp = this.getModelOverrides(id);
 
-      if (undefined !== modelApp) app.setFrom(modelApp); // preserve ref by calling setFrom instead of assigning
-      else app.reset();
+    /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
+    public getAppearance(feature: Feature, modelId: Id64): Appearance | undefined {
+      let app = !this._lineWeights ? Appearance.fromJSON({ weight: 1 }) : Appearance.defaults;
+      const modelApp = this.getModelOverrides(modelId);
+      if (undefined !== modelApp)
+        app = modelApp.extendAppearance(app);
 
       // Is the element visible?
       const { elementId, subCategoryId, geometryClass } = feature;
@@ -167,34 +160,35 @@ export namespace FeatureSymbology {
 
       if (elementId.isValid()) {
         if (this.isNeverDrawn(elementId))
-          return false;
+          return undefined;
 
         alwaysDrawn = this.isAlwaysDrawn(elementId);
         if (!alwaysDrawn && this.isAlwaysDrawnExclusive)
-          return false;
+          return undefined;
 
         // Element overrides take precedence
         elemApp = this.getElementOverrides(elementId);
-        if (undefined !== elemApp) app.setFrom(undefined !== modelApp ? elemApp.extend(app) : elemApp);
+        if (undefined !== elemApp)
+          app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
       }
 
       if (subCategoryId.isValid()) {
         if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
-          return false;
+          return undefined;
 
         const subCat = this.getSubCategoryOverrides(subCategoryId);
-        if (undefined !== subCat) app.setFrom(subCat.extend(app));
+        if (undefined !== subCat)
+          app = subCat.extendAppearance(app);
       }
 
       if (undefined === elemApp && undefined === modelApp)
-        app.setFrom(this._defaultOverrides.extend(app));
+        app = this._defaultOverrides.extendAppearance(app);
 
       let visible = alwaysDrawn || this.isClassVisible(geometryClass);
-      if (visible && app.overridesAlpha) visible = app.alpha! < 0xff; // don't bother rendering something with full transparency...
+      if (visible && app.overridesAlpha)
+        visible = app.alpha! < 0xff; // don't bother rendering something with full transparency...
 
-      if (!this._lineWeights) app.weight = 1;
-
-      return visible;
+      return visible ? app : undefined;
     }
 
     public isClassVisible(geomClass: GeometryClass): boolean {
@@ -230,10 +224,8 @@ export namespace FeatureSymbology {
       if (!id.isValid())
         return;
 
-      const model = this.getModelOverrides(id);
-
-      if (undefined === model) this.setModelOverrides(id, app);
-      else if (replaceExisting) model.setFrom(app);
+      if (replaceExisting || undefined === this.getModelOverrides(id))
+        this.modelOverrides.set(id.value, app);
     }
 
     public overrideSubCategory(id: Id64, app: Appearance, replaceExisting: boolean = true): void {
@@ -241,10 +233,8 @@ export namespace FeatureSymbology {
         return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this subcategory"
-      const subCatApp = this.getSubCategoryOverrides(id);
-
-      if (undefined === subCatApp) this.setSubCategoryOverrides(id, app);
-      else if (replaceExisting) subCatApp.setFrom(app);
+      if (replaceExisting || undefined === this.getSubCategoryOverrides(id))
+        this.subCategoryOverrides.set(id.value, app);
     }
 
     // NB: Appearance can override nothing, which prevents the default overrides from applying to it.
@@ -253,14 +243,13 @@ export namespace FeatureSymbology {
         return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this element"
-      const elemApp = this.getElementOverrides(id);
-
-      if (undefined === elemApp) this.setElementOverrides(id, app);
-      else if (replaceExisting) elemApp.setFrom(app);
+      if (replaceExisting || undefined === this.getElementOverrides(id))
+        this.elementOverrides.set(id.value, app);
     }
 
     public setDefaultOverrides(appearance: Appearance, replaceExisting: boolean = true): void {
-      if (replaceExisting || !appearance.overridesSymbology) this._defaultOverrides = appearance.clone();
+      if (replaceExisting || !appearance.overridesSymbology)
+        this._defaultOverrides = appearance;
     }
 
     public initFromView(view: ViewState) {
@@ -285,8 +274,7 @@ export namespace FeatureSymbology {
             this.visibleSubCategories.add(subCategoryId);
             const ovr = view.getSubCategoryOverride(subCategoryId);
             if (undefined !== ovr) {
-              const app = new Appearance();
-              app.initFrom(ovr);
+              const app = Appearance.fromSubCategoryOverride(ovr);
               if (app.overridesSymbology)
                 this.subCategoryOverrides.set(subCategoryId, app);
             }

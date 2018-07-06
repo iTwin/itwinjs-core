@@ -65,8 +65,8 @@ class OvrUniform {
     this.rgba = FloatRgba.fromColorDef(ColorDef.black, 0);
     this.flags = OvrFlags.None;
 
-    const app: FeatureSymbology.Appearance = FeatureSymbology.Appearance.fromRgb(ColorDef.white);
-    if (!ovrs.getAppearance(app, kvp.value, map.modelId)) {
+    const app = ovrs.getAppearance(kvp.value, map.modelId);
+    if (undefined === app) {
       // We're invisible. Don't care about any other overrides.
       this.flags = OvrFlags.Visibility;
       this.floatFlags = this.flags / 256.0;
@@ -161,8 +161,8 @@ class OvrNonUniform {
       const feature = kvp.value;
       const dataIndex = kvp.index * 4 * 2;
 
-      const app: FeatureSymbology.Appearance = FeatureSymbology.Appearance.fromRgb(ColorDef.white);
-      if (!ovr.getAppearance(app, feature, map.modelId) || (app.overridesAlpha && 0.0 === app.alpha)) { // ###TODO - transparency v alpha
+      const app = ovr.getAppearance(feature, map.modelId);
+      if (undefined === app || (app.overridesAlpha && 0.0 === app.alpha)) { // ###TODO - transparency v alpha
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
         data.setOvrFlagsAtIndex(dataIndex, OvrFlags.Visibility);
         nHidden++;
