@@ -5,6 +5,7 @@
 import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
+import KindOfQuantityEC32 from "../../source/Metadata/KindOfQuantityEC32";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
 import * as sinon from "sinon";
 import Unit from "../../source/Metadata/Unit";
@@ -16,8 +17,125 @@ describe("KindOfQuantity", () => {
   let testKoQ: KindOfQuantity;
   const schema = new Schema("TestSchema", 1, 0, 0);
   testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
+  describe("fromJson", () => {
+    const baseJson = { schemaItemType: "KindOfQuantity" };
+    it("should successfully deserialize valid JSON", async () => {
+      const koqJson = {
+        ...baseJson,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        precision: 1.234,
+        persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
+        presentationUnits: [
+          { unit: "cm" },
+          { unit: "in", format: "anotherFormat" },
+        ],
+      };
+      await testKoQ.fromJson(koqJson);
+
+      expect(testKoQ.name).to.eql("TestKindOfQuantity");
+      expect(testKoQ.label).to.eql("SomeDisplayLabel");
+      expect(testKoQ.description).to.eql("A really long description...");
+      expect(testKoQ.precision).to.eql(1.234);
+      expect(testKoQ.presentationUnits).to.exist;
+      expect(testKoQ.presentationUnits.length).to.eql(2);
+      expect(testKoQ.defaultPresentationUnit).to.eql({ unit: "cm" });
+      expect(testKoQ.presentationUnits[0]).to.eql({ unit: "cm" });
+      expect(testKoQ.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
+      expect(testKoQ.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
+    });
+
+    it("should successfully deserialize valid JSON (without units)", async () => {
+      testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
+      const koqJson = {
+        ...baseJson,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        precision: 1.234,
+      };
+      await testKoQ.fromJson(koqJson);
+
+      expect(testKoQ.name).to.eql("TestKindOfQuantity");
+      expect(testKoQ.label).to.eql("SomeDisplayLabel");
+      expect(testKoQ.description).to.eql("A really long description...");
+      expect(testKoQ.precision).to.eql(1.234);
+      expect(testKoQ.presentationUnits).to.exist;
+      expect(testKoQ.presentationUnits.length).to.eql(0);
+      expect(testKoQ.defaultPresentationUnit).to.not.exist;
+      expect(testKoQ.persistenceUnit).to.not.exist;
+    });
+    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        [attributeName]: value,
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+    }
+
+    it("should throw for invalid precision", async () => testInvalidAttribute("precision", "number", false));
+    it("should throw for presentationUnits not an array", async () => testInvalidAttribute("presentationUnits", "object[]", 0));
+    it("should throw for presentationUnits not an array of objects", async () => testInvalidAttribute("presentationUnits", "object[]", [0]));
+
+    it("should throw for presentationUnit with missing unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        presentationUnits: [{}],
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
+    });
+
+    it("should throw for presentationUnit with invalid unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        presentationUnits: [{ unit: 0 }],
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for presentationUnit with invalid format", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        presentationUnits: [{ unit: "valid", format: false }],
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'format' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for persistenceUnit not an object", async () => testInvalidAttribute("persistenceUnit", "object", 0));
+
+    it("should throw for persistenceUnit with missing unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        persistenceUnit: {},
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'unit'.`);
+    });
+
+    it("should throw for persistenceUnit with invalid unit", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        persistenceUnit: { unit: 0 },
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for persistenceUnit with invalid format", async () => {
+      expect(testKoQ).to.exist;
+      const json: any = {
+        ...baseJson,
+        persistenceUnit: { unit: "valid", format: false },
+      };
+      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);
+    });
+  });
+
   describe("Async deserialization", () => {
-    it("No persistenceUnits", async () => {
+    it("No presentationFormats", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
@@ -43,12 +161,13 @@ describe("KindOfQuantity", () => {
           },
         },
       };
+      Schema.ec32 = true;
       const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("testKoQ");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof KindOfQuantity);
-      const koQTest: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isTrue(testItem instanceof KindOfQuantityEC32);
+      const koQTest: KindOfQuantityEC32 = testItem as KindOfQuantityEC32;
       assert.isDefined(koQTest);
       expect(koQTest.precision).equal(5);
       assert.isDefined(koQTest.persistenceUnit);
@@ -70,7 +189,7 @@ describe("KindOfQuantity", () => {
     }
 
     it("should throw for invalid precision", async () => testInvalidAttribute("precision", "number", false));
-    it("should throw for persistenceUnit not a string", async () => testInvalidAttribute("persistenceUnit", "string", 0));
+    it("should throw for persistenceUnit not a string", async () => testInvalidAttribute("persistenceUnit", "object", 0));
 
     it("should throw for presentationUnits not an array or string", async () => {
       const testSchema = {
@@ -233,7 +352,7 @@ describe("KindOfQuantity", () => {
       };
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
-      const testKoQItem = await ecSchema.getItem<KindOfQuantity>("ExampleKoQ");
+      const testKoQItem = await ecSchema.getItem<KindOfQuantityEC32>("ExampleKoQ");
       const testUnitItem = await ecSchema.getItem<Unit>("MM");
       const testFormat = await ecSchema.getItem<Format>("DefaultReal");
       const testUnitSystem = await ecSchema.getItem<UnitSystem>("Metric");
@@ -242,7 +361,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(testFormat);
       assert.isDefined(testUnitSystem);
       assert.isTrue(testUnitSystem instanceof UnitSystem);
-      assert.isTrue(testKoQItem instanceof KindOfQuantity);
+      assert.isTrue(testKoQItem instanceof KindOfQuantityEC32);
       assert.isTrue(testUnitItem instanceof Unit);
       assert.isTrue(testFormat instanceof Format);
       const testPersistenceUnit = await ecSchema.getItem<Unit>(testKoQItem!.persistenceUnit!.name);
@@ -307,7 +426,7 @@ describe("KindOfQuantity", () => {
       };
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
-      const testKoQItem = await ecSchema.getItem<KindOfQuantity>("ExampleKoQ");
+      const testKoQItem = await ecSchema.getItem<KindOfQuantityEC32>("ExampleKoQ");
       const testFormatItem = await ecSchema.getItem<Format>("DefaultReal");
       assert(testKoQItem!.presentationUnits!.length === 1);
       assert(testFormatItem!.composite!.units!![0]["1"] === " in");
@@ -389,7 +508,7 @@ describe("KindOfQuantity", () => {
       };
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
-      const testKoQItem = await ecSchema.getItem<KindOfQuantity>("ExampleKoQ");
+      const testKoQItem = await ecSchema.getItem<KindOfQuantityEC32>("ExampleKoQ");
       const testFormatItem = await ecSchema.getItem<Format>("DefaultReal");
       assert(testKoQItem!.presentationUnits!.length === 1);
       assert(testFormatItem!.precision === 4);
@@ -605,7 +724,7 @@ describe("KindOfQuantity", () => {
       };
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
-      const testKoQItem = await ecSchema.getItem<KindOfQuantity>("ExampleKoQ");
+      const testKoQItem = await ecSchema.getItem<KindOfQuantityEC32>("ExampleKoQ");
       assert(testKoQItem!.presentationUnits!.length === 1);
       assert(testKoQItem!.precision === 3);
       const defaultPresForm = await testKoQItem!.defaultPresentationFormat;
@@ -646,8 +765,8 @@ describe("KindOfQuantity", () => {
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("testKoQ");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof KindOfQuantity);
-      const koQTest: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isTrue(testItem instanceof KindOfQuantityEC32);
+      const koQTest: KindOfQuantityEC32 = testItem as KindOfQuantityEC32;
       assert.isDefined(koQTest);
       expect(koQTest.precision).equal(5);
       assert.isDefined(koQTest.persistenceUnit);
@@ -657,19 +776,7 @@ describe("KindOfQuantity", () => {
   });
 
   describe("Sync fromJson", () => {
-    const baseJson = { schemaItemType: "KindOfQuantity" };
-    function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        ...baseJson,
-        precision: 5,
-        [attributeName]: value,
-      };
-      assert.throws(() => testKoQ.fromJsonSync(json), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-    }
-
-    it("should throw for invalid precision", () => testInvalidAttribute("precision", "number", false));
-    it("should throw for persistenceUnit not a string",  () => testInvalidAttribute("persistenceUnit", "string", 0));
+    testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
 
     it("should throw for presentationUnits not an array or string", () => {
       const testSchema = {
@@ -812,7 +919,7 @@ describe("KindOfQuantity", () => {
       };
       const ecSchema = Schema.fromJsonSync(json);
       assert.isDefined(ecSchema);
-      const testKoQItem = ecSchema.getItemSync<KindOfQuantity>("ExampleKoQ");
+      const testKoQItem = ecSchema.getItemSync<KindOfQuantityEC32>("ExampleKoQ");
       const testUnitItem = ecSchema.getItemSync<Unit>("MM");
       const testFormat = ecSchema.getItemSync<Format>("DefaultReal");
       const testUnitSystem = ecSchema.getItemSync<UnitSystem>("Metric");
@@ -821,7 +928,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(testFormat);
       assert.isDefined(testUnitSystem);
       assert.isTrue(testUnitSystem instanceof UnitSystem);
-      assert.isTrue(testKoQItem instanceof KindOfQuantity);
+      assert.isTrue(testKoQItem instanceof KindOfQuantityEC32);
       assert.isTrue(testUnitItem instanceof Unit);
       assert.isTrue(testFormat instanceof Format);
       const testPersistenceUnit = ecSchema.getItemSync<Unit>(testKoQItem!.persistenceUnit!.name);
@@ -964,7 +1071,7 @@ describe("KindOfQuantity", () => {
       };
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
-      const testKoQItem = await ecSchema.getItem<KindOfQuantity>("ExampleKoQ");
+      const testKoQItem = await ecSchema.getItem<KindOfQuantityEC32>("ExampleKoQ");
       const testFormatItem = await ecSchema.getItem<Format>("DefaultReal");
       assert(testKoQItem!.presentationUnits!.length === 1);
       assert(testFormatItem!.precision === 4);
@@ -1180,7 +1287,7 @@ describe("KindOfQuantity", () => {
       };
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
-      const testKoQItem = await ecSchema.getItem<KindOfQuantity>("ExampleKoQ");
+      const testKoQItem = await ecSchema.getItem<KindOfQuantityEC32>("ExampleKoQ");
       assert(testKoQItem!.presentationUnits!.length === 1);
       assert(testKoQItem!.precision === 3);
       const defaultPresForm = await testKoQItem!.defaultPresentationFormat;

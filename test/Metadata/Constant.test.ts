@@ -13,8 +13,13 @@ describe("Constant tests", () => {
   let testConstant: Constant;
   describe("accept", () => {
     beforeEach(() => {
+      Schema.ec32 = true;
       const schema = new Schema("TestSchema", 1, 0, 0);
       testConstant = new Constant(schema, "TestEnumeration");
+    });
+
+    afterEach(() => {
+      Schema.ec32 = false;
     });
 
     it("should call visitConstant on a SchemaItemVisitor object", async () => {
@@ -32,9 +37,15 @@ describe("Constant tests", () => {
   });
   describe("Async fromJson", () => {
     beforeEach(() => {
+      Schema.ec32 = true;
       const schema = new Schema("ExampleSchema", 1, 0, 0);
       testConstant = new Constant(schema, "PI");
     });
+
+    afterEach(() => {
+      Schema.ec32 = false;
+    });
+
     it("Basic test", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -232,6 +243,14 @@ describe("Constant tests", () => {
     });
   });
   describe("Sync fromJson", () => {
+    beforeEach(() => {
+      Schema.ec32 = true;
+    });
+
+    afterEach(() => {
+      Schema.ec32 = false;
+    });
+
     it("Basic test", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",

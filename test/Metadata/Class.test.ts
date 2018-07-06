@@ -80,7 +80,7 @@ describe("ECClass", () => {
   describe("deserialization", () => {
     it("class with base class", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -108,7 +108,7 @@ describe("ECClass", () => {
 
     it("class with base class in reference schema", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         references: [
@@ -144,7 +144,7 @@ describe("ECClass", () => {
     // specific test files.
     it("with properties", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -199,7 +199,7 @@ describe("ECClass", () => {
   describe("deserialization sync", () => {
     it("class with base class", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -227,7 +227,7 @@ describe("ECClass", () => {
 
     it("class with base class in reference schema", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         references: [
@@ -263,7 +263,7 @@ describe("ECClass", () => {
     // specific test files.
     it("with properties", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -380,7 +380,7 @@ describe("ECClass", () => {
       //        [    H    ]
       //
       const testSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "01.00.00",
         alias: "ts",

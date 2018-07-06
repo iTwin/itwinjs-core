@@ -14,7 +14,7 @@ describe("CustomAttributeClass", () => {
   describe("deserialization", () => {
     function createSchemaJsonWithItems(itemsJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {

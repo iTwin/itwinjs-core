@@ -12,7 +12,8 @@ import RelationshipClass, { RelationshipConstraint } from "../Metadata/Relations
 import { AnyClass, SchemaDeserializationVisitor, AnySchemaItem } from "../Interfaces";
 import { Property } from "../Metadata/Property";
 import { MutableClass } from "../Metadata/Class";
-import KindOfQuantity, { formatStringRgx } from "../Metadata/KindOfQuantity";
+import KindOfQuantity from "../Metadata/KindOfQuantity";
+import { formatStringRgx } from "../Metadata/KindOfQuantityEC32"; // should be in KoQ EC32
 import Unit from "../Metadata/Unit";
 import Constant from "../Metadata/Constant";
 import InvertedUnit from "../Metadata/InvertedUnit";
@@ -232,7 +233,10 @@ export default class SchemaReadHelper {
         break;
       case SchemaItemType.KindOfQuantity:
         schemaItem = await (schema as MutableSchema).createKindOfQuantity(itemName);
-        await this.loadKindOfQuantity(schemaItem, schemaItemJson);
+        if (Schema.ec32)
+          await this.loadKindOfQuantity(schemaItem, schemaItemJson);
+        else
+          await schemaItem.fromJson(schemaItemJson);
         break;
       case SchemaItemType.Unit:
         schemaItem = await (schema as MutableSchema).createUnit(itemName);

@@ -22,7 +22,9 @@ import Phenomenon from "./Phenomenon";
 import Format from "./Format";
 import Constant from "./Constant";
 import InvertedUnit from "./InvertedUnit";
+import KindOfQuantityEC32 from "./KindOfQuantityEC32";
 
+const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
 
 /**
@@ -37,6 +39,7 @@ export default class Schema implements CustomAttributeContainerProps {
   protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _items: SchemaItem[];
+  public static ec32: boolean = false; // use EC3.1 for now
   /**
    * Constructs an empty Schema with the given name and version, (optionally) in a given context.
    * @param name The schema's name
@@ -162,12 +165,16 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
    */
-  protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
-    return this.createItem<KindOfQuantity>(KindOfQuantity, name);
+ protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
+    if (!Schema.ec32) // use EC3.1
+      return this.createItem<KindOfQuantity>(KindOfQuantity, name);
+    return (this.createItem<KindOfQuantityEC32>(KindOfQuantityEC32, name) as any) as KindOfQuantity;
   }
 
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
-    return this.createItem<KindOfQuantity>(KindOfQuantity, name);
+    if (!Schema.ec32) // use EC3.1
+      return this.createItem<KindOfQuantity>(KindOfQuantity, name);
+    return (this.createItem<KindOfQuantityEC32>(KindOfQuantityEC32, name) as any) as KindOfQuantity;
   }
 
   /**
@@ -433,9 +440,10 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public schemaFromJson(jsonObj: any) {
-    if (SCHEMAURL3_2 !== jsonObj.$schema) {
+    if (Schema.ec32 && SCHEMAURL3_2 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "Schema namespace '$(jsonObj.$schema)' is not supported.");
-    }
+    else if (!Schema.ec32 && SCHEMAURL3_1 !== jsonObj.$schema)
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "Schema namespace '$(jsonObj.$schema)' is not supported.");
 
     if (!this._schemaKey) {
       if (undefined === jsonObj.name)
