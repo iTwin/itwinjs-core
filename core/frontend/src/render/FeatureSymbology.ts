@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { Id64Set, Id64 } from "@bentley/bentleyjs-core";
 import { ViewState, SpecialElements, DrawnElementSets } from "../ViewState";
 
@@ -84,11 +84,9 @@ export namespace FeatureSymbology {
     }
 
     public initFrom(ovr: SubCategoryOverride) {
-      const app = new SubCategoryAppearance();
-      ovr.applyTo(app);
-
+      this.weight = ovr.weight;
       if (undefined !== ovr.weight)
-        this.weight = app.weight;
+        this.weight = ovr.weight;
 
       if (undefined !== ovr.transparency)
         this.alpha = ovr.transparency;

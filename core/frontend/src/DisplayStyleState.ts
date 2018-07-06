@@ -70,7 +70,7 @@ export abstract class DisplayStyleState extends ElementState {
     // now apply this override to the unmodified SubCategory appearance
     const sc = this._subCategories.get(id.value);
     if (sc !== undefined)
-      ovr.applyTo(sc);
+      this._subCategories.set(id.value, ovr.override(sc)); // ###TODO: This all needs to move...
     else
       assert(false);
   }
