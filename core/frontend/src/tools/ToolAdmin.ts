@@ -308,47 +308,42 @@ export class CurrentInputState {
 }
 
 // tslint:disable-next-line:variable-name
-const WheelSettings = {
+export const WheelSettings = {
   zoomRatio: 1.75,
   navigateDistPct: 3.0,
   navigateMouseDistPct: 10.0,
 };
 
+/** Default processor to handle wheel events. */
 class WheelEventProcessor {
-  constructor(public ev?: BeWheelEvent) { }
-  public process(doUpdate: boolean): boolean {
-    const vp = this.ev!.viewport;
+  public static process(ev: BeWheelEvent, doUpdate: boolean) {
+    const vp = ev.viewport;
     if (!vp)
-      return true;
+      return;
 
-    this.doZoom(doUpdate);
+    this.doZoom(ev);
 
     if (doUpdate) {
-      const hasPendingWheelEvent = false; //  Display:: Kernel:: HasPendingMouseWheelEvent(); NEEDS_WORK
-
-      // don't put into undo buffer if we're about to get another wheel event.
-      if (!hasPendingWheelEvent)
-        vp.synchWithView(true);
+      vp.synchWithView(true);
 
       // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
       IModelApp.accuSnap.clear();
     }
-    return true;
   }
 
-  private doZoom(reCenter: boolean): ViewStatus {
-    const vp = this.ev!.viewport;
+  private static doZoom(ev: BeWheelEvent): ViewStatus {
+    const vp = ev.viewport;
     if (!vp)
       return ViewStatus.InvalidViewport;
 
     let zoomRatio = WheelSettings.zoomRatio;
     if (zoomRatio < 1)
       zoomRatio = 1;
-    if (this.ev!.wheelDelta > 0)
+    if (ev.wheelDelta > 0)
       zoomRatio = 1 / zoomRatio;
 
     const target = Point3d.create();
-    const isSnap = this.ev!.getTargetPoint(target);
+    const isSnap = ev.getTargetPoint(target);
     let targetRoot = target.clone();
     let status: ViewStatus;
 
@@ -361,7 +356,7 @@ class WheelEventProcessor {
 
         const lastEvent = IModelApp.toolAdmin.lastWheelEvent;
         const path = ViewManip.getTargetHitDetail(vp, target);
-        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(this.ev!.viewPoint) < .00001) {
+        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < .00001) {
           defaultTarget = vp.worldToNpc(lastEvent.point);
           targetRoot.z = defaultTarget.z;
           lastEventWasValid = true;
@@ -394,9 +389,9 @@ class WheelEventProcessor {
       newCameraPos.setFrom(oldCameraPos.plus(offset));
 
       if (!lastEventWasValid) {
-        const thisEvent = this.ev!.clone();
+        const thisEvent = ev.clone();
         thisEvent.point.setFrom(targetRoot);
-        IModelApp.toolAdmin.lastWheelEvent = thisEvent as BeWheelEvent;
+        IModelApp.toolAdmin.lastWheelEvent = thisEvent;
       }
 
       status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
@@ -406,20 +401,12 @@ class WheelEventProcessor {
       const trans = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1));
       const viewCenter = Point3d.create(.5, .5, .5);
 
-      if (reCenter) {
-        const shift = Vector3d.createStartEnd(viewCenter, targetNpc);
-        shift.z = 0.0;
-
-        const offset = Transform.createTranslation(shift);
-        trans.multiplyTransformTransform(offset, trans);
-      }
-
       trans.multiplyPoint3d(viewCenter, viewCenter);
       vp.npcToWorld(viewCenter, viewCenter);
       status = vp.zoom(viewCenter, zoomRatio);
     }
 
-    // if we scrolled out, we may have invalidated the current accusnap path
+    // if we scrolled out, we may have invalidated the current AccuSnap path
     IModelApp.accuSnap.reEvaluate();
     return status;
   }
@@ -1331,16 +1318,12 @@ export class ToolAdmin {
     IModelApp.viewManager.setViewCursor(BeCursor.NotAllowed);
   }
 
-  private wheelEventProcessor = new WheelEventProcessor();
-
   /** Performs default handling of mouse wheel event (zoom in/out) */
   public processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): boolean {
-    this.wheelEventProcessor.ev = ev;
-    const result = this.wheelEventProcessor.process(doUpdate);
-    this.wheelEventProcessor.ev = undefined;
+    WheelEventProcessor.process(ev, doUpdate);
     this.updateDynamics(ev);
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    return result;
+    return true;
   }
 
   public onSelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
