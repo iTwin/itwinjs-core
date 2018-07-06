@@ -68,10 +68,6 @@ export class RenderPlan {
  * A renderer-specific object that can be placed into a display list.
  */
 export abstract class RenderGraphic implements IDisposable {
-  public readonly iModel: IModelConnection;
-
-  constructor(iModel: IModelConnection) { this.iModel = iModel; }
-
   public abstract dispose(): void;
 }
 
@@ -247,7 +243,7 @@ export abstract class RenderSystem {
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
 
-  // /** Create an offscreen render target. */
+  /** Create an offscreen render target. */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   /** Find a previously-created Material by key. Returns null if no such material exists. */
@@ -265,11 +261,11 @@ export abstract class RenderSystem {
   // /** Create a Viewlet from parameters */
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
 
-  // /** Create a triangle mesh primitive */
-  public createTriMesh(_args: MeshArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  /** Create a triangle mesh primitive */
+  public createTriMesh(_args: MeshArgs): RenderGraphic | undefined { return undefined; }
 
-  // /** Create an indexed polyline primitive */
-  public createIndexedPolylines(_args: PolylineArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  /** Create an indexed polyline primitive */
+  public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
 
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
@@ -284,10 +280,10 @@ export abstract class RenderSystem {
   // public abstract createTile(tile: Texture, corners: GraphicBuilderTileCorners, imodel: IModel, params: GraphicParams): Graphic;
 
   /** Create a Graphic consisting of a list of Graphics */
-  public abstract createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic;
+  public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a Graphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;

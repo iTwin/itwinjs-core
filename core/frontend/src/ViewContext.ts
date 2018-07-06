@@ -53,7 +53,7 @@ export class RenderContext extends ViewContext {
     return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
   }
   public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVector): RenderGraphic {
-    return this.target.renderSystem.createBranch(branch, this.viewport.iModel, location, clip);
+    return this.target.renderSystem.createBranch(branch, location, clip);
   }
 }
 

@@ -11,8 +11,6 @@ import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
 
 export class FakeGraphic extends RenderGraphic {
-  constructor(iModel: IModelConnection) { super(iModel); }
-
   public dispose(): void { }
 }
 
@@ -31,11 +29,6 @@ describe("RenderGraphic", () => {
 
   after(async () => {
     if (iModel) await iModel.closeStandalone();
-  });
-
-  it("RenderGraphic works as expected", () => {
-    const g = new FakeGraphic(iModel);
-    assert.isTrue(g.iModel instanceof IModelConnection, "can access IModelConnection");
   });
 
   it("PolylineParamVertex works as expected", () => {
@@ -240,7 +233,7 @@ describe("createTriMesh", () => {
     args.vertIndices = [0, 1, 2];
     args.colors.initUniform(ColorByName.tan);
 
-    const graphic = IModelApp.renderSystem.createTriMesh(args, imodel);
+    const graphic = IModelApp.renderSystem.createTriMesh(args);
     expect(graphic).not.to.be.undefined;
   });
 });

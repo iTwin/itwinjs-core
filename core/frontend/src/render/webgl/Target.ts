@@ -234,6 +234,7 @@ export abstract class Target extends RenderTarget {
   public get scene(): GraphicList { return this._scene; }
   public get decorations(): Decorations { return this._decorations; }
   public get dynamics(): DecorationList | undefined { return this._dynamics; }
+
   public getWorldDecorations(decs: DecorationList): WorldDecorations {
     if (undefined === this._worldDecorations) {
       assert(0 < decs.length);
@@ -248,7 +249,7 @@ export abstract class Target extends RenderTarget {
         vf.setShowSolarLight(false);
       }
 
-      this._worldDecorations = new WorldDecorations(decs[0].graphic.iModel, vf);
+      this._worldDecorations = new WorldDecorations(vf);
     }
 
     this._worldDecorations.init(decs);
