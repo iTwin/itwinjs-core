@@ -82,8 +82,12 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("constructor with ViewState parameter works as expected", () => {
     // load viewState Special Elements
-    viewState.setNeverDrawn(new Id64("0x123"));
-    viewState.setAlwaysDrawn(new Id64("0x124"));
+    const neverDrawn = new Set<string>();
+    const alwaysDrawn = new Set<string>();
+    neverDrawn.add("0x123");
+    alwaysDrawn.add("0x124");
+    viewState.setNeverDrawn(neverDrawn);
+    viewState.setAlwaysDrawn(alwaysDrawn);
 
     // init overrides from ViewState
     overrides = new FeatureSymbology.Overrides(viewState);
@@ -92,8 +96,8 @@ describe("FeatureSymbology.Overrides", () => {
     expect(overrides.isClassVisible(GeometryClass.Dimension)).to.equal(viewState.viewFlags.dimensions);
     expect(overrides.isClassVisible(GeometryClass.Pattern)).to.equal(viewState.viewFlags.patterns);
     expect(overrides.lineWeights).to.equal(viewState.viewFlags.showWeights());
-    expect(Array.from(overrides.neverDrawn)).to.deep.equals(Array.from(viewState.neverDrawn));
-    expect(Array.from(overrides.alwaysDrawn)).to.deep.equals(Array.from(viewState.alwaysDrawn));
+    expect(Array.from(overrides.neverDrawn)).to.deep.equals(Array.from(viewState.neverDrawn!));
+    expect(Array.from(overrides.alwaysDrawn)).to.deep.equals(Array.from(viewState.alwaysDrawn!));
   });
 
   it("isClassVisible works as expected", () => {
@@ -156,7 +160,7 @@ describe("FeatureSymbology.Overrides", () => {
     assert.isTrue(overrides.isFeatureVisible(feature), "if elementId is in always drawn set, feature is visible");
 
     overrides = new FeatureSymbology.Overrides();
-    overrides.setAlwaysDrawnExclusive();
+    overrides.isAlwaysDrawnExclusive = true;
 
     // doesn't sound right... but this is how it works in the native code
     assert.isFalse(overrides.isFeatureVisible(feature), "if alwaysDrawnExclusive flag is set, but element not in always drawn set, feature isn't visible");
@@ -196,7 +200,7 @@ describe("FeatureSymbology.Overrides", () => {
     assert.isUndefined(appearance, "returns undefined if feature id is in the never drawn set");
 
     overrides = new FeatureSymbology.Overrides();
-    overrides.setAlwaysDrawnExclusive();
+    overrides.isAlwaysDrawnExclusive = true;
 
     appearance = overrides.getAppearance(feature, id);
     assert.isUndefined(appearance, "returns false if feature isn't in always drawn set, but alwaysDrawnExclusive flag is set");

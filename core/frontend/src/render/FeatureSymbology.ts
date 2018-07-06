@@ -4,8 +4,8 @@
 /** @module Rendering */
 
 import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride } from "@bentley/imodeljs-common";
-import { Id64Set, Id64 } from "@bentley/bentleyjs-core";
-import { ViewState, SpecialElements, DrawnElementSets } from "../ViewState";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { ViewState } from "../ViewState";
 
 export namespace FeatureSymbology {
   export interface AppearanceProps {
@@ -100,18 +100,17 @@ export namespace FeatureSymbology {
     private rgbIsEqual(rgb?: RgbColor): boolean { return undefined === this.rgb ? undefined === rgb ? true : false : undefined === rgb ? false : this.rgb.equals(rgb); }
   }
 
-  export class Overrides implements DrawnElementSets {
+  export class Overrides {
     /** Drawn Sets */
-    private readonly _specialElements = new SpecialElements();
-    public get neverDrawn(): Id64Set { return this._specialElements.neverDrawn; } // Get the list of elements that are never drawn
-    public get alwaysDrawn(): Id64Set { return this._specialElements.alwaysDrawn; } // Get the list of elements that are always drawn
+    public readonly neverDrawn = new Set<string>();
+    public readonly alwaysDrawn = new Set<string>();
+    public isAlwaysDrawnExclusive: boolean = false;
 
     /** Following properties are only mutable internally: */
     private _defaultOverrides = Appearance.defaults;
     private _constructions = false;
     private _dimensions = false;
     private _patterns = false;
-    private _alwaysDrawnExclusive = false;
     private _lineWeights = true;
 
     public readonly modelOverrides = new Map<string, Appearance>();
@@ -121,31 +120,23 @@ export namespace FeatureSymbology {
     public readonly visibleSubCategories = new Set<string>();
 
     public get defaultOverrides(): Appearance { return this._defaultOverrides; }
-    public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
     public get lineWeights(): boolean { return this._lineWeights; }
 
-    public copyAlwaysDrawn(always: Id64Set): void { this._specialElements.setAlwaysDrawn(always); }
-    public copyNeverDrawn(never: Id64Set): void { this._specialElements.setNeverDrawn(never); }
-
-    public isNeverDrawn(id: Id64): boolean { return this._specialElements.isNeverDrawn(id); }
-    public isAlwaysDrawn(id: Id64): boolean { return this._specialElements.isAlwaysDrawn(id); }
+    public isNeverDrawn(id: Id64): boolean { return this.neverDrawn.has(id.value); }
+    public isAlwaysDrawn(id: Id64): boolean { return this.alwaysDrawn.has(id.value); }
     public isSubCategoryVisible(id: Id64): boolean { return this.visibleSubCategories.has(id.value); }
 
     public clearModelOverrides(id: Id64): void { this.modelOverrides.delete(id.value); }
     public clearElementOverrides(id: Id64): void { this.elementOverrides.delete(id.value); }
     public clearSubCategoryOverrides(id: Id64): void { this.subCategoryOverrides.delete(id.value); }
-    public clearAlwaysDrawn(id?: Id64): void { this._specialElements.clearAlwaysDrawn(id); }
-    public clearNeverDrawn(id?: Id64): void { this._specialElements.clearNeverDrawn(id); }
-    public clearVisibleSubCategory(id: Id64): void { this.visibleSubCategories.delete(id.value); }
 
     public getModelOverrides(id: Id64): Appearance | undefined { return this.modelOverrides.get(id.value); }
     public getElementOverrides(id: Id64): Appearance | undefined { return this.elementOverrides.get(id.value); }
     public getSubCategoryOverrides(id: Id64): Appearance | undefined { return this.subCategoryOverrides.get(id.value); }
 
     public setVisibleSubCategory(id: Id64): void { this.visibleSubCategories.add(id.value); }
-    public setNeverDrawn(id: Id64): void { this._specialElements.setNeverDrawn(id); }
-    public setAlwaysDrawn(id: Id64): void { this._specialElements.setAlwaysDrawn(id); }
-    public setAlwaysDrawnExclusive(exclusive: boolean = true): void { this._alwaysDrawnExclusive = exclusive; }
+    public setNeverDrawn(id: Id64): void { this.neverDrawn.add(id.value); }
+    public setAlwaysDrawn(id: Id64): void { this.alwaysDrawn.add(id.value); }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
     public getAppearance(feature: Feature, modelId: Id64): Appearance | undefined {
@@ -256,9 +247,10 @@ export namespace FeatureSymbology {
       const { alwaysDrawn, neverDrawn, viewFlags } = view;
       const { constructions, dimensions, patterns } = viewFlags;
 
-      this.copyAlwaysDrawn(alwaysDrawn);
-      this.copyNeverDrawn(neverDrawn);
+      this.copy(this.alwaysDrawn, alwaysDrawn);
+      this.copy(this.neverDrawn, neverDrawn);
 
+      this.isAlwaysDrawnExclusive = view.isAlwaysDrawnExclusive;
       this._constructions = constructions;
       this._dimensions = dimensions;
       this._patterns = patterns;
@@ -284,5 +276,13 @@ export namespace FeatureSymbology {
     }
 
     constructor(view?: ViewState) { if (undefined !== view) this.initFromView(view); }
+
+    private copy(dst: Set<string>, src?: Set<string>): void {
+      dst.clear();
+      if (undefined !== src) {
+        for (const id of src)
+          dst.add(id);
+      }
+    }
   }
 }
