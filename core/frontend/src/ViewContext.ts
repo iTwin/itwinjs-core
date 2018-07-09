@@ -176,13 +176,19 @@ export class DecorateContext extends RenderContext {
     this.decorations.viewOverlay.add(graphic, ovr);
   }
 
-  /** Display sprite as view overlay graphic. */
-  public addSprite(sprite: Sprite, location: Point3d, xVec: Vector3d, transparency: number) {
+  /**
+   * Display a sprite as view overlay graphic.
+   * @param sprite The sprite to draw
+   * @param location The location of the sprite, in view coordinates
+   * @param xVec The orientation of the sprite, in view coordinates
+   * @param transparency The transparency of the sprite (0-255, 0 == fully opaque)
+   */
+  public addSprite(sprite: Sprite, location: XAndY, xVec: XAndY, transparency: number) {
     if (!sprite.texture)
-      return;
+      return; // sprite not loaded
 
-    const xVector = xVec.clone();
-    const yVector = xVec.rotate90CCWXY();
+    const xVector = new Vector3d(xVec.x, xVec.y, 0);
+    const yVector = xVector.rotate90CCWXY();
     xVector.scaleToLength(sprite.size.x, xVector);
     yVector.scaleToLength(sprite.size.y, yVector);
 
@@ -191,10 +197,8 @@ export class DecorateContext extends RenderContext {
     const pts = [org, xCorn, org.plus(yVector), xCorn.plus(yVector)];
 
     let ovr: FeatureSymbology.Appearance | undefined;
-    if (transparency) {
-      ovr = new FeatureSymbology.Appearance();
-      ovr.alpha = transparency;
-    }
+    if (transparency > 0)
+      ovr = FeatureSymbology.Appearance.fromJSON({ alpha: 255 - transparency });
 
     this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, pts)!, ovr);
   }
