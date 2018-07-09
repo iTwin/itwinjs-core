@@ -6,7 +6,6 @@ import { Range1d } from "../Range";
 import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { OrderedRotationAngles } from "../PointVector";
 
 /* tslint:disable:no-console */
 class AngleTests {

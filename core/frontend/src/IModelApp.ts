@@ -16,6 +16,7 @@ import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-commo
 import { NotificationManager } from "./NotificationManager";
 import { System } from "./render/webgl/System";
 import { RenderSystem } from "./render/System";
+import { dispose } from "@bentley/bentleyjs-core";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -108,7 +109,7 @@ export class IModelApp {
 
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
-    IModelApp._renderSystem!.dispose();
+    this._renderSystem = dispose(IModelApp._renderSystem);
     IModelApp._renderSystem = undefined;
     IModelApp.toolAdmin.onShutDown();
     IModelApp._initialized = false;

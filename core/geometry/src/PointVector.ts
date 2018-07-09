@@ -4,7 +4,7 @@
 
 /** @module CartesianGeometry */
 
-import { Geometry, Angle, BeJSONFunctions, AngleProps, AxisOrder } from "./Geometry";
+import { Geometry, Angle, BeJSONFunctions, AngleProps } from "./Geometry";
 import { Ray3d } from "./AnalyticGeometry";
 import { RotMatrix, Transform } from "./Transform";
 

@@ -7,7 +7,7 @@
 import { Geometry, Angle, AxisOrder, BeJSONFunctions } from "./Geometry";
 import { Point4d } from "./numerics/Geometry4d";
 import { Range3d } from "./Range";
-import { Point2d, Point3d, Vector3d, XYAndZ, OrderedRotationAngles } from "./PointVector";
+import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
 import { XAndY, XYZ, RotMatrixProps, TransformProps } from "./PointVector";
 /* tslint:disable:variable-name jsdoc-format*/
 /** A RotMatrix is tagged indicating one of the following states:

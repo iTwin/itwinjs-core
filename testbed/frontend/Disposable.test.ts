@@ -9,7 +9,7 @@ import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
   MeshArgs, OnScreenTarget, GraphicBuilderCreateParams, GraphicType,
-  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan, System
+  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan, System,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -23,7 +23,7 @@ const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "testbed/node_
 let canvas: HTMLCanvasElement;
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
-const itemsChecked: Object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
+const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
 
 /**
  * Class holding a RenderTarget that provides getters for all of a Target's typically private members, as well as members that may be set to undefined when disposing.
@@ -49,7 +49,7 @@ class ExposedTarget {
 function getImageBufferData(): Uint8Array {
   const buffer = new Uint8Array(4096);
   let currentBufferIdx = 0;
-  let color = ColorDef.from(54, 117, 255);
+  const color = ColorDef.from(54, 117, 255);
   for (let i = 0; i < 1024; i++ , currentBufferIdx += 4) {
     buffer[currentBufferIdx] = color.colors.r; buffer[currentBufferIdx + 1] = color.colors.g; buffer[currentBufferIdx + 2] = color.colors.b; buffer[currentBufferIdx + 3] = color.getAlpha();
   }
@@ -122,7 +122,6 @@ describe("Disposal of WebGL Resources", () => {
 
     WebGLTestContext.startup();
     imodel0 = await IModelConnection.openStandalone(iModelLocation);
-    await TestData.load();
     imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
   after(async () => {
@@ -131,7 +130,7 @@ describe("Disposal of WebGL Resources", () => {
     WebGLTestContext.shutdown();
   });
 
-  it("expect rendersystem disposal to trigger disposal of textures cached in id-map", () => {
+  it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
     if (!IModelApp.hasRenderSystem) {
       return;
     }
@@ -166,7 +165,7 @@ describe("Disposal of WebGL Resources", () => {
     assert.isUndefined(system.findTexture("-918273645", imodel0));
   });
 
-  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", () => {
+  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
     const system = IModelApp.renderSystem;

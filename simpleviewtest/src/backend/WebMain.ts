@@ -19,7 +19,7 @@ proxyServer.stderr.on("data", (data) => {
   console.log(`proxy server: ${data}`);
 });
 proxyServer.on("close", (code) => {
-  console.log(`proxy server terminated with code ${code}`)
+  console.log(`proxy server terminated with code ${code}`);
 });
 
 // tslint:disable
