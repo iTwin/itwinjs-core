@@ -619,8 +619,15 @@ function wireIconsToFunctions() {
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
   document.getElementById("browserFileSelector")!.addEventListener("change", async function onChange(this: HTMLElement) {
     const files = (this as any).files;
-    if (files !== undefined && files.length > 0)
-      await resetStandaloneIModel(configuration.standalonePath + "/" + files[0].name);
+    if (files !== undefined && files.length > 0) {
+      try {
+        await resetStandaloneIModel(configuration.standalonePath + "/" + files[0].name);
+      } catch {
+        alert("Error Opening iModel - Make you are selecting files from " + configuration.standalonePath);
+        const spinner = document.getElementById("spinner") as HTMLDivElement;
+        spinner.style.display = "none";
+      }
+    }
   });
 }
 
