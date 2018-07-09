@@ -5,7 +5,7 @@
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
-import { NodeKey, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
+import { NodeKey, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
 import { ECPresentationError, ECPresentationStatus } from "./Error";
 
@@ -20,7 +20,7 @@ export type Keys = ReadonlyArray<Key> | Readonly<KeySetJSON> | Readonly<KeySet>;
  */
 export interface KeySetJSON {
   instanceKeys: Array<[string, string[]]>;
-  nodeKeys: NodeKey[];
+  nodeKeys: NodeKeyJSON[];
 }
 
 /**
@@ -50,9 +50,12 @@ export default class KeySet {
     const instanceKeys = new Array();
     for (const entry of this._instanceKeys.entries())
       instanceKeys.push([entry["0"], [...entry["1"]]]);
+    const nodeKeys = new Array<NodeKeyJSON>();
+    for (const serializedKey of this._nodeKeys.values())
+      nodeKeys.push(JSON.parse(serializedKey));
     return {
       instanceKeys,
-      nodeKeys: [...this.nodeKeys],
+      nodeKeys,
     };
   }
 
