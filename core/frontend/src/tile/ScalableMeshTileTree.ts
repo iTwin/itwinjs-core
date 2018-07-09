@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { } from "./TileTree";
 import { TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64, BentleyStatus, assert, StopWatch } from "@bentley/bentleyjs-core";

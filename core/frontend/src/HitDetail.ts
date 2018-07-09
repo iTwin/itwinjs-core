@@ -19,6 +19,25 @@ export const enum SnapMode { // NEEDSWORK: Don't intend to use this as a mask, m
   Intersection = 1 << 6,
 }
 
+export const enum KeypointType {
+  Nearest = 0,
+  Keypoint = 1,
+  Midpoint = 2,
+  Center = 3,
+  Origin = 4,
+  Bisector = 5,
+  Intersection = 6,
+  Tangent = 7,
+  TangentPoint = 8,
+  Perpendicular = 9,
+  PerpendicularPt = 10,
+  Parallel = 11,
+  Point = 12,
+  PointOn = 13,
+  Unknown = 14,
+  Custom = 15,
+}
+
 export const enum SnapHeat {
   None = 0,
   NotInRange = 1,   // "of interest", but out of range

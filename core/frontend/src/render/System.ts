@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d } from "@bentley/geometry-core";
 import { assert, Id64, IDisposable } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
@@ -21,6 +21,8 @@ import {
   FeatureTable,
   Gradient,
   ElementAlignedBox3d,
+  QParams3d,
+  QPoint3dList,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -270,14 +272,29 @@ export abstract class RenderSystem {
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
 
-  // /** Create polygons on a range for a sheet tile */
-  // public abstract createSheetTilePolys(corners: GraphicBuilderTileCorners, clip: ClipVector, rangeOut: Range3d): PolyfaceHeader[];
+  /** Create a tile primitive */
+  public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
+    const rasterTile = new MeshArgs();
 
-  // /** Create a sheet tile primitive from polys */
-  // public abstract createSheetTile(tile: Texture, corners: GraphicBuilderTileCorners, imodel: IModel, params: GraphicParams): Graphic[];
+    // corners
+    // [0] [1]
+    // [2] [3]
+    rasterTile.points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
+    for (let i = 0; i < 4; ++i)
+      rasterTile.points.add(corners[i]);
 
-  // /** Create a tile primitive */
-  // public abstract createTile(tile: Texture, corners: GraphicBuilderTileCorners, imodel: IModel, params: GraphicParams): Graphic;
+    rasterTile.vertIndices = [0, 1, 2, 2, 1, 3];
+    rasterTile.textureUv = [
+      new Point2d(0.0, 0.0),
+      new Point2d(1.0, 0.0),
+      new Point2d(0.0, 1.0),
+      new Point2d(1.0, 1.0),
+    ];
+
+    rasterTile.texture = tileTexture;
+    rasterTile.isPlanar = true;
+    return this.createTriMesh(rasterTile);
+  }
 
   /** Create a Graphic consisting of a list of Graphics */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;

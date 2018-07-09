@@ -177,8 +177,26 @@ export class DecorateContext extends RenderContext {
   }
 
   /** Display sprite as view overlay graphic. */
-  public addSprite(_sprite: Sprite, _location: Point3d, _xVec: Vector3d, _transparency: number) {
-    //  this.addViewOverlay(* target.CreateSprite(sprite, location, xVec, transparency, GetDgnDb()), nullptr);
+  public addSprite(sprite: Sprite, location: Point3d, xVec: Vector3d, transparency: number) {
+    if (!sprite.texture)
+      return;
+
+    const xVector = xVec.clone();
+    const yVector = xVec.rotate90CCWXY();
+    xVector.scaleToLength(sprite.size.x, xVector);
+    yVector.scaleToLength(sprite.size.y, yVector);
+
+    const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
+    const xCorn = org.plus(xVector);
+    const pts = [org, xCorn, org.plus(yVector), xCorn.plus(yVector)];
+
+    let ovr: FeatureSymbology.Appearance | undefined;
+    if (transparency) {
+      ovr = new FeatureSymbology.Appearance();
+      ovr.alpha = transparency;
+    }
+
+    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, pts)!, ovr);
   }
 
   /** @private */

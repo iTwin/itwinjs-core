@@ -6,6 +6,8 @@
 import { Point2d, Point3d, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
+import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
+import { RenderTexture } from "@bentley/imodeljs-common/lib/common";
 
 /**
  * Sprites are small raster images that are drawn "on top" of Viewports by a ViewDecoration.
@@ -27,11 +29,11 @@ import { DecorateContext } from "./ViewContext";
  * @note It is also possible to draw a Sprite onto a Viewport directly
  * without ever using a SpritLocation. SpriteLocations are merely provided as a convenience.
  */
-export abstract class Sprite {
-  /** Get the size (in pixels) of this Sprite Definition.
-   *  @return the size in pixels of this sprite definition.
-   */
-  public abstract getSize(): Point2d;
+export class Sprite implements IDisposable {
+  public readonly size = new Point2d();
+  public texture?: RenderTexture;
+  public dispose() { if (this.texture) this.texture.dispose(); }
+
 }
 
 /**
@@ -81,10 +83,10 @@ export class SpriteLocation {
   }
 
   public decorate(context: DecorateContext): void {
-    if (context.viewport === this.viewport) {
+    if (context.viewport === this.viewport && this.sprite) {
       const loc = this.viewport!.worldToView(this.location);
       loc.z = 0;
-      context.addSprite(this.sprite!, loc, Vector3d.unitX(), this.transparency);
+      context.addSprite(this.sprite, loc, Vector3d.unitX(), this.transparency);
     }
   }
 }

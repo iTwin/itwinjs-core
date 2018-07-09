@@ -57,10 +57,6 @@ export abstract class Iterable<T> {
   }
 }
 
-export class GraphicBuilderTileCorners extends Iterable<Point3d> {
-  constructor(public pts: [Point3d, Point3d, Point3d, Point3d]) { super(pts); }
-}
-
 const identityTransform = Transform.createIdentity();
 Object.freeze(identityTransform);
 

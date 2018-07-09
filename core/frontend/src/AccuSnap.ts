@@ -378,7 +378,7 @@ export class AccuSnap {
       return;
 
     const vp = ev.viewport!;
-    const spriteSize = errorSprite.getSize();
+    const spriteSize = errorSprite.size;
     const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
 
     if (this.wantShowIcon())
@@ -828,7 +828,7 @@ export class AccuSnap {
       this.cross.decorate(context);
 
       // we have to adjust the world pt for the icon every time we draw it because the view may have changed size since we snapped
-      const iconSize = this.icon.sprite!.getSize();
+      const iconSize = this.icon.sprite!.size;
       const viewport = context.viewport!;
       this.icon.location.setFrom(AccuSnap.adjustIconLocation(viewport, this.cross.location, iconSize));
       this.icon.decorate(context);
