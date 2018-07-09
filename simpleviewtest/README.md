@@ -49,7 +49,7 @@ Debugging SimpleViewTest can be accomplished using the following procedures, dep
 * frontend
   * The frontend and common imodeljs-core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
 * backend
-  * Calls to the imodeljs-core backend functionality may be debugged by opening Visual Studio Code to the root imodeljs-core directory, navigating to the debug tab, and running the 'SimpleViewTest (backend)' launch configuration from the dropdown. Any breakpoints set in Visual Studio Code will be hit.
+  * Calls to the imodeljs-core backend functionality may be debugged by opening Visual Studio Code to the root imodeljs-core directory, navigating to the debug tab, and selecting either 'SimpleViewTest Electron (backend)' or 'SimpleViewTest Browser (backend)' from the launch configuration dropdown. Note that in the browser configuration, only the web server will be started, and you must still manually navigate to the URL of the application in the browser (which is printed to the debug console). Any breakpoints for backend functionality set in Visual Studio Code will now be hit.
 * iModelJsNodeAddon
   * To debug the node addon, one must have a local build of the addon from bim0200 source. With a valid 'OutRoot' environment variable set, run installnativeplatform.bat from the root of the imodeljs-core monorepo. This will copy your built node addon packages into the correct node_modules directories. Lastly, start SimpleViewTest using either of the other two methods listed above, and then attach to the Electron process using Visual Studio.
 
