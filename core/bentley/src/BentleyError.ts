@@ -233,7 +233,7 @@ export enum IModelHubStatus {
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 43,
 
   /** Id for errors that are returned for incorrect iModel Hub request. */
-  UndefinedArguementError = IMODELHUBERROR_REQUESTERRORBASE + 1, /** Undefined argument */
+  UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1, /** Undefined argument */
   InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2, /** Invalid argument */
   MissingDownloadUrlError = IMODELHUBERROR_REQUESTERRORBASE + 3, /** Missing download url */
   NotSupportedInBrowser = IMODELHUBERROR_REQUESTERRORBASE + 4, /** Not supported in browser */
@@ -550,7 +550,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.QueryIdsNotSpecified: return "Query Id is not specified";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
       /** Id for errors that are returned for incorrect iModel Hub request. */
-      case IModelHubStatus.UndefinedArguementError: return "Undefined argument";
+      case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";
       case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";

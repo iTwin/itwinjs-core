@@ -18,6 +18,9 @@ export type Id64Array = string[];
 /** Used for arguments to functions that can accept one or more Id64 values. */
 export type Id64Arg = Id64[] | Id64 | Id64Set | Id64Array | string;
 
+/** An Id64 or its string representation. */
+export type Id64String = Id64 | string;
+
 /**
  * A 64 bit Id, stored as a hex string. This is necessary since JavaScript does not intrinsically support 64-bit integers.
  * @note If invalid, value will be "0".

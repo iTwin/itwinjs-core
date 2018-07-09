@@ -119,8 +119,8 @@ export class IModelConnection extends IModel {
       openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
     }
 
-    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
-    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
 
     const startTime = Date.now();
 
@@ -130,16 +130,16 @@ export class IModelConnection extends IModel {
       if (!(openForReadOperation && request.operation === openForReadOperation) && !(openForWriteOperation && request.operation === openForWriteOperation))
         return;
 
-      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
       if (Date.now() - startTime > IModelConnection.connectionTimeout) {
-        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
       connectionRetryTime = connectionRetryTime * 2;
       request.retryInterval = connectionRetryTime;
-      Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+      Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
     });
 
     let openResponse: IModel;
@@ -152,7 +152,7 @@ export class IModelConnection extends IModel {
       removeListener();
     }
 
-    Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+    Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
     return openResponse;
   }
 
@@ -161,8 +161,14 @@ export class IModelConnection extends IModel {
       return;
 
     try {
-      const openResponse: IModel = await IModelConnection.callOpen(this.openAccessToken!, request.parameters[0], this.openMode);
+      const iModelToken: IModelToken = request.parameters[0];
+      Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+
+      const openResponse: IModel = await IModelConnection.callOpen(this.openAccessToken!, iModelToken, this.openMode);
       this.token = openResponse.iModelToken;
+
+      Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+      request.parameters[0] = openResponse.iModelToken; // Modify the token of the original request before resubmitting it.
       resubmit();
     } catch (error) {
       reject(error.message);
