@@ -4,7 +4,7 @@
 /** @module Categories */
 
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, Appearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, SubCategoryAppearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
@@ -12,7 +12,7 @@ import { DefinitionModel } from "./Model";
 /** Defines the appearance for graphics in Geometric elements */
 export class SubCategory extends DefinitionElement {
   /** The Appearance parameters for this SubCategory */
-  public appearance: Appearance;
+  public appearance: SubCategoryAppearance;
   /** Optional description of this SubCategory. */
   public description?: string;
 
@@ -22,7 +22,7 @@ export class SubCategory extends DefinitionElement {
    */
   public constructor(props: SubCategoryProps, iModel: IModelDb) {
     super(props, iModel);
-    this.appearance = new Appearance(props.appearance);
+    this.appearance = new SubCategoryAppearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
   }
 
@@ -67,7 +67,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   public myDefaultSubCategoryId(): Id64 { return IModelDb.getDefaultSubCategoryId(this.id); }
 
   /** Set the appearance of the default SubCategory for this Category */
-  public setDefaultAppearance(app: Appearance): void {
+  public setDefaultAppearance(app: SubCategoryAppearance): void {
     const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).clone();
     subCat.appearance = app;
     this.iModel.elements.updateElement(subCat);

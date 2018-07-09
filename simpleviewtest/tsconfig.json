@@ -13,7 +13,7 @@
     "outDir": "./lib"
   },
   "include": [
-    "./**/*.ts"
+    "./src/**/*.ts"
   ],
   "exclude": [
     "lib",

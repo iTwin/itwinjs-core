@@ -3,28 +3,42 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
-import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
+import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModelRepository, Config } from "@bentley/imodeljs-clients";
+import {
+  ElectronRpcManager,
+  ElectronRpcConfiguration,
+  StandaloneIModelRpcInterface,
+  IModelTileRpcInterface,
+  IModelReadRpcInterface,
+  ViewQueryParams,
+  ViewDefinitionProps,
+  ModelProps,
+  ModelQueryParams,
+  RenderMode,
+  RpcConfiguration,
+  BentleyCloudRpcManager,
+  RpcOperation,
+  IModelToken,
+} from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
-import { remote } from "electron";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
+
+// Only want the following imports if we are using electron and not a browser -----
+// tslint:disable-next-line:variable-name
+let remote: any;
+if (ElectronRpcConfiguration.isElectron) {
+  // tslint:disable-next-line:no-var-requires
+  remote = require("electron").remote;
+}
 
 // tslint:disable:no-console
 
-// show status in the output HTML
-function showStatus(string1: string, string2?: string) {
-  let outString: string = string1;
-  if (string2)
-    outString = outString.concat(" ", string2);
-  document.getElementById("showstatus")!.innerHTML = outString;
-}
-
+/** Global information on the currently opened iModel and the state of the view. */
 class SimpleViewState {
   public accessToken?: AccessToken;
   public project?: Project;
-  public iModel?: IModel;
+  public iModel?: IModelRepository;
   public iModelConnection?: IModelConnection;
   public viewDefinition?: ViewDefinitionProps;
   public viewState?: ViewState;
@@ -49,25 +63,26 @@ let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
 const curCategories: Set<string> = new Set<string>();
-let configuration = {} as SVTConfiguration;
+const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 
+/** Parameters for starting SimpleViewTest with a specified initial configuration */
 interface SVTConfiguration {
-  filename: string;
   userName: string;
   password: string;
   projectName: string;
   iModelName: string;
-  standalone: boolean;
+  standalone?: boolean;
+  filename?: string;
   viewName?: string;
+  standalonePath?: string;    // Used when ran in the browser - a common base path for all standalone imodels
 }
+
 // Entry point - run the main function
 setTimeout(() => main(), 1000);
 
-// retrieves configuration.json from the Public folder, and override configuration values from that.
-// see configuration.json in simpleviewtest/public.
-// alternatively, can open a standalone iModel from disk by setting iModelName to filename and standalone to true.
-function retrieveConfigurationOverrides(config: any) {
+// Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
+function retrieveConfiguration() {
   const request: XMLHttpRequest = new XMLHttpRequest();
   request.open("GET", "configuration.json", false);
   request.setRequestHeader("Cache-Control", "no-cache");
@@ -75,7 +90,7 @@ function retrieveConfigurationOverrides(config: any) {
     if (request.readyState === XMLHttpRequest.DONE) {
       if (request.status === 200) {
         const newConfigurationInfo: any = JSON.parse(request.responseText);
-        Object.assign(config, newConfigurationInfo);
+        Object.assign(configuration, newConfigurationInfo);
       }
       // Everything is good, the response was received.
     } else {
@@ -85,15 +100,12 @@ function retrieveConfigurationOverrides(config: any) {
   request.send();
 }
 
-// Apply environment overrides to configuration.
-// This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
-function applyConfigurationOverrides(config: any): void {
-  const filename = remote.process.env.SVT_STANDALONE_FILENAME;
-  if (undefined !== filename) {
-    config.iModelName = filename;
-    config.viewName = remote.process.env.SVT_STANDALONE_VIEWNAME; // optional
-    config.standalone = true;
-  }
+// show status in the output HTML
+function showStatus(string1: string, string2?: string) {
+  let outString: string = string1;
+  if (string2)
+    outString = outString.concat(" ", string2);
+  document.getElementById("showstatus")!.innerHTML = outString;
 }
 
 // log in to connect
@@ -160,15 +172,29 @@ function startCategorySelection(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-// build list of models; enables them all
+// build list of models; enables those defined in model selector
 async function buildModelMenu(state: SimpleViewState) {
   const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+  const modelButton = document.getElementById("startToggleModel")!;
+  const spatialView = undefined !== state.viewState && state.viewState instanceof SpatialViewState ? state.viewState as SpatialViewState : undefined;
+  if (undefined === spatialView) {
+    modelMenu.style.display = modelButton.style.display = "none";
+    return;
+  }
+
+  modelButton.style.display = "inline";
   const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
   curModelProps = await state.iModelConnection!.models.queryProps(modelQueryParams);
   curModelPropIndices = [];
   modelMenu.innerHTML = "";
+
+  // ###TODO: Load models on demand when they are enabled in the dialog - not all up front like this...super-inefficient...
   let i = 0;
   for (const modelProp of curModelProps) {
+    const model = spatialView.iModel.models.getLoaded(modelProp.id!.toString());
+    if (undefined === model)
+      await spatialView.iModel.models.load(modelProp.id!.toString());
+
     modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
     curModelPropIndices.push(i);
     i++;
@@ -177,34 +203,42 @@ async function buildModelMenu(state: SimpleViewState) {
   curNumModels = i;
   for (let c = 0; c < curNumModels; c++) {
     const cbxName = "cbxModel" + c;
-    updateCheckboxToggleState(cbxName, true);
+    const enabled = spatialView.modelSelector.has(curModelProps[c].id!.toString());
+    updateCheckboxToggleState(cbxName, enabled);
     addModelToggleHandler(cbxName);
   }
 
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
 }
 
-// build list of categories; enables them all
-function buildCategoryMenu(state: SimpleViewState) {
-  const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  categoryMenu.innerHTML = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
+// build list of categories; enable those defined in category selector
+async function buildCategoryMenu(state: SimpleViewState) {
+  curCategories.clear();
+  let html = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
 
   const view = state.viewState!;
+  const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
+  const rows = await view.iModel.executeQuery(ecsql);
 
-  curCategories.clear();
-  for (const cat of view.categorySelector.categories) {
-    curCategories.add(cat);
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-    categoryMenu.innerHTML += '<input id="cbxCat' + id.value + '" type="checkbox"> ' + cat + " (" + id.value + ")\n<br>\n";
+  for (const row of rows) {
+    let label = row.label as string;
+    if (undefined === label)
+      label = row.code;
+
+    const id = row.id as string;
+    curCategories.add(id);
+    html += '<input id="cbxCat' + id + '" type="checkbox"> ' + label + "\n<br>\n";
   }
 
-  updateCheckboxToggleState("cbxCatToggleAll", true);
+  const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  categoryMenu.innerHTML = html;
+
+  updateCheckboxToggleState("cbxCatToggleAll", curCategories.size === view.categorySelector.categories.size);
   addCategoryToggleAllHandler();
 
   for (const cat of curCategories) {
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-    const cbxName = "cbxCat" + id.value;
-    updateCheckboxToggleState(cbxName, true); // enable all categories
+    const cbxName = "cbxCat" + cat;
+    updateCheckboxToggleState(cbxName, view.categorySelector.has(cat));
     addCategoryToggleHandler(cbxName);
   }
 }
@@ -240,21 +274,8 @@ function applyModelToggleChange(_cbxModel: string) {
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
 }
 
-function toggleCategoryState(_invis: boolean, _cat: Id64, _origCat: Id64, view: ViewState) {
-  // Use overrides to toggle visibility
-  const ovr = view.getSubCategoryOverride(_cat);
-  if (_invis !== ovr.invisible) {
-    ovr.setInvisible(_invis);
-    view.overrideSubCategory(_cat, ovr); // sets feature overrides dirty
-  }
-
-  // Use categorySelector to toggle visibility
-  // if (_invis) {
-  //   view.categorySelector.dropCategories(_origCat);
-  // } else {
-  //   view.categorySelector.addCategories(_origCat);
-  // }
-  // view.setFeatureOverridesDirty(); // add/dropCategories doesn't set feature overrides dirty
+function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
+  view.changeCategoryDisplay(catId, !invis);
 }
 
 // apply a category checkbox state being changed
@@ -263,12 +284,10 @@ function applyCategoryToggleChange(_cbxCategory: string) {
 
   let allToggledOn = true;
   for (const cat of curCategories) {
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-
-    const cbxName = "cbxCat" + id.value;
+    const cbxName = "cbxCat" + cat;
     const isChecked = getCheckboxToggleState(cbxName);
     const invis = isChecked ? false : true;
-    toggleCategoryState(invis, id, new Id64(cat), view);
+    toggleCategoryState(invis, cat, view);
     if (invis)
       allToggledOn = false;
   }
@@ -285,13 +304,11 @@ function applyCategoryToggleAllChange() {
   const isChecked = getCheckboxToggleState("cbxCatToggleAll");
 
   for (const cat of curCategories) {
-    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
-
-    const cbxName = "cbxCat" + id.value;
+    const cbxName = "cbxCat" + cat;
     updateCheckboxToggleState(cbxName, isChecked);
 
     const invis = isChecked ? false : true;
-    toggleCategoryState(invis, id, new Id64(cat), view);
+    toggleCategoryState(invis, cat, view);
   }
 
   const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
@@ -419,7 +436,7 @@ async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
-  buildCategoryMenu(activeViewState);
+  await buildCategoryMenu(activeViewState);
   updateRenderModeOptionsMap();
 }
 
@@ -467,10 +484,11 @@ async function changeView(event: any) {
 }
 
 async function clearViews() {
-  if (configuration.standalone)
-    await activeViewState.iModelConnection!.closeStandalone();
-  else
-    await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
+  if (activeViewState.iModelConnection !== undefined)
+    if (configuration.standalone)
+      await activeViewState.iModelConnection.closeStandalone();
+    else
+      await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
   activeViewState = new SimpleViewState();
   viewMap.clear();
   document.getElementById("viewList")!.innerHTML = "";
@@ -488,15 +506,35 @@ async function resetStandaloneIModel(filename: string) {
   spinner.style.display = "none";
 }
 
-function selectIModel(): void {
-  const options: Electron.OpenDialogOptions = {
-    properties: ["openFile"],
-    filters: [{ name: "IModels", extensions: ["ibim", "bim"] }],
-  };
-  remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
-    if (undefined !== filePaths)
-      await resetStandaloneIModel(filePaths[0]);
-  });
+async function selectIModel() {
+  if (ElectronRpcConfiguration.isElectron) {  // Electron
+    const options = {
+      properties: ["openFile"],
+      filters: [{ name: "IModels", extensions: ["ibim", "bim"] }],
+    };
+    remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
+      if (undefined !== filePaths)
+        await resetStandaloneIModel(filePaths[0]);
+    });
+  } else {  // Browser
+    if (configuration.standalonePath === undefined || !document.createEvent) { // Do not have standalone path for files or support for document.createEvent... request full file path
+      const filePath = prompt("Enter the full local path of the iModel you wish to open:");
+      if (filePath !== null) {
+        try {
+          await resetStandaloneIModel(filePath);
+        } catch {
+          alert("Error - The file path given is invalid.");
+          const spinner = document.getElementById("spinner") as HTMLDivElement;
+          spinner.style.display = "none";
+        }
+      }
+    } else {  // Was given a base path for all standalone files. Let them select file using file selector
+      const selector = document.getElementById("browserFileSelector");
+      const evt = document.createEvent("MouseEvents");
+      evt.initEvent("click", true, false);
+      selector!.dispatchEvent(evt);
+    }
+  }
 }
 
 // undo prev view manipulation
@@ -577,29 +615,53 @@ function wireIconsToFunctions() {
     }
   });
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
+
+  // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
+  document.getElementById("browserFileSelector")!.addEventListener("change", async function onChange(this: HTMLElement) {
+    const files = (this as any).files;
+    if (files !== undefined && files.length > 0) {
+      try {
+        await resetStandaloneIModel(configuration.standalonePath + "/" + files[0].name);
+      } catch {
+        alert("Error Opening iModel - Make you are selecting files from " + configuration.standalonePath);
+        const spinner = document.getElementById("spinner") as HTMLDivElement;
+        spinner.style.display = "none";
+      }
+    }
+  });
 }
+
+// If we are using a browser, close the current iModel before leaving
+window.onbeforeunload = () => {
+  if (activeViewState.iModelConnection !== undefined)
+    if (configuration.standalone)
+      activeViewState.iModelConnection.closeStandalone();
+    else
+      activeViewState.iModelConnection.close(activeViewState.accessToken!);
+};
 
 // main entry point.
 async function main() {
-  // this is the default configuration
-  configuration = {
-    userName: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
-    projectName: "plant-sta",
-    iModelName: "NabeelQATestiModel",
-  } as SVTConfiguration;
-
-  // override anything that's in the configuration
-  retrieveConfigurationOverrides(configuration);
-  applyConfigurationOverrides(configuration);
-
+  // retrieve, set, and output the global configuration variable
+  retrieveConfiguration();
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
   IModelApp.startup();
 
-  if (ElectronRpcConfiguration.isElectron)
-    ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  // Choose RpcConfiguration based on whether we are in electron or browser
+  let rpcConfiguration: RpcConfiguration;
+  if (ElectronRpcConfiguration.isElectron) {
+    rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  } else {
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    Config.devCorsProxyServer = "http://localhost:3001";
+  }
+
+  // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
+  // RPC without any imodel and fails...
+  for (const definition of rpcConfiguration.interfaces())
+    RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
   const spinner = document.getElementById("spinner") as HTMLDivElement;
   spinner.style.display = "block";

@@ -5,7 +5,7 @@
 
 import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
-import { ViewFlags, FeatureTable, Feature, ColorDef } from "@bentley/imodeljs-common";
+import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
@@ -65,8 +65,8 @@ class OvrUniform {
     this.rgba = FloatRgba.fromColorDef(ColorDef.black, 0);
     this.flags = OvrFlags.None;
 
-    const app: FeatureSymbology.Appearance = FeatureSymbology.Appearance.fromRgb(ColorDef.white);
-    if (!ovrs.getAppearance(app, kvp.value, map.modelId)) {
+    const app = ovrs.getAppearance(kvp.value, map.modelId);
+    if (undefined === app) {
       // We're invisible. Don't care about any other overrides.
       this.flags = OvrFlags.Visibility;
       this.floatFlags = this.flags / 256.0;
@@ -161,8 +161,8 @@ class OvrNonUniform {
       const feature = kvp.value;
       const dataIndex = kvp.index * 4 * 2;
 
-      const app: FeatureSymbology.Appearance = FeatureSymbology.Appearance.fromRgb(ColorDef.white);
-      if (!ovr.getAppearance(app, feature, map.modelId) || (app.overridesAlpha && 0.0 === app.alpha)) { // ###TODO - transparency v alpha
+      const app = ovr.getAppearance(feature, map.modelId);
+      if (undefined === app || (app.overridesAlpha && 0.0 === app.alpha)) { // ###TODO - transparency v alpha
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
         data.setOvrFlagsAtIndex(dataIndex, OvrFlags.Visibility);
         nHidden++;
@@ -433,14 +433,16 @@ export abstract class Graphic extends RenderGraphic {
 export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: FeatureTable;
+  public readonly range: ElementAlignedBox3d;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
   private _isDisposed: boolean = false;
 
-  public constructor(graphic: RenderGraphic, features: FeatureTable) {
+  public constructor(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d) {
     super(graphic.iModel);
     this.graphic = graphic;
     this.featureTable = features;
+    this.range = range;
   }
 
   public get pickTable(): PickTable | undefined {

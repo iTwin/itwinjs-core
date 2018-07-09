@@ -1,6 +1,3 @@
----
-ignore: true
----
 # Relationships and Joins
 
 ## ECRelationshipClasses
@@ -16,7 +13,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the child Elements (id and class id) of the parent Element 0x10000000013
+> *Goal:* Return the child [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element)s (id and class id) of the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) 0x10000000013
 >
 > *ECSQL*
 > ```sql
@@ -75,7 +72,7 @@ As explained above using navigation properties instead of joins is preferred. So
 
 > **Try it yourself**
 >
-> *Goal:* Return the Model that contains the device with code 'DEV-A-2-6'.
+> *Goal:* Return the [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model) that contains the [Device](./MyDomain.ecschema.md#Device) with code 'DEV-A-2-6'.
 >
 > *ECSQL*
 > ```sql
@@ -88,13 +85,13 @@ As explained above using navigation properties instead of joins is preferred. So
 > --- |
 > {"id": "0x10000000011", "relClassName":"BisCore.ModelContainsElements"} |
 
-Note that the above ECSQL implies to navigate from the `Element` ECClass to the `Model` ECClass using the ECRelationshipClass `ModelContainsElements`. But none of that has to be expressed in the ECSQL. It is all hidden behind the navigation property and makes the ECSQL straight-forward.
+Note that the above ECSQL implies to navigate from the [Device](./MyDomain.ecschema.md#Device) ECClass (which is a subclass of [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) to the [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model) ECClass using the ECRelationshipClass [ModModelContainsElementsel](../../bis/domains/biscore/BisCore.ecschema.md#ModelContainsElements). But none of that has to be expressed in the ECSQL. It is all hidden behind the navigation property and makes the ECSQL straight-forward.
 
 The following ECSQL is the same as above but uses joins instead of the navigation property.
 
 > **Try it yourself**
 >
-> *Goal:* Return the Model that contains the device with code 'DEV-A-2-6'.
+> *Goal:* Return the [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model) that contains the [Device](./MyDomain.ecschema.md#Device) with code 'DEV-A-2-6'.
 >
 > *ECSQL*
 > ```sql
@@ -111,7 +108,7 @@ If you want to return something else than just the id of the related instance, y
 
 > **Try it yourself**
 >
-> *Goal:* Return the id, the modeled element and the parent model of the Model that contains the device with code 'DEV-A-2-6'.
+> *Goal:* Return the id, the modeled element and the parent model of the [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model) that contains the [Device](./MyDomain.ecschema.md#Device) with code 'DEV-A-2-6'.
 >
 > *ECSQL*
 > ```sql
@@ -127,7 +124,7 @@ Again for the purpose of learning, the same ECSQL expressed with relationship cl
 
 > **Try it yourself**
 >
-> *Goal:* Return the id, the modeled element and the parent model of the Model that contains the Element with code 'bla bla'.
+> *Goal:* Return the id, the modeled element and the parent model of the [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model) that contains the [Device](./MyDomain.ecschema.md#Device) with code 'DEV-A-2-6'.
 >
 > *ECSQL*
 > ```sql

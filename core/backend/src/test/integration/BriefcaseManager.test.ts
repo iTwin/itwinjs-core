@@ -298,18 +298,26 @@ describe("BriefcaseManager", () => {
 
     const iModelFixed: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModelFixed);
-    assert.notStrictEqual(iModelFixed.briefcase, iModelShared.briefcase);
+    assert.notStrictEqual(iModelFixed.briefcase.pathname, iModelShared.briefcase.pathname);
+
+    const iModelFixed2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModelFixed);
+    assert.notStrictEqual(iModelFixed.briefcase.pathname, iModelFixed2.briefcase.pathname);
 
     const iModelPullOnly: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModelPullOnly);
-    assert.notStrictEqual(iModelPullOnly.briefcase, iModelShared.briefcase);
-    assert.notStrictEqual(iModelPullOnly.briefcase, iModelFixed.briefcase);
+    assert.notStrictEqual(iModelPullOnly.briefcase.pathname, iModelShared.briefcase.pathname);
+    assert.notStrictEqual(iModelPullOnly.briefcase.pathname, iModelFixed.briefcase.pathname);
+
+    const iModelPullOnly2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModelPullOnly2);
+    assert.notStrictEqual(iModelPullOnly2.briefcase.pathname, iModelPullOnly.briefcase.pathname);
 
     const iModelPullAndPush: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
-    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelShared.briefcase);
-    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelFixed.briefcase);
-    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelPullOnly.briefcase);
+    assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelShared.briefcase.pathname);
+    assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelFixed.briefcase.pathname);
+    assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelPullOnly.briefcase.pathname);
 
     await iModelShared.close(accessToken, KeepBriefcase.No);
     await iModelFixed.close(accessToken, KeepBriefcase.No);
@@ -381,7 +389,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("Should track the AccessTokens that are used to open IModels (#integration)", async () => {
-    await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion());
+    await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Exclusive));
     assert.deepEqual(IModelDb.getAccessToken(testIModels[0].id), accessToken);
 
     try {
