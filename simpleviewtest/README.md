@@ -66,5 +66,7 @@ Debugging SimpleViewTest can be accomplished using the following procedures, dep
 
 * SVT_STANDALONE_FILENAME
   * Local path to an iModel, which will be the one opened by default at start-up.
+* SVT_STANDALONE_FILEPATH
+  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels (browser only).
 * SVT_STANDALONE_VIEWNAME
   * The view to open by default within an iModel. This may only be used in conjunction with SVT_STANDALONE_FILENAME.

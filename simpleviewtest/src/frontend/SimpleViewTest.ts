@@ -75,6 +75,7 @@ interface SVTConfiguration {
   standalone?: boolean;
   filename?: string;
   viewName?: string;
+  standalonePath?: string;    // Used when ran in the browser - a common base path for all standalone imodels
 }
 
 // Entry point - run the main function
@@ -516,17 +517,22 @@ async function selectIModel() {
         await resetStandaloneIModel(filePaths[0]);
     });
   } else {  // Browser
-    // We cannot get a local file path from the user in a browser due to security reasons...
-    // We will prompt for a full path instead..
-    const filePath = prompt("Enter the full local path of the iModel you wish to open:");
-    if (filePath !== null) {
-      try {
-        await resetStandaloneIModel(filePath);
-      } catch {
-        alert("Error - The file path given is invalid.");
-        const spinner = document.getElementById("spinner") as HTMLDivElement;
-        spinner.style.display = "none";
+    if (configuration.standalonePath === undefined || !document.createEvent) { // Do not have standalone path for files or support for document.createEvent... request full file path
+      const filePath = prompt("Enter the full local path of the iModel you wish to open:");
+      if (filePath !== null) {
+        try {
+          await resetStandaloneIModel(filePath);
+        } catch {
+          alert("Error - The file path given is invalid.");
+          const spinner = document.getElementById("spinner") as HTMLDivElement;
+          spinner.style.display = "none";
+        }
       }
+    } else {  // Was given a base path for all standalone files. Let them select file using file selector
+      const selector = document.getElementById("browserFileSelector");
+      const evt = document.createEvent("MouseEvents");
+      evt.initEvent("click", true, false);
+      selector!.dispatchEvent(evt);
     }
   }
 }
@@ -609,6 +615,13 @@ function wireIconsToFunctions() {
     }
   });
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
+
+  // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
+  document.getElementById("browserFileSelector")!.addEventListener("change", async function onChange(this: HTMLElement) {
+    const files = (this as any).files;
+    if (files !== undefined && files.length > 0)
+      await resetStandaloneIModel(configuration.standalonePath + "/" + files[0].name);
+  });
 }
 
 // If we are using a browser, close the current iModel before leaving

@@ -25,7 +25,7 @@ const configuration = {
 const filename = process.env.SVT_STANDALONE_FILENAME;
 if (filename !== undefined) {
   configuration.iModelName = filename;
-  (configuration as any).viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
+  (configuration as any).viewName = process.env.SVT_STANDALONE_VIEWNAME;  // optional
   (configuration as any).standalone = true;
 }
 fs.writeFileSync("./lib/backend/public/configuration.json", JSON.stringify(configuration), "utf8");
