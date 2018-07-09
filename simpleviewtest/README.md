@@ -19,13 +19,20 @@ The application contained within this directory provides a test environment for 
 
 ## Getting Started
 
+The application may be ran either as an Electron app, or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
+
 * In order to gain access to SimpleViewTest, one must clone, prepare, and build all of imodeljs-core. Instructions for doing so are contained within the build instructions for imodeljs-core, located [here](../README.md#Build\ Instructions).
 
 * Before starting SimpleViewTest, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see [here](#Environment\ Variables).
 
-* Start the application by navigating to the root of SimpleViewTest, and executing the npm start script.
+* To start the application in Electron, navigate to the root of SimpleViewTest, and use the command:
   ```
-  npm start
+  npm run start:electron
+  ```
+
+* To start the application in a browser, run the following command, and then navigate to the URL for SimpleViewTest that prints to the console:
+  ```
+  npm run start:web
   ```
 
 ## Using SimpleViewTest
