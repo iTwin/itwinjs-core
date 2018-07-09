@@ -48,7 +48,7 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
   constructor(json: any, public client: ScalableMeshTileClient, ecefToDb: Transform) {
     this.tilesetJson = json.root;
     this.id = new Id64();
-    this.rootTile = new ScalableMeshTileProps(json.root, "", this, rootContent);
+    this.rootTile = new ScalableMeshTileProps(json.root, "", this, undefined);
     const tileToEcef = CesiumUtils.transformFromJson(json.root.transf);
     const tileToDb = Transform.createIdentity();
     tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
@@ -149,7 +149,7 @@ export namespace ScalableMeshTileTree {
       const urlParts = url.split("/");
       const tilesId = urlParts.find(isGuid);
 
-      let clientProps: RDSClientProps | undefined = undefined;
+      let clientProps: RDSClientProps | undefined;
 
       if (undefined !== tilesId) {
         // ###TODO determine apropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
@@ -157,7 +157,7 @@ export namespace ScalableMeshTileTree {
         const client: RealityDataServicesClient = new RealityDataServicesClient("QA");
         const accessToken: AccessToken = await client.getAccessToken(authToken);
         const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
-        clientProps = { accessToken, projectId, tilesId, client }
+        clientProps = { accessToken, projectId, tilesId, client };
       }
 
       const tileClient = new ScalableMeshTileClient(clientProps);
@@ -173,7 +173,7 @@ export namespace ScalableMeshTileTree {
  * returns true if the string value is a guid, false if it is not
  * @param val string value to test
  */
-export function isGuid(val: string): boolean { return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val) }
+export function isGuid(val: string): boolean { return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val); }
 
 export interface RDSClientProps {
   accessToken: AccessToken;
@@ -206,7 +206,7 @@ export class ScalableMeshTileClient {
 
   public async getTileContent(url: string): Promise<any> {
     if (undefined !== this.rdsProps) {
-      return await this.rdsProps.client.getTileContent(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url)
+      return await this.rdsProps.client.getTileContent(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     } else if (undefined !== this.baseUrl) {
       const tileUrl = this.baseUrl + url;
       return await getArrayBuffer(tileUrl);
@@ -217,7 +217,7 @@ export class ScalableMeshTileClient {
 
   public async getTileJson(url: string): Promise<any> {
     if (undefined !== this.rdsProps) {
-      return await this.rdsProps.client.getTileJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url)
+      return await this.rdsProps.client.getTileJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     } else if (undefined !== this.baseUrl) {
       const tileUrl = this.baseUrl + url;
       return await getJson(tileUrl);

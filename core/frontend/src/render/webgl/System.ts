@@ -395,7 +395,7 @@ export class System extends RenderSystem {
       return PolylinePrimitive.create(args);
   }
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
-  public createPointCloud(args: PointCloudArgs, imodel: IModelConnection): RenderGraphic | undefined { return PointCloudGraphic.create(args, imodel); }
+  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudGraphic.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }

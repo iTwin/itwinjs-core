@@ -4,7 +4,6 @@
 /** @module WebGL */
 import { Graphic } from "./Graphic";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { IModelConnection } from "../../IModelConnection";
 import { RenderCommands } from "./DrawCommand";
 import { Primitive } from "./Primitive";
 import { CachedGeometry } from "./CachedGeometry";
@@ -21,12 +20,12 @@ export class PointCloudGraphic extends Graphic {
   }
   public dispose(): void {
   }
-  public static create(args: PointCloudArgs, iModel: IModelConnection) {
-    return new PointCloudGraphic(args, iModel);
+  public static create(args: PointCloudArgs) {
+    return new PointCloudGraphic(args);
   }
 
-  private constructor(args: PointCloudArgs, iModel: IModelConnection) {
-    super(iModel);
+  private constructor(args: PointCloudArgs) {
+    super();
     this.args = args;
   }
 }
@@ -55,7 +54,7 @@ export class PointCloudGeometry extends CachedGeometry {
 export class PointCloudPrimitive extends Primitive {
 
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
-  protected constructor(cachedGeom: PointCloudGeometry, pointCloud: PointCloudGraphic) {
-    super(cachedGeom, pointCloud.iModel);
+  protected constructor(cachedGeom: PointCloudGeometry, _pointCloud: PointCloudGraphic) {
+    super(cachedGeom);
   }
 }
