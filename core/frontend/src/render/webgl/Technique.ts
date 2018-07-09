@@ -21,7 +21,7 @@ import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
-import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
+import { createPointCloudBuilder /* , createPointCloudHiliter */ } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
@@ -341,7 +341,7 @@ class PointCloudTechnique extends VariedTechnique {
     const flags = scratchTechniqueFlags;
     const featureMode = FeatureMode.None;
     for (const clip of clips) {
-      this.addHiliteShader(clip, gl, createPointCloudHiliter);
+      //this.addHiliteShader(clip, gl, createPointCloudHiliter);
 
       const builder = createPointCloudBuilder(clip);
       addMonochrome(builder.frag);
@@ -354,7 +354,7 @@ class PointCloudTechnique extends VariedTechnique {
       addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
       this.addElementId(builder, featureMode);
       flags.reset(featureMode, clip);
-      this.addShader(builder, flags, gl);
+      //this.addShader(builder, flags, gl);
     }
   }
 
