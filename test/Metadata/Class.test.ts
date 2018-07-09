@@ -369,33 +369,34 @@ describe("ECClass", () => {
   });
 
   describe("getAllBaseClasses", () => {
+    // This is the class hierarchy used in this test. The numbers indicate override priority,
+    // i.e., the order that they should be returned by testClass.getAllBaseClasses():
+    //
+    //  2[A]  3(B)  5(C)  7(D)          [] := EntityClass
+    //     \   /     /     /            () := Mixin
+    //    1[ G ]  4(E)  6(F)
+    //        \    /     /
+    //        [    H    ]
+    //
+    const testSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "TestSchema",
+      version: "01.00.00",
+      alias: "ts",
+      items: {
+        A: { schemaItemType: "EntityClass" },
+        B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+        C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+        D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+        E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
+        F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+        G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
+        H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
+      },
+    };
+    const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
+
     it("should correctly traverse a complex inheritance hierarchy", async () => {
-      // This is the class hierarchy used in this test. The numbers indicate override priority,
-      // i.e., the order that they should be returned by testClass.getAllBaseClasses():
-      //
-      //  2[A]  3(B)  5(C)  7(D)          [] := EntityClass
-      //     \   /     /     /            () := Mixin
-      //    1[ G ]  4(E)  6(F)
-      //        \    /     /
-      //        [    H    ]
-      //
-      const testSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "01.00.00",
-        alias: "ts",
-        items: {
-          A: { schemaItemType: "EntityClass" },
-          B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-          C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-          D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-          E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
-          F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
-          G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
-          H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
-        },
-      };
-      const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
       const actualNames: string[] = [];
 
       schema = await Schema.fromJson(testSchemaJson);
@@ -408,6 +409,19 @@ describe("ECClass", () => {
       }
 
       expect(actualNames).to.eql(expectedNames);
+    });
+
+    it("should correctly traverse a complex inheritance hierarchy synchronously", () => {
+      schema = Schema.fromJsonSync(testSchemaJson);
+      expect(schema).to.exist;
+      const testClass = schema.getClassSync("H");
+      expect(testClass).to.exist;
+
+      const syncActualNames: string[] = [];
+      for (const baseClass of testClass!.getAllBaseClassesSync()) {
+        syncActualNames.push(baseClass.name);
+      }
+      expect(syncActualNames).to.eql(expectedNames);
     });
   });
 

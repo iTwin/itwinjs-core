@@ -57,18 +57,18 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     return prop;
   }
 
-  protected getReferencedClassSync<T extends SchemaItem>(key?: LazyLoadedSchemaItem<T>): ECClass | undefined {
+  protected getReferencedClassSync<T extends ECClass>(key?: LazyLoadedSchemaItem<T>): T | undefined {
     if (!key)
       return undefined;
 
     const isInThisSchema = (this.schema.name.toLowerCase() === key.schemaName.toLowerCase());
 
     if (isInThisSchema)
-      return this.schema.getClassSync(key.name);
+      return this.schema.getClassSync<T>(key.name);
 
     const reference = this.schema.getReferenceSync(key.schemaName);
     if (reference)
-      return reference.getClassSync(key.name);
+      return reference.getClassSync<T>(key.name);
 
     return undefined;
   }
@@ -427,6 +427,28 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       await addBaseClasses(baseClass);
       if (baseClass !== this)
         yield baseClass;
+    }
+  }
+
+public *getAllBaseClassesSync(): Iterable<AnyClass> {
+  const baseClasses: ECClass[] = [ this ];
+  const addBaseClasses = (ecClass: AnyClass) => {
+    if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
+      for (const m of Array.from(ecClass.getMixinsSync()).reverse()) {
+        baseClasses.push(m);
+      }
+    }
+
+    const baseClass = ecClass.getBaseClassSync();
+    if (baseClass)
+      baseClasses.push(baseClass);
+  };
+
+  while (baseClasses.length > 0) {
+    const baseClass = baseClasses.pop() as AnyClass;
+    addBaseClasses(baseClass);
+    if (baseClass !== this)
+      yield baseClass;
     }
   }
 }

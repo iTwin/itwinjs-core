@@ -30,6 +30,18 @@ export default class EntityClass extends ECClass {
     return this._mixins;
   }
 
+  public *getMixinsSync(): Iterable<Mixin> {
+    if (!this._mixins)
+      return function *(): Iterable<Mixin> {}(); // empty iterable
+
+    for (const mixin of this._mixins) {
+      const mObj = this.getReferencedClassSync<Mixin>(mixin);
+      if (mObj) {
+        yield mObj;
+      }
+    }
+  }
+
   /**
    *
    * @param mixin
