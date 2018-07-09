@@ -1220,6 +1220,13 @@ export class RotMatrix implements BeJSONFunctions {
     return result;
   }
 
+  /** return the transposed matrix */
+  public transposeInPlace() {
+    transpose3x3InPlace (this.coffs);
+    if (this.inverseCoffs)
+      transpose3x3InPlace (this.inverseCoffs);
+  }
+
   /** return the inverse matrix.  The return is  null if the matrix is singular (has columns that are coplanar or colinear) */
   public inverse(result?: RotMatrix): RotMatrix | undefined {
     this.computeCachedInverse(true);

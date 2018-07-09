@@ -84,10 +84,11 @@ export class OrderedRotationAngles {
     let m21 = matrix.coffs[1], m22 = matrix.coffs[4], m23 = matrix.coffs[7];
     let m31 = matrix.coffs[2], m32 = matrix.coffs[5], m33 = matrix.coffs[8];
 
-    if (!OrderedRotationAngles.treatVectorsAsColumns) {
-      m11 = matrix.coffs[0], m12 = matrix.coffs[3], m13 = matrix.coffs[6];
-      m21 = matrix.coffs[1], m22 = matrix.coffs[4], m23 = matrix.coffs[7];
-      m31 = matrix.coffs[2], m32 = matrix.coffs[5], m33 = matrix.coffs[8];
+    if (OrderedRotationAngles.treatVectorsAsColumns) {
+      // the formulas are from row order .. flip the mIJ
+      m11 = matrix.coffs[0], m12 = matrix.coffs[1], m13 = matrix.coffs[2];
+      m21 = matrix.coffs[3], m22 = matrix.coffs[4], m23 = matrix.coffs[5];
+      m31 = matrix.coffs[6], m32 = matrix.coffs[7], m33 = matrix.coffs[8];
 
     }
 
@@ -139,6 +140,7 @@ export class OrderedRotationAngles {
           xRad = 0;
           zRad = Math.atan2(-m12, m22);
         }
+        break;
       } case AxisOrder.YZX: {
         zRad = Math.asin(Math.max(-1, Math.min(1, m21)));
 
@@ -150,7 +152,7 @@ export class OrderedRotationAngles {
           yRad = Math.atan2(m13, m33);
         }
         break;
-      } case AxisOrder.XYZ: {
+      } case AxisOrder.XZY: {
         zRad = -Math.asin(Math.max(-1, Math.min(1, m12)));
 
         if (Math.abs(m12) < 0.99999) {
@@ -160,6 +162,7 @@ export class OrderedRotationAngles {
           xRad = Math.atan2(-m23, m33);
           yRad = 0;
         }
+        break;
       } default: {
         xRad = yRad = zRad = 0;
       }
