@@ -174,7 +174,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @returns Created error.
    */
   public static undefinedArgument(argumentName: string): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.UndefinedArguementError, `Argument ${argumentName} is null or undefined`);
+    return this.fromId(IModelHubStatus.UndefinedArgumentError, `Argument ${argumentName} is null or undefined`);
   }
 
   /**
