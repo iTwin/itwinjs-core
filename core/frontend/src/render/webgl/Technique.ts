@@ -21,6 +21,7 @@ import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
+import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
@@ -328,24 +329,53 @@ class PointStringTechnique extends VariedTechnique {
   }
 }
 
-// ###TODO: PointCloud shaders...
 class PointCloudTechnique extends VariedTechnique {
+  private static readonly kOpaque = 0;
+  private static readonly kTranslucent = 1;
+  private static readonly kHilite = numFeatureVariants(PointCloudTechnique.kTranslucent);
+  private static readonly kClip = PointCloudTechnique.kHilite + 1;
+
   public constructor(gl: WebGLRenderingContext) {
-    super(2);
+    super((numFeatureVariants(PointCloudTechnique.kTranslucent) + numHiliteVariants) * 2);
 
-    const builder = new ProgramBuilder(false);
-    builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
-    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
-    builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
+    const flags = scratchTechniqueFlags;
+    const featureMode = FeatureMode.None;
+    for (const clip of clips) {
+      this.addHiliteShader(clip, gl, createPointCloudHiliter);
 
-    const prog = builder.buildProgram(gl);
-    const flags = new TechniqueFlags();
-    this.addProgram(flags, prog);
-    flags.isTranslucent = true;
-    this.addProgram(flags, prog);
+      const builder = createPointCloudBuilder(clip);
+      addMonochrome(builder.frag);
+
+      // The translucent shaders do not need the element IDs.
+      const builderTrans = createPointCloudBuilder(clip);
+      addMonochrome(builderTrans.frag);
+
+      this.addTranslucentShader(builderTrans, flags, gl);
+      addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+      this.addElementId(builder, featureMode);
+      flags.reset(featureMode, clip);
+      this.addShader(builder, flags, gl);
+    }
   }
 
-  protected computeShaderIndex(flags: TechniqueFlags): number { return flags.isTranslucent ? 0 : 1; }
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    if (flags.isHilite) {
+      assert(flags.hasFeatures);
+      let hIndex = PointCloudTechnique.kHilite;
+      if (flags.hasClipVolume) {
+        hIndex += PointCloudTechnique.kClip;
+      }
+      return hIndex;
+    }
+
+    let index = flags.isTranslucent ? PointCloudTechnique.kTranslucent : PointCloudTechnique.kOpaque;
+    if (flags.hasClipVolume) {
+      index += PointCloudTechnique.kClip;
+    }
+
+    return index;
+  }
+
 }
 
 // A collection of rendering techniques accessed by ID.

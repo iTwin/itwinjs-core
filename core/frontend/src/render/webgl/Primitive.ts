@@ -138,8 +138,3 @@ export abstract class Primitive extends Graphic {
     // ###TODO
   }
 }
-
-export class PointCloudPrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(cachedGeom, iModel); }
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
-}
