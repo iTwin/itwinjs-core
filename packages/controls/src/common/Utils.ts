@@ -49,6 +49,3 @@ export const getDisplayName = <P>(component: React.ComponentType<P>): string => 
     return component.name;
   return "Component";
 };
-
-export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
-export type Subtract<T, K> = Omit<T, keyof K>;
