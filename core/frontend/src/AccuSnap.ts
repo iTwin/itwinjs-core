@@ -770,11 +770,11 @@ export class AccuSnap {
     return preferred;
   }
 
-  /** Cancel any pending motion processing requests outstanding. */
-  public async cancelMotion(ev: BeButtonEvent): Promise<void> { return ev.viewport!.iModel.cancelSnap(); }
-
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
+    // if there is an outstanding snap, cancel it.
+    await ev.viewport!.iModel.cancelSnap();
+
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
     const wasHot = this.isHot();
@@ -827,11 +827,11 @@ export class AccuSnap {
     if (this.cross.isActive()) {
       this.cross.decorate(context);
 
-      // we have to adjust the world pt for the icon every time we draw it because the view may have changed size since we snapped
-      const iconSize = this.icon.sprite!.size;
-      const viewport = context.viewport!;
-      this.icon.location.setFrom(AccuSnap.adjustIconLocation(viewport, this.cross.location, iconSize));
-      this.icon.decorate(context);
+      // // we have to adjust the world pt for the icon every time we draw it because the view may have changed size since we snapped
+      // const iconSize = this.icon.sprite!.size;
+      // const viewport = context.viewport!;
+      // this.icon.location.setFrom(AccuSnap.adjustIconLocation(viewport, this.cross.location, iconSize));
+      // this.icon.decorate(context);
     }
 
     this.errorIcon.decorate(context);

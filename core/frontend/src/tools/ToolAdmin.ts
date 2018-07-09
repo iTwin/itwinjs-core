@@ -618,15 +618,13 @@ export class ToolAdmin {
       return;
     }
 
-    await IModelApp.accuSnap.cancelMotion(rawEvent);
-
     await IModelApp.accuSnap.onMotion(rawEvent); // Must update AccuSnap before calling FromButton...
 
     const ev = new BeButtonEvent();
     current.fromButton(vp, pt2d, inputSource, true);
     current.toEvent(ev, true);
 
-    await IModelApp.accuSnap.onMotion(ev);
+    // await IModelApp.accuDraw.onMotion(ev);
 
     const tool = this.activeTool;
     const isValidLocation = !tool ? true : tool.isValidLocation(ev, false);

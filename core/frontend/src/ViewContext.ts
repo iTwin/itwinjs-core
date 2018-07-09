@@ -194,13 +194,12 @@ export class DecorateContext extends RenderContext {
 
     const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
     const xCorn = org.plus(xVector);
-    const pts = [org, xCorn, org.plus(yVector), xCorn.plus(yVector)];
 
     let ovr: FeatureSymbology.Appearance | undefined;
     if (transparency > 0)
       ovr = FeatureSymbology.Appearance.fromJSON({ alpha: 255 - transparency });
 
-    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, pts)!, ovr);
+    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, [org, xCorn, org.plus(yVector), xCorn.plus(yVector)])!, ovr);
   }
 
   /** @private */
