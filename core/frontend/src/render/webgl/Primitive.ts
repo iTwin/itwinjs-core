@@ -5,7 +5,6 @@
 
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../IModelConnection";
 import { Target } from "./Target";
 import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry } from "./CachedGeometry";
@@ -84,7 +83,7 @@ export abstract class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(iModel); this.cachedGeometry = cachedGeom; }
+  public constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
   public getRenderPass(target: Target) {
     if (this.isPixelMode)
@@ -137,4 +136,9 @@ export abstract class Primitive extends Graphic {
   public dispose(): void {
     // ###TODO
   }
+}
+
+export class PointCloudPrimitive extends Primitive {
+  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }

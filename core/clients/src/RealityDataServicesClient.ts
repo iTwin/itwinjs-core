@@ -337,7 +337,12 @@ export class RealityDataServicesClient extends WsgClient {
    */
   public async getRootDocumentJson(token: AccessToken, projectId: string, tilesId: string): Promise<any> {
     const realityData: RealityData[] = await this.getRealityData(token, projectId, tilesId);
-    return (await this.getModelData(token, projectId, tilesId, realityData[0].rootDocument!));
+    const root = realityData[0].rootDocument!;
+
+    // if the model is split by a forward slash, then we need to preserve the root so we can prefix it to the blob path used when requesting the tile content
+    this.blobRoot = root.includes("/") ? root.split("/")[0] : undefined;
+
+    return (await this.getModelData(token, projectId, tilesId, root));
   }
 
   /**

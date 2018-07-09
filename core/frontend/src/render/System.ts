@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d } from "@bentley/geometry-core";
 import { assert, Id64, IDisposable } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
@@ -20,6 +20,9 @@ import {
   ImageSource,
   FeatureTable,
   Gradient,
+  ElementAlignedBox3d,
+  QParams3d,
+  QPoint3dList,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -67,10 +70,6 @@ export class RenderPlan {
  * A renderer-specific object that can be placed into a display list.
  */
 export abstract class RenderGraphic implements IDisposable {
-  public readonly iModel: IModelConnection;
-
-  constructor(iModel: IModelConnection) { this.iModel = iModel; }
-
   public abstract dispose(): void;
 }
 
@@ -246,7 +245,7 @@ export abstract class RenderSystem {
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
 
-  // /** Create an offscreen render target. */
+  /** Create an offscreen render target. */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   /** Find a previously-created Material by key. Returns null if no such material exists. */
@@ -264,35 +263,50 @@ export abstract class RenderSystem {
   // /** Create a Viewlet from parameters */
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
 
-  // /** Create a triangle mesh primitive */
-  public createTriMesh(_args: MeshArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  /** Create a triangle mesh primitive */
+  public createTriMesh(_args: MeshArgs): RenderGraphic | undefined { return undefined; }
 
-  // /** Create an indexed polyline primitive */
-  public createIndexedPolylines(_args: PolylineArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  /** Create an indexed polyline primitive */
+  public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
 
   // /** Create a point cloud primitive */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
-  // /** Create polygons on a range for a sheet tile */
-  // public abstract createSheetTilePolys(corners: GraphicBuilderTileCorners, clip: ClipVector, rangeOut: Range3d): PolyfaceHeader[];
+  /** Create a tile primitive */
+  public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
+    const rasterTile = new MeshArgs();
 
-  // /** Create a sheet tile primitive from polys */
-  // public abstract createSheetTile(tile: Texture, corners: GraphicBuilderTileCorners, imodel: IModel, params: GraphicParams): Graphic[];
+    // corners
+    // [0] [1]
+    // [2] [3]
+    rasterTile.points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
+    for (let i = 0; i < 4; ++i)
+      rasterTile.points.add(corners[i]);
 
-  // /** Create a tile primitive */
-  // public abstract createTile(tile: Texture, corners: GraphicBuilderTileCorners, imodel: IModel, params: GraphicParams): Graphic;
+    rasterTile.vertIndices = [0, 1, 2, 2, 1, 3];
+    rasterTile.textureUv = [
+      new Point2d(0.0, 0.0),
+      new Point2d(1.0, 0.0),
+      new Point2d(0.0, 1.0),
+      new Point2d(1.0, 1.0),
+    ];
+
+    rasterTile.texture = tileTexture;
+    rasterTile.isPlanar = true;
+    return this.createTriMesh(rasterTile);
+  }
 
   /** Create a Graphic consisting of a list of Graphics */
-  public abstract createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic;
+  public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a Graphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
 
   /** Create a Graphic consisting of batched Features. */
-  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
   public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }

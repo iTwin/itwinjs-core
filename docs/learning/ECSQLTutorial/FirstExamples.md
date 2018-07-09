@@ -1,6 +1,3 @@
----
-ignore: true
----
 # First Examples
 
 We will start off the tutorial by a simple ECSQL example:
@@ -9,7 +6,7 @@ We will start off the tutorial by a simple ECSQL example:
 
 > **Try it yourself**
 >
-> *Goal:* Return id, subclass and code of all `SpatialLocationElement`s in the iModel.
+> *Goal:* Return id, subclass and code of all [SpatialLocationElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialLocationElement)s in the iModel.
 >
 > *ECSQL:*
 > ```sql
@@ -48,7 +45,7 @@ The example from above uses the schema alias. If you replace it by the schema na
 
 > **Try it yourself**
 >
-> *Goal:* Return id, subclass and code of all `SpatialLocationElement`s in the iModel.
+> *Goal:* Return id, subclass and code of all [SpatialLocationElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialLocationElement)s in the iModel.
 >
 > *ECSQL*
 > ```sql
@@ -79,7 +76,7 @@ If you omit the schema, you will get an error:
 
 > **Try it yourself**
 >
-> *Goal:* Return id, subclass and code of all `SpatialLocationElement`s in the iModel.
+> *Goal:* Return id, subclass and code of all [SpatialLocationElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialLocationElement)s in the iModel.
 >
 > *ECSQL*
 > ```sql
@@ -92,11 +89,11 @@ If you omit the schema, you will get an error:
 
 ## Element Count
 
-The above example is not very meaningful. In large iModels the query might return far too many instances. If you want to find out how many Elements there are in the iModel, you can run the following query.
+The above example is not very meaningful. In large iModels the query might return far too many instances. If you want to find out how many [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element)s there are in the iModel, you can run the following query.
 
 > **Try it yourself**
 >
-> *Goal:* Find out how many Elements there are in the iModel.
+> *Goal:* Find out how many [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element)s there are in the iModel.
 >
 > *ECSQL*
 > ```sql
@@ -109,11 +106,11 @@ The above example is not very meaningful. In large iModels the query might retur
 > --- |
 > 80 |
 
-This query considers all kinds of `Element`s. If we want to focus only on Elements which represent realworld assets, we can use the BIS class `SpatialElement` instead.
+This query considers all kinds of [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element)s. If we want to focus only on Elements which represent realworld assets, we can use the BIS class [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s instead.
 
 > **Try it yourself**
 >
-> *Goal:* Find out how many SpatialElements there are in the iModel.
+> *Goal:* Find out how many [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s there are in the iModel.
 >
 > *ECSQL*
 > ```sql
@@ -126,11 +123,11 @@ This query considers all kinds of `Element`s. If we want to focus only on Elemen
 > --- |
 > 26 |
 
-Let's compute some more Element statistic with ECSQL. We want to find out how many SpatialElements there are in the iModel per actual element type (where element type here refers to the subclasses of the `Element` ECClass).
+Let's compute some more Element statistic with ECSQL. We want to find out how many [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s there are in the iModel per actual element type (where element type here refers to the subclasses of the [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) ECClass).
 
 > **Try it yourself**
 >
-> *Goal:* Find out how many SpatialElements there are in the iModel.
+> *Goal:* Find out how many [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s there are in the iModel per actual element type.
 >
 > *ECSQL*
 > ```sql
@@ -154,7 +151,7 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 
 > **Try it yourself**
 >
-> *Goal:* Return the first 5 Element only.
+> *Goal:* Return the first 5 [SpatialLocationElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialLocationElement)s only.
 >
 > *ECSQL*
 > ```sql
@@ -174,7 +171,7 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 
 > **Try it yourself**
 >
-> *Goal:* Return the 11th through 15th Element only.
+> *Goal:* Return the 11th through 15th [SpatialLocationElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialLocationElement) only.
 >
 > *ECSQL*
 > ```sql
@@ -196,7 +193,7 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 
 > **Try it yourself**
 >
-> *Goal:* Find out how many Elements there are in the iModel and give the resulting column the more meaningful name *Element Count*.
+> *Goal:* Find out how many [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s there are in the iModel and give the resulting column the more meaningful name *Element Count*.
 >
 > *ECSQL*
 > ```sql
@@ -212,7 +209,7 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 
 > **Try it yourself**
 >
-> *Goal:* Return id and code of all Elements in the iModel and give the id column the name *ElementId* and the code value column the name *Code*.
+> *Goal:* Return id and code of all [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element)s in the iModel and give the id column the name *ElementId* and the code value column the name *Code*.
 >
 > *ECSQL*
 > ```sql
@@ -254,7 +251,9 @@ If you, for example, used the [Element Count example](#element-count) with the i
 The power of JavaScript object literals is lost here, because `count(*)` is not a valid member name. If you applied an alias to
 the count expression though so that the ECSQL would look like this:
 
-`SELECT count(*) elementCount FROM bis.SpatialElement`
+```sql
+SELECT count(*) elementCount FROM bis.SpatialElement
+```
 
 the JavaScript object would now look like this:
 
@@ -280,7 +279,7 @@ To reuse the same ECSQL statement with different values, parameters can be used.
 
 > **Try it yourself**
 >
-> *Goal:* Return all `SpatialElement`s that do not have a user label.
+> *Goal:* Return all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s that do not have a user label.
 >
 > *ECSQL*
 > ```sql
@@ -290,13 +289,17 @@ To reuse the same ECSQL statement with different values, parameters can be used.
 >
 > ECInstanceId | ECClassId
 > --- | ---
-> 1 | BisCore.RepositoryModel
+> 0x10000000012 | MyDomain.Building
+> 0x10000000021 | MyDomain.Device
+> 0x10000000022 | MyDomain.Device
+> 0x10000000023 | MyDomain.Device
+> 0x10000000024 | MyDomain.Device
 
 As you cannot bind values to parameters in the iModelConsole, the above query returns the same as if you did the following.
 
 > **Try it yourself**
 >
-> *Goal:* Return all Models that do not have a parent Model.
+> *Goal:* Return all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s that do not have a user label.
 >
 > *ECSQL*
 > ```sql
@@ -318,7 +321,8 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 
 > **Try it yourself**
 >
-> *Goal:* For all `SpatialElement`s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'. >
+> *Goal:* For all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'.
+>
 > *ECSQL*
 > ```sql
 > SELECT ECInstanceId, CodeValue, replace(CodeValue,'DEV','Device') ReadableCode FROM bis.SpatialElement WHERE instr(CodeValue,'DEV') LIMIT 5
@@ -340,7 +344,8 @@ Note, that the `instr` function can be replaced by using the standard SQL `LIKE`
 
 > **Try it yourself**
 >
-> *Goal:* For all `SpatialElement`s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'. >
+> *Goal:* For all [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'.
+>
 > *ECSQL*
 > ```sql
 > SELECT ECInstanceId, CodeValue, replace(CodeValue,'DEV','Device') ReadableCode FROM bis.SpatialElement WHERE CodeValue LIKE '%DEV%' LIMIT 5

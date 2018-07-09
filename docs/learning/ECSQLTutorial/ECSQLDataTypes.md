@@ -1,11 +1,8 @@
----
-ignore: true
----
 # ECSQL Data Types
 
 ## ECInstanceId and ECClassId
 
-ECSQL defines a set of built-in system properties. They don't have to be defined in the ECSchemas (see also [ECSQL reference](../ECSQL#ecinstanceid-and-ecclassid)).
+ECSQL defines a set of built-in system properties. They don't have to be defined in the ECSchemas (see also [ECSQL reference](../ECSQL.md#ecinstanceid-and-ecclassid)).
 
 Property | Description
 --- | ---
@@ -18,7 +15,7 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 
 > **Try it yourself**
 >
-> *Goal:* Return the actual Element subclass of the Element with id 0x10000000021.
+> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement) with id 0x10000000021.
 >
 > *ECSQL*
 > ```sql
@@ -40,7 +37,7 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 
 > **Try it yourself**
 >
-> *Goal:* Find out which `Model`s are private or not.
+> *Goal:* Find out which [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model) are private or not.
 >
 > *ECSQL*
 > ```sql
@@ -64,7 +61,7 @@ boolean value already.
 
 > **Try it yourself**
 >
-> *Goal:* Find private `Model`s.
+> *Goal:* Find private [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model)s.
 >
 > *ECSQL*
 > ```sql
@@ -87,7 +84,7 @@ And the same example with `False`:
 
 > **Try it yourself**
 >
-> *Goal:* Find non-private `Models`s.
+> *Goal:* Find non-private [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model)s.
 >
 > *ECSQL*
 > ```sql
@@ -120,7 +117,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all devices (ECClass `MyDomain.Device`) which were modified before June, 1st, 2018.
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified before June, 1st, 2018.
 >
 > *ECSQL*
 > ```sql
@@ -139,7 +136,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all devices (ECClass `MyDomain.Device`) which were modified between 8am and 6pm UTC on May, 29th 2018.
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified between 8am and 6pm UTC on May, 29th 2018.
 >
 > *ECSQL*
 > ```sql
@@ -167,7 +164,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Find all devices (ECClass `MyDomain.Device`) whose origin lies within the cube with the
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s whose origin lies within the cube with the
 > lower corner point (50, 30, 10) and the upper corner point (70, 40, 20).
 >
 > *ECSQL*
@@ -202,7 +199,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the parent Element for the `Space` with code value *A-G-2*.
+> *Goal:* Return the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -218,7 +215,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id of the parent Element for the `Space` with code value *A-G-2*.
+> *Goal:* Return the id of the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -234,7 +231,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and RelECClassId of the parent Element separately for the `Space` with code value *A-G-2*.
+> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) separately for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -255,15 +252,15 @@ In ECSQL you can refer to a struct ECProperty either as a whole or by just refer
 The operator for referencing members of structs in an ECSQL is the '.'.
 
 > As there are no struct properties in the sample iModel (structs are generally rarely used), you cannot try that out with this
-> tutorial. However, you will find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL#structs).
+> tutorial. However, you will find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#structs).
 
 ## Arrays
 
 In ECSQL you can refer to Array ECProperties only as a whole.
 
 > The sample iModel does not use array properties for its data. However, arrays are used when querying ECSchemas.
-> That topic is covered as advanced lesson: [Querying ECSchemas (Meta queries)](./MetaQueries)
-> You will also find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL#arrays).
+> That topic is covered as advanced lesson: [Querying ECSchemas (Meta queries)](./MetaQueries.md)
+> You will also find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
 
 ---
 

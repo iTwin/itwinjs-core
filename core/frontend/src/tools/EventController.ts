@@ -133,8 +133,6 @@ export class EventController {
   private interpretingDataButtonAsTouch = false;
   private endGestureId = GestureId.None;
   private readonly removals: RemovalFunction[] = [];
-  private static readonly scratchMousePos = new Point2d();
-  private static readonly scratchGestureInfo = new GestureInfo();
 
   constructor(public vp: Viewport) {
     this.registerListeners();
@@ -205,11 +203,9 @@ export class EventController {
       this.recordControlKey();
   }
 
-  private getPosition(ev: Touch | MouseEvent, result: Point2d): Point2d {
+  private getPosition(ev: Touch | MouseEvent, result?: Point2d): Point2d {
     const rect = this.vp.getClientRect();
-    result.x = ev.clientX - rect.left;
-    result.y = ev.clientY - rect.top;
-    return result;
+    return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top }, result);
   }
 
   private handleMouseUpDown(ev: MouseEvent, isDown: boolean): void {
@@ -218,7 +214,7 @@ export class EventController {
       return;
 
     this.recordKeyboardModifiers(ev);
-    const pos = this.getPosition(ev, EventController.scratchMousePos);
+    const pos = this.getPosition(ev);
 
     handler.call(this, pos);
     ev.preventDefault();
@@ -228,10 +224,11 @@ export class EventController {
   private handleMouseUp(ev: MouseEvent) { this.handleMouseUpDown(ev, false); }
 
   private handleMouseMove(ev: MouseEvent) {
-    this.recordKeyboardModifiers(ev);
-    const pos = this.getPosition(ev, EventController.scratchMousePos);
-    IModelApp.toolAdmin.onMouseMotion(this.vp, pos, InputSource.Mouse);
     ev.preventDefault();
+    this.recordKeyboardModifiers(ev);
+
+    // catch exceptions caused by aborting previous snap attempts
+    IModelApp.toolAdmin.onMouseMotion(this.vp, this.getPosition(ev), InputSource.Mouse).catch((_error) => { });
   }
 
   private handleMouseLeave(ev: MouseEvent) {
@@ -343,8 +340,8 @@ export class EventController {
     this.state = newState;
   }
 
-  private initGestureInfo(gestureId: GestureId, centerX: number, centerY: number, distance: number, points: TouchPoint[], isEnding: boolean, isFromMouse: boolean) {
-    const info = EventController.scratchGestureInfo;
+  private initGestureInfo(gestureId: GestureId, centerX: number, centerY: number, distance: number, points: TouchPoint[], isEnding: boolean, isFromMouse: boolean): GestureInfo {
+    const info = new GestureInfo();
     info.init(gestureId, centerX, centerY, distance, points, isEnding, isFromMouse, this.getPreviousNumberTouches(true));
     return info;
   }
@@ -718,7 +715,7 @@ export class EventController {
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < touches.length; ++i) {
       const touch = touches[i];
-      const pos = this.getPosition(touch, EventController.scratchMousePos);
+      const pos = this.getPosition(touch);
       func(touch.identifier, numFingers, pos.x, pos.y);
     }
 

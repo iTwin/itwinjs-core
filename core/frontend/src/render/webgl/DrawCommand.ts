@@ -279,7 +279,7 @@ export class RenderCommands {
       return;
 
     if (RenderPass.None !== this._forcedRenderPass) {
-      // Add the commmand to the forced render pass (background).
+      // Add the command to the forced render pass (background).
       this.getCommands(this._forcedRenderPass).push(command);
       return;
     }
@@ -464,8 +464,6 @@ export class RenderCommands {
     });
   }
 
-  // #TODO: implement property range on Batch
-  protected _doFrustumCulling: boolean = false; // ###TODO need to set culling range on each Batch.
   public addBatch(batch: Batch): void {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
@@ -478,8 +476,8 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes && this._doFrustumCulling) {
-      let frustum = this._scratchFrustum; // ###TODO: Batch.range Frustum.fromRange(batch.range, this._scratchFrustum);
+    if (undefined !== this._frustumPlanes) {
+      let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
       frustum = frustum.transformBy(this.target.currentTransform, frustum);
       if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
         return;

@@ -4,7 +4,7 @@
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Vector3d, XYZProps } from "@bentley/geometry-core";
 import {
-  Appearance, CategorySelectorProps, CategoryProps, CodeScopeSpec, CodeSpec, ColorDef, DefinitionElementProps,
+  SubCategoryAppearance, CategorySelectorProps, CategoryProps, CodeScopeSpec, CodeSpec, ColorDef, DefinitionElementProps,
   GeometryStreamBuilder, GeometryStreamProps, IModel, InformationPartitionElementProps, ModelSelectorProps, SpatialViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
@@ -50,7 +50,7 @@ export class IModelWriter {
     };
     const categoryId: Id64 = iModelDb.elements.insertElement(categoryProps);
     const category: SpatialCategory = iModelDb.elements.getElement(categoryId) as SpatialCategory;
-    category.setDefaultAppearance(new Appearance({ color }));
+    category.setDefaultAppearance(new SubCategoryAppearance({ color }));
     iModelDb.elements.updateElement(category);
     return categoryId;
   }

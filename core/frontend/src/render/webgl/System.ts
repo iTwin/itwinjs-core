@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageSource, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -388,17 +388,17 @@ export class System extends RenderSystem {
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
-  public createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined {
+  public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
     if (args.flags.isDisjoint)
-      return PointStringPrimitive.create(args, imodel);
+      return PointStringPrimitive.create(args);
     else
-      return PolylinePrimitive.create(args, imodel);
+      return PolylinePrimitive.create(args);
   }
-  public createTriMesh(args: MeshArgs, iModel: IModelConnection) { return MeshGraphic.create(args, iModel); }
+  public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
   public createPointCloud(args: PointCloudArgs, imodel: IModelConnection): RenderGraphic | undefined { return PointCloudGraphic.create(args, imodel); }
-  public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
-  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
-  public createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic { return new Batch(graphic, features); }
+  public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
+  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public applyRenderState(newState: RenderState) {
     newState.apply(this._currentRenderState);

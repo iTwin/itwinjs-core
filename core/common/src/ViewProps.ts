@@ -118,22 +118,22 @@ export interface AuxCoordSystemProps extends ElementProps {
   description?: string;
 }
 
-/**
- * Properties of AuxCoordSystem2d
- * @note angle is stored in degrees
- */
+/**  Properties of AuxCoordSystem2d */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
+  /** Origin of the AuxCoordSystem2d */
   origin?: XYProps;
-  angle?: number; // in degrees
+  /** Rotation angle */
+  angle?: AngleProps;
 }
 
-/**
- * Properties of AuxCoordSystem3d
- * @note All angles are stored in degrees
- */
+/** Properties of AuxCoordSystem3d */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
+  /** Origin of the AuxCoordSystem3d */
   origin?: XYZProps;
-  yaw?: AngleProps;  // in degrees
-  pitch?: AngleProps; // in degrees
-  roll?: AngleProps; // in degrees
+  /** Yaw angle */
+  yaw?: AngleProps;
+  /** Pitch angle */
+  pitch?: AngleProps;
+  /** Roll angle */
+  roll?: AngleProps;
 }

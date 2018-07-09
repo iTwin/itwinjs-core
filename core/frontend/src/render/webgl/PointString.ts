@@ -5,7 +5,6 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../IModelConnection";
 import { Primitive } from "./Primitive";
 import { Target } from "./Target";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
@@ -78,10 +77,10 @@ export class PointStringGeometry extends LUTGeometry {
 }
 
 export class PointStringPrimitive extends Primitive {
-  public static create(args: PolylineArgs, iModel: IModelConnection): PointStringPrimitive | undefined {
+  public static create(args: PolylineArgs): PointStringPrimitive | undefined {
     const geom = PointStringGeometry.create(args);
-    return undefined !== geom ? new PointStringPrimitive(geom, iModel) : undefined;
+    return undefined !== geom ? new PointStringPrimitive(geom) : undefined;
   }
-  private constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(cachedGeom, iModel); }
+  private constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
   public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
 }

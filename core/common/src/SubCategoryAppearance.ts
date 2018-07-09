@@ -6,35 +6,26 @@
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 
-/** Properties to create a SubCategory Appearance */
-export interface AppearanceProps {
-  color?: ColorDefProps;
-  invisible?: boolean;
-  dontPlot?: boolean;
-  dontSnap?: boolean;
-  dontLocate?: boolean;
-  weight?: number;
-  style?: Id64Props;
-  priority?: number;
-  material?: Id64Props;
-  transp?: number;
-}
-
 /** Parameters that define the way geometry on a SubCategory appears. */
-export class Appearance {
-  public color: ColorDef = ColorDef.black;
-  public weight = 0;
-  public priority = 0;
-  public transparency = 0;
-  public invisible = false;
-  public dontPlot = false;
-  public dontSnap = false;
-  public dontLocate = false;
-  public styleId: Id64;
-  public materialId: Id64;
+export class SubCategoryAppearance {
+  public readonly color: ColorDef;
+  public readonly weight: number;
+  public readonly priority: number;
+  public readonly transparency: number;
+  public readonly invisible: boolean;
+  public readonly dontPlot: boolean;
+  public readonly dontSnap: boolean;
+  public readonly dontLocate: boolean;
+  public readonly styleId: Id64;
+  public readonly materialId: Id64;
 
-  constructor(props?: AppearanceProps) {
+  constructor(props?: SubCategoryAppearance.Props) {
     if (!props) {
+      this.color = ColorDef.black;
+      this.weight = 0;
+      this.priority = 0;
+      this.transparency = 0;
+      this.invisible = this.dontPlot = this.dontSnap = this.dontLocate = false;
       this.styleId = new Id64();
       this.materialId = new Id64();
       return;
@@ -52,7 +43,7 @@ export class Appearance {
     this.transparency = JsonUtils.asInt(props.transp);
   }
 
-  public equals(other: Appearance): boolean {
+  public equals(other: SubCategoryAppearance): boolean {
     return this.invisible === other.invisible &&
       this.dontPlot === other.dontPlot &&
       this.dontSnap === other.dontSnap &&
@@ -65,8 +56,8 @@ export class Appearance {
       this.transparency === other.transparency;
   }
 
-  public toJSON(): AppearanceProps {
-    const val = { color: this.color.toJSON() } as AppearanceProps;
+  public toJSON(): SubCategoryAppearance.Props {
+    const val = { color: this.color.toJSON() } as SubCategoryAppearance.Props;
     if (this.invisible) val.invisible = true;
     if (this.dontPlot) val.dontPlot = true;
     if (this.dontSnap) val.dontSnap = true;
@@ -78,76 +69,93 @@ export class Appearance {
     if (0.0 !== this.transparency) val.transp = this.transparency;
     return val;
   }
+
+  public clone(): SubCategoryAppearance { return new SubCategoryAppearance(this.toJSON()); }
+
+  public static defaults = new SubCategoryAppearance();
 }
 
-/** The SubCategory appearance overrides for a view */
-export class SubCategoryOverride {
-  private readonly _value = new Appearance();
-  private _invisible?: boolean;
-  private _color?: boolean;
-  private _weight?: boolean;
-  private _style?: boolean;
-  private _priority?: boolean;
-  private _material?: boolean;
-  private _transp?: boolean;
+export namespace SubCategoryAppearance {
+  /** Properties to create a SubCategoryAppearance */
+  export interface Props {
+    color?: ColorDefProps;
+    invisible?: boolean;
+    dontPlot?: boolean;
+    dontSnap?: boolean;
+    dontLocate?: boolean;
+    weight?: number;
+    style?: Id64Props;
+    priority?: number;
+    material?: Id64Props;
+    transp?: number;
+  }
+}
 
-  public get invisible(): boolean | undefined { return this._invisible ? this._value.invisible : undefined; }
-  public get color(): ColorDef | undefined { return this._color ? this._value.color : undefined; }
-  public get weight(): number | undefined { return this._weight ? this._value.weight : undefined; }
-  public get style(): Id64 | undefined { return this._style ? this._value.styleId : undefined; }
-  public get priority(): number | undefined { return this._priority ? this._value.priority : undefined; }
-  public get material(): Id64 | undefined { return this._material ? this._value.materialId : undefined; }
-  public get transparency(): number | undefined { return this._transp ? this._value.transparency : undefined; }
+/** Overrides selected aspects of a SubCategoryAppearance. */
+export class SubCategoryOverride {
+  public readonly color?: ColorDef;
+  public readonly invisible?: boolean;
+  public readonly weight?: number;
+  public readonly style?: Id64;
+  public readonly priority?: number;
+  public readonly material?: Id64;
+  public readonly transparency?: number;
 
   public get anyOverridden(): boolean {
-    return undefined !== this._invisible || undefined !== this._color || undefined !== this._weight || undefined !== this._style || undefined !== this._priority || undefined !== this._material || undefined !== this._transp;
+    return undefined !== this.invisible || undefined !== this.color || undefined !== this.weight || undefined !== this.style || undefined !== this.priority || undefined !== this.material || undefined !== this.transparency;
   }
 
-  public setInvisible(val: boolean): void { this._invisible = true; this._value.invisible = val; }
-  public setColor(val: ColorDef): void { this._color = true; this._value.color = val; }
-  public setWeight(val: number): void { this._weight = true; this._value.weight = val; }
-  public setStyle(val: Id64) { this._style = true; this._value.styleId = val; }
-  public setDisplayPriority(val: number) { this._priority = true; this._value.priority = val; }
-  public setMaterial(val: Id64) { this._material = true; this._value.materialId = val; }
-  public setTransparency(val: number) { this._transp = true; this._value.transparency = val; }
-  public applyTo(appear: Appearance): void {
-    if (this._invisible) appear.invisible = this._value.invisible;
-    if (this._color) appear.color = this._value.color;
-    if (this._weight) appear.weight = this._value.weight;
-    if (this._style) appear.styleId = this._value.styleId;
-    if (this._material) appear.materialId = this._value.materialId;
-    if (this._priority) appear.priority = this._value.priority;
-    if (this._transp) appear.transparency = this._value.transparency;
+  /** Returns a SubCategoryAppearance overridden to match the properties defined by this SubCategoryOverride. */
+  public override(appearance: SubCategoryAppearance): SubCategoryAppearance {
+    if (!this.anyOverridden)
+      return appearance;
+
+    const props = appearance.toJSON();
+    const ovrProps = this.toJSON();
+    if (undefined !== ovrProps.invisible) props.invisible = ovrProps.invisible;
+    if (undefined !== ovrProps.weight) props.weight = ovrProps.weight;
+    if (undefined !== ovrProps.style) props.style = ovrProps.style;
+    if (undefined !== ovrProps.material) props.material = ovrProps.material;
+    if (undefined !== ovrProps.priority) props.priority = ovrProps.priority;
+    if (undefined !== ovrProps.transp) props.transp = ovrProps.transp;
+    if (undefined !== ovrProps.color) props.color = ovrProps.color;
+
+    return new SubCategoryAppearance(props);
   }
 
   /** Convert this SubCategoryOverride to a JSON object */
-  public toJSON(): any {
-    const val: any = {};
-    if (this._invisible) val.invisible = this._value.invisible;
-    if (this._color) val.color = this._value.color;
-    if (this._weight) val.weight = this._value.weight;
-    if (this._style) val.style = this._value.styleId;
-    if (this._material) val.material = this._value.materialId;
-    if (this._priority) val.priority = this._value.priority;
-    if (this._transp) val.transp = this._value.transparency;
+  public toJSON(): SubCategoryAppearance.Props {
+    const val: SubCategoryAppearance.Props = {
+      invisible: this.invisible,
+      weight: this.weight,
+      style: this.style,
+      material: this.material,
+      priority: this.priority,
+      transp: this.transparency,
+    };
+
+    if (undefined !== this.color)
+      val.color = this.color.toJSON();
+
     return val;
   }
 
   /** Create a new SubCategoryOverride from a JSON object */
-  public static fromJSON(json: any): SubCategoryOverride {
-    const val = new SubCategoryOverride();
-    if (!json)
-      return val;
-
-    if (json.invisible) val.setInvisible(JsonUtils.asBool(json.invisible));
-    if (json.color) val.setColor(ColorDef.fromJSON(json.color));
-    if (json.weight) val.setWeight(JsonUtils.asInt(json.weight));
-    if (json.style) val.setStyle(Id64.fromJSON(json.style));
-    if (json.material) val.setMaterial(Id64.fromJSON(json.material));
-    if (json.priority) val.setDisplayPriority(JsonUtils.asInt(json.priority));
-    if (json.transp) val.setTransparency(JsonUtils.asDouble(json.transp));
-    return val;
+  public static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride {
+    return undefined !== json ? new SubCategoryOverride(json) : this.defaults;
   }
+
+  private constructor(props: SubCategoryAppearance.Props) {
+    if (undefined !== props.invisible) this.invisible = JsonUtils.asBool(props.invisible);
+    if (undefined !== props.color) this.color = ColorDef.fromJSON(props.color);
+    if (undefined !== props.weight) this.weight = JsonUtils.asInt(props.weight);
+    if (undefined !== props.style) this.style = Id64.fromJSON(props.style);
+    if (undefined !== props.material) this.material = Id64.fromJSON(props.material);
+    if (undefined !== props.priority) this.priority = JsonUtils.asInt(props.priority);
+    if (undefined !== props.transp) this.transparency = JsonUtils.asDouble(props.transp);
+  }
+
+  public static defaults = new SubCategoryOverride({});
 }
 
 /** The *rank* for a Category */

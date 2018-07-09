@@ -8,7 +8,6 @@ import { SurfaceType, RenderPass, RenderOrder } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
 import { Graphic, wantJointTriangles, Batch } from "./Graphic";
@@ -135,13 +134,13 @@ export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: MeshPrimitive[] = [];
 
-  public static create(args: MeshArgs, iModel: IModelConnection) {
+  public static create(args: MeshArgs) {
     const data = MeshData.create(new MeshParams(args));
-    return undefined !== data ? new MeshGraphic(data, args, iModel) : undefined;
+    return undefined !== data ? new MeshGraphic(data, args) : undefined;
   }
 
-  private constructor(data: MeshData, args: MeshArgs, iModel: IModelConnection) {
-    super(iModel);
+  private constructor(data: MeshData, args: MeshArgs) {
+    super();
     this.meshData = data;
 
     const surface = SurfacePrimitive.create(args, this);
@@ -235,7 +234,7 @@ export abstract class MeshPrimitive extends Primitive {
   public get meshData(): MeshData { return this.mesh.meshData; }
 
   protected constructor(cachedGeom: MeshGeometry, mesh: MeshGraphic) {
-    super(cachedGeom, mesh.iModel);
+    super(cachedGeom);
     this.mesh = mesh;
   }
 

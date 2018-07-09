@@ -188,9 +188,6 @@ export class DepthRangeNpc {
 
 /** Coordinate system types */
 export const enum CoordSystem {
-  /** Coordinates are relative to the origin of the screen. */
-  Screen,
-
   /**
    * Coordinates are relative to the origin of the viewing rectangle.
    * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
@@ -1094,8 +1091,6 @@ export class Viewport {
       case CoordSystem.World:
         this.npcToWorldArray(box.points);
         break;
-
-      // case CoordSystem.Screen:
     }
     return box;
   }

@@ -44,6 +44,9 @@ export class IModelConnection extends IModel {
   public readonly transientIds = new TransientIdSequence();
   /** A unique Id of this IModelConnection. */
   public readonly connectionId = Guid.createValue();
+  /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
+  private static connectionTimeout: number = 5 * 60 * 1000;
+  private openAccessToken?: AccessToken;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -64,10 +67,6 @@ export class IModelConnection extends IModel {
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
-
-  /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static connectionTimeout: number = 5 * 60 * 1000;
-  private openAccessToken?: AccessToken;
 
   private constructor(iModel: IModel, openMode: OpenMode, accessToken?: AccessToken) {
     super(iModel.iModelToken);
@@ -120,8 +119,8 @@ export class IModelConnection extends IModel {
       openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
     }
 
-    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
-    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
 
     const startTime = Date.now();
 
@@ -131,16 +130,16 @@ export class IModelConnection extends IModel {
       if (!(openForReadOperation && request.operation === openForReadOperation) && !(openForWriteOperation && request.operation === openForWriteOperation))
         return;
 
-      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
       if (Date.now() - startTime > IModelConnection.connectionTimeout) {
-        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
       connectionRetryTime = connectionRetryTime * 2;
       request.retryInterval = connectionRetryTime;
-      Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+      Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
     });
 
     let openResponse: IModel;
@@ -153,7 +152,7 @@ export class IModelConnection extends IModel {
       removeListener();
     }
 
-    Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ iModelId: iModelToken.iModelId, openMode, changeSetId: iModelToken.changeSetId }));
+    Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
     return openResponse;
   }
 
@@ -162,8 +161,14 @@ export class IModelConnection extends IModel {
       return;
 
     try {
-      const openResponse: IModel = await IModelConnection.callOpen(this.openAccessToken!, request.parameters[0], this.openMode);
+      const iModelToken: IModelToken = request.parameters[0];
+      Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+
+      const openResponse: IModel = await IModelConnection.callOpen(this.openAccessToken!, iModelToken, this.openMode);
       this.token = openResponse.iModelToken;
+
+      Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+      request.parameters[0] = openResponse.iModelToken; // Modify the token of the original request before resubmitting it.
       resubmit();
     } catch (error) {
       reject(error.message);
@@ -291,8 +296,20 @@ export class IModelConnection extends IModel {
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
-  public requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
-  public cancelSnap(): Promise<void> { return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); }
+  private _snapPending = false;
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    this._snapPending = true; // save flag indicating we're in the process of generating a snap
+    const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
+    await response; // after snap completes, turn off flag
+    this._snapPending = false;
+    return response; // return fulfilled promise
+  }
+  public async cancelSnap(): Promise<void> {
+    if (this._snapPending) { // if we're waiting for a snap, cancel it.
+      this._snapPending = false;
+      return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
+    }
+  }
 }
 
 export namespace IModelConnection {
