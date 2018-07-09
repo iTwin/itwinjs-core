@@ -181,7 +181,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "SimpleViewTest (backend)",
+      "name": "SimpleViewTest Electron (backend)",
       "cwd": "${workspaceFolder}/simpleviewtest/",
       "runtimeExecutable": "${workspaceFolder}\\simpleviewtest\\node_modules\\.bin\\electron",
       "runtimeArgs": [
@@ -195,6 +195,20 @@
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "SimpleViewTest Browser (backend)",
+      "cwd": "${workspaceRoot}/simpleviewtest",
+      "program": "${workspaceRoot}/simpleviewtest/lib/backend/public/WebMain.js",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ],
+      "protocol": "inspector"
+    }
   ],
   "compounds": [
     {
