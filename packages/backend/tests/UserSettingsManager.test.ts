@@ -6,7 +6,7 @@ import * as moq from "@helpers/Mocks";
 import { createRandomId } from "@helpers/random";
 import * as faker from "faker";
 import { SettingValueTypes, ECPresentationError } from "@common/index";
-import { NodeAddonDefinition } from "@src/ECPresentationManager";
+import { NativePlatformDefinition } from "@src/NativePlatform";
 import UserSettingsManager from "@src/UserSettingsManager";
 
 describe("UserSettingsManager", () => {
@@ -14,7 +14,7 @@ describe("UserSettingsManager", () => {
   let settingsManager: UserSettingsManager;
   const rulesetId = "rulesetId";
   const settingId = "settingId";
-  const addonMock = moq.Mock.ofType<NodeAddonDefinition>();
+  const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
   beforeEach(() => {
     addonMock.reset();
     settingsManager = new UserSettingsManager(() => addonMock.object);

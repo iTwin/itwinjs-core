@@ -5,37 +5,37 @@
 
 import { UserSettingsManager as UserSettingsManagerDefinition, SettingValue, SettingValueTypes, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { NodeAddonDefinition } from "./ECPresentationManager";
+import { NativePlatformDefinition } from "./NativePlatform";
 
 /** @hidden */
 export default class UserSettingsManager implements UserSettingsManagerDefinition {
-  private _getNativeAddon: () => NodeAddonDefinition;
+  private _getNativePlatform: () => NativePlatformDefinition;
 
-  constructor(getNativeAddon: () => NodeAddonDefinition) {
-    this._getNativeAddon = getNativeAddon;
+  constructor(getNativePlatform: () => NativePlatformDefinition) {
+    this._getNativePlatform = getNativePlatform;
   }
 
   public async setValue(ruleSetId: string, settingId: string, value: SettingValue): Promise<void> {
-    return await this._getNativeAddon().setUserSetting(ruleSetId, settingId, JSON.stringify(value));
+    return await this._getNativePlatform().setUserSetting(ruleSetId, settingId, JSON.stringify(value));
   }
   public async getBoolean(ruleSetId: string, settingId: string): Promise<boolean> {
-    return await this._getNativeAddon().getUserSetting(ruleSetId, settingId, SettingValueTypes.Bool);
+    return await this._getNativePlatform().getUserSetting(ruleSetId, settingId, SettingValueTypes.Bool);
   }
   public async getInt(ruleSetId: string, settingId: string): Promise<number> {
-    return await this._getNativeAddon().getUserSetting(ruleSetId, settingId, SettingValueTypes.Int);
+    return await this._getNativePlatform().getUserSetting(ruleSetId, settingId, SettingValueTypes.Int);
   }
   public async getIntArray(ruleSetId: string, settingId: string): Promise<number[]> {
-    return await this._getNativeAddon().getUserSetting(ruleSetId, settingId, SettingValueTypes.IntArray);
+    return await this._getNativePlatform().getUserSetting(ruleSetId, settingId, SettingValueTypes.IntArray);
   }
   public async getId64(ruleSetId: string, settingId: string): Promise<Id64> {
-    return new Id64(await this._getNativeAddon().getUserSetting(ruleSetId, settingId, SettingValueTypes.Id64));
+    return new Id64(await this._getNativePlatform().getUserSetting(ruleSetId, settingId, SettingValueTypes.Id64));
   }
   public async getId64Array(ruleSetId: string, settingId: string): Promise<Id64[]> {
-    const values: string[] = await this._getNativeAddon().getUserSetting(ruleSetId, settingId, SettingValueTypes.Id64Array);
+    const values: string[] = await this._getNativePlatform().getUserSetting(ruleSetId, settingId, SettingValueTypes.Id64Array);
     return values.map((x) => new Id64(x));
   }
   public async getString(ruleSetId: string, settingId: string): Promise<string> {
-    return await this._getNativeAddon().getUserSetting(ruleSetId, settingId, SettingValueTypes.String);
+    return await this._getNativePlatform().getUserSetting(ruleSetId, settingId, SettingValueTypes.String);
   }
 
   public async getValue(ruleSetId: string, settingId: string, settingType: SettingValueTypes) {
