@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
@@ -49,6 +49,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
+
+  /** Runs when the iModel this iModelState represents closes. */
+  public onIModelConnectionClose() { }
 }
 
 /** The state of a geometric model */
@@ -97,6 +100,11 @@ export abstract class GeometricModelState extends ModelState {
   private setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
+  }
+
+  public onIModelConnectionClose() {
+    dispose(this._tileTree);  // we do not track if we are disposed... catch this at the tiletree level
+    super.onIModelConnectionClose();
   }
 }
 

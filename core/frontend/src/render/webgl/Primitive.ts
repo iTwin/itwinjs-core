@@ -15,6 +15,7 @@ import { DrawParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { RenderCommands, DrawCommand, DrawCommands } from "./DrawCommand";
+import { dispose } from "../../../../bentley/lib/Disposable";
 
 export const enum PolylineParam {
   kNone = 0,
@@ -86,6 +87,10 @@ export abstract class Primitive extends Graphic {
 
   public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(iModel); this.cachedGeometry = cachedGeom; }
 
+  public dispose() {
+    dispose(this.cachedGeometry);
+  }
+
   public getRenderPass(target: Target) {
     if (this.isPixelMode)
       return RenderPass.ViewOverlay;
@@ -133,10 +138,6 @@ export abstract class Primitive extends Graphic {
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 
   public get debugString(): string { return this.cachedGeometry.debugString; }
-
-  public dispose(): void {
-    // ###TODO
-  }
 }
 
 export class PointCloudPrimitive extends Primitive {

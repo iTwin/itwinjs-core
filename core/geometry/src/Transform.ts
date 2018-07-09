@@ -272,6 +272,7 @@ export class RotMatrix implements BeJSONFunctions {
     }
     return result;
   }
+
   /**
    *  set all entries in the matrix from call parameters appearing in row-major order.
    * @param axx Row x, column x (0,0) entry

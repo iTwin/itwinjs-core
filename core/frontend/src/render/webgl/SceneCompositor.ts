@@ -9,17 +9,16 @@ import { Target } from "./Target";
 import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry } from "./CachedGeometry";
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
-import { dispose } from "./Disposable";
 import { System, RenderType } from "./System";
 import { Pixel } from "../System";
 import { ViewRect } from "../../Viewport";
-import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, DrawParams } from "./DrawCommand";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 
-class Textures {
+class Textures implements IDisposable {
   public accumulation?: TextureHandle;
   public revealage?: TextureHandle;
   public color?: TextureHandle;
@@ -27,6 +26,16 @@ class Textures {
   public idHigh?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public hilite?: TextureHandle;
+
+  public dispose() {
+    this.accumulation = dispose(this.accumulation);
+    this.revealage = dispose(this.revealage);
+    this.color = dispose(this.color);
+    this.idLow = dispose(this.idLow);
+    this.idHigh = dispose(this.idHigh);
+    this.depthAndOrder = dispose(this.depthAndOrder);
+    this.hilite = dispose(this.hilite);
+  }
 
   public init(width: number, height: number): boolean {
     assert(undefined === this.accumulation);
@@ -65,19 +74,9 @@ class Textures {
       && undefined !== this.depthAndOrder
       && undefined !== this.hilite;
   }
-
-  public reset() {
-    this.accumulation = dispose(this.accumulation);
-    this.revealage = dispose(this.revealage);
-    this.color = dispose(this.color);
-    this.idLow = dispose(this.idLow);
-    this.idHigh = dispose(this.idHigh);
-    this.depthAndOrder = dispose(this.depthAndOrder);
-    this.hilite = dispose(this.hilite);
-  }
 }
 
-class FrameBuffers {
+class FrameBuffers implements IDisposable {
   public opaqueAll?: FrameBuffer;
   public opaqueColor?: FrameBuffer;
   public opaqueAndCompositeAll?: FrameBuffer;
@@ -128,7 +127,7 @@ class FrameBuffers {
       && undefined !== this.hilite;
   }
 
-  public reset() {
+  public dispose() {
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
@@ -141,7 +140,7 @@ class FrameBuffers {
   }
 }
 
-class Geometry {
+class Geometry implements IDisposable {
   public copyPickBuffers?: CopyPickBufferGeometry;
   public composite?: CompositeGeometry;
   public clearTranslucent?: ViewportQuadGeometry;
@@ -158,17 +157,11 @@ class Geometry {
     return undefined !== this.composite && undefined !== this.copyPickBuffers && undefined !== this.clearTranslucent && undefined !== this.clearPickAndColor;
   }
 
-  public reset() {
-    /* ###TODO CachedGeometry implements IDisposable
+  public dispose() {
     this.copyPickBuffers = dispose(this.copyPickBuffers);
     this.composite = dispose(this.composite);
     this.clearTranslucent = dispose(this.clearTranslucent);
     this.clearPickAndColor = dispose(this.clearPickAndColor);
-     */
-    this.copyPickBuffers = undefined;
-    this.composite = undefined;
-    this.clearTranslucent = undefined;
-    this.clearPickAndColor = undefined;
   }
 }
 
@@ -325,7 +318,7 @@ class PixelBuffer implements Pixel.Buffer {
   }
 }
 
-export class SceneCompositor {
+export class SceneCompositor implements IDisposable {
   private _target: Target;
   private _width: number = -1;
   private _height: number = -1;
@@ -355,11 +348,9 @@ export class SceneCompositor {
     const width = rect.width;
     const height = rect.height;
 
-    if (width === this._width && height === this._height) {
+    if (this._textures.accumulation !== undefined && width === this._width && height === this._height) {
       return true;
     }
-
-    this.reset();
 
     this._width = width;
     this._height = height;
@@ -434,8 +425,7 @@ export class SceneCompositor {
     const fbo = FrameBuffer.create([tex]);
     const result = this.readFrameBuffer(rect, fbo);
 
-    if (undefined !== fbo)
-      fbo.dispose();
+    dispose(fbo);
 
     return result;
   }
@@ -463,20 +453,20 @@ export class SceneCompositor {
   public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
 
-  public reset() {
+  public dispose() {
     this._depth = dispose(this._depth);
-    this._textures.reset();
-    this._fbos.reset();
-    this._geometry.reset();
+    dispose(this._textures);
+    dispose(this._fbos);
+    dispose(this._geometry);
   }
 
   private init(): boolean {
+    this.dispose();
     this._depth = System.instance.createDepthBuffer(this._width, this._height);
-
-    return undefined !== this._depth
-      && this._textures.init(this._width, this._height)
-      && this._fbos.init(this._textures, this._depth)
-      && this._geometry.init(this._textures);
+    if (this._depth !== undefined) {
+      return this._textures.init(this._width, this._height) && this._fbos.init(this._textures, this._depth) && this._geometry.init(this._textures);
+    }
+    return false;
   }
 
   private clearOpaque(needComposite: boolean) {

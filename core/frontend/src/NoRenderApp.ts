@@ -27,6 +27,7 @@ export class NullTarget extends RenderTarget {
   public setViewRect(): void { }
   public queueReset(): void { }
   public onResized(): void { }
+  public dispose(): void { }
   public updateViewRect(): boolean { return false; }
   public readPixels() { return undefined; }
 }
@@ -42,6 +43,7 @@ export class NullRenderSystem extends RenderSystem {
   public createGraphicList() { return undefined as any; }
   public createBranch() { return undefined as any; }
   public createBatch() { return undefined as any; }
+  public dispose() { }
   public constructor() { super(undefined as any); }
 }
 

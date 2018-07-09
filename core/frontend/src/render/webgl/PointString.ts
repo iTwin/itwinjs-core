@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { Primitive } from "./Primitive";
@@ -74,6 +74,11 @@ export class PointStringGeometry extends LUTGeometry {
       }
     }
     return undefined;
+  }
+
+  public dispose() {
+    dispose(this.lut);
+    dispose(this.indices);
   }
 }
 
