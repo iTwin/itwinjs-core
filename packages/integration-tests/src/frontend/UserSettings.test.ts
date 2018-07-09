@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { initialize, terminate } from "./IntegrationTests";
+import { initialize, terminate } from "../IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import { UserSettingsItem, UserSettingsGroup, SettingValueTypes, PresentationRuleSet, UserSettingsManager } from "@bentley/ecpresentation-common";

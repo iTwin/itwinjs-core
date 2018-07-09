@@ -155,8 +155,8 @@ export default class ECPresentationTableDataProvider extends ContentDataProvider
     if (!page) {
       page = this._pages.reservePage(rowIndex);
       page.promise = this.getContent({
-        pageStart: page.position.start,
-        pageSize: page.position.end - page.position.start + 1,
+        start: page.position.start,
+        size: page.position.end - page.position.start + 1,
       }).then((c: content.Content | undefined) => {
         page!.items = createRows(c);
       }).catch((e) => {

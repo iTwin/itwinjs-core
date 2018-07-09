@@ -9,7 +9,7 @@ import {
   KeySet, SelectionInfo, InstanceKey,
   PresentationRuleSet, PresentationRuleSpecificationTypes, PresentationRuleTypes,
 } from "@bentley/ecpresentation-common";
-import { initialize, terminate } from "./IntegrationTests";
+import { initialize, terminate } from "../IntegrationTests";
 
 before(async () => {
   initialize();
@@ -45,16 +45,16 @@ describe("DistinctValues", async () => {
 
   it.skip("gets distinct content values", async () => {
     ECPresentation.presentation.addRuleSet(contentRuleset);
-    const options = { RulesetId: contentRuleset.ruleSetId };
     const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };
     const key2: InstanceKey = { id: new Id64("0x17"), className: "BisCore:SpatialCategory" };
     const selection: SelectionInfo = { providerName: "Some provider", level: 0 };
     const keys = new KeySet([key1, key2]);
-    const descriptor = await ECPresentation.presentation.getContentDescriptor(imodel, "Grid", keys, selection, options);
+    const options = { imodel, rulesetId: contentRuleset.ruleSetId };
+    const descriptor = await ECPresentation.presentation.getContentDescriptor(options, "Grid", keys, selection);
     expect(descriptor).to.not.be.undefined;
     if (descriptor) {
-      const distinctValues = await ECPresentation.presentation.getDistinctValues(imodel, descriptor, keys,
-        "SubCategory_DefinitionPartition_LinkPartition_PhysicalPartition_Model", options);
+      const distinctValues = await ECPresentation.presentation.getDistinctValues(options, descriptor, keys,
+        "SubCategory_DefinitionPartition_LinkPartition_PhysicalPartition_Model");
       expect(distinctValues).to.be.deep.equal(["Dictionary Model-0-G", "Repository Model-0-1"]);
     }
   });

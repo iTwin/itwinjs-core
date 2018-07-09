@@ -5,8 +5,8 @@ Array [
   Object {
     "key": Object {
       "instanceKey": Object {
-        "className": "turquoise",
-        "id": "0x350d0000005955",
+        "className": "navigating",
+        "id": "0xcb1000000aa86",
       },
       "pathFromRoot": Array [
         "p1",
@@ -33,52 +33,52 @@ Content {
   "contentSet": Array [
     Item {
       "classInfo": Object {
-        "id": "0xc43000000143f2",
-        "label": "input",
-        "name": "cross-platform",
+        "id": "0x8ef40000018523",
+        "label": "Syrian Pound",
+        "name": "Iceland",
       },
       "displayValues": Object {
-        "Bedfordshire": "monetize",
+        "Borders": "Puerto Rico quantify",
       },
-      "imageId": "54b67b0d-e045-4ff9-a03b-a818ce3470a8",
-      "label": "Checking Account Checking Account",
+      "imageId": "7a09054b-67b0-4de0-85ff-9a03ba818ce3",
+      "label": "Buckinghamshire clicks-and-mortar input",
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "transform",
-          "id": "0x1283800000109f2",
+          "className": "Berkshire",
+          "id": "0x79810000017552",
         },
       ],
       "values": Object {
-        "Bedfordshire": "quantify Auto Loan Account withdrawal",
+        "Borders": "Avon",
       },
     },
   ],
   "descriptor": Descriptor {
     "contentFlags": 0,
-    "displayType": "et neque tempora",
+    "displayType": "magni eligendi nihil",
     "fields": Array [
       PropertiesField {
         "category": Object {
-          "description": "Libero est ullam ea.",
-          "expand": false,
-          "label": "Gibraltar Pound Practical Plastic Table",
-          "name": "Bedfordshire",
-          "priority": 73717,
+          "description": "Quam ad ducimus.",
+          "expand": true,
+          "label": "payment model Gibraltar Pound",
+          "name": "Idaho",
+          "priority": 13433,
         },
         "isReadonly": true,
-        "label": "circuit didactic world-class",
-        "name": "Bedfordshire",
-        "priority": 83206,
+        "label": "frame system",
+        "name": "Borders",
+        "priority": 73989,
         "properties": Array [
           Object {
             "property": Object {
               "classInfo": Object {
-                "id": "0x135fe0000000de6",
-                "label": "web services workforce",
-                "name": "cutting-edge",
+                "id": "0x6f0a00000160a8",
+                "label": "transmitting Jewelery",
+                "name": "encompassing",
               },
-              "name": "back-end",
+              "name": "cutting-edge",
               "type": "string",
             },
             "relatedClassPath": Array [],
@@ -96,9 +96,9 @@ Content {
         "pathToPrimaryClass": Array [],
         "relatedPropertyPaths": Array [],
         "selectClassInfo": Object {
-          "id": "0x1267300000112a0",
-          "label": "Dynamic",
-          "name": "Intranet",
+          "id": "0xf572000000d53d",
+          "label": "Reactive reboot",
+          "name": "Bike",
         },
       },
     ],
@@ -108,17 +108,17 @@ Content {
 
 exports[`ECPresentationManager addon results conversion to ECPresentation objects returns content descriptor 1`] = `
 Descriptor {
-  "connectionId": "e2c09f34-d82e-4329-8080-456e4e17ea03",
+  "connectionId": "2c09f34d-82e3-4290-8804-56e4e17ea030",
   "contentFlags": 0,
   "contentOptions": "bar",
-  "displayType": "orchestrate",
+  "displayType": "Mills",
   "fields": Array [
     PropertiesField {
       "category": Object {
-        "description": "Odio a dolorem quibusdam alias repudiandae quo.",
+        "description": "Quibusdam alias repudiandae quo.",
         "expand": true,
-        "label": "withdrawal",
-        "name": "Ohio",
+        "label": "architectures web services",
+        "name": "Hong Kong Dollar",
         "priority": 61251,
       },
       "editor": Object {
@@ -299,58 +299,58 @@ Descriptor {
       },
     },
   ],
-  "inputKeysHash": "0ba6d478-7921-4998-9666-e7bf11d320f5",
+  "inputKeysHash": "ba6d4787-9219-4985-a66e-7bf11d320f54",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": true,
       "pathToPrimaryClass": Array [
         Object {
-          "isForwardRelationship": false,
+          "isForwardRelationship": true,
           "isPolymorphicRelationship": false,
           "relationshipInfo": Object {
-            "id": "0xf0c50000002e40",
-            "label": "website port Intelligent Plastic Chicken",
-            "name": "help-desk",
+            "id": "0x17f8900000076f6",
+            "label": "Gloves",
+            "name": "port",
           },
           "sourceClassInfo": Object {
-            "id": "0x8dd4000000eea4",
-            "label": "New York",
-            "name": "Marketing",
+            "id": "0x16d160000008dd4",
+            "label": "deposit time-frame",
+            "name": "Chair",
           },
           "targetClassInfo": Object {
-            "id": "0x7a830000002b0b",
-            "label": "Avon New Leu",
-            "name": "Program",
+            "id": "0x857a00000014ce",
+            "label": "deposit Money Market Account metrics",
+            "name": "Avon",
           },
         },
       ],
       "relatedPropertyPaths": Array [
         Array [
           Object {
-            "isForwardRelationship": false,
+            "isForwardRelationship": true,
             "isPolymorphicRelationship": true,
             "relationshipInfo": Object {
-              "id": "0x5453000000d715",
-              "label": "Specialist Granite",
-              "name": "SDD",
+              "id": "0x14fac0000005453",
+              "label": "Avon",
+              "name": "Handcrafted Frozen Ball",
             },
             "sourceClassInfo": Object {
-              "id": "0xd390000000dd80",
-              "label": "heuristic",
-              "name": "artificial intelligence",
+              "id": "0xdd800000001170",
+              "label": "black",
+              "name": "Ghana",
             },
             "targetClassInfo": Object {
-              "id": "0x104810000008663",
-              "label": "interfaces",
-              "name": "index",
+              "id": "0x8663000000aea5",
+              "label": "hardware Nevada",
+              "name": "Dobra",
             },
           },
         ],
       ],
       "selectClassInfo": Object {
-        "id": "0x41e00000005d5b",
-        "label": "Gloves",
-        "name": "District",
+        "id": "0x15d2600000041e0",
+        "label": "methodology",
+        "name": "Burg",
       },
     },
   ],
@@ -361,28 +361,34 @@ exports[`ECPresentationManager addon results conversion to ECPresentation object
 Array [
   Object {
     "children": Array [],
-    "index": 634,
-    "isMarked": true,
+    "index": 476,
+    "isMarked": false,
     "node": Object {
-      "hasChildren": false,
-      "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
-      "isChecked": false,
+      "backColor": "rgb(
+    129,
+    133,
+    193
+  )",
+      "description": "Est id autem et assumenda sint qui dolorem.",
+      "hasChildren": true,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": true,
       "isEditable": false,
-      "isExpanded": true,
+      "isExpanded": false,
       "isSelectable": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "throughput",
-          "id": "0x17ae30000017e71",
+          "className": "Virginia",
+          "id": "0x907e0000003565",
         },
         "pathFromRoot": Array [
-          "0ac963ce-ddc4-488c-864d-6bb70fbea7cb",
-          "ca893c40-6773-462d-af5a-0c6206c3a8d4",
+          "4cda564e-72d1-4f91-af08-3a22e014a12b",
+          "bd837548-da20-4fd9-ae67-d4afa0bd65ac",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Kyat West Virginia",
+      "label": "Virginia Markets",
     },
   },
 ]
@@ -392,35 +398,34 @@ exports[`ECPresentationManager addon results conversion to ECPresentation object
 Array [
   Object {
     "children": Array [],
-    "index": 481,
-    "isMarked": false,
+    "index": 525,
+    "isMarked": true,
     "node": Object {
       "backColor": "rgb(
-    56,
-    207,
-    36
+    216,
+    24,
+    79
   )",
-      "description": "Nesciunt dolor enim ipsum officiis voluptates eaque a.",
-      "foreColor": "#21F749",
+      "foreColor": "#C7B408",
       "hasChildren": true,
       "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
-      "isChecked": false,
-      "isEditable": false,
-      "isExpanded": true,
+      "isCheckboxVisible": true,
+      "isChecked": true,
+      "isEditable": true,
+      "isExpanded": false,
       "isSelectable": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "Honduras",
-          "id": "0x29e9000000e470",
+          "className": "Wooden",
+          "id": "0x96850000001e17",
         },
         "pathFromRoot": Array [
-          "ef79d4c7-b408-45d1-897a-94a388c42752",
-          "ef51cc8e-90ad-4460-aa8f-7aa6d39cf5a1",
+          "13de95d1-3ee4-4d0e-bb74-b87b612f22a1",
+          "fbd3c2a4-b2c6-4aa5-9dcb-41b4bb04d8f6",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "transition",
+      "label": "solid state JBOD Place",
     },
   },
 ]
@@ -466,8 +471,8 @@ Array [
     "isSelectable": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "Legacy",
-        "id": "0xde620000016aad",
+        "className": "focus group",
+        "id": "0x13c400000006cf7",
       },
       "pathFromRoot": Array [
         "p1",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-controls",
+      "comment": "React to changed request options format.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-controls",
+  "email": "grigas.petraitis@bentley.com"
+}

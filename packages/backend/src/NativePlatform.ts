@@ -27,7 +27,6 @@ export interface NativePlatformDefinition extends IDisposable {
   handleRequest(db: any, options: string): Promise<string>;
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
-  setActiveLocale(locale: string): void;
   getImodelAddon(imodel: IModelDb): any;
   addRuleSet(ruleSetJson: string): void;
   removeRuleSet(ruleSetId: string): void;
@@ -82,9 +81,6 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     }
     public setupLocaleDirectories(directories: string[]): void {
       this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));
-    }
-    public setActiveLocale(locale: string): void {
-      this.handleVoidResult(this._nativeAddon.setActiveLocale(locale));
     }
     public addRuleSet(ruleSetJson: string): void {
       this.handleVoidResult(this._nativeAddon.addRuleSet(ruleSetJson));

@@ -7,7 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { ECPresentationError } from "@common/index";
 import { ECPresentation } from "@bentley/ecpresentation-backend";
-import { NodeAddonDefinition as PresentationManagerNodeAddonDefinition } from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
+import { NativePlatformDefinition } from "@bentley/ecpresentation-backend/lib/NativePlatform";
 
 before(() => {
   initialize();
@@ -22,7 +22,7 @@ describe("ECPresentationManager", () => {
   describe("calling default addon implementation", () => {
 
     let imodel: IModelDb;
-    let nativePlatform: PresentationManagerNodeAddonDefinition;
+    let nativePlatform: NativePlatformDefinition;
     beforeEach(async () => {
       nativePlatform = ECPresentation.manager.getNativePlatform();
       const testIModelName: string = "assets/datasets/1K.bim";

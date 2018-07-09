@@ -5,8 +5,11 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { KeySet, SettingValueTypes } from "@src/index";
-import { ECPresentationRpcInterface } from "@src/index";
+import {
+  ECPresentationRpcInterface,
+  KeySet, SettingValueTypes,
+  Paged, HierarchyRequestOptions, ContentRequestOptions,
+} from "@src/index";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "@helpers/random";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 
@@ -40,12 +43,6 @@ describe("ECPresentationRpcInterface", () => {
       rpcInterface.forward = mock.object;
     });
 
-    it("forwards setActiveLocale call", async () => {
-      const locale = faker.locale;
-      await rpcInterface.setActiveLocale(locale);
-      mock.verify((x) => x(locale), moq.Times.once());
-    });
-
     it("forwards addRuleSet call", async () => {
       const ruleset = { ruleSetId: "" };
       await rpcInterface.addRuleSet(ruleset);
@@ -63,61 +60,101 @@ describe("ECPresentationRpcInterface", () => {
     });
 
     it("forwards getRootNodes call", async () => {
-      await rpcInterface.getRootNodes(testData.imodelToken, undefined, {});
-      mock.verify((x) => x(moq.It.isAny(), undefined, {}), moq.Times.once());
+      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
+      await rpcInterface.getRootNodes(options);
+      mock.verify((x) => x(options as any), moq.Times.once());
     });
 
     it("forwards getRootNodesCount call", async () => {
-      await rpcInterface.getRootNodesCount(testData.imodelToken, {});
-      mock.verify((x) => x(moq.It.isAny(), {}), moq.Times.once());
+      const options: HierarchyRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
+      await rpcInterface.getRootNodesCount(options);
+      mock.verify((x) => x(options as any), moq.Times.once());
     });
 
     it("forwards getChildren call", async () => {
+      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
       const parentKey = createRandomECInstanceNodeKey();
-      await rpcInterface.getChildren(testData.imodelToken, parentKey, undefined, {});
-      mock.verify((x) => x(moq.It.isAny(), parentKey, undefined, {}), moq.Times.once());
+      await rpcInterface.getChildren(options, parentKey);
+      mock.verify((x) => x(options as any, parentKey), moq.Times.once());
     });
 
     it("forwards getChildrenCount call", async () => {
+      const options: HierarchyRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
       const parentKey = createRandomECInstanceNodeKey();
-      await rpcInterface.getChildrenCount(testData.imodelToken, parentKey, {});
-      mock.verify((x) => x(moq.It.isAny(), parentKey, {}), moq.Times.once());
+      await rpcInterface.getChildrenCount(options, parentKey);
+      mock.verify((x) => x(options as any, parentKey), moq.Times.once());
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      await rpcInterface.getFilteredNodePaths(testData.imodelToken, "filter", { RulesetId: "id" });
-      mock.verify((x) => x(moq.It.isAny(), "filter", { RulesetId: "id" }), moq.Times.once());
+      const options: HierarchyRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
+      await rpcInterface.getFilteredNodePaths(options, "filter");
+      mock.verify((x) => x(options as any, "filter"), moq.Times.once());
     });
 
     it("forwards getNodePaths call", async () => {
+      const options: HierarchyRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
-      await rpcInterface.getNodePaths(testData.imodelToken, keys, 1, { RulesetId: "id" });
-      mock.verify((x) => x(moq.It.isAny(), keys, 1, { RulesetId: "id" }), moq.Times.once());
+      await rpcInterface.getNodePaths(options, keys, 1);
+      mock.verify((x) => x(options as any, keys, 1), moq.Times.once());
     });
 
     it("forwards getContentDescriptor call", async () => {
-      await rpcInterface.getContentDescriptor(testData.imodelToken, "test", new KeySet(), undefined, {});
-      mock.verify((x) => x(moq.It.isAny(), "test", moq.It.is((a) => a instanceof KeySet), undefined, {}), moq.Times.once());
+      const options: ContentRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
+      await rpcInterface.getContentDescriptor(options, "test", new KeySet(), undefined);
+      mock.verify((x) => x(options as any, "test", moq.It.is((a) => a instanceof KeySet), undefined), moq.Times.once());
     });
 
     it("forwards getContentSetSize call", async () => {
+      const options: ContentRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
       const descriptor = createRandomDescriptor();
-      await rpcInterface.getContentSetSize(testData.imodelToken, descriptor, new KeySet(), {});
-      mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), {}), moq.Times.once());
+      await rpcInterface.getContentSetSize(options, descriptor, new KeySet());
+      mock.verify((x) => x(options as any, descriptor, moq.It.is((a) => a instanceof KeySet)), moq.Times.once());
     });
 
     it("forwards getContent call", async () => {
+      const options: Paged<ContentRequestOptions<IModelToken>> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
       const descriptor = createRandomDescriptor();
-      await rpcInterface.getContent(testData.imodelToken, descriptor, new KeySet(), undefined, {});
-      mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), undefined, {}), moq.Times.once());
+      await rpcInterface.getContent(options, descriptor, new KeySet());
+      mock.verify((x) => x(options as any, descriptor, moq.It.is((a) => a instanceof KeySet), undefined), moq.Times.once());
     });
 
     it("forwards getDistinctValues call", async () => {
+      const options: ContentRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: faker.random.word(),
+      };
       const descriptor = createRandomDescriptor();
       const fieldName = faker.random.word();
       const maximumValueCount = faker.random.number();
-      await rpcInterface.getDistinctValues(testData.imodelToken, descriptor, new KeySet(), fieldName, {}, maximumValueCount);
-      mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), fieldName, {}, maximumValueCount), moq.Times.once());
+      await rpcInterface.getDistinctValues(options, descriptor, new KeySet(), fieldName, maximumValueCount);
+      mock.verify((x) => x(options as any, descriptor, moq.It.is((a) => a instanceof KeySet), fieldName, maximumValueCount), moq.Times.once());
     });
 
     it("forwards setUserSettingValue call", async () => {

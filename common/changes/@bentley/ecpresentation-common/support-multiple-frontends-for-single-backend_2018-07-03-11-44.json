@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Change the format of request options.",
+      "type": "minor"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Active locale is now a property of request options rather than presentation manager / RPC interface.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

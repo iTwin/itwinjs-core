@@ -4,11 +4,12 @@
 /** @module Core */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PageOptions, InstanceKey, NodePathElement } from "@bentley/ecpresentation-common";
-import { Node, NodeKey } from "@bentley/ecpresentation-common";
-import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
-import { ECPresentationManager as ECPInterface, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
-import { PresentationRuleSet } from "@bentley/ecpresentation-common";
+import {
+  ECPresentationManager as ECPInterface, ECPresentationRpcInterface,
+  HierarchyRequestOptions, Node, NodeKey, NodePathElement,
+  ContentRequestOptions, Content, Descriptor, SelectionInfo,
+  Paged, RequestOptions, KeySet, InstanceKey, PresentationRuleSet,
+} from "@bentley/ecpresentation-common";
 import UserSettingsManager from "./UserSettingsManager";
 
 /**
@@ -28,8 +29,8 @@ export interface Props {
  */
 export default class ECPresentationManager implements ECPInterface<IModelConnection> {
 
-  private _activeLocale?: string;
   private _settings: UserSettingsManager;
+  public activeLocale: string | undefined;
 
   private constructor(props?: Props) {
     if (props)
@@ -49,21 +50,13 @@ export default class ECPresentationManager implements ECPInterface<IModelConnect
     return new ECPresentationManager(props);
   }
 
-  /**
-   * Get currently active locale
-   */
-  public get activeLocale(): string | undefined {
-    return this._activeLocale;
-  }
-
-  /**
-   * Set active locale
-   */
-  public set activeLocale(locale: string | undefined) {
-    if (this._activeLocale !== locale) {
-      this._activeLocale = locale;
-      ECPresentationRpcInterface.getClient().setActiveLocale(locale);
-    }
+  private toIModelTokenOptions<TOptions extends RequestOptions<IModelConnection>>(options: TOptions) {
+    // 1. put default `locale`
+    // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
+    // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options`
+    return Object.assign({}, { locale: this.activeLocale }, options, {
+      imodel: options.imodel.iModelToken,
+    });
   }
 
   /**
@@ -87,49 +80,49 @@ export default class ECPresentationManager implements ECPInterface<IModelConnect
     return await ECPresentationRpcInterface.getClient().clearRuleSets();
   }
 
-  public async getRootNodes(imodel: IModelConnection, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await ECPresentationRpcInterface.getClient().getRootNodes(imodel.iModelToken, pageOptions, options);
+  public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>): Promise<ReadonlyArray<Readonly<Node>>> {
+    return await ECPresentationRpcInterface.getClient().getRootNodes(this.toIModelTokenOptions(requestOptions));
   }
 
-  public async getRootNodesCount(imodel: IModelConnection, options: object): Promise<number> {
-    return await ECPresentationRpcInterface.getClient().getRootNodesCount(imodel.iModelToken, options);
+  public async getRootNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<number> {
+    return await ECPresentationRpcInterface.getClient().getRootNodesCount(this.toIModelTokenOptions(requestOptions));
   }
 
-  public async getChildren(imodel: IModelConnection, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await ECPresentationRpcInterface.getClient().getChildren(imodel.iModelToken, parentKey, pageOptions, options);
+  public async getChildren(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+    return await ECPresentationRpcInterface.getClient().getChildren(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
-  public async getChildrenCount(imodel: IModelConnection, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
-    return await ECPresentationRpcInterface.getClient().getChildrenCount(imodel.iModelToken, parentKey, options);
+  public async getChildrenCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: Readonly<NodeKey>): Promise<number> {
+    return await ECPresentationRpcInterface.getClient().getChildrenCount(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
-  public async getNodePaths(imodel: IModelConnection, paths: InstanceKey[][], markedIndex: number, options: object): Promise<NodePathElement[]> {
-    return await ECPresentationRpcInterface.getClient().getNodePaths(imodel.iModelToken, paths, markedIndex, options);
+  public async getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+    return await ECPresentationRpcInterface.getClient().getNodePaths(this.toIModelTokenOptions(requestOptions), paths, markedIndex);
   }
 
-  public async getFilteredNodePaths(imodel: IModelConnection, filterText: string, options: object): Promise<NodePathElement[]> {
-    return await ECPresentationRpcInterface.getClient().getFilteredNodePaths(imodel.iModelToken, filterText, options);
+  public async getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]> {
+    return await ECPresentationRpcInterface.getClient().getFilteredNodePaths(this.toIModelTokenOptions(requestOptions), filterText);
   }
 
-  public async getContentDescriptor(imodel: IModelConnection, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
-    const descriptor = await ECPresentationRpcInterface.getClient().getContentDescriptor(imodel.iModelToken, displayType, keys, selection, options);
+  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+    const descriptor = await ECPresentationRpcInterface.getClient().getContentDescriptor(this.toIModelTokenOptions(requestOptions), displayType, keys, selection);
     if (descriptor)
       descriptor.rebuildParentship();
     return descriptor;
   }
 
-  public async getContentSetSize(imodel: IModelConnection, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
-    return await ECPresentationRpcInterface.getClient().getContentSetSize(imodel.iModelToken, descriptor.createStrippedDescriptor(), keys, options);
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+    return await ECPresentationRpcInterface.getClient().getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
   }
 
-  public async getContent(imodel: IModelConnection, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
-    const content = await ECPresentationRpcInterface.getClient().getContent(imodel.iModelToken, descriptor.createStrippedDescriptor(), keys, pageOptions, options);
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+    const content = await ECPresentationRpcInterface.getClient().getContent(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
     content.descriptor.rebuildParentship();
     return content;
   }
 
-  public async getDistinctValues(imodel: IModelConnection, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, options: object, maximumValueCount: number = 0): Promise<string[]> {
-    return await ECPresentationRpcInterface.getClient().getDistinctValues(imodel.iModelToken, descriptor.createStrippedDescriptor(), keys, fieldName, options, maximumValueCount);
+  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+    return await ECPresentationRpcInterface.getClient().getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
   }
 
 }

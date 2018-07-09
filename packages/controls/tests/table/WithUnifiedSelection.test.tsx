@@ -92,7 +92,7 @@ describe("Table withUnifiedSelection", () => {
 
     const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
     presentationManagerMock
-      .setup((x) => x.getContentDescriptor(imodelMock.object, moq.It.isAnyString(), moq.It.isAny(), undefined, moq.It.isAny()))
+      .setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()))
       .returns(async () => undefined);
     ECPresentation.presentation = presentationManagerMock.object;
 
@@ -155,7 +155,7 @@ describe("Table withUnifiedSelection", () => {
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />, { disableLifecycleMethods: true });
-    component.instance().componentDidUpdate!(component.props(), component.state());
+    component.instance().componentDidUpdate!(component.props(), component.state()!);
   });
 
   describe("selection handling", () => {

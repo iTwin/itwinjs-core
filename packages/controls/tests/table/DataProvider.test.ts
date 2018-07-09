@@ -89,7 +89,7 @@ describe("TableDataProvider", () => {
 
     it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", () => {
       const onColumnsChangedSpy = spies.spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor());
 
       provider.filterExpression = faker.random.words();
@@ -150,7 +150,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
 
       await provider.sort(0, SortDirection.Descending);
@@ -214,14 +214,14 @@ describe("TableDataProvider", () => {
     it("throws when trying to sort by invalid column", async () => {
       const source = createRandomDescriptor();
       source.fields = [];
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(ECPresentationError);
     });
 
     it("invalidates descriptor configuration and content", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
@@ -231,7 +231,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
@@ -260,7 +260,7 @@ describe("TableDataProvider", () => {
 
     it("returns valid sorting column", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       const sortingColumn = await provider.sortColumn;
@@ -342,8 +342,8 @@ describe("TableDataProvider", () => {
 
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       (provider as any).getContent = getContentMock.object;
-      getContentMock.setup((x) => x({ pageStart: 0, pageSize: 2 })).returns(() => contentResolver[0].promise).verifiable(moq.Times.once());
-      getContentMock.setup((x) => x({ pageStart: 2, pageSize: 2 })).returns(() => contentResolver[1].promise).verifiable(moq.Times.once());
+      getContentMock.setup((x) => x({ start: 0, size: 2 })).returns(() => contentResolver[0].promise).verifiable(moq.Times.once());
+      getContentMock.setup((x) => x({ start: 2, size: 2 })).returns(() => contentResolver[1].promise).verifiable(moq.Times.once());
 
       // request rows without await to make sure paging is handled properly (new
       // pages are not created while other pages for the same position are being loaded)

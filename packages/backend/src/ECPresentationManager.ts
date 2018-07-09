@@ -51,8 +51,8 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
 
   private _addon?: NativePlatformDefinition;
   private _settings: UserSettingsManager;
-  private _activeLocale?: string;
   private _isDisposed: boolean;
+  public activeLocale: string | undefined;
 
   /**
    * Creates an instance of ECPresentationManager.
@@ -108,23 +108,6 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
   }
 
   /**
-   * Get currently active locale
-   */
-  public get activeLocale(): string | undefined {
-    return this._activeLocale;
-  }
-
-  /**
-   * Set active locale
-   */
-  public set activeLocale(locale: string | undefined) {
-    if (this.activeLocale !== locale) {
-      this._activeLocale = locale;
-      this.getNativePlatform().setActiveLocale(locale ? locale : "");
-    }
-  }
-
-  /**
    * Register a presentation rule set.
    */
   public async addRuleSet(ruleSet: PresentationRuleSet): Promise<void> {
@@ -145,86 +128,78 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.getNativePlatform().clearRuleSets();
   }
 
-  public async getRootNodes(imodel: IModelDb, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
-      pageOptions,
-      options,
-    });
-    return this.request<Node[]>(imodel, params, nodesListReviver);
+  public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb>>): Promise<ReadonlyArray<Readonly<Node>>> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
+    return this.request<Node[]>(requestOptions.imodel, params, nodesListReviver);
   }
 
-  public async getRootNodesCount(imodel: IModelDb, options: object): Promise<number> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodesCount, {
-      options,
-    });
-    return this.request<number>(imodel, params);
+  public async getRootNodesCount(requestOptions: HierarchyRequestOptions<IModelDb>): Promise<number> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, requestOptions);
+    return this.request<number>(requestOptions.imodel, params);
   }
 
-  public async getChildren(imodel: IModelDb, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
+  public async getChildren(requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, {
       nodeKey: parentKey,
-      pageOptions,
-      options,
     });
-    return this.request<Node[]>(imodel, params, nodesListReviver);
+    return this.request<Node[]>(requestOptions.imodel, params, nodesListReviver);
   }
 
-  public async getChildrenCount(imodel: IModelDb, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
+  public async getChildrenCount(requestOptions: HierarchyRequestOptions<IModelDb>, parentKey: Readonly<NodeKey>): Promise<number> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, requestOptions, {
       nodeKey: parentKey,
-      options,
     });
-    return this.request<number>(imodel, params);
+    return this.request<number>(requestOptions.imodel, params);
   }
 
-  public getNodePaths(imodel: IModelDb, paths: InstanceKey[][], markedIndex: number, options: object): Promise<NodePathElement[]> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetNodePaths, { paths, markedIndex, options });
-    return this.request<NodePathElement[]>(imodel, params, nodePathElementReviver);
+  public getNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, requestOptions, {
+      paths,
+      markedIndex,
+    });
+    return this.request<NodePathElement[]>(requestOptions.imodel, params, nodePathElementReviver);
   }
 
-  public getFilteredNodePaths(imodel: IModelDb, filterText: string, options: object): Promise<NodePathElement[]> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetFilteredNodePaths, { filterText, options });
-    return this.request<NodePathElement[]>(imodel, params, nodePathElementReviver);
+  public getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, requestOptions, {
+      filterText,
+    });
+    return this.request<NodePathElement[]>(requestOptions.imodel, params, nodePathElementReviver);
   }
 
-  public async getContentDescriptor(imodel: IModelDb, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
+  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, requestOptions, {
       displayType,
       keys,
       selection,
-      options,
     });
-    return this.request<Descriptor | undefined>(imodel, params, Descriptor.reviver);
+    return this.request<Descriptor | undefined>(requestOptions.imodel, params, Descriptor.reviver);
   }
 
-  public async getContentSetSize(imodel: IModelDb, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetContentSetSize, {
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
       keys,
       descriptorOverrides: descriptor.createDescriptorOverrides(),
-      options,
     });
-    return this.request<number>(imodel, params);
+    return this.request<number>(requestOptions.imodel, params);
   }
 
-  public async getContent(imodel: IModelDb, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
       keys,
       descriptorOverrides: descriptor.createDescriptorOverrides(),
-      pageOptions,
-      options,
     });
-    return this.request<Content>(imodel, params, Content.reviver);
+    return this.request<Content>(requestOptions.imodel, params, Content.reviver);
   }
 
-  public async getDistinctValues(imodel: IModelDb, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, options: object, maximumValueCount: number = 0): Promise<string[]> {
-    const params = this.createRequestParams(NodeAddonRequestTypes.GetDistinctValues, {
+  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, requestOptions, {
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       keys,
       fieldName,
       maximumValueCount,
-      options,
     });
-    return this.request<string[]>(imodel, params);
+    return this.request<string[]>(requestOptions.imodel, params);
   }
 
   private async request<T>(imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
@@ -235,10 +210,15 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return JSON.parse(serializedResponse, reviver);
   }
 
-  private createRequestParams(requestId: string, requestParams: object): string {
+  private createRequestParams(requestId: string, genericOptions: Paged<RequestOptions<IModelDb>>, additionalOptions?: object): string {
+    const { imodel, locale, ...genericOptionsStripped } = genericOptions;
     const request = {
       requestId,
-      params: requestParams,
+      params: {
+        locale: locale ? locale : this.activeLocale,
+        ...genericOptionsStripped,
+        ...additionalOptions,
+      },
     };
     return JSON.stringify(request);
   }

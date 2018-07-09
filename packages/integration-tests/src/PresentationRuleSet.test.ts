@@ -50,7 +50,7 @@ describe("PresentationRuleSet", async () => {
 
   it("creates ruleset from Json and gets rootNode from frontend", async () => {
     await ECPresentation.presentation.addRuleSet(presentationRuleSet);
-    const rootNodes = await ECPresentation.presentation.getRootNodes(imodel, undefined, { RulesetId: presentationRuleSet.ruleSetId });
+    const rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: presentationRuleSet.ruleSetId });
 
     expect(rootNodes.length).to.be.equal(1);
     expect(rootNodes[0].label).to.be.equal(customNodeSpecification.label);
@@ -60,21 +60,21 @@ describe("PresentationRuleSet", async () => {
 
   it("removes ruleset from frontend", async () => {
     await ECPresentation.presentation.addRuleSet(presentationRuleSet);
-    let rootNodes = await ECPresentation.presentation.getRootNodes(imodel, undefined, { RulesetId: presentationRuleSet.ruleSetId });
+    let rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: presentationRuleSet.ruleSetId });
     expect(rootNodes.length).to.be.equal(1);
 
     await ECPresentation.presentation.removeRuleSet(presentationRuleSet.ruleSetId);
-    rootNodes = await ECPresentation.presentation.getRootNodes(imodel, undefined, { RulesetId: presentationRuleSet.ruleSetId });
+    rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: presentationRuleSet.ruleSetId });
     expect(rootNodes.length).to.be.equal(0);
   });
 
   it("clears rulesets from frontend", async () => {
     await ECPresentation.presentation.addRuleSet(presentationRuleSet);
-    let rootNodes = await ECPresentation.presentation.getRootNodes(imodel, undefined, { RulesetId: presentationRuleSet.ruleSetId });
+    let rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: presentationRuleSet.ruleSetId });
     expect(rootNodes.length).to.be.equal(1);
 
     await ECPresentation.presentation.clearRuleSets();
-    rootNodes = await ECPresentation.presentation.getRootNodes(imodel, undefined, { RulesetId: presentationRuleSet.ruleSetId });
+    rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: presentationRuleSet.ruleSetId });
     expect(rootNodes.length).to.be.equal(0);
   });
 
