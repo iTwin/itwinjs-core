@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
+import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import ECClass, { MutableClass } from "../../source/Metadata/Class";
 import EntityClass, { MutableEntityClass } from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
@@ -41,6 +41,29 @@ describe("EntityClass", () => {
       expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+    });
+
+    it("from mixins synchronously", () => {
+      const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
+      const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
+
+      const mixin = (schema as MutableSchema).createMixinClassSync("TestMixin");
+      const mixinPrimProp = (mixin as ECClass as MutableClass).createPrimitivePropertySync("MixinPrimProp");
+
+      const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
+      (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
+      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      (entityClass as MutableEntityClass).addMixin(mixin);
+
+      expect(entityClass.getPropertySync("MixinPrimProp")).to.be.undefined;
+      expect(entityClass.getPropertySync("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(entityClass.getInheritedPropertySync("MixinPrimProp")).equal(mixinPrimProp);
+
+      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
+      expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
     });
   });
 

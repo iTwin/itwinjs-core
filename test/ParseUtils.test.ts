@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import { ECClassModifier, CustomAttributeContainerType, parseClassModifier,
          PrimitiveType, parsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
          RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, StrengthDirection,
@@ -193,6 +193,6 @@ describe("ECObjectsError ", () => {
     expect(new ECObjectsError(ECObjectsStatus.InvalidType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidType: msg");
     expect(new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "msg").toDebugString()).to.equal("ECObjectsStatus.MissingSchemaUrl: msg");
     expect(new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.UnableToLocateSchema: msg");
-    expect(() => new ECObjectsError(-9999).toDebugString()).to.throw(Error);
+    assert.throw(() => new ECObjectsError(-9999).toDebugString(), "Programmer Error");
   });
 });

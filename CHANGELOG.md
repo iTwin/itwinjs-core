@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - EC3.2 enables references to Units and Formats which are now defined within the Schema.
 - Added EC3.2 support to ECEnumerator.
 
+### Fixed
+- Getting inherited properties that are in mixins works in synchronous code, too. There were some missing sync methods.
+
+### Removed
+- Removed SchemaReadHelper.to() and SchemaReadHelper.toSync() as public callers should go through Schema.fromJson() instead. SchemaReadHelper can still be constructed publicly to mimic the to() methods.
+- Removed some unused internal code
+
 ## [0.6.1]  -  2018-06-21
 ### Fixed
 

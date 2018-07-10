@@ -118,17 +118,6 @@ export abstract class SchemaFileLocater {
         this.searchPaths.push(schemaPath);
   }
 
-  /**
-   * Reads the schema file at the given location and returns the file buffer.
-   * @param schemaPath The path to the schema to load
-   */
-  public getSchemaFile(schemaPath: string): string | undefined {
-    // If the file is not there, return an undefined
-    if (!fs.existsSync(schemaPath))
-      return undefined;
-    else return fs.readFileSync(schemaPath, "utf-8");
-  }
-
   protected abstract getSchemaKey(data: string): SchemaKey;
 
   /**

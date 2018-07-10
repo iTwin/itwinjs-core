@@ -36,6 +36,21 @@ describe("ECClass", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
+    it("inherited properties from base class synchronously", () => {
+      const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
+      const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
+
+      const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
+      (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
+      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+
+      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
+      expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
+    });
+
     it("case-insensitive search", async () => {
       const entityClass = new EntityClass(schema, "TestClass");
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
@@ -354,33 +369,34 @@ describe("ECClass", () => {
   });
 
   describe("getAllBaseClasses", () => {
+    // This is the class hierarchy used in this test. The numbers indicate override priority,
+    // i.e., the order that they should be returned by testClass.getAllBaseClasses():
+    //
+    //  2[A]  3(B)  5(C)  7(D)          [] := EntityClass
+    //     \   /     /     /            () := Mixin
+    //    1[ G ]  4(E)  6(F)
+    //        \    /     /
+    //        [    H    ]
+    //
+    const testSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "TestSchema",
+      version: "01.00.00",
+      alias: "ts",
+      items: {
+        A: { schemaItemType: "EntityClass" },
+        B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+        C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+        D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+        E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
+        F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+        G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
+        H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
+      },
+    };
+    const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
+
     it("should correctly traverse a complex inheritance hierarchy", async () => {
-      // This is the class hierarchy used in this test. The numbers indicate override priority,
-      // i.e., the order that they should be returned by testClass.getAllBaseClasses():
-      //
-      //  2[A]  3(B)  5(C)  7(D)          [] := EntityClass
-      //     \   /     /     /            () := Mixin
-      //    1[ G ]  4(E)  6(F)
-      //        \    /     /
-      //        [    H    ]
-      //
-      const testSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "01.00.00",
-        alias: "ts",
-        items: {
-          A: { schemaItemType: "EntityClass" },
-          B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-          C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-          D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-          E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
-          F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
-          G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
-          H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
-        },
-      };
-      const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
       const actualNames: string[] = [];
 
       schema = await Schema.fromJson(testSchemaJson);
@@ -393,6 +409,93 @@ describe("ECClass", () => {
       }
 
       expect(actualNames).to.eql(expectedNames);
+    });
+
+    it("should correctly traverse a complex inheritance hierarchy synchronously", () => {
+      schema = Schema.fromJsonSync(testSchemaJson);
+      expect(schema).to.exist;
+      const testClass = schema.getClassSync("H");
+      expect(testClass).to.exist;
+
+      const syncActualNames: string[] = [];
+      for (const baseClass of testClass!.getAllBaseClassesSync()) {
+        syncActualNames.push(baseClass.name);
+      }
+      expect(syncActualNames).to.eql(expectedNames);
+    });
+  });
+
+  describe("NavProperty on CustomAttributeClass", () => {
+    function createSchemaJsonWithItems(itemsJson: any): any {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          ...itemsJson,
+        },
+      };
+    }
+    function createSchemaJson(nestedJson: any): any {
+      return createSchemaJsonWithItems({
+        TestCA: {
+          schemaItemType: "CustomAttributeClass",
+          ...nestedJson,
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+        },
+        NavPropRelationship: {
+          schemaItemType: "RelationshipClass",
+          strength: "Embedding",
+          strengthDirection: "Forward",
+          modifier: "Sealed",
+          source: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Source RoleLabel",
+            constraintClasses: [ "TestSchema.TestEntity" ],
+          },
+          target: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Target RoleLabel",
+            constraintClasses: [ "TestSchema.TestEntity" ],
+          },
+        },
+      });
+    }
+
+    it("should throw", async () => {
+      const json = createSchemaJson({
+        appliesTo: "Any",
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+          ],
+        });
+
+      await assert.isRejected(Schema.fromJson(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
+    });
+
+    it("should throw synchronously", () => {
+      const json = createSchemaJson({
+        appliesTo: "Any",
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+          ],
+        });
+
+      assert.throw(() => Schema.fromJsonSync(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
     });
   });
 });

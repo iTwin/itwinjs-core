@@ -39,28 +39,6 @@ export default class SchemaReadHelper {
   }
 
   /**
-   * Populates the given schema object with the information presented in the schemaJson provided. If present, uses the provided context to resolve any references within the schema.
-   * Otherwise, those references will be unresolved.
-   * @param schema The schema object to populate. Must be an extension of the DeserializableSchema.
-   * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
-   */
-  public static to<T extends Schema>(schema: T, schemaJson: object | string, visitor?: SchemaDeserializationVisitor): Promise<T> {
-    const helper = new SchemaReadHelper(undefined, visitor);
-    return helper.readSchema(schema, schemaJson);
-  }
-
-  /**
-   * Populates the given schema object with the information presented in the schemaJson provided. If present, uses the provided context to resolve any references within the schema.
-   * Otherwise, those references will be unresolved.
-   * @param schema The schema object to populate. Must be an extension of the DeserializableSchema.
-   * @param schemaJson An object, or string representing that object, that follows the SchemaJson format.
-   */
-  public static toSync<T extends Schema>(schema: T, schemaJson: object | string, visitor?: SchemaDeserializationVisitor): T {
-    const helper = new SchemaReadHelper(undefined, visitor);
-    return helper.readSchemaSync(schema, schemaJson);
-  }
-
-  /**
    * Populates the given Schema with the JSON.
    * @param schema The Schema to populate
    * @param schemaJson The JSON to use to populate the Schema.

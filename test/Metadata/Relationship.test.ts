@@ -169,6 +169,34 @@ describe("RelationshipClass", () => {
       }
     });
 
+    it("should succeed with navigation property synchronously", () => {
+      const json = createSchemaJson({
+        source: {},
+        target: {},
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.TestRelationship",
+            direction: "backward",
+          },
+        ],
+      });
+      const schema = Schema.fromJsonSync(json);
+      assert.isDefined(schema);
+
+      const relClass = schema.getClassSync<RelationshipClass>("TestRelationship");
+      assert.isDefined(relClass);
+
+      const navProp = relClass!.getPropertySync("testNavProp");
+      assert.isDefined(navProp);
+      assert.isTrue(navProp!.isNavigation());
+      if (navProp && navProp.isNavigation()) {
+        assert.isDefined(navProp.relationshipClass);
+        assert.isTrue(navProp.getRelationshipClassSync() === relClass);
+      }
+    });
+
     it("should throw for missing source constraint", async () => {
       const json = createSchemaJson({
         target: {},
