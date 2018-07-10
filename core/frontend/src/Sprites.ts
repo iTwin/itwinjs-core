@@ -40,6 +40,8 @@ export class Sprite implements IDisposable {
     imodel.loadNativeAsset(name).then((val: Uint8Array) => {
       const src = new ImageSource(val, ImageSourceFormat.Png);
       const handle = TextureHandle.createForImageSource(32, 32, src);
+      if (handle)
+        handle;
       // this.texture = val;
     }).catch((_e) => {
     });
