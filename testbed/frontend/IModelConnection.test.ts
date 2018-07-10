@@ -156,7 +156,7 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.childIds.length).to.equal(0); // this is a leaf tile.
   });
 
-  it.only("Load native assets", async () => {
+  it("Load native assets", async () => {
     const sprite = await iModel.loadNativeAsset("decorators/dgncore/SnapNone.png");
     assert.isDefined(sprite);
   });
