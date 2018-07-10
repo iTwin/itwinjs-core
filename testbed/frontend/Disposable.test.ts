@@ -121,9 +121,12 @@ describe("Disposal of WebGL Resources", () => {
     document.body.appendChild(canvas!);
 
     WebGLTestContext.startup();
+
+    await TestData.load();
     imodel0 = await IModelConnection.openStandalone(iModelLocation);
     imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
+
   after(async () => {
     await imodel0.closeStandalone();
     await imodel1.close(TestData.accessToken);
