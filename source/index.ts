@@ -5,6 +5,7 @@ export * from "./Interfaces";
 export * from "./DelayedPromise";
 export * from "./Exception";
 export * from "./PropertyTypes";
+export * from "./utils/FormatEnums";
 export { default as Schema } from "./Metadata/Schema";
 export { default as SchemaItem } from "./Metadata/SchemaItem";
 export { default as ECClass, StructClass } from "./Metadata/Class";
@@ -15,7 +16,7 @@ export { default as CustomAttributeClass } from "./Metadata/CustomAttributeClass
 export { default as Enumeration, Enumerator } from "./Metadata/Enumeration";
 export { default as KindOfQuantity } from "./Metadata/KindOfQuantity";
 export { default as Constant } from "./Metadata/Constant";
-export { default as Format, Composite } from "./Metadata/Format";
+export { default as Format } from "./Metadata/Format";
 export { default as InvertedUnit } from "./Metadata/InvertedUnit";
 export { default as Phenomenon } from "./Metadata/Phenomenon";
 export { default as Unit } from "./Metadata/Unit";

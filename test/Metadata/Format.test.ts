@@ -5,7 +5,8 @@
 import { assert, expect } from "chai";
 
 import Schema from "../../source/Metadata/Schema";
-import Format, { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "../../source/Metadata/Format";
+import Format from "../../source/Metadata/Format";
+import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "../../source/utils/FormatEnums";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
 import Unit from "../../source/Metadata/Unit";
