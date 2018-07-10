@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcInvocation } from "./RpcInvocation";
@@ -13,6 +13,7 @@ import { RpcMarshaling } from "./RpcMarshaling";
 import { OPERATION, CURRENT_REQUEST } from "./RpcRegistry";
 import { aggregateLoad, RpcNotFoundResponse } from "./RpcControl";
 import { IModelToken } from "../../IModel";
+import { IModelError } from "../../IModelError";
 
 /** Supplies an IModelToken for an RPC request. */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
@@ -197,7 +198,7 @@ export class RpcRequest<TResponse = any> {
 
     this._lastSubmitted = new Date().getTime();
 
-    if (this.status === RpcRequestStatus.Created) {
+    if (this.status === RpcRequestStatus.Created || this.status === RpcRequestStatus.NotFound) {
       this.setStatus(RpcRequestStatus.Submitted);
     }
 
@@ -273,7 +274,16 @@ export class RpcRequest<TResponse = any> {
 
       case RpcRequestStatus.NotFound: {
         const response = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-        RpcRequest.notFoundHandlers.raiseEvent(this, response, () => this.submit(), (reason: any) => this.reject(reason));
+        this.setStatus(status);
+
+        let resubmitted = false;
+        RpcRequest.notFoundHandlers.raiseEvent(this, response, () => {
+          if (resubmitted)
+            throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
+
+          resubmitted = true;
+          this.submit();
+        }, (reason: any) => this.reject(reason));
         return;
       }
     }
