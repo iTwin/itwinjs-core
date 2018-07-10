@@ -92,14 +92,16 @@ export abstract class GeometricModelState extends ModelState {
             }).catch((_err) => {
               this._loadStatus = TileTree.LoadStatus.NotFound;
             });
-	case "BisCore:WebMercatorModel":
-	{
- 	WebMercatorTileTree.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
-          this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
-        }).catch((_err) => {
-          this._loadStatus = TileTree.LoadStatus.NotFound;
-        });
-
+          }
+        }
+      case "BisCore:WebMercatorModel":
+        {
+          WebMercatorTileTree.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
+            this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
+          }).catch((_err) => {
+            this._loadStatus = TileTree.LoadStatus.NotFound;
+          });
+        }
       default:
         {
           const ids = Id64.toIdSet(this.id);
