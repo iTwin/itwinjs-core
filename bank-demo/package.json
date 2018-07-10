@@ -12,9 +12,9 @@
   "repository": {},
   "dependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/geometry-core": "8",
+    "@bentley/geometry-core": "9",
     "@bentley/imodeljs-backend": "0",
-    "@bentley/imodeljs-clients": "6",
+    "@bentley/imodeljs-clients": "7",
     "@bentley/imodeljs-common": "0",
     "prompt": "1.0.0",
     "fs-extra": "^6.0.1"
