@@ -1352,8 +1352,9 @@ export class BriefcaseManager {
    * @param accessToken The access token of the account that has write access to the iModel. This may be a service account.
    * @param briefcase Identifies the IModelDb that contains the pending changes.
    * @param description a description of the changeset that is to be pushed.
+   * @param relinquishCodesLocks release locks held and codes reserved (but not used) after pushing?
    */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void> {
+  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean = true): Promise<void> {
     for (let i = 0; i < 5; ++i) {
       let pushed: boolean = false;
       let error: any;

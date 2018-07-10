@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { AccessToken, Code as HubCode, CodeState, CodeQuery } from "@bentley/imodeljs-clients";
+import { Id64, DbOpcode, RepositoryStatus, assert } from "@bentley/bentleyjs-core";
+import { AccessToken, Code as HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
@@ -33,11 +33,22 @@ export class ConcurrencyControl {
   public onSavedChanges() { this.applyTransactionOptions(); }
 
   /** @hidden */
+  public onMergeChanges() {
+    if (this.hasPendingRequests())
+      throw new IModelError(IModelStatus.TransactionActive);
+  }
+
+  /** @hidden */
+  public onMergedChanges() { this.applyTransactionOptions(); }
+
+  /** @hidden */
   private applyTransactionOptions() {
     if (!this._policy)
       return;
     if (!this.inBulkOperation())
       this.startBulkOperation();
+
+    // TODO: release all public locks.
   }
 
   /** Create an empty Request */
@@ -131,11 +142,15 @@ export class ConcurrencyControl {
     if (!this._iModel.briefcase)
       return Promise.reject(this._iModel._newNotOpenError());
 
+    assert(this.inBulkOperation(), "should always be in bulk mode");
+
     if (req === undefined)
       req = this.extractPendingRequest();
 
     const codeResults = await this.reserveCodesFromRequest(req, this._iModel.briefcase, accessToken);
     await this.acquireLocksFromRequest(req, this._iModel.briefcase, accessToken);
+
+    assert(this.inBulkOperation(), "should always be in bulk mode");
 
     let err: ConcurrencyControl.RequestError | undefined;
     for (const code of codeResults) {
@@ -176,31 +191,51 @@ export class ConcurrencyControl {
     return codes.map((code: Code) => this.buildHubCodesFromCode(briefcaseEntry, code));
   }
 
-  private buildLockRequests(_briefcaseInfo: BriefcaseEntry, req: ConcurrencyControl.Request): HubCode[] | undefined {
+  /** Obtain the schema lock. This is always an immediate request, never deferred. */
+  public lockSchema(accessToken: AccessToken): Promise<Lock[]> {
+    const locks: Lock[] = [
+      {
+        wsgId: "what-is-this",
+        ecId: "and-what-is-this",
+        lockLevel: LockLevel.Exclusive,
+        lockType: LockType.Schemas,
+        objectId: "0x1",
+        briefcaseId: this._iModel.briefcase.briefcaseId,
+        releasedWithChangeSet: this._iModel.briefcase.changeSetId,
+      },
+    ];
+    assert(this.inBulkOperation(), "should always be in bulk mode");
+    const res = BriefcaseManager.imodelClient.Locks().update(accessToken, this._iModel.iModelToken.iModelId!, locks);
+    assert(this.inBulkOperation(), "should always be in bulk mode");
+    return res;
+  }
+
+  private buildLockRequests(briefcaseInfo: BriefcaseEntry, req: ConcurrencyControl.Request): Lock[] | undefined {
     const reqAny: any = ConcurrencyControl.convertRequestToAny(req);
 
     if (!reqAny.hasOwnProperty("Locks") || reqAny.Locks.length === 0)
       return undefined;
 
-    throw new IModelError(IModelStatus.BadRequest, "TBD locks");
+    const locks: Lock[] = [];
+    for (const reqLock of reqAny.Locks) {
+      const lock = new Lock();
+      lock.briefcaseId = briefcaseInfo.briefcaseId;
+      lock.lockLevel = reqLock.Level;
+      lock.lockType = reqLock.LockableId.Type;
+      lock.objectId = reqLock.LockableId.Id;
+      lock.releasedWithChangeSet = this._iModel.briefcase.changeSetId;
+      lock.seedFileId = this._iModel.briefcase.fileId!;
+      locks.push(lock);
+    }
+    return locks;
   }
 
   /** process the Lock-specific part of the request. */
-  private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {
-    const bySpecId = this.buildLockRequests(briefcaseEntry, req);
-    if (bySpecId === undefined)
-      return;
-
-    /* TODO locks
-
-    for (const [, thisSpec] of bySpecId) {
-      for (const [, thisReq] of thisSpec) {
-        const newCodes: MultiCode = await imodelHubClient.requestMultipleCodes(accessToken, briefcaseEntry.iModelId, thisReq);
-        console.log(JSON.stringify(newCodes));
-      }
-    }
-    */
-    Promise.reject(new IModelError(IModelStatus.BadRequest, "TBD locks"));
+  private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<Lock[]> {
+    const locks = this.buildLockRequests(briefcaseEntry, req);
+    if (locks === undefined)
+      return [];
+    return BriefcaseManager.imodelClient.Locks().update(accessToken, this._iModel.iModelToken.iModelId!, locks);
   }
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
@@ -315,7 +350,7 @@ export class ConcurrencyControl {
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest);
     let rc: RepositoryStatus = RepositoryStatus.Success;
-    if (policy as ConcurrencyControl.OptimisticPolicy) {
+    if (policy instanceof ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
       rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
     } else {
@@ -334,7 +369,7 @@ export class ConcurrencyControl {
    * has pushed changes to the same entities or used the same codes as the local transaction.
    * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
    * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
-   * See [[request]], [[IModelDb.saveChanges]] and [[endBulkOperation]].
+   * See [[request]] and [[IModelDb.saveChanges]].
    * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
    */
   private startBulkOperation(): void {

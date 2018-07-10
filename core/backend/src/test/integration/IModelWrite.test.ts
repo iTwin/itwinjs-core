@@ -385,7 +385,6 @@ describe("IModelWriteTest", () => {
     rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
 
     // Commit the local changes to a local transaction in the briefcase.
-    // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
 
     rwIModel.elements.getElement(elid1); // throws if elid1 is not found
