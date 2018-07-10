@@ -4,10 +4,8 @@
 import { DeploymentEnv } from "../Client";
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { IModelClient } from "../IModelClient";
-import { Version, IModel, VersionQuery, IModelQuery } from "../imodelhub";
+import { IModelHubClient, Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelhub";
 import { ConnectClient, Project } from "../ConnectClients";
-import { IModelHubClient } from "..";
 import { expect } from "chai";
 
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
@@ -56,7 +54,7 @@ export class TestConfig {
   }
 
   /** Query for the test file from connect/hub */
-  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModel, version?: Version }> {
+  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModelRepository, version?: Version }> {
     const connectClient = new ConnectClient(deploymentEnv);
     const imodelHubClient: IModelClient = new IModelHubClient(deploymentEnv);
 
@@ -66,7 +64,7 @@ export class TestConfig {
     });
     expect(project);
 
-    let iModel: IModel | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let iModel: IModelRepository | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     let version: Version | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     if (iModelName) {
       const iModels = await imodelHubClient.IModels().get(accessToken, project.wsgId, new IModelQuery().byName(iModelName));

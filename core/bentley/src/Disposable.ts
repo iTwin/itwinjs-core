@@ -10,8 +10,14 @@ export interface IDisposable {
   dispose(): void;
 }
 
-/**
- * A 'using' function which is a substitution for .NET's using statement. It makes sure that 'dispose'
+/** Function for disposing of a disposable object that may be undefined. */
+export function dispose(disposable?: IDisposable) {
+  if (undefined !== disposable)
+    disposable.dispose();
+  return undefined;
+}
+
+/** A 'using' function which is a substitution for .NET's using statement. It makes sure that 'dispose'
  * is called on the resource no matter if the func returns or throws. If func returns, the return value
  * of this function is equal to return value of func. If func throws, this function also throws (after
  * disposing the resource).

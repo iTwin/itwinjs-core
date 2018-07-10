@@ -1,6 +1,3 @@
----
-ignore: true
----
 # Key to ECSQL
 
 ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It sticks to
@@ -28,7 +25,7 @@ As you can see, there is **no syntactical difference** between ECSQL and SQL in 
 
 > **Try it yourself**
 >
-> *Goal:* Find out how many Elements there are in the iModel.
+> *Goal:* Find out how many [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element)s there are in the iModel.
 >
 > *ECSQL*
 > ```sql
@@ -56,4 +53,4 @@ That abstraction is a huge simplification for ECSQL users. The database schema o
 
 ---
 
-[**< Previous**](./index.md)  &nbsp; | &nbsp; [**Next >**](./FirstExamples)
+[**< Previous**](./index.md)  &nbsp; | &nbsp; [**Next >**](./FirstExamples.md)

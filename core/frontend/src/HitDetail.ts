@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
-import { Point3d, Vector3d, CurvePrimitive } from "@bentley/geometry-core";
+import { Point3d, Vector3d, CurvePrimitive, XYZProps } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { DecorateContext } from "./frontend";
@@ -17,6 +17,25 @@ export const enum SnapMode { // NEEDSWORK: Don't intend to use this as a mask, m
   Origin = 1 << 4,
   Bisector = 1 << 5,
   Intersection = 1 << 6,
+}
+
+export const enum KeypointType {
+  Nearest = 0,
+  Keypoint = 1,
+  Midpoint = 2,
+  Center = 3,
+  Origin = 4,
+  Bisector = 5,
+  Intersection = 6,
+  Tangent = 7,
+  TangentPoint = 8,
+  Perpendicular = 9,
+  PerpendicularPt = 10,
+  Parallel = 11,
+  Point = 12,
+  PointOn = 13,
+  Unknown = 14,
+  Custom = 15,
 }
 
 export const enum SnapHeat {
@@ -96,38 +115,39 @@ export class HitDetail {
 }
 
 export class SnapDetail extends HitDetail {
-  public snapMode: SnapMode;              // snap mode currently associated with this snap
-  public heat = SnapHeat.None;
   public sprite?: Sprite;
   public readonly snapPoint: Point3d;     // hitPoint adjusted by snap
-  public readonly adjustedPoint: Point3d; // sometimes accuSnap adjusts the point after the snap.
-  public geomType = HitGeomType.None;     // type of hit geometry (edge or interior)
+  private _adjustedPoint: Point3d; // sometimes accuSnap adjusts the point after the snap.
   public primitive?: CurvePrimitive;      // curve primitive for snap.
   public normal?: Vector3d;               // surface normal at snapPoint
 
-  public constructor(from: HitDetail) {
+  /** Constructor for SnapDetail.
+   * @param from The HitDetail that created this snap
+   * @param snapMode The SnapMode used to create this SnapDetail
+   * @param heat The SnapHeat of this SnapDetail
+   * @param snapPoint The snapped point in the element
+   * @param geomType the HitGeomType of this SnapDetail
+   */
+  public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps, public readonly geomType: HitGeomType = HitGeomType.None) {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
-    this.snapMode = SnapMode.Nearest;
-    this.snapPoint = this.hitPoint.clone();
-    this.adjustedPoint = this.snapPoint.clone();
+    this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
+    this._adjustedPoint = this.snapPoint;
   }
 
+  public get adjustedPoint(): Point3d { return this._adjustedPoint; }
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
   public isSnapDetail(): this is SnapDetail { return true; }
   public isHot(): boolean { return this.heat !== SnapHeat.None; }
-  public isPointAdjusted(): boolean { return !this.adjustedPoint.isAlmostEqual(this.snapPoint); }
-  public setAdjustedPoint(point: Point3d) { this.adjustedPoint.setFrom(point); }
-  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
+  public isPointAdjusted(): boolean { return this.adjustedPoint !== this.snapPoint; }
+  public setAdjustedPoint(point: Point3d) { this._adjustedPoint = point.clone(); }
+  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this._adjustedPoint = this.snapPoint; this.heat = heat; }
 
   public clone(): SnapDetail {
-    const val = new SnapDetail(this);
-    val.snapMode = this.snapMode;
-    val.heat = this.heat;
+    const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint, this.geomType);
     val.sprite = this.sprite;
-    val.snapPoint.setFrom(this.snapPoint);
-    val.adjustedPoint.setFrom(this.adjustedPoint);
-    val.geomType = this.geomType;
+    if (this.isPointAdjusted())
+      val.setAdjustedPoint(this.adjustedPoint);
     if (undefined !== this.primitive)
       val.primitive = this.primitive.clone() as CurvePrimitive;
     if (undefined !== this.normal)
@@ -144,8 +164,8 @@ export class IntersectDetail extends SnapDetail {
  * The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
  *  are somehow "better" than those later on.
  */
-export class HitList {
-  public hits: HitDetail[] = [];
+export class HitList<T extends HitDetail> {
+  public hits: T[] = [];
   public currHit = -1;
   public get length(): number { return this.hits.length; }
   public empty(): void { this.hits.length = 0; this.currHit = -1; }
@@ -155,13 +175,13 @@ export class HitList {
    * get a hit from a particular index into a HitList
    * return the requested hit from the HitList or undefined
    */
-  public getHit(hitNum: number): HitDetail | undefined {
+  public getHit(hitNum: number): T | undefined {
     if (hitNum < 0) hitNum = this.length - 1;
     return (hitNum >= this.length) ? undefined : this.hits[hitNum];
   }
 
   /** When setting one or more indices to undefined you must call dropNulls afterwards */
-  public setHit(i: number, p: HitDetail | undefined): void {
+  public setHit(i: number, p: T | undefined): void {
     if (i < 0 || i >= this.length)
       return;
     this.hits[i] = p!;
@@ -174,10 +194,10 @@ export class HitList {
       this.hits.push(hit);
   }
 
-  public getNextHit(): HitDetail | undefined { this.currHit++; return this.getCurrentHit(); }
-  public getCurrentHit(): HitDetail | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
+  public getNextHit(): T | undefined { this.currHit++; return this.getCurrentHit(); }
+  public getCurrentHit(): T | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
 
-  public setCurrentHit(hit: HitDetail): void {
+  public setCurrentHit(hit: T): void {
     this.resetCurrentHit();
     for (let thisHit; undefined !== (thisHit = this.getNextHit());) {
       if (thisHit === hit)
@@ -261,7 +281,7 @@ export class HitList {
   }
 
   /** Add a new hit to the list. Hits are sorted according to their priority and distance. */
-  public addHit(newHit: HitDetail): number {
+  public addHit(newHit: T): number {
     if (0 === this.hits.length) {
       this.hits.push(newHit);
       return 0;
@@ -279,7 +299,7 @@ export class HitList {
   }
 
   /** Insert a new hit into the list at the supplied index. */
-  public insertHit(i: number, hit: HitDetail): void {
+  public insertHit(i: number, hit: T): void {
     if (i < 0 || i >= this.length)
       this.hits.push(hit);
     else

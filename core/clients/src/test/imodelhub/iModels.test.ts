@@ -9,7 +9,7 @@ import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 
 import { AccessToken, WsgError, IModelClient } from "../../";
 import {
-  IModelHubClient, IModel, SeedFile, IModelHubError,
+  IModelHubClient, IModelRepository, SeedFile, IModelHubError,
   IModelQuery, IModelHubRequestError,
 } from "../../";
 
@@ -24,7 +24,7 @@ function mockGetIModelByName(projectId: string, name: string, imodelId?: string,
   imodelId = imodelId || Guid.createValue();
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId,
     "iModel", `?$filter=Name+eq+%27${encodeURIComponent(name)}%27`);
-  const requestResponse = ResponseBuilder.generateGetResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
+  const requestResponse = ResponseBuilder.generateGetResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
     new Map<string, any>([
       ["name", name],
       ["wsgId", imodelId],
@@ -35,13 +35,13 @@ function mockGetIModelByName(projectId: string, name: string, imodelId?: string,
 
 function mockPostiModel(projectId: string, imodelId: string, imodelName: string, description: string) {
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-  const postBody = ResponseBuilder.generatePostBody<IModel>(
-    ResponseBuilder.generateObject<IModel>(IModel,
+  const postBody = ResponseBuilder.generatePostBody<IModelRepository>(
+    ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
       new Map<string, any>([
         ["name", imodelName],
         ["description", description],
       ])));
-  const requestResponse = ResponseBuilder.generatePostResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
+  const requestResponse = ResponseBuilder.generatePostResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
     new Map<string, any>([
       ["wsgId", imodelId],
       ["name", imodelName],
@@ -159,18 +159,18 @@ describe("iModelHub iModelHandler", () => {
   it("should get list of IModels", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-      const requestResponse = ResponseBuilder.generateGetResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
+      const requestResponse = ResponseBuilder.generateGetResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
         new Map<string, any>([["name", imodelName]])));
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
 
-    const imodels: IModel[] = await imodelHubClient.IModels().get(accessToken, projectId);
+    const imodels: IModelRepository[] = await imodelHubClient.IModels().get(accessToken, projectId);
     chai.expect(imodels.length).to.be.greaterThan(0);
   });
 
   it("should get a specific IModel", async () => {
     mockGetIModelByName(projectId, imodelName);
-    const iModel: IModel = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
+    const iModel: IModelRepository = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(iModel.name).to.be.equal(imodelName);
   });
 
@@ -182,7 +182,7 @@ describe("iModelHub iModelHandler", () => {
     const names = ["22_LargePlant.166.i"];
     for (const name of names) {
       mockGetIModelByName(projectId, name);
-      const iModel: IModel = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(name)))[0];
+      const iModel: IModelRepository = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(name)))[0];
       chai.expect(iModel.name).to.be.equal(name);
       mockDeleteiModel(projectId, iModel.wsgId);
       await imodelHubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
@@ -192,12 +192,12 @@ describe("iModelHub iModelHandler", () => {
   it("should retrieve an iModel by its id", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", iModelId);
-      const requestResponse = ResponseBuilder.generateGetResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
+      const requestResponse = ResponseBuilder.generateGetResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
         new Map<string, any>([["wsgId", iModelId]])));
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
 
-    const iModel: IModel = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
+    const iModel: IModelRepository = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
 
     chai.expect(iModel.wsgId).to.be.equal(iModelId);
   });
@@ -280,8 +280,8 @@ describe("iModelHub iModelHandler", () => {
     const filePath = utils.getMockSeedFilePath();
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-      const postBody = ResponseBuilder.generatePostBody<IModel>(
-        ResponseBuilder.generateObject<IModel>(IModel,
+      const postBody = ResponseBuilder.generatePostBody<IModelRepository>(
+        ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
           new Map<string, any>([["name", imodelName]])));
       const requestResponse = ResponseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
         new Map<string, any>([["iModelInitialized", false]]));

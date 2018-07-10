@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -108,7 +108,7 @@ export class Texture extends RenderTexture {
 
   /** Free this object in the WebGL wrapper. */
   public dispose() {
-    this.texture.dispose();
+    dispose(this.texture);
   }
 
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
@@ -249,9 +249,11 @@ export class TextureHandle implements IDisposable {
     return true;
   }
 
+  public get isDisposed(): boolean { return this._glTexture === undefined; }
+
   public dispose() {
-    if (undefined !== this._glTexture) {
-      System.instance.context.deleteTexture(this._glTexture);
+    if (!this.isDisposed) {
+      System.instance.context.deleteTexture(this._glTexture!);
       this._glTexture = undefined;
     }
   }

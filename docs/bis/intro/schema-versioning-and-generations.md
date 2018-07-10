@@ -85,6 +85,16 @@ If schema 2 adds to *Student* a double property *Psychology*, the meaning of *Ov
 
 Updating data for a schema update with a *write* version change usually requires some custom logic. This should not be surprising as the previous data was written by applications that are not write-compatible with the newer schema.
 
+#### Examples of Write incompatible changes
+* Adding a *Not Null* or *Unique* constraint on a new property in an existing class
+* Adding a new *Navigation Property* with a *Foreign Key* constraint to an existing class
+
+There are other examples of write incompatible changes which, however, are prohibited by the software because they
+would modify how EC content is mapped to the database (which is generally not allowed):
+* Adding a *Not Null* or *Unique* constraint to an existing property
+* Adding a new unique index to an existing class
+* Adding a *Foreign Key* constraint to an existing *Navigation Property*
+
 ### Application Schema Compatibility Logic
 
 The general logic for an application written for a particular version of a schema working with a repository that potentially

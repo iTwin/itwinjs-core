@@ -18,12 +18,12 @@ This website is organized into sections by tabs at the top of each page.
 
 ## Using iModelJs
 
-The iModelJs library has a comprehensive set of APIs that can be used anywhere an iModel may be relevant.
+The iModelJs library has a comprehensive set of APIs that can be used anywhere an [iModel](./imodels.md) may be relevant.
 It is designed to be modular and extensible, with the expectation that iModelJs will be used in environments with many
 other JavaScript frameworks. iModelJs strives to be as consistent as possible with established JavaScript conventions,
 though sometimes judgement calls are required where no established convention is clear.
 
-From the same JavaScript codebase, it is possible to create:
+With the [iModelJs Software architecture](./SoftwareArchitecture.md), from the same JavaScript codebase, it is possible to create:
 
 * [Agents and Services](./SoftwareArchitecture.md#web) that process iModels and respond to events from iModelHub
 * [Web Apps](./SoftwareArchitecture.md#web) that run in web browsers and communicate with backends
@@ -32,7 +32,7 @@ From the same JavaScript codebase, it is possible to create:
 
 ## iModelJs vs. iModelHub
 
-It is important to understand that iModelJs applications do not *run on iModelHub*. Instead, they can run *anywhere else*. iModelJs applications always work on a copy of an iModel in a *briefcase*, obtained from iModelHub, and process it locally, making them *infinitely scalable*.
+It is important to understand that iModelJs applications do not *run on [iModelHub](./imodelhub)*. Instead, they can run *anywhere else*. iModelJs applications always work on a copy of an iModel in a *briefcase*, obtained from iModelHub, and process it locally, making them *infinitely scalable*.
 
 iModelJs applications can be:
 

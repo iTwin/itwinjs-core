@@ -1,7 +1,6 @@
----
-ignore: true
----
 # Learning ECSQL
+
+> The tutorial is still a **work in progress**. The iModelConsole and the sample iModel used in the tutorial are not yet publicly available. However, you can still use the tutorial and learn ECSQL. You won't be able to run and experiment with the examples though.
 
 This tutorial allows you to learn how to use ECSQL to read and query the business data in your iModels.
 
@@ -42,7 +41,8 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 
 ### Step 1 - Start the iModelConsole
 
-> TBD
+1. Launch the console (TBD)
+1. Authenticate with your CONNECT credentials.
 
 ### Step 2 - Open the sample iModel
 
@@ -69,15 +69,15 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 
 ## Tutorial Overview
 
-* [Lesson 1: Key to ECSQL](./KeyToECSQL)
-* [Lesson 2: The first examples](./FirstExamples)
-* [Lesson 3: ECSQL Data Types](./ECSQLDataTypes)
-* [Lesson 4: Relationships and Joins](./Joins)
-* [Lesson 5: Class Polymorphism](./PolymorphicQueries)
-* [Lesson 6: Spatial Queries](./SpatialQueries)
-* [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries)
-* [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries)
+* [Lesson 1: Key to ECSQL](./KeyToECSQL.md)
+* [Lesson 2: The first examples](./FirstExamples.md)
+* [Lesson 3: ECSQL Data Types](./ECSQLDataTypes.md)
+* [Lesson 4: Relationships and Joins](./Joins.md)
+* [Lesson 5: Class Polymorphism](./PolymorphicQueries.md)
+* [Lesson 6: Spatial Queries](./SpatialQueries.md)
+* [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
+* [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
 
 ---
 
-[**Next >**](./KeyToECSQL)
+[**Next >**](./KeyToECSQL.md)

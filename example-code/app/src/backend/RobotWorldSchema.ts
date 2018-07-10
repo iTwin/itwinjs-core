@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { ClassRegistry, Schema, Schemas, IModelDb, DictionaryModel, SpatialCategory, IModelHost } from "@bentley/imodeljs-backend";
-import { IModelError, IModelStatus, Appearance, ColorByName } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, SubCategoryAppearance, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as _schemaNames from "../common/RobotWorldSchema";
 
@@ -73,7 +73,7 @@ export class RobotWorld extends Schema {
   // __PUBLISH_EXTRACT_START__ Element.createSpatialCategory.example-code
       const cat: SpatialCategory = SpatialCategory.create(dictionary, _schemaNames.Class.Robot);
       cat.id = iModelDb.elements.insertElement(cat);
-      cat.setDefaultAppearance(new Appearance({ color: ColorByName.silver }));
+      cat.setDefaultAppearance(new SubCategoryAppearance({ color: ColorByName.silver }));
       iModelDb.elements.updateElement(cat);
   // __PUBLISH_EXTRACT_END__
     }
@@ -81,7 +81,7 @@ export class RobotWorld extends Schema {
     if (true) {
       const cat: SpatialCategory = SpatialCategory.create(dictionary, _schemaNames.Class.Barrier);
       cat.id = iModelDb.elements.insertElement(cat);
-      cat.setDefaultAppearance(new Appearance({ color: ColorByName.brown }));
+      cat.setDefaultAppearance(new SubCategoryAppearance({ color: ColorByName.brown }));
       iModelDb.elements.updateElement(cat);
     }
   }

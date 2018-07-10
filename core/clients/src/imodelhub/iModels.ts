@@ -13,9 +13,9 @@ import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
-/** IModel */
+/** HubIModel */
 @ECJsonTypeMap.classToJson("wsg", "ProjectScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class IModel extends WsgInstance {
+export class IModelRepository extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
 
@@ -237,10 +237,10 @@ export class IModelHandler {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found iModel. Rejects if no iModels, or more than one iModel is found.
    */
-  public async get(token: AccessToken, projectId: string, query: IModelQuery = new IModelQuery()): Promise<IModel[]> {
+  public async get(token: AccessToken, projectId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
     Logger.logInfo(loggingCategory, `Querying iModels in project ${projectId}`);
 
-    const imodels = await this._handler.getInstances<IModel>(IModel, token, this.getRelativeUrl(projectId, query.getId()), query.getQueryOptions());
+    const imodels = await this._handler.getInstances<IModelRepository>(IModelRepository, token, this.getRelativeUrl(projectId, query.getId()), query.getQueryOptions());
 
     Logger.logTrace(loggingCategory, `Queried ${imodels.length} iModels in project ${projectId}`);
 
@@ -269,17 +269,17 @@ export class IModelHandler {
    * @param iModelName Name of the iModel on the Hub.
    * @param description Description of the iModel on the Hub.
    */
-  private async createIModelInstance(token: AccessToken, projectId: string, iModelName: string, description?: string): Promise<IModel> {
+  private async createIModelInstance(token: AccessToken, projectId: string, iModelName: string, description?: string): Promise<IModelRepository> {
     Logger.logInfo(loggingCategory, `Creating iModel with name ${iModelName} in project ${projectId}`);
 
-    let imodel: IModel;
-    const iModel = new IModel();
+    let imodel: IModelRepository;
+    const iModel = new IModelRepository();
     iModel.name = iModelName;
     if (description)
       iModel.description = description;
 
     try {
-      imodel = await this._handler.postInstance<IModel>(IModel, token, this.getRelativeUrl(projectId), iModel);
+      imodel = await this._handler.postInstance<IModelRepository>(IModelRepository, token, this.getRelativeUrl(projectId), iModel);
       Logger.logTrace(loggingCategory, `Created iModel instance with name ${iModelName} in project ${projectId}`);
     } catch (err) {
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
@@ -324,7 +324,7 @@ export class IModelHandler {
    */
   public async create(token: AccessToken, projectId: string, name: string, pathName: string,
     description?: string, progressCallback?: (progress: ProgressInfo) => void,
-    timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModel> {
+    timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModelRepository> {
     Logger.logInfo(loggingCategory, `Creating iModel in project ${projectId}`);
 
     if (Config.isBrowser())

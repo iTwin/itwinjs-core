@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { IModel as HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
+import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
@@ -62,7 +62,7 @@ export class HubUtility {
     return project;
   }
 
-  private static async queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
+  private static async queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
     const iModels = await BriefcaseManager.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
     if (iModels.length === 0)
       return undefined;
@@ -71,7 +71,7 @@ export class HubUtility {
     return iModels[0];
   }
 
-  private static async queryIModelById(accessToken: AccessToken, projectId: string, iModelId: string): Promise<HubIModel | undefined> {
+  private static async queryIModelById(accessToken: AccessToken, projectId: string, iModelId: string): Promise<IModelRepository | undefined> {
     const iModels = await BriefcaseManager.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
       return undefined;
@@ -99,7 +99,7 @@ export class HubUtility {
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
   public static async queryIModelIdByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
-    const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
+    const iModel: IModelRepository | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (!iModel)
       return Promise.reject(`IModel ${iModelName} not found`);
     return iModel.wsgId;
@@ -124,7 +124,7 @@ export class HubUtility {
       HubUtility.deleteDirectoryRecursive(downloadDir);
     HubUtility.makeDirectoryRecursive(downloadDir);
 
-    const iModel: HubIModel | undefined = await HubUtility.queryIModelById(accessToken, projectId, iModelId);
+    const iModel: IModelRepository | undefined = await HubUtility.queryIModelById(accessToken, projectId, iModelId);
     if (!iModel)
       return Promise.reject(`IModel with id ${iModelId} not found`);
 
@@ -150,7 +150,7 @@ export class HubUtility {
   public static async downloadIModelByName(accessToken: AccessToken, projectName: string, iModelName: string, downloadDir: string): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
 
-    const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
+    const iModel: IModelRepository | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (!iModel)
       return Promise.reject(`IModel ${iModelName} not found`);
     const iModelId = iModel.wsgId;
@@ -183,7 +183,7 @@ export class HubUtility {
   public static async pushIModel(accessToken: AccessToken, projectId: string, pathname: string): Promise<string> {
     // Delete any existing iModels with the same name as the required iModel
     const iModelName = path.basename(pathname, ".bim");
-    let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
+    let iModel: IModelRepository | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel) {
       await BriefcaseManager.imodelClient.IModels().delete(accessToken, projectId, iModel.wsgId);
     }

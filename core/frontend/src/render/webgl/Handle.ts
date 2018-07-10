@@ -17,7 +17,7 @@ export type BufferData = ArrayBufferView | ArrayBuffer;
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  */
 export class BufferHandle implements IDisposable {
-  private _glBuffer: WebGLBuffer | undefined;
+  private _glBuffer?: WebGLBuffer;
 
   /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */
   public constructor() {
@@ -30,15 +30,15 @@ export class BufferHandle implements IDisposable {
       this._glBuffer = undefined;
     }
 
-    assert(this.isValid);
+    assert(!this.isDisposed);
   }
 
-  public get isValid() { return undefined !== this._glBuffer; }
+  public get isDisposed(): boolean { return this._glBuffer === undefined; }
 
   /** Frees the WebGL buffer */
   public dispose(): void {
-    if (undefined !== this._glBuffer && null !== this._glBuffer) {
-      System.instance.context.deleteBuffer(this._glBuffer);
+    if (!this.isDisposed) {
+      System.instance.context.deleteBuffer(this._glBuffer!);
       this._glBuffer = undefined;
     }
   }
@@ -63,7 +63,7 @@ export class BufferHandle implements IDisposable {
   /** Creates a BufferHandle and binds its data */
   public static createBuffer(target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
     const handle = new BufferHandle();
-    if (!handle.isValid) {
+    if (handle.isDisposed) {
       return undefined;
     }
 
@@ -134,7 +134,7 @@ export class QBufferHandle2d extends BufferHandle {
 
   public static create(params: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
     const handle = new QBufferHandle2d(params);
-    if (!handle.isValid) {
+    if (handle.isDisposed) {
       return undefined;
     }
 
@@ -158,7 +158,7 @@ export class QBufferHandle3d extends BufferHandle {
 
   public static create(params: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(params);
-    if (!handle.isValid) {
+    if (handle.isDisposed) {
       return undefined;
     }
 

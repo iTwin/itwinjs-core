@@ -4,7 +4,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64, BeEvent } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, Range3d, Angle } from "@bentley/geometry-core";
+import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
@@ -13,7 +13,7 @@ import {
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement,
+  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -729,6 +729,12 @@ describe("iModel", () => {
 
   });
 
+  it("snapping", async () => {
+    const worldToView = Matrix4d.createIdentity();
+    const response = await imodel2.requestSnap("0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    assert.isDefined(response.status);
+  });
+
   it("should import schemas", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     imodel1.importSchema(schemaPathname); // will throw an exception if import fails
@@ -821,7 +827,7 @@ describe("iModel", () => {
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: ColorByName.darkRed }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
       const updated = testImodel.elements.getElement(IModelDb.getDefaultSubCategoryId(spatialCategoryId)) as SubCategory;
       assert.equal(updated.appearance.color.tbgr, ColorByName.darkRed, "SubCategory appearance should be updated");
@@ -887,7 +893,7 @@ describe("iModel", () => {
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance());
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance());
     }
 
     const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";

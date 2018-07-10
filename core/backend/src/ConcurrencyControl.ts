@@ -140,7 +140,7 @@ export class ConcurrencyControl {
    */
   public async request(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
     if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel._newNotOpenError());
+      return Promise.reject(this._iModel.newNotOpenError());
 
     assert(this.inBulkOperation(), "should always be in bulk mode");
 
@@ -255,7 +255,7 @@ export class ConcurrencyControl {
   /** Reserve the specified codes */
   public async reserveCodes(accessToken: AccessToken, codes: Code[]): Promise<HubCode[]> {
     if (this._iModel.briefcase === undefined)
-      return Promise.reject(this._iModel._newNotOpenError());
+      return Promise.reject(this._iModel.newNotOpenError());
 
     const bySpecId = this.buildHubCodesFromCodes(this._iModel.briefcase, codes);
     if (bySpecId === undefined)
@@ -267,7 +267,7 @@ export class ConcurrencyControl {
   // Query the state of the Codes for the specified CodeSpec and scope.
   public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<HubCode[]> {
     if (this._iModel.briefcase === undefined)
-      return Promise.reject(this._iModel._newNotOpenError());
+      return Promise.reject(this._iModel.newNotOpenError());
 
     const query = new CodeQuery().byCodeSpecId(specId.toString()).byCodeScope(scopeId);
 
@@ -290,7 +290,7 @@ export class ConcurrencyControl {
    */
   public async areCodesAvailable(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
     if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel._newNotOpenError());
+      return Promise.reject(this._iModel.newNotOpenError());
     // throw new Error("TBD");
     if (req === undefined)
       req = this.pendingRequest;
@@ -320,7 +320,7 @@ export class ConcurrencyControl {
    */
   public async areAvailable(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
     if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel._newNotOpenError());
+      return Promise.reject(this._iModel.newNotOpenError());
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -485,7 +485,7 @@ export namespace ConcurrencyControl {
     public async reserve(accessToken: AccessToken, codes?: Code[]) {
 
       if (!this._iModel.briefcase)
-        return Promise.reject(this._iModel._newNotOpenError());
+        return Promise.reject(this._iModel.newNotOpenError());
 
       if (codes !== undefined) {
         await this._iModel.concurrencyControl.reserveCodes(accessToken, codes);
