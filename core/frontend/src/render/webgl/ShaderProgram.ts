@@ -153,16 +153,17 @@ export class ShaderProgram implements IDisposable {
     assert(undefined !== this._description);
   }
 
+  public get isDisposed(): boolean { return this._glProgram === undefined; }
+
   public dispose(): void {
-    if (undefined !== this._glProgram && null !== this._glProgram) {
+    if (!this.isDisposed) {
       assert(!this._inUse);
-      System.instance.context.deleteProgram(this._glProgram);
+      System.instance.context.deleteProgram(this._glProgram!);
       this._glProgram = undefined;
       this._status = CompileStatus.Uncompiled;
     }
   }
 
-  public get isValid(): boolean { return undefined !== this.glProgram; }
   public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
   public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
 
@@ -200,7 +201,7 @@ export class ShaderProgram implements IDisposable {
       case CompileStatus.Failure: return false;
       case CompileStatus.Success: return true;
       default: {
-        if (!this.isValid) {
+        if (this.isDisposed) {
           this._status = CompileStatus.Failure;
           return false;
         }
@@ -295,7 +296,7 @@ export class ShaderProgram implements IDisposable {
 // Context in which ShaderPrograms are executed. Avoids switching shaders unnecessarily.
 // Ensures shader programs are compiled before use and un-bound when scope is disposed.
 // This class must *only* be used inside a using() function!
-export class ShaderProgramExecutor implements IDisposable {
+export class ShaderProgramExecutor {
   private _program?: ShaderProgram;
   private _params: ShaderProgramParams;
 
@@ -304,6 +305,7 @@ export class ShaderProgramExecutor implements IDisposable {
     this.changeProgram(program);
   }
 
+  /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
   public dispose() { this.changeProgram(undefined); }
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }

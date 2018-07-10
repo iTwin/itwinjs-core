@@ -70,11 +70,8 @@
     "webpack": "^3.10.0",
     "asn1": "0.2.3"
   },
-  "//dependencies": [
-    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
-  ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~22.0.0",
+    "@bentley/imodeljs-native-platform-api": "~23.0.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

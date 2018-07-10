@@ -53,7 +53,7 @@ export class RenderContext extends ViewContext {
     return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
   }
   public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVector): RenderGraphic {
-    return this.target.renderSystem.createBranch(branch, this.viewport.iModel, location, clip);
+    return this.target.renderSystem.createBranch(branch, location, clip);
   }
 }
 
@@ -176,9 +176,31 @@ export class DecorateContext extends RenderContext {
     this.decorations.viewOverlay.add(graphic, ovr);
   }
 
-  /** Display sprite as view overlay graphic. */
-  public addSprite(_sprite: Sprite, _location: Point3d, _xVec: Vector3d, _transparency: number) {
-    //  this.addViewOverlay(* target.CreateSprite(sprite, location, xVec, transparency, GetDgnDb()), nullptr);
+  /**
+   * Display a sprite as view overlay graphic.
+   * @param sprite The sprite to draw
+   * @param location The location of the sprite, in view coordinates
+   * @param xVec The orientation of the sprite, in view coordinates
+   * @param transparency The transparency of the sprite (0-255, 0 == fully opaque)
+   */
+  public addSprite(sprite: Sprite, location: XAndY, xVec: XAndY, transparency: number) {
+    if (!sprite.texture)
+      return; // sprite not loaded
+
+    const xVector = new Vector3d(xVec.x, xVec.y, 0);
+    const yVector = xVector.rotate90CCWXY();
+    xVector.scaleToLength(sprite.size.x, xVector);
+    yVector.scaleToLength(sprite.size.y, yVector);
+
+    const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
+    const xCorn = org.plus(xVector);
+    const pts = [org, xCorn, org.plus(yVector), xCorn.plus(yVector)];
+
+    let ovr: FeatureSymbology.Appearance | undefined;
+    if (transparency > 0)
+      ovr = FeatureSymbology.Appearance.fromJSON({ alpha: 255 - transparency });
+
+    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, pts)!, ovr);
   }
 
   /** @private */
@@ -241,18 +263,18 @@ export class DecorateContext extends RenderContext {
       maxGridRefs = 10;
 
     // values are "per 1000 pixels"
-    const minGridSeperationPixels = 1000 / maxGridPts;
-    const minRefSeperation = 1000 / maxGridRefs;
+    const minGridSeparationPixels = 1000 / maxGridPts,
+      minRefSeparation = 1000 / maxGridRefs;
     let uorPerPixel = vp.getPixelSizeAtPoint(testPt);
 
-    if ((refSpacing.x / uorPerPixel) < minRefSeperation || (refSpacing.y / uorPerPixel) < minRefSeperation)
+    if ((refSpacing.x / uorPerPixel) < minRefSeparation || (refSpacing.y / uorPerPixel) < minRefSeparation)
       gridsPerRef = 0;
 
-    // Avoid z fighting with coincident geometry...let the wookie win...
+    // Avoid z fighting with coincident geometry
     gridOrg.plusScaled(viewZ, uorPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
     uorPerPixel *= refScale;
 
-    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeperationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeperationPixels);
+    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeparationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeparationPixels);
     const graphic = this.createWorldDecoration();
 
     DecorateContext.drawGrid(graphic, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
@@ -260,7 +282,7 @@ export class DecorateContext extends RenderContext {
   }
 
   public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
-    const eyePoint = vp.rootToView.transform1.columnZ();
+    const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const viewZ = Vector3d.createFrom(eyePoint);
 
     const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);

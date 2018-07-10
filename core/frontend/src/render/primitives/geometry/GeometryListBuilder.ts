@@ -151,7 +151,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       const tolerance = this.computeTolerance(accum);
       accum.saveToGraphicList(this.primitives, options, tolerance);
     }
-    return (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives, this.iModel) : this.primitives.pop() as RenderGraphic;
+    return (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {

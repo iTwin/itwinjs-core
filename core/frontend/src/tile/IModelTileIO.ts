@@ -181,7 +181,7 @@ export namespace IModelTileIO {
     }
 
     protected materialFromJson(key: string): RenderMaterial | undefined {
-      if (this.renderMaterials[key] === undefined)
+      if (this.renderMaterials === undefined || this.renderMaterials[key] === undefined)
         return undefined;
 
       let material = this.system.findMaterial(key, this.model.iModel);

@@ -19,7 +19,6 @@ describe("IModelConnection (#integration)", () => {
 
   before(async () => {
     IModelApp.startup();
-    await TestData.load();
 
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -97,12 +96,6 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to re-establish IModelConnection if the backend is shut down", async () => {
-    const roIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ReadOnlyTest");
-    const roIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, roIModelId);
-
-    assert.exists(roIModel);
-    assert.isTrue(roIModel instanceof IModelConnection);
-
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));

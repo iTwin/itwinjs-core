@@ -59,6 +59,7 @@ TestbedConfig.initializeRpcBackend();
 
 Logger.initializeToConsole();
 Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
+Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
 
 if (TestbedConfig.cloudRpc) {
   const app = express();

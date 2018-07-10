@@ -10,7 +10,7 @@ import { IModelApp } from "./IModelApp";
 /** event types for SelectionSet.onChanged  */
 export const enum SelectEventType { Add, Remove, Replace, Clear }
 
-/** The set of hilited elements for an IModelConnection, by element id */
+/** A set of *hilited* elements for an IModelConnection, by element id. */
 export class HilitedSet {
   public readonly elements = new Set<string>();
   public constructor(public iModel: IModelConnection) { }
@@ -27,7 +27,7 @@ export class HilitedSet {
   public get size() { return this.elements.size; }
 }
 
-/** The set of currently selected elements for an IModelConnection */
+/** A set of *currently selected* elements for an IModelConnection. */
 export class SelectionSet {
   public readonly elements = new Set<string>();
   /** Called whenever elements are added or removed from this SelectionSet */
@@ -45,13 +45,19 @@ export class SelectionSet {
   /** Check whether there are any selected elements. */
   public isActive() { return this.size !== 0; }
 
-  /** return true if elemId is in this SelectionSet */
+  /** Return true if elemId is in this SelectionSet.
+   * @see [[isSelected]]
+   */
   public has(elemId?: string) { return !!elemId && this.elements.has(elemId); }
 
-  /** Query whether an element is in the selection set. */
+  /** Query whether an Ids is in the selection set.
+   * @see [[has]]
+   */
   public isSelected(elemId?: Id64): boolean { return !!elemId && this.elements.has(elemId.value); }
 
-  /** Clear current selection set. */
+  /** Clear current selection set.
+   * @note raises the [[onChanged]] event with [[SelectEventType.Clear]].
+   */
   public emptyAll(): void {
     if (!this.isActive())
       return;
@@ -60,7 +66,9 @@ export class SelectionSet {
   }
 
   /**
-   * Add one or more elements to the current selection set.
+   * Add one or more Ids to the current selection set.
+   * @param elem The set of Ids to add.
+   * @param sendEvent If true, raise the [[onChanged]] event with [[SelectEventType.Add]]. Default is true.
    * @returns true if any elements were added.
    */
   public add(elem: Id64Arg, sendEvent = true): boolean {
@@ -74,7 +82,9 @@ export class SelectionSet {
   }
 
   /**
-   * Remove one or more elements from the current selection set.
+   * Remove one or more Ids from the current selection set.
+   * @param elem The set of Ids to remove.
+   * @param sendEvent If true, raise the [[onChanged]] event with [[SelectEventType.Remove]]. Default is true.
    * @returns true if any elements were removed.
    */
   public remove(elem: Id64Arg, sendEvent = true): boolean {
@@ -87,13 +97,17 @@ export class SelectionSet {
     return changed;
   }
 
+  /**
+   * Add one set of Ids, and remove another set of Ids. Any Ids that are in both sets are removed.
+   * @returns True if any Ids were either added or removed.
+   */
   public addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean {
     const added = this.add(adds);
     const removed = this.remove(removes);
     return added || removed; // don't put this on one line. Make sure we call both.
   }
 
-  /** invert the state of a set of elements in the SelectionSet */
+  /** Invert the state of a set of Ids in the SelectionSet */
   public invert(elem: Id64Arg): boolean {
     const elementsToAdd = new Set<string>();
     const elementsToRemove = new Set<string>();
@@ -101,7 +115,7 @@ export class SelectionSet {
     return this.addAndRemove(elementsToAdd, elementsToRemove);
   }
 
-  /** Change selection set to be the supplied set of elements */
+  /** Change selection set to be the supplied set of Ids. */
   public replace(elem: Id64Arg): void {
     this.elements.clear();
     this.add(elem, false);

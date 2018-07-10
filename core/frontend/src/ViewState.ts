@@ -109,59 +109,6 @@ export class MarginPercent {
 }
 
 /**
- * Standardize behavior for structs that consume always/never drawn sets
- * Possibly should add clear methods
- */
-export interface DrawnElementSets {
-  readonly alwaysDrawn: Id64Set;
-  readonly neverDrawn: Id64Set;
-  isNeverDrawn(id: Id64): boolean;
-  isAlwaysDrawn(id: Id64): boolean;
-  setNeverDrawn(id: Id64): void;
-  setAlwaysDrawn(id: Id64): void;
-  clearAlwaysDrawn(id?: Id64): void;
-  clearNeverDrawn(id?: Id64): void;
-}
-
-/**
- * Encapsulates logic for handling always/never drawn sets
- * This for example prevents ViewState and FeatureSymbology.Overrides from duplicating this logic
- */
-export class SpecialElements implements DrawnElementSets {
-  private _always: Id64Set = new Set<string>();
-  private _never: Id64Set = new Set<string>();
-
-  private copyAlwaysDrawn(always: Id64Set): void { this._always = new Set(always); }
-  private copyNeverDrawn(never: Id64Set): void { this._never = new Set(never); }
-
-  public get isEmpty(): boolean { return this._always.size === 0 && this._never.size === 0; }
-
-  public get alwaysDrawn(): Id64Set { return this._always; }
-  public get neverDrawn(): Id64Set { return this._never; }
-
-  public isAlwaysDrawn(id: Id64): boolean { return this._always.has(id.value); }
-  public isNeverDrawn(id: Id64): boolean { return this._never.has(id.value); }
-
-  public setAlwaysDrawn(id: Id64 | Id64Set): void {
-    if (id instanceof Id64) this._always.add(id.value);
-    else this.copyAlwaysDrawn(id);
-  }
-  public setNeverDrawn(id: Id64 | Id64Set): void {
-    if (id instanceof Id64) this._never.add(id.value);
-    else this.copyNeverDrawn(id);
-  }
-
-  public clearAlwaysDrawn(id?: Id64): void {
-    if (undefined !== id) this._always.delete(id.value);
-    else this._always.clear();
-  }
-  public clearNeverDrawn(id?: Id64): void {
-    if (undefined !== id) this._never.delete(id.value);
-    else this._never.clear();
-  }
-}
-
-/**
  * Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
  */
 export class ViewSubCategories {
@@ -224,10 +171,9 @@ export class ViewSubCategories {
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  * * @see [Views]($docs/learning/frontend/Views.md)
  */
-export abstract class ViewState extends ElementState implements DrawnElementSets {
+export abstract class ViewState extends ElementState {
   protected _featureOverridesDirty = true;
   protected _selectionSetDirty = true;
-  private _noQuery: boolean = false;
   private _auxCoordSystem?: AuxCoordSystemState;
   public description?: string;
   public isPrivate?: boolean;
@@ -309,40 +255,36 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** Get the background color */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
-  /** Special Elements */
-  private _specialElements?: SpecialElements; // Get the set of special elements for this ViewState.
+  private _neverDrawn?: Id64Set;
+  private _alwaysDrawn?: Id64Set;
+  private _alwaysDrawnExclusive: boolean = false;
 
-  public get neverDrawn(): Id64Set { return undefined !== this._specialElements ? this._specialElements.neverDrawn : new Set(); } // Get the list of elements that are never drawn
-  public get alwaysDrawn(): Id64Set { return undefined !== this._specialElements ? this._specialElements.alwaysDrawn : new Set(); } // Get the list of elements that are always drawn
+  public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
+  public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
 
-  public isNeverDrawn(id: Id64): boolean { return undefined !== this._specialElements ? this._specialElements.isNeverDrawn(id) : false; }
-  public isAlwaysDrawn(id: Id64): boolean { return undefined !== this._specialElements ? this._specialElements.isAlwaysDrawn(id) : false; }
+  public clearAlwaysDrawn(): void {
+    if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
+      this.alwaysDrawn.clear();
+      this._alwaysDrawnExclusive = false;
+      this.setFeatureOverridesDirty();
+    }
+  }
 
-  private _clearAlwaysDrawn(id?: Id64): void { if (undefined !== this._specialElements) this._specialElements.clearAlwaysDrawn(id); }
-  private _clearNeverDrawn(id?: Id64): void { if (undefined !== this._specialElements) this._specialElements.clearNeverDrawn(id); }
+  public clearNeverDrawn(): void {
+    if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
+      this.neverDrawn.clear();
+      this.setFeatureOverridesDirty();
+    }
+  }
 
-  public clearAlwaysDrawn(id?: Id64): void {
-    this._clearAlwaysDrawn(id);
-    this._noQuery = false;
+  public setNeverDrawn(ids: Id64Set): void {
+    this._neverDrawn = ids;
     this.setFeatureOverridesDirty();
   }
 
-  public clearNeverDrawn(id?: Id64): void {
-    this._clearNeverDrawn(id);
-    this._noQuery = false;
-    this.setFeatureOverridesDirty();
-  }
-
-  public setNeverDrawn(id: Id64 | Id64Set): void {
-    if (undefined === this._specialElements) this._specialElements = new SpecialElements();
-    this._specialElements.setNeverDrawn(id);
-    this.setFeatureOverridesDirty();
-  }
-
-  public setAlwaysDrawn(id: Id64 | Id64Set, exclusive?: boolean): void {
-    if (undefined === this._specialElements) this._specialElements = new SpecialElements();
-    if (undefined !== exclusive) this._noQuery = exclusive;
-    this._specialElements.setAlwaysDrawn(id);
+  public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
+    this._alwaysDrawn = ids;
+    this._alwaysDrawnExclusive = exclusive;
     this.setFeatureOverridesDirty();
   }
 
@@ -380,7 +322,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   }
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
-  public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
+  public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
     if (add) {
@@ -1559,7 +1501,7 @@ export abstract class ViewState3d extends ViewState {
       const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
       args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
 
-      const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+      const gf = IModelApp.renderSystem.createTriMesh(args);
       if (undefined !== gf)
         context.setViewBackground(gf);
     }

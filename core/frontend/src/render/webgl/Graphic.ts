@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "../../IModelConnection";
+import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -266,14 +265,17 @@ export class FeatureOverrides implements IDisposable {
   private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
   private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
 
-  private _isDisposed: boolean = false;
-
   private constructor(target: Target) {
     this.target = target;
   }
 
   public static createFromTarget(target: Target) {
     return new FeatureOverrides(target);
+  }
+
+  public dispose() {
+    dispose(this.lut);
+    this.lut = undefined;
   }
 
   public get isNonUniform(): boolean { return LUTDimension.NonUniform === this.dimension; }
@@ -341,16 +343,6 @@ export class FeatureOverrides implements IDisposable {
       this._lastFlashUpdated = flashLastUpdated;
       this._lastHiliteUpdated = hiliteLastUpdated;
     }
-  }
-
-  public get isDisposed() { return this._isDisposed; }
-
-  public dispose() {
-    if (this.lut !== undefined) {
-      this.lut.dispose();
-      this.lut = undefined;
-    }
-    this._isDisposed = true;
   }
 }
 
@@ -422,7 +414,6 @@ export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
 }
 
 export abstract class Graphic extends RenderGraphic {
-  constructor(iModel: IModelConnection) { super(iModel); }
   public abstract addCommands(_commands: RenderCommands): void;
   public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
@@ -436,13 +427,22 @@ export class Batch extends Graphic {
   public readonly range: ElementAlignedBox3d;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
-  private _isDisposed: boolean = false;
 
   public constructor(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d) {
-    super(graphic.iModel);
+    super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
+  }
+
+  // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
+  public dispose() {
+    dispose(this.graphic);
+    for (const over of this._overrides) {
+      over.target.onBatchDisposed(this);
+      dispose(over);
+    }
+    this._overrides.length = 0;
   }
 
   public get pickTable(): PickTable | undefined {
@@ -468,6 +468,7 @@ export class Batch extends Graphic {
       ret = FeatureOverrides.createFromTarget(target);
       this._overrides.push(ret);
       target.addBatch(this);
+      // ###TODO target.addBatch(*this);
       ret.initFromMap(this.featureTable);
     }
 
@@ -488,20 +489,9 @@ export class Batch extends Graphic {
     }
 
     if (foundIndex > -1) {
-      this._overrides[foundIndex].dispose();
+      dispose(this._overrides[foundIndex]);
       this._overrides.splice(foundIndex, 1);
     }
-  }
-
-  public get isDisposed() { return this._isDisposed; }
-
-  public dispose(): void {
-    for (const ovr of this._overrides) {
-      ovr.target.onBatchDisposed(this);
-      ovr.dispose();
-    }
-    this._overrides = [];
-    this._isDisposed = true;
   }
 }
 
@@ -510,14 +500,16 @@ export class Branch extends Graphic {
   public readonly localToWorldTransform: Transform;
   public readonly clips?: Clip.Volume;
 
-  public constructor(iModel: IModelConnection, branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
-    super(iModel);
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
+    super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
-    this.clips = Clip.getClipVolume(clips, iModel);
+    this.clips = Clip.getClipVolume(clips);
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
   }
+
+  public dispose() { }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public assignUniformFeatureIndices(index: number): void {
@@ -525,21 +517,17 @@ export class Branch extends Graphic {
       (entry as Graphic).assignUniformFeatureIndices(index);
     }
   }
-
-  public dispose(): void {
-    // ###TODO
-  }
 }
 
 export class WorldDecorations extends Branch {
   public readonly overrides: Array<FeatureSymbology.Appearance | undefined> = [];
 
-  public constructor(iModel: IModelConnection, viewFlags: ViewFlags) { super(iModel, new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
+  public constructor(viewFlags: ViewFlags) { super(new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
 
   public init(decs: DecorationList): void {
     this.branch.clear();
     this.overrides.length = 0;
-    for (const dec of decs) {
+    for (const dec of decs.list) {
       this.branch.add(dec.graphic);
       this.overrides.push(dec.overrides);
     }
@@ -547,7 +535,14 @@ export class WorldDecorations extends Branch {
 }
 
 export class GraphicsList extends Graphic {
-  constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); }
+  // Note: We assume the graphics array we get contains undisposed graphics to start
+  constructor(public graphics: RenderGraphic[]) { super(); }
+
+  public dispose() {
+    for (const graphic of this.graphics)
+      dispose(graphic);
+    this.graphics.length = 0;
+  }
 
   public addCommands(commands: RenderCommands): void {
     for (const graphic of this.graphics) {
@@ -565,9 +560,5 @@ export class GraphicsList extends Graphic {
     for (const gf of this.graphics) {
       (gf as Graphic).assignUniformFeatureIndices(index);
     }
-  }
-
-  public dispose(): void {
-    // ###TODO
   }
 }

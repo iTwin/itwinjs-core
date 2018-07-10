@@ -6,7 +6,6 @@
 import { ClipVector, ClipPlane, Transform } from "@bentley/geometry-core";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target, Clips } from "./Target";
-import { IModelConnection } from "../../IModelConnection";
 
 // Types related to clipping.
 export namespace Clip {
@@ -71,7 +70,7 @@ export namespace Clip {
   }
 
   // Given a ClipVector, obtain an equivalent ClipVolume.
-  export function getClipVolume(clipVector: ClipVector | undefined, _iModel: IModelConnection): Volume | undefined {
+  export function getClipVolume(clipVector: ClipVector | undefined): Volume | undefined {
     let volume: Volume | undefined;
     if (undefined !== clipVector) {
       volume = Planes.create(clipVector);

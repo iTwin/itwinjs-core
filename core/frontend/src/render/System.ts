@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform } from "@bentley/geometry-core";
-import { assert, Id64, IDisposable } from "@bentley/bentleyjs-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d } from "@bentley/geometry-core";
+import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -21,6 +21,8 @@ import {
   FeatureTable,
   Gradient,
   ElementAlignedBox3d,
+  QParams3d,
+  QPoint3dList,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -64,21 +66,15 @@ export class RenderPlan {
   }
 }
 
-/**
- * A renderer-specific object that can be placed into a display list.
- */
+/** A renderer-specific object that can be placed into a display list. */
 export abstract class RenderGraphic implements IDisposable {
-  public readonly iModel: IModelConnection;
-
-  constructor(iModel: IModelConnection) { this.iModel = iModel; }
-
   public abstract dispose(): void;
 }
 
 export type GraphicList = RenderGraphic[];
 
 /** A graphic used for decorations, optionally with symbology overrides. */
-export class Decoration {
+export class Decoration implements IDisposable {
   public readonly graphic: RenderGraphic;
   public readonly overrides?: FeatureSymbology.Appearance;
 
@@ -86,10 +82,26 @@ export class Decoration {
     this.graphic = graphic;
     this.overrides = overrides;
   }
+
+  public dispose() {
+    dispose(this.graphic);
+  }
 }
 
-export class DecorationList extends Array<Decoration> {
-  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) { this.push(new Decoration(graphic, ovrs)); }
+export class DecorationList implements IDisposable {
+  public readonly list: Decoration[];
+
+  public constructor() { this.list = []; }
+
+  public dispose() {
+    for (const decoration of this.list)
+      dispose(decoration);
+    this.list.length = 0;
+  }
+
+  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) {
+    this.list.push(new Decoration(graphic, ovrs));
+  }
 }
 
 /**
@@ -97,34 +109,50 @@ export class DecorationList extends Array<Decoration> {
  * in addition to the Scene.
  */
 export class Decorations implements IDisposable {
-  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
+  private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
+  private _world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  private _worldOverlay?: DecorationList; // drawn in overlay mode, world units
+  private _viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 
-  public reset(): void {
-    this.viewBackground = undefined;
-    this.normal = undefined;
-    this.world = this.worldOverlay = this.viewOverlay = undefined;
+  // Getters & Setters - dispose of members before resetting
+  public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
+  public set viewBackground(viewBackground: RenderGraphic | undefined) {
+    dispose(this._viewBackground);  // no effect if already disposed
+    this._viewBackground = viewBackground;
+  }
+  public get normal(): GraphicList | undefined { return this._normal; }
+  public set normal(normal: GraphicList | undefined) {
+    if (this._normal)
+      for (const graphic of this._normal)
+        dispose(graphic);
+    this._normal = normal;
+  }
+  public get world(): DecorationList | undefined { return this._world; }
+  public set world(world: DecorationList | undefined) {
+    dispose(this._world); // no effect if already disposed
+    this._world = world;
+  }
+  public get worldOverlay(): DecorationList | undefined { return this._worldOverlay; }
+  public set worldOverlay(worldOverlay: DecorationList | undefined) {
+    dispose(this._worldOverlay);  // no effect if already disposed
+    this._worldOverlay = worldOverlay;
+  }
+  public get viewOverlay(): DecorationList | undefined { return this._viewOverlay; }
+  public set viewOverlay(viewOverlay: DecorationList | undefined) {
+    dispose(this._viewOverlay); // no effect if already disposed
+    this._viewOverlay = viewOverlay;
   }
 
-  /** Dispose of all of the contained RenderGraphics and WebGL resources corresponding to these decorations. */
-  public dispose(): void {
-    if (this.viewBackground)
-      this.viewBackground.dispose();
-    if (this.normal)
-      for (const graphic of this.normal)
-        graphic.dispose();
-    if (this.world)
-      for (const decoration of this.world)
-        decoration.graphic.dispose();
-    if (this.worldOverlay)
-      for (const decoration of this.worldOverlay)
-        decoration.graphic.dispose();
-    if (this.viewOverlay)
-      for (const decoration of this.viewOverlay)
-        decoration.graphic.dispose();
+  public dispose() {
+    this._viewBackground = dispose(this._viewBackground);
+    this._world = dispose(this._world);
+    this._worldOverlay = dispose(this._worldOverlay);
+    this._viewOverlay = dispose(this._viewOverlay);
+    if (this._normal)
+      for (const graphic of this._normal)
+        dispose(graphic);
+    this._normal = undefined;
   }
 }
 
@@ -135,14 +163,20 @@ export class GraphicBranch {
 
   public constructor() { }
 
-  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
-  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
+  public add(graphic: RenderGraphic): void {
+    this.entries.push(graphic);
+  }
+  public addRange(graphics: RenderGraphic[]): void {
+    graphics.forEach(this.add);
+  }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
-  public clear() { this.entries.length = 0; }
+  public clear() {
+    this.entries.length = 0;
+  }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 
@@ -201,6 +235,7 @@ export namespace Pixel {
  * Every DgnViewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
+
   public static get frustumDepth2d(): number { return 1.0; } // one meter
 
   public abstract get renderSystem(): RenderSystem;
@@ -210,7 +245,7 @@ export abstract class RenderTarget implements IDisposable {
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
-  public dispose() { }
+  public abstract dispose(): void;
   public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
@@ -233,7 +268,7 @@ export abstract class RenderTarget implements IDisposable {
  * A RenderSystem is the renderer-specific factory for creating Render::Graphics, Render::Textures, and Render::Materials.
  * @note The methods of this class may be called from any thread.
  */
-export abstract class RenderSystem {
+export abstract class RenderSystem implements IDisposable {
   protected _nowPainting?: RenderTarget;
   public readonly canvas: HTMLCanvasElement;
   public get isPainting(): boolean { return !!this._nowPainting; }
@@ -244,10 +279,12 @@ export abstract class RenderSystem {
   public isValid(): boolean { return this.canvas !== undefined; }
   public constructor(canvas: HTMLCanvasElement) { this.canvas = canvas; }
 
+  public abstract dispose(): void;
+
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
 
-  // /** Create an offscreen render target. */
+  /** Create an offscreen render target. */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   /** Find a previously-created Material by key. Returns null if no such material exists. */
@@ -265,29 +302,44 @@ export abstract class RenderSystem {
   // /** Create a Viewlet from parameters */
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
 
-  // /** Create a triangle mesh primitive */
-  public createTriMesh(_args: MeshArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  /** Create a triangle mesh primitive */
+  public createTriMesh(_args: MeshArgs): RenderGraphic | undefined { return undefined; }
 
-  // /** Create an indexed polyline primitive */
-  public createIndexedPolylines(_args: PolylineArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  /** Create an indexed polyline primitive */
+  public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
 
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
 
-  // /** Create polygons on a range for a sheet tile */
-  // public abstract createSheetTilePolys(corners: GraphicBuilderTileCorners, clip: ClipVector, rangeOut: Range3d): PolyfaceHeader[];
+  /** Create a tile primitive */
+  public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
+    const rasterTile = new MeshArgs();
 
-  // /** Create a sheet tile primitive from polys */
-  // public abstract createSheetTile(tile: Texture, corners: GraphicBuilderTileCorners, imodel: IModel, params: GraphicParams): Graphic[];
+    // corners
+    // [0] [1]
+    // [2] [3]
+    rasterTile.points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
+    for (let i = 0; i < 4; ++i)
+      rasterTile.points.add(corners[i]);
 
-  // /** Create a tile primitive */
-  // public abstract createTile(tile: Texture, corners: GraphicBuilderTileCorners, imodel: IModel, params: GraphicParams): Graphic;
+    rasterTile.vertIndices = [0, 1, 2, 2, 1, 3];
+    rasterTile.textureUv = [
+      new Point2d(0.0, 0.0),
+      new Point2d(1.0, 0.0),
+      new Point2d(0.0, 1.0),
+      new Point2d(1.0, 1.0),
+    ];
+
+    rasterTile.texture = tileTexture;
+    rasterTile.isPlanar = true;
+    return this.createTriMesh(rasterTile);
+  }
 
   /** Create a Graphic consisting of a list of Graphics */
-  public abstract createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic;
+  public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a Graphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
@@ -320,5 +372,4 @@ export abstract class RenderSystem {
   public idle(): void { }
 
   public onInitialized(): void { }
-  public onShutDown(): void { }
 }

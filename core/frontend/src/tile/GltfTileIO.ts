@@ -251,15 +251,15 @@ export namespace GltfTileIO {
       if (!geometry.isEmpty) {
         const meshGraphicArgs = new MeshGraphicArgs();
         if (1 === geometry.meshes.length) {
-          renderGraphic = geometry.meshes[0].getGraphics(meshGraphicArgs, this.system, this.model.iModel);
+          renderGraphic = geometry.meshes[0].getGraphics(meshGraphicArgs, this.system);
         } else {
           const renderGraphicList: RenderGraphic[] = [];
           for (const mesh of geometry.meshes) {
-            renderGraphic = mesh.getGraphics(meshGraphicArgs, this.system, this.model.iModel);
+            renderGraphic = mesh.getGraphics(meshGraphicArgs, this.system);
             if (undefined !== renderGraphic)
               renderGraphicList.push(renderGraphic);
           }
-          renderGraphic = this.system.createGraphicList(renderGraphicList, this.model.iModel);
+          renderGraphic = this.system.createGraphicList(renderGraphicList);
         }
         if (undefined !== renderGraphic) {
           renderGraphic = this.system.createBatch(renderGraphic, featureTable, contentRange);
@@ -269,7 +269,7 @@ export namespace GltfTileIO {
             let transform = (undefined === this.returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this.returnToCenter[0], this.returnToCenter[1], this.returnToCenter[2]);
             if (this.yAxisUp) transform = transform.multiplyTransformRotMatrix(RotMatrix.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as RotMatrix);
 
-            renderGraphic = this.system.createBranch(branch, this.model.iModel, transform);
+            renderGraphic = this.system.createBranch(branch, transform);
           }
         }
       }

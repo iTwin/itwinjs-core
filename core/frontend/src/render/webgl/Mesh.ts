@@ -3,12 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { SurfaceType, RenderPass, RenderOrder } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
 import { Graphic, wantJointTriangles, Batch } from "./Graphic";
@@ -58,7 +57,7 @@ export class MeshInfo {
   }
 }
 
-export class MeshData extends MeshInfo {
+export class MeshData extends MeshInfo implements IDisposable {
   public readonly lut: VertexLUT.Data;
   public readonly material?: Material;
   public readonly animation: any; // should be a AnimationLookupTexture;
@@ -73,6 +72,10 @@ export class MeshData extends MeshInfo {
     this.lut = lut;
     this.material = params.material;
     this.animation = undefined;
+  }
+
+  public dispose() {
+    dispose(this.lut);
   }
 }
 
@@ -135,13 +138,13 @@ export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: MeshPrimitive[] = [];
 
-  public static create(args: MeshArgs, iModel: IModelConnection) {
+  public static create(args: MeshArgs): MeshGraphic | undefined {
     const data = MeshData.create(new MeshParams(args));
-    return undefined !== data ? new MeshGraphic(data, args, iModel) : undefined;
+    return undefined !== data ? new MeshGraphic(data, args) : undefined;
   }
 
-  private constructor(data: MeshData, args: MeshArgs, iModel: IModelConnection) {
-    super(iModel);
+  private constructor(data: MeshData, args: MeshArgs) {
+    super();
     this.meshData = data;
 
     const surface = SurfacePrimitive.create(args, this);
@@ -172,6 +175,13 @@ export class MeshGraphic extends Graphic {
     }
   }
 
+  public dispose() {
+    dispose(this.meshData);
+    for (const primitive of this._primitives)
+      dispose(primitive);
+    this._primitives.length = 0;
+  }
+
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
   public addHiliteCommands(cmds: DrawCommands, batch: Batch): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch)); }
 
@@ -184,10 +194,6 @@ export class MeshGraphic extends Graphic {
     // });
   }
   public get surfaceType(): SurfaceType { return this.meshData.type; }
-
-  public dispose(): void {
-    // ###TODO
-  }
 }
 
 // Defines one aspect of the geometry of a mesh (surface or edges)
@@ -230,12 +236,12 @@ export abstract class MeshGeometry extends LUTGeometry {
 }
 
 export abstract class MeshPrimitive extends Primitive {
-  public readonly mesh: MeshGraphic;
+  public readonly mesh: MeshGraphic;  // is not owned (mesh is the owner of THIS MeshPrimitive)
 
   public get meshData(): MeshData { return this.mesh.meshData; }
 
   protected constructor(cachedGeom: MeshGeometry, mesh: MeshGraphic) {
-    super(cachedGeom, mesh.iModel);
+    super(cachedGeom);
     this.mesh = mesh;
   }
 
@@ -337,6 +343,11 @@ export class EdgeGeometry extends MeshGeometry {
     return undefined;
   }
 
+  public dispose() {
+    dispose(this._indices);
+    dispose(this._endPointAndQuadIndices);
+  }
+
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
@@ -427,6 +438,11 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     return undefined;
   }
 
+  public dispose() {
+    dispose(this._normalPairs);
+    super.dispose();
+  }
+
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.SilhouetteEdge; }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
   public get normalPairs(): BufferHandle { return this._normalPairs; }
@@ -470,6 +486,10 @@ export class PolylineEdgeGeometry extends MeshGeometry {
       }
     }
     return undefined;
+  }
+
+  public dispose() {
+    dispose(this._buffers);
   }
 
   public _wantWoWReversal(_target: Target): boolean { return true; }
