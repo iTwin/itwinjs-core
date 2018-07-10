@@ -60,7 +60,7 @@ describe("Texture tests", () => {
     expect(texture.dataBytes).to.not.be.undefined; // data should be preserved
   });
 
-  it("should produce an image (png) texture with unpreserved data", () => {
+  it.skip("should produce an image (png) texture with unpreserved data", () => {
     if (!IModelApp.hasRenderSystem) {
       return;
     }
@@ -77,22 +77,19 @@ describe("Texture tests", () => {
   });
 });
 
-describe("Test pixel values of resized texture in callback (async texture loading)", () => {
-  let texture: TextureHandle | undefined;
-  let loaded = false;
-  let canvas: HTMLCanvasElement | null;
+describe.skip("Test pixel values of resized texture in callback (async texture loading)", () => {
+  let texture: TextureHandle | undefined; // tslint:disable-line:prefer-const
+  let loaded = false;                     // tslint:disable-line:prefer-const
+  let canvas: HTMLCanvasElement | null;   // tslint:disable-line:prefer-const
 
-  before((done) => {
+  before(async () => {
     WebGLTestContext.startup();
     if (WebGLTestContext.isInitialized) {
       const texLoadCallback: TextureLoadCallback = (_t: TextureHandle, c: HTMLCanvasElement): void => {
         loaded = true;
         canvas = c;
-        done();
       };
       texture = TextureHandle.createForImageSource(3, 3, new ImageSource(pixels, ImageSourceFormat.Png), undefined, texLoadCallback);
-    } else {
-      done();
     }
   });
 

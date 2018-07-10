@@ -9,7 +9,7 @@ import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
   MeshArgs, OnScreenTarget, GraphicBuilderCreateParams, GraphicType,
-  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan, System,
+  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -113,7 +113,8 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
   return true;
 }
 
-describe("Disposal of WebGL Resources", () => {
+// This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
+describe("Disposal of System", () => {
   before(async () => {
     canvas = document.createElement("canvas") as HTMLCanvasElement;
     assert(null !== canvas);
@@ -167,6 +168,27 @@ describe("Disposal of WebGL Resources", () => {
     assert.isUndefined(system.findTexture("-192837465", imodel0));
     assert.isUndefined(system.findTexture("-918273645", imodel0));
   });
+});
+
+describe("Disposal of WebGL Resources", () => {
+  before(async () => {
+    canvas = document.createElement("canvas") as HTMLCanvasElement;
+    assert(null !== canvas);
+    canvas!.width = canvas!.height = 1000;
+    document.body.appendChild(canvas!);
+
+    WebGLTestContext.startup();
+
+    await TestData.load();
+    imodel0 = await IModelConnection.openStandalone(iModelLocation);
+    imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
+  });
+
+  after(async () => {
+    await imodel0.closeStandalone();
+    await imodel1.close(TestData.accessToken);
+    WebGLTestContext.shutdown();
+  });
 
   it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
     if (!IModelApp.hasRenderSystem)
@@ -214,10 +236,8 @@ describe("Disposal of WebGL Resources", () => {
   });
 
   it("expect disposal of target to trigger disposal of only owned resources", async () => {
-    // Due to previous tests that disposed of some items, re-initialize the system, bipassing type-checking
-    (IModelApp as any)._renderSystem = System.create();
-    (IModelApp as any)._renderSystem.onInitialized();
-
+    if (!IModelApp.hasRenderSystem)
+      return;
     const system = IModelApp.renderSystem;
 
     // Let's grab an actual view and set up a target that is holding prepared decorations
