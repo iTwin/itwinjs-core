@@ -10,7 +10,7 @@ import {
   PropertyDescription, PropertyRecord,
   PropertyValueFormat, PropertyEditorInfo, EnumerationChoicesInfo,
   PropertyValue, PrimitiveValue, ArrayValue, StructValue,
-} from "@bentley/ui-components";
+} from "@bentley/ui-components/lib/properties";
 
 const isNestedContent = (v: content.Value): v is content.NestedContent[] => {
   // note: we don't guarantee by 100% that v is NestedContent[], but merely make compiler happy.

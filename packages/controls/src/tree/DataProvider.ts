@@ -7,8 +7,8 @@ import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
-import { CheckBoxState } from "@bentley/ui-core";
-import { TreeNodeItem } from "@bentley/ui-components";
+import { CheckBoxState } from "@bentley/ui-core/lib/enums/CheckBoxState";
+import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import StyleHelper from "../common/StyleHelper";
 
 /**

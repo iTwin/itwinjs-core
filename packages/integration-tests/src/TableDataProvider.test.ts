@@ -7,8 +7,8 @@ import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { ECPresentationTableDataProvider } from "@bentley/ecpresentation-controls/lib/table";
-import { SortDirection } from "@bentley/ui-core";
+import ECPresentationTableDataProvider from "@bentley/ecpresentation-controls/lib/table/DataProvider";
+import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
 import "@helpers/Snapshots";
 
 before(() => {
