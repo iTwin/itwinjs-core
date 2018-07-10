@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "5",
+    "@types/fs-extra": "5.0.4",
     "tslint": "^5.9.0",
     "typescript": "~2.7.2"
   }

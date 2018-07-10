@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// tslint:disable-next-line:no-var-keyword
-// tslint:disable-next-line:no-var-requires
-// const prompt = require("prompt");
+// tslint:disable:no-console
+
 import { BriefcaseManager, IModelHost, IModelDb, /*OpenParams,*/ IModelHostConfiguration, IModelAccessContext } from "@bentley/imodeljs-backend";
-import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, Version } from "@bentley/imodeljs-clients";
+import { AccessToken, IModelQuery, IModelRepository, ChangeSet, Version } from "@bentley/imodeljs-clients";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -30,7 +29,7 @@ export class DemoBackend {
     IModelHost.startup(hostConfig);
   }
 
-  private static displayIModelInfo(iModel: HubIModel) {
+  private static displayIModelInfo(iModel: IModelRepository) {
     console.log(`name: ${iModel.name} ID: ${iModel.wsgId}`);
     // *** TODO: Log more info
   }
@@ -70,7 +69,7 @@ export class DemoBackend {
     BriefcaseManager.setContext(context);
 
     console.log("\niModel:");
-    const iModel: HubIModel = (await BriefcaseManager.imodelClient.IModels().get(accessToken, context.projectId, new IModelQuery().byId(context.iModelId)))[0];
+    const iModel: IModelRepository = (await BriefcaseManager.imodelClient.IModels().get(accessToken, context.projectId, new IModelQuery().byId(context.iModelId)))[0];
     DemoBackend.displayIModelInfo(iModel);
 
     console.log("\nChangeSets:");
