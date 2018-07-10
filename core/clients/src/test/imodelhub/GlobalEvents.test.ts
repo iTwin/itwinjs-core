@@ -7,7 +7,7 @@ import { Guid } from "@bentley/bentleyjs-core";
 
 import { AccessToken, IModelClient } from "../../";
 import {
-  IModelHubClient, IModelRepository, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
+  IModelRepository, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent,
 } from "../../";

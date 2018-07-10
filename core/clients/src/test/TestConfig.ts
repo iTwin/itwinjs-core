@@ -4,7 +4,8 @@
 import { DeploymentEnv } from "../Client";
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { IModelHubClient, Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelhub";
+import { Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelhub";
+import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
 

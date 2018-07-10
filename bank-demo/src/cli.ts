@@ -6,6 +6,8 @@ import { DemoBackend } from "./DemoBackend";
 
 const args = process.argv.slice(2);
 
+// tslint:disable:no-console
+
 let useIModelHub = false;
 if (args[0].toLowerCase() === "hub")
   useIModelHub = true;
