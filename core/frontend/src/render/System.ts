@@ -68,12 +68,6 @@ export class RenderPlan {
 
 /** A renderer-specific object that can be placed into a display list. */
 export abstract class RenderGraphic implements IDisposable {
-  public readonly iModel: IModelConnection;
-
-  constructor(iModel: IModelConnection) {
-    this.iModel = iModel;
-  }
-
   public abstract dispose(): void;
 }
 

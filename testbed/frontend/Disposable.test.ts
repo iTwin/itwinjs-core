@@ -178,8 +178,8 @@ describe("Disposal of WebGL Resources", () => {
       args.points.add(point);
     args.vertIndices = [0, 1, 2];
     args.colors.initUniform(ColorByName.tan);
-    const meshGraphic0 = system.createTriMesh(args, imodel0)!;
-    const meshGraphic1 = system.createTriMesh(args, imodel0)!;
+    const meshGraphic0 = system.createTriMesh(args)!;
+    const meshGraphic1 = system.createTriMesh(args)!;
     assert.isDefined(meshGraphic0);
     assert.isDefined(meshGraphic1);
 
