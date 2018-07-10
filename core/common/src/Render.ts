@@ -194,14 +194,17 @@ export class PolylineEdgeArgs {
 
 /** A Texture for rendering */
 export abstract class RenderTexture implements IDisposable {
-  public readonly params: RenderTexture.Params;
+  public readonly key: string | undefined;
+  public readonly isGlyph: boolean;
+  public readonly isTileSection: boolean;
 
-  protected constructor(params: RenderTexture.Params) { this.params = params; }
+  protected constructor(params: RenderTexture.Params) {
+    this.key = params.key;
+    this.isGlyph = params.isGlyph;
+    this.isTileSection = params.isTileSection;
+  }
+
   public abstract dispose(): void;
-
-  public get key(): string | undefined { return this.params.key; }
-  public get isGlyph(): boolean { return this.params.isGlyph; }
-  public get isTileSection(): boolean { return this.params.isTileSection; }
 }
 
 export namespace RenderTexture {
