@@ -9,7 +9,7 @@ import { EntityProps } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
 import { IModelError, IModelStatus } from "./IModelError";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
-import { Rank, AppearanceProps } from "./SubCategoryAppearance";
+import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of an ECNavigationProperty. */
 export interface RelatedElementProps {
@@ -170,6 +170,6 @@ export interface CategoryProps extends ElementProps {
 
 /** Parameters of a [SubCategory]($backend) */
 export interface SubCategoryProps extends ElementProps {
-  appearance?: AppearanceProps;
+  appearance?: SubCategoryAppearance.Props;
   description?: string;
 }

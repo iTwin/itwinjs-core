@@ -28,9 +28,11 @@ export class RenderBuffer implements IDisposable {
     return new RenderBuffer(glBuffer);
   }
 
+  public get isDisposed(): boolean { return this._glBuffer === undefined || this._glBuffer === null; }
+
   public dispose(): void {
-    if (undefined !== this._glBuffer) {
-      System.instance.context.deleteRenderbuffer(this._glBuffer);
+    if (!this.isDisposed) {
+      System.instance.context.deleteRenderbuffer(this._glBuffer!);
       this._glBuffer = undefined;
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.97.1",
+  "version": "0.97.2",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -36,7 +36,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "8",
     "@bentley/geometry-core": "9",
-    "@bentley/imodeljs-clients": "6",
+    "@bentley/imodeljs-clients": "7",
     "@bentley/imodeljs-common": "0"
   },
   "//devDependencies": [
@@ -47,7 +47,7 @@
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "5",
     "@bentley/geometry-core": "9",
-    "@bentley/imodeljs-clients": "6",
+    "@bentley/imodeljs-clients": "7",
     "@bentley/imodeljs-common": "0",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
@@ -70,11 +70,8 @@
     "webpack": "^3.10.0",
     "asn1": "0.2.3"
   },
-  "//dependencies": [
-    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
-  ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~22.0.0",
+    "@bentley/imodeljs-native-platform-api": "~23.0.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

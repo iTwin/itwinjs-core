@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, BeDuration, StopWatch } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -158,7 +158,7 @@ export class PerformanceMetrics {
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
-  private _decorations = new Decorations();
+  private _decorations?: Decorations;
   private _dynamics?: DecorationList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
@@ -187,15 +187,14 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  public readonly environmentMap?: TextureHandle; // ###TODO: for IBL
-  public readonly diffuseMap?: TextureHandle; // ###TODO: for IBL
+  private _environmentMap?: TextureHandle; // ###TODO: for IBL
+  private _diffuseMap?: TextureHandle; // ###TODO: for IBL
   public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
-  private _isDisposed: boolean = false;
 
   protected constructor() {
     super();
@@ -204,7 +203,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this.compositor = new SceneCompositor(this);
+    this.compositor = new SceneCompositor(this);  // compositor is created but not yet initialized... we are still undisposed
   }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
@@ -232,11 +231,11 @@ export abstract class Target extends RenderTarget {
   public get shaderLights(): ShaderLights | undefined { return this._shaderLights; }
 
   public get scene(): GraphicList { return this._scene; }
-  public get decorations(): Decorations { return this._decorations; }
   public get dynamics(): DecorationList | undefined { return this._dynamics; }
+
   public getWorldDecorations(decs: DecorationList): WorldDecorations {
     if (undefined === this._worldDecorations) {
-      assert(0 < decs.length);
+      assert(0 < decs.list.length);
 
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
       const vf = new ViewFlags();
@@ -248,7 +247,7 @@ export abstract class Target extends RenderTarget {
         vf.setShowSolarLight(false);
       }
 
-      this._worldDecorations = new WorldDecorations(decs[0].graphic.iModel, vf);
+      this._worldDecorations = new WorldDecorations(vf);
     }
 
     this._worldDecorations.init(decs);
@@ -266,11 +265,32 @@ export abstract class Target extends RenderTarget {
   public set clipMask(mask: TextureHandle | undefined) {
     assert(!this.hasClipMask);
     assert(this.is2d);
+    dispose(this._clipMask);
     this._clipMask = mask;
   }
 
+  public get environmentMap(): TextureHandle | undefined { return this._environmentMap; }
+  public get diffuseMap(): TextureHandle | undefined { return this._diffuseMap; }
+
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
+
+  public dispose() {
+    dispose(this._decorations);
+    dispose(this.compositor);
+    this._dynamics = dispose(this._dynamics);
+    this._worldDecorations = dispose(this._worldDecorations);
+    this._clipMask = dispose(this._clipMask);
+    this._environmentMap = dispose(this._environmentMap);
+    this._diffuseMap = dispose(this._diffuseMap);
+
+    for (const batch of this._batches)
+      batch.onTargetDisposed(this);
+    this._batches = [];
+
+    this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
+    this._renderCommands.clear();
+  }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
     this._stack.pushBranch(branch);
@@ -332,8 +352,11 @@ export abstract class Target extends RenderTarget {
   }
 
   public changeDecorations(decs: Decorations): void {
-    this._decorations.dispose();
+    this._decorations = dispose(this._decorations);
     this._decorations = decs;
+    for (let i = 0; i < 16; i++) {
+      System.instance.context.disableVertexAttribArray(i);
+    }
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
@@ -342,6 +365,7 @@ export abstract class Target extends RenderTarget {
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
     // See IModelConnection.transientIds
+    dispose(this._dynamics);
     this._dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
@@ -376,6 +400,7 @@ export abstract class Target extends RenderTarget {
     if (this._dcAssigned && plan.is3d !== this.is3d) {
       // changed the dimensionality of the Target. World decorations no longer valid.
       // (lighting is enabled or disabled based on 2d vs 3d).
+      dispose(this._worldDecorations);
       this._worldDecorations = undefined;
     }
 
@@ -530,22 +555,12 @@ export abstract class Target extends RenderTarget {
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
-  public get isDisposed() { return this._isDisposed; }
-
-  public dispose() {
-    for (const batch of this._batches)
-      batch.onTargetDisposed(this);
-    this._batches = [];
-    this._renderCommands.clear();
-    this._isDisposed = true;
-  }
-
   public queueReset(): void {
     this.reset();
   }
   public reset(): void {
+    this.dispose();
     this._scene.length = 0;
-    this._decorations.reset();
     this._dynamics = undefined;
     // ###TODO this._activeVolume = undefined;
   }
@@ -607,13 +622,11 @@ export abstract class Target extends RenderTarget {
     const rect = this.viewRect;
     gl.viewport(0, 0, rect.width, rect.height);
 
-    // ###TODO? System.instance.garbage.execute();
-
     this.setFrameTime();
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
     this.setFrameTime();
-    this.compositor.draw(this._renderCommands);
+    this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
     this.setFrameTime();
     this._stack.pushState(this.decorationState);
@@ -685,10 +698,9 @@ export abstract class Target extends RenderTarget {
         result = this.readPixelsFromFbo(rect, selector);
       });
 
-      fbo.dispose();
+      dispose(fbo);
     }
-
-    texture.dispose();
+    dispose(texture);
 
     return result;
   }
@@ -757,7 +769,7 @@ export abstract class Target extends RenderTarget {
     }
 
     // Draw the scene
-    this.compositor.drawForReadPixels(this._renderCommands);
+    this.compositor.drawForReadPixels(this._renderCommands);  // compositor gets disposed and re-initialized... target remains undisposed
 
     // Restore the state
     this._stack.pop();
@@ -785,6 +797,12 @@ export class OnScreenTarget extends Target {
     this._canvas = canvas;
   }
 
+  public dispose() {
+    this._fbo = dispose(this._fbo);
+    this._blitGeom = dispose(this._blitGeom);
+    super.dispose();
+  }
+
   public get viewRect(): ViewRect {
     this._viewRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
     assert(Math.floor(this._viewRect.width) === this._viewRect.width && Math.floor(this._viewRect.height) === this._viewRect.height, "fractional view rect dimensions");
@@ -803,6 +821,7 @@ export class OnScreenTarget extends Target {
     }
 
     this._fbo = FrameBuffer.create([color]);
+    // color.dispose();  // dispose of the texture (it is not used anymore)...?
     if (undefined === this._fbo) {
       return false;
     }
@@ -883,6 +902,7 @@ export class OnScreenTarget extends Target {
   }
   public onResized(): void {
     this._dcAssigned = false;
+    dispose(this._fbo);
     this._fbo = undefined;
   }
 }
@@ -910,7 +930,7 @@ export class OffScreenTarget extends Target {
 
     this._dcAssigned = false;
     // ###TODO this._fbo = undefined;
-    this.compositor.reset();
+    dispose(this.compositor);
   }
 
   // ###TODO...
@@ -984,7 +1004,7 @@ function interpolatePoint(p0: Point3d, fraction: number, p1: Point3d, out: Point
     z = p0.z + fraction * (p1.z - p0.z);
   } else {
     const t = fraction - 1.0;
-    x = p1.x + t * (p1.y - p0.x);
+    x = p1.x + t * (p1.x - p0.x);
     y = p1.y + t * (p1.y - p0.y);
     z = p1.z + t * (p1.z - p0.z);
   }

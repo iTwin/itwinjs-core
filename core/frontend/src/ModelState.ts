@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
@@ -50,6 +50,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
+
+  /** Runs when the iModel this iModelState represents closes. */
+  public onIModelConnectionClose() { }
 }
 
 /** The state of a geometric model */
@@ -73,37 +76,53 @@ export abstract class GeometricModelState extends ModelState {
 
   /** @hidden */
   public loadTileTree(): TileTree.LoadStatus {
-    if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
-      this._loadStatus = TileTree.LoadStatus.Loading;
-      if (this.classFullName === "ScalableMesh:ScalableMeshModel") {
-        ScalableMeshTileTree.getTileTreeProps(this.modeledElement, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
-          this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
-          IModelApp.viewManager.onNewTilesReady();
-        }).catch((_err) => {
-          this._loadStatus = TileTree.LoadStatus.NotFound;
-        });
-      } else if (this.classFullName === "BisCore:WebMercatorModel") {
-        WebMercatorTileTree.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
+    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
+      return this._loadStatus;
+
+    this._loadStatus = TileTree.LoadStatus.Loading;
+    switch (this.classFullName) {
+      case "ScalableMesh:ScalableMeshModel":
+      case "PointCloud2:PointCloud2Model":
+        {
+          const json = (this.classFullName === "ScalableMesh:ScalableMeshModel") ? this.jsonProperties.scalablemesh : this.jsonProperties.pointcloud2;
+          if (json !== undefined && json.FileId !== undefined) {
+            ScalableMeshTileTree.getTileTreeProps(json.FileId, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
+              this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
+              IModelApp.viewManager.onNewTilesReady();
+            }).catch((_err) => {
+              this._loadStatus = TileTree.LoadStatus.NotFound;
+            });
+	case "BisCore:WebMercatorModel":
+	{
+ 	WebMercatorTileTree.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
           this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
         }).catch((_err) => {
           this._loadStatus = TileTree.LoadStatus.NotFound;
         });
-      } else {
-        const ids = Id64.toIdSet(this.id);
-        this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
-          this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
-          IModelApp.viewManager.onNewTilesReady();
-        }).catch((_err) => {
-          this._loadStatus = TileTree.LoadStatus.NotFound;
-        });
-      }
+
+      default:
+        {
+          const ids = Id64.toIdSet(this.id);
+          this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
+            this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
+            IModelApp.viewManager.onNewTilesReady();
+          }).catch((_err) => {
+            this._loadStatus = TileTree.LoadStatus.NotFound;
+          });
+        }
     }
+
     return this._loadStatus;
   }
 
   private setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
+  }
+
+  public onIModelConnectionClose() {
+    dispose(this._tileTree);  // we do not track if we are disposed... catch this at the tiletree level
+    super.onIModelConnectionClose();
   }
 }
 

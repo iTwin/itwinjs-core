@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
+import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
@@ -253,7 +253,7 @@ export class IModelTestUtils {
   }
 
   // Create a SpatialCategory, insert it, and set its default appearance
-  public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: Appearance): Id64 {
+  public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: SubCategoryAppearance): Id64 {
     const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
     cat.id = definitionModel.iModel.elements.insertElement(cat);
     cat.setDefaultAppearance(appearance);

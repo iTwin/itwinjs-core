@@ -5,7 +5,6 @@
 
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../IModelConnection";
 import { Target } from "./Target";
 import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry } from "./CachedGeometry";
@@ -15,6 +14,7 @@ import { DrawParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { RenderCommands, DrawCommand, DrawCommands } from "./DrawCommand";
+import { dispose } from "../../../../bentley/lib/Disposable";
 
 export const enum PolylineParam {
   kNone = 0,
@@ -84,7 +84,11 @@ export abstract class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(iModel); this.cachedGeometry = cachedGeom; }
+  public constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
+
+  public dispose() {
+    dispose(this.cachedGeometry);
+  }
 
   public getRenderPass(target: Target) {
     if (this.isPixelMode)
@@ -133,13 +137,9 @@ export abstract class Primitive extends Graphic {
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 
   public get debugString(): string { return this.cachedGeometry.debugString; }
-
-  public dispose(): void {
-    // ###TODO
-  }
 }
 
 export class PointCloudPrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(cachedGeom, iModel); }
+  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }

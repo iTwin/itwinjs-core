@@ -149,6 +149,7 @@ export class PrimitivePointStringGeometry extends Geometry {
 
     const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, true, false);
     strksPrim.strokes = strksPts;
+    strksPrim.transform(this.transform);
     strksList.push(strksPrim);
 
     return strksList;
@@ -173,6 +174,7 @@ export class PrimitiveLineStringGeometry extends Geometry {
 
     const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, false, false);
     strksPrim.strokes = strksPts;
+    strksPrim.transform(this.transform);
     strksList.push(strksPrim);
 
     return strksList;
@@ -198,9 +200,8 @@ export class PrimitiveLoopGeometry extends Geometry {
     const contour = SweepContour.createForLinearSweep(this.loop);
     if (contour !== undefined) {
       const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
-      contour.emitFacets(pfBuilder, facetOptions, false); // build facets and emit them to the builder
+      contour.emitFacets(pfBuilder, facetOptions, false, this.transform); // build facets and emit them to the builder
       const polyface = pfBuilder.claimPolyface();
-
       const wantEdges = DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType;
       const isPlanar = true;
       return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));

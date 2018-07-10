@@ -5,7 +5,6 @@
 
 import { QParams3d, QPoint3dList, PolylineFlags, PolylineData, RenderMode } from "@bentley/imodeljs-common";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { IModelConnection } from "../../IModelConnection";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { Primitive } from "./Primitive";
 import { wantJointTriangles } from "./Graphic";
@@ -21,6 +20,7 @@ import { ColorInfo } from "./ColorInfo";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
+import { dispose } from "../../../../bentley/lib/Disposable";
 
 export class PolylineInfo {
   public vertexParams: QParams3d;
@@ -234,12 +234,17 @@ export class PolylineGeometry extends LUTGeometry {
   public numIndices: number;
   private buffers: PolylineBuffers;
 
-  public constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
+  private constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
     super();
     this.polyline = info;
     this.lut = lut;
     this.numIndices = numIndices;
     this.buffers = buffers;
+  }
+
+  public dispose() {
+    dispose(this.lut);
+    dispose(this.buffers);
   }
 
   public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }
@@ -285,12 +290,12 @@ export class PolylineGeometry extends LUTGeometry {
   public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
 
   public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this.buffers.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+    attr.enableArray(this.buffers!.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
 
   public draw(): void {
     const gl = System.instance.context;
-    this.buffers.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    this.buffers!.indices.bind(GL.Buffer.Target.ArrayBuffer);
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
   }
 
@@ -315,10 +320,10 @@ export class PolylineGeometry extends LUTGeometry {
 }
 
 export class PolylinePrimitive extends Primitive {
-  private constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(cachedGeom, iModel); }
-  public static create(args: PolylineArgs, iModel: IModelConnection): PolylinePrimitive | undefined {
+  private constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+  public static create(args: PolylineArgs): PolylinePrimitive | undefined {
     const geom = PolylineGeometry.create(args);
-    return undefined !== geom ? new PolylinePrimitive(geom, iModel) : undefined;
+    return undefined !== geom ? new PolylinePrimitive(geom) : undefined;
   }
   public get renderOrder(): RenderOrder { return (this.cachedGeometry as PolylineGeometry).renderOrder; }
   public get isPlanar(): boolean { return (this.cachedGeometry as PolylineGeometry).isPlanar; }

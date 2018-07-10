@@ -2,10 +2,10 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping, Gradient, SubCategoryOverride, Appearance as SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping, Gradient, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64, assert } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem } from "./rendering";
 
@@ -14,7 +14,6 @@ export abstract class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
   private _monochrome: ColorDef;
-  private _subCategories: Map<string, SubCategoryAppearance> = new Map<string, SubCategoryAppearance>();
   private _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
 
   constructor(props: ElementProps, iModel: IModelConnection) {
@@ -60,59 +59,18 @@ export abstract class DisplayStyleState extends ElementState {
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 
   public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
-    if (!id.isValid)
-      return;
-
-    this._subCategoryOverrides.set(id.value, ovr);
-
-    this.loadSubCategory(id); // To ensure none of the previous overrides are still active, we reload the original SubCategory
-
-    // now apply this override to the unmodified SubCategory appearance
-    const sc = this._subCategories.get(id.value);
-    if (sc !== undefined)
-      ovr.applyTo(sc);
-    else
-      assert(false);
+    if (id.isValid)
+      this._subCategoryOverrides.set(id.value, ovr);
   }
 
   public dropSubCategoryOverride(id: Id64) {
     this._subCategoryOverrides.delete(id.value);
-    this.loadSubCategory(id);
   }
 
   public get hasSubCategoryOverride() { return this._subCategoryOverrides.entries.length > 0; }
 
-  public getSubCategoryOverride(id: Id64): SubCategoryOverride {
-    const ovr = this._subCategoryOverrides.get(id.value);
-    return undefined !== ovr ? ovr : new SubCategoryOverride();
-  }
-
-  public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
-    const sc = this._subCategories.get(id.value);
-    if (undefined !== sc)
-      return sc;
-
-    return this.loadSubCategory(id);
-  }
-
-  /** Load a subcategory appearance into its unmodified state */
-  private loadSubCategory(id: Id64): SubCategoryAppearance {
-    const app = new SubCategoryAppearance();
-    this._subCategories.set(id.value, app);
-    return app;
-
-    // ###TODO
-    // auto unmodified = DgnSubCategory::Get(GetDgnDb(), id);
-    // BeAssert(unmodified.IsValid());
-    // if (!unmodified.IsValid())
-    //     return DgnSubCategory::Appearance();
-
-    // BeMutexHolder _v(m_mutex);
-    // auto const& result = m_subCategories.Insert(id, unmodified->GetAppearance());
-    // if (!result.second)
-    //     result.first->second = unmodified->GetAppearance(); // we already had this SubCategory; change it to unmodified state
-
-    // return unmodified->GetAppearance();
+  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
+    return this._subCategoryOverrides.get(id.toString());
   }
 }
 
@@ -239,6 +197,7 @@ export class Environment {
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3dState extends DisplayStyleState {
   public skyboxMaterial: RenderMaterial | undefined;
+  public skyBoxTextures: RenderTexture[] = []; // ###TODO: make this a cubemap if possible
   public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
@@ -282,6 +241,33 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
+
+  /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
+  public loadSkyBoxTextures(system: RenderSystem): boolean {
+    if (this.skyBoxTextures.length > 0)
+      return true;  // skybox textures have already been loaded
+
+    // const env = this.getEnvironment();
+    // ###TODO - Use actual textures - just defining our own textures for now (different colors to distinguish them); can key off env.sky.jpegFile (needs more than one file though!)
+
+    // ###TODO - If possible, use a cubemap texture to store all six images in one fell swoop (better use of GPU resources)
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // front
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // back
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // top
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // bottom
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // left
+
+    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // right
+
+    // ###TODO - if any image buffer or texture fails to load, bail out.
+
+    return true;
+  }
 
   /** Attempts to create a texture and material for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
   public loadSkyBoxMaterial(system: RenderSystem): boolean {

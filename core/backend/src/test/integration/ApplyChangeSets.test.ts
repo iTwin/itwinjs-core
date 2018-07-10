@@ -3,14 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ChangeSetApplyOption, ChangeSetStatus } from "@bentley/bentleyjs-core";
+import { OpenMode, ChangeSetApplyOption, ChangeSetStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelDb } from "../../backend";
+import { IModelVersion } from "@bentley/imodeljs-common";
+import { IModelDb, ChangeSetToken, OpenParams } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { ChangeSetToken } from "../../BriefcaseManager";
 import { KnownLocations } from "../../Platform";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe("ApplyChangeSets (#integration)", () => {
@@ -65,15 +64,28 @@ describe("ApplyChangeSets (#integration)", () => {
     assert(status === ChangeSetStatus.Success, "Error applying change sets");
   };
 
+  const testOpen = async (projectName: string, iModelName: string) => {
+    const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    const iModelDb = IModelDb.open(accessToken, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    assert(!!iModelDb);
+  };
+
+  const testAllOperations = async (projectName: string, iModelName: string) => {
+    testAllChangeSetOperations(projectName, iModelName);
+    testOpen(projectName, iModelName);
+  };
+
   it("should test all change set operations after downloading iModel from the hub", async () => {
     console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // tslint:disable-line:no-console
-    await testAllChangeSetOperations("iModelJsTest", "ReadOnlyTest");
-    await testAllChangeSetOperations("iModelJsTest", "ReadWriteTest");
-    await testAllChangeSetOperations("iModelJsTest", "NoVersionsTest");
-    await testAllChangeSetOperations("NodeJsTestProject", "TestModel");
-    await testAllChangeSetOperations("SampleBisPlant", "samplePlant20");
-    // await testAllChangeSetOperations("iModelHubTest", "Office Building4"); Fails due to an assertion DgnGeoCoord
-    // await testAllChangeSetOperations("AbdTestProject", "ATP_2018050310145994_scenario22"); Waiting for new Db after converter fix
+    await testAllOperations("plant-sta", "atp_10K.bim");
+    await testAllOperations("iModelJsTest", "ReadOnlyTest");
+    await testAllOperations("iModelJsTest", "ReadWriteTest");
+    await testAllOperations("iModelJsTest", "NoVersionsTest");
+    await testAllOperations("NodeJsTestProject", "TestModel");
+    await testAllOperations("SampleBisPlant", "samplePlant20");
+    // await testAllOperations("iModelHubTest", "Office Building4"); Fails due to an assertion DgnGeoCoord
+    // await testAllOperations("AbdTestProject", "ATP_2018050310145994_scenario22"); Waiting for new Db after converter fix
   });
 
 });

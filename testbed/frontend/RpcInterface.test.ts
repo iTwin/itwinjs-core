@@ -161,6 +161,7 @@ describe("RpcInterface", () => {
 
     assert.isTrue(receivedPending);
     removeListener();
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.RESET_OP8_INITIALIZER, value: undefined }));
   });
 
   it("should support supplied RPC implementation instances", async () => {

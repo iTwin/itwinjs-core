@@ -94,13 +94,13 @@ describe("Test shader compilation", () => {
     }
 
     const prog = builder.buildProgram(System.instance.context);
-    expect(prog.isValid).to.equal(true);
+    expect(prog.isDisposed).to.equal(false);
     expect(prog.isUncompiled).to.equal(true);
     expect(prog.compile()).to.equal(true);
     expect(prog.isUncompiled).to.equal(false);
 
     prog.dispose();
-    expect(prog.isValid).to.equal(false);
+    expect(prog.isDisposed).to.equal(true);
     expect(prog.isUncompiled).to.equal(true);
-    });
+  });
 });

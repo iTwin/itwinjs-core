@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation,
+  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -16,6 +16,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
+import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import * as path from "path";
@@ -23,6 +24,8 @@ import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
+import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -115,15 +118,17 @@ export class IModelDb extends IModel {
   public views = new IModelDb.Views(this);
   public tiles = new IModelDb.Tiles(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
-  private readonly statementCache = new ECSqlStatementCache();
+  private readonly _statementCache = new ECSqlStatementCache();
+  private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
   private _txnManager?: TxnManager;
   protected _fontMap?: FontMap;
-  public readFontJson(): string { return this.briefcase.nativeDb.readFontMap(); }
+  private readonly _snaps = new Map<string, SnapRequest>();
+  public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
-  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.briefcase.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
+  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
 
   /** Get the parameters used to open this iModel */
   public readonly openParams: OpenParams;
@@ -169,7 +174,7 @@ export class IModelDb extends IModel {
   private initializeIModelDb() {
     let props: any;
     try {
-      props = JSON.parse(this.briefcase.nativeDb.getIModelProps()) as IModelProps;
+      props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     } catch (error) { }
 
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
@@ -261,10 +266,10 @@ export class IModelDb extends IModel {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openParams, version);
-    Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, ...openParams }));
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     IModelDb.setFirstAccessToken(imodelDb.briefcase.iModelId, accessToken);
     IModelDb.onOpened.raiseEvent(imodelDb);
+    Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb.token, ...openParams }));
     return imodelDb;
   }
 
@@ -274,7 +279,7 @@ export class IModelDb extends IModel {
    */
   public closeStandalone(): void {
     if (!this.briefcase)
-      throw this._newNotOpenError();
+      throw this.newNotOpenError();
     if (!this.briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.closeStandalone() to close a non-standalone iModel. Use IModelDb.close() instead");
 
@@ -295,7 +300,7 @@ export class IModelDb extends IModel {
    */
   public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcase)
-      throw this._newNotOpenError();
+      throw this.newNotOpenError();
     if (this.briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
 
@@ -330,6 +335,7 @@ export class IModelDb extends IModel {
   private onBriefcaseCloseHandler() {
     this.onBeforeClose.raiseEvent();
     this.clearStatementCache();
+    this.clearSqliteStatementCache();
   }
 
   private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.changeSetId; }
@@ -338,7 +344,7 @@ export class IModelDb extends IModel {
   public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Get the in-memory handle of the native Db */
-  public get nativeDb(): any { return (this.briefcase === undefined) ? undefined : this.briefcase.nativeDb; }
+  public get nativeDb(): NativeDgnDb { return this.briefcase.nativeDb; }
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcase === undefined ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
@@ -346,7 +352,7 @@ export class IModelDb extends IModel {
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
    * @hidden
    */
-  public _newNotOpenError() {
+  public newNotOpenError() {
     return new IModelError(IModelStatus.NotOpen, "IModelDb not open" + this.name, Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
   }
 
@@ -356,18 +362,17 @@ export class IModelDb extends IModel {
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStatement = this.statementCache.find(ecsql);
+    const cachedStatement = this._statementCache.find(ecsql);
     if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       cachedStatement.useCount++;
       return cachedStatement.statement;
     }
 
-    this.statementCache.removeUnusedStatementsIfNecessary();
+    this._statementCache.removeUnusedStatementsIfNecessary();
     const stmt = this.prepareStatement(ecsql);
-    this.statementCache.add(ecsql, stmt);
+    this._statementCache.add(ecsql, stmt);
     return stmt;
   }
-  private releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
 
   /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
    *
@@ -386,10 +391,10 @@ export class IModelDb extends IModel {
     const stmt = this.getPreparedStatement(ecsql);
     try {
       const val = callback(stmt);
-      this.releasePreparedStatement(stmt);
+      this._statementCache.release(stmt);
       return val;
     } catch (err) {
-      this.releasePreparedStatement(stmt); // always release statement
+      this._statementCache.release(stmt); // always release statement
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }
@@ -427,6 +432,56 @@ export class IModelDb extends IModel {
     });
   }
 
+  /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
+   *
+   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
+   * the already prepared statement from the cache will be reused.
+   *
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by cb
+   */
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    const stmt = this.getPreparedSqlStatement(sql);
+    try {
+      const val = callback(stmt);
+      this._sqliteStatementCache.release(stmt);
+      return val;
+    } catch (err) {
+      this._sqliteStatementCache.release(stmt); // always release statement
+      Logger.logError(loggingCategory, err.toString());
+      throw err;
+    }
+  }
+
+  /** Prepare an SQLite SQL statement.
+   * @param sql The SQLite SQL statement to prepare
+   * @throws [[IModelError]] if there is a problem preparing the statement.
+   */
+  public prepareSqliteStatement(sql: string): SqliteStatement {
+    const stmt = new SqliteStatement();
+    stmt.prepare(this.briefcase.nativeDb, sql);
+    return stmt;
+  }
+
+  /** Get a prepared SQLite SQL statement - may require preparing the statement, if not found in the cache.
+   * @param sql The SQLite SQL statement to prepare
+   * @returns the prepared statement
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   */
+  private getPreparedSqlStatement(sql: string): SqliteStatement {
+    const cachedStatement: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
+    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
+      cachedStatement.useCount++;
+      return cachedStatement.statement;
+    }
+
+    this._statementCache.removeUnusedStatementsIfNecessary();
+    const stmt: SqliteStatement = this.prepareSqliteStatement(sql);
+    this._sqliteStatementCache.add(sql, stmt);
+    return stmt;
+  }
+
   /**
    * Query for a set of entity ids, given an EntityQueryParams
    * @param params the EntityQueryParams for query
@@ -457,14 +512,17 @@ export class IModelDb extends IModel {
     return ids;
   }
 
-  /** Empty the [[ECSqlStatementCache]] for this iModel. */
-  public clearStatementCache(): void { this.statementCache.clear(); }
+  /** Empty the [ECSqlStatementCache]($backend) for this iModel. */
+  public clearStatementCache(): void { this._statementCache.clear(); }
+
+  /** Empty the [SqliteStatementCache]($backend) for this iModel. */
+  public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
   /** Get the GUID of this iModel.  */
-  public getGuid(): Guid { return new Guid(this.briefcase.nativeDb.getDbGuid()); }
+  public getGuid(): Guid { return new Guid(this.nativeDb.getDbGuid()); }
 
   /** Set the GUID of this iModel. */
-  public setGuid(guid: Guid): DbResult { return this.briefcase.nativeDb.setDbGuid(guid.toString()); }
+  public setGuid(guid: Guid): DbResult { return this.nativeDb.setDbGuid(guid.toString()); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -491,7 +549,7 @@ export class IModelDb extends IModel {
    * ```
    */
   public updateIModelProps() {
-    this.briefcase.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
+    this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
   }
 
   /**
@@ -507,7 +565,7 @@ export class IModelDb extends IModel {
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
     this.concurrencyControl.onSaveChanges();
 
-    const stat = this.briefcase.nativeDb.saveChanges(description);
+    const stat = this.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
 
@@ -519,7 +577,7 @@ export class IModelDb extends IModel {
    */
   public abandonChanges() {
     this.concurrencyControl.abandonRequest();
-    this.briefcase.nativeDb.abandonChanges();
+    this.nativeDb.abandonChanges();
   }
 
   /**
@@ -588,8 +646,8 @@ export class IModelDb extends IModel {
    * @see containsClass
    */
   public importSchema(schemaFileName: string) {
-    if (!this.briefcase) throw this._newNotOpenError();
-    const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
+    if (!this.briefcase) throw this.newNotOpenError();
+    const stat = this.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
   }
@@ -598,9 +656,13 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if an open IModelDb matching the token is not found.
    */
   public static find(iModelToken: IModelToken): IModelDb {
+    Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
-    if (!briefcaseEntry)
+    if (!briefcaseEntry) {
+      Logger.logTrace(loggingCategory, "IModelDb not found - throwing a not found response", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       throw new IModelNotFoundResponse();
+    }
+    Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     assert(!!briefcaseEntry.iModelDb);
     return briefcaseEntry.iModelDb!;
   }
@@ -625,8 +687,8 @@ export class IModelDb extends IModel {
 
   /** @hidden */
   public insertCodeSpec(codeSpec: CodeSpec): Id64 {
-    if (!this.briefcase) throw this._newNotOpenError();
-    const { error, result } = this.briefcase.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    if (!this.briefcase) throw this.newNotOpenError();
+    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggingCategory);
     return new Id64(result);
   }
@@ -634,9 +696,9 @@ export class IModelDb extends IModel {
   /** @hidden @deprecated */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
-      throw this._newNotOpenError();
+      throw this.newNotOpenError();
 
-    const { error, result: idHexStr } = this.briefcase.nativeDb.getElementPropertiesForDisplay(elementId);
+    const { error, result: idHexStr } = this.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
       throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, elementId }));
 
@@ -649,9 +711,9 @@ export class IModelDb extends IModel {
    */
   public prepareStatement(sql: string): ECSqlStatement {
     if (!this.briefcase)
-      throw this._newNotOpenError();
+      throw this.newNotOpenError();
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.briefcase.nativeDb, sql);
+    stmt.prepare(this.nativeDb, sql);
     return stmt;
   }
 
@@ -692,7 +754,7 @@ export class IModelDb extends IModel {
   /*** @hidden */
   private loadMetaData(classFullName: string) {
     if (!this.briefcase)
-      throw this._newNotOpenError();
+      throw this.newNotOpenError();
 
     if (this.classMetaDataRegistry.find(classFullName))
       return;
@@ -700,7 +762,7 @@ export class IModelDb extends IModel {
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
 
-    const { error, result: metaDataJson } = this.briefcase.nativeDb.getECClassMetaData(className[0], className[1]);
+    const { error, result: metaDataJson } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
       throw new IModelError(error.status, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
 
@@ -723,45 +785,72 @@ export class IModelDb extends IModel {
     const className = classFullName.split(":");
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
-    const { error } = this.briefcase.nativeDb.getECClassMetaData(className[0], className[1]);
+    const { error } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     return (error === undefined);
   }
 
   /** query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
-  public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.briefcase.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
+  public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
 
   /** query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
-  public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.briefcase.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
+  public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
 
   /** save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, value: string | ArrayBuffer): DbResult { return this.briefcase.nativeDb.saveFileProperty(JSON.stringify(prop), value); }
+  public saveFileProperty(prop: FilePropertyProps, value: string | ArrayBuffer): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), value); }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.briefcase.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
+  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
 
   /** query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
-  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.briefcase.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
+  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
+
+  public requestSnap(connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    let request = this._snaps.get(connectionId);
+    if (undefined === request) {
+      request = (new (NativePlatformRegistry.getNativePlatform()).SnapRequest()) as SnapRequest;
+      this._snaps.set(connectionId, request);
+    } else
+      request.cancelSnap();
+
+    return new Promise<SnapResponseProps>((resolve, reject) => {
+      request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
+        this._snaps.delete(connectionId);
+        if (ret.error !== undefined)
+          reject(new Error(ret.error.message));
+        else
+          return resolve(ret.result);
+      });
+    });
+  }
+
+  public cancelSnap(connectionId: string): void {
+    const request = this._snaps.get(connectionId);
+    if (undefined !== request) {
+      request.cancelSnap();
+      this._snaps.delete(connectionId);
+    }
+  }
 
   /** Execute a test from native code
    * @param testName The name of the test
    * @param params parameters for the test
    * @hidden
    */
-  public executeTest(testName: string, params: any): any { return JSON.parse(this.briefcase.nativeDb.executeTest(testName, JSON.stringify(params))); }
+  public executeTest(testName: string, params: any): any { return JSON.parse(this.nativeDb.executeTest(testName, JSON.stringify(params))); }
 }
 
 export namespace IModelDb {
@@ -788,8 +877,8 @@ export namespace IModelDb {
      * @return a json string with the properties of the model.
      */
     public getModelJson(modelIdArg: string): string {
-      if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-      const { error, result } = this._iModel.briefcase.nativeDb.getModel(modelIdArg);
+      if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
+      const { error, result } = this._iModel.nativeDb.getModel(modelIdArg);
       if (error) throw new IModelError(error.status, "Model=" + modelIdArg);
       return result!;
     }
@@ -820,8 +909,8 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(model: Model): Id64 {
-      if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-      const { error, result } = this._iModel.briefcase.nativeDb.insertModel(JSON.stringify(model));
+      if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
+      const { error, result } = this._iModel.nativeDb.insertModel(JSON.stringify(model));
       if (error) throw new IModelError(error.status, "inserting model", Logger.logWarning, loggingCategory);
       return model.id = new Id64(JSON.parse(result!).id);
     }
@@ -831,8 +920,8 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(model: ModelProps): void {
-      if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-      const error: IModelStatus = this._iModel.briefcase.nativeDb.updateModel(JSON.stringify(model));
+      if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
+      const error: IModelStatus = this._iModel.nativeDb.updateModel(JSON.stringify(model));
       if (error !== IModelStatus.Success)
         throw new IModelError(error, "updating model id=" + model.id, Logger.logWarning, loggingCategory);
     }
@@ -843,9 +932,9 @@ export namespace IModelDb {
      */
     public deleteModel(model: Model): void {
       if (!this._iModel.briefcase)
-        throw this._iModel._newNotOpenError();
+        throw this._iModel.newNotOpenError();
 
-      const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteModel(model.id.value);
+      const error: IModelStatus = this._iModel.nativeDb.deleteModel(model.id.value);
       if (error !== IModelStatus.Success)
         throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
     }
@@ -870,7 +959,7 @@ export namespace IModelDb {
      * @return a json string with the properties of the element.
      */
     public getElementJson(elementIdArg: string): any {
-      const { error, result } = this._iModel.briefcase.nativeDb.getElement(elementIdArg);
+      const { error, result } = this._iModel.nativeDb.getElement(elementIdArg);
       if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
       return result!;
     }
@@ -946,9 +1035,9 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps): Id64 {
       if (!this._iModel.briefcase)
-        throw this._iModel._newNotOpenError();
+        throw this._iModel.newNotOpenError();
 
-      const { error, result: json } = this._iModel.briefcase.nativeDb.insertElement(JSON.stringify(elProps));
+      const { error, result: json } = this._iModel.nativeDb.insertElement(JSON.stringify(elProps));
       if (error)
         throw new IModelError(error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
 
@@ -961,9 +1050,9 @@ export namespace IModelDb {
      */
     public updateElement(props: ElementProps): void {
       if (!this._iModel.briefcase)
-        throw this._iModel._newNotOpenError();
+        throw this._iModel.newNotOpenError();
 
-      const error: IModelStatus = this._iModel.briefcase.nativeDb.updateElement(JSON.stringify(props));
+      const error: IModelStatus = this._iModel.nativeDb.updateElement(JSON.stringify(props));
       if (error !== IModelStatus.Success)
         throw new IModelError(error, "", Logger.logWarning, loggingCategory);
     }
@@ -975,7 +1064,7 @@ export namespace IModelDb {
      */
     public deleteElement(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
-        const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteElement(id);
+        const error: IModelStatus = this._iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
           throw new IModelError(error, "", Logger.logWarning, loggingCategory);
       });
@@ -1090,9 +1179,9 @@ export namespace IModelDb {
     /** @hidden */
     public getTileTreeJson(id: string): any {
       if (!this._iModel.briefcase)
-        throw this._iModel._newNotOpenError();
+        throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.briefcase.nativeDb.getTileTree(id);
+      const { error, result } = this._iModel.nativeDb.getTileTree(id);
       if (error)
         throw new IModelError(error.status, "TreeId=" + id);
 
@@ -1105,9 +1194,9 @@ export namespace IModelDb {
     /** @hidden */
     public getTilesProps(treeId: string, tileIds: string[]): TileProps[] {
       if (!this._iModel.briefcase)
-        throw this._iModel._newNotOpenError();
+        throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.briefcase.nativeDb.getTiles(treeId, tileIds);
+      const { error, result } = this._iModel.nativeDb.getTiles(treeId, tileIds);
       if (error)
         throw new IModelError(error.status, "TreeId=" + treeId);
 
@@ -1124,29 +1213,29 @@ export class TxnManager {
   constructor(private _iModel: IModelDb) { }
 
   /** Get the Id of the first transaction, if any. */
-  public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.briefcase.nativeDb!.txnManagerQueryFirstTxnId(); }
+  public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerQueryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcase.nativeDb!.txnManagerQueryNextTxnId(txnId); }
+  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerQueryNextTxnId(txnId); }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcase.nativeDb!.txnManagerQueryPreviousTxnId(txnId); }
+  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerQueryPreviousTxnId(txnId); }
 
   /** Get the Id of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnManager.TxnId { return this._iModel.briefcase.nativeDb!.txnManagerGetCurrentTxnId(); }
+  public getCurrentTxnId(): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerGetCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnManager.TxnId): string { return this._iModel.briefcase.nativeDb!.txnManagerGetTxnDescription(txnId); }
+  public getTxnDescription(txnId: TxnManager.TxnId): string { return this._iModel.nativeDb!.txnManagerGetTxnDescription(txnId); }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.briefcase.nativeDb!.txnManagerIsTxnIdValid(txnId); }
+  public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.nativeDb!.txnManagerIsTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
   public hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
   public hasUnsavedChanges(): boolean {
-    return this._iModel.briefcase.nativeDb!.txnManagerHasUnsavedChanges();
+    return this._iModel.nativeDb!.txnManagerHasUnsavedChanges();
   }
 
   /** Query if there are un-saved or un-pushed local changes. */

@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
-  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
+  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
   QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
@@ -17,7 +17,7 @@ import { ElementState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
@@ -109,55 +109,60 @@ export class MarginPercent {
 }
 
 /**
- * Standardize behavior for structs that consume always/never drawn sets
- * Possibly should add clear methods
+ * Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
  */
-export interface DrawnElementSets {
-  readonly alwaysDrawn: Id64Set;
-  readonly neverDrawn: Id64Set;
-  isNeverDrawn(id: Id64): boolean;
-  isAlwaysDrawn(id: Id64): boolean;
-  setNeverDrawn(id: Id64): void;
-  setAlwaysDrawn(id: Id64): void;
-  clearAlwaysDrawn(id?: Id64): void;
-  clearNeverDrawn(id?: Id64): void;
-}
+export class ViewSubCategories {
+  private readonly _byCategoryId = new Map<string, Id64Set>();
+  private readonly _appearances = new Map<string, SubCategoryAppearance>();
 
-/**
- * Encapsulates logic for handling always/never drawn sets
- * This for example prevents ViewState and FeatureSymbology.Overrides from duplicating this logic
- */
-export class SpecialElements implements DrawnElementSets {
-  private _always: Id64Set = new Set<string>();
-  private _never: Id64Set = new Set<string>();
+  /** Get the IDs of all subcategories belonging to the category with the specified ID, or undefined if no such information is present. */
+  public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
-  private copyAlwaysDrawn(always: Id64Set): void { this._always = new Set(always); }
-  private copyNeverDrawn(never: Id64Set): void { this._never = new Set(never); }
+  /** Get the base appearance of the subcategory with the specified ID, or undefined if no such information is present. */
+  public getSubCategoryAppearance(subCategoryId: string): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId); }
 
-  public get isEmpty(): boolean { return this._always.size === 0 && this._never.size === 0; }
+  /** Asynchronously populates this cache with information about subcategories belonging to the specified set of categories. */
+  public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    const where = [...categoryIds].join(",");
+    if (0 === where.length)
+      return Promise.resolve();
 
-  public get alwaysDrawn(): Id64Set { return this._always; }
-  public get neverDrawn(): Id64Set { return this._never; }
-
-  public isAlwaysDrawn(id: Id64): boolean { return this._always.has(id.value); }
-  public isNeverDrawn(id: Id64): boolean { return this._never.has(id.value); }
-
-  public setAlwaysDrawn(id: Id64 | Id64Set): void {
-    if (id instanceof Id64) this._always.add(id.value);
-    else this.copyAlwaysDrawn(id);
-  }
-  public setNeverDrawn(id: Id64 | Id64Set): void {
-    if (id instanceof Id64) this._never.add(id.value);
-    else this.copyNeverDrawn(id);
+    const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
+    return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
   }
 
-  public clearAlwaysDrawn(id?: Id64): void {
-    if (undefined !== id) this._always.delete(id.value);
-    else this._always.clear();
+  /**
+   * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
+   * When the request completes, the ViewState's feature overrides will be marked dirty to indicate they must be updated.
+   */
+  public update(addedCategoryIds: Set<string>, view: ViewState): void {
+    let missing: Set<string> | undefined;
+    for (const catId of addedCategoryIds) {
+      if (undefined === this._byCategoryId.get(catId)) {
+        if (undefined === missing)
+          missing = new Set<string>();
+
+        missing.add(catId);
+      }
+    }
+
+    if (undefined !== missing)
+      this.load(missing, view.iModel).then(() => view.setFeatureOverridesDirty());
   }
-  public clearNeverDrawn(id?: Id64): void {
-    if (undefined !== id) this._never.delete(id.value);
-    else this._never.clear();
+
+  private loadFromRows(rows: any[]): void {
+    for (const row of rows)
+      this.add(row.parentId as string, row.id as string, new SubCategoryAppearance(JSON.parse(row.appearance)));
+  }
+
+  private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+    let set = this._byCategoryId.get(categoryId);
+    if (undefined === set)
+      this._byCategoryId.set(categoryId, set = new Set<string>());
+
+    set.add(subCategoryId);
+
+    this._appearances.set(subCategoryId, appearance);
   }
 }
 
@@ -166,14 +171,14 @@ export class SpecialElements implements DrawnElementSets {
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  * * @see [Views]($docs/learning/frontend/Views.md)
  */
-export abstract class ViewState extends ElementState implements DrawnElementSets {
+export abstract class ViewState extends ElementState {
   protected _featureOverridesDirty = true;
   protected _selectionSetDirty = true;
-  private _noQuery: boolean = false;
   private _auxCoordSystem?: AuxCoordSystemState;
-  public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
+  public readonly subCategories = new ViewSubCategories();
+  public static get className() { return "ViewDefinition"; }
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
@@ -182,6 +187,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
+      this.subCategories = categorySelector.subCategories; // NB: This is a cache. No reason to deep-copy.
     }
   }
 
@@ -239,6 +245,8 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       const props = await this.iModel.elements.getProps(acsId);
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     }
+
+    return this.subCategories.load(this.categorySelector.categories, this.iModel);
   }
 
   /** Get the name of the ViewDefinition of this ViewState */
@@ -247,40 +255,36 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** Get the background color */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
-  /** Special Elements */
-  private _specialElements?: SpecialElements; // Get the set of special elements for this ViewState.
+  private _neverDrawn?: Id64Set;
+  private _alwaysDrawn?: Id64Set;
+  private _alwaysDrawnExclusive: boolean = false;
 
-  public get neverDrawn(): Id64Set { return undefined !== this._specialElements ? this._specialElements.neverDrawn : new Set(); } // Get the list of elements that are never drawn
-  public get alwaysDrawn(): Id64Set { return undefined !== this._specialElements ? this._specialElements.alwaysDrawn : new Set(); } // Get the list of elements that are always drawn
+  public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
+  public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
 
-  public isNeverDrawn(id: Id64): boolean { return undefined !== this._specialElements ? this._specialElements.isNeverDrawn(id) : false; }
-  public isAlwaysDrawn(id: Id64): boolean { return undefined !== this._specialElements ? this._specialElements.isAlwaysDrawn(id) : false; }
+  public clearAlwaysDrawn(): void {
+    if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
+      this.alwaysDrawn.clear();
+      this._alwaysDrawnExclusive = false;
+      this.setFeatureOverridesDirty();
+    }
+  }
 
-  private _clearAlwaysDrawn(id?: Id64): void { if (undefined !== this._specialElements) this._specialElements.clearAlwaysDrawn(id); }
-  private _clearNeverDrawn(id?: Id64): void { if (undefined !== this._specialElements) this._specialElements.clearNeverDrawn(id); }
+  public clearNeverDrawn(): void {
+    if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
+      this.neverDrawn.clear();
+      this.setFeatureOverridesDirty();
+    }
+  }
 
-  public clearAlwaysDrawn(id?: Id64): void {
-    this._clearAlwaysDrawn(id);
-    this._noQuery = false;
+  public setNeverDrawn(ids: Id64Set): void {
+    this._neverDrawn = ids;
     this.setFeatureOverridesDirty();
   }
 
-  public clearNeverDrawn(id?: Id64): void {
-    this._clearNeverDrawn(id);
-    this._noQuery = false;
-    this.setFeatureOverridesDirty();
-  }
-
-  public setNeverDrawn(id: Id64 | Id64Set): void {
-    if (undefined === this._specialElements) this._specialElements = new SpecialElements();
-    this._specialElements.setNeverDrawn(id);
-    this.setFeatureOverridesDirty();
-  }
-
-  public setAlwaysDrawn(id: Id64 | Id64Set, exclusive?: boolean): void {
-    if (undefined === this._specialElements) this._specialElements = new SpecialElements();
-    if (undefined !== exclusive) this._noQuery = exclusive;
-    this._specialElements.setAlwaysDrawn(id);
+  public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
+    this._alwaysDrawn = ids;
+    this._alwaysDrawnExclusive = exclusive;
     this.setFeatureOverridesDirty();
   }
 
@@ -294,12 +298,42 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64): SubCategoryOverride {
+  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
     return this.displayStyle.getSubCategoryOverride(id);
   }
 
+  /** Returns the appearance of the subcategory with the specified ID within this view, possibly as overridden by the display style. */
+  public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
+    const app = this.subCategories.getSubCategoryAppearance(id.value);
+    if (undefined === app)
+      return SubCategoryAppearance.defaults;
+
+    const ovr = this.getSubCategoryOverride(id);
+    return undefined !== ovr ? ovr.override(app) : app;
+  }
+
+  public isSubCategoryVisible(id: Id64 | string): boolean {
+    const app = this.subCategories.getSubCategoryAppearance(id.toString());
+    if (undefined === app || app.invisible)
+      return false;
+
+    const ovr = this.getSubCategoryOverride(id);
+    return undefined === ovr || !ovr.invisible;
+  }
+
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
-  public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
+  public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
+
+  public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
+    if (add) {
+      this.categorySelector.addCategories(arg);
+      this.subCategories.update(Id64.toIdSet(arg), this);
+    } else {
+      this.categorySelector.dropCategories(arg);
+    }
+
+    this.setFeatureOverridesDirty();
+  }
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
@@ -1297,7 +1331,11 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    this.drawSkyBox(context);
+    const useOldSkyBox = true;
+    if (useOldSkyBox)
+      this.drawSkyBox(context);
+    else
+      this.drawRealSkyBox(context); // ###TODO - WIP!
     this.drawGroundPlane(context);
   }
 
@@ -1323,6 +1361,23 @@ export abstract class ViewState3d extends ViewState {
     const altitude = Math.atan2(zValue, radius);
 
     return Point2d.create(0.5 - altitude / (Math.PI * 2), 0.25 - azimuth);
+  }
+
+  private drawSkyBoxMesh(builder: GraphicBuilder, _viewport: Viewport) {
+    // ###TODO - Calculate meshes for each side of the skyBox.  Currently only calculates one side (front).
+
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    strokeOptions.needNormals = true;
+    strokeOptions.shouldTriangulate = false;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+
+    const points = [Point3d.create(-100, -100, 0), Point3d.create(100, -100, 0), Point3d.create(100, 100, 0), Point3d.create(-100, 100, 0)];
+    const params = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    polyfaceBuilder.addQuadFacet(points, params, undefined);
+
+    const polyface = polyfaceBuilder.claimPolyface(false);
+    builder.addPolyface(polyface, true);
   }
 
   /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
@@ -1386,6 +1441,34 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** @hidden */
+  protected drawRealSkyBox(context: DecorateContext) {
+    const style3d = this.getDisplayStyle3d();
+    if (!style3d.getEnvironment().sky.display)
+      return;
+
+    const vp = context.viewport;
+    style3d.loadSkyBoxTextures(vp.target.renderSystem);
+
+    if (style3d.skyBoxTextures.length > 0) {
+      // Create graphics for the skybox textures
+      const skyBoxGraphic = context.createViewBackground();
+      const params = new GraphicParams();
+
+      const matParams = new RenderMaterial.Params();
+      matParams.textureMapping = new TextureMapping(style3d.skyBoxTextures[0], new TextureMapping.Params());
+      params.material = vp.target.renderSystem.createMaterial(matParams, this.iModel);
+
+      skyBoxGraphic.activateGraphicParams(params);
+
+      // create a mesh for a cube that represents the skybox
+      this.drawSkyBoxMesh(skyBoxGraphic, vp);
+      context.setViewBackground(skyBoxGraphic.finish());
+    } else {
+      // Skybox material failed to load. Resort to drawing some kind of fake version.
+    }
+  }
+
+  /** @hidden */
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
     if (!style3d.getEnvironment().sky.display)
@@ -1418,7 +1501,7 @@ export abstract class ViewState3d extends ViewState {
       const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
       args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
 
-      const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+      const gf = IModelApp.renderSystem.createTriMesh(args);
       if (undefined !== gf)
         context.setViewBackground(gf);
     }

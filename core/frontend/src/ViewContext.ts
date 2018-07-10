@@ -15,7 +15,7 @@ import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ViewState3d } from "./ViewState";
 
-const gridConstants = { maxGridDotsInRow: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225, maxGridPoints: 90, maxGridRefs: 40 };
+const gridConstants = { maxGridPoints: 50, maxGridRefs: 25, maxGridDotsInRow: 250, maxHorizonGrids: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225 };
 
 export class ViewContext {
   public readonly viewFlags: ViewFlags;
@@ -53,7 +53,7 @@ export class RenderContext extends ViewContext {
     return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
   }
   public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVector): RenderGraphic {
-    return this.target.renderSystem.createBranch(branch, this.viewport.iModel, location, clip);
+    return this.target.renderSystem.createBranch(branch, location, clip);
   }
 }
 
@@ -74,8 +74,8 @@ export class DecorateContext extends RenderContext {
   /** wrapped nRepetitions and min in object to preserve changes */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
     // initialized only to avoid warning.
-    let distLow = 0.0,
-      distHigh = 0.0;
+    let distLow = 0.0;
+    let distHigh = 0.0;
 
     for (let i = 0, n = points.length; i < n; ++i) {
       const distance = org.vectorTo(points[i]).dotProduct(dir);
@@ -101,7 +101,6 @@ export class DecorateContext extends RenderContext {
   }
 
   public static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[] {
-    const intersections: CurveLocationDetail[] = [];
     const limitRange = useProjectExtents && vp.view.isSpatialView();
     let range: Range3d = new Range3d();
 
@@ -138,6 +137,7 @@ export class DecorateContext extends RenderContext {
     if (undefined === plane)
       return [];
 
+    const intersections: CurveLocationDetail[] = [];
     for (let i = 0, n = index.length; i < n; ++i) {
       const corner1 = frust.getCorner(index[i][0]),
         corner2 = frust.getCorner(index[i][1]);
@@ -176,9 +176,31 @@ export class DecorateContext extends RenderContext {
     this.decorations.viewOverlay.add(graphic, ovr);
   }
 
-  /** Display sprite as view overlay graphic. */
-  public addSprite(_sprite: Sprite, _location: Point3d, _xVec: Vector3d, _transparency: number) {
-    //  this.addViewOverlay(* target.CreateSprite(sprite, location, xVec, transparency, GetDgnDb()), nullptr);
+  /**
+   * Display a sprite as view overlay graphic.
+   * @param sprite The sprite to draw
+   * @param location The location of the sprite, in view coordinates
+   * @param xVec The orientation of the sprite, in view coordinates
+   * @param transparency The transparency of the sprite (0-255, 0 == fully opaque)
+   */
+  public addSprite(sprite: Sprite, location: XAndY, xVec: XAndY, transparency: number) {
+    if (!sprite.texture)
+      return; // sprite not loaded
+
+    const xVector = new Vector3d(xVec.x, xVec.y, 0);
+    const yVector = xVector.rotate90CCWXY();
+    xVector.scaleToLength(sprite.size.x, xVector);
+    yVector.scaleToLength(sprite.size.y, yVector);
+
+    const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
+    const xCorn = org.plus(xVector);
+    const pts = [org, xCorn, org.plus(yVector), xCorn.plus(yVector)];
+
+    let ovr: FeatureSymbology.Appearance | undefined;
+    if (transparency > 0)
+      ovr = FeatureSymbology.Appearance.fromJSON({ alpha: 255 - transparency });
+
+    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, pts)!, ovr);
   }
 
   /** @private */
@@ -194,8 +216,8 @@ export class DecorateContext extends RenderContext {
     if (!vp.isCameraOn() && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
 
-    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef,
-      refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
+    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
+    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
 
     let gridOrg = new Point3d();
     let repetitions = new Point2d();
@@ -232,8 +254,8 @@ export class DecorateContext extends RenderContext {
 
     const testPt = gridOrg.plus2Scaled(gridX, repetitions.x / 2.0, gridY, repetitions.y / 2.0);
 
-    let maxGridPts = gridConstants.maxGridPoints,
-      maxGridRefs = gridConstants.maxGridRefs;
+    let maxGridPts = gridConstants.maxGridPoints;
+    let maxGridRefs = gridConstants.maxGridRefs;
 
     if (maxGridPts < 10)
       maxGridPts = 10;
@@ -241,18 +263,18 @@ export class DecorateContext extends RenderContext {
       maxGridRefs = 10;
 
     // values are "per 1000 pixels"
-    const minGridSeperationPixels = 1000 / maxGridPts,
-      minRefSeperation = 1000 / maxGridRefs;
+    const minGridSeparationPixels = 1000 / maxGridPts,
+      minRefSeparation = 1000 / maxGridRefs;
     let uorPerPixel = vp.getPixelSizeAtPoint(testPt);
 
-    if ((refSpacing.x / uorPerPixel) < minRefSeperation || (refSpacing.y / uorPerPixel) < minRefSeperation)
+    if ((refSpacing.x / uorPerPixel) < minRefSeparation || (refSpacing.y / uorPerPixel) < minRefSeparation)
       gridsPerRef = 0;
 
-    // Avoid z fighting with coincident geometry...let the wookie win...
+    // Avoid z fighting with coincident geometry
     gridOrg.plusScaled(viewZ, uorPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
     uorPerPixel *= refScale;
 
-    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeperationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeperationPixels);
+    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeparationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeparationPixels);
     const graphic = this.createWorldDecoration();
 
     DecorateContext.drawGrid(graphic, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
@@ -260,7 +282,7 @@ export class DecorateContext extends RenderContext {
   }
 
   public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
-    const eyePoint = vp.rootToView.transform1.columnZ();
+    const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const viewZ = Vector3d.createFrom(eyePoint);
 
     const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
@@ -361,10 +383,7 @@ export class DecorateContext extends RenderContext {
     return clipDistance.min < clipDistance.max;
   }
 
-  private static drawGridDots(graphic: GraphicBuilder, doIsoGrid: boolean, origin: Point3d, rowVec: Vector3d, rowRepetitions: number, colVec: Vector3d, colRepetitions: number,
-    refSpacing: number, vp: Viewport) {
-
-    const maxHorizonGrids = 800.0;
+  private static drawGridDots(graphic: GraphicBuilder, doIsoGrid: boolean, origin: Point3d, rowVec: Vector3d, rowRepetitions: number, colVec: Vector3d, colRepetitions: number, refSpacing: number, vp: Viewport) {
     const colSpacing = colVec.magnitude();
     const colNormal = colVec.normalize();
     if (!colNormal)
@@ -380,7 +399,7 @@ export class DecorateContext extends RenderContext {
     if (cameraOn) {
       const view = vp.view as ViewState3d;
       const camera = view.camera;
-      const sizeLimit = maxHorizonGrids * colSpacing / vp.viewDelta.x;
+      const sizeLimit = gridConstants.maxHorizonGrids * colSpacing / vp.viewDelta.x;
 
       vp.rotMatrix.rowZ(viewZ);
       zCamera = viewZ.dotProduct(camera.getEyePoint());
@@ -389,14 +408,12 @@ export class DecorateContext extends RenderContext {
 
     const corners = vp.getFrustum();
     const clipPlanes: ConvexClipPlaneSet = corners.getRangePlanes(true, true, 0);
-
     const clipDistance = { min: 0, max: 0 };
     for (let i = 0; i < rowRepetitions; i++) {
-      if (refSpacing !== 0 && (i % refSpacing) !== 0)
+      if (0 !== refSpacing && 0 === (i % refSpacing))
         continue;
 
       const dotOrigin = origin.plusScaled(rowVec, i);
-
       if (DecorateContext.getClipPlaneIntersection(clipDistance, dotOrigin, colNormal, clipPlanes)) {
         if (cameraOn) {
           const startPoint = dotOrigin.plusScaled(colNormal, clipDistance.min);
@@ -405,6 +422,7 @@ export class DecorateContext extends RenderContext {
             continue;
         }
 
+        let nToDisplay = 0;
         let jMin = Math.floor(clipDistance.min / colSpacing);
         let jMax = Math.ceil(clipDistance.max / colSpacing);
 
@@ -413,27 +431,23 @@ export class DecorateContext extends RenderContext {
         jMax = jMax > colRepetitions ? colRepetitions : jMax;
 
         const isoOffset = doIsoGrid && (i & 1) ? 0.5 : 0.0;
-        for (let j = jMin; j <= jMax && points.length < gridConstants.maxGridDotsInRow; j++) {
+        for (let j = jMin; j <= jMax && nToDisplay < gridConstants.maxGridDotsInRow; j++) {
           if (0 !== refSpacing && 0 === (j % refSpacing))
             continue;
-
           const point = dotOrigin.plusScaled(colVec, j + isoOffset);
-
           if (cameraOn) {
             const pointZ = viewZ.dotProduct(point);
-
             if (pointZ < zCamera && pointZ > zCameraLimit)
               points.push(point);
           } else {
             points.push(point);
           }
+          nToDisplay++;
         }
-
-        if (points.length !== 0)
-          graphic.addPointString(points);
       }
-      points.length = 0;  // reuse the array, but reset it on each iteration
     }
+    if (points.length !== 0)
+      graphic.addPointString(points);
   }
 
   private static drawGridRefs(graphic: GraphicBuilder, org: Point3d, rowVec: Vector3d, colVec: Vector3d, rowRepetitions: number, colRepetitions: number) {

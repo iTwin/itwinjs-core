@@ -4,7 +4,7 @@
 /** @module iModels */
 
 import {
-  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet, IModel as HubIModel,
+  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet, IModelRepository,
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, AzureFileHandler, ConflictingCodesError,
 } from "@bentley/imodeljs-clients";
@@ -540,6 +540,10 @@ export class BriefcaseManager {
       if (entry.iModelId !== iModelId)
         return false;
 
+      // Reject any previously open briefcases if exclusive access is required
+      if (entry.isOpen && requiredOpenParams.accessMode === AccessMode.Exclusive)
+        return false;
+
       // Narrow down to the exact same open parameters (if it was opened)
       if (entry.isOpen && (entry.openParams!.openMode !== requiredOpenParams.openMode || entry.openParams!.accessMode !== requiredOpenParams.accessMode || entry.openParams!.syncMode !== requiredOpenParams.syncMode))
         return false;
@@ -565,12 +569,14 @@ export class BriefcaseManager {
     /* FixedVersion, PullOnly - find a standalone briefcase */
     if (requiredOpenParams.syncMode !== SyncMode.PullAndPush) {
 
-      // first prefer a briefcase that's open, and with changeSetIndex = requiredChangeSetIndex
-      briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-        return entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex;
-      });
-      if (briefcase)
-        return briefcase;
+      // first prefer a briefcase that's open, and with changeSetIndex = requiredChangeSetIndex (if exclusive access is not required)
+      if (requiredOpenParams.accessMode !== AccessMode.Exclusive) {
+        briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
+          return entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex;
+        });
+        if (briefcase)
+          return briefcase;
+      }
 
       // next prefer a briefcase that's closed, and with changeSetIndex = requiredChangeSetIndex
       briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
@@ -595,15 +601,19 @@ export class BriefcaseManager {
     briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
       return entry.changeSetIndex === requiredChangeSetIndex;
     });
-    if (briefcase)
+    if (briefcase) {
+      assert(!briefcase.isOpen); // PullAndPush require Exclusive access, and cannot reuse a previously open briefcase
       return briefcase;
+    }
 
     // next prefer any briefcase with changeSetIndex < requiredChangeSetIndex
     briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-      return !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex;
+      return entry.changeSetIndex! < requiredChangeSetIndex;
     });
-    if (briefcase)
+    if (briefcase) {
+      assert(!briefcase.isOpen); // PullAndPush require Exclusive access, and cannot reuse a previously open briefcase
       return briefcase;
+    }
 
     return undefined;
   }
@@ -637,7 +647,7 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
-    const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
+    const iModel: IModelRepository = (await BriefcaseManager.hubClient.IModels().get(accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
 
     const briefcase = new BriefcaseEntry();
     briefcase.iModelId = iModelId;
@@ -1379,7 +1389,7 @@ export class BriefcaseManager {
   private static async upload(accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
     hubName = hubName || path.basename(pathname, ".bim");
 
-    const iModel: HubIModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
+    const iModel: IModelRepository = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
     return iModel.wsgId;
   }
 
