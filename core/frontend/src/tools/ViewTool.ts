@@ -658,7 +658,6 @@ export abstract class ViewManip extends ViewTool {
     const ev = new BeButtonEvent();
     ev.initEvent(this.targetCenterWorld, this.targetCenterWorld, viewPt, vp, CoordSource.User, 0);
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
-    ev.reset();
   }
 
   public invalidateTargetCenter() { this.targetCenterValid = false; }

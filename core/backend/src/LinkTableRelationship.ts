@@ -153,7 +153,7 @@ export class IModelDbLinkTableRelationships {
    */
   public insertInstance(props: LinkTableRelationshipProps): Id64 {
     if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
+      throw this._iModel.newNotOpenError();
 
     const { error, result } = this._iModel.briefcase.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (error)
@@ -170,7 +170,7 @@ export class IModelDbLinkTableRelationships {
    */
   public updateInstance(props: LinkTableRelationshipProps): void {
     if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
+      throw this._iModel.newNotOpenError();
 
     const error: DbResult = this._iModel.briefcase.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
@@ -184,7 +184,7 @@ export class IModelDbLinkTableRelationships {
    */
   public deleteInstance(props: LinkTableRelationshipProps): void {
     if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
+      throw this._iModel.newNotOpenError();
 
     const error: DbResult = this._iModel.briefcase.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)

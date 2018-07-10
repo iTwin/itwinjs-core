@@ -75,25 +75,38 @@ export abstract class GeometricModelState extends ModelState {
 
   /** @hidden */
   public loadTileTree(): TileTree.LoadStatus {
-    if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
-      this._loadStatus = TileTree.LoadStatus.Loading;
-      if (this.classFullName === "ScalableMesh:ScalableMeshModel") {
-        ScalableMeshTileTree.getTileTreeProps(this.modeledElement, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
-          this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
-          IModelApp.viewManager.onNewTilesReady();
-        }).catch((_err) => {
-          this._loadStatus = TileTree.LoadStatus.NotFound;
-        });
-      } else {
-        const ids = Id64.toIdSet(this.id);
-        this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
-          this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
-          IModelApp.viewManager.onNewTilesReady();
-        }).catch((_err) => {
-          this._loadStatus = TileTree.LoadStatus.NotFound;
-        });
-      }
+    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
+      return this._loadStatus;
+
+    this._loadStatus = TileTree.LoadStatus.Loading;
+    switch (this.classFullName) {
+      case "ScalableMesh:ScalableMeshModel":
+      case "PointCloud2:PointCloud2Model":
+        {
+          const json = (this.classFullName === "ScalableMesh:ScalableMeshModel") ? this.jsonProperties.scalablemesh : this.jsonProperties.pointcloud2;
+          if (json !== undefined && json.FileId !== undefined) {
+            ScalableMeshTileTree.getTileTreeProps(json.FileId, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
+              this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
+              IModelApp.viewManager.onNewTilesReady();
+            }).catch((_err) => {
+              this._loadStatus = TileTree.LoadStatus.NotFound;
+            });
+          }
+          break;
+        }
+
+      default:
+        {
+          const ids = Id64.toIdSet(this.id);
+          this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
+            this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
+            IModelApp.viewManager.onNewTilesReady();
+          }).catch((_err) => {
+            this._loadStatus = TileTree.LoadStatus.NotFound;
+          });
+        }
     }
+
     return this._loadStatus;
   }
 

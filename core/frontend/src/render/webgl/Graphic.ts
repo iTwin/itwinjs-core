@@ -4,7 +4,6 @@
 /** @module WebGL */
 
 import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -415,7 +414,6 @@ export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
 }
 
 export abstract class Graphic extends RenderGraphic {
-  constructor(iModel: IModelConnection) { super(iModel); }
   public abstract addCommands(_commands: RenderCommands): void;
   public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
@@ -431,7 +429,7 @@ export class Batch extends Graphic {
   private _overrides: FeatureOverrides[] = [];
 
   public constructor(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d) {
-    super(graphic.iModel);
+    super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
@@ -502,11 +500,11 @@ export class Branch extends Graphic {
   public readonly localToWorldTransform: Transform;
   public readonly clips?: Clip.Volume;
 
-  public constructor(iModel: IModelConnection, branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
-    super(iModel);
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
+    super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
-    this.clips = Clip.getClipVolume(clips, iModel);
+    this.clips = Clip.getClipVolume(clips);
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
   }
@@ -524,7 +522,7 @@ export class Branch extends Graphic {
 export class WorldDecorations extends Branch {
   public readonly overrides: Array<FeatureSymbology.Appearance | undefined> = [];
 
-  public constructor(iModel: IModelConnection, viewFlags: ViewFlags) { super(iModel, new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
+  public constructor(viewFlags: ViewFlags) { super(new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
 
   public init(decs: DecorationList): void {
     this.branch.clear();
@@ -538,7 +536,7 @@ export class WorldDecorations extends Branch {
 
 export class GraphicsList extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
-  constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); }
+  constructor(public graphics: RenderGraphic[]) { super(); }
 
   public dispose() {
     for (const graphic of this.graphics)

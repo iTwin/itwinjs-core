@@ -518,7 +518,7 @@ export class ECSqlValue {
 
   /** Indicates whether the value is NULL or not. */
   public isNull(): boolean { return this._val.isNull(); }
-  /** Get the value as BLOB (formatted as Base64 string) */
+  /** Get the value as BLOB */
   public getBlob(): ArrayBuffer { return this._val.getBlob(); }
   /** Get the value as a boolean value */
   public getBoolean(): boolean { return this._val.getBoolean(); }

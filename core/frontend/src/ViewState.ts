@@ -1501,7 +1501,7 @@ export abstract class ViewState3d extends ViewState {
       const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
       args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
 
-      const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+      const gf = IModelApp.renderSystem.createTriMesh(args);
       if (undefined !== gf)
         context.setViewBackground(gf);
     }

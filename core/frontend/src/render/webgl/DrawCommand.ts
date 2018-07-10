@@ -279,7 +279,7 @@ export class RenderCommands {
       return;
 
     if (RenderPass.None !== this._forcedRenderPass) {
-      // Add the commmand to the forced render pass (background).
+      // Add the command to the forced render pass (background).
       this.getCommands(this._forcedRenderPass).push(command);
       return;
     }

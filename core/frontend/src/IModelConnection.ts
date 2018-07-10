@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse,
+  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -24,18 +24,31 @@ const loggingCategory = "imodeljs-frontend.IModelConnection";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
-  /** The [[Model]]s in this IModel */
-  public readonly models: IModelConnection.Models;
-  public readonly elements: IModelConnection.Elements;
-  public readonly codeSpecs: IModelConnection.CodeSpecs;
-  public readonly views: IModelConnection.Views;
-  public readonly hilited: HilitedSet;
-  public readonly selectionSet: SelectionSet;
-  public readonly tiles: IModelConnection.Tiles;
+  /** The [[OpenMode]] used for this IModelConnection. */
   public readonly openMode: OpenMode;
+  /** The [[ModelState]]s in this IModelConnection. */
+  public readonly models: IModelConnection.Models;
+  /** The [[ElementState]]s in this IModelConnection. */
+  public readonly elements: IModelConnection.Elements;
+  /** The [[CodeSpec]]s in this IModelConnection. */
+  public readonly codeSpecs: IModelConnection.CodeSpecs;
+  /** The [[ViewState]]s in this IModelConnection. */
+  public readonly views: IModelConnection.Views;
+  /** The set of currently hilited elements for this IModelConnection. */
+  public readonly hilited: HilitedSet;
+  /** The set of currently selected elements for this IModelConnection. */
+  public readonly selectionSet: SelectionSet;
+  /** The set of [[Tile]]s for this IModelConnection. */
+  public readonly tiles: IModelConnection.Tiles;
+  /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
+  /** A unique Id of this IModelConnection. */
+  public readonly connectionId = Guid.createValue();
+  /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
+  private static connectionTimeout: number = 5 * 60 * 1000;
+  private openAccessToken?: AccessToken;
 
-  /** Check if this iModel has been opened read-only or not. */
+  /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
   /**
@@ -54,10 +67,6 @@ export class IModelConnection extends IModel {
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
-
-  /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static connectionTimeout: number = 5 * 60 * 1000;
-  private openAccessToken?: AccessToken;
 
   private constructor(iModel: IModel, openMode: OpenMode, accessToken?: AccessToken) {
     super(iModel.iModelToken);
@@ -204,7 +213,7 @@ export class IModelConnection extends IModel {
   }
 
   /**
-   * Execute a query against the iModel.
+   * Execute an ECSQL query against the iModel.
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -288,6 +297,21 @@ export class IModelConnection extends IModel {
    * @hidden
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
+
+  private _snapPending = false;
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    this._snapPending = true; // save flag indicating we're in the process of generating a snap
+    const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
+    await response; // after snap completes, turn off flag
+    this._snapPending = false;
+    return response; // return fulfilled promise
+  }
+  public async cancelSnap(): Promise<void> {
+    if (this._snapPending) { // if we're waiting for a snap, cancel it.
+      this._snapPending = false;
+      return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
+    }
+  }
 }
 
 export namespace IModelConnection {
