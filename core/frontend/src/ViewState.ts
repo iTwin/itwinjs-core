@@ -345,8 +345,8 @@ export abstract class ViewState extends ElementState {
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
-  public abstract getViewedExtents(): AxisAlignedBox3d;
-  public computeFitRange(): Range3d { return this.getViewedExtents(); } // ###TODO
+  public abstract getViewedExtents(_vp: Viewport): AxisAlignedBox3d;
+  public computeFitRange(_vp: Viewport): Range3d { return this.getViewedExtents(_vp); } // ###TODO
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
@@ -1639,9 +1639,10 @@ export class SpatialViewState extends ViewState3d {
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
 
-  public getViewedExtents(): AxisAlignedBox3d {
+  public getViewedExtents(vp: Viewport): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
       this._viewedExtents = new AxisAlignedBox3d(this.iModel.projectExtents.low, this.iModel.projectExtents.high);
+      this._viewedExtents.extendRange(this.getGroundExtents(vp));
       this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
     }
 
@@ -1741,7 +1742,7 @@ export class ViewState2d extends ViewState {
   }
 
   private static readonly _scratchViewedExtents = new AxisAlignedBox3d();
-  public getViewedExtents() {
+  public getViewedExtents(_vp: Viewport) {
     // ###TODO: Would prefer not to have to (asynchronously and possibly needlessly) load the tile tree solely to obtain the model range...
     // Seems like GeometricModelState ought to be able to report its range independent of a TileTree or ViewState.
     if (undefined === this._viewedExtents) {
