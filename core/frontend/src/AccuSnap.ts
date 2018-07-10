@@ -3,7 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
+import { Point3d, Point2d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager } from "./ElementLocateManager";
@@ -482,16 +483,23 @@ export class AccuSnap {
         id: thisHit.sourceId,
         closePoint: thisHit.hitPoint,
         worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
+        viewFlags: thisHit.viewport.viewFlags,
         snapMode,
-        snapDivisor: IModelApp.locateManager.getKeypointDivisor(),
         snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
-      });
+        snapDivisor: IModelApp.locateManager.getKeypointDivisor(),
+      }); // ### TODO offSubCategories...
 
     if (out) out.snapStatus = result.status;
     if (result.status !== SnapStatus.Success)
       return undefined;
 
-    return new SnapDetail(thisHit, snapMode, result.heat!, result.snapPoint!, result.geomType!);
+    const snap = new SnapDetail(thisHit, snapMode, result.heat!, result.snapPoint!);
+    snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined !== result.localToWorld ? Transform.fromJSON(result.localToWorld) : undefined, result.geomType);
+    if (undefined !== result.normal)
+      snap.normal = Vector3d.fromJSON(result.normal);
+
+    IModelApp.accuDraw.onSnap(snap); // AccuDraw can adjust nearest snap to intersection of circle (polar distance lock) or line (axis lock) with snapped to curve...
+    return snap;
   }
 
   private async getAccuSnapDetail(hitList: HitList<HitDetail>, out: LocateResponse): Promise<SnapDetail | undefined> {
@@ -514,7 +522,7 @@ export class AccuSnap {
       if (this.doLocateTesting())
         filtered = IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out);
 
-      const thisDist = thisSnap.distXY;
+      const thisDist = thisSnap.hitPoint.distance(thisSnap.snapPoint);
       if (!filtered && !(bestSnap && (thisDist >= bestDist))) {
         bestHit = thisHit;
         bestSnap = thisSnap;
@@ -749,13 +757,16 @@ export class AccuSnap {
         return undefined;
 
       if ((SnapStatus.Success === out.snapStatus) && snap) {
-        if (snap.isHot() && (SnapMode.Center === this.candidateSnapMode || SnapHeat.NotInRange === snap.heat)) {
+        if (snap.isHot() && (SnapMode.Center === this.candidateSnapMode || SnapHeat.InRange === snap.heat)) {
           preferred = snap;
           break;
-        } else if (snap.distXY < preferredDistance) {
-          // Snap is not hot, but it is the closest we've seen so far => prefer it and keep searching for a closer one or a hot one.
-          preferred = snap;
-          preferredDistance = snap.distXY;
+        } else {
+          const dist = snap.hitPoint.distance(snap.snapPoint);
+          if (dist < preferredDistance) {
+            // Snap is not hot, but it is the closest we've seen so far => prefer it and keep searching for a closer one or a hot one.
+            preferred = snap;
+            preferredDistance = dist;
+          }
         }
       }
     }
