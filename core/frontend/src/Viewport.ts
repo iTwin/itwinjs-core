@@ -5,7 +5,7 @@
 
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  RotMatrix, Transform, Map4d, Point4d, Constant,
+  RotMatrix, Transform, Map4d, Point4d, Constant, XYAndZ,
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
@@ -1009,31 +1009,31 @@ export class Viewport {
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
    * @param input the point to convert
    * @param out optional location for result. If undefined, a new Point4d is created.
    */
-  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
+  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
   /**
    * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
    * @param input the point to convert

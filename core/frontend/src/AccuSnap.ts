@@ -8,17 +8,10 @@ import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager } from "./ElementLocateManager";
-import { SpriteLocation, Sprite } from "./Sprites";
+import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-
-// tslint:disable:variable-name
-
-const s_unfocused: any = {};
-const s_focused: any = {};
-const s_notSnappable: any = {};
-const s_appFiltered: any = {};
 
 /** @hidden */
 export class AccuSnapToolState {
@@ -242,7 +235,7 @@ export class AccuSnap {
     const tpHit = IModelApp.tentativePoint.getCurrSnap();
 
     // if we don't have either an AccuSnap or a tentative point hit, quit.
-    if (!accuSnapHit && !tpHit && !this.errorIcon.isActive())
+    if (!accuSnapHit && !tpHit && !this.errorIcon.isActive)
       return;
 
     let timeout = this.settings.popupDelay;
@@ -280,7 +273,7 @@ export class AccuSnap {
     this.infoPt.setFrom(viewPt);
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
-    if (!this.errorIcon.isActive() && theHit) {
+    if (!this.errorIcon.isActive && theHit) {
       this.showElemInfo(viewPt, vp, theHit);
       return;
     }
@@ -325,8 +318,8 @@ export class AccuSnap {
       return;
 
     const crossPt = snap.snapPoint;
-    const crossSprite = snap.isHot() ? s_focused : s_unfocused;
     const viewport = snap.viewport!;
+    const crossSprite = IconSprites.getSprite(snap.isHot() ? "SnapCross" : "SnapUnfocused", viewport);
 
     if (!snap.isHot() && !this.wantShowHint())
       return;
@@ -353,11 +346,12 @@ export class AccuSnap {
   private showSnapError(status: SnapStatus, ev: BeButtonEvent) {
     this.errorIcon.deactivate();
 
+    const vp = ev.viewport!;
     let errorSprite: Sprite | undefined;
     switch (status) {
       case SnapStatus.FilteredByUser:
       case SnapStatus.FilteredByApp:
-        errorSprite = s_appFiltered;
+        errorSprite = IconSprites.getSprite("SnapAppFiltered", vp);
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -365,12 +359,12 @@ export class AccuSnap {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = s_notSnappable;
+        errorSprite = IconSprites.getSprite("SnapNotSnappable", vp);
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
 
       case SnapStatus.ModelNotSnappable:
-        errorSprite = s_notSnappable;
+        errorSprite = IconSprites.getSprite("SnapNotSnappable", vp);
         this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }
@@ -378,7 +372,6 @@ export class AccuSnap {
     if (!errorSprite)
       return;
 
-    const vp = ev.viewport!;
     const spriteSize = errorSprite.size;
     const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
 
@@ -783,8 +776,8 @@ export class AccuSnap {
 
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
-    // if there is an outstanding snap, cancel it.
-    await ev.viewport!.iModel.cancelSnap();
+
+    await ev.viewport!.iModel.cancelSnap(); // if there is an outstanding snap, cancel it.
 
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
@@ -794,17 +787,15 @@ export class AccuSnap {
 
     let hit: HitDetail | undefined;
     if (this.isActive()) {
-      if (this.doSnapping()) {
+      if (this.doSnapping())
         hit = await this.getPreferredSnap(ev, out);
-      } else if (this.doLocateTesting()) {
+      else if (this.doLocateTesting())
         hit = this.findLocatableHit(ev, true, out);
-      }
     }
 
     // set the current hit and display the sprite (based on snap's KeypointType)
-    if (hit || this.currHit) {
+    if (hit || this.currHit)
       this.setCurrHit(hit);
-    }
 
     // indicate errors
     this.showSnapError(out.snapStatus, ev);
@@ -835,14 +826,9 @@ export class AccuSnap {
   public decorate(context: DecorateContext): void {
     this.flashElements(context);
 
-    if (this.cross.isActive()) {
+    if (this.cross.isActive) {
       this.cross.decorate(context);
-
-      // // we have to adjust the world pt for the icon every time we draw it because the view may have changed size since we snapped
-      // const iconSize = this.icon.sprite!.size;
-      // const viewport = context.viewport!;
-      // this.icon.location.setFrom(AccuSnap.adjustIconLocation(viewport, this.cross.location, iconSize));
-      // this.icon.decorate(context);
+      this.icon.decorate(context);
     }
 
     this.errorIcon.decorate(context);

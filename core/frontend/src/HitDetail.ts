@@ -4,7 +4,7 @@
 /** @module LocatingElements */
 import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
-import { Sprite } from "./Sprites";
+import { Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./frontend";
 
 // tslint:disable:variable-name
@@ -17,25 +17,6 @@ export const enum SnapMode { // NEEDSWORK: Don't intend to use this as a mask, m
   Origin = 1 << 4,
   Bisector = 1 << 5,
   Intersection = 1 << 6,
-}
-
-export const enum KeypointType {
-  Nearest = 0,
-  Keypoint = 1,
-  Midpoint = 2,
-  Center = 3,
-  Origin = 4,
-  Bisector = 5,
-  Intersection = 6,
-  Tangent = 7,
-  TangentPoint = 8,
-  Perpendicular = 9,
-  PerpendicularPt = 10,
-  Parallel = 11,
-  Point = 12,
-  PointOn = 13,
-  Unknown = 14,
-  Custom = 15,
 }
 
 export const enum SnapHeat {
@@ -132,6 +113,7 @@ export class SnapDetail extends HitDetail {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this._adjustedPoint = this.snapPoint;
+    this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport);
   }
 
   public get adjustedPoint(): Point3d { return this._adjustedPoint; }
@@ -186,6 +168,19 @@ export class SnapDetail extends HitDetail {
       val.normal = this.normal.clone();
     return val;
   }
+
+  private static getSnapSprite(snapType: SnapMode): string {
+    switch (snapType) {
+      case SnapMode.NearestKeypoint: return "SnapKeypoint";
+      case SnapMode.MidPoint: return "SnapMidpoint";
+      case SnapMode.Center: return "SnapCenter";
+      case SnapMode.Origin: return "SnapOrigin";
+      case SnapMode.Bisector: return "SnapBisector";
+      case SnapMode.Intersection: return "SnapIntersection";
+    }
+    return "";
+  }
+
 }
 
 export class IntersectDetail extends SnapDetail {
