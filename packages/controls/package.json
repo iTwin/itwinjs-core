@@ -28,7 +28,7 @@
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
     "pseudolocalize": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
-    "test": "node ../../scripts/run-tests.js --testsDir ./tests",
+    "test": "node ../../scripts/run-tests.js --testsDir ./tests --react",
     "test+cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
     "validatePackageJson": "validjson ./package.json",
     "watch": "npm test -- --watch"

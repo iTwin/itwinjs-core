@@ -6,6 +6,7 @@ const path = require("path");
 const yargs = require("yargs").argv;
 const chokidar = require("chokidar");
 const Mocha = require("mocha");
+const utils = require("./utils");
 
 const options = {
   testsDir: path.resolve(yargs.testsDir || "./"), // the directory where test files are located
@@ -16,11 +17,16 @@ const options = {
   report: yargs.report || false, // create test run report
   cache: yargs.cache || true, // enable/disable ts-node caching
   extensions: [".ts", ".tsx"], // source file extensions
+  react: yargs.react || false, // init for react components testing
 };
 const testsName = path.basename(path.resolve("./"));
 
 process.env.TS_NODE_PROJECT = path.join(options.testsDir, "tsconfig.json");
 process.env.TS_NODE_CACHE = options.cache;
+process.env.CACHE_REQUIRE_PATHS_FILE = `../../out/temp/test-caches/${testsName}/cache-require-paths.json`;
+
+utils.ensureDirectoryExists(path.dirname(process.env.CACHE_REQUIRE_PATHS_FILE));
+require('cache-require-paths');
 
 const setupTestingFramework = () => {
   // setup chai
@@ -28,12 +34,14 @@ const setupTestingFramework = () => {
   const chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
 
-  // configure enzyme (testing utils for React)
-  const enzyme = require("enzyme");
-  const Adapter = require("enzyme-adapter-react-16");
-  enzyme.configure({ adapter: new Adapter() });
-  const chaiJestSnapshot = require("chai-jest-snapshot");
-  chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
+  if (options.react) {
+    // configure enzyme (testing utils for React)
+    const enzyme = require("enzyme");
+    const Adapter = require("enzyme-adapter-react-16");
+    enzyme.configure({ adapter: new Adapter() });
+    const chaiJestSnapshot = require("chai-jest-snapshot");
+    chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
+  }
 }
 setupTestingFramework();
 
@@ -43,8 +51,10 @@ const registerExtensions = () => {
     require("ts-node/register");
     require("tsconfig-paths/register");
     require("source-map-support/register");
-    require("jsdom-global/register");
-    require("ignore-styles");
+    if (options.react) {
+      require("jsdom-global/register");
+      require("ignore-styles");
+    }
     extensionsRegistered = true;
   }
 };
@@ -159,6 +169,7 @@ const run = () => {
       process.exit(1);
   });
   current = chain;
+  return current;
 };
 
 run();

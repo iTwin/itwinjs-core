@@ -4,10 +4,11 @@
 /** @module Content */
 
 import * as _ from "lodash";
+import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-components/lib/properties";
 import {
-  PropertyDataProvider as IPropertyDataProvider, PropertyData, PropertyDataChangeEvent,
-  PropertyCategory, PropertyRecord, PropertyValueFormat, PropertyValue,
-} from "@bentley/ui-components";
+  PropertyDataProvider as IPropertyDataProvider,
+  PropertyData, PropertyDataChangeEvent, PropertyCategory,
+} from "@bentley/ui-components/lib/propertygrid/PropertyDataProvider";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   CategoryDescription, Descriptor, ContentFlags,

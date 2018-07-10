@@ -4,11 +4,11 @@
 /** @module Content */
 
 import * as _ from "lodash";
-import { SortDirection } from "@bentley/ui-core";
+import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
 import {
   TableDataProvider as ITableDataProvider, TableDataChangeEvent,
   ColumnDescription, RowItem, CellItem,
-} from "@bentley/ui-components";
+} from "@bentley/ui-components/lib/table/TableDataProvider";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
