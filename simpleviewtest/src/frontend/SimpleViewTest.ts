@@ -23,6 +23,7 @@ import {
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
+import { Transform } from "@bentley/geometry-core/lib/Transform";
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -344,8 +345,21 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === theViewport)
     return;
 
+  const startFrustum = theViewport.getFrustum();
+  const newFrustum = startFrustum.clone();
+  const rotatePoint = theViewport.determineDefaultRotatePoint();
   const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
-  theViewport.view.setRotationAboutPoint(rMatrix);
+  const viewTransform = Transform.createFixedPointAndMatrix(rotatePoint, theViewport.rotMatrix);
+  newFrustum.multiply(viewTransform);
+
+  let rotateTransform: Transform | undefined = Transform.createFixedPointAndMatrix(rotatePoint, rMatrix);
+  rotateTransform = rotateTransform.inverse();
+  if (!rotateTransform)
+    return;
+
+  newFrustum.multiply(rotateTransform);
+
+  theViewport.animateFrustumChange(startFrustum, newFrustum);
   theViewport.synchWithView(true);
   showStatus(label, "view");
 }
