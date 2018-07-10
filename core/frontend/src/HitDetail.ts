@@ -171,6 +171,7 @@ export class SnapDetail extends HitDetail {
 
   private static getSnapSprite(snapType: SnapMode): string {
     switch (snapType) {
+      case SnapMode.Nearest: return "SnapPointOn";
       case SnapMode.NearestKeypoint: return "SnapKeypoint";
       case SnapMode.MidPoint: return "SnapMidpoint";
       case SnapMode.Center: return "SnapCenter";
