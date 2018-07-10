@@ -210,6 +210,14 @@ export class IModelConnection extends IModel {
     }
   }
 
+  /** Load a file from the native asset directory of the backend.
+   * @param assetName Name of the asset file, with path relative to the *Assets* directory
+   */
+  public async loadNativeAsset(assetName: string): Promise<Uint8Array> {
+    const val = await IModelReadRpcInterface.getClient().loadNativeAsset(this.iModelToken, assetName);
+    return new Uint8Array(atob(val).split("").map((c) => c.charCodeAt(0)));
+  }
+
   /**
    * Execute an ECSQL query against the iModel.
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
@@ -234,7 +242,7 @@ export class IModelConnection extends IModel {
     return await IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
-  /** query for a set of ids that satisfy the supplied query params  */
+  /** Query for a set of element ids that satisfy the supplied query params  */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken, params); }
 
   /**

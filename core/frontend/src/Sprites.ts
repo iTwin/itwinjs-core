@@ -7,10 +7,12 @@ import { Point2d, Point3d, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
 import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
-import { RenderTexture } from "@bentley/imodeljs-common/lib/common";
+import { RenderTexture, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common/lib/common";
+import { IModelConnection } from "./IModelConnection";
+import { TextureHandle } from "./render/webgl/Texture";
 
 /**
- * Sprites are small raster images that are drawn "on top" of Viewports by a ViewDecoration.
+ * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
  * Their purpose is to draw the user's attention to something of importance.
  *
  * There are two classes in the Sprites subsystem: Sprite (a Sprite Definition) and SpriteLocation.
@@ -33,6 +35,15 @@ export class Sprite implements IDisposable {
   public readonly size = new Point2d();
   public texture?: RenderTexture;
   public dispose() { if (this.texture) this.texture.dispose(); }
+
+  public fromNativeAsset(imodel: IModelConnection, name: string): void {
+    imodel.loadNativeAsset(name).then((val: Uint8Array) => {
+      const src = new ImageSource(val, ImageSourceFormat.Png);
+      const handle = TextureHandle.createForImageSource(32, 32, src);
+      // this.texture = val;
+    }).catch((_e) => {
+    });
+  }
 
 }
 

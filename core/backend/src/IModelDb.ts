@@ -26,6 +26,8 @@ import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
 import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { KnownLocations } from "./Platform";
+import { IModelJsFs } from "./IModelJsFs";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -843,6 +845,12 @@ export class IModelDb extends IModel {
       request.cancelSnap();
       this._snaps.delete(connectionId);
     }
+  }
+
+  public static loadNativeAsset(assetName: string): string {
+    const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
+    const fileData = IModelJsFs.readFileSync(fileName) as Buffer;
+    return fileData.toString("base64");
   }
 
   /** Execute a test from native code

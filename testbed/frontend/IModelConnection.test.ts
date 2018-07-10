@@ -156,6 +156,11 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.childIds.length).to.equal(0); // this is a leaf tile.
   });
 
+  it.only("Load native assets", async () => {
+    const sprite = await iModel.loadNativeAsset("decorators/dgncore/SnapNone.png");
+    assert.isDefined(sprite);
+  });
+
   it("Parameterized ECSQL", async () => {
     assert.exists(iModel);
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");

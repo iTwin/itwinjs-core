@@ -71,6 +71,9 @@ export interface NativeBriefcaseManagerOnConflictPolicy {
 export declare class NativeDgnDb {
   constructor();
 
+  /** Get the name of the *assets* directory. */
+  public static getAssetsDir(): string;
+
   /** Get the IModelProps of this iModel. */
   public getIModelProps(): string;
 

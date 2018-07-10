@@ -330,9 +330,7 @@ export class ChangeSummaryManager {
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
   }
 
-  private static getExtendedSchemaPath(): string {
-    return path.join(KnownLocations.platformAssetsDir, "IModelChange.01.00.01.ecschema.xml");
-  }
+  private static getExtendedSchemaPath(): string { return path.join(KnownLocations.packageAssetsDir, "IModelChange.01.00.01.ecschema.xml"); }
 
   private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): Id64 | undefined {
     return changesFile.withPreparedStatement("SELECT Summary.Id summaryid FROM imodelchange.ChangeSet WHERE WsgId=?",
