@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { ColorDef, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
+import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
@@ -143,8 +143,6 @@ describe("Disposal of System", () => {
     // Create image buffer and image source
     const imageBuff = ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1);
     assert.isDefined(imageBuff);
-    const imageSrcData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
-    const imageSrc = new ImageSource(imageSrcData, ImageSourceFormat.Png);
 
     // Texture from image buffer
     const textureParams0 = new RenderTexture.Params("-192837465");
@@ -153,7 +151,7 @@ describe("Disposal of System", () => {
 
     // Texture from image source
     const textureParams1 = new RenderTexture.Params("-918273645");
-    const texture1 = system.createTextureFromImageSource(imageSrc, 256, 256, imodel0, textureParams1);
+    const texture1 = system.createTextureFromImageBuffer(imageBuff!, imodel0, textureParams1);
     assert.isDefined(texture1);
 
     // Pre-disposal
