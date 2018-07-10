@@ -93,6 +93,8 @@ export abstract class GeometricModelState extends ModelState {
               this._loadStatus = TileTree.LoadStatus.NotFound;
             });
           }
+
+          break;
         }
       case "BisCore:WebMercatorModel":
         {
@@ -101,6 +103,8 @@ export abstract class GeometricModelState extends ModelState {
           }).catch((_err) => {
             this._loadStatus = TileTree.LoadStatus.NotFound;
           });
+
+          break;
         }
       default:
         {
@@ -111,6 +115,8 @@ export abstract class GeometricModelState extends ModelState {
           }).catch((_err) => {
             this._loadStatus = TileTree.LoadStatus.NotFound;
           });
+
+          break;
         }
     }
 
