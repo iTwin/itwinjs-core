@@ -45,7 +45,7 @@ function logResult(..._args: any[]) {
 }
 
 describe("ToolRegistry", () => {
-  before(() => setupToolRegistryTests());
+  before(async () => await setupToolRegistryTests());
   after(() => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
