@@ -1638,10 +1638,20 @@ export class SpatialViewState extends ViewState3d {
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
 
+  public computeFitRange(vp: Viewport): AxisAlignedBox3d {
+    // Loop over the current models in the model selector with loaded tile trees and union their ranges
+    const range = new AxisAlignedBox3d();
+    this.forEachModel((model: GeometricModelState) => {
+      if (model.tileTree !== undefined) {   // can we assume that a loaded model
+        range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
+      }
+    });
+    return range.isNull() ? this.getViewedExtents(vp) : range;
+  }
+
   public getViewedExtents(vp: Viewport): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
-      this._viewedExtents = new AxisAlignedBox3d(this.iModel.projectExtents.low, this.iModel.projectExtents.high);
-      this._viewedExtents.extendRange(this.getGroundExtents(vp, true));
+      this._viewedExtents = this.getGroundExtents(vp, true);
       this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
     }
 
