@@ -2,11 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaJsonFileLocater } from "../source/Deserialization/SchemaJsonFileLocater";
-import { FileSchemaKey } from "../source/Deserialization/SchemaFileLocater";
-import { SchemaContext } from "../source/Context";
 import { assert } from "chai";
-import { ECObjectsError, ECObjectsStatus, SchemaKey, SchemaMatchType } from "../source";
+
+import { SchemaJsonFileLocater } from "../../source/Deserialization/SchemaJsonFileLocater";
+import { FileSchemaKey } from "../../source/Deserialization/SchemaFileLocater";
+import { SchemaContext } from "../../source/Context";
+import { ECObjectsError, ECObjectsStatus, SchemaKey, SchemaMatchType } from "../../source";
 
 describe("SchemaJsonFileLocater tests: ", () => {
   let locater: SchemaJsonFileLocater;
@@ -14,7 +15,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   beforeEach(() => {
     locater = new SchemaJsonFileLocater();
-    locater.addSchemaSearchPath(__dirname + "\\assets\\");
+    locater.addSchemaSearchPath(__dirname + "\\..\\assets\\");
     context = new SchemaContext();
     context.addLocater(locater);
   });

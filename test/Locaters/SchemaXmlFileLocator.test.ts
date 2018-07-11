@@ -2,10 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaXmlFileLocater } from "../source/Deserialization/SchemaXmlFileLocater";
-import { FileSchemaKey } from "../source/Deserialization/SchemaFileLocater";
-import { SchemaKey, SchemaMatchType, ECObjectsError, ECObjectsStatus, SchemaContext } from "../source";
 import { assert } from "chai";
+
+import { SchemaXmlFileLocater } from "../../source/Deserialization/SchemaXmlFileLocater";
+import { FileSchemaKey } from "../../source/Deserialization/SchemaFileLocater";
+import { SchemaKey, SchemaMatchType, ECObjectsError, ECObjectsStatus, SchemaContext } from "../../source";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
@@ -13,7 +14,7 @@ describe("SchemaXmlFileLocater tests:", () => {
 
   beforeEach(() => {
     locater = new SchemaXmlFileLocater();
-    locater.addSchemaSearchPath(__dirname + "\\assets\\");
+    locater.addSchemaSearchPath(__dirname + "\\..\\assets\\");
     context = new SchemaContext();
     context.addLocater(locater);
   });
