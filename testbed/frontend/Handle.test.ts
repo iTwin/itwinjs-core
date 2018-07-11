@@ -17,9 +17,9 @@ describe("Handles", () => {
 
     /** Test constructors */
     let a = new BufferHandle();
-    expect(a.isValid).to.equal(true);
+    expect(a.isDisposed).to.equal(false);
     a.dispose();
-    expect(a.isValid).to.equal(false);
+    expect(a.isDisposed).to.equal(true);
 
     /** Test bind function */
     a = new BufferHandle();

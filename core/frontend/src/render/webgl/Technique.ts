@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, using, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags, WithClipVolume, FeatureMode } from "./TechniqueFlags";
@@ -42,12 +42,15 @@ export interface Technique extends IDisposable {
 export class SingularTechnique implements Technique {
   public readonly program: ShaderProgram;
 
+  // Note: Technique assumes ownership of a program
   public constructor(program: ShaderProgram) { this.program = program; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
   public compileShaders(): boolean { return this.program.compile(); }
 
-  public dispose(): void { this.program.dispose(); }
+  public dispose(): void {
+    dispose(this.program);
+  }
 }
 
 function numFeatureVariants(numBaseShaders: number) { return numBaseShaders * 3; }
@@ -71,9 +74,9 @@ export abstract class VariedTechnique implements Technique {
   }
 
   public dispose(): void {
-    for (const program of this._programs) {
-      program.dispose();
-    }
+    for (const program of this._programs)
+      dispose(program);
+    this._programs.length = 0;
   }
 
   protected constructor(numPrograms: number) {
@@ -82,7 +85,9 @@ export abstract class VariedTechnique implements Technique {
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
 
-  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void { this.addProgram(flags, builder.buildProgram(gl)); }
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
+    this.addProgram(flags, builder.buildProgram(gl));
+  }
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
     const index = this.getShaderIndex(flags);
     assert(undefined === this._programs[index], "program already exists");
@@ -450,10 +455,8 @@ export class Techniques implements IDisposable {
   }
 
   public dispose(): void {
-    for (const tech of this._list) {
-      tech.dispose();
-    }
-
+    for (const tech of this._list)
+      dispose(tech);
     this._list.length = 0;
   }
 

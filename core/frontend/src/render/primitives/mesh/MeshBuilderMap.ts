@@ -87,7 +87,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     const { indexedPolyface, displayParams, isPlanar } = polyface;
     const { pointCount, normalCount } = indexedPolyface;
     const { fillColor, isTextured } = displayParams;
-    const textureMapping = displayParams.material ? displayParams.material.textureMapping : undefined;
+    const textureMapping = displayParams.textureMapping;
 
     if (pointCount === 0)
       return;

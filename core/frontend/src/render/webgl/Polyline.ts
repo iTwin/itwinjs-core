@@ -20,6 +20,7 @@ import { ColorInfo } from "./ColorInfo";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
+import { dispose } from "../../../../bentley/lib/Disposable";
 
 export class PolylineInfo {
   public vertexParams: QParams3d;
@@ -233,12 +234,17 @@ export class PolylineGeometry extends LUTGeometry {
   public numIndices: number;
   private buffers: PolylineBuffers;
 
-  public constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
+  private constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
     super();
     this.polyline = info;
     this.lut = lut;
     this.numIndices = numIndices;
     this.buffers = buffers;
+  }
+
+  public dispose() {
+    dispose(this.lut);
+    dispose(this.buffers);
   }
 
   public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }
@@ -284,12 +290,12 @@ export class PolylineGeometry extends LUTGeometry {
   public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
 
   public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this.buffers.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+    attr.enableArray(this.buffers!.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
 
   public draw(): void {
     const gl = System.instance.context;
-    this.buffers.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    this.buffers!.indices.bind(GL.Buffer.Target.ArrayBuffer);
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
   }
 

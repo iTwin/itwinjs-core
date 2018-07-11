@@ -491,7 +491,7 @@ export class Viewport {
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents() as Range3d;
+    let extents = view.getViewedExtents(this) as Range3d;
     if (extents.isNull())
       return;
 
@@ -793,7 +793,7 @@ export class Viewport {
         // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
         this.alignWithRootZ(); // make sure we're in a z Up view
 
-        const extents = view.getViewedExtents();
+        const extents = view.getViewedExtents(this);
         if (extents.isNull()) {
           extents.low.z = -Viewport.get2dFrustumDepth();
           extents.high.z = Viewport.get2dFrustumDepth();
@@ -1239,7 +1239,7 @@ export class Viewport {
   /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
-    const viewRange = this.view.computeFitRange();
+    const viewRange = this.view.computeFitRange(this);
 
     return viewRange;
   }

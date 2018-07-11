@@ -2,6 +2,8 @@
 
 By default, any ECClass in the FROM or JOIN clause of an ECSQL is treated polymorphically. That means all the subclasses of the specified class are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.
 
+> This also applies to [Mixins](../../bis/intro/mixins.md). From an ECSQL perspective there is nothing special about mixins because they are technically just ECClasses (abstract Entity ECClasses to be precise). You can simply query against a mixin class without knowing which classes actually implement the mixin.
+
 We begin the lesson by using a simple ECSQL similar to the ones used at the beginning of the tutorial.
 
 > **Try it yourself**

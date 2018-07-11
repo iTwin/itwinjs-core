@@ -1,5 +1,7 @@
 # ECSQL
 
+> Make sure to check out the [ECSQL Tutorial](./ECSQLTutorial/index.md) as well!
+
 ## What is ECSQL
 
 ECSQL is a text-based command language for CRUD (create, read, update, delete) operations against
@@ -25,7 +27,7 @@ This is not a comprehensive documentation of the SQL subset of ECSQL. This docum
 to standard SQL and the cases where less known features of the standard are used.
 Standard SQL refers to SQL-92 (aka SQL 2), and to SQL-99 (aka SQL 3) whenever SQL-92 is not sufficient.
 
-> All ECSQL examples in the following sections refer to classes and relationships from the **BisCore** ECSchema (unless mentioned otherwise).
+> All ECSQL examples in the following sections refer to classes and relationships from the [BisCore](../../bis/domains/biscore/BisCore.ecschema.md) ECSchema (unless mentioned otherwise).
 
 ## Fully qualifying ECClasses in ECSQL
 
@@ -297,6 +299,8 @@ SELECT Model FROM bis.Element WHERE ECInstanceId=?
 ## Polymorphic Queries
 
 By default, any ECClass in the FROM clause of an ECSQL is treated polymorphically, i.e. all its subclasses are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.
+
+> This also applies to [Mixins](../bis/intro/mixins.md). Mixins technically are ECClasses (abstract Entity ECClasses to be precise). So you can simply query against a mixin class without knowing which classes actually implement the mixin.
 
 ### Examples
 

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
@@ -11,6 +11,7 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
 import { ScalableMeshTileTree, ScalableMeshTileLoader, ScalableMeshTileTreeProps } from "./tile/ScalableMeshTileTree";
+import { WebMercatorTileTree, WebMercatorTileLoader, WebMercatorTileTreeProps } from "./tile/WebMercatorTileTree";
 import { DecorateContext } from "./ViewContext";
 import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
@@ -49,6 +50,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
+
+  /** Runs when the iModel this iModelState represents closes. */
+  public onIModelConnectionClose() { }
 }
 
 /** The state of a geometric model */
@@ -89,9 +93,19 @@ export abstract class GeometricModelState extends ModelState {
               this._loadStatus = TileTree.LoadStatus.NotFound;
             });
           }
+
           break;
         }
+      case "BisCore:WebMercatorModel":
+        {
+          WebMercatorTileTree.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
+            this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
+          }).catch((_err) => {
+            this._loadStatus = TileTree.LoadStatus.NotFound;
+          });
 
+          break;
+        }
       default:
         {
           const ids = Id64.toIdSet(this.id);
@@ -101,6 +115,8 @@ export abstract class GeometricModelState extends ModelState {
           }).catch((_err) => {
             this._loadStatus = TileTree.LoadStatus.NotFound;
           });
+
+          break;
         }
     }
 
@@ -110,6 +126,11 @@ export abstract class GeometricModelState extends ModelState {
   private setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
+  }
+
+  public onIModelConnectionClose() {
+    dispose(this._tileTree);  // we do not track if we are disposed... catch this at the tiletree level
+    super.onIModelConnectionClose();
   }
 }
 

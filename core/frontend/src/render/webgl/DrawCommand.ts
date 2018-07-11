@@ -241,7 +241,7 @@ export class RenderCommands {
 
   public addDecorations(dec: DecorationList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
-    for (const entry of dec) {
+    for (const entry of dec.list) {
       this.addDecoration(entry.graphic as Graphic, entry.overrides);
     }
 
@@ -405,7 +405,7 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
-  public init(scene: GraphicList, dec: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -418,31 +418,33 @@ export class RenderCommands {
       return;
     }
 
-    this.addBackground(dec.viewBackground as Graphic);
     this.addGraphics(scene);
 
-    if (undefined !== dynamics && 0 < dynamics.length) {
+    if (undefined !== dynamics && 0 < dynamics.list.length) {
       this.addDecorations(dynamics);
     }
 
-    if (undefined !== dec.normal && 0 < dec.normal.length) {
-      this.addGraphics(dec.normal);
-    }
+    if (undefined !== dec) {
+      this.addBackground(dec.viewBackground as Graphic);
+      if (undefined !== dec.normal && 0 < dec.normal.length) {
+        this.addGraphics(dec.normal);
+      }
 
-    if (undefined !== dec.world && 0 < dec.world.length) {
-      this.addWorldDecorations(dec.world);
-    }
+      if (undefined !== dec.world && 0 < dec.world.list.length) {
+        this.addWorldDecorations(dec.world);
+      }
 
-    this._stack.pushState(this.target.decorationState);
-    if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
-      this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
-    }
+      this._stack.pushState(this.target.decorationState);
+      if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.list.length) {
+        this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
+      }
 
-    if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
-      this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
-    }
+      if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.list.length) {
+        this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
+      }
 
-    this._stack.pop();
+      this._stack.pop();
+    }
   }
 
   public addPrimitive(prim: Primitive): void {

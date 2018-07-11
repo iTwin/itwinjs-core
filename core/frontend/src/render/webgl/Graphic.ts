@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -265,14 +265,17 @@ export class FeatureOverrides implements IDisposable {
   private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
   private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
 
-  private _isDisposed: boolean = false;
-
   private constructor(target: Target) {
     this.target = target;
   }
 
   public static createFromTarget(target: Target) {
     return new FeatureOverrides(target);
+  }
+
+  public dispose() {
+    dispose(this.lut);
+    this.lut = undefined;
   }
 
   public get isNonUniform(): boolean { return LUTDimension.NonUniform === this.dimension; }
@@ -340,16 +343,6 @@ export class FeatureOverrides implements IDisposable {
       this._lastFlashUpdated = flashLastUpdated;
       this._lastHiliteUpdated = hiliteLastUpdated;
     }
-  }
-
-  public get isDisposed() { return this._isDisposed; }
-
-  public dispose() {
-    if (this.lut !== undefined) {
-      this.lut.dispose();
-      this.lut = undefined;
-    }
-    this._isDisposed = true;
   }
 }
 
@@ -434,13 +427,22 @@ export class Batch extends Graphic {
   public readonly range: ElementAlignedBox3d;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
-  private _isDisposed: boolean = false;
 
   public constructor(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
+  }
+
+  // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
+  public dispose() {
+    dispose(this.graphic);
+    for (const over of this._overrides) {
+      over.target.onBatchDisposed(this);
+      dispose(over);
+    }
+    this._overrides.length = 0;
   }
 
   public get pickTable(): PickTable | undefined {
@@ -466,6 +468,7 @@ export class Batch extends Graphic {
       ret = FeatureOverrides.createFromTarget(target);
       this._overrides.push(ret);
       target.addBatch(this);
+      // ###TODO target.addBatch(*this);
       ret.initFromMap(this.featureTable);
     }
 
@@ -486,20 +489,9 @@ export class Batch extends Graphic {
     }
 
     if (foundIndex > -1) {
-      this._overrides[foundIndex].dispose();
+      dispose(this._overrides[foundIndex]);
       this._overrides.splice(foundIndex, 1);
     }
-  }
-
-  public get isDisposed() { return this._isDisposed; }
-
-  public dispose(): void {
-    for (const ovr of this._overrides) {
-      ovr.target.onBatchDisposed(this);
-      ovr.dispose();
-    }
-    this._overrides = [];
-    this._isDisposed = true;
   }
 }
 
@@ -517,15 +509,13 @@ export class Branch extends Graphic {
       branch.setViewFlags(viewFlags);
   }
 
+  public dispose() { }
+
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public assignUniformFeatureIndices(index: number): void {
     for (const entry of this.branch.entries) {
       (entry as Graphic).assignUniformFeatureIndices(index);
     }
-  }
-
-  public dispose(): void {
-    // ###TODO
   }
 }
 
@@ -537,7 +527,7 @@ export class WorldDecorations extends Branch {
   public init(decs: DecorationList): void {
     this.branch.clear();
     this.overrides.length = 0;
-    for (const dec of decs) {
+    for (const dec of decs.list) {
       this.branch.add(dec.graphic);
       this.overrides.push(dec.overrides);
     }
@@ -545,7 +535,14 @@ export class WorldDecorations extends Branch {
 }
 
 export class GraphicsList extends Graphic {
+  // Note: We assume the graphics array we get contains undisposed graphics to start
   constructor(public graphics: RenderGraphic[]) { super(); }
+
+  public dispose() {
+    for (const graphic of this.graphics)
+      dispose(graphic);
+    this.graphics.length = 0;
+  }
 
   public addCommands(commands: RenderCommands): void {
     for (const graphic of this.graphics) {
@@ -563,9 +560,5 @@ export class GraphicsList extends Graphic {
     for (const gf of this.graphics) {
       (gf as Graphic).assignUniformFeatureIndices(index);
     }
-  }
-
-  public dispose(): void {
-    // ###TODO
   }
 }
