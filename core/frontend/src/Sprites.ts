@@ -8,6 +8,7 @@ import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
 import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { RenderTexture, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { IModelApp } from "./IModelApp";
 
 /**
  * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
@@ -30,16 +31,28 @@ import { RenderTexture, ImageSource, ImageSourceFormat } from "@bentley/imodeljs
  * without ever using a SpritLocation. SpriteLocations are merely provided as a convenience.
  */
 export class Sprite implements IDisposable {
+  /** The size of the sprite, in pixels */
   public readonly size = new Point2d();
+  /** The texture for this Sprite. If undefined, the Spite is not valid. */
   public texture?: RenderTexture;
-  public dispose() { if (this.texture) this.texture.dispose(); }
 
-  public fromNativeAsset(vp: Viewport, name: string): void {
-    vp.iModel.loadNativeAsset(name).then((val: Uint8Array) => {
-      const src = new ImageSource(val, ImageSourceFormat.Png);
-      this.texture = vp.target.renderSystem.createTextureFromImageSource(src, 32, 32, undefined, new RenderTexture.Params(undefined, true));
-      this.size.set(32, 32);
-    }).catch(() => { });
+  /** Dispose of this Sprite. Disposes of texture, if present. */
+  public dispose() { if (this.texture) { this.texture.dispose(); this.texture = undefined; } }
+
+  /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
+   * @note This method loads the .png file asynchronously. The [[texture]] member will be undefined until the data is loaded.
+   */
+  public fromNativePng(name: string, vp: Viewport): void {
+    vp.iModel.loadNativeAsset(name).then((val: Uint8Array) => this.fromImageSource(new ImageSource(val, ImageSourceFormat.Png)))
+      .catch(() => { });
+  }
+
+  /** Initialize this Sprite from an ImageSource.
+   * @note This method creates the texture from the ImageSource asynchronously. The texture will appear as a white square until it is fully loaded.
+   */
+  public fromImageSource(src: ImageSource): void {
+    this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, 32, 32, undefined, new RenderTexture.Params(undefined, true));
+    this.size.set(32, 32);
   }
 }
 
@@ -55,10 +68,11 @@ export class IconSprites {
     if (!sprite) {
       sprite = new Sprite();
       this._sprites.set(spriteName, sprite);
-      sprite.fromNativeAsset(vp, "decorators/dgncore/" + spriteName + ".png");
+      sprite.fromNativePng("decorators/dgncore/" + spriteName + ".png", vp); // note: asynchronous
     }
     return sprite;
   }
+  /** Empty the cache of IconSprites, disposing all existing Sprites. */
   public static emptyAll() { this._sprites.forEach((sprite: Sprite) => sprite.dispose()); this._sprites.clear(); }
 }
 

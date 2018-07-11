@@ -320,7 +320,13 @@ export abstract class RenderSystem {
   /** Create a new Texture from an ImageBuffer. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** Create a new Texture from an ImageSource. */
+  /** Create a new Texture from an ImageSource.
+   * @param _source The image source data
+   * @param _width The width of the texture
+   * @param _height The height of the texture
+   * @param _imodel The IModelConnection this texture is to be associated with. When the IModelConnection is closed, the texture is disposed. If undefined, caller is responsible for disposing the texture.
+   * @param _params Parameters that describe the texture
+   */
   public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   // /** Create a Texture from a graphic. */
