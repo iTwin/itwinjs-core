@@ -350,17 +350,21 @@ export class System extends RenderSystem {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
-
-  public readonly drawBuffersExtension?: WEBGL_draw_buffers;
-
+  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private _lineCodeTexture: TextureHandle | undefined;
-  public get lineCodeTexture() { return this._lineCodeTexture; }
-
   public readonly renderCache: Dictionary<IModelConnection, IdMap>;
+
+  public static identityTransform = Transform.createIdentity();
+
+  public get lineCodeTexture() { return this._lineCodeTexture; }
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
-  public static identityTransform = Transform.createIdentity();
+  public setDrawBuffers(attachments: GLenum[]): void {
+    // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
+    if (undefined !== this._drawBuffersExtension)
+      this._drawBuffersExtension.drawBuffersWEBGL(attachments);
+  }
 
   public static create(): System {
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -546,7 +550,7 @@ export class System extends RenderSystem {
     this.context = context;
     this.techniques = techniques;
     this.capabilities = capabilities;
-    this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
+    this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this.renderCache = new Dictionary<IModelConnection, IdMap>((lhs: IModelConnection, rhs: IModelConnection): number => {
       if (lhs.iModelToken.iModelId !== rhs.iModelToken.iModelId) {
         if (lhs.iModelToken.iModelId === undefined || rhs.iModelToken.iModelId === undefined)
