@@ -82,10 +82,10 @@ export class SweepContour {
           const linestring = children[0] as LineString3d;
           const points = linestring.points;
           this.localToWorld.multiplyInversePoint3dArrayInPlace(points);
-          if (PolygonOps.sumTriangleAreasXY (points) < 0)
-            points.reverse ();
+          if (PolygonOps.sumTriangleAreasXY(points) < 0)
+            points.reverse();
           const graph = Triangulator.earcutFromPoints(points);
-          const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph);
+          const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
           this.facets = unflippedPoly;
           this.facets.tryTransformInPlace(this.localToWorld);
         }
@@ -104,7 +104,7 @@ export class SweepContour {
           }
           const graph = Triangulator.triangulateStrokedLoops(strokes);
           if (graph) {
-            const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph);
+            const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
             this.facets = unflippedPoly;
             this.facets.tryTransformInPlace(this.localToWorld);
           }
@@ -115,8 +115,8 @@ export class SweepContour {
   /** Emit facets to a builder.
    * This method may cache and reuse facets over multiple calls.
    */
-  public emitFacets(builder: PolyfaceBuilder, strokeOptions: StrokeOptions | undefined, reverse: boolean, transform?: Transform) {
-    this.buildFacets(builder, strokeOptions);
+  public emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform) {
+    this.buildFacets(builder, builder.options);
     if (this.facets)
       builder.addIndexedPolyface(this.facets, reverse, transform);
   }

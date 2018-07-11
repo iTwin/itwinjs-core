@@ -44,7 +44,8 @@ export class StrokeOptions {
   public shouldTriangulate: boolean = false;
 
   public needNormals?: boolean;
-  public needParams?: boolean;
+  public _needParams?: boolean;
+  public get needParams(): boolean { return this._needParams !== undefined ? this._needParams : false; }
   public needColors?: boolean;
   public defaultCircleStrokes = 16;
 

@@ -343,7 +343,7 @@ function testMultiAngleEquivalence(ck: Checker, xDegrees: number, yDegrees: numb
 
   }
 }
-describe.only("OrderedRotationAngles", () => {
+describe("OrderedRotationAngles", () => {
 
   it("OrderedRotationAngles.SingleRotation", () => {
     const ck = new Checker();
