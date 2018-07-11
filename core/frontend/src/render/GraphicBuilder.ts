@@ -12,6 +12,8 @@ import {
   Arc3d,
   Polyface,
   StrokeOptions,
+  Path,
+  Loop,
 } from "@bentley/geometry-core";
 import {
   AreaPattern,
@@ -222,6 +224,12 @@ export abstract class GraphicBuilder {
    * @param zDepth Z depth value
    */
   public abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
+
+  /** Draw a 3D open path */
+  public abstract addPath(path: Path): void;
+
+  /** Draw a 3D planar region */
+  public abstract addLoop(loop: Loop): void;
 
   /** @note Wireframe fill display supported for non-illuminated meshes. */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;

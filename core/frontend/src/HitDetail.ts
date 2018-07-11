@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
-import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d, Path } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./frontend";
@@ -92,13 +92,13 @@ export class HitDetail {
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   public isElementHit(): boolean { return true; } // NEEDSWORK: Check that sourceId is a valid Id64 for an element...
   public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
-  public draw(context: DecorateContext) { context.drawHit(this); }
+  public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 }
 
 export class SnapDetail extends HitDetail {
   public sprite?: Sprite;
   public readonly snapPoint: Point3d;     // hitPoint adjusted by snap
-  private _adjustedPoint: Point3d;        // AccuSnap/AccuDraw can adjust the point after the snap
+  public readonly adjustedPoint: Point3d; // AccuSnap/AccuDraw can adjust the point after the snap
   public primitive?: CurvePrimitive;      // curve primitive for snap.
   public normal?: Vector3d;               // surface normal at snapPoint
   public geomType?: HitGeomType;          // the HitGeomType of this SnapDetail
@@ -112,18 +112,16 @@ export class SnapDetail extends HitDetail {
   public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps) {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
-    this._adjustedPoint = this.snapPoint;
+    this.adjustedPoint = this.snapPoint.clone();
     this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport);
   }
 
-  public get adjustedPoint(): Point3d { return this._adjustedPoint; }
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
   public isSnapDetail(): this is SnapDetail { return true; }
   public isHot(): boolean { return this.heat !== SnapHeat.None; }
-  public isPointAdjusted(): boolean { return this.adjustedPoint !== this.snapPoint; }
-  public setAdjustedPoint(point: Point3d) { this._adjustedPoint = point.clone(); }
-  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this._adjustedPoint = this.snapPoint; this.heat = heat; }
+  public isPointAdjusted(): boolean { return this.adjustedPoint.isAlmostEqual(this.snapPoint); }
+  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
   public setCurvePrimitive(primitive?: CurvePrimitive, localToWorld?: Transform, geomType?: HitGeomType): void {
@@ -160,13 +158,37 @@ export class SnapDetail extends HitDetail {
     const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint);
     val.sprite = this.sprite;
     val.geomType = this.geomType;
-    if (this.isPointAdjusted())
-      val.setAdjustedPoint(this.adjustedPoint);
+    val.adjustedPoint.setFrom(this.adjustedPoint);
     if (undefined !== this.primitive)
       val.primitive = this.primitive.clone() as CurvePrimitive;
     if (undefined !== this.normal)
       val.normal = this.normal.clone();
     return val;
+  }
+
+  public draw(context: DecorateContext) {
+    if (undefined !== this.primitive) {
+      const graphic = context.createWorldOverlay();
+      graphic.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + Subcaetegory Appearance...
+      if (this.primitive instanceof LineString3d) {
+        const ls = this.primitive as LineString3d;
+        if (ls.points.length > 2) {
+          const loc = ls.closestPoint(this.snapPoint, false);
+          const nSegments = ls.points.length - 1;
+          const uSegRange = (1.0 / nSegments);
+          let segmentNo = Math.floor(loc.fraction / uSegRange);
+          if (segmentNo >= nSegments)
+            segmentNo = nSegments - 1;
+          const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
+          graphic.addLineString(points);
+          context.addWorldOverlay(graphic.finish());
+          return;
+        }
+      }
+      graphic.addPath(Path.create(this.primitive));
+      context.addWorldOverlay(graphic.finish());
+    }
+    super.draw(context);
   }
 
   private static getSnapSprite(snapType: SnapMode): string {

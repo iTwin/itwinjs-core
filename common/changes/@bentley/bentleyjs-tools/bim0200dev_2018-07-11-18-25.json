@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/bentleyjs-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-tools",
+  "email": "brien.bastings@bentley.com"
+}
