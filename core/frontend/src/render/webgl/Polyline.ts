@@ -20,7 +20,7 @@ import { ColorInfo } from "./ColorInfo";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
-import { dispose } from "../../../../bentley/lib/Disposable";
+import { dispose } from "@bentley/bentleyjs-core";
 
 export class PolylineInfo {
   public vertexParams: QParams3d;
