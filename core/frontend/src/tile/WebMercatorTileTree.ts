@@ -30,15 +30,9 @@ class WebMercatorTileTreeProps implements TileTreeProps {
 }
 
 class WebMercatorTileLoader extends TileLoader {
-  public async getTileProps(_ids: string[]): Promise<TileProps[]> {
-    return [new WebMercatorTileProps()];
-  }
-  public getMaxDepth(): number {
-    return this._props._provider.maximumZoomLevel;
-  }
-  constructor(private _props: WebMercatorTileTreeProps) {
-    super();
-  }
+  public async getTileProps(_ids: string[]): Promise<TileProps[]> { return [new WebMercatorTileProps()]; }
+  public getMaxDepth(): number { return this._props._provider.maximumZoomLevel; }
+  constructor(private _props: WebMercatorTileTreeProps) { super(); }
 }
 
 class WebMercatorTileProps implements TileProps {
@@ -74,11 +68,8 @@ abstract class ImageryProvider {
   }
 
   public abstract get tileWidth(): number;
-
   public abstract get tileHeight(): number;
-
   public abstract get minimumZoomLevel(): number;
-
   public abstract get maximumZoomLevel(): number;
 
   // construct the Url from the desired Tile
@@ -154,7 +145,7 @@ class BingMapProvider extends ImageryProvider {
   public get maximumZoomLevel(): number { return this._zoomMax; }
 
   private tileXYToQuadKey(tileX: number, tileY: number, zoomLevel: number) {
-    // blatantly ripped off from C# example in bing documentation https://msdn.microsoft.com/en-us/library/bb259689.aspx
+    // from C# example in bing documentation https://msdn.microsoft.com/en-us/library/bb259689.aspx
     let quadKey: string = "";
 
     // Root tile is not displayable. Returns 0 for _GetMaximumSize(). Should not end up here.
@@ -187,13 +178,8 @@ class BingMapProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined {
-    return this._logoByteArray;
-  }
-
-  public getCopyrightMessage(): string {
-    return ""; // NEEDSWORK
-  }
+  public getCopyrightImage(): Uint8Array | undefined { return this._logoByteArray; }
+  public getCopyrightMessage(): string { return ""; }    // NEEDSWORK
 
   public matchesMissingTile(tileData: Uint8Array): boolean {
     if (!this._missingTileData)
@@ -333,19 +319,15 @@ class MapBoxProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined {
-    return undefined;
-  }
+  public getCopyrightImage(): Uint8Array | undefined { return undefined; }
 
-  public getCopyrightMessage(): string {
-    return "(c) Mapbox, (c) OpenStreetMap contributors";
-  }
+  public getCopyrightMessage(): string { return "(c) Mapbox, (c) OpenStreetMap contributors"; }
 
   // no initialization needed for MapBoxProvider.
-  public async initialize(): Promise<void> {
-  }
+  public async initialize(): Promise<void> { }
 }
 
+/** @hidden */
 export class WebMercatorModelState extends SpatialModelState {
   // The Tile Tree generated from a WebMercator map model.
   private static async getTileTreeProps(jsonProperties: any, _iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
@@ -353,7 +335,6 @@ export class WebMercatorModelState extends SpatialModelState {
       const providerName: string = jsonProperties.providerName;
       const providerData: any = jsonProperties.providerData;
       let provider: ImageryProvider;
-      // tslint:disable:no-console
       if (("BingProvider" === providerName) && (providerData.hasOwnProperty("mapType"))) {
         const mapType: number = Number(providerData.mapType);
         provider = new BingMapProvider(mapType);
@@ -368,7 +349,7 @@ export class WebMercatorModelState extends SpatialModelState {
     }
     throw new BentleyError(IModelStatus.BadModel, "WebMercator specification invalid");
   }
-  /** @hidden */
+
   public loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
       return this._loadStatus;

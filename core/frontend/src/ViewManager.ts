@@ -14,7 +14,7 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { WebMercatorModelState } from "./tile/WebMercatorTileTree";
-import { ScaleableMeshModelState } from "./tile/ScalableMeshTileTree";
+import { ScalableMeshModelState } from "./tile/ScalableMeshTileTree";
 
 /**
  * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
@@ -39,7 +39,7 @@ export class ViewManager {
     models.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
     models.registerClass(SheetModelState.getClassFullName(), SheetModelState);
     models.registerClass(WebMercatorModelState.getClassFullName(), WebMercatorModelState);
-    models.registerClass(ScaleableMeshModelState.getClassFullName(), ScaleableMeshModelState);
+    models.registerClass(ScalableMeshModelState.getClassFullName(), ScalableMeshModelState);
   }
 
   /** Called after the selected view changes.
@@ -79,7 +79,7 @@ export class ViewManager {
     }
   }
   public beginDynamicsMode() { this.inDynamicsMode = true; }
-  public doesHostHaveFocus(): boolean { return true; } // NEEDS_WORK
+  public doesHostHaveFocus(): boolean { return document.hasFocus(); }
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
 
