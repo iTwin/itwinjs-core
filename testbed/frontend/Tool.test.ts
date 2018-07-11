@@ -3,9 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { IModelApp, IModelConnection, ElementAgenda, ModifyElementSource, SelectEventType } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ElementAgenda, ModifyElementSource, SelectEventType } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { CONSTANTS } from "../common/Testbed";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -13,12 +14,12 @@ describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    MaybeRenderApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
   });
   after(async () => {
     if (imodel) await imodel.closeStandalone();
-    IModelApp.shutdown();
+    MaybeRenderApp.shutdown();
   });
 
   it("ElementAgenda tests", () => {

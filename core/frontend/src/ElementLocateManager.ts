@@ -257,9 +257,8 @@ export class ElementLocateManager {
     if (HitSource.AccuSnap === source && !IModelApp.toolAdmin.isCurrentInputSourceMouse())
       return snaps;
 
-    // We need a snap mode UI!!! Removed center and intersection they were just obnoxious. -BB 06/2015
+    // Snap modes should be provided by the UI...
     snaps.push(SnapMode.NearestKeypoint);
-    snaps.push(SnapMode.Nearest);
     return snaps;
   }
 
