@@ -194,7 +194,7 @@ export class PrimitiveLoopGeometry extends Geometry {
     const contour = SweepContour.createForLinearSweep(this.loop);
     if (contour !== undefined) {
       const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
-      contour.emitFacets(pfBuilder, facetOptions, false, this.transform); // build facets and emit them to the builder
+      contour.emitFacets(pfBuilder, false, this.transform); // build facets and emit them to the builder
       const polyface = pfBuilder.claimPolyface();
       const wantEdges = DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType;
       const isPlanar = true;

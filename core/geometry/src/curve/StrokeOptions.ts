@@ -46,6 +46,7 @@ export class StrokeOptions {
   public needNormals?: boolean;
   public _needParams?: boolean;
   public get needParams(): boolean { return this._needParams !== undefined ? this._needParams : false; }
+  public set needParams(value: boolean) { this._needParams = value; }
   public needColors?: boolean;
   public defaultCircleStrokes = 16;
 
