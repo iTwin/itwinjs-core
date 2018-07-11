@@ -35,7 +35,7 @@ namespace CesiumUtils {
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
   export function transformFromJson(jTrans: number[] | undefined): Transform {
-    return (jTrans === undefined) ? Transform.createIdentity() : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), RotMatrix.createRowValues(jTrans[0], jTrans[4], jTrans[9], jTrans[1], jTrans[5], jTrans[10], jTrans[2], jTrans[6], jTrans[11]));
+    return (jTrans === undefined) ? Transform.createIdentity() : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), RotMatrix.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
   }
 }
 
@@ -49,9 +49,13 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
     this.tilesetJson = json.root;
     this.id = new Id64();
     this.rootTile = new ScalableMeshTileProps(json.root, "", this, undefined);
-    const tileToEcef = CesiumUtils.transformFromJson(json.root.transform);
-    const tileToDb = Transform.createIdentity();
-    tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
+    let tileToDb = CesiumUtils.transformFromJson(json.asset.TileToDB);
+
+    if (undefined === tileToDb) {
+      tileToDb = Transform.createIdentity();
+      const tileToEcef = CesiumUtils.transformFromJson(json.root.transform);
+      tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
+    }
     this.location = tileToDb.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
       this.yAxisUp = true;
