@@ -82,6 +82,7 @@
         "Polyfaces",
         "Polylines",
         "postupdate",
+        "prerelease",
         "readonly",
         "redoable",
         "remotable",
