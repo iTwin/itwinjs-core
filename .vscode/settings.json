@@ -101,6 +101,7 @@
     "parameterize",
     "pnpm",
     "postupdate",
+    "prerelease",
     "readonly",
     "redoable",
     "renderable",
