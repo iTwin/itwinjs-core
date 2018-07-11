@@ -8,6 +8,9 @@ import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64, BentleyStatus, assert, StopWatch } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
+import { SpatialModelState } from "../ModelState";
+import { TileTree } from "./TileTree";
+import { IModelApp } from "../IModelApp";
 
 function debugPrint(str: string): void {
   console.log(str); // tslint:disable-line:no-console
@@ -39,7 +42,7 @@ namespace CesiumUtils {
   }
 }
 
-export class ScalableMeshTileTreeProps implements TileTreeProps {
+class ScalableMeshTileTreeProps implements TileTreeProps {
   public id: Id64Props = "";
   public rootTile: TileProps;
   public location: TransformProps;
@@ -85,7 +88,7 @@ class ScalableMeshTileProps implements TileProps {
   }
 }
 
-export class ScalableMeshTileLoader {
+class ScalableMeshTileLoader {
   constructor(private tree: ScalableMeshTileTreeProps) { }
   public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
 
@@ -135,8 +138,29 @@ export class ScalableMeshTileLoader {
   }
 }
 
-export namespace ScalableMeshTileTree {
-  export async function getTileTreeProps(url: string, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
+export class ScaleableMeshModelState extends SpatialModelState {
+
+  /** @hidden */
+  public loadTileTree(): TileTree.LoadStatus {
+    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
+      return this._loadStatus;
+
+    this._loadStatus = TileTree.LoadStatus.Loading;
+
+    const json = (this.classFullName === "ScalableMesh:ScalableMeshModel") ? this.jsonProperties.scalablemesh : this.jsonProperties.pointcloud2;
+    if (json !== undefined && json.FileId !== undefined) {
+      this.getTileTreeProps(json.FileId, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
+        this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
+        IModelApp.viewManager.onNewTilesReady();
+      }).catch((_err) => {
+        this._loadStatus = TileTree.LoadStatus.NotFound;
+      });
+    }
+
+    return this._loadStatus;
+  }
+
+  private async getTileTreeProps(url: string, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
 
     if (undefined !== url) {
       const urlParts = url.split("/");

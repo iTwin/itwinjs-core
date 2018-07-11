@@ -462,9 +462,7 @@ export class TileTree implements IDisposable {
     this.loader = props.loader;
   }
 
-  public dispose() {
-    dispose(this.rootTile);
-  }
+  public dispose() { dispose(this.rootTile); }
 
   public get is3d(): boolean { return this.model.is3d; }
   public get is2d(): boolean { return this.model.is2d; }

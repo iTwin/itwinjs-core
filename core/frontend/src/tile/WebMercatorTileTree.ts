@@ -8,11 +8,12 @@ import { TileTreeProps, TileProps, TileId } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64 } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform } from "@bentley/geometry-core";
-import { TileLoader } from "./TileTree";
+import { TileLoader, TileTree } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
+import { SpatialModelState } from "../ModelState";
 
-export class WebMercatorTileTreeProps implements TileTreeProps {
+class WebMercatorTileTreeProps implements TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
   public id: Id64Props = "";
   /** Metadata describing the tree's root Tile. */
@@ -28,7 +29,7 @@ export class WebMercatorTileTreeProps implements TileTreeProps {
   }
 }
 
-export class WebMercatorTileLoader extends TileLoader {
+class WebMercatorTileLoader extends TileLoader {
   public async getTileProps(_ids: string[]): Promise<TileProps[]> {
     return [new WebMercatorTileProps()];
   }
@@ -62,10 +63,10 @@ class WebMercatorTileProps implements TileProps {
 }
 
 // The type of background map
-export enum MapType { Street = 0, Aerial = 1, Hybrid = 2 }
+enum MapType { Street = 0, Aerial = 1, Hybrid = 2 }
 
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
-export abstract class ImageryProvider {
+abstract class ImageryProvider {
   public mapType: MapType;
 
   constructor(mapType: MapType) {
@@ -148,11 +149,8 @@ class BingMapProvider extends ImageryProvider {
   }
 
   public get tileWidth(): number { return this._tileWidth; }
-
   public get tileHeight(): number { return this._tileHeight; }
-
   public get minimumZoomLevel(): number { return this._zoomMin; }
-
   public get maximumZoomLevel(): number { return this._zoomMax; }
 
   private tileXYToQuadKey(tileX: number, tileY: number, zoomLevel: number) {
@@ -321,11 +319,8 @@ class MapBoxProvider extends ImageryProvider {
   }
 
   public get tileWidth(): number { return 256; }
-
   public get tileHeight(): number { return 256; }
-
   public get minimumZoomLevel(): number { return this._zoomMin; }
-
   public get maximumZoomLevel(): number { return this._zoomMax; }
 
   // construct the Url from the desired Tile
@@ -351,10 +346,9 @@ class MapBoxProvider extends ImageryProvider {
   }
 }
 
-// The Tile Tree generated from a WebMercator map model.
-export namespace WebMercatorTileTree {
-
-  export async function getTileTreeProps(jsonProperties: any, _iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
+export class WebMercatorModelState extends SpatialModelState {
+  // The Tile Tree generated from a WebMercator map model.
+  private static async getTileTreeProps(jsonProperties: any, _iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
     if (jsonProperties.hasOwnProperty("providerName") && jsonProperties.hasOwnProperty("providerData")) {
       const providerName: string = jsonProperties.providerName;
       const providerData: any = jsonProperties.providerData;
@@ -374,4 +368,17 @@ export namespace WebMercatorTileTree {
     }
     throw new BentleyError(IModelStatus.BadModel, "WebMercator specification invalid");
   }
+  /** @hidden */
+  public loadTileTree(): TileTree.LoadStatus {
+    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
+      return this._loadStatus;
+
+    this._loadStatus = TileTree.LoadStatus.Loading;
+
+    WebMercatorModelState.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
+      this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
+    }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
+    return this._loadStatus;
+  }
+
 }

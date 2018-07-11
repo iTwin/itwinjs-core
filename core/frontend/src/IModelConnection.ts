@@ -360,6 +360,21 @@ export namespace IModelConnection {
 
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
+    public async findRegisteredBaseClass(className: string): Promise<typeof ModelState> {
+      let ctor = ModelState;
+      const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this._iModel.iModelToken, className);
+      baseClasses.some((baseClass: string) => {
+        const test = Models.findClass(baseClass);
+        if (test !== undefined) {
+          ctor = test;
+          Models.registerClass(className, ctor);
+          return true;
+        }
+        return false;
+      });
+      return ctor;
+    }
+
     /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
@@ -373,13 +388,10 @@ export namespace IModelConnection {
         return; // all requested models are already loaded
 
       try {
-        (await this.getProps(notLoaded)).forEach((props) => {
+        (await this.getProps(notLoaded)).forEach(async (props) => {
           let ctor = Models.findClass(props.classFullName);
-          if (undefined === ctor) {
-            ctor = Models.findClass("BisCore:" + props.bisBaseClass);
-            if (undefined === ctor)
-              ctor = ModelState;
-          }
+          if (undefined === ctor)
+            ctor = await this.findRegisteredBaseClass(props.classFullName);
           const modelState = new ctor(props, this._iModel);
           this.loaded.set(modelState.id.value, modelState);
         });

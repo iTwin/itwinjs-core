@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Moved EntityMetaData from backend to common",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "keith.bentley@bentley.com"
+}

@@ -67,8 +67,29 @@ export interface CustomAttribute {
 
 type FactoryFunc = (jsonObj: any) => any;
 
+export interface PropertyMetaDataProps {
+  primitiveType?: number;
+  structName?: string;
+  extendedType?: string;
+  description?: string;
+  displayLabel?: string;
+  minimumValue?: any;
+  maximumValue?: any;
+  minimumLength?: number;
+  maximumLength?: number;
+  readOnly?: boolean;
+  kindOfQuantity?: string;
+  isCustomHandled?: boolean;
+  isCustomHandledOrphan?: boolean;
+  minOccurs?: number;
+  maxOccurs?: number;
+  direction?: string;
+  relationshipClass?: string;
+  customAttributes?: CustomAttribute[];
+}
+
 /** Metadata for a property. */
-export class PropertyMetaData {
+export class PropertyMetaData implements PropertyMetaDataProps {
   public primitiveType?: PrimitiveTypeCode;
   public structName?: string;
   public extendedType?: string;
@@ -88,7 +109,7 @@ export class PropertyMetaData {
   public relationshipClass?: string;
   public customAttributes?: CustomAttribute[];
 
-  public constructor(jsonObj: any) {
+  public constructor(jsonObj: PropertyMetaDataProps) {
     this.primitiveType = jsonObj.primitiveType;
     if (jsonObj.structName)
       this.structName = jsonObj.structName;
@@ -151,9 +172,21 @@ export class PropertyMetaData {
     return jsonObj;
   }
 }
+export interface EntityMetaDataProps {
+  ecclass: string;
+  description?: string;
+  modifier?: string;
+  displayLabel?: string;
+  /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
+  baseClasses: string[];
+  /** The Custom Attributes for this class */
+  customAttributes?: CustomAttribute[];
+  /** An object whose properties correspond by name to the properties of this class. */
+  properties: { [propName: string]: PropertyMetaData };
+}
 
 /** Metadata for an Entity. */
-export class EntityMetaData {
+export class EntityMetaData implements EntityMetaDataProps {
   /** The Entity name */
   public readonly ecclass: string;
   public readonly description?: string;
@@ -166,7 +199,7 @@ export class EntityMetaData {
   /** An object whose properties correspond by name to the properties of this class. */
   public readonly properties: { [propName: string]: PropertyMetaData };
 
-  public constructor(jsonObj: any) {
+  public constructor(jsonObj: EntityMetaDataProps) {
     this.ecclass = jsonObj.ecclass;
     this.description = jsonObj.description;
     this.modifier = jsonObj.modifier;
@@ -179,5 +212,4 @@ export class EntityMetaData {
         this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
     }
   }
-
 }
