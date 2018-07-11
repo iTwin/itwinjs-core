@@ -10,7 +10,7 @@ import { Base64 } from "js-base64";
 export abstract class Token {
   protected samlAssertion: string;
 
-  private userProfile?: UserProfile;
+  protected userProfile?: UserProfile;
   private startsAt?: Date;
   private expiresAt?: Date;
   protected x509Certificate?: string;
@@ -23,15 +23,15 @@ export abstract class Token {
     return this.samlAssertion;
   }
 
-  public getUserProfile(): UserProfile|undefined {
+  public getUserProfile(): UserProfile | undefined {
     return this.userProfile;
   }
 
-  public getExpiresAt(): Date|undefined {
+  public getExpiresAt(): Date | undefined {
     return this.expiresAt;
   }
 
-  public getStartsAt(): Date|undefined {
+  public getStartsAt(): Date | undefined {
     return this.startsAt;
   }
 
@@ -96,10 +96,20 @@ export class AuthorizationToken extends Token {
 export class AccessToken extends Token {
   private accessTokenString?: string;
   private static tokenPrefix = "Token";
+  public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
 
   public static fromSamlAssertion(samlAssertion: string): AuthorizationToken | undefined {
     const token = new AccessToken(samlAssertion);
     return token.parseSamlAssertion() ? token : undefined;
+  }
+
+  public static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined {
+    const props: any = JSON.parse(foreignJsonStr);
+    if (props[this.foreignProjectAccessTokenJsonProperty] === undefined)
+      return undefined;
+    const tok = new AccessToken(foreignJsonStr);
+    tok.userProfile = props[this.foreignProjectAccessTokenJsonProperty].userProfile;
+    return tok;
   }
 
   public static fromTokenString(accessTokenString: string): AccessToken | undefined {
@@ -130,7 +140,10 @@ export class AccessToken extends Token {
     return AccessToken.tokenPrefix + " " + tokenStr;
   }
 
-  public static fromJson(jsonObj: any): AccessToken|undefined {
+  public static fromJson(jsonObj: any): AccessToken | undefined {
+    const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj.samlAssertion);
+    if (foreignTok !== undefined)
+      return foreignTok;
     return AccessToken.fromSamlAssertion(jsonObj.samlAssertion);
   }
 

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, ChangeSet, IModelHubError } from "@bentley/imodeljs-clients";
-import { BriefcaseManager, IModelAccessContext, IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseManager, IModelAccessContext, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
 import { IModelHubStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as fs from "fs";
 import * as path from "path";
@@ -43,10 +43,12 @@ async function pushCS(iModelId: string, accessToken: AccessToken, cs: any) {
   return pushChangeSet(iModelId, accessToken, changeSet, csfilepath);
 }
 
-async function sideLoadChangeSets(context: IModelAccessContext, accessToken: AccessToken) {
+async function sideLoadChangeSets(context: IModelAccessContext, iModelId: string, accessToken: AccessToken) {
   BriefcaseManager.setContext(context);
+  const bc = await IModelDb.open(accessToken, "", iModelId, OpenParams.pullAndPush()); // must create a briefcase in order to upload changesets
   const timeline = require(getAssetFilePath("changeSets.json"));
   for (const cs of timeline) {
+    cs.briefcaseId = bc.briefcase.briefcaseId;
     await pushCS(context.iModelId, accessToken, cs);
   }
 }
@@ -62,5 +64,5 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use se
 const iModelInfo = require("../assets/imodel.json");
 const theAccessToken = NonBentleyProject.getAccessToken();
 NonBentleyProject.getIModelAccessContext(iModelInfo.wsgId, "")
-  .then((context: IModelAccessContext) => sideLoadChangeSets(context, theAccessToken))
+  .then((context: IModelAccessContext) => sideLoadChangeSets(context, iModelInfo.wsgId, theAccessToken))
   .then(() => process.exit(0));
