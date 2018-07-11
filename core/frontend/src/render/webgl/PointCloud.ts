@@ -13,16 +13,13 @@ import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { GL } from "./GL";
 import { System } from "./System";
+import { dispose } from "@bentley/bentleyjs-core";
 
 export class PointCloudGraphic extends Graphic {
   public readonly args: PointCloudArgs;
-  public addCommands(_commands: RenderCommands): void {
-  }
-  public dispose(): void {
-  }
-  public static create(args: PointCloudArgs) {
-    return new PointCloudGraphic(args);
-  }
+  public addCommands(_commands: RenderCommands): void { }
+  public dispose(): void { }
+  public static create(args: PointCloudArgs) { return new PointCloudGraphic(args); }
 
   private constructor(args: PointCloudArgs) {
     super();
@@ -32,6 +29,8 @@ export class PointCloudGraphic extends Graphic {
 export class PointCloudGeometry extends CachedGeometry {
   private vertices: QBufferHandle3d;
   private vertexCount: number;
+
+  public dispose() { dispose(this.vertices); }
 
   constructor(pointCloud: PointCloudArgs) {
     super();
