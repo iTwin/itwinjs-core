@@ -2,33 +2,17 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as fs from "fs";
 import * as url from "url";
 
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
-import { initializeBackend, getRpcInterfaces } from "./common";
-import { useIModelBank } from "./common";
+import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
+import { initializeBackend, getRpcInterfaces } from "./backend";
+import { useIModelBank } from "../common/common";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
 // import { app, protocol, BrowserWindow } from "electron";
 // tslint:disable-next-line:no-var-requires
 const electron = require("electron");
-
-// Store SVT settings in the configuration.json file, which will be read by the application
-const configuration = {
-  userName: "bistroDEV_pmadm1@mailinator.com",
-  password: "pmadm1",
-  projectName: "plant-sta",
-  iModelName: "NabeelQATestiModel",
-};
-const filename = process.env.SVT_STANDALONE_FILENAME;
-if (filename !== undefined) {
-  configuration.iModelName = filename;
-  (configuration as any).viewName = process.env.SVT_STANDALONE_VIEWNAME;  // optional
-  (configuration as any).standalone = true;
-}
-fs.writeFileSync("./lib/backend/public/configuration.json", JSON.stringify(configuration), "utf8");
 
 // --------------------------------------------------------------------------------------
 // ------- Initialization and setup of host and tools before starting app ---------------

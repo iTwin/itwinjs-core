@@ -3,9 +3,9 @@ import * as fs from "fs";
 import * as bodyParser from "body-parser";
 import * as cp from "child_process";
 
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager } from "@bentley/imodeljs-common/lib/common";
 import { Config } from "@bentley/imodeljs-clients/lib";
-import { initializeBackend, getRpcInterfaces } from "./common";
+import { initializeBackend, getRpcInterfaces } from "./backend";
 
 // tslint:disable:no-console
 

@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelHost, BriefcaseManager, IModelAccessContext } from "@bentley/imodeljs-backend";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelClient } from "@bentley/imodeljs-clients";
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { IModelHost, BriefcaseManager, IModelAccessContext } from "@bentley/imodeljs-backend/lib/backend";
+import { Logger } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { IModelBankClient, IModelClient } from "@bentley/imodeljs-clients/lib";
+import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common/lib/common";
+import { useIModelBank } from "../common/common";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-
-export const useIModelBank = true;
 
 export function getRpcInterfaces() {
   return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
