@@ -3,18 +3,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 import Schema from "../../source/Metadata/Schema";
 import Unit from "../../source/Metadata/Unit";
-import { ECObjectsError } from "../../source/Exception";
-import * as sinon from "sinon";
 import Phenomenon from "../../source/Metadata/Phenomenon";
 import UnitSystem from "../../source/Metadata/UnitSystem";
-import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
+import { ECObjectsError } from "../../source/Exception";
 
-describe("Unit tests", () => {
-  let testUnit: Unit;
+describe("Unit", () => {
+  before(() => {
+    Schema.ec32 = true;
+  });
+
+  after(() => {
+    Schema.ec32 = false;
+  });
+
   describe("accept", () => {
+    let testUnit: Unit;
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       testUnit = new Unit(schema, "TestUnit");
@@ -34,683 +42,221 @@ describe("Unit tests", () => {
     });
   });
 
-  describe("SchemaItemType", () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
-    testUnit = new Unit(schema, "Test");
-    it("should return correct item type and string", () => {
-      assert.equal(testUnit.schemaItemType, SchemaItemType.Unit);
-      assert.equal(schemaItemTypeToString(testUnit.schemaItemType), "Unit");
-    });
-  });
+  function createSchemaJson(unitJson: any): any {
+    return createSchemaJsonWithItems({
+      TestUnit: {
+        schemaItemType: "Unit",
+        ...unitJson,
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+      TestUnitSystem: {
+        schemaItemType: "UnitSystem",
+      },
+    }, true);
+  }
 
-  describe("Async fromJson", () => {
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testUnit = new Unit(schema, "MM");
+  describe("deserialization", () => {
+    const fullyDefinedUnit = createSchemaJson({
+      label: "Millimeter",
+      description: "A unit defining the millimeter metric unit of length",
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.MM",
+      numerator: 5,
+      denominator: 1,
+      offset: 4,
     });
-    it("Basic test for definition", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      const ecSchema = await Schema.fromJson(testSchema);
-      const schemaUnit = await ecSchema.getItem("MM");
-      assert.isDefined(schemaUnit);
-      const unitTest: Unit = schemaUnit as Unit;
-      assert(unitTest.definition, "[MILLI]*Units.MM");
+
+    it("async - should succeed with fully defined", async () => {
+      const ecSchema = await Schema.fromJson(fullyDefinedUnit);
+      const unit = await ecSchema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+
+      const phen = await ecSchema.getItem<Phenomenon>("TestPhenomenon");
+      assert.isDefined(phen);
+      assert.isTrue((await unit!.phenomenon) === phen);
+
+      const unitSystem = await ecSchema.getItem<UnitSystem>("TestUnitSystem");
+      assert.isDefined(unitSystem);
+      assert.isTrue((await unit!.unitSystem) === unitSystem);
+
+      expect(unit!.definition).to.eql("[MILLI]*Units.MM");
+      expect(unit!.denominator).to.equal(1);
+      expect(unit!.numerator).to.equal(5);
+      expect(unit!.offset).to.equal(4);
     });
-    it("Label must be a string", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+
+    it("sync - should succeed with fully defined", () => {
+      const ecSchema = Schema.fromJsonSync(fullyDefinedUnit);
+      const unit = ecSchema.getItemSync<Unit>("TestUnit");
+      assert.isDefined(unit);
+
+      const phen = ecSchema.getItemSync<Phenomenon>("TestPhenomenon");
+      assert.isDefined(phen);
+      assert.equal(phen, ecSchema.getItemSync<Phenomenon>(unit!.phenomenon!.name));
+
+      const unitSystem = ecSchema.getItemSync<UnitSystem>("TestUnitSystem");
+      assert.isDefined(unitSystem);
+      assert.equal(unitSystem, ecSchema.getItemSync<UnitSystem>(unit!.unitSystem!.name));
+
+      expect(unit!.definition).to.eql("[MILLI]*Units.MM");
+      expect(unit!.denominator).to.equal(1);
+      expect(unit!.numerator).to.equal(5);
+      expect(unit!.offset).to.equal(4);
+    });
+
+    // Check order of schema items shouldn't matter
+    const reverseOrderJson = createSchemaJsonWithItems({
+      M: {
         schemaItemType: "Unit",
-        name: "MM",
-        label: 77,
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-        numerator: 1.0,
-        denominator: 1.0,
-        offset: 0.0,
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem MM has an invalid 'label' attribute. It should be of type 'string'.`);
-    });
-    it("Name in json must match name in constructor", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        name: "MMM",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-        numerator: 1.0,
-        denominator: 1.0,
-        offset: 0.0,
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
-    });
-    it("Phenomenon can't be undefined", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        name: "MM",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-        numerator: 1.0,
-        denominator: 1.0,
-        offset: 0.0,
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Unit MM does not have the required 'phenomenon' attribute.`);
-    });
-    it("Numerator can't be a string", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-            numerator: "5",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Unit MM has an invalid 'numerator' attribute. It should be of type 'number'.`);
-    });
-    it("Numerator, denominator, offset default values are 1.0, 1.0, 0.0, respectively", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      const ecSchema = await Schema.fromJson(testSchema);
-      const schemaUnit = await ecSchema.getItem("MM");
-      assert.isDefined(schemaUnit);
-      const unitTest: Unit = schemaUnit as Unit;
-      assert(unitTest.numerator === 1.0);
-      assert(unitTest.denominator === 1.0);
-      assert(unitTest.offset === 0.0);
-    });
-    it("Numerator, denominator, offset are different than default", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-            numerator: 3.0,
-            denominator: 6.0,
-            offset: 4.0,
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      const ecSchema = await Schema.fromJson(testSchema);
-      const schemaUnit = await ecSchema.getItem("MM");
-      assert.isDefined(schemaUnit);
-      const unitTest: Unit = schemaUnit as Unit;
-      assert(unitTest.numerator === 3.0);
-      assert(unitTest.denominator === 6.0);
-      assert(unitTest.offset === 4.0);
-    });
-    it("Invalid ECName", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        name: "5MM",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
-    });
-    it("Definition is required", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The Unit MM does not have the required 'definition' attribute.`);
-    });
-  });
-  describe("Async DelayedPromise Tests", () => {
-    it("should successfully deserialize valid JSON I", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          M: {
-            schemaItemType: "Unit",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*M",
-          },
-        },
-      };
-      const ecSchema = await Schema.fromJson(json);
+        phenomenon: "TestSchema.Length",
+        unitSystem: "TestSchema.Metric",
+        definition: "[MILLI]*M",
+      },
+      Length: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+        label: "length",
+      },
+      Metric: {
+        schemaItemType: "UnitSystem",
+        label: "metric",
+      },
+    }, true);
+    it("async - order shouldn't matter", async () => {
+      const ecSchema = await Schema.fromJson(reverseOrderJson);
       assert.isDefined(ecSchema);
-      const testPhenomenonItem = await ecSchema.getItem<Phenomenon>("Length");
-      const testUnitSystemItem = await ecSchema.getItem<UnitSystem>("Metric");
-      const testUnitItem = await ecSchema.getItem<Unit>("M");
-      assert.isDefined(testPhenomenonItem);
-      assert.isDefined(testUnitSystemItem);
-      assert.isDefined(testUnitItem);
-      assert.isTrue(testPhenomenonItem instanceof Phenomenon);
-      assert.isTrue(testUnitSystemItem instanceof UnitSystem);
-      assert.isTrue(testUnitItem instanceof Unit);
-      assert(testPhenomenonItem!.definition === "LENGTH(1)");
-      assert(testUnitItem!.phenomenon!.name, testPhenomenonItem!.name);
-      assert(testUnitItem!.unitSystem!.name, testUnitSystemItem!.name);
+      assert.isDefined(await ecSchema.getItem<Phenomenon>("Length"));
+      assert.isDefined(await ecSchema.getItem<UnitSystem>("Metric"));
+      assert.isDefined(await ecSchema.getItem<Unit>("M"));
     });
-    it("should successfully deserialize valid JSON II", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-            label: "length",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-            label: "metric",
-          },
-          M: {
-            schemaItemType: "Unit",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*M",
-          },
-        },
-      };
-      const ecSchema = await Schema.fromJson(json);
+
+    it("sync - should succeed with dependency order", () => {
+      const ecSchema = Schema.fromJsonSync(reverseOrderJson);
       assert.isDefined(ecSchema);
-      const testPhenomenonItem = await ecSchema.getItem<Phenomenon>("Length");
-      const testUnitSystemItem = await ecSchema.getItem<UnitSystem>("Metric");
-      const testUnitItem = await ecSchema.getItem<Unit>("M");
-      assert(testUnitItem!.phenomenon!.then((value: Phenomenon) => value.label === testPhenomenonItem!.label));
-      assert(testUnitItem!.unitSystem!.then((value: UnitSystem) => value.label === testUnitSystemItem!.label));
+      assert.isDefined(ecSchema.getItemSync<Phenomenon>("Length"));
+      assert.isDefined(ecSchema.getItemSync<UnitSystem>("Metric"));
+      assert.isDefined(ecSchema.getItemSync<Unit>("M"));
     });
-    it("Order shouldn't matter", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          M: {
-            schemaItemType: "Unit",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*M",
-          },
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-            label: "length",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-            label: "metric",
-          },
-        },
-      };
-      const ecSchema = await Schema.fromJson(json);
-      assert.isDefined(ecSchema);
-      const testPhenomenonItem = await ecSchema.getItem<Phenomenon>("Length");
-      const testUnitSystemItem = await ecSchema.getItem<UnitSystem>("Metric");
-      const testUnitItem = await ecSchema.getItem<Unit>("M");
-      assert(testUnitItem!.phenomenon!.then((value: Phenomenon) => value.label === testPhenomenonItem!.label));
-      assert(testUnitItem!.unitSystem!.then((value: UnitSystem) => value.label === testUnitSystemItem!.label));
+
+    // Missing phenomenon
+    const missingPhenomenonJson = {
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.M",
+    };
+    it("async - should throw for missing phenomenon", async () => {
+      await expect(Schema.fromJson(createSchemaJson(missingPhenomenonJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit does not have the required 'phenomenon' attribute.`);
     });
-  });
-  describe("Sync DelayedPromise Tests", () => {
-    it("should successfully deserialize valid JSON I", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          M: {
-            schemaItemType: "Unit",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*M",
-          },
-        },
-      };
-      const ecSchema = Schema.fromJsonSync(json);
-      assert.isDefined(ecSchema);
-      const testPhenomenonItem = ecSchema.getItemSync<Phenomenon>("Length");
-      const testUnitSystemItem = ecSchema.getItemSync<UnitSystem>("Metric");
-      const testUnitItem = ecSchema.getItemSync<Unit>("M");
-      assert.isDefined(testPhenomenonItem);
-      assert.isDefined(testUnitSystemItem);
-      assert.isDefined(testUnitItem);
-      assert.isTrue(testPhenomenonItem instanceof Phenomenon);
-      assert.isTrue(testUnitSystemItem instanceof UnitSystem);
-      assert.isTrue(testUnitItem instanceof Unit);
-      assert(testPhenomenonItem!.definition === "LENGTH(1)");
-      assert(testUnitItem!.phenomenon!.name, testPhenomenonItem!.name);
-      assert(testUnitItem!.unitSystem!.name, testUnitSystemItem!.name);
+    it("sync - should throw for missing phenomenon", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenonJson)), ECObjectsError, `The Unit TestUnit does not have the required 'phenomenon' attribute.`);
     });
-    it("should successfully deserialize valid JSON II", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-            label: "length",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-            label: "metric",
-          },
-          M: {
-            schemaItemType: "Unit",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*M",
-          },
-        },
-      };
-      const ecSchema = Schema.fromJsonSync(json);
-      assert.isDefined(ecSchema);
-      const testPhenomenonItem = ecSchema.getItemSync<Phenomenon>("Length");
-      const testUnitSystemItem = ecSchema.getItemSync<UnitSystem>("Metric");
-      const testUnitItem = ecSchema.getItemSync<Unit>("M");
-      assert(testUnitItem!.phenomenon!.then((value: Phenomenon) => value.label === testPhenomenonItem!.label));
-      assert(testUnitItem!.unitSystem!.then((value: UnitSystem) => value.label === testUnitSystemItem!.label));
+
+    // Invalid phenomenon
+    const invalidPhenomenonJson = {
+      phenomenon: 5,
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.M",
+    };
+    it("async - should throw for invalid phenomenon", async () => {
+      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenonJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'`);
     });
-    it("Order shouldn't matter", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          M: {
-            schemaItemType: "Unit",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*M",
-          },
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-            label: "length",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-            label: "metric",
-          },
-        },
-      };
-      const ecSchema = Schema.fromJsonSync(json);
-      assert.isDefined(ecSchema);
-      const testPhenomenonItem = ecSchema.getItemSync<Phenomenon>("Length");
-      const testUnitSystemItem = ecSchema.getItemSync<UnitSystem>("Metric");
-      const testUnitItem = ecSchema.getItemSync<Unit>("M");
-      assert(testUnitItem!.phenomenon!.then((value: Phenomenon) => value.label === testPhenomenonItem!.label));
-      assert(testUnitItem!.unitSystem!.then((value: UnitSystem) => value.label === testUnitSystemItem!.label));
+    it("sync - should throw for invalid phenomenon", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenonJson)), ECObjectsError, `The Unit TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'`);
     });
-  });
-  describe("Sync fromJson", () => {
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testUnit = new Unit(schema, "MM");
+
+    // Missing UnitSystem
+    const missingUnitSystemJson = {
+      phenomenon: "TestSchema.TestPhenomenon",
+      definition: "[MILLI]*Units.M",
+    };
+    it("async - should throw for missing unit system", async () => {
+      await expect(Schema.fromJson(createSchemaJson(missingUnitSystemJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit does not have the required 'unitSystem' attribute.`);
     });
-    it("Basic test for definition", () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      const ecSchema = Schema.fromJsonSync(testSchema);
-      const schemaUnit = ecSchema.getItemSync("MM");
-      assert.isDefined(schemaUnit);
-      const unitTest: Unit = schemaUnit as Unit;
-      assert(unitTest.definition, "[MILLI]*Units.MM");
+    it("sync - should throw for missing unit system", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingUnitSystemJson)), ECObjectsError, `The Unit TestUnit does not have the required 'unitSystem' attribute.`);
     });
-    it("Label must be a string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        name: "MM",
-        label: 77,
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-        numerator: 1.0,
-        denominator: 1.0,
-        offset: 0.0,
-      };
-      assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError, `The SchemaItem MM has an invalid 'label' attribute. It should be of type 'string'.`);
+
+    // Invalid UnitSystem
+    const invalidUnitSystemJson = {
+      unitSystem: 5,
+      phenomenon: "TestSchema.TestPhenomenon",
+      definition: "[MILLI]*Units.M",
+    };
+    it("async - should throw for invalid unit system", async () => {
+      await expect(Schema.fromJson(createSchemaJson(invalidUnitSystemJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'`);
     });
-    it("Name in json must match name in constructor", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        name: "MMM",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-        numerator: 1.0,
-        denominator: 1.0,
-        offset: 0.0,
-      };
-      assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError,  ``);
+    it("sync - should throw for invalid unit system", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidUnitSystemJson)), ECObjectsError, `The Unit TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'`);
     });
-    it("Phenomenon can't be undefined", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        name: "MM",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-        numerator: 1.0,
-        denominator: 1.0,
-        offset: 0.0,
-      };
-      assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError, `The Unit MM does not have the required 'phenomenon' attribute.`);
+
+    // Missing Definition
+    const missingDefinitionJson = {
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+    };
+    it("async - should throw for missing definition", async () => {
+      await expect(Schema.fromJson(createSchemaJson(missingDefinitionJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit does not have the required 'definition' attribute.`);
     });
-    it("Numerator can't be a string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-            numerator: "5",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      assert.throws(() => Schema.fromJsonSync(json), ECObjectsError, `The Unit MM has an invalid 'numerator' attribute. It should be of type 'number'.`);
+    it("sync - should throw for missing definition", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingDefinitionJson)), ECObjectsError, `The Unit TestUnit does not have the required 'definition' attribute.`);
     });
-    it("Numerator, denominator, offset default values are 1.0, 1.0, 0.0, respectively", () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      const ecSchema = Schema.fromJsonSync(testSchema);
-      const schemaUnit = ecSchema.getItemSync("MM");
-      assert.isDefined(schemaUnit);
-      const unitTest: Unit = schemaUnit as Unit;
-      assert(unitTest.numerator === 1.0);
-      assert(unitTest.denominator === 1.0);
-      assert(unitTest.offset === 0.0);
+
+    // Missing Definition
+    const invalidDefinitionJson = {
+      definition: 5,
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+    };
+    it("async - should throw for invalid definition", async () => {
+      await expect(Schema.fromJson(createSchemaJson(invalidDefinitionJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit has an invalid 'definition' attribute. It should be of type 'string'`);
     });
-    it("Numerator, denominator, offset are different than default", () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-            definition: "[MILLI]*Units.MM",
-            numerator: 3.0,
-            denominator: 6.0,
-            offset: 4.0,
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      const ecSchema = Schema.fromJsonSync(testSchema);
-      const schemaUnit = ecSchema.getItemSync("MM");
-      assert.isDefined(schemaUnit);
-      const unitTest: Unit = schemaUnit as Unit;
-      assert(unitTest.numerator === 3.0);
-      assert(unitTest.denominator === 6.0);
-      assert(unitTest.offset === 4.0);
+    it("sync - should throw for invalid definition", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDefinitionJson)), ECObjectsError, `The Unit TestUnit has an invalid 'definition' attribute. It should be of type 'string'`);
     });
-    it("Invalid ECName", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        name: "5MM",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-      };
-      assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError,  ``);
+
+    // Invalid numerator
+    const invalidNumeratorJson = {
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.MM",
+      numerator: "5",
+    };
+    it("async - should throw for invalid numerator", async () => {
+      await expect(Schema.fromJson(createSchemaJson(invalidNumeratorJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`);
     });
-    it("Definition is required", () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "LENGTH(1)",
-          },
-          Metric: {
-            schemaItemType: "UnitSystem",
-          },
-          MM: {
-            schemaItemType: "Unit",
-            label: "Millimeter",
-            description: "A unit defining the millimeter metric unit of length",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.Metric",
-          },
-          testKoQ: {
-            schemaItemType: "KindOfQuantity",
-            precision: 5,
-            persistenceUnit: "TestSchema.MM",
-          },
-        },
-      };
-      assert.throws(() => Schema.fromJsonSync(testSchema), ECObjectsError, `The Unit MM does not have the required 'definition' attribute.`);
+    it("sync - should throw for invalid numerator", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidNumeratorJson)), ECObjectsError, `The Unit TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`);
+    });
+
+    // Invalid denominator
+    const invalidDenominatorJson = {
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.MM",
+      denominator: "5",
+    };
+    it("async - should throw for invalid denominator", async () => {
+      await expect(Schema.fromJson(createSchemaJson(invalidDenominatorJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`);
+    });
+    it("sync - should throw for invalid denominator", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDenominatorJson)), ECObjectsError, `The Unit TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`);
+    });
+
+    // Invalid offset
+    const invalidOffsetJson = {
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.MM",
+      offset: "5",
+    };
+    it("async - should throw for invalid offset", async () => {
+      await expect(Schema.fromJson(createSchemaJson(invalidOffsetJson))).to.be.rejectedWith(ECObjectsError, `The Unit TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`);
+    });
+    it("sync - should throw for invalid offset", () => {
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidOffsetJson)), ECObjectsError, `The Unit TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`);
     });
   });
 });
