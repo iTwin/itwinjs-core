@@ -21,7 +21,7 @@ import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
-import { createPointCloudBuilder /* , createPointCloudHiliter */ } from "./glsl/PointCloud";
+import { createPointCloudBuilder } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
@@ -331,44 +331,23 @@ class PointStringTechnique extends VariedTechnique {
 
 class PointCloudTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
-  private static readonly kTranslucent = 1;
-  private static readonly kHilite = numFeatureVariants(PointCloudTechnique.kTranslucent);
-  private static readonly kClip = PointCloudTechnique.kHilite + 1;
+  private static readonly kClip = PointCloudTechnique.kOpaque + 1;
 
   public constructor(gl: WebGLRenderingContext) {
-    super((numFeatureVariants(PointCloudTechnique.kTranslucent) + numHiliteVariants) * 2);
+    super(2);
 
     const flags = scratchTechniqueFlags;
-    const featureMode = FeatureMode.None;
     for (const clip of clips) {
-      //this.addHiliteShader(clip, gl, createPointCloudHiliter);
-
+      flags.reset(FeatureMode.None, clip);
       const builder = createPointCloudBuilder(clip);
-      addMonochrome(builder.frag);
-
-      // The translucent shaders do not need the element IDs.
-      const builderTrans = createPointCloudBuilder(clip);
-      addMonochrome(builderTrans.frag);
-
-      this.addTranslucentShader(builderTrans, flags, gl);
-      addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
-      this.addElementId(builder, featureMode);
-      flags.reset(featureMode, clip);
-      //this.addShader(builder, flags, gl);
+      builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+      this.addShader(builder, flags, gl);
     }
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    if (flags.isHilite) {
-      assert(flags.hasFeatures);
-      let hIndex = PointCloudTechnique.kHilite;
-      if (flags.hasClipVolume) {
-        hIndex += PointCloudTechnique.kClip;
-      }
-      return hIndex;
-    }
 
-    let index = flags.isTranslucent ? PointCloudTechnique.kTranslucent : PointCloudTechnique.kOpaque;
+    let index = PointCloudTechnique.kOpaque;
     if (flags.hasClipVolume) {
       index += PointCloudTechnique.kClip;
     }

@@ -49,7 +49,7 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
     this.tilesetJson = json.root;
     this.id = new Id64();
     this.rootTile = new ScalableMeshTileProps(json.root, "", this, undefined);
-    const tileToEcef = CesiumUtils.transformFromJson(json.root.transf);
+    const tileToEcef = CesiumUtils.transformFromJson(json.root.transform);
     const tileToDb = Transform.createIdentity();
     tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
     this.location = tileToDb.toJSON();
@@ -137,13 +137,6 @@ export class ScalableMeshTileLoader {
 
 export namespace ScalableMeshTileTree {
   export async function getTileTreeProps(url: string, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
-    const ecefLocation = iModel.ecefLocation;
-    let ecefToDb: Transform = Transform.createIdentity();
-
-    if (ecefLocation !== undefined) {
-      const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
-      ecefToDb = dbToEcef.inverse() as Transform;
-    }
 
     if (undefined !== url) {
       const urlParts = url.split("/");
@@ -162,6 +155,15 @@ export namespace ScalableMeshTileTree {
 
       const tileClient = new ScalableMeshTileClient(clientProps);
       const json = await tileClient.getRootDocument(url);
+      const ecefLocation = iModel.ecefLocation;
+      let dbToEcef: Transform = Transform.createIdentity();
+
+      if (ecefLocation !== undefined) {
+        dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+      } else if (json.asset.SpatialToEcef !== undefined) {
+        dbToEcef = CesiumUtils.transformFromJson(json.asset.SpatialToEcef);
+      }
+      const ecefToDb = dbToEcef.inverse() as Transform;
       return new ScalableMeshTileTreeProps(json, tileClient, ecefToDb);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");

@@ -78,7 +78,7 @@ export abstract class GeometricModelState extends ModelState {
     this._loadStatus = TileTree.LoadStatus.Loading;
     switch (this.classFullName) {
       case "ScalableMesh:ScalableMeshModel":
-      case "PointCloud2:PointCloud2Model":
+        /* case "PointCloud2:PointCloud2Model": */
         {
           const json = (this.classFullName === "ScalableMesh:ScalableMeshModel") ? this.jsonProperties.scalablemesh : this.jsonProperties.pointcloud2;
           if (json !== undefined && json.FileId !== undefined) {
@@ -92,6 +92,21 @@ export abstract class GeometricModelState extends ModelState {
           break;
         }
 
+      /*
+            case "PointCloud:PointCloudModel":   // WIP - Testing.
+              {
+                {
+                  const url = "http://realitymodeling-pw.bentley.com/a3D/Cesium/CesiumPointCloud/PoliceCar/Model_32/Model_32.json";
+                  ScalableMeshTileTree.getTileTreeProps(url, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
+                    this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
+                    IModelApp.viewManager.onNewTilesReady();
+                  }).catch((_err) => {
+                    this._loadStatus = TileTree.LoadStatus.NotFound;
+                  });
+                }
+                break;
+              }
+      */
       default:
         {
           const ids = Id64.toIdSet(this.id);

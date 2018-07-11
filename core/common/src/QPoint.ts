@@ -15,7 +15,7 @@ import { assert, Iterable } from "@bentley/bentleyjs-core";
  * Therefore min quantizes to 0, max to 0xffff, (min+max)/2 to 0x7fff, and so on.
  * These routines are chiefly used internally by classes like QPoint2d and QPoint3d.
  */
-namespace Quantization {
+export namespace Quantization {
   const rangeScale = 0xffff;
 
   export function computeScale(extent: number): number { return 0.0 === extent ? extent : rangeScale / extent; }
