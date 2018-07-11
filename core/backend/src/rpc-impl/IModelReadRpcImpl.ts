@@ -5,8 +5,10 @@
 
 import { Logger, Id64Set, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken, IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps } from "@bentley/imodeljs-common";
-import { EntityMetaData } from "../Entity";
+import {
+  EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken,
+  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData,
+} from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 

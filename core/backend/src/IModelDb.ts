@@ -8,7 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps,
+  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -18,7 +18,7 @@ import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { CodeSpecs } from "./CodeSpecs";
-import { Entity, EntityMetaData } from "./Entity";
+import { Entity } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -747,6 +747,28 @@ export class IModelDb extends IModel {
         throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
     }
     return metadata;
+  }
+
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   * @param iModel  The IModel that contains the schema
+   * @param classFullName The full class name to load the metadata, if necessary
+   * @param wantSuper If true, superclass properties will also be processed
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   */
+  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+    const meta = iModel.getMetaData(classFullName); // will load if necessary
+    for (const propName in meta.properties) {
+      if (propName) {
+        const propMeta = meta.properties[propName];
+        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
+          func(propName, propMeta);
+      }
+    }
+
+    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
   }
 
   /*** @hidden */
