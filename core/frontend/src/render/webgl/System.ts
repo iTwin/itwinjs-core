@@ -203,8 +203,11 @@ export class IdMap implements IDisposable {
       dispose(texture);
     for (const gradient of gradientArr)
       dispose(gradient);
+    for (const texture of this.keylessTextures)
+      dispose(texture);
     this.textureMap.clear();
     this.gradientMap.clear();
+    this.keylessTextures.length = 0;
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
