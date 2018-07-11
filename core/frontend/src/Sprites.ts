@@ -11,6 +11,7 @@ import { RenderTexture, ImageSource, ImageSourceFormat } from "@bentley/imodeljs
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { Logger } from "@bentley/bentleyjs-core";
+import { ImageUtil } from "./ImageUtil";
 
 /**
  * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
@@ -58,8 +59,10 @@ export class Sprite implements IDisposable {
    * @note This method creates the texture from the ImageSource asynchronously. The texture will appear as a white square until it is fully loaded.
    */
   public fromImageSource(src: ImageSource): void {
-    this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, 32, 32, undefined, new RenderTexture.Params(undefined, true));
-    this.size.set(32, 32);
+    ImageUtil.extractImageDimensions(src).then((size: Point2d) => {
+      this.size.setFrom(size);
+      this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, size.x, size.y, undefined, new RenderTexture.Params(undefined, true));
+    });
   }
 }
 
