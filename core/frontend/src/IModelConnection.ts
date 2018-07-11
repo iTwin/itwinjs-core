@@ -360,19 +360,23 @@ export namespace IModelConnection {
 
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
-    public async findRegisteredBaseClass(className: string): Promise<typeof ModelState> {
-      let ctor = ModelState;
+    /** Find the first base class of the given class that is registered. Then, register that ModelState as the handler of the given class so we won't need this method again for that class. */
+    private async findRegisteredBaseClass(className: string): Promise<typeof ModelState> {
+      let ctor = ModelState; // worst case, we don't find any registered base classes
+
+      // wait until we get the full list of base classes from backend
       const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this._iModel.iModelToken, className);
+      // walk through the list until we find a registered base class
       baseClasses.some((baseClass: string) => {
         const test = Models.findClass(baseClass);
-        if (test !== undefined) {
-          ctor = test;
-          Models.registerClass(className, ctor);
-          return true;
-        }
-        return false;
+        if (test === undefined)
+          return false; // nope, not registered
+
+        ctor = test; // found it, save it
+        Models.registerClass(className, ctor); // and register the fact that our starting class is handled by this ModelState subclass.
+        return true; // stop
       });
-      return ctor;
+      return ctor; // either the baseClass handler or ModelState if we didn't find a registered baseClass
     }
 
     /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
@@ -390,17 +394,15 @@ export namespace IModelConnection {
       try {
         (await this.getProps(notLoaded)).forEach(async (props) => {
           let ctor = Models.findClass(props.classFullName);
-          if (undefined === ctor)
-            ctor = await this.findRegisteredBaseClass(props.classFullName);
-          const modelState = new ctor(props, this._iModel);
-          this.loaded.set(modelState.id.value, modelState);
+          if (undefined === ctor) // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
+            ctor = await this.findRegisteredBaseClass(props.classFullName); // must wait for this
+          const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
+          this.loaded.set(modelState.id.value, modelState); // save it in loaded set
         });
       } catch (err) { } // ignore error, we had nothing to do.
     }
 
-    /**
-     * Query for a set of ModelProps of the specified ModelQueryParams
-     */
+    /** Query for a set of ModelProps of the specified ModelQueryParams. */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ModelState.sqlName; // use "BisCore.Model" as default class name

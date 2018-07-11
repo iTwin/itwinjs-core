@@ -33,6 +33,8 @@ export class ViewManager {
   public onInitialized(): void {
     const models = IModelConnection.Models;
     models.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
+    models.registerClass("BisCore:PhysicalModel", SpatialModelState);
+    models.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
     models.registerClass(DrawingModelState.getClassFullName(), DrawingModelState);
     models.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
     models.registerClass(SheetModelState.getClassFullName(), SheetModelState);
