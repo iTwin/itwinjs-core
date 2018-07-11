@@ -6,11 +6,10 @@
 import { Point2d, Point3d, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
-import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
+import { IDisposable, dispose, Logger } from "@bentley/bentleyjs-core";
 import { RenderTexture, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { Logger } from "@bentley/bentleyjs-core";
 import { ImageUtil } from "./ImageUtil";
 
 /**
@@ -40,7 +39,7 @@ export class Sprite implements IDisposable {
   public texture?: RenderTexture;
 
   /** Dispose of this Sprite. Disposes of texture, if present. */
-  public dispose() { if (this.texture) { this.texture.dispose(); this.texture = undefined; } }
+  public dispose() { this.texture = dispose(this.texture); }
 
   /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
    * @param filePath The file path of the PNG file holding the sprite texture (relative to the assets directory.)
