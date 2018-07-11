@@ -194,14 +194,17 @@ export class PolylineEdgeArgs {
 
 /** A Texture for rendering */
 export abstract class RenderTexture implements IDisposable {
-  public readonly params: RenderTexture.Params;
+  public readonly key: string | undefined;
+  public readonly isGlyph: boolean;
+  public readonly isTileSection: boolean;
 
-  protected constructor(params: RenderTexture.Params) { this.params = params; }
+  protected constructor(params: RenderTexture.Params) {
+    this.key = params.key;
+    this.isGlyph = params.isGlyph;
+    this.isTileSection = params.isTileSection;
+  }
+
   public abstract dispose(): void;
-
-  public get key(): string | undefined { return this.params.key; }
-  public get isGlyph(): boolean { return this.params.isGlyph; }
-  public get isTileSection(): boolean { return this.params.isTileSection; }
 }
 
 export namespace RenderTexture {
@@ -896,8 +899,8 @@ export namespace Gradient {
   export const enum ThematicMode {
     Smooth = 0,
     Stepped = 1,
-    SteppedWithDelimeter = 2,
-    Isolines = 3,
+    SteppedWithDelimiter = 2,
+    IsoLines = 3,
   }
 
   export const enum ThematicColorScheme {
@@ -1232,12 +1235,12 @@ export namespace Gradient {
             } else {
               f = (f - settings.margin) / (1 - 2 * settings.margin);
               switch (settings.mode) {
-                case ThematicMode.SteppedWithDelimeter:
+                case ThematicMode.SteppedWithDelimiter:
                 case ThematicMode.Stepped: {
                   if (settings.stepCount !== 0) {
                     const fStep = Math.floor(f * settings.stepCount + .99999) / settings.stepCount;
                     const delimitFraction = 1 / 1024;
-                    if (settings.mode === ThematicMode.SteppedWithDelimeter && Math.abs(fStep - f) < delimitFraction)
+                    if (settings.mode === ThematicMode.SteppedWithDelimiter && Math.abs(fStep - f) < delimitFraction)
                       color = new ColorDef(0xff000000);
                     else
                       color = this.mapColor(fStep);
@@ -1297,7 +1300,7 @@ export const enum GeometryClass {
   Pattern = 3,
 }
 
-/** A list of Render::Lights, plus the f-stop setting for the camera */
+/** A list of Lights, plus the f-stop setting for the camera */
 export class SceneLights {
   private _list: Light[] = [];
   public get isEmpty(): boolean { return this._list.length === 0; }

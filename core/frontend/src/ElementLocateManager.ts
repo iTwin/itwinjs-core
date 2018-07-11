@@ -71,13 +71,13 @@ export class LocateResponse {
 }
 
 export interface HitListHolder {
-  setHitList(list: HitList | undefined): void;
+  setHitList(list: HitList<HitDetail> | undefined): void;
 }
 
 export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
-  public hitList?: HitList;
+  public hitList?: HitList<HitDetail>;
 
   public empty() {
     this.pickPointWorld.setZero();
@@ -85,11 +85,11 @@ export class ElementPicker {
     if (this.hitList)
       this.hitList.empty();
     else
-      this.hitList = new HitList();
+      this.hitList = new HitList<HitDetail>();
   }
 
   /** return the HitList for the last Pick performed. Optionally allows the caller to take ownership of the list. */
-  public getHitList(takeOwnership: boolean): HitList {
+  public getHitList(takeOwnership: boolean): HitList<HitDetail> {
     const list = this.hitList!;
     if (takeOwnership)
       this.hitList = undefined;
@@ -209,7 +209,7 @@ export class ElementPicker {
 }
 
 export class ElementLocateManager {
-  public hitList?: HitList;
+  public hitList?: HitList<HitDetail>;
   public currHit?: HitDetail;
   public readonly options = new LocateOptions();
   public readonly picker = new ElementPicker();
@@ -226,7 +226,7 @@ export class ElementLocateManager {
   public setChosenSnapMode(_snapMode: SnapMode) { }
 
   public clear(): void { this.setCurrHit(undefined); }
-  public setHitList(list?: HitList) { this.hitList = list; }
+  public setHitList(list?: HitList<HitDetail>) { this.hitList = list; }
   public setCurrHit(hit?: HitDetail): void { this.currHit = hit; }
   public getNextHit(): HitDetail | undefined {
     return this.hitList ? this.hitList.getNextHit() : undefined;

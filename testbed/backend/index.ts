@@ -5,7 +5,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
-import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "./TestRpcImpl";
+import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
 import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
@@ -43,6 +43,9 @@ ipcMain.on("testbed", (event: any, arg: any) => {
   } else if (msg.name === CONSTANTS.RESTART_BACKEND) {
     IModelHost.shutdown();
     IModelHost.startup();
+    event.returnValue = true;
+  } else if (msg.name === CONSTANTS.RESET_OP8_INITIALIZER) {
+    resetOp8Initializer();
     event.returnValue = true;
   }
 });

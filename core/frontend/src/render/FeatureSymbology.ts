@@ -8,9 +8,14 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 
 export namespace FeatureSymbology {
+
+  /** The Properties that define an Appearance. */
   export interface AppearanceProps {
+    /** The color of the Appearance */
     rgb?: RgbColor;
+    /** The line weight of the Appearance */
     weight?: number;
+    /** Alpha 0-255. O means fully transparent. */
     alpha?: number;
     linePixels?: LinePixels;
     ignoresMaterial?: true | undefined;
@@ -33,10 +38,10 @@ export namespace FeatureSymbology {
         return new Appearance(props);
     }
 
-    /** Create an Appearance which overrides the RGB color of a Feature. */
+    /** Create an Appearance that overrides the RGB color of a Feature. */
     public static fromRgb(color: ColorDef): Appearance { return this.fromJSON({ rgb: RgbColor.fromColorDef(color) }); }
 
-    /** Create an Appearance which overides the RGB and alpha of a Feature. */
+    /** Create an Appearance that overrides the RGB and alpha of a Feature. */
     public static fromRgba(color: ColorDef): Appearance {
       return this.fromJSON({
         rgb: RgbColor.fromColorDef(color),
@@ -60,8 +65,7 @@ export namespace FeatureSymbology {
     public get overridesSymbology(): boolean { return this.overridesRgb || this.overridesAlpha || this.overridesWeight || this.overridesLinePixels || this.ignoresMaterial; }
 
     public equals(other: Appearance): boolean {
-      const { rgb, weight, alpha, linePixels, ignoresMaterial } = other;
-      return this.rgbIsEqual(rgb) && this.weight === weight && this.alpha === alpha && this.linePixels === linePixels && this.ignoresMaterial === ignoresMaterial;
+      return this.rgbIsEqual(other.rgb) && this.weight === other.weight && this.alpha === other.alpha && this.linePixels === other.linePixels && this.ignoresMaterial === other.ignoresMaterial;
     }
 
     public toJSON(): AppearanceProps {

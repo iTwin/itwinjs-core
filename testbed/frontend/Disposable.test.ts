@@ -4,12 +4,12 @@
 import { assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { ColorDef, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
+import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
   MeshArgs, OnScreenTarget, GraphicBuilderCreateParams, GraphicType,
-  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan, System,
+  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -113,7 +113,8 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
   return true;
 }
 
-describe("Disposal of WebGL Resources", () => {
+// This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
+describe("Disposal of System", () => {
   before(async () => {
     canvas = document.createElement("canvas") as HTMLCanvasElement;
     assert(null !== canvas);
@@ -121,9 +122,12 @@ describe("Disposal of WebGL Resources", () => {
     document.body.appendChild(canvas!);
 
     WebGLTestContext.startup();
+
+    await TestData.load();
     imodel0 = await IModelConnection.openStandalone(iModelLocation);
     imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
+
   after(async () => {
     await imodel0.closeStandalone();
     await imodel1.close(TestData.accessToken);
@@ -139,8 +143,6 @@ describe("Disposal of WebGL Resources", () => {
     // Create image buffer and image source
     const imageBuff = ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1);
     assert.isDefined(imageBuff);
-    const imageSrcData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
-    const imageSrc = new ImageSource(imageSrcData, ImageSourceFormat.Png);
 
     // Texture from image buffer
     const textureParams0 = new RenderTexture.Params("-192837465");
@@ -149,7 +151,7 @@ describe("Disposal of WebGL Resources", () => {
 
     // Texture from image source
     const textureParams1 = new RenderTexture.Params("-918273645");
-    const texture1 = system.createTextureFromImageSource(imageSrc, 256, 256, imodel0, textureParams1);
+    const texture1 = system.createTextureFromImageBuffer(imageBuff!, imodel0, textureParams1);
     assert.isDefined(texture1);
 
     // Pre-disposal
@@ -163,6 +165,27 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(texture1!));
     assert.isUndefined(system.findTexture("-192837465", imodel0));
     assert.isUndefined(system.findTexture("-918273645", imodel0));
+  });
+});
+
+describe("Disposal of WebGL Resources", () => {
+  before(async () => {
+    canvas = document.createElement("canvas") as HTMLCanvasElement;
+    assert(null !== canvas);
+    canvas!.width = canvas!.height = 1000;
+    document.body.appendChild(canvas!);
+
+    WebGLTestContext.startup();
+
+    await TestData.load();
+    imodel0 = await IModelConnection.openStandalone(iModelLocation);
+    imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
+  });
+
+  after(async () => {
+    await imodel0.closeStandalone();
+    await imodel1.close(TestData.accessToken);
+    WebGLTestContext.shutdown();
   });
 
   it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
@@ -178,8 +201,8 @@ describe("Disposal of WebGL Resources", () => {
       args.points.add(point);
     args.vertIndices = [0, 1, 2];
     args.colors.initUniform(ColorByName.tan);
-    const meshGraphic0 = system.createTriMesh(args, imodel0)!;
-    const meshGraphic1 = system.createTriMesh(args, imodel0)!;
+    const meshGraphic0 = system.createTriMesh(args)!;
+    const meshGraphic1 = system.createTriMesh(args)!;
     assert.isDefined(meshGraphic0);
     assert.isDefined(meshGraphic1);
 
@@ -211,10 +234,8 @@ describe("Disposal of WebGL Resources", () => {
   });
 
   it("expect disposal of target to trigger disposal of only owned resources", async () => {
-    // Due to previous tests that disposed of some items, re-initialize the system, bipassing type-checking
-    (IModelApp as any)._renderSystem = System.create();
-    (IModelApp as any)._renderSystem.onInitialized();
-
+    if (!IModelApp.hasRenderSystem)
+      return;
     const system = IModelApp.renderSystem;
 
     // Let's grab an actual view and set up a target that is holding prepared decorations

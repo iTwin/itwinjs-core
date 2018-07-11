@@ -496,7 +496,7 @@ export abstract class TileLoader {
 }
 export class IModelTileLoader {
   constructor(private iModel: IModelConnection, private rootId: Id64) { }
-  public getMaxDepth(): number { return 2; }  // Can be removed when element tile selector is working.
+  public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {
     const tileIds: TileId[] = ids.map((id: string) => new TileId(this.rootId, id));

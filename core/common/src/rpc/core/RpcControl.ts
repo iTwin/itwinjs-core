@@ -153,6 +153,11 @@ export class RpcControlChannel {
         this.dequeuePending(request);
         break;
       }
+
+      case RpcRequestStatus.NotFound: {
+        this.dequeuePending(request);
+        break;
+      }
     }
   }
 
