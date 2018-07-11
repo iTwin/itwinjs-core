@@ -17,7 +17,7 @@ import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, Drawin
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
+import { ModelState } from "./ModelState";
 import { IModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
@@ -336,7 +336,16 @@ export namespace IModelConnection {
 
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models {
+    /** The set of loaded models for this IModelConnection, indexed by Id. */
     public loaded = new Map<string, ModelState>();
+
+    /** Registry of className to ModelState class */
+    private static _registry = new Map<string, typeof ModelState>();
+
+    /** Register a class by classFullName */
+    public static registerClass(className: string, classType: typeof ModelState) { this._registry.set(className, classType); }
+
+    private static findClass(className: string) { return this._registry.get(className); }
 
     /** @hidden */
     constructor(private _iModel: IModelConnection) { }
@@ -365,32 +374,11 @@ export namespace IModelConnection {
 
       try {
         (await this.getProps(notLoaded)).forEach((props) => {
-          let className: string;
-          if (undefined !== props.bisBaseClass) // this should be present to tell us which bis class the model derives from
-            className = props.bisBaseClass;
-          else {
-            const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
-            if (names.length < 2)
-              return;
-            className = names[1];
-          }
-          let ctor = ModelState;
-          switch (className) {
-            case "SpatialModel":
-            case "PhysicalModel":
-            case "SpatialLocationModel":
-            case "WebMercatorModel":
-              ctor = SpatialModelState;
-              break;
-            case "SectionDrawingModel":
-              ctor = SectionDrawingModelState;
-              break;
-            case "DrawingModel":
-              ctor = DrawingModelState;
-              break;
-            case "SheetModel":
-              ctor = SheetModelState;
-              break;
+          let ctor = Models.findClass(props.classFullName);
+          if (undefined === ctor) {
+            ctor = Models.findClass("BisCore:" + props.bisBaseClass);
+            if (undefined === ctor)
+              ctor = ModelState;
           }
           const modelState = new ctor(props, this._iModel);
           this.loaded.set(modelState.id.value, modelState);
