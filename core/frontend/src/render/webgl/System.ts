@@ -496,7 +496,7 @@ export class System extends RenderSystem {
       return (textureHandle === undefined) ? undefined : new Texture(params, textureHandle);
     }
 
-    let idMap = this.renderCache.get(imodel);
+    let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
       idMap = this.createIModelMap(imodel);
     }
