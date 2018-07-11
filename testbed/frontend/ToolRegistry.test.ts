@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { IModelApp, Tool, FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: string;
@@ -21,7 +22,7 @@ class TestImmediate extends Tool {
 }
 
 // spell-checker: disable
-class TestCommandApp extends IModelApp {
+class TestCommandApp extends MaybeRenderApp {
   public static testNamespace?: I18NNamespace;
 
   protected static onStartup() {
