@@ -78,7 +78,7 @@ describe("Schema", () => {
 
       it("with name/version first specified in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -93,7 +93,7 @@ describe("Schema", () => {
 
       it("with name/version repeated in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -108,7 +108,7 @@ describe("Schema", () => {
 
       it("with name/version omitted in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
           alias: "vs",
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -123,7 +123,7 @@ describe("Schema", () => {
     async function testInvalidAttribute(schema: Schema, attributeName: string, expectedType: string, value: any) {
       expect(schema).to.exist;
       const json: any = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         [attributeName]: value,
       };
       await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema ${schema.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
@@ -144,7 +144,7 @@ describe("Schema", () => {
 
     it("should throw for missing name", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       };
       const testSchema = new Schema();
       expect(testSchema).to.exist;
@@ -154,7 +154,7 @@ describe("Schema", () => {
 
     it("should throw for mismatched name", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "ThisDoesNotMatch",
       };
       const testSchema = new Schema("BadSchema", 1, 2, 3);
@@ -167,7 +167,7 @@ describe("Schema", () => {
       const schemaWithName = new Schema("BadSchema", 1, 2, 3);
 
       const json: any = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: 0,
       };
       await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
@@ -179,7 +179,7 @@ describe("Schema", () => {
       const schemaWithKey = new Schema("BadSchema", 1, 2, 3);
 
       const json: any = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "BadSchema",
         version: 0,
       };
@@ -189,7 +189,7 @@ describe("Schema", () => {
 
     it("should throw for missing version", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "BadSchema",
       };
       const testSchema = new Schema();
@@ -199,7 +199,7 @@ describe("Schema", () => {
 
     it("should throw for mismatched version", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "BadSchema",
         version: "1.2.6",
       };

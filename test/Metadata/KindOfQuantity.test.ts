@@ -3,11 +3,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
+
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import KindOfQuantityEC32 from "../../source/Metadata/KindOfQuantityEC32";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
-import * as sinon from "sinon";
 import Unit from "../../source/Metadata/Unit";
 import Phenomenon from "../../source/Metadata/Phenomenon";
 import UnitSystem from "../../source/Metadata/UnitSystem";
@@ -76,6 +77,7 @@ describe("KindOfQuantity", () => {
     it("should throw for invalid precision", async () => testInvalidAttribute("precision", "number", false));
     it("should throw for presentationUnits not an array", async () => testInvalidAttribute("presentationUnits", "object[]", 0));
     it("should throw for presentationUnits not an array of objects", async () => testInvalidAttribute("presentationUnits", "object[]", [0]));
+    it("should throw for persistenceUnit not an object", async () => testInvalidAttribute("persistenceUnit", "object", 0));
 
     it("should throw for presentationUnit with missing unit", async () => {
       expect(testKoQ).to.exist;
@@ -103,8 +105,6 @@ describe("KindOfQuantity", () => {
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'format' attribute. It should be of type 'string'.`);
     });
-
-    it("should throw for persistenceUnit not an object", async () => testInvalidAttribute("persistenceUnit", "object", 0));
 
     it("should throw for persistenceUnit with missing unit", async () => {
       expect(testKoQ).to.exist;
@@ -135,6 +135,14 @@ describe("KindOfQuantity", () => {
   });
 
   describe("Async deserialization", () => {
+    beforeEach(() => {
+      Schema.ec32 = true;
+    });
+
+    afterEach(() => {
+      Schema.ec32 = false;
+    });
+
     it("No presentationFormats", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -161,7 +169,7 @@ describe("KindOfQuantity", () => {
           },
         },
       };
-      Schema.ec32 = true;
+
       const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("testKoQ");

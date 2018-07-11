@@ -3,6 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
@@ -10,7 +12,6 @@ import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 import ECClass, { MutableClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
-import * as sinon from "sinon";
 import { SchemaItemType } from "../../source/ECObjects";
 
 describe("ECClass", () => {
@@ -426,16 +427,6 @@ describe("ECClass", () => {
   });
 
   describe("NavProperty on CustomAttributeClass", () => {
-    function createSchemaJsonWithItems(itemsJson: any): any {
-      return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          ...itemsJson,
-        },
-      };
-    }
     function createSchemaJson(nestedJson: any): any {
       return createSchemaJsonWithItems({
         TestCA: {

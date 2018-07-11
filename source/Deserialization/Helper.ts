@@ -395,7 +395,7 @@ export default class SchemaReadHelper {
     }
     if (undefined !== unitJson.unitSystem ) {
       if (typeof(unitJson.unitSystem ) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'unitSystem ' attribute. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
       await this.findSchemaItem(unitJson.unitSystem , true);
     }
 
@@ -410,7 +410,7 @@ export default class SchemaReadHelper {
     }
     if (undefined !== unitJson.unitSystem ) {
       if (typeof(unitJson.unitSystem ) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'unitSystem ' attribute. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
       this.findSchemaItemSync(unitJson.unitSystem , true);
     }
 

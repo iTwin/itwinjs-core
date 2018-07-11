@@ -3,6 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+
 import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import ECClass, { MutableClass } from "../../source/Metadata/Class";
 import EntityClass, { MutableEntityClass } from "../../source/Metadata/EntityClass";
@@ -68,16 +70,6 @@ describe("EntityClass", () => {
   });
 
   describe("deserialization", () => {
-    function createSchemaJsonWithItems(itemsJson: any): any {
-      return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          ...itemsJson,
-        },
-      };
-    }
     function createSchemaJson(entityClassJson: any): any {
       return createSchemaJsonWithItems({
         TestEntityClass: {
