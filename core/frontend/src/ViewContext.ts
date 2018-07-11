@@ -7,7 +7,6 @@ import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, ClipVector, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { HitDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
@@ -62,13 +61,6 @@ export class DecorateContext extends RenderContext {
   constructor(vp: Viewport, decorations: Decorations = new Decorations()) {
     super(vp);
     this.decorations = decorations;
-  }
-  //  public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.sourceId, 0.25); } // NEEDSWORK
-  public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.sourceId, 0.25); } // NEEDSWORK
-  public drawHit(hit: HitDetail): void {
-    //    const sheetVp = hit.sheetViewport;
-    //    return (sheetVp && hit.viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
-    return this.drawNormalHit(hit);
   }
 
   /** wrapped nRepetitions and min in object to preserve changes */

@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { IModelApp, Tool, AccuDraw, IdleTool, RotateTool, PanTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -35,7 +36,7 @@ class FourthImmediate extends Tool {
 class TestRotateTool extends RotateTool { }
 class TestSelectTool extends SelectionTool { }
 
-class TestApp extends IModelApp {
+class TestApp extends MaybeRenderApp {
   public static testNamespace?: I18NNamespace;
 
   protected static onStartup() {

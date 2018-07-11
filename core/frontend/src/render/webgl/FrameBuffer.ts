@@ -104,10 +104,7 @@ export class FrameBuffer implements IDisposable {
     gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
 
     if (bindAttachments) {
-      const dbExt: WEBGL_draw_buffers | undefined = System.instance.drawBuffersExtension;
-      if (undefined !== dbExt) {
-        dbExt.drawBuffersWEBGL(this.colorAttachments);
-      }
+      System.instance.setDrawBuffers(this.colorAttachments);
       this._bindState = FrameBufferBindState.BoundWithAttachments;
 
       if (TextureHandle.wantDebugIds)

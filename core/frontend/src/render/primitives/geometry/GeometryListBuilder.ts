@@ -98,10 +98,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.addPointString(pts3d);
   }
 
-  public addPolyface(meshData: Polyface): void {
-    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.localToWorldTransform);
-  }
-
   public addShape(points: Point3d[]): void {
     const loop = Loop.create(LineString3d.create(points));
     this.accum.addLoop(loop, this.getMeshDisplayParams(), this.localToWorldTransform, false);
@@ -110,6 +106,18 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public addShape2d(points: Point2d[], zDepth: number): void {
     const pts3d = copy2dTo3d(points, zDepth);
     this.addShape(pts3d);
+  }
+
+  public addPath(path: Path): void {
+    this.accum.addPath(path, this.getLinearDisplayParams(), this.localToWorldTransform, false);
+  }
+
+  public addLoop(loop: Loop): void {
+    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.localToWorldTransform, false);
+  }
+
+  public addPolyface(meshData: Polyface): void {
+    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.localToWorldTransform);
   }
 
   public abstract reset(): void;

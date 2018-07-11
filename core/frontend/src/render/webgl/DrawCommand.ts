@@ -330,6 +330,7 @@ export class RenderCommands {
         // Want these items to draw in general opaque pass so they are not in pick data.
         if (FeatureIndexType.Empty === command.featureIndexType)
           pass = RenderPass.OpaqueGeneral;
+        /* falls through */
       case RenderPass.OpaqueGeneral:
         if (this._translucentOverrides && haveFeatureOverrides && !this._addTranslucentAsOpaque)
           this.getCommands(RenderPass.Translucent).push(command);

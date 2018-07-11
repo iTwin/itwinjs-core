@@ -8,6 +8,7 @@ import * as path from "path";
 import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode, FitViewTool } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -35,7 +36,7 @@ describe("Viewport", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
+    MaybeRenderApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -43,7 +44,7 @@ describe("Viewport", () => {
 
   after(async () => {
     if (imodel) await imodel.closeStandalone();
-    IModelApp.shutdown();
+    MaybeRenderApp.shutdown();
   });
 
   it("Viewport", async () => {
@@ -187,18 +188,19 @@ describe("RenderLoop tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {
-    if (!doRenderLoopTests)
-      return;
-
-    IModelApp.startup();
-    imodel = await IModelConnection.openStandalone(iModelLocation);
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.RightIso);
+    if (doRenderLoopTests) {
+      MaybeRenderApp.startup();
+      imodel = await IModelConnection.openStandalone(iModelLocation);
+      spatialView = await imodel.views.load("0x34") as SpatialViewState;
+      spatialView.setStandardRotation(StandardViewId.RightIso);
+    }
   });
 
-  after(async (done) => {
-    if (!doRenderLoopTests)
-      done();
+  after(async () => {
+    if (doRenderLoopTests) {
+      await imodel.closeStandalone();
+      MaybeRenderApp.shutdown();
+    }
   });
 
   it("should start up the render loop", () => {

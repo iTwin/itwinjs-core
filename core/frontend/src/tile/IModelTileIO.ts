@@ -250,7 +250,13 @@ export namespace IModelTileIO {
         const format = namedTex.format;
         const imageSource = new ImageSource(bytes, format);
 
-        const params = new RenderTexture.Params(name, JsonUtils.asBool(namedTex.isTileSection), JsonUtils.asBool(namedTex.isGlyph), false);
+        let textureType = RenderTexture.Type.Normal;
+        if (JsonUtils.asBool(namedTex.isGlyph))
+          textureType = RenderTexture.Type.Glyph;
+        else if (JsonUtils.asBool(namedTex.isTileSection))
+          textureType = RenderTexture.Type.TileSection;
+
+        const params = new RenderTexture.Params(name, textureType);
         texture = this.system.createTextureFromImageSource(imageSource, width, height, imodel, params);
 
         if (undefined === texture)

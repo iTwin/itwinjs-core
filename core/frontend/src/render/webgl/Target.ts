@@ -448,7 +448,8 @@ export abstract class Target extends RenderTarget {
           hidEdgeOvrs!.color.setFrom(ColorDef.white);
           visEdgeOvrs.ovrColor = hidEdgeOvrs!.ovrColor = true;
         }
-      } // fall-through intentional...
+      }
+      /* falls through */
       case RenderMode.HiddenLine: {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
         vf.setShowVisibleEdges(true);
