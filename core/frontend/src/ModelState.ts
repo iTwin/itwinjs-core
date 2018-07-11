@@ -104,6 +104,7 @@ export abstract class GeometricModelState extends ModelState {
             this._loadStatus = TileTree.LoadStatus.NotFound;
           });
           break;
+        }
 
       /*
             case "PointCloud:PointCloudModel":   // WIP - Testing.
