@@ -267,7 +267,7 @@ export class IdMap implements IDisposable {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
 
-    const textureHandle = TextureHandle.createForImageBuffer(img);
+    const textureHandle = TextureHandle.createForImageBuffer(img, params.type);
     if (textureHandle === undefined)
       return undefined;
     const texture = new Texture(params, textureHandle);
@@ -286,7 +286,7 @@ export class IdMap implements IDisposable {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
 
-    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc);
+    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc, params.type);
     if (textureHandle === undefined)
       return undefined;
     const texture = new Texture(params, textureHandle);
@@ -337,7 +337,7 @@ export class IdMap implements IDisposable {
 
     const image: ImageBuffer = grad.getImage(0x100, 0x100);
 
-    const textureHandle = TextureHandle.createForImageBuffer(image);
+    const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
     if (!textureHandle)
       return undefined;
     const texture = new Texture(Texture.Params.defaults, textureHandle);
@@ -519,7 +519,7 @@ export class System extends RenderSystem {
   public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
     if (undefined === imodel) {
-      const textureHandle = TextureHandle.createForImageSource(width, height, source);
+      const textureHandle = TextureHandle.createForImageSource(width, height, source, params.type);
       return (textureHandle === undefined) ? undefined : new Texture(params, textureHandle);
     }
 

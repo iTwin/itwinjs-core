@@ -60,7 +60,7 @@ export class Sprite implements IDisposable {
   public fromImageSource(src: ImageSource): void {
     ImageUtil.extractImageDimensions(src).then((size: Point2d) => {
       this.size.setFrom(size);
-      this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, size.x, size.y, undefined, new RenderTexture.Params(undefined, true));
+      this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, size.x, size.y, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection));
     });
   }
 }

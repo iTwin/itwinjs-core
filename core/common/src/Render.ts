@@ -208,18 +208,24 @@ export abstract class RenderTexture implements IDisposable {
 }
 
 export namespace RenderTexture {
+  export const enum Type {
+    Normal,
+    Glyph,
+    TileSection,
+    // ###TODO? RGBE
+  }
+
   export class Params {
     public readonly key?: string; // The ID of a persistent texture, the name of a named texture, or undefined for an unnamed texture.
-    public readonly isTileSection: boolean;
-    public readonly isGlyph: boolean;
-    public readonly isRGBE: boolean;
+    public readonly type: Type = Type.Normal;
 
-    public constructor(key?: string, isTileSection: boolean = false, isGlyph: boolean = false, isRGBE: boolean = false) {
+    public constructor(key?: string, type: Type = Type.Normal) {
       this.key = key;
-      this.isTileSection = isTileSection;
-      this.isGlyph = isGlyph;
-      this.isRGBE = isRGBE;
+      this.type = type;
     }
+
+    public get isTileSection(): boolean { return Type.TileSection === this.type; }
+    public get isGlyph(): boolean { return Type.Glyph === this.type; }
 
     /** Obtain a RenderTexture params object with default values. */
     public static readonly defaults = new Params();

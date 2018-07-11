@@ -6,7 +6,7 @@ import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp, ImageUtil } from "@bentley/imodeljs-frontend";
 import { TextureHandle, TextureLoadCallback, GL } from "@bentley/imodeljs-frontend/lib/rendering";
-import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 
 // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
 // bottom right pixel.  The rest of the square is red.
@@ -66,7 +66,7 @@ describe("Texture tests", () => {
     }
 
     // create texture with default parameters
-    const texture = TextureHandle.createForImageSource(3, 3, new ImageSource(pixels, ImageSourceFormat.Png));
+    const texture = TextureHandle.createForImageSource(3, 3, new ImageSource(pixels, ImageSourceFormat.Png), RenderTexture.Type.Normal);
     assert(undefined !== texture);
     if (undefined === texture) {
       return;
@@ -89,7 +89,7 @@ describe.skip("Test pixel values of resized texture in callback (async texture l
         loaded = true;
         canvas = c;
       };
-      texture = TextureHandle.createForImageSource(3, 3, new ImageSource(pixels, ImageSourceFormat.Png), undefined, texLoadCallback);
+      texture = TextureHandle.createForImageSource(3, 3, new ImageSource(pixels, ImageSourceFormat.Png), RenderTexture.Type.Normal, texLoadCallback);
     }
   });
 

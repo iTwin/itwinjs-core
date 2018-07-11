@@ -787,10 +787,10 @@ export class AccuSnap {
 
     let hit: HitDetail | undefined;
     if (this.isActive()) {
-      if (this.doSnapping())
+      // if (this.doSnapping())
         hit = await this.getPreferredSnap(ev, out);
-      else if (this.doLocateTesting())
-        hit = this.findLocatableHit(ev, true, out);
+        // else if (this.doLocateTesting())
+        // hit = this.findLocatableHit(ev, true, out);
     }
 
     // set the current hit and display the sprite (based on snap's KeypointType)

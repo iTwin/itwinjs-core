@@ -88,7 +88,6 @@ function loadTextureFromImageSource(handle: TextureHandle, params: TextureCreate
 
 type TextureFlag = true | undefined;
 type LoadImageData = (handle: TextureHandle, params: TextureCreateParams) => void;
-export const enum ImageTextureType { Normal, Glyph, TileSection }
 
 interface TextureImageProperties {
   wrapMode: GL.Texture.WrapMode;
@@ -132,7 +131,7 @@ class TextureCreateParams {
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, preserveData ? data : undefined);
   }
 
-  public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
+  public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
     const props = this.getImageProperties(ImageBufferFormat.Rgba === image.format, type);
 
     return new TextureCreateParams(image.width, image.height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
@@ -144,14 +143,14 @@ class TextureCreateParams {
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, undefined);
   }
 
-  public static createForImageSource(source: ImageSource, width: number, height: number, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
+  public static createForImageSource(source: ImageSource, width: number, height: number, type: RenderTexture.Type, loadCallback?: TextureLoadCallback) {
     const props = this.getImageProperties(ImageSourceFormat.Png === source.format, type);
 
     let targetWidth = width;
     let targetHeight = height;
 
     const caps = System.instance.capabilities;
-    if (ImageTextureType.Glyph === type) {
+    if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
     } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
@@ -174,10 +173,10 @@ class TextureCreateParams {
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromImageSource(tex, params, { source, canvas, loadCallback }), props.useMipMaps, props.interpolate);
   }
 
-  private static getImageProperties(isTranslucent: boolean, type: ImageTextureType): TextureImageProperties {
-    const wrapMode = ImageTextureType.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
-    const useMipMaps: TextureFlag = (ImageTextureType.TileSection !== type) ? true : undefined;
-    const interpolate: TextureFlag = true; // WTF? (ImageTextureType.TileSection === type) ? true : undefined;
+  private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
+    const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
+    const useMipMaps: TextureFlag = (RenderTexture.Type.TileSection !== type) ? true : undefined;
+    const interpolate: TextureFlag = true; // WTF? (RenderTexture.Type.TileSection === type) ? true : undefined;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     return { format, wrapMode, useMipMaps, interpolate };
   }
@@ -264,7 +263,7 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Create a texture from a jpeg or png */
-  public static createForImageSource(width: number, height: number, source: ImageSource, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
+  public static createForImageSource(width: number, height: number, source: ImageSource, type: RenderTexture.Type, loadCallback?: TextureLoadCallback) {
     return this.create(TextureCreateParams.createForImageSource(source, width, height, type, loadCallback));
   }
 
@@ -279,7 +278,7 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Create a texture from a bitmap */
-  public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
+  public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
     // ###TODO: Support non-power-of-two if necessary...
     return this.create(TextureCreateParams.createForImageBuffer(image, type));
   }
