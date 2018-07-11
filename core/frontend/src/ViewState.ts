@@ -1513,12 +1513,11 @@ export abstract class ViewState3d extends ViewState {
     return env.ground.elevation + this.iModel.globalOrigin.z;
   }
 
-  protected _forceGroundPlane: boolean = false;
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
-  public getGroundExtents(vp: Viewport): AxisAlignedBox3d {
+  public getGroundExtents(vp: Viewport, ignoreDisplayStyleFlag: boolean = false): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (!displayStyle.getEnvironment().ground.display && !this._forceGroundPlane)
+    if (!ignoreDisplayStyleFlag && !displayStyle.getEnvironment().ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
@@ -1642,7 +1641,7 @@ export class SpatialViewState extends ViewState3d {
   public getViewedExtents(vp: Viewport): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
       this._viewedExtents = new AxisAlignedBox3d(this.iModel.projectExtents.low, this.iModel.projectExtents.high);
-      this._viewedExtents.extendRange(this.getGroundExtents(vp));
+      this._viewedExtents.extendRange(this.getGroundExtents(vp, true));
       this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
     }
 
