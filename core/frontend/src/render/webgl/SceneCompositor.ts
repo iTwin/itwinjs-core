@@ -49,6 +49,7 @@ class Textures implements IDisposable {
       case RenderType.TextureHalfFloat: {
         // ###TODO...
       }
+      /* falls through */
       case RenderType.TextureUnsignedByte: {
         break;
       }
