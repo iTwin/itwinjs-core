@@ -17,12 +17,12 @@ import { Target } from "./render/webgl/Target";
 export class SheetBorder {
   private rect: Point2d[];
   private shadow: Point2d[];
-  // private gradient: Gradient.Symb;
+  private gradient: Gradient.Symb;
 
-  private constructor(rect: Point2d[], shadow: Point2d[], _gradient: Gradient.Symb) {
+  private constructor(rect: Point2d[], shadow: Point2d[], gradient: Gradient.Symb) {
     this.rect = rect;
     this.shadow = shadow;
-    // this.gradient = gradient;
+    this.gradient = gradient;
   }
 
   /** Create a new sheet border. If a context is supplied, points are transformed to view coordinates. */
@@ -78,6 +78,8 @@ export class SheetBorder {
     return range;
   }
 
+  private static _wantGradient: boolean = false; // ###TODO not working properly yet...
+
   /** Add this border to the given GraphicBuilder. */
   public addToBuilder(builder: GraphicBuilder) {
     builder.setSymbology(ColorDef.black, ColorDef.black, 2);
@@ -85,8 +87,10 @@ export class SheetBorder {
 
     const params = new GraphicParams();
     params.setFillColor(ColorDef.black);
-    // params.gradient = this.gradient;
-    builder.activateGraphicParams(params);   // <== ###TODO: Setting a gradient seems to make the linestring above not have a width or color...
+    if (SheetBorder._wantGradient)
+      params.gradient = this.gradient;
+
+    builder.activateGraphicParams(params);
 
     builder.addShape2d(this.shadow, Target.frustumDepth2d);
   }

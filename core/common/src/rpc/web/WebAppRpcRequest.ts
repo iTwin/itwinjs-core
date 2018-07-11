@@ -72,6 +72,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
       if (this.connection!.readyState === 4) {
         this._loading = false;
+        this.setLastUpdatedTime();
         this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
       } else {
         this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);

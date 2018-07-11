@@ -11,6 +11,7 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
 import { ScalableMeshTileTree, ScalableMeshTileLoader, ScalableMeshTileTreeProps } from "./tile/ScalableMeshTileTree";
+import { WebMercatorTileTree, WebMercatorTileLoader, WebMercatorTileTreeProps } from "./tile/WebMercatorTileTree";
 import { DecorateContext } from "./ViewContext";
 import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
@@ -92,9 +93,19 @@ export abstract class GeometricModelState extends ModelState {
               this._loadStatus = TileTree.LoadStatus.NotFound;
             });
           }
+
           break;
         }
+      case "BisCore:WebMercatorModel":
+        {
+          WebMercatorTileTree.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
+            this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
+          }).catch((_err) => {
+            this._loadStatus = TileTree.LoadStatus.NotFound;
+          });
 
+          break;
+        }
       default:
         {
           const ids = Id64.toIdSet(this.id);
@@ -104,6 +115,8 @@ export abstract class GeometricModelState extends ModelState {
           }).catch((_err) => {
             this._loadStatus = TileTree.LoadStatus.NotFound;
           });
+
+          break;
         }
     }
 

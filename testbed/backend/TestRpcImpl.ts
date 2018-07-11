@@ -8,6 +8,10 @@ import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IM
 
 let op8Initializer = 0;
 
+export const resetOp8Initializer = () => {
+  op8Initializer = 0;
+};
+
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);

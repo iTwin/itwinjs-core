@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
+import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping, RenderTexture } from "@bentley/imodeljs-common";
 import { compareNumbers, compareBooleans, compareStringsOrUndefined, comparePossiblyUndefined, assert } from "@bentley/bentleyjs-core";
 
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
@@ -44,11 +44,18 @@ export class DisplayParams {
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
-  public static createForType(type: DisplayParams.Type, gf: GraphicParams): DisplayParams {
+  public static createForType(type: DisplayParams.Type, gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams {
     const lineColor = DisplayParams.adjustTransparencyInPlace(gf.lineColor.clone());
     switch (type) {
-      case DisplayParams.Type.Mesh:
-        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparencyInPlace(gf.fillColor.clone()), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, undefined);
+      case DisplayParams.Type.Mesh: {
+        let gradientMapping: TextureMapping | undefined;
+        if (undefined !== gf.gradient && undefined !== resolveGradient) {
+          const gradientTexture = resolveGradient(gf.gradient);
+          if (undefined !== gradientTexture)
+            gradientMapping = new TextureMapping(gradientTexture, new TextureMapping.Params());
+        }
+        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparencyInPlace(gf.fillColor.clone()), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, false, gradientMapping);
+      }
       case DisplayParams.Type.Linear:
         return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
       default: // DisplayParams.Type.Text
@@ -57,8 +64,8 @@ export class DisplayParams {
   }
 
   /** Creates a DisplayParams object that describes mesh geometry based on the specified GraphicParams. */
-  public static createForMesh(gf: GraphicParams): DisplayParams {
-    return DisplayParams.createForType(DisplayParams.Type.Mesh, gf);
+  public static createForMesh(gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams {
+    return DisplayParams.createForType(DisplayParams.Type.Mesh, gf, resolveGradient);
   }
 
   /** Creates a DisplayParams object that describes linear geometry based on the specified GraphicParams. */

@@ -58,6 +58,7 @@ export namespace WebGLTestContext {
 
   export function shutdown() {
     MaybeRenderApp.shutdown();
+    isInitialized = false;
   }
 
   const canvasId = "WebGLTestCanvas";

@@ -203,17 +203,20 @@ export class IdMap implements IDisposable {
       dispose(texture);
     for (const gradient of gradientArr)
       dispose(gradient);
+    for (const texture of this.keylessTextures)
+      dispose(texture);
     this.textureMap.clear();
     this.gradientMap.clear();
+    this.keylessTextures.length = 0;
   }
 
-  /** Add a material to the material map, given that it has a valid key. */
+  /** Add a material to this IdMap, given that it has a valid key. */
   public addMaterial(material: RenderMaterial) {
     if (material.key)
       this.materialMap.set(material.key, material);
   }
 
-  /** Add a texture to the texture map, given that it has a valid key. */
+  /** Add a texture to this IdMap, given that it has a valid key. */
   public addTexture(texture: RenderTexture) {
     if (texture.key)
       this.textureMap.set(texture.key, texture);
@@ -221,7 +224,7 @@ export class IdMap implements IDisposable {
       this.keylessTextures.push(texture);
   }
 
-  /** Add a texture to the gradient symbology map. */
+  /** Add a texture to this IdMap using gradient symbology. */
   public addGradient(gradientSymb: Gradient.Symb, texture: RenderTexture) {
     this.gradientMap.set(gradientSymb, texture);
   }
@@ -236,15 +239,12 @@ export class IdMap implements IDisposable {
     return this.textureMap.get(key);
   }
 
-  /** Find a cached gradient using the symbology provided. If not found, returns undefined. */
+  /** Find a cached gradient using the gradient symbology. If not found, returns undefined. */
   public findGradient(symb: Gradient.Symb): RenderTexture | undefined {
     return this.gradientMap.get(symb);
   }
 
-  /**
-   * Find a material using its key. If not found, create and return it.
-   * This will also add it to the map if the key was valid.
-   */
+  /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
   public getMaterial(params: RenderMaterial.Params): RenderMaterial {
     if (!params.key)
       return new Material(params);
@@ -257,14 +257,8 @@ export class IdMap implements IDisposable {
     return material;
   }
 
-  /**
-   * Attempt to create a new texture from an ImageBuffer and insert it into this cache.
-   * If the texture already exists inside the cache, or an error occurs, returns undefined.
-   */
+  /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
   private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key && this.textureMap.get(params.key) !== undefined)
-      return undefined;
-
     const textureHandle = TextureHandle.createForImageBuffer(img);
     if (textureHandle === undefined)
       return undefined;
@@ -276,10 +270,7 @@ export class IdMap implements IDisposable {
     return texture;
   }
 
-  /**
-   * Attempt to create a new texture from an ImageSource and insert it into this cache.
-   * If the texture already exists inside the cache, or an error occurs, returns undefined.
-   */
+  /** Attempt to create and return a new texture from an ImageSource. This will cache the texture if its key is valid. */
   private createTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
@@ -295,10 +286,7 @@ export class IdMap implements IDisposable {
     return texture;
   }
 
-  /**
-   * Find a texture using its key. If not found, create one using an ImageSource and return it.
-   * This will also add it to the map if the key was valid.
-   */
+  /** Find or attempt to create a new texture using an ImageSource. If a new texture was created, it will be cached provided its key is valid. */
   public getTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key) {
       const existingTexture = this.textureMap.get(params.key);
@@ -310,10 +298,7 @@ export class IdMap implements IDisposable {
     return this.createTextureFromImageSource(imgSrc, width, height, params);
   }
 
-  /**
-   * Find a texture using its key. If not found, create one using an ImageBuffer and return it.
-   * This will also add it to the map if the key was valid. Returns undefined if we were unable to create the texture.
-   */
+  /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key) {
       const existingTexture = this.textureMap.get(params.key);
@@ -324,10 +309,7 @@ export class IdMap implements IDisposable {
     return this.createTextureFromImageBuffer(img, params);
   }
 
-  /**
-   * Find a gradient using its symbology. If the gradient does not exist, create it by constructing a texture
-   * derived from an image of given height and width. This will also add it to the map.
-   */
+  /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
   public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
     const existingGrad = this.gradientMap.get(grad);
     if (existingGrad)
@@ -356,7 +338,7 @@ export class System extends RenderSystem {
   private _lineCodeTexture: TextureHandle | undefined;
   public get lineCodeTexture() { return this._lineCodeTexture; }
 
-  public readonly renderCache: Dictionary<IModelConnection, IdMap>;
+  public readonly resourceCache: Map<IModelConnection, IdMap>;
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
@@ -392,12 +374,12 @@ export class System extends RenderSystem {
   public dispose() {
     dispose(this.techniques);
 
-    // We must attempt to dispose of each idmap in the rendercache (if idmap is already disposed, has no effect)
-    const idMaps = this.renderCache.extractArrays().values;
-    for (const idMap of idMaps)
+    // We must attempt to dispose of each idmap in the resourceCache (if idmap is already disposed, has no effect)
+    this.resourceCache.forEach((idMap: IdMap) => {
       dispose(idMap);
+    });
 
-    this.renderCache.clear();
+    this.resourceCache.clear();
     IModelConnection.onClose.removeListener(this.removeIModelMap);
   }
 
@@ -443,99 +425,82 @@ export class System extends RenderSystem {
 
   /** Find an imodel rendering map using an IModelConnection. Returns undefined if not found. */
   public findIModelMap(imodel: IModelConnection): IdMap | undefined {
-    return this.renderCache.get(imodel);
+    return this.resourceCache.get(imodel);
   }
 
-  /**
-   * Find an imodel rendering map using an IModelConnection. If not found, as long as the id
-   * is valid, create and return a new one, adding it to the dictionary.
-   */
-  public createIModelMap(imodel: IModelConnection): IdMap | undefined {
-    let idMap = this.renderCache.get(imodel);
+  /** Returns the corresponding IdMap for an IModelConnection. Creates a new one if it doesn't exist. */
+  public createIModelMap(imodel: IModelConnection): IdMap {
+    let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
-      if (imodel.iModelToken === undefined || imodel.iModelToken.iModelId === undefined)
-        return undefined;
-      idMap = new IdMap();  // This currently starts empty, no matter the current contents of the imodel
-      this.renderCache.set(imodel, idMap);
+      idMap = new IdMap();
+      this.resourceCache.set(imodel, idMap);
     }
     return idMap;
   }
 
-  /**
-   * Removes an imodel map from the renderCache. This function is called when the onClose event occurs on an iModel.
-   * Note that this does not remove
-   */
+  /** Removes an IModelConnection-IdMap pairing from the system's resource cache. */
   private removeIModelMap(imodel: IModelConnection) {
-    // First, 'free' all textures in the idMap for this imodel
-    const idMap = this.renderCache.get(imodel);
+    const idMap = this.resourceCache.get(imodel);
     if (idMap === undefined)
       return;
     dispose(idMap);
-    this.renderCache.delete(imodel);
+    this.resourceCache.delete(imodel);
   }
 
   /**
-   * Creates a material and adds it to the iModel's render map. If the material already exists in the map, simply return it.
+   * Creates a material and adds it to the corresponding IdMap for that iModel. If the material already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
-    let idMap = this.renderCache.get(imodel);
+    let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
       idMap = this.createIModelMap(imodel);
-      if (idMap === undefined)
-        return undefined;
     }
     const material = idMap.getMaterial(params);
     return material;
   }
 
-  /** Searches through the iModel's render map for a material, given its key. Returns undefined if none found. */
+  /** Given a key and an iModel, returns the corresponding material for that key in the iModel's IdMap. Returns undefined if none found. */
   public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
-    const idMap = this.renderCache.get(imodel);
+    const idMap = this.resourceCache.get(imodel);
     if (!idMap)
       return undefined;
     return idMap.findMaterial(key);
   }
 
-  /** Creates a texture using an ImageBuffer and adds it to the iModel's render map. If the texture already exists in the map, simply return it. */
+  /** Creates a texture using an ImageBuffer and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    let idMap = this.renderCache.get(imodel);
+    let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
       idMap = this.createIModelMap(imodel);
-      if (idMap === undefined)
-        return undefined;
     }
     const texture = idMap.getTexture(image, params);
     return texture;
   }
 
-  /** Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it. */
+  /** Creates a texture using an ImageSource and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
   public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    let idMap = this.renderCache.get(imodel);
+    let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
       idMap = this.createIModelMap(imodel);
-      if (idMap === undefined)
-        return undefined;
     }
     const texture = idMap.getTextureFromImageSource(source, width, height, params);
     return texture;
   }
 
-  /** Creates a texture using gradient symbology and adds it to the iModel's render map. If the texture already exists in the map, simply return it. */
+  /** Creates a texture using gradient symbology and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
-    let idMap = this.renderCache.get(imodel);
+    let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
       idMap = this.createIModelMap(imodel);
-      if (idMap === undefined)
-        return undefined;
     }
     const texture = idMap.getGradient(symb);
     return texture;
   }
 
-  /** Searches through the iModel's render map for a texture, given its key. Returns undefined if none found. */
+  /** Given a key and an iModel, returns the corresponding texture for that key in the iModel's IdMap. Returns undefined if none found. */
   public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
-    const idMap = this.renderCache.get(imodel);
+    const idMap = this.resourceCache.get(imodel);
     if (!idMap)
       return undefined;
     return idMap.findTexture(key);
@@ -547,16 +512,7 @@ export class System extends RenderSystem {
     this.techniques = techniques;
     this.capabilities = capabilities;
     this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-    this.renderCache = new Dictionary<IModelConnection, IdMap>((lhs: IModelConnection, rhs: IModelConnection): number => {
-      if (lhs.iModelToken.iModelId !== rhs.iModelToken.iModelId) {
-        if (lhs.iModelToken.iModelId === undefined || rhs.iModelToken.iModelId === undefined)
-          return -1;
-        if (lhs.iModelToken.iModelId < rhs.iModelToken.iModelId!)
-          return -1;
-        return 1;
-      }
-      return 0;
-    });
+    this.resourceCache = new Map<IModelConnection, IdMap>();
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
   }
