@@ -1,25 +1,4 @@
 {
-<<<<<<< HEAD
-	"$schema" : "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-	"alias" : "a",
-	"description" : "This is a test schema.",
-	"name" : "SchemaA",
-	"references" : [
-		{
-			"name" : "SchemaC",
-			"version" : "3.3"
-		},
-		{
-			"name" : "SchemaB",
-			"version" : "2.2"
-		},
-		{
-			"name" : "SchemaD",
-			"version" : "4.4"
-		}
-	],
-	"label" : "SchemaA"
-=======
   "$schema" : "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
   "alias" : "a",
   "description" : "This is a test schema.",
@@ -39,5 +18,4 @@
     }
   ],
   "label" : "SchemaA"
->>>>>>> Fix an EC3.2 test that accidentally set the static ec32 property on Schema
 }
