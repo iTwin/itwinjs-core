@@ -87,7 +87,7 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 3. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
 4. Repeat steps 1-3 until ready to push changes
 5. Add changelog entry (which could potentially cover several commits): `rush change`
-6. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented.
+6. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented. If the changes are only to non-published packages (like **testbed**), then `rush change` will indicate that a changelog entry is not needed.
 7. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
 8. In order to keep the Git history clean, amend the prior commit using the **Commit All (Amend)** menu item in Visual Studio Code or use the command line: `git commit --amend --no-edit`
 9. Push changes
