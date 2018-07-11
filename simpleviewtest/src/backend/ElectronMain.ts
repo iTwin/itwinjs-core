@@ -5,9 +5,9 @@ import * as path from "path";
 import * as fs from "fs";
 import * as url from "url";
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { ElectronRpcManager } from "@bentley/imodeljs-common";
+import { initializeBackend, getRpcInterfaces } from "./common";
+import { useIModelBank } from "./common";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -34,9 +34,7 @@ fs.writeFileSync("./lib/backend/public/configuration.json", JSON.stringify(confi
 // ------- Initialization and setup of host and tools before starting app ---------------
 
 // Start the backend
-IModelHost.startup();
-
-Logger.initializeToConsole(); // configure logging for imodeljs-core
+initializeBackend();
 
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
@@ -80,10 +78,18 @@ function createWindow() {
 
 electron.app.on("ready", () => {
   // Initialize application gateway configuration for the backend
-  ElectronRpcManager.initializeImpl({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  ElectronRpcManager.initializeImpl({}, getRpcInterfaces());
 
   createWindow();
 });
+
+if (useIModelBank) {
+  electron.app.on("certificate-error", (event: any, _webContents: any, _url: string, _error: any, _certificate: any, callback: any) => {
+    // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+    event.preventDefault();
+    callback(true);
+  });
+}
 
 electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin")

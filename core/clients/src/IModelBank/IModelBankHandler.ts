@@ -8,6 +8,7 @@ import { RequestOptions } from "../Request";
 import { assert } from "@bentley/bentleyjs-core";
 import { UrlFileHandler } from "../UrlFileHandler";
 import { IModelBankError } from "./Errors";
+import { FileHandler, Config } from "..";
 
 /**
  * Provides default options for iModelBank requests.
@@ -19,6 +20,10 @@ class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsPr
     this.defaultOptions.retryCallback = IModelBankError.shouldRetry;
     this.defaultOptions.agent = agent;
   }
+}
+
+function constructUrlFileHandler(): FileHandler | undefined {
+  return Config.isBrowser() ? undefined : new UrlFileHandler();
 }
 
 /**
@@ -33,7 +38,7 @@ export class IModelBankHandler extends IModelBaseHandler {
    * @param deploymentEnv Deployment environment.
    */
   public constructor(url: string, keepAliveDuration = 30000) {
-    super("PROD", keepAliveDuration, new UrlFileHandler());
+    super("PROD", keepAliveDuration, constructUrlFileHandler());
     this._url = url;
   }
 

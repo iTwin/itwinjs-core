@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
-import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModelRepository, Config } from "@bentley/imodeljs-clients";
+import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModelRepository, Config, IModelBankClient, IModelHubClient, UserProfile } from "@bentley/imodeljs-clients";
 import {
   ElectronRpcManager,
   ElectronRpcConfiguration,
@@ -20,10 +20,10 @@ import {
   RpcOperation,
   IModelToken,
 } from "@bentley/imodeljs-common";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode, assert } from "@bentley/bentleyjs-core";
 import { IModelApi } from "./IModelApi";
-import { ProjectApi, ProjectScope } from "./ProjectApi";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+import { ProjectApi, ProjectScope, DeploymentEnv } from "./ProjectApi";
+import { Transform } from "@bentley/geometry-core";
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -34,6 +34,85 @@ if (ElectronRpcConfiguration.isElectron) {
 }
 
 // tslint:disable:no-console
+
+const useIModelBank = true;
+
+/** Class to allow mocking of accessToken needed for various client operations */
+export class MockAccessToken extends AccessToken {
+  public constructor() { super(""); }
+  public getUserProfile(): UserProfile | undefined {
+    return new UserProfile("<firstname>", "<lastname>", "email.address@somedomain.com", "<userid>", "<organization>");
+  }
+  public toTokenString() { return ""; }
+}
+
+// Logic to establish a connection to a non-Connect-hosted project and iModel
+class NonConnectProject {
+
+  public static getIModelClient(env: DeploymentEnv) {
+    return new IModelBankClient("https://localhost:3001", env);
+  }
+
+  // Set up to access the iModel using iModelBank
+  public static async initialize(state: SimpleViewState) {
+    assert(useIModelBank);
+    state.accessToken = new MockAccessToken();
+    state.project = { wsgId: "tbd", ecId: "tbd", name: "tbd" };
+    state.iModel = { wsgId: "tbd", ecId: "tbd" } as IModelRepository;
+    state.iModelConnection = await IModelApi.openIModel(state.accessToken!, state.project!.wsgId, state.iModel!.wsgId, undefined, OpenMode.Readonly);
+  }
+}
+
+// Logic to establish a connection to a Connect-hosted project and iModel
+class ConnectProject {
+
+  public static getIModelClient(env: DeploymentEnv) {
+    return new IModelHubClient(env);
+  }
+
+  // Set up to access the iModel on Connect
+  public static async initialize(state: SimpleViewState, cfg: SVTConfiguration) {
+    assert(!useIModelBank);
+
+    await ProjectApi.init();
+    await IModelApi.init();
+
+    // log in.
+    showStatus("logging in as", cfg.userName);
+    await ConnectProject.loginToConnect(state, cfg.userName, cfg.password);
+
+    // open the specified project
+    showStatus("opening Project", cfg.projectName);
+    await ConnectProject.openProject(state, cfg.projectName);
+
+    // open the specified iModel
+    showStatus("opening iModel", cfg.iModelName);
+    await ConnectProject.openIModel(state, cfg.iModelName);
+  }
+
+  // log in to connect
+  private static async loginToConnect(state: SimpleViewState, userName: string, password: string) {
+    // tslint:disable-next-line:no-console
+    console.log("Attempting login with userName", userName, "password", password);
+
+    const authClient = new ImsActiveSecureTokenClient("QA");
+    const accessClient = new ImsDelegationSecureTokenClient("QA");
+
+    const authToken: AuthorizationToken = await authClient.getToken(userName, password);
+    state.accessToken = await accessClient.getToken(authToken);
+  }
+
+  // opens the configured project
+  private static async openProject(state: SimpleViewState, projectName: string) {
+    state.project = await ProjectApi.getProjectByName(state.accessToken!, ProjectScope.Invited, projectName);
+  }
+
+  // opens the configured iModel
+  private static async openIModel(state: SimpleViewState, iModelName: string) {
+    state.iModel = await IModelApi.getIModelByName(state.accessToken!, state.project!.wsgId, iModelName);
+    state.iModelConnection = await IModelApi.openIModel(state.accessToken!, state.project!.wsgId, state.iModel!.wsgId, undefined, OpenMode.Readonly);
+  }
+}
 
 /** Global information on the currently opened iModel and the state of the view. */
 class SimpleViewState {
@@ -76,7 +155,7 @@ interface SVTConfiguration {
   standalone?: boolean;
   filename?: string;
   viewName?: string;
-  standalonePath?: string;    // Used when ran in the browser - a common base path for all standalone imodels
+  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
 }
 
 // Entry point - run the main function
@@ -107,29 +186,6 @@ function showStatus(string1: string, string2?: string) {
   if (string2)
     outString = outString.concat(" ", string2);
   document.getElementById("showstatus")!.innerHTML = outString;
-}
-
-// log in to connect
-async function loginToConnect(state: SimpleViewState, userName: string, password: string) {
-  // tslint:disable-next-line:no-console
-  console.log("Attempting login with userName", userName, "password", password);
-
-  const authClient = new ImsActiveSecureTokenClient("QA");
-  const accessClient = new ImsDelegationSecureTokenClient("QA");
-
-  const authToken: AuthorizationToken = await authClient.getToken(userName, password);
-  state.accessToken = await accessClient.getToken(authToken);
-}
-
-// opens the configured project
-async function openProject(state: SimpleViewState, projectName: string) {
-  state.project = await ProjectApi.getProjectByName(state.accessToken!, ProjectScope.Invited, projectName);
-}
-
-// opens the configured iModel
-async function openIModel(state: SimpleViewState, iModelName: string) {
-  state.iModel = await IModelApi.getIModelByName(state.accessToken!, state.project!.wsgId, iModelName);
-  state.iModelConnection = await IModelApi.openIModel(state.accessToken!, state.project!.wsgId, state.iModel!.wsgId, undefined, OpenMode.Readonly);
 }
 
 // opens the configured iModel from disk
@@ -661,7 +717,10 @@ async function main() {
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
-  IModelApp.startup();
+  const env = ProjectApi.hubDeploymentEnv;
+  const imodelClient = useIModelBank ? NonConnectProject.getIModelClient(env) : ConnectProject.getIModelClient(env);
+  IModelApp.startup(imodelClient);
+  IModelApp.hubDeploymentEnv = env;
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
@@ -681,22 +740,14 @@ async function main() {
   spinner.style.display = "block";
 
   try {
-    // initialize the Project and IModel Api
-    await ProjectApi.init();
-    await IModelApi.init();
-
     if (!configuration.standalone) {
-      // log in.
-      showStatus("logging in as", configuration.userName);
-      await loginToConnect(activeViewState, configuration.userName, configuration.password);
+      if (useIModelBank) {
+        await NonConnectProject.initialize(activeViewState);
+      } else {
+        // initialize the Project and IModel Api
+        await ConnectProject.initialize(activeViewState, configuration);
+      }
 
-      // open the specified project
-      showStatus("opening Project", configuration.projectName);
-      await openProject(activeViewState, configuration.projectName);
-
-      // open the specified iModel
-      showStatus("opening iModel", configuration.iModelName);
-      await openIModel(activeViewState, configuration.iModelName);
     } else {
       showStatus("Opening", configuration.iModelName);
       await openStandaloneIModel(activeViewState, configuration.iModelName);
