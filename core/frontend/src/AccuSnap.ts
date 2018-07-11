@@ -331,11 +331,8 @@ export class AccuSnap {
       return;
 
     const snapSprite = snap.sprite;
-    if (snapSprite) {
-      const spriteSize = snapSprite.size;
-      const iconPt = AccuSnap.adjustIconLocation(viewport, crossPt, spriteSize);
-      this.icon.activate(snapSprite, viewport, iconPt, 0);
-    }
+    if (snapSprite)
+      this.icon.activate(snapSprite, viewport, AccuSnap.adjustIconLocation(viewport, crossPt, snapSprite.size), 0);
   }
 
   private static adjustIconLocation(vp: Viewport, input: Point3d, iconSize: XAndY): Point3d {

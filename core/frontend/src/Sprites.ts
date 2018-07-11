@@ -9,6 +9,8 @@ import { DecorateContext } from "./ViewContext";
 import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
 import { RenderTexture, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
+import { Logger } from "@bentley/bentleyjs-core";
 
 /**
  * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
@@ -40,14 +42,19 @@ export class Sprite implements IDisposable {
   public dispose() { if (this.texture) { this.texture.dispose(); this.texture = undefined; } }
 
   /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
+   * @param filePath The file path of the PNG file holding the sprite texture (relative to the assets directory.)
+   * @param iModel An IModelConnection used to locate the backend server. Note that this method does not associate this Sprite with the iModel
+   * in any way. It is merely necessary to route the request to the backend.
    * @note This method loads the .png file asynchronously. The [[texture]] member will be undefined until the data is loaded.
    */
-  public fromNativePng(name: string, vp: Viewport): void {
-    vp.iModel.loadNativeAsset(name).then((val: Uint8Array) => this.fromImageSource(new ImageSource(val, ImageSourceFormat.Png)))
-      .catch(() => { });
+  public fromNativePng(filePath: string, iModel: IModelConnection): void {
+    iModel.loadNativeAsset(filePath).then((val: Uint8Array) => this.fromImageSource(new ImageSource(val, ImageSourceFormat.Png))).catch(() => {
+      Logger.logError("imodeljs-frontend.Sprites", "can't load sprite from asset file: " + filePath);
+    });
   }
 
   /** Initialize this Sprite from an ImageSource.
+   * @param src The ImageSource holding an image to create the texture for this Sprite.
    * @note This method creates the texture from the ImageSource asynchronously. The texture will appear as a white square until it is fully loaded.
    */
   public fromImageSource(src: ImageSource): void {
@@ -57,22 +64,25 @@ export class Sprite implements IDisposable {
 }
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.
- * They are cached by name. They are cleared when the ToolAdmin is shut down.
+ * They are cached by name, and the cache is cleared when the ToolAdmin is shut down.
  */
 export class IconSprites {
   private static readonly _sprites = new Map<string, Sprite>();
 
-  /** Look up an IconSprite by name. If not loaded, create and load it. */
+  /** Look up an IconSprite by name. If not loaded, create and load it.
+   * @param spriteName The base name (without ".png") of a PNG file in the `decorators/dgncore` subdirectory of the `Assets` directory of the imodeljs-native package.
+   * @param vp A Viewport used to find the IModelConnection
+   */
   public static getSprite(spriteName: string, vp: Viewport): Sprite {
     let sprite = this._sprites.get(spriteName);
     if (!sprite) {
       sprite = new Sprite();
       this._sprites.set(spriteName, sprite);
-      sprite.fromNativePng("decorators/dgncore/" + spriteName + ".png", vp); // note: asynchronous
+      sprite.fromNativePng("decorators/dgncore/" + spriteName + ".png", vp.iModel); // note: asynchronous
     }
     return sprite;
   }
-  /** Empty the cache of IconSprites, disposing all existing Sprites. */
+  /** Empty the cache, disposing all existing Sprites. */
   public static emptyAll() { this._sprites.forEach((sprite: Sprite) => sprite.dispose()); this._sprites.clear(); }
 }
 
