@@ -65,7 +65,7 @@ export const enum HitPriority {
 export const enum HitDetailType {
   Hit = 1,
   Snap = 2,
-  Intersection = 3, c
+  Intersection = 3,
 }
 
 /**
