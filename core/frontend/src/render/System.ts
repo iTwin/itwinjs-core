@@ -31,7 +31,7 @@ import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 /**
- * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
+ * A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  */
 export class RenderPlan {
   public readonly is3d: boolean;
@@ -91,7 +91,7 @@ export class DecorationList extends Array<Decoration> {
 }
 
 /**
- * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
+ * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the RenderTarget,
  * in addition to the Scene.
  */
 export class Decorations implements IDisposable {
@@ -172,17 +172,22 @@ export namespace Pixel {
   }
 
   /**
-   * Bit-mask by which callers of DgnViewport::ReadPixels() specify which aspects are of interest.
+   * Bit-mask by which callers of [[Viewport.readPixels]] specify which aspects are of interest.
+   *
    * Aspects not specified will be omitted from the returned data.
    */
   export const enum Selector {
     None = 0,
-    ElementId = 1 << 0, // Select element IDs
-    Distance = 1 << 1, // Select distances from near plane
-    Geometry = 1 << 2, // Select geometry type and planarity
-
-    GeometryAndDistance = Geometry | Distance, // Select geometry type/planarity and distance from near plane
-    All = GeometryAndDistance | ElementId, // Select all aspects
+    /** Select element Ids */
+    ElementId = 1 << 0,
+    /** Select distances from near plane */
+    Distance = 1 << 1,
+    /** Select geometry type and planarity */
+    Geometry = 1 << 2,
+    /** Select geometry type/planarity and distance from near plane */
+    GeometryAndDistance = Geometry | Distance,
+    /** Select all aspects */
+    All = GeometryAndDistance | ElementId,
   }
 
   /** A rectangular array of pixels as read from a RenderTarget's frame buffer. */
@@ -195,8 +200,10 @@ export namespace Pixel {
 /**
  * A RenderTarget holds the current scene, the current set of dynamic RenderGraphics, and the current decorators.
  * When frames are composed, all of those RenderGraphics are rendered, as appropriate.
- * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
- * Every DgnViewport holds a reference to a RenderTarget.
+ *
+ * A RenderTarget holds a reference to a RenderSystem.
+ *
+ * Every Viewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
   public static get frustumDepth2d(): number { return 1.0; } // one meter
@@ -228,8 +235,7 @@ export abstract class RenderTarget implements IDisposable {
 }
 
 /**
- * A RenderSystem is the renderer-specific factory for creating Render::Graphics, Render::Textures, and Render::Materials.
- * @note The methods of this class may be called from any thread.
+ * A RenderSystem is the renderer-specific factory for creating RenderGraphics, RenderTexture, and RenderMaterials.
  */
 export abstract class RenderSystem {
   protected _nowPainting?: RenderTarget;
@@ -251,14 +257,11 @@ export abstract class RenderSystem {
   /** Find a previously-created Material by key. Returns null if no such material exists. */
   public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
-  /** Create a Material from parameters */
+  /** Create a RenderMaterial from parameters */
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a GraphicBuilder from parameters */
   public abstract createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
-
-  // /** Create a Sprite from parameters */
-  // public abstract createSprite(sprite: ISprite, location: Point3d, transparency: number, imodel: IModel): Graphic;
 
   // /** Create a Viewlet from parameters */
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
@@ -296,16 +299,16 @@ export abstract class RenderSystem {
     return this.createTriMesh(rasterTile);
   }
 
-  /** Create a Graphic consisting of a list of Graphics */
+  /** Create a RenderGraphic consisting of a list of Graphics */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
-  /** Create a Graphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
+  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
   public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
 
-  /** Create a Graphic consisting of batched Features. */
+  /** Create a RenderGraphic consisting of batched Features. */
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
@@ -317,13 +320,19 @@ export abstract class RenderSystem {
   /** Create a new Texture from an ImageBuffer. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** Create a new Texture from an ImageSource. */
-  public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+  /** Create a new Texture from an ImageSource.
+   * @param _source The image source data
+   * @param _width The width of the texture
+   * @param _height The height of the texture
+   * @param _imodel The IModelConnection this texture is to be associated with. When the IModelConnection is closed, the texture is disposed. If undefined, caller is responsible for disposing the texture.
+   * @param _params Parameters that describe the texture
+   */
+  public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   // /** Create a Texture from a graphic. */
   // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;
 
-  // /** Create a Light from Light::Parameters */
+  // /** Create a Light from Light.Parameters */
   // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;
 
   /**

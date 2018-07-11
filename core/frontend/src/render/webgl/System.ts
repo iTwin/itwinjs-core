@@ -420,13 +420,13 @@ export class System extends RenderSystem {
     }
   }
 
-  /** Find an imodel rendering map using an IModelConnection. Returns undefined if not found. */
+  /** Find a rendering map using an IModelConnection. Returns undefined if not found. */
   public findIModelMap(imodel: IModelConnection): IdMap | undefined {
     return this.renderCache.get(imodel);
   }
 
   /**
-   * Find an imodel rendering map using an IModelConnection. If not found, as long as the id
+   * Create a new rendering map using an IModelConnection. If not found, as long as the id
    * is valid, create and return a new one, adding it to the dictionary.
    */
   public createIModelMap(imodel: IModelConnection): IdMap | undefined {
@@ -519,7 +519,13 @@ export class System extends RenderSystem {
    * Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
-  public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+  public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
+    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
+    if (undefined === imodel) {
+      const textureHandle = TextureHandle.createForImageSource(width, height, source);
+      return (textureHandle === undefined) ? undefined : new Texture(params, textureHandle);
+    }
+
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();

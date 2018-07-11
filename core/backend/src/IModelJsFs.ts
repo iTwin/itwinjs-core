@@ -28,36 +28,36 @@ export class IModelJsFsStats {
 export class IModelJsFs {
 
   /** Does file or directory exist? */
-  public static existsSync(fn: string): boolean { return fs.existsSync(fn); }
+  public static existsSync(path: string): boolean { return fs.existsSync(path); }
 
   /** Delete a file. */
-  public static unlinkSync(fn: string): void { fs.unlinkSync(fn); }
+  public static unlinkSync(path: string): void { fs.unlinkSync(path); }
 
   /** Delete a file or remove a directory (rm -r). */
-  public static removeSync(fn: string): void { fs.removeSync(fn); }
+  public static removeSync(path: string): void { fs.removeSync(path); }
 
   /** Create a directory. */
-  public static mkdirSync(fn: string): void { fs.mkdirSync(fn); }
+  public static mkdirSync(path: string): void { fs.mkdirSync(path); }
 
   /** Remove a directory. */
-  public static rmdirSync(fn: string): void { fs.rmdirSync(fn); }
+  public static rmdirSync(path: string): void { fs.rmdirSync(path); }
 
   /** Write to a file. */
-  public static writeFileSync(fn: string, str: string, wflag: string = "w"): void { fs.writeFileSync(fn, str, { flag: wflag }); }
+  public static writeFileSync(path: string, str: string, wflag: string = "w"): void { fs.writeFileSync(path, str, { flag: wflag }); }
 
   /** Make a copy of a file */
-  public static copySync(fn: string, fnout: string, opts?: any): void { fs.copySync(fn, fnout, opts); }
+  public static copySync(src: string, dest: string, opts?: any): void { fs.copySync(src, dest, opts); }
 
   /** Get the file and directory names in the specified directory. Excludes "." and "..". */
-  public static readdirSync(fn: string): string[] { return fs.readdirSync(fn); }
+  public static readdirSync(path: string): string[] { return fs.readdirSync(path); }
 
   /** Read file */
-  public static readFileSync(fn: string): string|Buffer { return fs.readFileSync(fn); }
+  public static readFileSync(path: string): string | Buffer { return fs.readFileSync(path); }
 
   /** Test if the current user has permission to write to a file. */
-  private static isFileWritable(fn: string): boolean {
+  private static isFileWritable(path: string): boolean {
     try {
-      fs.accessSync(fn, fs.constants.W_OK);
+      fs.accessSync(path, fs.constants.W_OK);
       return true;
     } catch (_err) {
       return false;
@@ -65,8 +65,8 @@ export class IModelJsFs {
   }
 
   /** Get information about a file. */
-  public static lstatSync(fn: string): IModelJsFsStats | undefined {
-    const stats = fs.lstatSync(fn);
+  public static lstatSync(path: string): IModelJsFsStats | undefined {
+    const stats = fs.lstatSync(path);
     if (stats === undefined)
       return undefined;
 
@@ -79,7 +79,7 @@ export class IModelJsFs {
       stats.isFile(),
       stats.isSocket(),
       stats.isSymbolicLink(),
-      !IModelJsFs.isFileWritable(fn));
+      !IModelJsFs.isFileWritable(path));
   }
 
 }

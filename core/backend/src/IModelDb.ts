@@ -26,6 +26,8 @@ import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
 import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { KnownLocations } from "./Platform";
+import { IModelJsFs } from "./IModelJsFs";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -548,9 +550,7 @@ export class IModelDb extends IModel {
    * [[include:IModelDb.updateIModelProps]]
    * ```
    */
-  public updateIModelProps() {
-    this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
-  }
+  public updateIModelProps() { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
   /**
    * Commit pending changes to this iModel.
@@ -572,9 +572,7 @@ export class IModelDb extends IModel {
     this.concurrencyControl.onSavedChanges();
   }
 
-  /**
-   * Abandon pending changes in this iModel
-   */
+  /** Abandon pending changes in this iModel */
   public abandonChanges() {
     this.concurrencyControl.abandonRequest();
     this.nativeDb.abandonChanges();
@@ -789,17 +787,17 @@ export class IModelDb extends IModel {
     return (error === undefined);
   }
 
-  /** query a "file property" from this iModel, as a string.
+  /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
   public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
 
-  /** query a "file property" from this iModel, as a blob.
+  /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
   public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
 
-  /** save a "file property" to this iModel
+  /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
@@ -812,7 +810,7 @@ export class IModelDb extends IModel {
    */
   public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
 
-  /** query for the next available major id for a "file property" from this iModel.
+  /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
@@ -837,12 +835,22 @@ export class IModelDb extends IModel {
     });
   }
 
+  /** Cancel a previously requested snap. */
   public cancelSnap(connectionId: string): void {
     const request = this._snaps.get(connectionId);
     if (undefined !== request) {
       request.cancelSnap();
       this._snaps.delete(connectionId);
     }
+  }
+
+  /** Load a file from the *Assets* directory of imodeljs-native
+   * @param assetName The asset file name with path relative to the *Assets* directory.
+   */
+  public static loadNativeAsset(assetName: string): string {
+    const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
+    const fileData = IModelJsFs.readFileSync(fileName) as Buffer;
+    return fileData.toString("base64");
   }
 
   /** Execute a test from native code

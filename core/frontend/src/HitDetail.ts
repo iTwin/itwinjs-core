@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
-import { Point3d, Vector3d, CurvePrimitive, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
-import { Sprite } from "./Sprites";
+import { Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./frontend";
 
 // tslint:disable:variable-name
@@ -17,25 +17,6 @@ export const enum SnapMode { // NEEDSWORK: Don't intend to use this as a mask, m
   Origin = 1 << 4,
   Bisector = 1 << 5,
   Intersection = 1 << 6,
-}
-
-export const enum KeypointType {
-  Nearest = 0,
-  Keypoint = 1,
-  Midpoint = 2,
-  Center = 3,
-  Origin = 4,
-  Bisector = 5,
-  Intersection = 6,
-  Tangent = 7,
-  TangentPoint = 8,
-  Perpendicular = 9,
-  PerpendicularPt = 10,
-  Parallel = 11,
-  Point = 12,
-  PointOn = 13,
-  Unknown = 14,
-  Custom = 15,
 }
 
 export const enum SnapHeat {
@@ -84,7 +65,7 @@ export const enum HitPriority {
 export const enum HitDetailType {
   Hit = 1,
   Snap = 2,
-  Intersection = 3,
+  Intersection = 3, c
 }
 
 /**
@@ -117,21 +98,22 @@ export class HitDetail {
 export class SnapDetail extends HitDetail {
   public sprite?: Sprite;
   public readonly snapPoint: Point3d;     // hitPoint adjusted by snap
-  private _adjustedPoint: Point3d; // sometimes accuSnap adjusts the point after the snap.
+  private _adjustedPoint: Point3d;        // AccuSnap/AccuDraw can adjust the point after the snap
   public primitive?: CurvePrimitive;      // curve primitive for snap.
   public normal?: Vector3d;               // surface normal at snapPoint
+  public geomType?: HitGeomType;          // the HitGeomType of this SnapDetail
 
   /** Constructor for SnapDetail.
    * @param from The HitDetail that created this snap
    * @param snapMode The SnapMode used to create this SnapDetail
    * @param heat The SnapHeat of this SnapDetail
    * @param snapPoint The snapped point in the element
-   * @param geomType the HitGeomType of this SnapDetail
    */
-  public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps, public readonly geomType: HitGeomType = HitGeomType.None) {
+  public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps) {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this._adjustedPoint = this.snapPoint;
+    this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport);
   }
 
   public get adjustedPoint(): Point3d { return this._adjustedPoint; }
@@ -143,9 +125,41 @@ export class SnapDetail extends HitDetail {
   public setAdjustedPoint(point: Point3d) { this._adjustedPoint = point.clone(); }
   public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this._adjustedPoint = this.snapPoint; this.heat = heat; }
 
+  /** Set curve primitive and HitGeometryType for this SnapDetail. */
+  public setCurvePrimitive(primitive?: CurvePrimitive, localToWorld?: Transform, geomType?: HitGeomType): void {
+    this.primitive = primitive;
+    this.geomType = undefined;
+
+    // Only HitGeomType.Point and HitGeomType.Surface are valid without a curve primitive.
+    if (undefined === this.primitive) {
+      if (HitGeomType.Point === geomType || HitGeomType.Surface === geomType)
+        this.geomType = geomType;
+      return;
+    }
+
+    if (undefined !== localToWorld)
+      this.primitive.tryTransformInPlace(localToWorld);
+
+    if (this.primitive instanceof Arc3d)
+      this.geomType = HitGeomType.Arc;
+    else if (this.primitive instanceof LineSegment3d)
+      this.geomType = HitGeomType.Segment;
+    else if (this.primitive instanceof LineString3d)
+      this.geomType = HitGeomType.Segment;
+    else
+      this.geomType = HitGeomType.Curve;
+
+    // Set curve primitive geometry type override...
+    //  - HitGeomType.Point with arc/ellipse denotes center.
+    //  - HitGeomType.Surface with any curve primitive denotes an interior hit.
+    if (undefined !== geomType && HitGeomType.None !== geomType)
+      this.geomType = geomType;
+  }
+
   public clone(): SnapDetail {
-    const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint, this.geomType);
+    const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint);
     val.sprite = this.sprite;
+    val.geomType = this.geomType;
     if (this.isPointAdjusted())
       val.setAdjustedPoint(this.adjustedPoint);
     if (undefined !== this.primitive)
@@ -154,6 +168,20 @@ export class SnapDetail extends HitDetail {
       val.normal = this.normal.clone();
     return val;
   }
+
+  private static getSnapSprite(snapType: SnapMode): string {
+    switch (snapType) {
+      case SnapMode.Nearest: return "SnapPointOn";
+      case SnapMode.NearestKeypoint: return "SnapKeypoint";
+      case SnapMode.MidPoint: return "SnapMidpoint";
+      case SnapMode.Center: return "SnapCenter";
+      case SnapMode.Origin: return "SnapOrigin";
+      case SnapMode.Bisector: return "SnapBisector";
+      case SnapMode.Intersection: return "SnapIntersection";
+    }
+    return "";
+  }
+
 }
 
 export class IntersectDetail extends SnapDetail {

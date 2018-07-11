@@ -20,6 +20,7 @@ import { HitDetail } from "../HitDetail";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { IconSprites } from "../Sprites";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -452,6 +453,7 @@ export class ToolAdmin {
     }
   }
   public onShutDown() {
+    IconSprites.emptyAll(); // clear cache of icon sprites
     this._wantEventLoop = false;
     this._idleTool = undefined;
   }
