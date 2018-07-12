@@ -1672,7 +1672,7 @@ export class WindowAreaTool extends ViewTool {
       graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
       graphic.addPointString([this.firstPtWorld]);
 
-      context.addWorldOverlay(graphic.finish()!);
+      context.addWorldOverlay(graphic.finish());
       return;
     }
 
@@ -1695,7 +1695,7 @@ export class WindowAreaTool extends ViewTool {
     this.lineVertPts[1].y = viewRect.bottom;
     gf.addLineString(this.lineVertPts);
 
-    context.addViewOverlay(gf.finish()!);
+    context.addViewOverlay(gf.finish());
   }
 
   private computeWindowCorners(): Point3d[] | undefined {
