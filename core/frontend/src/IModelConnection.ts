@@ -576,17 +576,8 @@ export namespace IModelConnection {
           break;
         }
         case SheetViewState.getClassFullName(): {
-          // Using the attachment ids in the sheet properties, add a property to sheetProps containing the actual attachment views
-          const attachmentIds: string[] = viewStateData.sheetProps.attachmentIds !== undefined ? viewStateData.sheetProps.attachmentIds : [];
-          const attachmentViews: ViewState[] = [];
-          for (const id of attachmentIds) {
-            const attachmentElement = await this._iModel.elements.getProps(id);
-            if (attachmentElement.length > 0)
-              attachmentViews.push(await this._iModel.views.load(attachmentElement[0].view.id));
-          }
-          viewStateData.sheetProps.attachments = attachmentViews;
           const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-          viewState = new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, viewStateData.sheetProps);
+          viewState = new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
           break;
         }
         default:

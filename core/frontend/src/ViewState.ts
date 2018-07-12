@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -25,7 +25,7 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, GeometricModel2dState } from "./ModelState";
+import { GeometricModelState, GeometricModel2dState, SheetModelState } from "./ModelState";
 import { RenderGraphic } from "./render/System";
 import { Sheet } from "./Sheet";
 
@@ -1764,16 +1764,51 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
-  public readonly size: Point2d;
-  // public readonly attachments: Sheet.Attachments[];
+  public size?: Point2d;
+  public attachments?: Sheet.Attachments;
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
+  }
 
-    // sheetProps contains the width & height of the sheet, as well as views to be attached (if cloning, sheetProps will be a member of the props argument)
-    sheetProps = sheetProps ? sheetProps : props.sheetProps;
-    assert(sheetProps !== undefined, "Properties specific to sheet views were not included upon creation.");
-    this.size = Point2d.create(sheetProps.width, sheetProps.height);
+  public async load(): Promise<void> {
+    await super.load();
+
+    // Get the size of the sheet from the modeled element
+    const model = this.getViewedModel();
+    if (model === undefined || !(model instanceof SheetModelState))
+      return;
+    const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
+    assert(sheetElement !== undefined, "Sheet modeled element is undefined");
+    this.size = Point2d.create(sheetElement.width, sheetElement.height);
+
+    // Query the attachment ids
+    const attachmentList = new Sheet.Attachments();
+    const queryResult = (await this.iModel.executeQuery("SELECT ECInstanceId FROM BisCore.ViewAttachment WHERE Model.Id=" + model.id));
+    const attachmentIds: string[] = [];
+    for (const row of queryResult)
+      attachmentIds.push(row.id);
+
+    // Query the attachments using the id list, and grab all of their corresponding view ids
+    const attachments = await this.iModel.elements.getProps(attachmentIds) as ViewAttachmentProps[];
+    const attachmentViewIds: Id64Props[] = [];
+    for (const attachment of attachments)
+      attachmentViewIds.push((attachment.view as any).id);
+
+    // Load each view state corresponding to each attachment in the attachments array
+    // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
+    const attachmentViews: ViewState[] = [];
+    for (const viewId of attachmentViewIds)
+      attachmentViews.push(await this.iModel.views.load(viewId));
+
+    // Create the attachment objects and store them on this SheetViewState
+    for (let i = 0; i < attachments.length; i++) {
+      if (attachmentViews[i].is3d())
+        attachmentList.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+      else
+        attachmentList.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i]));
+    }
+    this.attachments = attachmentList;
   }
 
   /** Create a sheet border decoration graphic. */
@@ -1785,14 +1820,15 @@ export class SheetViewState extends ViewState2d {
   }
 
   public decorate(context: DecorateContext): void {
-    const border = this.createBorder(this.size.x, this.size.y, context);
-    context.setViewBackground(border);
+    if (this.size !== undefined) {
+      const border = this.createBorder(this.size.x, this.size.y, context);
+      context.setViewBackground(border);
+    }
   }
 
   /** Serialize this SheetViewState into a JSON object. */
   public toJSON(): any {
     const json = super.toJSON();
-    json.sheetProps = { width: this.size.x, height: this.size.y };
     return json;
   }
 }
