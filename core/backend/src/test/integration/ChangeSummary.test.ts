@@ -50,7 +50,7 @@ describe("ChangeSummary", () => {
       MockAssetUtil.tearDownOfflineFixture();
   });
 
-  it.skip("Attach / Detach ChangeCache file to pullonly briefcase", async () => {
+  it("Attach / Detach ChangeCache file to pullonly briefcase", async () => {
     const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
@@ -100,7 +100,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it.skip("Attach / Detach ChangeCache file to readonly briefcase", async () => {
+  it("Attach / Detach ChangeCache file to readonly briefcase", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
