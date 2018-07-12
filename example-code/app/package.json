@@ -13,7 +13,7 @@
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets && npm run build-code",
+    "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/backend/test\""
   },
   "repository": {},
