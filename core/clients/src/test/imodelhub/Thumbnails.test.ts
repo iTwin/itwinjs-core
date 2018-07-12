@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { IModelHubClient, ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../imodelhub";
-import { AccessToken } from "../../";
+import { ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../";
+import { AccessToken, IModelClient } from "../../";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -46,7 +46,7 @@ describe("iModelHub ThumbnailHandler", () => {
   let iModelId: string;
   let versions: Version[];
   const imodelName = "imodeljs-clients Thumbnails test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
     accessToken = await utils.login();

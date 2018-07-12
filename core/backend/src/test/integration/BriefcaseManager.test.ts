@@ -107,7 +107,7 @@ describe("BriefcaseManager", () => {
       // Validate that the IModelDb is readonly
       assert(iModel.openParams.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModels[0].id, BriefcaseManager.hubClient);
+      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModels[0].id, BriefcaseManager.imodelClient);
       assert.strictEqual<string>(iModel.briefcase.changeSetId, expectedChangeSetId);
       assert.strictEqual<string>(iModel.iModelToken.changeSetId!, expectedChangeSetId);
 
@@ -369,7 +369,7 @@ describe("BriefcaseManager", () => {
     assert(devProjectId);
     const devIModelId = await HubUtility.queryIModelIdByName(accessToken, devProjectId, TestConfig.iModelName);
     assert(devIModelId);
-    const devChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, devIModelId);
+    const devChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
     const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(devIModel);
@@ -382,7 +382,7 @@ describe("BriefcaseManager", () => {
     assert(qaProjectId);
     const qaIModelId = await HubUtility.queryIModelIdByName(accessToken, qaProjectId, TestConfig.iModelName);
     assert(qaIModelId);
-    const qaChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, qaIModelId);
+    const qaChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);
     const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(qaIModel);
