@@ -693,7 +693,7 @@ export class IModelDb extends IModel {
     return new Id64(result);
   }
 
-  /** @hidden @deprecated */
+  /** @hidden */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this.newNotOpenError();
