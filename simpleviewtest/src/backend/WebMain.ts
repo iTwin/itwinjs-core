@@ -4,9 +4,12 @@ import * as cp from "child_process";
 
 import { BentleyCloudRpcManager } from "@bentley/imodeljs-common/lib/common";
 import { Config } from "@bentley/imodeljs-clients/lib";
-import { initializeBackend, getRpcInterfaces } from "./backend";
+import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { IModelHost } from "@bentley/imodeljs-backend";
 
-// tslint:disable:no-console
+export function getRpcInterfaces() {
+  return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+}
 
 // Start the dev-cors-proxy-server
 const proxyServer = cp.spawn("node", ["./node_modules/@bentley/dev-cors-proxy-server/server.js"]);
@@ -22,11 +25,10 @@ proxyServer.on("close", (code) => {
 
 // Initialize backend functionality and logging
 Config.devCorsProxyServer = "http://localhost:3001";
-initializeBackend();
-const rpcInterfaces = getRpcInterfaces();
+IModelHost.startup();
 
 // Set up the ability to serve the supported rpcInterfaces via web requests
-const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, rpcInterfaces);
+const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, getRpcInterfaces());
 
 const app = express();
 app.use(bodyParser.text());
