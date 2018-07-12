@@ -26,8 +26,8 @@ import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GeometricModelState, GeometricModel2dState } from "./ModelState";
-import { SheetBorder } from "./Sheet";
 import { RenderGraphic } from "./render/System";
+import { Sheet } from "./Sheet";
 
 export const enum GridOrientationType {
   View = 0,
@@ -1780,7 +1780,7 @@ export class SheetViewState extends ViewState2d {
 
   /** Create a sheet border decoration graphic. */
   private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, viewContext);
+    const border = Sheet.Border.create(width, height, viewContext);
     const builder: GraphicBuilder = viewContext.createViewBackground();
     border.addToBuilder(builder);
     return builder.finish();
