@@ -25,7 +25,9 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, SheetModelState, GeometricModel2dState } from "./ModelState";
+import { GeometricModelState, GeometricModel2dState } from "./ModelState";
+import { SheetBorder } from "./Sheet";
+import { RenderGraphic } from "./render/System";
 
 export const enum GridOrientationType {
   View = 0,
@@ -1763,6 +1765,7 @@ export class DrawingViewState extends ViewState2d {
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
   public readonly size: Point2d;
+  // public readonly attachments: Attachment[];
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
     super(props, iModel, categories, displayStyle);
@@ -1775,8 +1778,16 @@ export class SheetViewState extends ViewState2d {
       this.size = Point2d.create(props.sheetProps.width, props.sheetProps.height);
   }
 
+  /** Create a sheet border decoration graphic. */
+  private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
+    const border = SheetBorder.create(width, height, viewContext);
+    const builder: GraphicBuilder = viewContext.createViewBackground();
+    border.addToBuilder(builder);
+    return builder.finish();
+  }
+
   public decorate(context: DecorateContext): void {
-    const border = SheetModelState.createBorder(this.size.x, this.size.y, context);
+    const border = this.createBorder(this.size.x, this.size.y, context);
     context.setViewBackground(border);
   }
 

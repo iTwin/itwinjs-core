@@ -15,6 +15,8 @@ import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/System";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
+import { ScalableMeshTileTree, ScalableMeshTileLoader, ScalableMeshTileTreeProps } from "./tile/ScalableMeshTileTree";
+import { WebMercatorTileTree, WebMercatorTileLoader, WebMercatorTileTreeProps } from "./tile/WebMercatorTileTree";
 
 /** The state of a Model */
 export class ModelState extends EntityState implements ModelProps {
@@ -136,15 +138,7 @@ export class GeometricModel3dState extends GeometricModelState {
  * * Has finite extents, specified in meters (the *page size*.)
  * * Can contain views of other models, like pictures pasted on a photo album.
  */
-export class SheetModelState extends GeometricModel2dState {
-  /** Draw border graphics (called during update) */
-  public static createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, viewContext);
-    const builder: GraphicBuilder = viewContext.createViewBackground();
-    border.addToBuilder(builder);
-    return builder.finish();
-  }
-}
+export class SheetModelState extends GeometricModel2dState { }
 
 /** The state of a SpatialModel */
 export class SpatialModelState extends GeometricModel3dState { }
