@@ -13,7 +13,7 @@ import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
+import { HitDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
@@ -1416,23 +1416,16 @@ export class Viewport {
 
   /** Show the surface normal for geometry under the cursor when snapping. */
   private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    // NEEDS_WORK: Need to decide the fate of this...when/if to show it, etc.
     const vp = context.viewport!;
     if (!vp.view.is3d())
-      return; // Not valuable in 2d...
+      return; // Not valuable feedback in 2d...
 
-    if (!(hit instanceof SnapDetail))
-      return; // Don't display unless snapped...
-
-    if (!hit.normal)
-      return; // AccuSnap will flash edge/segment geometry...
-
-    if (SnapMode.Nearest !== hit.snapMode && hit.isHot)
-      return; // Only display if snap is nearest or NOT hot...surface normal is for hit location, not snap location...
+    if (!hit.isSnapDetail() || !hit.normal || hit.isPointAdjusted())
+      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
     const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
     const colorFill = color.clone();
-    const pt = hit.getPoint();
+    const pt = hit.snapPoint;
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
     const normal = hit.normal;
     const rMatrix = RotMatrix.createRigidHeadsUp(normal);
