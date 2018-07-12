@@ -4,6 +4,7 @@
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
+import { using } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { HierarchyRequestOptions, Paged, ContentRequestOptions, KeySet } from "@bentley/ecpresentation-common";
 import IBackendECPresentationManager, { Props } from "@src/IBackendECPresentationManager";
@@ -12,6 +13,7 @@ import SingleClientECPresentationManager from "@src/SingleClientECPresentationMa
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
 import { createRandomDescriptor } from "@helpers/random/Content";
+import TemporaryStorage from "@src/TemporaryStorage";
 
 describe("MultiClientECPresentationManager", () => {
 
@@ -42,9 +44,18 @@ describe("MultiClientECPresentationManager", () => {
   });
 
   it("by default creates SingleClientECPresentationManager as a client manager", async () => {
-    manager = new MultiClientECPresentationManager();
-    manager.rulesets(undefined);
-    expect((manager as any).getClientManager("")).to.be.instanceof(SingleClientECPresentationManager);
+    using(new MultiClientECPresentationManager(), (newManager) => {
+      newManager.rulesets(undefined);
+      expect((newManager as any).getClientManager("")).to.be.instanceof(SingleClientECPresentationManager);
+    });
+  });
+
+  it("sets value lifetime for temporary storage", async () => {
+    const unusedClientLifetime = faker.random.number();
+    using(new MultiClientECPresentationManager({ unusedClientLifetime }), (newManager) => {
+      const storage = (newManager as any)._clientsStorage as TemporaryStorage<IBackendECPresentationManager>;
+      expect(storage.props.valueLifetime).to.eq(unusedClientLifetime);
+    });
   });
 
   describe("dispose", () => {
@@ -66,10 +77,9 @@ describe("MultiClientECPresentationManager", () => {
 
     it("by default uses activeLocale set in props", () => {
       const locale = faker.random.locale();
-      manager = new MultiClientECPresentationManager({
-        activeLocale: locale,
+      using(new MultiClientECPresentationManager({ activeLocale: locale }), (newManager) => {
+        expect(newManager.activeLocale).to.eq(locale);
       });
-      expect(manager.activeLocale).to.eq(locale);
     });
 
     it("sets active locale to all client managers", () => {

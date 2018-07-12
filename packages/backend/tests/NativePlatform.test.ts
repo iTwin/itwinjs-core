@@ -55,7 +55,7 @@ describe("default NativePlatform", () => {
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ result: "0" }); })
       .verifiable();
-    await expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.equal("0");
+    expect(await nativePlatform.handleRequest(undefined, "")).to.equal("0");
     addonMock.verifyAll();
   });
 
@@ -63,21 +63,21 @@ describe("default NativePlatform", () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb(undefined as any); });
-    return expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError);
+    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(ECPresentationError);
   });
 
   it("throws on handleRequest error response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ error: { status: NativeECPresentationStatus.Error, message: "test" } }); });
-    return expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError, "test");
+    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(ECPresentationError, "test");
   });
 
   it("throws on handleRequest success response without result", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ result: undefined }); });
-    return expect(nativePlatform.handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError);
+    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(ECPresentationError);
   });
 
   it("calls addon's setupRulesetDirectories", async () => {

@@ -12,6 +12,7 @@ import {
 } from "@bentley/ecpresentation-common";
 import IBackendECPresentationManager, { Props as IBackendECPresentationManagerProps } from "./IBackendECPresentationManager";
 import SingleClientECPresentationManager from "./SingleClientECPresentationManager";
+import TemporaryStorage from "./TemporaryStorage";
 
 /**
  * Properties that can be used to configure [[MultiClientECPresentationManager]]
@@ -24,6 +25,12 @@ export interface Props extends IBackendECPresentationManagerProps {
    * @hidden
    */
   clientManagerFactory?: (clientId: string, props: IBackendECPresentationManagerProps) => IBackendECPresentationManager;
+
+  /**
+   * How much time should an unused client manager be stored in memory
+   * before it's disposed.
+   */
+  unusedClientLifetime?: number;
 }
 
 /**
@@ -35,7 +42,7 @@ export interface Props extends IBackendECPresentationManagerProps {
  */
 export default class MultiClientECPresentationManager implements IBackendECPresentationManager {
 
-  private _clientManagers: Map<string, IBackendECPresentationManager>;
+  private _clientsStorage: TemporaryStorage<IBackendECPresentationManager>;
   private _props: Props;
 
   /**
@@ -44,18 +51,25 @@ export default class MultiClientECPresentationManager implements IBackendECPrese
    */
   constructor(props?: Props) {
     this._props = props || {};
-    this._clientManagers = new Map<string, IBackendECPresentationManager>();
+    this._clientsStorage = new TemporaryStorage<IBackendECPresentationManager>({
+      factory: this.createClientManager,
+      cleanupHandler: this.disposeClientManager,
+      // cleanup unused managers every minute
+      cleanupInterval: 60 * 1000,
+      // by default, manager is disposed after 1 hour of being unused
+      valueLifetime: (props && props.unusedClientLifetime) ? props.unusedClientLifetime : 60 * 60 * 1000,
+    });
   }
 
   /**
    * Dispose the presentation manager. Must be called to clean up native resources.
    */
   public dispose() {
-    this._clientManagers.forEach((mgr) => mgr.dispose());
-    this._clientManagers.clear();
+    this._clientsStorage.dispose();
   }
 
-  private createClientManager(clientId: string): IBackendECPresentationManager {
+  // tslint:disable-next-line:naming-convention
+  private createClientManager = (clientId: string): IBackendECPresentationManager => {
     const props: IBackendECPresentationManagerProps = {
       localeDirectories: this._props.localeDirectories,
       rulesetDirectories: this._props.rulesetDirectories,
@@ -66,11 +80,13 @@ export default class MultiClientECPresentationManager implements IBackendECPrese
     return new SingleClientECPresentationManager(props);
   }
 
+  // tslint:disable-next-line:naming-convention
+  private disposeClientManager = (manager: IBackendECPresentationManager) => {
+    manager.dispose();
+  }
+
   private getClientManager(clientId: string): IBackendECPresentationManager {
-    if (!this._clientManagers.has(clientId)) {
-      this._clientManagers.set(clientId, this.createClientManager(clientId));
-    }
-    return this._clientManagers.get(clientId)!;
+    return this._clientsStorage.getValue(clientId);
   }
 
   private getClientId(input: RequestOptions<IModelDb> | string | undefined): string {
@@ -84,7 +100,7 @@ export default class MultiClientECPresentationManager implements IBackendECPrese
   public get activeLocale() { return this._props.activeLocale; }
   public set activeLocale(value: string | undefined) {
     this._props.activeLocale = value;
-    this._clientManagers.forEach((mgr) => mgr.activeLocale = value);
+    this._clientsStorage.values.forEach((mgr) => mgr.activeLocale = value);
   }
 
   /**

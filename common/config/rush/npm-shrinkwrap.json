@@ -1552,7 +1552,7 @@
     },
     "@rush-temp/ecpresentation-backend": {
       "version": "file:projects/ecpresentation-backend.tgz",
-      "integrity": "sha1-WCZBdi9QkI6AMKWA/9hlMdM0shg=",
+      "integrity": "sha1-0oMWIjb8msZCvbhFiNfVtvbm2i4=",
       "requires": {
         "@bentley/bentleyjs-core": "0.98.0-4",
         "@bentley/bentleyjs-tools": "0.98.0-4",
@@ -1564,6 +1564,7 @@
         "@types/chai-spies": "0.0.1",
         "@types/deep-equal": "1.0.1",
         "@types/faker": "4.1.2",
+        "@types/lolex": "2.1.3",
         "@types/mocha": "2.2.48",
         "chai": "4.1.2",
         "chai-as-promised": "7.1.1",
@@ -1573,6 +1574,7 @@
         "cross-env": "5.2.0",
         "deep-equal": "1.0.1",
         "faker": "4.1.0",
+        "lolex": "2.7.1",
         "mocha": "5.2.0",
         "nyc": "11.9.0",
         "rimraf": "2.6.2",
@@ -1955,6 +1957,11 @@
       "version": "4.14.112",
       "resolved": "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.112.tgz",
       "integrity": "sha512-jDD7sendv3V7iwyRXSlECOR8HCtMN2faVA9ngLdHHihSVIwY7nbfsKl2kA6fimUDU1i5l/zgpG3aevwWnN3zCQ=="
+    },
+    "@types/lolex": {
+      "version": "2.1.3",
+      "resolved": "https://registry.npmjs.org/@types/lolex/-/lolex-2.1.3.tgz",
+      "integrity": "sha512-nEipOLYyZJ4RKHCg7tlR37ewFy91oggmip2MBzPdVQ8QhTFqjcRhE8R0t4tfpDnSlxGWHoEGJl0UCC4kYhqoiw=="
     },
     "@types/marked": {
       "version": "0.3.0",
