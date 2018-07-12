@@ -298,9 +298,7 @@ export abstract class ViewState extends ElementState {
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
-    return this.displayStyle.getSubCategoryOverride(id);
-  }
+  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {    return this.displayStyle.getSubCategoryOverride(id);  }
 
   /** Returns the appearance of the subcategory with the specified ID within this view, possibly as overridden by the display style. */
   public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
@@ -379,9 +377,7 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  public createScene(context: SceneContext): void {
-    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));
-  }
+  public createScene(context: SceneContext): void {    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));  }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -951,7 +947,7 @@ export abstract class ViewState3d extends ViewState {
     val.cameraOn = this.cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
-    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation);
+    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation)!.toJSON();
     assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
@@ -1665,18 +1661,9 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
-
-  public clearViewedModels() {
-    this.modelSelector.models.clear();
-  }
-
-  public addViewedModel(id: Id64Props) {
-    this.modelSelector.addModels(id);
-  }
-
-  public removeViewedModel(id: Id64Props) {
-    this.modelSelector.dropModels(id);
-  }
+  public clearViewedModels() { this.modelSelector.models.clear(); }
+  public addViewedModel(id: Id64Props) { this.modelSelector.addModels(id); }
+  public removeViewedModel(id: Id64Props) { this.modelSelector.dropModels(id); }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
