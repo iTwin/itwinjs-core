@@ -14,6 +14,7 @@ import { RenderTarget } from "./render/System";
 import { Target } from "./render/webgl/Target";
 import { ViewState } from "./ViewState";
 import { ClipVector } from "@bentley/geometry-core/lib/geometry-core";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 // import { Target } from "./render/webgl/Target";
 
 /** Contains functionality specific to Sheet views. */
@@ -117,30 +118,18 @@ export namespace Sheet {
   }
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies the id of the view and its position on the sheet. */
-  export class Attachment {
+  export abstract class Attachment {
     public readonly view: ViewState;
     public readonly scale: number;
     public readonly placement: Placement2d;
     public clipping?: ClipVector;
     // ###TODO: public readonly displayPriority;
 
-    private constructor(view: ViewState, scale: number, placement: Placement2d, clipping?: ClipVector) {
+    protected constructor(view: ViewState, scale: number, placement: Placement2d, clipping?: ClipVector) {
       this.view = view;
       this.scale = scale;
       this.placement = placement;
       this.clipping = clipping;
-    }
-
-    /** Create an attachment using a known size. The view scale will be computed. */
-    public static createFromPlacement(view: ViewState, placement: Placement2d): Attachment {
-      const scale = this.computeScale(view, placement.bbox);
-      return new Attachment(view, scale, placement);
-    }
-
-    /** Create an attachment using a known view scale. The placement's size will be computed. */
-    public static createFromScale(view: ViewState, origin: Point2d, scale: number): Attachment {
-      const placement = this.computePlacement(view, origin, scale);
-      return new Attachment(view, scale, placement);
     }
 
     /** Given a view and placement, compute a scale for an attachment. */
@@ -159,6 +148,100 @@ export namespace Sheet {
       return new Placement2d(origin, Angle.createDegrees(0), box);
     }
 
+    /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clipping = undefined; }
+  }
+
+  /** A reference to the root tile for a view in a view attachment. */
+  export abstract class Root {
+
+  }
+
+  /** A reference to the root tile for a view in a 2d view attachment. */
+  export abstract class Root2d {
+
+  }
+
+  /** A reference to the root tile for a view in a 3d view attachment. */
+  export abstract class Root3d {
+
+  }
+
+  /** A 2d sheet view attachment. */
+  export class Attachment2d extends Attachment {
+
+    private constructor(view: ViewState, scale: number, placement: Placement2d) {
+      super(view, scale, placement);
+    }
+
+    /** Create an attachment using a known size. The view scale will be computed. */
+    public static createFromPlacement(view: ViewState, placement: Placement2d): Attachment {
+      const scale = this.computeScale(view, placement.bbox);
+      return new Attachment2d(view, scale, placement);
+    }
+
+    /** Create an attachment using a known view scale. The placement's size will be computed. */
+    public static createFromScale(view: ViewState, origin: Point2d, scale: number): Attachment {
+      const placement = this.computePlacement(view, origin, scale);
+      return new Attachment2d(view, scale, placement);
+    }
+  }
+
+  /** A 3d sheet view attachment. */
+  export class Attachment3d extends Attachment {
+
+    private constructor(view: ViewState, scale: number, placement: Placement2d) {
+      super(view, scale, placement);
+    }
+
+    /** Create an attachment using a known size. The view scale will be computed. */
+    public static createFromPlacement(view: ViewState, placement: Placement2d): Attachment {
+      const scale = this.computeScale(view, placement.bbox);
+      return new Attachment3d(view, scale, placement);
+    }
+
+    /** Create an attachment using a known view scale. The placement's size will be computed. */
+    public static createFromScale(view: ViewState, origin: Point2d, scale: number): Attachment {
+      const placement = this.computePlacement(view, origin, scale);
+      return new Attachment3d(view, scale, placement);
+    }
+  }
+
+  /** A list of view attachments for a sheet. */
+  export class Attachments {
+    public readonly list: Attachment[] = [];
+    private allAttachmentsLoaded: boolean = true;
+
+    public constructor() { }
+
+    /** Returns true if every attachment has a valid reference to a root. Otherwise, returns false. */
+    public get allLoaded(): boolean { return this.allAttachmentsLoaded; }
+    /** The number of attachments in this list. */
+    public get length(): number { return this.list.length; }
+
+    /** Given a view id, return an attachment containing that view from the list. If no attachment in the list stores that view, returns undefined. */
+    public findByViewId(viewId: Id64): Attachment | undefined {
+      for (const attachment of this.list)
+        if (attachment.view.id.equals(viewId))
+          return attachment;
+      return undefined;
+    }
+
+    /** Clear this list of attachments. */
+    public clear() {
+      this.list.length = 0;
+    }
+
+    /** Add an attachment to this list of attachments. */
+    public add(attachment: Attachment) {
+      this.list.push(attachment);
+    }
+
+    /** Drop an attachment from this list by reference. */
+    public drop(attachment: Attachment) {
+      const idx = this.list.indexOf(attachment);
+      if (idx !== -1)
+        this.list.splice(idx, 1);
+    }
   }
 }

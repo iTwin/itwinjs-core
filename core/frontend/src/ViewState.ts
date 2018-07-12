@@ -1765,17 +1765,15 @@ export class DrawingViewState extends ViewState2d {
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
   public readonly size: Point2d;
-  // public readonly attachments: Attachment[];
+  // public readonly attachments: Sheet.Attachments[];
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
     super(props, iModel, categories, displayStyle);
 
-    // sheetProps is necessary for a Sheet View, and contains a height and width for the size of the sheet itself
-    // if it does not appear as given by a sheetProps object, we expect it to be included on the props object (from cloning)
-    if (sheetProps)
-      this.size = Point2d.create(sheetProps.width, sheetProps.height);
-    else
-      this.size = Point2d.create(props.sheetProps.width, props.sheetProps.height);
+    // sheetProps contains the width & height of the sheet, as well as views to be attached (if cloning, sheetProps will be a member of the props argument)
+    sheetProps = sheetProps ? sheetProps : props.sheetProps;
+    assert(sheetProps !== undefined, "Properties specific to sheet views were not included upon creation.");
+    this.size = Point2d.create(sheetProps.width, sheetProps.height);
   }
 
   /** Create a sheet border decoration graphic. */
