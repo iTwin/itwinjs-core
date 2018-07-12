@@ -1213,8 +1213,12 @@ export namespace IModelDb {
       viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
       if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined) {
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
-      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId); // For SheetViewDefinition, include sheetProps
+      } else if (viewDefinitionElement instanceof SheetViewDefinition) {  // For SheetViewState, include sheetProps containing base model information and attachment ids
+        viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId);
+        viewStateData.sheetProps.attachmentIds = this._iModel.queryEntityIds({
+          from: "BisCore.ViewAttachment",
+          where: "Model.Id=" + viewDefinitionElement.baseModelId,
+        });
       }
       return viewStateData;
     }
