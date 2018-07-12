@@ -13,7 +13,7 @@ import {
   QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState } from "./EntityState";
+import { ElementState, EntityState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -1764,12 +1764,17 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
-  public size?: Point2d;
-  public attachments?: Sheet.Attachments;
+  private _size?: Point2d;
+  private _attachments?: Sheet.Attachments;
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
   }
+
+  /** If the view has been loaded, returns the size of this sheet view as (width, height). Otherwise, returns undefined. */
+  public get size(): Point2d | undefined { return this._size; }
+  /** If the view has been loaded, returns the attachments of this sheet view. Otherwise, returns undefined. */
+  public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
 
   public async load(): Promise<void> {
     await super.load();
@@ -1780,7 +1785,7 @@ export class SheetViewState extends ViewState2d {
       return;
     const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
     assert(sheetElement !== undefined, "Sheet modeled element is undefined");
-    this.size = Point2d.create(sheetElement.width, sheetElement.height);
+    this._size = Point2d.create(sheetElement.width, sheetElement.height);
 
     // Query the attachment ids
     const attachmentList = new Sheet.Attachments();
@@ -1808,7 +1813,7 @@ export class SheetViewState extends ViewState2d {
       else
         attachmentList.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i]));
     }
-    this.attachments = attachmentList;
+    this._attachments = attachmentList;
   }
 
   /** Create a sheet border decoration graphic. */
@@ -1820,8 +1825,8 @@ export class SheetViewState extends ViewState2d {
   }
 
   public decorate(context: DecorateContext): void {
-    if (this.size !== undefined) {
-      const border = this.createBorder(this.size.x, this.size.y, context);
+    if (this._size !== undefined) {
+      const border = this.createBorder(this._size.x, this._size.y, context);
       context.setViewBackground(border);
     }
   }
@@ -1830,5 +1835,13 @@ export class SheetViewState extends ViewState2d {
   public toJSON(): any {
     const json = super.toJSON();
     return json;
+  }
+
+  // override - copy references to view attachments and sheet size
+  public clone<T extends EntityState>(): T {
+    const viewStateClone = super.clone();
+    (viewStateClone as any)._size = this._size;
+    (viewStateClone as any)._attachments = this._attachments;
+    return viewStateClone as T;
   }
 }
