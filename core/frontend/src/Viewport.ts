@@ -24,6 +24,9 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
+/** A function which customizes the appearance of Features within a Viewport. */
+export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
+
 /** Viewport synchronization flags */
 export class SyncFlags {
   private decorations = false;
@@ -366,6 +369,8 @@ export class Viewport {
   public static nearScale24 = 0.0003;
   private _evController?: EventController;
   private _view!: ViewState;
+  private _addFeatureOverrides?: AddFeatureOverrides;
+
   /** @hidden */
   public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
@@ -443,6 +448,19 @@ export class Viewport {
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
+
+  /**
+   * Sets a function which can customize the appearance of features within a viewport.
+   * If defined, this function will be invoked whenever the overrides are determined to need refreshing.
+   * The overrides can be explicitly marked as needing a refresh by calling ViewState.setFeatureOverridesDirty().
+   */
+  public set addFeatureOverrides(addFeatureOverrides: AddFeatureOverrides | undefined) {
+    if (addFeatureOverrides !== this._addFeatureOverrides) {
+      this._addFeatureOverrides = addFeatureOverrides;
+      this.view.setFeatureOverridesDirty(true);
+    }
+  }
+
   /** True if this is a 3d view with the camera turned on. */
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   /** @hidden */
@@ -1553,7 +1571,11 @@ export class Viewport {
     }
 
     if (view.areFeatureOverridesDirty) {
-      target.overrideFeatureSymbology(new FeatureSymbology.Overrides(view));
+      const ovrs = new FeatureSymbology.Overrides(view);
+      if (undefined !== this._addFeatureOverrides)
+        this._addFeatureOverrides(ovrs, this);
+
+      target.overrideFeatureSymbology(ovrs);
       view.setFeatureOverridesDirty(false);
       isRedrawNeeded = true;
     }
