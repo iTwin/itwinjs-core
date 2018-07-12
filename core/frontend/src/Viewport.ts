@@ -1416,59 +1416,67 @@ export class Viewport {
 
   /** Show the surface normal for geometry under the cursor when snapping. */
   private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    const vp = context.viewport!;
-    if (!vp.view.is3d())
+    if (!context.viewport.view.is3d())
       return; // Not valuable feedback in 2d...
 
     if (!hit.isSnapDetail() || !hit.normal || hit.isPointAdjusted())
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
-    const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
+    const graphic = context.createWorldOverlay();
+    const color = new ColorDef(~context.viewport.hilite.color.getRgb); // Invert hilite color for good contrast...
     const colorFill = color.clone();
-    const pt = hit.snapPoint;
-    const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
-    const normal = hit.normal;
-    const rMatrix = RotMatrix.createRigidHeadsUp(normal);
+
     color.setTransparency(100);
     colorFill.setTransparency(200);
-
-    const ellipse = Arc3d.createScaledXYColumns(pt, rMatrix, radius, radius, AngleSweep.create360())!;
-    const graphic = context.createWorldOverlay();
     graphic.setSymbology(color, colorFill, 1);
+
+    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
+    const rMatrix = RotMatrix.createRigidHeadsUp(hit.normal);
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+
     graphic.addArc(ellipse, true, true);
     graphic.addArc(ellipse, false, false);
 
     const length = (0.6 * radius);
+    const normal = Vector3d.create();
+
     ellipse.vector0.normalize(normal);
-    const pt1 = pt.plusScaled(normal, length);
-    const pt2 = pt.plusScaled(normal, -length);
+    const pt1 = hit.snapPoint.plusScaled(normal, length);
+    const pt2 = hit.snapPoint.plusScaled(normal, -length);
     graphic.addLineString([pt1, pt2]);
+
     ellipse.vector90.normalize(normal);
-    pt.plusScaled(normal, length, pt1);
-    pt.plusScaled(normal, -length, pt2);
-    graphic.addLineString([pt1, pt2]);
-    context.addWorldOverlay(graphic.finish()!);
+    const pt3 = hit.snapPoint.plusScaled(normal, length);
+    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    graphic.addLineString([pt3, pt4]);
+
+    context.addWorldOverlay(graphic.finish());
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
   private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const radius = (aperture / 2.0) + .5;
-    const center = context.viewport!.worldToView(pt);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
     const graphic = context.createViewOverlay();
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
+
+    const radius = (aperture / 2.0) + .5;
+    const center = context.viewport.worldToView(pt);
+    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
+    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
+
     white.setTransparency(165);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
+
     black.setTransparency(100);
     graphic.setSymbology(black, black, 1);
     graphic.addArc2d(ellipse2, false, false, 0.0);
+
     white.setTransparency(20);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, false, false, 0.0);
-    context.addViewOverlay(graphic.finish()!);
+
+    context.addViewOverlay(graphic.finish());
   }
 
   /** @hidden */
