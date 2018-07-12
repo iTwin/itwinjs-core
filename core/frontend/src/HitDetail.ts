@@ -120,7 +120,7 @@ export class SnapDetail extends HitDetail {
   public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
   public isSnapDetail(): this is SnapDetail { return true; }
   public isHot(): boolean { return this.heat !== SnapHeat.None; }
-  public isPointAdjusted(): boolean { return this.adjustedPoint.isAlmostEqual(this.snapPoint); }
+  public isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
   public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
