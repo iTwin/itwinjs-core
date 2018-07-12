@@ -345,8 +345,8 @@ export abstract class ViewState extends ElementState {
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
-  public abstract getViewedExtents(_vp: Viewport): AxisAlignedBox3d;
-  public computeFitRange(_vp: Viewport): Range3d { return this.getViewedExtents(_vp); } // ###TODO
+  public abstract getViewedExtents(): AxisAlignedBox3d;
+  public computeFitRange(): Range3d { return this.getViewedExtents(); }
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
@@ -1514,25 +1514,27 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
-  public getGroundExtents(vp: Viewport, ignoreDisplayStyleFlag: boolean = false): AxisAlignedBox3d {
+  public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (!ignoreDisplayStyleFlag && !displayStyle.getEnvironment().ground.display)
+    if (undefined !== vp && !displayStyle.getEnvironment().ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
 
-    const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
-    const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+    if (undefined !== vp) {
+      const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+      const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
 
-    // first determine whether the ground plane is displayed in the view
-    const worldFrust = vp.getFrustum();
-    for (const point of worldFrust.points) {
-      viewRay.origin = point;   // We never modify the reference
-      const xyzPoint = Point3d.create();
-      const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
-      if (param === undefined)
-        return extents;   // View does not show ground plane
+      // first determine whether the ground plane is displayed in the view
+      const worldFrust = vp.getFrustum();
+      for (const point of worldFrust.points) {
+        viewRay.origin = point;   // We never modify the reference
+        const xyzPoint = Point3d.create();
+        const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+        if (param === undefined)
+          return extents;   // View does not show ground plane
+      }
     }
 
     extents.setFrom(this.iModel.projectExtents);
@@ -1638,7 +1640,7 @@ export class SpatialViewState extends ViewState3d {
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
 
-  public computeFitRange(vp: Viewport): AxisAlignedBox3d {
+  public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
@@ -1646,12 +1648,12 @@ export class SpatialViewState extends ViewState3d {
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
-    return range.isNull() ? this.getViewedExtents(vp) : range;
+    return range.isNull() ? this.getViewedExtents() : range;
   }
 
-  public getViewedExtents(vp: Viewport): AxisAlignedBox3d {
+  public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
-      this._viewedExtents = this.getGroundExtents(vp, true);
+      this._viewedExtents = this.getGroundExtents();
       this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
     }
 
@@ -1751,7 +1753,7 @@ export class ViewState2d extends ViewState {
   }
 
   private static readonly _scratchViewedExtents = new AxisAlignedBox3d();
-  public getViewedExtents(_vp: Viewport) {
+  public getViewedExtents() {
     // ###TODO: Would prefer not to have to (asynchronously and possibly needlessly) load the tile tree solely to obtain the model range...
     // Seems like GeometricModelState ought to be able to report its range independent of a TileTree or ViewState.
     if (undefined === this._viewedExtents) {
