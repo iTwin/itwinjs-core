@@ -34,15 +34,13 @@ describe.skip("iModelBank", () => {
     const accessToken1 = NonBentleyProject.getAccessToken1();
     const accessToken2 = NonBentleyProject.getAccessToken2();
 
-    BriefcaseManager.setContext(accessContext);
-
     await BriefcaseManager.purgeClosed(accessToken1);
     await BriefcaseManager.purgeClosed(accessToken2);
 
-    const iModel1: IModelDb = await IModelDb.open(accessToken1, "contextId-unused", imodelId, OpenParams.pullAndPush());
+    const iModel1: IModelDb = await IModelDb.open(accessToken1, accessContext.toIModelTokenContextId(), imodelId, OpenParams.pullAndPush());
     assert.exists(iModel1);
 
-    const iModel2: IModelDb = await IModelDb.open(accessToken2, "contextId-unused", imodelId, OpenParams.pullAndPush());
+    const iModel2: IModelDb = await IModelDb.open(accessToken2, accessContext.toIModelTokenContextId(), imodelId, OpenParams.pullAndPush());
     assert.exists(iModel2);
 
     iModel1.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());

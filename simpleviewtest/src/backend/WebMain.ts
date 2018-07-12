@@ -7,6 +7,8 @@ import { Config } from "@bentley/imodeljs-clients/lib";
 import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 
+// tslint:disable:no-console
+
 export function getRpcInterfaces() {
   return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
 }

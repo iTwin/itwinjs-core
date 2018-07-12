@@ -9,10 +9,8 @@ import * as path from "path";
 import { NonBentleyProject } from "./NonBentleyProject";
 
 async function pushChangeSet(iModelId: string, accessToken: AccessToken, changeSet: ChangeSet, csfilename: string): Promise<void> {
-
-  // let postedChangeSet: ChangeSet | undefined;
   try {
-    /* postedChangeSet = */ await BriefcaseManager.imodelClient.ChangeSets().create(accessToken, iModelId, changeSet, csfilename);
+    await BriefcaseManager.imodelClient.ChangeSets().create(accessToken, iModelId, changeSet, csfilename);
   } catch (error) {
     // If ChangeSet already exists, updating codes and locks might have timed out.
     if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
@@ -44,12 +42,11 @@ async function pushCS(iModelId: string, accessToken: AccessToken, cs: any) {
 }
 
 async function sideLoadChangeSets(context: IModelAccessContext, iModelId: string, accessToken: AccessToken) {
-  BriefcaseManager.setContext(context);
-  const bc = await IModelDb.open(accessToken, "", iModelId, OpenParams.pullAndPush()); // must create a briefcase in order to upload changesets
+  const bc = await IModelDb.open(accessToken, context.toIModelTokenContextId(), iModelId, OpenParams.pullAndPush()); // must create a briefcase in order to upload changesets
   const timeline = require(getAssetFilePath("changeSets.json"));
   for (const cs of timeline) {
     cs.briefcaseId = bc.briefcase.briefcaseId;
-    await pushCS(context.iModelId, accessToken, cs);
+    await pushCS(iModelId, accessToken, cs);
   }
 }
 

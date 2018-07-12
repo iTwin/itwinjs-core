@@ -10,11 +10,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use se
 
 export class IModelBankAccessContext extends IModelAccessContext {
   private _client: IModelBankClient;
+  private _iModelId: string;
   private _url: string;
   private _env: DeploymentEnv;
 
   constructor(iModelId: string, url: string, env: DeploymentEnv) {
-    super(iModelId, "");
+    super();
+    this._iModelId = iModelId;
     this._client = new IModelBankClient(url, env);
     this._url = url;
     this._env = env;
@@ -25,7 +27,7 @@ export class IModelBankAccessContext extends IModelAccessContext {
   private toJson(): any {
     return {
       imodeljsCoreClientsIModelBankAccessContext: {
-        iModelId: this.iModelId,
+        iModelId: this._iModelId,
         url: this._url,
         env: this._env,
       },

@@ -29,15 +29,17 @@ async function runDemo() {
   await frontend.login();
   const iModelId = await frontend.chooseIModel();
   const context = await frontend.getIModelAccessContext(iModelId);
-  await backend.downloadBriefcase(context, frontend.accessToken);
-  await backend.logChangeSets(context, frontend.accessToken);
+  const contextId = context.toIModelTokenContextId();
+  await backend.downloadBriefcase(contextId, iModelId, frontend.accessToken);
+  await backend.logChangeSets(contextId, iModelId, frontend.accessToken);
 }
 
 async function createNamedVersion(changeSetId: string, versionName: string) {
   await frontend.login();
   const iModelId = await frontend.chooseIModel();
   const context = await frontend.getIModelAccessContext(iModelId);
-  await backend.createNamedVersion(changeSetId, versionName, context, frontend.accessToken);
+  const contextId = context.toIModelTokenContextId();
+  await backend.createNamedVersion(changeSetId, versionName, contextId, iModelId, frontend.accessToken);
 }
 
 const cmd = (args.length > 1) ? args[1] : "";
