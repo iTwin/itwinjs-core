@@ -41,6 +41,9 @@ function areIndicesValid(indices: number[] | undefined, indexPositionA: number, 
       return false;
   return true;
 }
+function allDefined(valueA: any, valueB: any, valueC: any): boolean {
+  return valueA !== undefined && valueB !== undefined && valueC !== undefined;
+}
 /**
  * Test if facetStartIndex is (minimally!) valid:
  * * length must be nonzero (recall that for "no facets" the facetStartIndexArray still must contain a 0)
@@ -483,10 +486,10 @@ export class PolyfaceData {
     const packedData = ClusterableArray.clusterGrowablePoint3dArray(this.point);
     this.point = packedData.growablePackedPoints!;
     packedData.updateIndices(this.pointIndex);
-    if (this.paramIndex)  // Tracking uv params
-      packedData.updateIndices(this.paramIndex);
-    if (this.normalIndex) // Tracking normals
-      packedData.updateIndices(this.normalIndex);
+    //    if (this.paramIndex)  // Tracking uv params
+    //      packedData.updateIndices(this.paramIndex);
+    //    if (this.normalIndex) // Tracking normals
+    //      packedData.updateIndices(this.normalIndex);
   }
 }
 
@@ -584,6 +587,8 @@ export class IndexedPolyface extends Polyface {
    * * will only copy param, normal, color, and face data if we are already tracking them AND/OR the source contains them
    */
   public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
+    const copyParams = allDefined (this.data.param, source.data.param, source.data.paramIndex);
+    const copyNormals = allDefined (this.data.normal, source.data.normal, source.data.normalIndex);
     // Add point data
     const sourceToDestPointIndex = new GrowableFloat64Array();
     sourceToDestPointIndex.ensureCapacity(source.data.pointCount);
@@ -612,13 +617,13 @@ export class IndexedPolyface extends Polyface {
           this.addPointIndex(sourceToDestPointIndex.at(source.data.pointIndex[j]), source.data.edgeVisible[j]);
         }
       }
-      this.terminateFacet();
+      this.terminateFacet(false);
     }
 
     // Add param and param index data
-    if (this.data.param && source.data.param && source.data.paramIndex) {
-      const startOfNewParams = this.data.param.length;
-      for (const param of source.data.param) {
+    if (copyParams) {
+      const startOfNewParams = this.data.param!.length;
+      for (const param of source.data.param!) {
         const sourceParam = param.clone();
         if (transform) {
           // TODO: Perform transformation
@@ -632,18 +637,18 @@ export class IndexedPolyface extends Polyface {
         const i1 = source.facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addParamIndex(startOfNewParams + source.data.paramIndex[j - 1]);
+            this.addParamIndex(startOfNewParams + source.data.paramIndex![j - 1]);
         } else {
           for (let j = i0; j < i1; j++)
-            this.addPointIndex(startOfNewParams + source.data.paramIndex[j]);
+            this.addParamIndex(startOfNewParams + source.data.paramIndex![j]);
         }
       }
     }
 
     // Add normal and normal index data
-    if (this.data.normal && source.data.normal && source.data.normalIndex) {
-      const startOfNewNormals = this.data.normal.length;
-      for (const normal of source.data.normal) {
+    if (copyNormals) {
+      const startOfNewNormals = this.data.normal!.length;
+      for (const normal of source.data.normal!) {
         const sourceNormal = normal.clone();
         if (transform) {
           transform.multiplyVector(sourceNormal, sourceNormal);
@@ -657,10 +662,10 @@ export class IndexedPolyface extends Polyface {
         const i1 = source.facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j - 1]);
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j - 1]);
         } else {
           for (let j = i0; j < i1; j++)
-            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j]);
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j]);
         }
       }
     }

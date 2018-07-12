@@ -378,7 +378,7 @@ describe("OrderedRotationAngles", () => {
       for (const treatVectorsAsColumns of [true, false]) {
         const savedFlag = OrderedRotationAngles.treatVectorsAsColumns;
         OrderedRotationAngles.treatVectorsAsColumns = treatVectorsAsColumns;
-        for (const factor of [1.0, 0.05, 0.1, 0.01, 0.001, 0.0001, 0.00001, -1.0, -0.4]) {
+        for (const factor of [1.0, 0.05, 2.0, 4.2343, 0.001, 0.0001, 0.00001, -1.0, -0.4]) {
           const r = primaryRadians * factor;
           const q = 0.25;
           const q1 = Math.PI - r;

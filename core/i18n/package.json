@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "0.98.0-1",
+  "version": "0.98.0-3",
   "description": "iModelJs localization code",
   "main": "lib/i18n",
   "typings": "lib/i18n",
@@ -22,15 +22,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.98.0-1"
+    "@bentley/bentleyjs-core": "0.98.0-3"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.98.0-1",
-    "@bentley/bentleyjs-tools": "0.98.0-1",
+    "@bentley/bentleyjs-core": "0.98.0-3",
+    "@bentley/bentleyjs-tools": "0.98.0-3",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",

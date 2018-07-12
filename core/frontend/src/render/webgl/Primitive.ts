@@ -14,7 +14,7 @@ import { DrawParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { RenderCommands, DrawCommand, DrawCommands } from "./DrawCommand";
-import { dispose } from "../../../../bentley/lib/Disposable";
+import { dispose } from "@bentley/bentleyjs-core";
 
 export const enum PolylineParam {
   kNone = 0,

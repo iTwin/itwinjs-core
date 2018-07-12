@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Viewport supports custom logic for overriding symbology.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

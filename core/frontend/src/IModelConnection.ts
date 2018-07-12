@@ -160,19 +160,21 @@ export class IModelConnection extends IModel {
     if (!(response instanceof IModelNotFoundResponse))
       return;
 
-    try {
-      const iModelToken: IModelToken = request.parameters[0];
-      Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    const iModelToken: IModelToken = request.parameters[0];
+    if (this.token.key !== iModelToken.key)
+      return; // The handler is called for a different connection than this
 
+    try {
+      Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       const openResponse: IModel = await IModelConnection.callOpen(this.openAccessToken!, iModelToken, this.openMode);
       this.token = openResponse.iModelToken;
-
-      Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-      request.parameters[0] = openResponse.iModelToken; // Modify the token of the original request before resubmitting it.
-      resubmit();
     } catch (error) {
       reject(error.message);
     }
+
+    Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    request.parameters[0] = this.token; // Modify the token of the original request before resubmitting it.
+    resubmit();
   }
 
   /** Close this IModelConnection */

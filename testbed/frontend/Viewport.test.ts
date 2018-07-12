@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { Cartographic, FontType, FontMap, ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode, FitViewTool } from "@bentley/imodeljs-frontend";
+import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -35,7 +36,7 @@ describe("Viewport", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
+    MaybeRenderApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -43,7 +44,7 @@ describe("Viewport", () => {
 
   after(async () => {
     if (imodel) await imodel.closeStandalone();
-    IModelApp.shutdown();
+    MaybeRenderApp.shutdown();
   });
 
   it("Viewport", async () => {
@@ -167,51 +168,5 @@ describe("Cartographic tests", () => {
     assert.isTrue(ecefNY.isAlmostEqual({ x: 1138577.8226437706, y: 3972262.6507547107, z: 4842118.181650281 }), "new york");
     const ny2 = Cartographic.fromEcef(ecefNY);
     assert.isTrue(newYork.equalsEpsilon(ny2!, 0.01));
-  });
-});
-
-// RenderLoop tests exist because all the rendering code lives in the mono-repo, while
-// applications like proto-gist which actually allow the user to open a viewport reside outside
-// of the mono-repo. This test opens a viewport and then lets the browser's event loop run indefinitely,
-// so that we can interact with and debug the viewport.
-// Otherwise, every time we made a change/fix to the rendering code, we'd need to republish imodeljs-core
-// so that we could test it in proto-gist.
-const doRenderLoopTests = false;
-
-describe("RenderLoop tests", () => {
-  let imodel: IModelConnection;
-  let spatialView: SpatialViewState;
-
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  canvas!.width = canvas!.height = 400;
-  document.body.appendChild(canvas!);
-
-  before(async () => {
-    if (!doRenderLoopTests)
-      return;
-
-    IModelApp.startup();
-    imodel = await IModelConnection.openStandalone(iModelLocation);
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.RightIso);
-  });
-
-  after(async (done) => {
-    if (!doRenderLoopTests)
-      done();
-  });
-
-  it("should start up the render loop", () => {
-    if (!doRenderLoopTests)
-      return;
-
-    spatialView.displayStyle.backgroundColor = new ColorDef(ColorByName.darkBlue);
-    const viewport = new TestViewport(canvas, spatialView);
-    IModelApp.viewManager.addViewport(viewport);
-
-    const fitView = IModelApp.tools.create("View.Fit", viewport);
-    expect(fitView).not.to.be.undefined;
-    expect(fitView instanceof FitViewTool).to.be.true;
-    (fitView as FitViewTool).run();
   });
 });

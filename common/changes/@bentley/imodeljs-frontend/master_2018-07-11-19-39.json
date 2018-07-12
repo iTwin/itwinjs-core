@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Handler to reopen a connection if the backend was moved should really be skipped for calls originating from other connections. ",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ramanujam.Raman@bentley.com"
+}
