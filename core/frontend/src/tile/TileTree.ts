@@ -56,7 +56,7 @@ export class Tile implements IDisposable {
   private _childrenLastUsed: BeTimePoint;
   private _childrenLoadStatus: TileTree.LoadStatus;
   private _children?: Tile[];
-  private readonly _contentRange?: ElementAlignedBox3d;
+  private _contentRange?: ElementAlignedBox3d;
   private _graphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
@@ -154,6 +154,14 @@ export class Tile implements IDisposable {
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
+
+  /** Returns the range of this tile's contents in world coordinates. */
+  public computeWorldContentRange(): ElementAlignedBox3d {
+    const range = new ElementAlignedBox3d();
+    this.root.location.multiplyRange(this.contentRange, range);
+    return range;
+  }
+
   public computeVisibility(args: Tile.DrawArgs): Tile.Visibility {
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
@@ -315,8 +323,18 @@ export class Tile implements IDisposable {
         this._children = [];
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
-          for (const prop of props)
-            this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth()));
+          // If this tile is undisplayable, update its content range based on children's content ranges.
+          const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
+          for (const prop of props) {
+            // ###TODO if child is empty don't bother adding it to list...
+            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth());
+            this._children.push(child);
+            if (undefined !== parentRange && !child.isEmpty)
+              parentRange.extendRange(child.contentRange);
+          }
+
+          if (undefined !== parentRange)
+            this._contentRange = parentRange;
         }
 
         IModelApp.viewManager.onNewTilesReady();
