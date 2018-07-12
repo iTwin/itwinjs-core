@@ -115,10 +115,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
     let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
-    if (extend) {
+    if (!extend) {
       if (fraction > 1.0)
         fraction = 1.0;
-      else
+      else if (fraction < 0.0)
         fraction = 0.0;
     }
     result = CurveLocationDetail.create(this, result);
