@@ -876,6 +876,7 @@ export class AccuDrawShortcuts {
 
       // AccuDraw:: UpdateAuxCoordinateSystem(* acsPtr, * vp);
       // then fall thru
+        /* falls through */
 
       case RotationMode.ACS:
         rotation = RotationMode.ACS;

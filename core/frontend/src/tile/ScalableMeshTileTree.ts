@@ -5,16 +5,19 @@
 
 import { TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { Id64Props, Id64, BentleyStatus, assert, StopWatch } from "@bentley/bentleyjs-core";
+import { Id64Props, Id64, BentleyStatus, assert, StopWatch, Guid } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
-import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient } from "@bentley/imodeljs-clients";
+import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
+import { SpatialModelState } from "../ModelState";
+import { TileTree } from "./TileTree";
+import { IModelApp } from "../IModelApp";
 
 function debugPrint(str: string): void {
   console.log(str); // tslint:disable-line:no-console
 }
 
-namespace CesiumUtils {
-  export function rangeFromBoundingVolume(boundingVolume: any): Range3d {
+class CesiumUtils {
+  public static rangeFromBoundingVolume(boundingVolume: any): Range3d {
     const box: number[] = boundingVolume.box;
     const center = Point3d.create(box[0], box[1], box[2]);
     const ux = Vector3d.create(box[3], box[4], box[5]);
@@ -30,26 +33,26 @@ namespace CesiumUtils {
     }
     return Range3d.createArray(corners);
   }
-  export function maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
+  public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
     const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
-  export function transformFromJson(jTrans: number[] | undefined): Transform {
+  public static transformFromJson(jTrans: number[] | undefined): Transform {
     return (jTrans === undefined) ? Transform.createIdentity() : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), RotMatrix.createRowValues(jTrans[0], jTrans[4], jTrans[9], jTrans[1], jTrans[5], jTrans[10], jTrans[2], jTrans[6], jTrans[11]));
   }
 }
 
-export class ScalableMeshTileTreeProps implements TileTreeProps {
+class ScalableMeshTileTreeProps implements TileTreeProps {
   public id: Id64Props = "";
   public rootTile: TileProps;
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  constructor(json: any, public client: RealityDataServicesClient, public accessToken: AccessToken, public projectId: string, public tilesId: string, ecefToDb: Transform) {
+  constructor(json: any, public client: ScalableMeshTileClient, ecefToDb: Transform) {
     this.tilesetJson = json.root;
     this.id = new Id64();
     this.rootTile = new ScalableMeshTileProps(json.root, "", this, undefined);
-    const tileToEcef = CesiumUtils.transformFromJson(json.root.transf);
+    const tileToEcef = CesiumUtils.transformFromJson(json.root.transform);
     const tileToDb = Transform.createIdentity();
     tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
     this.location = tileToDb.toJSON();
@@ -85,7 +88,7 @@ class ScalableMeshTileProps implements TileProps {
   }
 }
 
-export class ScalableMeshTileLoader {
+class ScalableMeshTileLoader {
   constructor(private tree: ScalableMeshTileTreeProps) { }
   public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
 
@@ -124,40 +127,112 @@ export class ScalableMeshTileLoader {
       return new ScalableMeshTileProps(foundChild, thisParentId, this.tree, undefined);
 
     if (foundChild.content.url.endsWith("json")) {
-      const subTree = await this.tree.client.getTileJson(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
+      const subTree = await this.tree.client.getTileJson(foundChild.content.url);
       foundChild = subTree.root;
       tilesetJson.children[childIndex] = subTree.root;
     }
 
-    const content = await this.tree.client.getTileContent(this.tree.accessToken, this.tree.projectId, this.tree.tilesId, foundChild.content.url);
+    const content = await this.tree.client.getTileContent(foundChild.content.url);
     assert(content !== undefined, "scalable mesh tile content not found.");
     return new ScalableMeshTileProps(foundChild, thisParentId, this.tree, content);
   }
 }
 
-export namespace ScalableMeshTileTree {
-  export async function getTileTreeProps(url: string, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
-    const ecefLocation = iModel.ecefLocation;
-    let ecefToDb: Transform = Transform.createIdentity();
+/** @hidden */
+export class ScalableMeshModelState extends SpatialModelState {
+  public loadTileTree(): TileTree.LoadStatus {
+    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
+      return this._loadStatus;
 
-    if (ecefLocation !== undefined) {
-      const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
-      ecefToDb = dbToEcef.inverse() as Transform;
+    this._loadStatus = TileTree.LoadStatus.Loading;
+
+    const json = this.jsonProperties.scalablemesh;
+    if (json !== undefined && json.FileId !== undefined) {
+      this.getTileTreeProps(json.FileId, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
+        this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
+        IModelApp.viewManager.onNewTilesReady();
+      }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
     }
 
-    // url = "https://qa-connect-realitydataservices.bentley.com/v2.8/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/67fc2f1e-1d8f-49ca-9fc3-39cb2d46f98e/3dtiles/altenburg_inSaltLake.xyz.json";
+    return this._loadStatus;
+  }
+
+  private async getTileTreeProps(url: string, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
+
     if (undefined !== url) {
-      // ###TODO determine apropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
-      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
-      const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient("QA");
-      const accessToken: AccessToken = await realityDataServiceClient.getAccessToken(authToken);
-      const projectId = url.split("/").find((val: string) => val.includes("--"))!.split("--")[1];
-      const tilesId = url.split("/").find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
-      const json = await realityDataServiceClient.getTileJsonFromUrl(accessToken, url);
+      const urlParts = url.split("/");
+      const tilesId = urlParts.find(Guid.isGuid);
 
-      return new ScalableMeshTileTreeProps(json, realityDataServiceClient, accessToken, projectId, tilesId as string, ecefToDb);
-    } else {
-      throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
+      let clientProps: RDSClientProps | undefined;
+
+      if (undefined !== tilesId) {
+        // ###TODO determine appropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
+        const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
+        const client: RealityDataServicesClient = new RealityDataServicesClient("QA");
+        const accessToken: AccessToken = await client.getAccessToken(authToken);
+        const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
+        clientProps = { accessToken, projectId, tilesId, client };
+      }
+
+      const tileClient = new ScalableMeshTileClient(clientProps);
+      const json = await tileClient.getRootDocument(url);
+      const ecefLocation = iModel.ecefLocation;
+      let dbToEcef: Transform = Transform.createIdentity();
+
+      if (ecefLocation !== undefined) {
+        dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+      } else if (json.asset.SpatialToEcef !== undefined) {
+        dbToEcef = CesiumUtils.transformFromJson(json.asset.SpatialToEcef);
+      }
+      const ecefToDb = dbToEcef.inverse() as Transform;
+      return new ScalableMeshTileTreeProps(json, tileClient, ecefToDb);
     }
+    throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
+  }
+}
+
+interface RDSClientProps {
+  accessToken: AccessToken;
+  projectId: string;
+  tilesId: string;
+  client: RealityDataServicesClient;
+}
+
+class ScalableMeshTileClient {
+  public rdsProps?: RDSClientProps;
+  private baseUrl: string = "";
+  constructor(props?: RDSClientProps) { this.rdsProps = props; }
+
+  private setBaseUrl(url: string): void {
+    const urlParts = url.split("/");
+    urlParts.pop();
+    this.baseUrl = urlParts.join("/") + "/";
+  }
+
+  public async getRootDocument(url: string): Promise<any> {
+    if (undefined !== this.rdsProps)
+      return this.rdsProps.client.getRootDocumentJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId);
+    this.setBaseUrl(url);
+    return getJson(url);
+  }
+
+  public async getTileContent(url: string): Promise<any> {
+    if (undefined !== this.rdsProps)
+      return this.rdsProps.client.getTileContent(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this.baseUrl) {
+      const tileUrl = this.baseUrl + url;
+      return getArrayBuffer(tileUrl);
+    }
+    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
+  }
+
+  public async getTileJson(url: string): Promise<any> {
+    if (undefined !== this.rdsProps)
+      return this.rdsProps.client.getTileJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this.baseUrl) {
+      const tileUrl = this.baseUrl + url;
+      return getJson(tileUrl);
+    }
+    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
   }
 }

@@ -10,6 +10,7 @@ import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert, Dictionary, IDisposable, dispose } from "@bentley/bentleyjs-core";
@@ -24,6 +25,7 @@ import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
+import { PointCloudGraphic } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 
@@ -259,7 +261,7 @@ export class IdMap implements IDisposable {
 
   /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
   private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const textureHandle = TextureHandle.createForImageBuffer(img);
+    const textureHandle = TextureHandle.createForImageBuffer(img, params.type);
     if (textureHandle === undefined)
       return undefined;
     const texture = new Texture(params, textureHandle);
@@ -275,7 +277,7 @@ export class IdMap implements IDisposable {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
 
-    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc);
+    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc, params.type);
     if (textureHandle === undefined)
       return undefined;
     const texture = new Texture(params, textureHandle);
@@ -317,7 +319,7 @@ export class IdMap implements IDisposable {
 
     const image: ImageBuffer = grad.getImage(0x100, 0x100);
 
-    const textureHandle = TextureHandle.createForImageBuffer(image);
+    const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
     if (!textureHandle)
       return undefined;
     const texture = new Texture(Texture.Params.defaults, textureHandle);
@@ -402,6 +404,7 @@ export class System extends RenderSystem {
       return PolylinePrimitive.create(args);
   }
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
+  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudGraphic.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
@@ -427,7 +430,7 @@ export class System extends RenderSystem {
     }
   }
 
-  /** Find an imodel rendering map using an IModelConnection. Returns undefined if not found. */
+  /** Find a rendering map using an IModelConnection. Returns undefined if not found. */
   public findIModelMap(imodel: IModelConnection): IdMap | undefined {
     return this.resourceCache.get(imodel);
   }
@@ -482,8 +485,17 @@ export class System extends RenderSystem {
     return texture;
   }
 
-  /** Creates a texture using an ImageSource and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
-  public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+  /**
+   * Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
+    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
+    if (undefined === imodel) {
+      const textureHandle = TextureHandle.createForImageSource(width, height, source, params.type);
+      return (textureHandle === undefined) ? undefined : new Texture(params, textureHandle);
+    }
+
     let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
       idMap = this.createIModelMap(imodel);

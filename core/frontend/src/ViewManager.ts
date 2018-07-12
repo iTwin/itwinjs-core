@@ -12,6 +12,9 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
+import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
+import { WebMercatorModelState } from "./tile/WebMercatorTileTree";
+import { ScalableMeshModelState } from "./tile/ScalableMeshTileTree";
 
 /**
  * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
@@ -27,7 +30,17 @@ export class ViewManager {
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
 
-  public onInitialized(): void { }
+  public onInitialized(): void {
+    const models = IModelConnection.Models;
+    models.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
+    models.registerClass("BisCore:PhysicalModel", SpatialModelState);
+    models.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
+    models.registerClass(DrawingModelState.getClassFullName(), DrawingModelState);
+    models.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
+    models.registerClass(SheetModelState.getClassFullName(), SheetModelState);
+    models.registerClass(WebMercatorModelState.getClassFullName(), WebMercatorModelState);
+    models.registerClass(ScalableMeshModelState.getClassFullName(), ScalableMeshModelState);
+  }
 
   /** Called after the selected view changes.
    * @param old Previously selected viewport.
@@ -66,7 +79,7 @@ export class ViewManager {
     }
   }
   public beginDynamicsMode() { this.inDynamicsMode = true; }
-  public doesHostHaveFocus(): boolean { return true; } // NEEDS_WORK
+  public doesHostHaveFocus(): boolean { return document.hasFocus(); }
   public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
   public clearInfoWindow(): void { }
 

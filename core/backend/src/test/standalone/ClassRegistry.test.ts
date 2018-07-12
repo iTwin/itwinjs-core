@@ -4,8 +4,8 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Code } from "@bentley/imodeljs-common";
-import { DefinitionElement, EntityMetaData, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../backend";
+import { Code, EntityMetaData } from "@bentley/imodeljs-common";
+import { DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -80,7 +80,7 @@ describe("Class Registry", () => {
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
     const testData: string[] = [];
-    EntityMetaData.forEach(imodel, "TestDomain:TestDomainClass", true, (propName) => {
+    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName) => {
       testData.push(propName);
     }, false);
 

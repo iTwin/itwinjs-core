@@ -341,3 +341,29 @@ export async function request(url: string, options: RequestOptions): Promise<Res
       return Promise.reject(parsedError);
     });
 }
+
+/**
+ * fetch array buffer from HTTP request
+ * @param url server URL to address the request
+ */
+export async function getArrayBuffer(url: string): Promise<any> {
+  const options: RequestOptions = {
+    method: "GET",
+    responseType: "arraybuffer",
+  };
+  const data = await request(url, options);
+  return data.body;
+}
+
+/**
+ * fetch json from HTTP request
+ * @param url server URL to address the request
+ */
+export async function getJson(url: string): Promise<any> {
+  const options: RequestOptions = {
+    method: "GET",
+    responseType: "json",
+  };
+  const data = await request(url, options);
+  return data.body;
+}

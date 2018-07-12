@@ -8,12 +8,12 @@ import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
-  IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
+  IModelDb, ECSqlStatement, Entity,
   Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement,
+  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement, EntityMetaData, PrimitiveTypeCode,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -733,6 +733,10 @@ describe("iModel", () => {
     const worldToView = Matrix4d.createIdentity();
     const response = await imodel2.requestSnap("0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
+
+    // make sure we can read native asset files.
+    const sprite = IModelDb.loadNativeAsset("decorators/dgncore/SnapNone.png");
+    assert.isDefined(sprite);
   });
 
   it("should import schemas", () => {

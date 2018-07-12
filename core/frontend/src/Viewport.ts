@@ -5,7 +5,7 @@
 
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  RotMatrix, Transform, Map4d, Point4d, Constant,
+  RotMatrix, Transform, Map4d, Point4d, Constant, XYAndZ,
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
@@ -13,7 +13,7 @@ import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
+import { HitDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
@@ -1027,31 +1027,31 @@ export class Viewport {
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
    * @param input the point to convert
    * @param out optional location for result. If undefined, a new Point4d is created.
    */
-  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
+  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
   /**
    * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
    * @param input the point to convert
@@ -1434,66 +1434,67 @@ export class Viewport {
 
   /** Show the surface normal for geometry under the cursor when snapping. */
   private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    // NEEDS_WORK: Need to decide the fate of this...when/if to show it, etc.
-    const vp = context.viewport!;
-    if (!vp.view.is3d())
-      return; // Not valuable in 2d...
+    if (!context.viewport.view.is3d())
+      return; // Not valuable feedback in 2d...
 
-    if (!(hit instanceof SnapDetail))
-      return; // Don't display unless snapped...
+    if (!hit.isSnapDetail() || !hit.normal || hit.isPointAdjusted())
+      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
-    if (!hit.normal)
-      return; // AccuSnap will flash edge/segment geometry...
-
-    if (SnapMode.Nearest !== hit.snapMode && hit.isHot)
-      return; // Only display if snap is nearest or NOT hot...surface normal is for hit location, not snap location...
-
-    const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
+    const graphic = context.createWorldOverlay();
+    const color = new ColorDef(~context.viewport.hilite.color.getRgb); // Invert hilite color for good contrast...
     const colorFill = color.clone();
-    const pt = hit.getPoint();
-    const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
-    const normal = hit.normal;
-    const rMatrix = RotMatrix.createRigidHeadsUp(normal);
+
     color.setTransparency(100);
     colorFill.setTransparency(200);
-
-    const ellipse = Arc3d.createScaledXYColumns(pt, rMatrix, radius, radius, AngleSweep.create360())!;
-    const graphic = context.createWorldOverlay();
     graphic.setSymbology(color, colorFill, 1);
+
+    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
+    const rMatrix = RotMatrix.createRigidHeadsUp(hit.normal);
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+
     graphic.addArc(ellipse, true, true);
     graphic.addArc(ellipse, false, false);
 
     const length = (0.6 * radius);
+    const normal = Vector3d.create();
+
     ellipse.vector0.normalize(normal);
-    const pt1 = pt.plusScaled(normal, length);
-    const pt2 = pt.plusScaled(normal, -length);
+    const pt1 = hit.snapPoint.plusScaled(normal, length);
+    const pt2 = hit.snapPoint.plusScaled(normal, -length);
     graphic.addLineString([pt1, pt2]);
+
     ellipse.vector90.normalize(normal);
-    pt.plusScaled(normal, length, pt1);
-    pt.plusScaled(normal, -length, pt2);
-    graphic.addLineString([pt1, pt2]);
-    context.addWorldOverlay(graphic.finish()!);
+    const pt3 = hit.snapPoint.plusScaled(normal, length);
+    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    graphic.addLineString([pt3, pt4]);
+
+    context.addWorldOverlay(graphic.finish());
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
   private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const radius = (aperture / 2.0) + .5;
-    const center = context.viewport!.worldToView(pt);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
     const graphic = context.createViewOverlay();
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
+
+    const radius = (aperture / 2.0) + .5;
+    const center = context.viewport.worldToView(pt);
+    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
+    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
+
     white.setTransparency(165);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
+
     black.setTransparency(100);
     graphic.setSymbology(black, black, 1);
     graphic.addArc2d(ellipse2, false, false, 0.0);
+
     white.setTransparency(20);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, false, false, 0.0);
-    context.addViewOverlay(graphic.finish()!);
+
+    context.addViewOverlay(graphic.finish());
   }
 
   /** @hidden */

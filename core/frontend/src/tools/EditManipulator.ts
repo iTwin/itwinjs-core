@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { BeButtonEvent, InputCollector, BeButton, BeGestureEvent } from "./Tool";
-import { DecorateContext } from "../ViewContext";
+import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { IModelConnection } from "../IModelConnection";
@@ -116,5 +116,34 @@ export namespace EditManipulator {
       }
       this.clearControls();
     }
+  }
+}
+
+/** @hidden */
+export class TestEditManipulatorTool extends EditManipulator.Tool {
+  protected init(): void { super.init(); IModelApp.accuDraw.deactivate(); this.beginDynamics(); } // ### TODO Disable AccuDraw for locate detail test...
+  protected accept(_ev: BeButtonEvent): boolean { return true; }
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { /* console.log("Dynamics");*/ }
+}
+
+/** @hidden */
+export class TestEditManipulatorProvider extends EditManipulator.Provider {
+  protected createControls(): boolean {
+    return 1 === this.iModel.selectionSet.size;
+  }
+  protected selectControls(_ev: BeButtonEvent): boolean {
+    const autoHit = IModelApp.accuSnap.currHit;
+    return (undefined !== autoHit && this.iModel.selectionSet.has(autoHit.sourceId));
+  }
+  protected modifyControls(_ev: BeButtonEvent): boolean {
+    const manipTool = new TestEditManipulatorTool(this);
+    return manipTool.run();
+  }
+  protected drawControls(_context: DecorateContext): void {
+    /* console.log("Decorate"); */
+  }
+  public onManipulatorEvent(eventType: EditManipulator.EventType): void {
+    super.onManipulatorEvent(eventType);
+    /* console.log("Event " + eventType); */
   }
 }

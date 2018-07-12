@@ -10,8 +10,6 @@ import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, Ti
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
-import { ScalableMeshTileTree, ScalableMeshTileLoader, ScalableMeshTileTreeProps } from "./tile/ScalableMeshTileTree";
-import { WebMercatorTileTree, WebMercatorTileLoader, WebMercatorTileTreeProps } from "./tile/WebMercatorTileTree";
 import { DecorateContext } from "./ViewContext";
 import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
@@ -57,8 +55,8 @@ export class ModelState extends EntityState implements ModelProps {
 
 /** The state of a geometric model */
 export abstract class GeometricModelState extends ModelState {
-  private _tileTree?: TileTree;
-  private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  protected _tileTree?: TileTree;
+  protected _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
 
   public abstract get is3d(): boolean;
   public get is2d(): boolean { return !this.is3d; }
@@ -80,50 +78,16 @@ export abstract class GeometricModelState extends ModelState {
       return this._loadStatus;
 
     this._loadStatus = TileTree.LoadStatus.Loading;
-    switch (this.classFullName) {
-      case "ScalableMesh:ScalableMeshModel":
-      case "PointCloud2:PointCloud2Model":
-        {
-          const json = (this.classFullName === "ScalableMesh:ScalableMeshModel") ? this.jsonProperties.scalablemesh : this.jsonProperties.pointcloud2;
-          if (json !== undefined && json.FileId !== undefined) {
-            ScalableMeshTileTree.getTileTreeProps(json.FileId, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
-              this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
-              IModelApp.viewManager.onNewTilesReady();
-            }).catch((_err) => {
-              this._loadStatus = TileTree.LoadStatus.NotFound;
-            });
-          }
-
-          break;
-        }
-      case "BisCore:WebMercatorModel":
-        {
-          WebMercatorTileTree.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
-            this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
-          }).catch((_err) => {
-            this._loadStatus = TileTree.LoadStatus.NotFound;
-          });
-
-          break;
-        }
-      default:
-        {
-          const ids = Id64.toIdSet(this.id);
-          this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
-            this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
-            IModelApp.viewManager.onNewTilesReady();
-          }).catch((_err) => {
-            this._loadStatus = TileTree.LoadStatus.NotFound;
-          });
-
-          break;
-        }
-    }
+    const ids = Id64.toIdSet(this.id);
+    this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
+      this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
+      IModelApp.viewManager.onNewTilesReady();
+    }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
 
     return this._loadStatus;
   }
 
-  private setTileTree(props: TileTreeProps, loader: TileLoader) {
+  protected setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }

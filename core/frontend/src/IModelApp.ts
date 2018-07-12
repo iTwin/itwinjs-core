@@ -121,9 +121,8 @@ export class IModelApp {
 
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
-    this._renderSystem = dispose(IModelApp._renderSystem);
-    IModelApp._renderSystem = undefined;
     IModelApp.toolAdmin.onShutDown();
+    IModelApp._renderSystem = dispose(IModelApp._renderSystem);
     IModelApp._initialized = false;
   }
 

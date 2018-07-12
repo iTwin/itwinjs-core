@@ -8,7 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps,
+  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -18,7 +18,7 @@ import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { CodeSpecs } from "./CodeSpecs";
-import { Entity, EntityMetaData } from "./Entity";
+import { Entity } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -26,6 +26,8 @@ import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
 import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { KnownLocations } from "./Platform";
+import { IModelJsFs } from "./IModelJsFs";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -548,9 +550,7 @@ export class IModelDb extends IModel {
    * [[include:IModelDb.updateIModelProps]]
    * ```
    */
-  public updateIModelProps() {
-    this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
-  }
+  public updateIModelProps() { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
   /**
    * Commit pending changes to this iModel.
@@ -572,9 +572,7 @@ export class IModelDb extends IModel {
     this.concurrencyControl.onSavedChanges();
   }
 
-  /**
-   * Abandon pending changes in this iModel
-   */
+  /** Abandon pending changes in this iModel */
   public abandonChanges() {
     this.concurrencyControl.abandonRequest();
     this.nativeDb.abandonChanges();
@@ -772,6 +770,28 @@ export class IModelDb extends IModel {
     return metadata;
   }
 
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   * @param iModel  The IModel that contains the schema
+   * @param classFullName The full class name to load the metadata, if necessary
+   * @param wantSuper If true, superclass properties will also be processed
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   */
+  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+    const meta = iModel.getMetaData(classFullName); // will load if necessary
+    for (const propName in meta.properties) {
+      if (propName) {
+        const propMeta = meta.properties[propName];
+        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
+          func(propName, propMeta);
+      }
+    }
+
+    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
+  }
+
   /*** @hidden */
   private loadMetaData(classFullName: string) {
     if (!this.briefcase)
@@ -810,17 +830,17 @@ export class IModelDb extends IModel {
     return (error === undefined);
   }
 
-  /** query a "file property" from this iModel, as a string.
+  /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
   public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
 
-  /** query a "file property" from this iModel, as a blob.
+  /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
   public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
 
-  /** save a "file property" to this iModel
+  /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
@@ -833,7 +853,7 @@ export class IModelDb extends IModel {
    */
   public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
 
-  /** query for the next available major id for a "file property" from this iModel.
+  /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
@@ -858,12 +878,22 @@ export class IModelDb extends IModel {
     });
   }
 
+  /** Cancel a previously requested snap. */
   public cancelSnap(connectionId: string): void {
     const request = this._snaps.get(connectionId);
     if (undefined !== request) {
       request.cancelSnap();
       this._snaps.delete(connectionId);
     }
+  }
+
+  /** Load a file from the *Assets* directory of imodeljs-native
+   * @param assetName The asset file name with path relative to the *Assets* directory.
+   */
+  public static loadNativeAsset(assetName: string): string {
+    const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
+    const fileData = IModelJsFs.readFileSync(fileName) as Buffer;
+    return fileData.toString("base64");
   }
 
   /** Execute a test from native code
@@ -1125,7 +1155,6 @@ export namespace IModelDb {
         aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
 
         const entity = this._iModel.constructEntity(aspectProps);
-        assert(entity instanceof ElementAspect);
         const aspect = entity as ElementAspect;
         aspects.push(aspect);
       }

@@ -55,6 +55,7 @@ export namespace B3dmTileIO {
     public read(): GltfTileIO.ReaderResult {
       const isLeaf = true;    // TBD...
 
+      // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       const featureTable: FeatureTable = new FeatureTable(1);
       const feature = new Feature();
       featureTable.insert(feature);

@@ -17,7 +17,7 @@ import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, Drawin
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
+import { ModelState } from "./ModelState";
 import { IModelApp } from "./IModelApp";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
@@ -214,6 +214,14 @@ export class IModelConnection extends IModel {
     }
   }
 
+  /** Load a file from the native asset directory of the backend.
+   * @param assetName Name of the asset file, with path relative to the *Assets* directory
+   */
+  public async loadNativeAsset(assetName: string): Promise<Uint8Array> {
+    const val = await IModelReadRpcInterface.getClient().loadNativeAsset(this.iModelToken, assetName);
+    return new Uint8Array(atob(val).split("").map((c) => c.charCodeAt(0)));
+  }
+
   /**
    * Execute an ECSQL query against the iModel.
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
@@ -238,7 +246,7 @@ export class IModelConnection extends IModel {
     return await IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
-  /** query for a set of ids that satisfy the supplied query params  */
+  /** Query for a set of element ids that satisfy the supplied query params  */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken, params); }
 
   /**
@@ -330,7 +338,16 @@ export namespace IModelConnection {
 
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models {
+    /** The set of loaded models for this IModelConnection, indexed by Id. */
     public loaded = new Map<string, ModelState>();
+
+    /** Registry of className to ModelState class */
+    private static _registry = new Map<string, typeof ModelState>();
+
+    /** Register a class by classFullName */
+    public static registerClass(className: string, classType: typeof ModelState) { this._registry.set(className, classType); }
+
+    private static findClass(className: string) { return this._registry.get(className); }
 
     /** @hidden */
     constructor(private _iModel: IModelConnection) { }
@@ -345,6 +362,25 @@ export namespace IModelConnection {
 
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
+    /** Find the first base class of the given class that is registered. Then, register that ModelState as the handler of the given class so we won't need this method again for that class. */
+    private async findRegisteredBaseClass(className: string): Promise<typeof ModelState> {
+      let ctor = ModelState; // worst case, we don't find any registered base classes
+
+      // wait until we get the full list of base classes from backend
+      const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this._iModel.iModelToken, className);
+      // walk through the list until we find a registered base class
+      baseClasses.some((baseClass: string) => {
+        const test = Models.findClass(baseClass);
+        if (test === undefined)
+          return false; // nope, not registered
+
+        ctor = test; // found it, save it
+        Models.registerClass(className, ctor); // and register the fact that our starting class is handled by this ModelState subclass.
+        return true; // stop
+      });
+      return ctor; // either the baseClass handler or ModelState if we didn't find a registered baseClass
+    }
+
     /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
@@ -358,43 +394,17 @@ export namespace IModelConnection {
         return; // all requested models are already loaded
 
       try {
-        (await this.getProps(notLoaded)).forEach((props) => {
-          let className: string;
-          if (undefined !== props.bisBaseClass) // this should be present to tell us which bis class the model derives from
-            className = props.bisBaseClass;
-          else {
-            const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
-            if (names.length < 2)
-              return;
-            className = names[1];
-          }
-          let ctor = ModelState;
-          switch (className) {
-            case "SpatialModel":
-            case "PhysicalModel":
-            case "SpatialLocationModel":
-            case "WebMercatorModel":
-              ctor = SpatialModelState;
-              break;
-            case "SectionDrawingModel":
-              ctor = SectionDrawingModelState;
-              break;
-            case "DrawingModel":
-              ctor = DrawingModelState;
-              break;
-            case "SheetModel":
-              ctor = SheetModelState;
-              break;
-          }
-          const modelState = new ctor(props, this._iModel);
-          this.loaded.set(modelState.id.value, modelState);
+        (await this.getProps(notLoaded)).forEach(async (props) => {
+          let ctor = Models.findClass(props.classFullName);
+          if (undefined === ctor) // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
+            ctor = await this.findRegisteredBaseClass(props.classFullName); // must wait for this
+          const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
+          this.loaded.set(modelState.id.value, modelState); // save it in loaded set
         });
       } catch (err) { } // ignore error, we had nothing to do.
     }
 
-    /**
-     * Query for a set of ModelProps of the specified ModelQueryParams
-     */
+    /** Query for a set of ModelProps of the specified ModelQueryParams. */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ModelState.sqlName; // use "BisCore.Model" as default class name

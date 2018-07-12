@@ -4,27 +4,9 @@
 /** @module Schema */
 
 import { Id64, DbOpcode } from "@bentley/bentleyjs-core";
-import { Point3d, Point2d } from "@bentley/geometry-core";
-import { EntityProps, RelatedElement } from "@bentley/imodeljs-common";
+import { EntityProps, PropertyMetaData, PropertyCallback } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-
-/** The primitive types of an Entity property. */
-export const enum PrimitiveTypeCode {
-  Uninitialized = 0x00,
-  Binary = 0x101,
-  Boolean = 0x201,
-  DateTime = 0x301,
-  Double = 0x401,
-  Integer = 0x501,
-  Long = 0x601,
-  Point2d = 0x701,
-  Point3d = 0x801,
-  String = 0x901,
-}
-
-/** a callback function to process properties of an Entity */
-export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** Base class for all Entities in an iModel. */
 export class Entity implements EntityProps {
@@ -62,7 +44,7 @@ export class Entity implements EntityProps {
   }
 
   /** Call a function for each property of this Entity. Function arguments are property name and property metadata. */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.classFullName, true, func, includeCustom); }
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
 
   /** Get the full name of this class, in the form "schema:class"  */
   public static get classFullName(): string { return this.schema.name + ":" + this.name; }
@@ -78,150 +60,4 @@ export class Entity implements EntityProps {
 
   /** Make a deep copy of this Entity */
   public clone<T extends Entity>(): T { return new (this.constructor as any)(this, this.iModel) as T; }
-}
-
-/** A custom attribute instance */
-export interface CustomAttribute {
-  /** The class of the CustomAttribute */
-  ecclass: string;
-  /** An object whose properties correspond by name to the properties of this custom attribute instance. */
-  properties: { [propName: string]: any };
-}
-
-type FactoryFunc = (jsonObj: any) => any;
-
-/** Metadata for a property. */
-export class PropertyMetaData {
-  public primitiveType?: PrimitiveTypeCode;
-  public structName?: string;
-  public extendedType?: string;
-  public description?: string;
-  public displayLabel?: string;
-  public minimumValue?: any;
-  public maximumValue?: any;
-  public minimumLength?: number;
-  public maximumLength?: number;
-  public readOnly?: boolean;
-  public kindOfQuantity?: string;
-  public isCustomHandled?: boolean;
-  public isCustomHandledOrphan?: boolean;
-  public minOccurs?: number;
-  public maxOccurs?: number;
-  public direction?: string;
-  public relationshipClass?: string;
-  public customAttributes?: CustomAttribute[];
-
-  public constructor(jsonObj: any) {
-    this.primitiveType = jsonObj.primitiveType;
-    if (jsonObj.structName)
-      this.structName = jsonObj.structName;
-    this.extendedType = jsonObj.extendedType;
-    this.description = jsonObj.description;
-    this.displayLabel = jsonObj.displayLabel;
-    if (undefined !== jsonObj.minimumValue)
-      this.minimumValue = jsonObj.minimumValue;
-    if (undefined !== jsonObj.maximumValue)
-      this.maximumValue = jsonObj.maximumValue;
-    if (undefined !== jsonObj.minimumLength)
-      this.minimumLength = jsonObj.minimumLength;
-    if (undefined !== jsonObj.maximumLength)
-      this.maximumLength = jsonObj.maximumLength;
-    this.readOnly = jsonObj.readOnly;
-    this.kindOfQuantity = jsonObj.kindOfQuantity;
-    this.isCustomHandled = jsonObj.isCustomHandled;
-    if (undefined !== jsonObj.minOccurs)
-      this.minOccurs = jsonObj.minOccurs;
-    if (undefined !== jsonObj.maxOccurs)
-      this.maxOccurs = jsonObj.maxOccurs;
-    this.direction = jsonObj.direction;
-    this.relationshipClass = jsonObj.relationshipClass;
-    this.customAttributes = jsonObj.customAttributes;
-  }
-
-  /** Create a typed value, or array of values, from a factory and an input object */
-  private createValueOrArray(func: FactoryFunc, jsonObj: any) {
-    if (undefined === this.minOccurs)
-      return func(jsonObj); // not an array
-
-    const val: any = [];
-    jsonObj.forEach((element: any) => val.push(func(element)));
-    return val;
-  }
-
-  /** construct a single property from an input object according to this metadata */
-  public createProperty(jsonObj: any): any {
-    if (jsonObj === undefined)
-      return undefined;
-
-    if (undefined !== this.primitiveType) {
-      switch (this.primitiveType) {
-        case PrimitiveTypeCode.Boolean:
-        case PrimitiveTypeCode.Double:
-        case PrimitiveTypeCode.Integer:
-        case PrimitiveTypeCode.String:
-          return jsonObj; // this works even for arrays or strings that are JSON because the parsed JSON is already the right type
-
-        case PrimitiveTypeCode.Point2d:
-          return this.createValueOrArray(Point2d.fromJSON, jsonObj);
-
-        case PrimitiveTypeCode.Point3d:
-          return this.createValueOrArray(Point3d.fromJSON, jsonObj);
-      }
-    }
-    if (this.direction !== undefined)  // the presence of this means it is a navigation property
-      return jsonObj.id !== undefined ? new RelatedElement(jsonObj) : Id64.fromJSON(jsonObj);
-
-    return jsonObj;
-  }
-}
-
-/** Metadata for an Entity. */
-export class EntityMetaData {
-  /** The Entity name */
-  public readonly ecclass: string;
-  public readonly description?: string;
-  public readonly modifier?: string;
-  public readonly displayLabel?: string;
-  /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
-  public readonly baseClasses: string[];
-  /** The Custom Attributes for this class */
-  public readonly customAttributes?: CustomAttribute[];
-  /** An object whose properties correspond by name to the properties of this class. */
-  public readonly properties: { [propName: string]: PropertyMetaData };
-
-  public constructor(jsonObj: any) {
-    this.ecclass = jsonObj.ecclass;
-    this.description = jsonObj.description;
-    this.modifier = jsonObj.modifier;
-    this.displayLabel = jsonObj.displayLabel;
-    this.baseClasses = jsonObj.baseClasses;
-    this.customAttributes = jsonObj.customAttributes;
-    this.properties = {};
-    for (const propName in jsonObj.properties) {
-      if (propName)
-        this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
-    }
-  }
-
-  /**
-   * Invoke a callback on each property of the specified class, optionally including superclass properties.
-   * @param iModel  The IModel that contains the schema
-   * @param classFullName The full class name to load the metadata, if necessary
-   * @param wantSuper If true, superclass properties will also be processed
-   * @param func The callback to be invoked on each property
-   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
-   */
-  public static forEach(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
-    const meta = iModel.getMetaData(classFullName); // will load if necessary
-    for (const propName in meta.properties) {
-      if (propName) {
-        const propMeta = meta.properties[propName];
-        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
-          func(propName, propMeta);
-      }
-    }
-
-    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
-      meta.baseClasses.forEach((baseClass) => EntityMetaData.forEach(iModel, baseClass, true, func, includeCustom));
-  }
 }
