@@ -1653,7 +1653,9 @@ export class SpatialViewState extends ViewState3d {
 
   public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
-      this._viewedExtents = this.getGroundExtents();
+      this._viewedExtents = new AxisAlignedBox3d();
+      this._viewedExtents.setFrom(this.iModel.projectExtents);
+      this._viewedExtents.extendRange(this.getGroundExtents());
       this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
     }
 
