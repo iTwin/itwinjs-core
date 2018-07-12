@@ -61,6 +61,10 @@ export class IModelApp {
     return this._imodelClient;
   }
 
+  public static set iModelClient(client: IModelClient) {
+    this._imodelClient = client;
+  }
+
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid(); }
 
   /**

@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, IModelAccessContext } from "@bentley/imodeljs-clients";
 import { NonBentleyProject } from "./NonBentleyProject";
 import { BentleyCloudProject } from "./BentleyCloudProject";
-import { IModelAccessContext } from "@bentley/imodeljs-backend/lib/backend";
 
 export class DemoFrontend {
   public useIModelHub: boolean;

@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-console
 
-import { BriefcaseManager, IModelHost, IModelDb, /*OpenParams,*/ IModelHostConfiguration, IModelAccessContext } from "@bentley/imodeljs-backend";
-import { AccessToken, IModelQuery, IModelRepository, ChangeSet, Version } from "@bentley/imodeljs-clients";
+import { BriefcaseManager, IModelHost, IModelDb, /*OpenParams,*/ IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { AccessToken, IModelQuery, IModelRepository, ChangeSet, Version, IModelAccessContext } from "@bentley/imodeljs-clients";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -60,14 +60,10 @@ export class DemoBackend {
   */
 
   public async createNamedVersion(changeSetId: string, versionName: string, context: IModelAccessContext, accessToken: AccessToken) {
-    BriefcaseManager.setContext(context);
-
     await BriefcaseManager.imodelClient.Versions().create(accessToken, context.iModelId, changeSetId, versionName);
   }
 
   public async logChangeSets(context: IModelAccessContext, accessToken: AccessToken) {
-    BriefcaseManager.setContext(context);
-
     console.log("\niModel:");
     const iModel: IModelRepository = (await BriefcaseManager.imodelClient.IModels().get(accessToken, context.projectId, new IModelQuery().byId(context.iModelId)))[0];
     DemoBackend.displayIModelInfo(iModel);
@@ -95,8 +91,6 @@ export class DemoBackend {
   }
 
   public async downloadBriefcase(context: IModelAccessContext, accessToken: AccessToken) {
-    BriefcaseManager.setContext(context);
-
     const imodel = await IModelDb.open(accessToken, context.projectId, context.iModelId /*, OpenParams.pullAndPush()*/);
     console.log(`Briefcase: ${imodel.briefcase.pathname}`);
   }

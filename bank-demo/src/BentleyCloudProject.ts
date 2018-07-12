@@ -1,5 +1,5 @@
-import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv, IModelClient } from "@bentley/imodeljs-clients";
-import { BriefcaseManager, IModelAccessContext } from "@bentley/imodeljs-backend/lib/backend";
+import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv, IModelClient, IModelAccessContext } from "@bentley/imodeljs-clients";
+import { BriefcaseManager } from "@bentley/imodeljs-backend/lib/backend";
 
 export class IModelHubIModelAccessContext extends IModelAccessContext {
 

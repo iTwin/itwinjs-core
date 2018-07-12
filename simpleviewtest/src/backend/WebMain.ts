@@ -1,5 +1,4 @@
 import * as express from "express";
-import * as fs from "fs";
 import * as bodyParser from "body-parser";
 import * as cp from "child_process";
 
@@ -20,24 +19,6 @@ proxyServer.stderr.on("data", (data) => {
 proxyServer.on("close", (code) => {
   console.log(`proxy server terminated with code ${code}`);
 });
-
-// tslint:disable
-
-// Store SVT settings in the configuration.json file, which will be read by the application
-const configuration = {
-  userName: "bistroDEV_pmadm1@mailinator.com",
-  password: "pmadm1",
-  projectName: "plant-sta",
-  iModelName: "NabeelQATestiModel",
-};
-const filename = process.env.SVT_STANDALONE_FILENAME;
-if (filename !== undefined) {
-  configuration.iModelName = filename;
-  (configuration as any).viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
-  (configuration as any).standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional
-  (configuration as any).standalone = true;
-}
-fs.writeFileSync("./lib/backend/public/configuration.json", JSON.stringify(configuration), "utf8");
 
 // Initialize backend functionality and logging
 Config.devCorsProxyServer = "http://localhost:3001";

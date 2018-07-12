@@ -6,7 +6,7 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelClient, IModelRepository
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelClient, IModelRepository, IModelAccessContext, IModelBankAccessContext,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -200,13 +200,6 @@ class BriefcaseCache {
 
   /** Clears all entries in the cache */
   public clear() { this.briefcases.clear(); }
-}
-
-export abstract class IModelAccessContext {
-  public iModelId: string;
-  public projectId: string;
-  constructor(id: string, pid: string) { this.iModelId = id; this.projectId = pid; }
-  public abstract get client(): IModelClient | undefined;
 }
 
 /** Utility to manage briefcases */
@@ -470,8 +463,13 @@ export class BriefcaseManager {
   }
 
   /** Open a briefcase */
-  public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
+  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
     await BriefcaseManager.memoizedInitCache(accessToken);
+
+    const iModelBankAccessContext = IModelBankAccessContext.fromIModelTokenContextId(contextId);
+    if (iModelBankAccessContext !== undefined)
+      this.setContext(iModelBankAccessContext);
+
     assert(!!BriefcaseManager.imodelClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.imodelClient);
@@ -497,7 +495,7 @@ export class BriefcaseManager {
       Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} after upgrades (if necessary)`);
       BriefcaseManager.reopenBriefcase(briefcase, tempOpenParams);
     } else {
-      briefcase = await BriefcaseManager.createBriefcase(accessToken, projectId, iModelId, tempOpenParams); // Merge needs the Db to be opened ReadWrite
+      briefcase = await BriefcaseManager.createBriefcase(accessToken, contextId, iModelId, tempOpenParams); // Merge needs the Db to be opened ReadWrite
       isNewBriefcase = true;
     }
 

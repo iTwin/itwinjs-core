@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, ChangeSet, IModelHubError } from "@bentley/imodeljs-clients";
-import { BriefcaseManager, IModelAccessContext, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
+import { AccessToken, ChangeSet, IModelHubError, IModelAccessContext } from "@bentley/imodeljs-clients";
+import { BriefcaseManager, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
 import { IModelHubStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as fs from "fs";
 import * as path from "path";

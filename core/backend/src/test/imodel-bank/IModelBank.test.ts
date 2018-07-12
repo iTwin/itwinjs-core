@@ -4,25 +4,13 @@
 import { assert } from "chai";
 import * as path from "path";
 import { IModelDb, BriefcaseManager, ConcurrencyControl } from "../../backend";
-import { AccessToken, IModelBankClient, IModelClient, ChangeSet } from "../../../../clients";
+import { AccessToken, ChangeSet, IModelAccessContext, IModelBankAccessContext } from "../../../../clients";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelAccessContext } from "../../BriefcaseManager";
 import { OpenParams } from "../../IModelDb";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 const imodelId = "233e1f55-561d-42a4-8e80-d6f91743863e";
-
-export class IModelBankIModelAccessContext extends IModelAccessContext {
-  private _client: IModelBankClient;
-
-  constructor(id: string, url: string) {
-    super(id, "");
-    this._client = new IModelBankClient(url);
-  }
-
-  public get client(): IModelClient | undefined { return this._client; }
-}
 
 export class NonBentleyProject {
   public static getAccessToken1() {
@@ -36,11 +24,11 @@ export class NonBentleyProject {
   // Deploy and start up an iModelBank server for this iModel
   public static async getIModelAccessContext(imodelid: string, _projectid: string): Promise<IModelAccessContext> {
     // WIP DEMO WIP - we currently always use a single server, and it supports only one iModel!
-    return new IModelBankIModelAccessContext(imodelid, "https://localhost:3001");
+    return new IModelBankAccessContext(imodelid, "https://localhost:3001", "QA");
   }
 }
 
-describe.only("iModelBank", () => {
+describe.skip("iModelBank", () => {
   it("should get schema lock", async () => {
     const accessContext = await NonBentleyProject.getIModelAccessContext(imodelId, "");
     const accessToken1 = NonBentleyProject.getAccessToken1();

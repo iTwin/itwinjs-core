@@ -25,7 +25,6 @@ import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
-import { useIModelBank } from "../common/common";
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -59,7 +58,9 @@ let curFPSIntervalId: NodeJS.Timer;
 
 /** Parameters for starting SimpleViewTest with a specified initial configuration */
 interface SVTConfiguration {
+  useIModelBank: boolean;
   viewName?: string;
+  environment?: DeploymentEnv;
   // standalone-specific config:
   standalone?: boolean;
   iModelName?: string;
@@ -620,14 +621,8 @@ async function main() {
   await retrieveConfiguration();
   console.log("Configuration", JSON.stringify(configuration));
 
-  // Choose the project mgmt environment
-  const env: DeploymentEnv = "QA";
-
-  const projectMgr: ProjectAbstraction = useIModelBank ? new NonConnectProject(env) : new ConnectProject(env);
-
   // start the app.
-  IModelApp.startup(projectMgr.getIModelClient());
-  IModelApp.hubDeploymentEnv = env;
+  IModelApp.startup();
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
@@ -647,11 +642,12 @@ async function main() {
   spinner.style.display = "block";
 
   try {
-    if (!configuration.standalone) {
-      await projectMgr.loginAndOpenImodel(activeViewState);
-    } else {
-      showStatus("Opening", configuration.iModelName);
+    if (configuration.standalone) {
       await openStandaloneIModel(activeViewState, configuration.iModelName!);
+    } else {
+      IModelApp.hubDeploymentEnv = configuration.environment || "QA";
+      const projectMgr: ProjectAbstraction = configuration.useIModelBank ? new NonConnectProject() : new ConnectProject();
+      await projectMgr.loginAndOpenImodel(activeViewState);
     }
 
     // open the specified view

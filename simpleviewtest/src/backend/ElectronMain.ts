@@ -6,7 +6,6 @@ import * as url from "url";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
-import { useIModelBank } from "../common/common";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -67,7 +66,9 @@ electron.app.on("ready", () => {
   createWindow();
 });
 
-if (useIModelBank) {
+// tslint:disable-next-line:no-var-requires
+const configuration = require(path.join(__dirname, "public", "configuration.json"));
+if (configuration.useIModelBank) {
   electron.app.on("certificate-error", (event: any, _webContents: any, _url: string, _error: any, _certificate: any, callback: any) => {
     // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
     event.preventDefault();

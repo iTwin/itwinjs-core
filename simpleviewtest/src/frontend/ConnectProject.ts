@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, IModelQuery, IModelRepository, VersionQuery, Version, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, IModelClient, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
+import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, IModelQuery, IModelRepository, VersionQuery, Version, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
+import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/common";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import { showStatus } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
+import { ProjectAbstraction } from "./ProjectAbstraction";
 
 /** Parameters for starting SimpleViewTest with a specified initial configuration */
 interface ConnectProjectConfiguration {
@@ -95,16 +96,11 @@ class IModelApi {
 }
 
 // Logic to establish a connection to a Connect-hosted project and iModel
-export class ConnectProject {
+export class ConnectProject extends ProjectAbstraction {
   private _cfg: ConnectProjectConfiguration = { userName: "", password: "", projectName: "", iModelName: "" };
-  private _env: DeploymentEnv;
 
-  constructor(env: DeploymentEnv) {
-    this._env = env;
-  }
-
-  // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
-  public readConfiguration(): Promise<void> {
+  // Retrieves the configuration for Connect-related settings from connect-configuration.json file located in the built public folder
+  private retrieveConfiguration(): Promise<void> {
     return new Promise((resolve, _reject) => {
       const request: XMLHttpRequest = new XMLHttpRequest();
       request.open("GET", "connect-configuration.json", false);
@@ -125,16 +121,16 @@ export class ConnectProject {
     });
   }
 
-  public getIModelClient(): IModelClient {
-    return new IModelHubClient(this._env);
-  }
-
   // Set up to access the iModel on Connect
   public async loginAndOpenImodel(state: SimpleViewState): Promise<void> {
-    await ProjectApi.init(this._env);
-    await IModelApi.init(this._env);
+    const env: DeploymentEnv = IModelApp.hubDeploymentEnv;
 
-    await this.readConfiguration();
+    IModelApp.iModelClient = new IModelHubClient(env);
+
+    await ProjectApi.init(env);
+    await IModelApi.init(env);
+
+    await this.retrieveConfiguration();
 
     // log in.
     showStatus("logging in as", this._cfg.userName);

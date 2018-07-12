@@ -104,6 +104,8 @@ export class AccessToken extends Token {
   }
 
   public static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined {
+    if (!foreignJsonStr.startsWith(`{\"${this.foreignProjectAccessTokenJsonProperty}\":`))
+      return undefined;
     const props: any = JSON.parse(foreignJsonStr);
     if (props[this.foreignProjectAccessTokenJsonProperty] === undefined)
       return undefined;

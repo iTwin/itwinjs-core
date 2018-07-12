@@ -18,7 +18,7 @@ export class IModelBankClient extends IModelClient {
    * Creates an instance of IModelBankClient.
    * @param url Url to iModel Bank instance.
    */
-  public constructor(url: string, deploymentEnv: DeploymentEnv = "PROD") {
+  public constructor(url: string, deploymentEnv: DeploymentEnv) {
     super(new IModelBankHandler(url), deploymentEnv, constructUrlFileHandler());
   }
 
