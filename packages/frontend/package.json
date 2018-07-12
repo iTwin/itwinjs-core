@@ -35,14 +35,14 @@
     "@bentley/bentleyjs-core": "^8",
     "@bentley/imodeljs-i18n": "^0.0.1",
     "@bentley/imodeljs-common": "^0.95",
-    "@bentley/imodeljs-frontend": "^0.95.1",
+    "@bentley/imodeljs-frontend": "^0.96.4",
     "@bentley/ecpresentation-common": "^0.4.1"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
     "@bentley/imodeljs-i18n": "^0.0.1",
     "@bentley/imodeljs-common": "^0.95",
-    "@bentley/imodeljs-frontend": "^0.95.1",
+    "@bentley/imodeljs-frontend": "^0.96.4",
     "@bentley/ecpresentation-common": "^0.4.1",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",

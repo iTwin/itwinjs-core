@@ -19,6 +19,7 @@ import { Tree, TreeNodeItem } from "@bentley/ui-components";
 import { Props as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
 import { ECPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "@src/tree";
+import { createRandomTreeNodeItem } from "../test-helpers/UiComponents";
 
 // tslint:disable-next-line:variable-name naming-convention
 const ECPresentationTree = withUnifiedSelection(Tree);
@@ -54,19 +55,6 @@ describe("Tree withUnifiedSelection", () => {
     providerMock.setup((x) => x.getRootNodesCount()).returns(async () => rootNodes!().length);
     providerMock.setup((x) => x.getChildNodes(moq.It.isAny(), moq.It.isAny())).returns(async (p) => childNodes!(p));
     providerMock.setup((x) => x.getChildNodesCount(moq.It.isAny())).returns(async (p) => childNodes!(p).length);
-  };
-
-  const createRandomTreeNodeItem = (hasChildren: boolean = false, parentId?: string): TreeNodeItem => {
-    return {
-      id: faker.random.uuid(),
-      parentId,
-      label: faker.random.word(),
-      description: faker.random.words(),
-      hasChildren,
-      extendedData: {
-        key: createRandomECInstanceNodeKey(),
-      },
-    };
   };
 
   it("mounts", () => {

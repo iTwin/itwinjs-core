@@ -4,22 +4,22 @@
 import "@helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
-import * as spies from "@helpers/Spies";
 import { PromiseContainer } from "@helpers/Promises";
 import * as faker from "faker";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "@helpers/random/Hierarchy";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
+import { Node, NodeKey } from "@bentley/ecpresentation-common";
+import { PageOptions } from "@bentley/ui-components";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import ECPresentationTreeDataProvider from "@src/tree/DataProvider";
 import "@helpers/Snapshots";
+import { pageOptionsUiToPresentation } from "@src/tree/Utils";
 
 describe("TreeDataProvider", () => {
 
   let rulesetId: string;
   let provider: ECPresentationTreeDataProvider;
-  let memoizedCacheSpies: any[];
   const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
@@ -29,12 +29,6 @@ describe("TreeDataProvider", () => {
   beforeEach(() => {
     presentationManagerMock.reset();
     provider = new ECPresentationTreeDataProvider(imodelMock.object, rulesetId);
-    memoizedCacheSpies = [
-      spies.spy.on(provider.getRootNodesCount.cache, "clear"),
-      spies.spy.on(provider.getRootNodes.cache, "clear"),
-      spies.spy.on(provider.getChildNodesCount.cache, "clear"),
-      spies.spy.on(provider.getChildNodes.cache, "clear"),
-    ];
   });
 
   const createRequestOptions = () => ({
@@ -50,33 +44,10 @@ describe("TreeDataProvider", () => {
     extendedData: { key: key || createRandomECInstanceNodeKey() },
   });
 
-  const verifyMemoizedCachesCleared = (expectCleared: boolean = true) => {
-    memoizedCacheSpies.forEach((spy) => {
-      if (expectCleared)
-        expect(spy).to.be.called();
-      else
-        expect(spy).to.not.be.called();
-    });
-  };
-
   describe("rulesetId", () => {
 
     it("returns rulesetId provider is initialized with", () => {
       expect(provider.rulesetId).to.eq(rulesetId);
-    });
-
-    it("sets a different rulesetId and clears caches", () => {
-      const newId = rulesetId + " (changed)";
-      provider.rulesetId = newId;
-      expect(provider.rulesetId).to.eq(newId);
-      verifyMemoizedCachesCleared();
-    });
-
-    it("doesn't clear caches if setting to the same rulesetId", () => {
-      const newId = rulesetId + "";
-      provider.rulesetId = newId;
-      expect(provider.rulesetId).to.eq(newId);
-      verifyMemoizedCachesCleared(false);
     });
 
   });
@@ -85,19 +56,6 @@ describe("TreeDataProvider", () => {
 
     it("returns connection provider is initialized with", () => {
       expect(provider.connection).to.eq(imodelMock.object);
-    });
-
-    it("sets a different connection and clears caches", () => {
-      const newConnection = moq.Mock.ofType<IModelConnection>();
-      provider.connection = newConnection.object;
-      expect(provider.connection).to.eq(newConnection.object);
-      verifyMemoizedCachesCleared();
-    });
-
-    it("doesn't clear caches if setting to the same connection", () => {
-      provider.connection = imodelMock.object;
-      expect(provider.connection).to.eq(imodelMock.object);
-      verifyMemoizedCachesCleared(false);
     });
 
   });
@@ -135,10 +93,10 @@ describe("TreeDataProvider", () => {
   describe("getRootNodes", () => {
 
     it("returns presentation manager result", async () => {
-      const pageOptions: PageOptions = { pageStart: faker.random.number(), pageSize: faker.random.number() };
-      const result = [ createRandomECInstanceNode(), createRandomECInstanceNode() ];
+      const pageOptions: PageOptions = { start: faker.random.number(), size: faker.random.number() };
+      const result = [createRandomECInstanceNode(), createRandomECInstanceNode()];
       presentationManagerMock
-        .setup((x) => x.getRootNodes(imodelMock.object, pageOptions, createRequestOptions()))
+        .setup((x) => x.getRootNodes(imodelMock.object, pageOptionsUiToPresentation(pageOptions), createRequestOptions()))
         .returns(async () => result)
         .verifiable();
       const actualResult = await provider.getRootNodes(pageOptions);
@@ -166,9 +124,9 @@ describe("TreeDataProvider", () => {
 
       const promises = [
         provider.getRootNodes(undefined), provider.getRootNodes(undefined),
-        provider.getRootNodes({ pageStart: 0, pageSize: 0 }), provider.getRootNodes({ pageStart: 0, pageSize: 0 }),
-        provider.getRootNodes({ pageStart: 1, pageSize: 0 }), provider.getRootNodes({ pageStart: 1, pageSize: 0 }),
-        provider.getRootNodes({ pageStart: 0, pageSize: 1 }), provider.getRootNodes({ pageStart: 0, pageSize: 1 }),
+        provider.getRootNodes({ start: 0, size: 0 }), provider.getRootNodes({ start: 0, size: 0 }),
+        provider.getRootNodes({ start: 1, size: 0 }), provider.getRootNodes({ start: 1, size: 0 }),
+        provider.getRootNodes({ start: 0, size: 1 }), provider.getRootNodes({ start: 0, size: 1 }),
       ];
       resultContainers.forEach((c: PromiseContainer<Node[]>) => c.resolve([createRandomECInstanceNode()]));
       const results = await Promise.all(promises);
@@ -234,9 +192,9 @@ describe("TreeDataProvider", () => {
     it("returns presentation manager result", async () => {
       const parentKey = createRandomECInstanceNodeKey();
       const parentNode = createTreeNodeItem(parentKey);
-      const pageOptions: PageOptions = { pageStart: faker.random.number(), pageSize: faker.random.number() };
+      const pageOptions: PageOptions = { start: faker.random.number(), size: faker.random.number() };
       presentationManagerMock
-        .setup((x) => x.getChildren(imodelMock.object, parentKey, pageOptions, createRequestOptions()))
+        .setup((x) => x.getChildren(imodelMock.object, parentKey, pageOptionsUiToPresentation(pageOptions), createRequestOptions()))
         .returns(async () => [createRandomECInstanceNode(), createRandomECInstanceNode()])
         .verifiable();
       const actualResult = await provider.getChildNodes(parentNode, pageOptions);
@@ -267,8 +225,8 @@ describe("TreeDataProvider", () => {
 
       const promises = [
         provider.getChildNodes(parentNodes[0], undefined), provider.getChildNodes(parentNodes[0], undefined),
-        provider.getChildNodes(parentNodes[0], { pageStart: 0, pageSize: 0 }), provider.getChildNodes(parentNodes[0], { pageStart: 0, pageSize: 0 }),
-        provider.getChildNodes(parentNodes[0], { pageStart: 1, pageSize: 0 }), provider.getChildNodes(parentNodes[0], { pageStart: 1, pageSize: 0 }),
+        provider.getChildNodes(parentNodes[0], { start: 0, size: 0 }), provider.getChildNodes(parentNodes[0], { start: 0, size: 0 }),
+        provider.getChildNodes(parentNodes[0], { start: 1, size: 0 }), provider.getChildNodes(parentNodes[0], { start: 1, size: 0 }),
         provider.getChildNodes(parentNodes[1], undefined), provider.getChildNodes(parentNodes[1], undefined),
       ];
       resultContainers.forEach((c: PromiseContainer<Node[]>) => c.resolve([createRandomECInstanceNode()]));
@@ -281,6 +239,21 @@ describe("TreeDataProvider", () => {
       expect(results[4]).to.eq(results[5], "results[4] should eq results[5]");
       expect(results[6]).to.eq(results[7], "results[6] should eq results[7]");
 
+      presentationManagerMock.verifyAll();
+    });
+
+  });
+
+  describe("getFilteredNodes", () => {
+
+    it("returns presentation manager result", async () => {
+      const filter = faker.random.word();
+      presentationManagerMock
+        .setup((x) => x.getFilteredNodePaths(imodelMock.object, filter, createRequestOptions()))
+        .returns(async () => [createRandomNodePathElement(), createRandomNodePathElement()])
+        .verifiable();
+      const actualResult = await provider.getFilteredNodePaths(filter);
+      expect(actualResult).to.matchSnapshot();
       presentationManagerMock.verifyAll();
     });
 

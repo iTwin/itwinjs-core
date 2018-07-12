@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Hierarchies */
+
 import * as React from "react";
 import { Keys } from "@bentley/ecpresentation-common";
 import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/ecpresentation-common/lib/hierarchy/Key";
@@ -9,7 +11,7 @@ import { TreeNodeItem } from "@bentley/ui-components";
 import { Props as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import { getDisplayName, Subtract } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import ECPresentationTreeDataProvider from "./DataProvider";
+import IECPresentationTreeDataProvider from "./IECPresentationTreeDataProvider";
 
 /**
  * Possible options of what gets put into selection
@@ -33,7 +35,7 @@ export const enum SelectionTarget {
  */
 export interface Props {
   /** The data provider used by the tree. */
-  dataProvider: ECPresentationTreeDataProvider;
+  dataProvider: IECPresentationTreeDataProvider;
 
   /** Defines what gets put into selection when a node is selected */
   selectionTarget?: SelectionTarget;

@@ -15,6 +15,7 @@
     "**/*.test.tsx",
     "**/*.d.ts",
     "**/*.d.tsx",
+    "**/test-helpers/*.ts",
     "lib",
     "node_modules"
   ],

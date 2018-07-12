@@ -36,13 +36,13 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^8",
     "@bentley/imodeljs-common": "^0.95",
-    "@bentley/imodeljs-backend": "^0.96",
+    "@bentley/imodeljs-backend": "^0.97",
     "@bentley/ecpresentation-common": "^0.4.1"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
     "@bentley/imodeljs-common": "^0.95",
-    "@bentley/imodeljs-backend": "^0.96",
+    "@bentley/imodeljs-backend": "^0.97",
     "@bentley/ecpresentation-common": "^0.4.1",
     "cpx": "^1.5",
     "cross-env": "^5.1.0",

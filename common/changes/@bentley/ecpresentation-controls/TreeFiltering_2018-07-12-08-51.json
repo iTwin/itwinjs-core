@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-controls",
+      "comment": "Added HOC with filtering support.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-controls",
+  "email": "aidas.kilinskas@bentley.com"
+}

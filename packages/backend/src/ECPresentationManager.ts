@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import {
   ECPresentationManager as ECPresentationManagerDefinition,
