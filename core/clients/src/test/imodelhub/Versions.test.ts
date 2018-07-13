@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { AccessToken } from "../../";
+import { AccessToken, IModelClient } from "../../";
 import {
-  IModelHubClient, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
+  Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
   ThumbnailQuery, ThumbnailSize,
-} from "../../imodelhub";
+} from "../../";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -43,7 +43,7 @@ describe("iModelHub VersionHandler", () => {
   let iModelId: string;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
     accessToken = await utils.login();

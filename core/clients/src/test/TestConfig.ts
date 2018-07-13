@@ -4,7 +4,8 @@
 import { DeploymentEnv } from "../Client";
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { IModelHubClient, Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelhub";
+import { Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelhub";
+import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
 
@@ -56,7 +57,7 @@ export class TestConfig {
   /** Query for the test file from connect/hub */
   public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModelRepository, version?: Version }> {
     const connectClient = new ConnectClient(deploymentEnv);
-    const imodelHubClient: IModelHubClient = new IModelHubClient(deploymentEnv);
+    const imodelHubClient: IModelClient = new IModelHubClient(deploymentEnv);
 
     const project: Project | undefined = await connectClient.getProject(accessToken, {
       $select: "*",

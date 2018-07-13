@@ -8,7 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps,
+  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -18,7 +18,7 @@ import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { CodeSpecs } from "./CodeSpecs";
-import { Entity, EntityMetaData } from "./Entity";
+import { Entity } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -585,7 +585,9 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    this.concurrencyControl.onMergeChanges();
     await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase, version);
+    this.concurrencyControl.onMergedChanges();
     this.token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
@@ -639,15 +641,34 @@ export class IModelDb extends IModel {
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelId is a briefcase,
+   * this method must first obtain the schema lock from the IModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
+   * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public importSchema(schemaFileName: string) {
-    if (!this.briefcase) throw this.newNotOpenError();
-    const stat = this.nativeDb.importSchema(schemaFileName);
-    if (DbResult.BE_SQLITE_OK !== stat)
+  public async importSchema(schemaFileName: string): Promise<void> {
+    if (!this.briefcase)
+      throw this.newNotOpenError();
+
+    if (!this.briefcase.isStandalone) {
+      await this.concurrencyControl.lockSchema(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+    }
+    const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
+    if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
+    }
+    if (!this.briefcase.isStandalone) {
+      try {
+        // The schema import logic and/or imported Domains may have created new elements and models.
+        // Make sure we have the supporting locks and codes.
+        await this.concurrencyControl.request(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      } catch (err) {
+        this.abandonChanges();
+        throw err;
+      }
+    }
   }
 
   /** Find an already open IModelDb. Used by the remoting logic.
@@ -691,7 +712,7 @@ export class IModelDb extends IModel {
     return new Id64(result);
   }
 
-  /** @hidden @deprecated */
+  /** @hidden */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this.newNotOpenError();
@@ -747,6 +768,28 @@ export class IModelDb extends IModel {
         throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
     }
     return metadata;
+  }
+
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   * @param iModel  The IModel that contains the schema
+   * @param classFullName The full class name to load the metadata, if necessary
+   * @param wantSuper If true, superclass properties will also be processed
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   */
+  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+    const meta = iModel.getMetaData(classFullName); // will load if necessary
+    for (const propName in meta.properties) {
+      if (propName) {
+        const propMeta = meta.properties[propName];
+        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
+          func(propName, propMeta);
+      }
+    }
+
+    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
   }
 
   /*** @hidden */

@@ -43,7 +43,7 @@
     "no-namespace": false,
     "one-variable-per-declaration": false,
     "no-empty": false,
-    "no-switch-case-fall-through": false,
+    "no-switch-case-fall-through": true,
     "no-conditional-assignment": false,
     "member-ordering": [
       false

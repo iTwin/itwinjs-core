@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix window area horizontal/vertical decoration line",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

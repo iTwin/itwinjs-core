@@ -121,7 +121,7 @@ export namespace EditManipulator {
 
 /** @hidden */
 export class TestEditManipulatorTool extends EditManipulator.Tool {
-  protected init(): void { super.init(); this.beginDynamics(); }
+  protected init(): void { super.init(); IModelApp.accuDraw.deactivate(); this.beginDynamics(); } // ### TODO Disable AccuDraw for locate detail test...
   protected accept(_ev: BeButtonEvent): boolean { return true; }
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { /* console.log("Dynamics");*/ }
 }

@@ -272,6 +272,7 @@ export class RotMatrix implements BeJSONFunctions {
     }
     return result;
   }
+
   /**
    *  set all entries in the matrix from call parameters appearing in row-major order.
    * @param axx Row x, column x (0,0) entry
@@ -1218,6 +1219,13 @@ export class RotMatrix implements BeJSONFunctions {
       result.inverseCoffs = undefined;
     }
     return result;
+  }
+
+  /** return the transposed matrix */
+  public transposeInPlace() {
+    transpose3x3InPlace (this.coffs);
+    if (this.inverseCoffs)
+      transpose3x3InPlace (this.inverseCoffs);
   }
 
   /** return the inverse matrix.  The return is  null if the matrix is singular (has columns that are coplanar or colinear) */

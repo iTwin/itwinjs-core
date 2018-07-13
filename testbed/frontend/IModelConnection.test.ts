@@ -19,11 +19,11 @@ describe("IModelConnection (#integration)", () => {
 
   before(async () => {
     IModelApp.startup();
-    await TestData.load();
 
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
+    await TestData.load();
     iModel = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
 

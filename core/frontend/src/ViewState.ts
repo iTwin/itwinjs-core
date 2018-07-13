@@ -298,9 +298,7 @@ export abstract class ViewState extends ElementState {
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
-    return this.displayStyle.getSubCategoryOverride(id);
-  }
+  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {    return this.displayStyle.getSubCategoryOverride(id);  }
 
   /** Returns the appearance of the subcategory with the specified ID within this view, possibly as overridden by the display style. */
   public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
@@ -346,7 +344,7 @@ export abstract class ViewState extends ElementState {
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
   public abstract getViewedExtents(): AxisAlignedBox3d;
-  public computeFitRange(): Range3d { return this.getViewedExtents(); } // ###TODO
+  public computeFitRange(): Range3d { return this.getViewedExtents(); }
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
@@ -379,9 +377,7 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  public createScene(context: SceneContext): void {
-    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));
-  }
+  public createScene(context: SceneContext): void {    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));  }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -951,7 +947,7 @@ export abstract class ViewState3d extends ViewState {
     val.cameraOn = this.cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
-    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation);
+    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation)!.toJSON();
     assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
@@ -1513,27 +1509,28 @@ export abstract class ViewState3d extends ViewState {
     return env.ground.elevation + this.iModel.globalOrigin.z;
   }
 
-  protected _forceGroundPlane: boolean = false;
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
-  public getGroundExtents(vp: Viewport): AxisAlignedBox3d {
+  public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (!displayStyle.getEnvironment().ground.display && !this._forceGroundPlane)
+    if (undefined !== vp && !displayStyle.getEnvironment().ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
 
-    const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
-    const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+    if (undefined !== vp) {
+      const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+      const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
 
-    // first determine whether the ground plane is displayed in the view
-    const worldFrust = vp.getFrustum();
-    for (const point of worldFrust.points) {
-      viewRay.origin = point;   // We never modify the reference
-      const xyzPoint = Point3d.create();
-      const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
-      if (param === undefined)
-        return extents;   // View does not show ground plane
+      // first determine whether the ground plane is displayed in the view
+      const worldFrust = vp.getFrustum();
+      for (const point of worldFrust.points) {
+        viewRay.origin = point;   // We never modify the reference
+        const xyzPoint = Point3d.create();
+        const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+        if (param === undefined)
+          return extents;   // View does not show ground plane
+      }
     }
 
     extents.setFrom(this.iModel.projectExtents);
@@ -1639,9 +1636,22 @@ export class SpatialViewState extends ViewState3d {
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
 
+  public computeFitRange(): AxisAlignedBox3d {
+    // Loop over the current models in the model selector with loaded tile trees and union their ranges
+    const range = new AxisAlignedBox3d();
+    this.forEachModel((model: GeometricModelState) => {
+      if (model.tileTree !== undefined) {   // can we assume that a loaded model
+        range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
+      }
+    });
+    return range.isNull() ? this.getViewedExtents() : range;
+  }
+
   public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
-      this._viewedExtents = new AxisAlignedBox3d(this.iModel.projectExtents.low, this.iModel.projectExtents.high);
+      this._viewedExtents = new AxisAlignedBox3d();
+      this._viewedExtents.setFrom(this.iModel.projectExtents);
+      this._viewedExtents.extendRange(this.getGroundExtents());
       this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
     }
 
@@ -1655,18 +1665,9 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
-
-  public clearViewedModels() {
-    this.modelSelector.models.clear();
-  }
-
-  public addViewedModel(id: Id64Props) {
-    this.modelSelector.addModels(id);
-  }
-
-  public removeViewedModel(id: Id64Props) {
-    this.modelSelector.dropModels(id);
-  }
+  public clearViewedModels() { this.modelSelector.models.clear(); }
+  public addViewedModel(id: Id64Props) { this.modelSelector.addModels(id); }
+  public removeViewedModel(id: Id64Props) { this.modelSelector.dropModels(id); }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {

@@ -107,7 +107,7 @@ describe("BriefcaseManager", () => {
       // Validate that the IModelDb is readonly
       assert(iModel.openParams.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModels[0].id, BriefcaseManager.hubClient);
+      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModels[0].id, BriefcaseManager.imodelClient);
       assert.strictEqual<string>(iModel.briefcase.changeSetId, expectedChangeSetId);
       assert.strictEqual<string>(iModel.iModelToken.changeSetId!, expectedChangeSetId);
 
@@ -298,18 +298,26 @@ describe("BriefcaseManager", () => {
 
     const iModelFixed: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModelFixed);
-    assert.notStrictEqual(iModelFixed.briefcase, iModelShared.briefcase);
+    assert.notStrictEqual(iModelFixed.briefcase.pathname, iModelShared.briefcase.pathname);
+
+    const iModelFixed2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModelFixed);
+    assert.notStrictEqual(iModelFixed.briefcase.pathname, iModelFixed2.briefcase.pathname);
 
     const iModelPullOnly: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModelPullOnly);
-    assert.notStrictEqual(iModelPullOnly.briefcase, iModelShared.briefcase);
-    assert.notStrictEqual(iModelPullOnly.briefcase, iModelFixed.briefcase);
+    assert.notStrictEqual(iModelPullOnly.briefcase.pathname, iModelShared.briefcase.pathname);
+    assert.notStrictEqual(iModelPullOnly.briefcase.pathname, iModelFixed.briefcase.pathname);
+
+    const iModelPullOnly2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModelPullOnly2);
+    assert.notStrictEqual(iModelPullOnly2.briefcase.pathname, iModelPullOnly.briefcase.pathname);
 
     const iModelPullAndPush: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
-    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelShared.briefcase);
-    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelFixed.briefcase);
-    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelPullOnly.briefcase);
+    assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelShared.briefcase.pathname);
+    assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelFixed.briefcase.pathname);
+    assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelPullOnly.briefcase.pathname);
 
     await iModelShared.close(accessToken, KeepBriefcase.No);
     await iModelFixed.close(accessToken, KeepBriefcase.No);
@@ -361,7 +369,7 @@ describe("BriefcaseManager", () => {
     assert(devProjectId);
     const devIModelId = await HubUtility.queryIModelIdByName(accessToken, devProjectId, TestConfig.iModelName);
     assert(devIModelId);
-    const devChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, devIModelId);
+    const devChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
     const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(devIModel);
@@ -374,14 +382,14 @@ describe("BriefcaseManager", () => {
     assert(qaProjectId);
     const qaIModelId = await HubUtility.queryIModelIdByName(accessToken, qaProjectId, TestConfig.iModelName);
     assert(qaIModelId);
-    const qaChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, qaIModelId);
+    const qaChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);
     const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(qaIModel);
   });
 
   it("Should track the AccessTokens that are used to open IModels (#integration)", async () => {
-    await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion());
+    await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Exclusive));
     assert.deepEqual(IModelDb.getAccessToken(testIModels[0].id), accessToken);
 
     try {

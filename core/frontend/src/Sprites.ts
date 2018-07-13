@@ -6,11 +6,11 @@
 import { Point2d, Point3d, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
-import { IDisposable } from "@bentley/bentleyjs-core/lib/Disposable";
+import { IDisposable, dispose, Logger } from "@bentley/bentleyjs-core";
 import { RenderTexture, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { Logger } from "@bentley/bentleyjs-core";
+import { ImageUtil } from "./ImageUtil";
 
 /**
  * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
@@ -39,7 +39,7 @@ export class Sprite implements IDisposable {
   public texture?: RenderTexture;
 
   /** Dispose of this Sprite. Disposes of texture, if present. */
-  public dispose() { if (this.texture) { this.texture.dispose(); this.texture = undefined; } }
+  public dispose() { this.texture = dispose(this.texture); }
 
   /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
    * @param filePath The file path of the PNG file holding the sprite texture (relative to the assets directory.)
@@ -58,8 +58,10 @@ export class Sprite implements IDisposable {
    * @note This method creates the texture from the ImageSource asynchronously. The texture will appear as a white square until it is fully loaded.
    */
   public fromImageSource(src: ImageSource): void {
-    this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, 32, 32, undefined, new RenderTexture.Params(undefined, true));
-    this.size.set(32, 32);
+    ImageUtil.extractImageDimensions(src).then((size: Point2d) => {
+      this.size.setFrom(size);
+      this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, size.x, size.y, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection));
+    });
   }
 }
 

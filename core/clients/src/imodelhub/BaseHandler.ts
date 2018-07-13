@@ -9,7 +9,7 @@ import { IModelHubError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import * as https from "https";
-import { Config } from "..";
+import { Config, FileHandler } from "..";
 
 /**
  * Provides default options for iModel Hub requests.
@@ -26,10 +26,12 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 /**
  * This class acts as the WsgClient for other iModel Hub Handlers.
  */
-export class IModelHubBaseHandler extends WsgClient {
+export class IModelBaseHandler extends WsgClient {
+  protected url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
-  private _agent: https.Agent;
+  protected _agent: https.Agent;
+  protected _fileHandler: FileHandler | undefined;
 
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
@@ -39,14 +41,17 @@ export class IModelHubBaseHandler extends WsgClient {
   };
 
   /**
-   * Creates an instance of IModelHubBaseHandler.
+   * Creates an instance of IModelBaseHandler.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv = "PROD", keepAliveDuration = 30000) {
+  public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
+    this._fileHandler = fileHandler;
     if (!Config.isBrowser())
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
+
+  public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
   /**
    * Augments request options with defaults returned by the DefaultIModelHubRequestOptionsProvider.
@@ -66,7 +71,7 @@ export class IModelHubBaseHandler extends WsgClient {
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
-    return IModelHubBaseHandler.searchKey;
+    return IModelBaseHandler.searchKey;
   }
 
   /**
@@ -74,7 +79,7 @@ export class IModelHubBaseHandler extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelHubBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
+    return IModelBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**

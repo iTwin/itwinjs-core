@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="Test2" alias="test2" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+    <ECEntityClass typeName="Test2Element">
+        <BaseClass>bis:PhysicalElement</BaseClass>
+        <ECProperty propertyName="BaseStr" typeName="string"/>
+        <ECProperty propertyName="BaseLong" typeName="long"/>
+        <ECProperty propertyName="BaseDouble" typeName="double"/>
+    </ECEntityClass>
+</ECSchema>

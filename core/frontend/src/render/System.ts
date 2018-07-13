@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform, Point2d, Range3d, Point3d } from "@bentley/geometry-core";
-import { assert, Id64, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -66,9 +66,7 @@ export class RenderPlan {
   }
 }
 
-/**
- * A renderer-specific object that can be placed into a display list.
- */
+/** A renderer-specific object that can be placed into a display list. */
 export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
@@ -76,7 +74,7 @@ export abstract class RenderGraphic implements IDisposable {
 export type GraphicList = RenderGraphic[];
 
 /** A graphic used for decorations, optionally with symbology overrides. */
-export class Decoration {
+export class Decoration implements IDisposable {
   public readonly graphic: RenderGraphic;
   public readonly overrides?: FeatureSymbology.Appearance;
 
@@ -84,10 +82,26 @@ export class Decoration {
     this.graphic = graphic;
     this.overrides = overrides;
   }
+
+  public dispose() {
+    dispose(this.graphic);
+  }
 }
 
-export class DecorationList extends Array<Decoration> {
-  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) { this.push(new Decoration(graphic, ovrs)); }
+export class DecorationList implements IDisposable {
+  public readonly list: Decoration[];
+
+  public constructor() { this.list = []; }
+
+  public dispose() {
+    for (const decoration of this.list)
+      dispose(decoration);
+    this.list.length = 0;
+  }
+
+  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) {
+    this.list.push(new Decoration(graphic, ovrs));
+  }
 }
 
 /**
@@ -95,34 +109,50 @@ export class DecorationList extends Array<Decoration> {
  * in addition to the Scene.
  */
 export class Decorations implements IDisposable {
-  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
+  private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
+  private _world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  private _worldOverlay?: DecorationList; // drawn in overlay mode, world units
+  private _viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 
-  public reset(): void {
-    this.viewBackground = undefined;
-    this.normal = undefined;
-    this.world = this.worldOverlay = this.viewOverlay = undefined;
+  // Getters & Setters - dispose of members before resetting
+  public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
+  public set viewBackground(viewBackground: RenderGraphic | undefined) {
+    dispose(this._viewBackground);  // no effect if already disposed
+    this._viewBackground = viewBackground;
+  }
+  public get normal(): GraphicList | undefined { return this._normal; }
+  public set normal(normal: GraphicList | undefined) {
+    if (this._normal)
+      for (const graphic of this._normal)
+        dispose(graphic);
+    this._normal = normal;
+  }
+  public get world(): DecorationList | undefined { return this._world; }
+  public set world(world: DecorationList | undefined) {
+    dispose(this._world); // no effect if already disposed
+    this._world = world;
+  }
+  public get worldOverlay(): DecorationList | undefined { return this._worldOverlay; }
+  public set worldOverlay(worldOverlay: DecorationList | undefined) {
+    dispose(this._worldOverlay);  // no effect if already disposed
+    this._worldOverlay = worldOverlay;
+  }
+  public get viewOverlay(): DecorationList | undefined { return this._viewOverlay; }
+  public set viewOverlay(viewOverlay: DecorationList | undefined) {
+    dispose(this._viewOverlay); // no effect if already disposed
+    this._viewOverlay = viewOverlay;
   }
 
-  /** Dispose of all of the contained RenderGraphics and WebGL resources corresponding to these decorations. */
-  public dispose(): void {
-    if (this.viewBackground)
-      this.viewBackground.dispose();
-    if (this.normal)
-      for (const graphic of this.normal)
-        graphic.dispose();
-    if (this.world)
-      for (const decoration of this.world)
-        decoration.graphic.dispose();
-    if (this.worldOverlay)
-      for (const decoration of this.worldOverlay)
-        decoration.graphic.dispose();
-    if (this.viewOverlay)
-      for (const decoration of this.viewOverlay)
-        decoration.graphic.dispose();
+  public dispose() {
+    this._viewBackground = dispose(this._viewBackground);
+    this._world = dispose(this._world);
+    this._worldOverlay = dispose(this._worldOverlay);
+    this._viewOverlay = dispose(this._viewOverlay);
+    if (this._normal)
+      for (const graphic of this._normal)
+        dispose(graphic);
+    this._normal = undefined;
   }
 }
 
@@ -133,14 +163,20 @@ export class GraphicBranch {
 
   public constructor() { }
 
-  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
-  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
+  public add(graphic: RenderGraphic): void {
+    this.entries.push(graphic);
+  }
+  public addRange(graphics: RenderGraphic[]): void {
+    graphics.forEach(this.add);
+  }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
-  public clear() { this.entries.length = 0; }
+  public clear() {
+    this.entries.length = 0;
+  }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 
@@ -206,6 +242,7 @@ export namespace Pixel {
  * Every Viewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
+
   public static get frustumDepth2d(): number { return 1.0; } // one meter
 
   public abstract get renderSystem(): RenderSystem;
@@ -215,7 +252,7 @@ export abstract class RenderTarget implements IDisposable {
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
-  public dispose() { }
+  public abstract dispose(): void;
   public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
@@ -237,7 +274,7 @@ export abstract class RenderTarget implements IDisposable {
 /**
  * A RenderSystem is the renderer-specific factory for creating RenderGraphics, RenderTexture, and RenderMaterials.
  */
-export abstract class RenderSystem {
+export abstract class RenderSystem implements IDisposable {
   protected _nowPainting?: RenderTarget;
   public readonly canvas: HTMLCanvasElement;
   public get isPainting(): boolean { return !!this._nowPainting; }
@@ -247,6 +284,8 @@ export abstract class RenderSystem {
 
   public isValid(): boolean { return this.canvas !== undefined; }
   public constructor(canvas: HTMLCanvasElement) { this.canvas = canvas; }
+
+  public abstract dispose(): void;
 
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -329,18 +368,11 @@ export abstract class RenderSystem {
    */
   public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  // /** Create a Texture from a graphic. */
-  // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;
+  /** Create a new Texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
+  public createTextureFromImage(_image: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   // /** Create a Light from Light.Parameters */
   // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;
 
-  /**
-   * Perform some small unit of work (or do nothing) during an idle frame.
-   * An idle frame is classified one tick of the render loop during which no viewports are open and the render queue is empty.
-   */
-  public idle(): void { }
-
   public onInitialized(): void { }
-  public onShutDown(): void { }
 }

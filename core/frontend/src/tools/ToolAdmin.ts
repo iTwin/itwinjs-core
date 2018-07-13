@@ -180,18 +180,18 @@ export class CurrentInputState {
 
   public toEvent(ev: BeButtonEvent, useSnap: boolean) {
     let from = CoordSource.User;
-    let uorPt = this.uorPoint.clone();
+    const uorPt = this.uorPoint.clone();
     let vp = this.viewport;
 
     if (useSnap) {
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (snap) {
         from = snap.isHot() ? CoordSource.ElemSnap : CoordSource.User;
-        uorPt = snap.adjustedPoint; // NOTE: Updated by AdjustSnapPoint even when not hot...
+        uorPt.setFrom(snap.adjustedPoint); // NOTE: Updated by AdjustSnapPoint even when not hot...
         vp = snap.viewport;
       } else if (IModelApp.tentativePoint.isActive) {
         from = CoordSource.TentativePoint;
-        uorPt = IModelApp.tentativePoint.point;
+        uorPt.setFrom(IModelApp.tentativePoint.point);
         vp = IModelApp.tentativePoint.viewport;
       }
     }
@@ -718,8 +718,8 @@ export class ToolAdmin {
 
     const vp = snap.viewport;
     const isHot = snap.isHot();
-    const savePt = snap.snapPoint.clone();
-    const point = (isHot ? savePt : snap.getPoint());
+    const point = snap.getPoint().clone();
+    const savePt = point.clone();
 
     if (!isHot) // Want point adjusted to grid for a hit that isn't hot...
       this.adjustPointToGrid(point, vp);
@@ -1239,7 +1239,7 @@ export class ToolAdmin {
     if (ev.viewport !== viewport)
       return;
 
-    const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
+    const hit = IModelApp.accuDraw.isActive() ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), this.isLocateCircleOn(), hit);
   }
 

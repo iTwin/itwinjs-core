@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
+import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
@@ -41,7 +41,7 @@ export class TileRequests {
   }
 }
 
-export class Tile {
+export class Tile implements IDisposable {
   public readonly root: TileTree;
   public readonly range: ElementAlignedBox3d;
   public readonly parent: Tile | undefined;
@@ -57,7 +57,7 @@ export class Tile {
   private _childrenLastUsed: BeTimePoint;
   private _childrenLoadStatus: TileTree.LoadStatus;
   private _children?: Tile[];
-  private readonly _contentRange?: ElementAlignedBox3d;
+  private _contentRange?: ElementAlignedBox3d;
   private _graphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
@@ -88,6 +88,15 @@ export class Tile {
     this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
+  // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
+  public dispose() {
+    this._graphic = dispose(this._graphic);
+    if (this._children)
+      for (const child of this._children)
+        dispose(child);
+    this._children = undefined;
+  }
+
   private loadGraphics(blob?: Uint8Array): void {
     this.loadStatus = Tile.LoadStatus.Ready;
     if (undefined === blob)
@@ -115,8 +124,9 @@ export class Tile {
 
     if (undefined !== reader) {
       const result = reader.read();
-      if (undefined !== result)
+      if (undefined !== result) {
         this._graphic = result.renderGraphic;
+      }
     }
   }
 
@@ -155,6 +165,14 @@ export class Tile {
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
+
+  /** Returns the range of this tile's contents in world coordinates. */
+  public computeWorldContentRange(): ElementAlignedBox3d {
+    const range = new ElementAlignedBox3d();
+    this.root.location.multiplyRange(this.contentRange, range);
+    return range;
+  }
+
   public computeVisibility(args: Tile.DrawArgs): Tile.Visibility {
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
@@ -279,17 +297,21 @@ export class Tile {
 
   private unloadChildren(olderThan: BeTimePoint): void {
     const children = this.children;
-    if (undefined === children)
+    if (undefined === children) {
       return;
-    else if (this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
+    }
+
+    if (this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
       // this node has been used recently. Keep it, but potentially unload its grandchildren.
       for (const child of children)
         child.unloadChildren(olderThan);
     } else {
-      for (const child of children)
+      for (const child of children) {
         child.setAbandoned();
+        child.dispose();
+      }
 
-      children.length = 0;
+      this._children = undefined;
       this._childrenLoadStatus = TileTree.LoadStatus.NotLoaded;
     }
   }
@@ -312,8 +334,18 @@ export class Tile {
         this._children = [];
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
-          for (const prop of props)
-            this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth()));
+          // If this tile is undisplayable, update its content range based on children's content ranges.
+          const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
+          for (const prop of props) {
+            // ###TODO if child is empty don't bother adding it to list...
+            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth());
+            this._children.push(child);
+            if (undefined !== parentRange && !child.isEmpty)
+              parentRange.extendRange(child.contentRange);
+          }
+
+          if (undefined !== parentRange)
+            this._contentRange = parentRange;
         }
 
         IModelApp.viewManager.onNewTilesReady();
@@ -425,7 +457,7 @@ export namespace Tile {
   }
 }
 
-export class TileTree {
+export class TileTree implements IDisposable {
   public readonly model: GeometricModelState;
   public readonly location: Transform;
   public readonly rootTile: Tile;
@@ -444,9 +476,11 @@ export class TileTree {
     this.clipVector = props.clipVector;
     this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this));
+    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.loader = props.loader;
   }
+
+  public dispose() { dispose(this.rootTile); }
 
   public get is3d(): boolean { return this.model.is3d; }
   public get is2d(): boolean { return this.model.is2d; }

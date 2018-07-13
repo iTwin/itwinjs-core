@@ -60,6 +60,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
   public formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
   public loadMetaDataForClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<any[]> { return this.forward.apply(this, arguments); }
+  public getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]> { return this.forward.apply(this, arguments); }
   public getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward.apply(this, arguments); }
   public getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> { return this.forward.apply(this, arguments); }
   public readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward.apply(this, arguments); }

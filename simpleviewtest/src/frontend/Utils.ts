@@ -1,14 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
-
-export function dispose(disposable?: IDisposable) {
-  if (undefined !== disposable) {
-    disposable.dispose();
-  }
-
-  return undefined;
+// show status in the output HTML
+export function showStatus(string1: string, string2?: string) {
+  let outString: string = string1;
+  if (string2)
+    outString = outString.concat(" ", string2);
+  document.getElementById("showstatus")!.innerHTML = outString;
 }

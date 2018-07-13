@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d } from "@bentley/geometry-core";
-import { GraphicParams } from "@bentley/imodeljs-common";
+import { GraphicParams, RenderTexture, Gradient } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../../GraphicBuilder";
 import { ViewContext } from "../../../ViewContext";
@@ -98,10 +98,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.addPointString(pts3d);
   }
 
-  public addPolyface(meshData: Polyface): void {
-    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.localToWorldTransform);
-  }
-
   public addShape(points: Point3d[]): void {
     const loop = Loop.create(LineString3d.create(points));
     this.accum.addLoop(loop, this.getMeshDisplayParams(), this.localToWorldTransform, false);
@@ -112,14 +108,26 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.addShape(pts3d);
   }
 
+  public addPath(path: Path): void {
+    this.accum.addPath(path, this.getLinearDisplayParams(), this.localToWorldTransform, false);
+  }
+
+  public addLoop(loop: Loop): void {
+    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.localToWorldTransform, false);
+  }
+
+  public addPolyface(meshData: Polyface): void {
+    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.localToWorldTransform);
+  }
+
   public abstract reset(): void;
 
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
 
   public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
-  public getMeshDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Mesh); }
-  public getLinearDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Linear); }
-  public get textDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Text); }
+  public getMeshDisplayParams(): DisplayParams { return DisplayParams.createForMesh(this.graphicParams, (grad) => this.resolveGradient(grad)); }
+  public getLinearDisplayParams(): DisplayParams { return DisplayParams.createForLinear(this.graphicParams); }
+  public get textDisplayParams(): DisplayParams { return DisplayParams.createForText(this.graphicParams); }
 
   public get system(): RenderSystem { return this.accum.system; }
 
@@ -130,6 +138,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.activateGraphicParams(this.graphicParams);
     this.createParams.placement = localToWorld;
     this.reset();
+  }
+
+  private resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
+    return this.system.getGradientTexture(gradient, this.iModel);
   }
 }
 

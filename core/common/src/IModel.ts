@@ -16,7 +16,7 @@ export class IModelToken {
   public constructor(
     /** Key used for identifying the iModel on the backend */
     public readonly key?: string,
-    /** Context (Project or Asset) in which the iModel exists - must be defined if the iModel exists in the Hub */
+    /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
     public readonly contextId?: string,
     /** Guid of the iModel - must be defined if the iModel exists in the Hub */
     public readonly iModelId?: string,

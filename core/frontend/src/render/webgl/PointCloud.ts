@@ -12,6 +12,7 @@ import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { GL } from "./GL";
 import { System } from "./System";
+import { dispose } from "@bentley/bentleyjs-core";
 
 export class PointCloudGraphic extends Primitive {
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
@@ -30,6 +31,8 @@ export class PointCloudGeometry extends CachedGeometry {
   private vertices: QBufferHandle3d;
   private vertexCount: number;
   private colorHandle: BufferHandle | undefined = undefined;
+
+  public dispose() { dispose(this.vertices); }
 
   constructor(pointCloud: PointCloudArgs) {
     super();

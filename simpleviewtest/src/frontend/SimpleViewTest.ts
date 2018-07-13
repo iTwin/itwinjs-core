@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend/lib/frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
-import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
+import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
   ElectronRpcManager,
   ElectronRpcConfiguration,
@@ -11,36 +11,30 @@ import {
   IModelTileRpcInterface,
   IModelReadRpcInterface,
   ViewQueryParams,
-  ViewDefinitionProps,
   ModelProps,
   ModelQueryParams,
   RenderMode,
-} from "@bentley/imodeljs-common";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { IModelApi } from "./IModelApi";
-import { ProjectApi, ProjectScope } from "./ProjectApi";
-import { remote } from "electron";
+  RpcConfiguration,
+  BentleyCloudRpcManager,
+  RpcOperation,
+  IModelToken,
+} from "@bentley/imodeljs-common/lib/common";
+import { Transform } from "@bentley/geometry-core/lib/geometry-core";
+import { showStatus } from "./Utils";
+import { SimpleViewState } from "./SimpleViewState";
+import { ProjectAbstraction } from "./ProjectAbstraction";
+import { ConnectProject } from "./ConnectProject";
+import { NonConnectProject } from "./NonConnectProject";
+
+// Only want the following imports if we are using electron and not a browser -----
+// tslint:disable-next-line:variable-name
+let remote: any;
+if (ElectronRpcConfiguration.isElectron) {
+  // tslint:disable-next-line:no-var-requires
+  remote = require("electron").remote;
+}
 
 // tslint:disable:no-console
-
-// show status in the output HTML
-function showStatus(string1: string, string2?: string) {
-  let outString: string = string1;
-  if (string2)
-    outString = outString.concat(" ", string2);
-  document.getElementById("showstatus")!.innerHTML = outString;
-}
-
-class SimpleViewState {
-  public accessToken?: AccessToken;
-  public project?: Project;
-  public iModel?: IModelRepository;
-  public iModelConnection?: IModelConnection;
-  public viewDefinition?: ViewDefinitionProps;
-  public viewState?: ViewState;
-  public viewPort?: Viewport;
-  constructor() { }
-}
 
 interface RenderModeOptions {
   flags: Map<string, boolean>;
@@ -59,74 +53,44 @@ let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
 const curCategories: Set<string> = new Set<string>();
-let configuration = {} as SVTConfiguration;
+const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 
+/** Parameters for starting SimpleViewTest with a specified initial configuration */
 interface SVTConfiguration {
-  filename: string;
-  userName: string;
-  password: string;
-  projectName: string;
-  iModelName: string;
-  standalone: boolean;
+  useIModelBank: boolean;
   viewName?: string;
+  environment?: DeploymentEnv;
+  // standalone-specific config:
+  standalone?: boolean;
+  iModelName?: string;
+  filename?: string;
+  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
 }
+
 // Entry point - run the main function
 setTimeout(() => main(), 1000);
 
-// retrieves configuration.json from the Public folder, and override configuration values from that.
-// see configuration.json in simpleviewtest/public.
-// alternatively, can open a standalone iModel from disk by setting iModelName to filename and standalone to true.
-function retrieveConfigurationOverrides(config: any) {
-  const request: XMLHttpRequest = new XMLHttpRequest();
-  request.open("GET", "configuration.json", false);
-  request.setRequestHeader("Cache-Control", "no-cache");
-  request.onreadystatechange = ((_event: Event) => {
-    if (request.readyState === XMLHttpRequest.DONE) {
-      if (request.status === 200) {
-        const newConfigurationInfo: any = JSON.parse(request.responseText);
-        Object.assign(config, newConfigurationInfo);
+// Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
+function retrieveConfiguration(): Promise<void> {
+  return new Promise((resolve, _reject) => {
+    const request: XMLHttpRequest = new XMLHttpRequest();
+    request.open("GET", "configuration.json", false);
+    request.setRequestHeader("Cache-Control", "no-cache");
+    request.onreadystatechange = ((_event: Event) => {
+      if (request.readyState === XMLHttpRequest.DONE) {
+        if (request.status === 200) {
+          const newConfigurationInfo: any = JSON.parse(request.responseText);
+          Object.assign(configuration, newConfigurationInfo);
+          resolve();
+        }
+        // Everything is good, the response was received.
+      } else {
+        // Not ready yet.
       }
-      // Everything is good, the response was received.
-    } else {
-      // Not ready yet.
-    }
+    });
+    request.send();
   });
-  request.send();
-}
-
-// Apply environment overrides to configuration.
-// This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
-function applyConfigurationOverrides(config: any): void {
-  const filename = remote.process.env.SVT_STANDALONE_FILENAME;
-  if (undefined !== filename) {
-    config.iModelName = filename;
-    config.viewName = remote.process.env.SVT_STANDALONE_VIEWNAME; // optional
-    config.standalone = true;
-  }
-}
-
-// log in to connect
-async function loginToConnect(state: SimpleViewState, userName: string, password: string) {
-  // tslint:disable-next-line:no-console
-  console.log("Attempting login with userName", userName, "password", password);
-
-  const authClient = new ImsActiveSecureTokenClient("QA");
-  const accessClient = new ImsDelegationSecureTokenClient("QA");
-
-  const authToken: AuthorizationToken = await authClient.getToken(userName, password);
-  state.accessToken = await accessClient.getToken(authToken);
-}
-
-// opens the configured project
-async function openProject(state: SimpleViewState, projectName: string) {
-  state.project = await ProjectApi.getProjectByName(state.accessToken!, ProjectScope.Invited, projectName);
-}
-
-// opens the configured iModel
-async function openIModel(state: SimpleViewState, iModelName: string) {
-  state.iModel = await IModelApi.getIModelByName(state.accessToken!, state.project!.wsgId, iModelName);
-  state.iModelConnection = await IModelApi.openIModel(state.accessToken!, state.project!.wsgId, state.iModel!.wsgId, undefined, OpenMode.Readonly);
 }
 
 // opens the configured iModel from disk
@@ -342,8 +306,21 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === theViewport)
     return;
 
+  const startFrustum = theViewport.getFrustum();
+  const newFrustum = startFrustum.clone();
+  const rotatePoint = theViewport.determineDefaultRotatePoint();
   const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
-  theViewport.view.setRotationAboutPoint(rMatrix);
+  const viewTransform = Transform.createFixedPointAndMatrix(rotatePoint, theViewport.rotMatrix);
+  newFrustum.multiply(viewTransform);
+
+  let rotateTransform: Transform | undefined = Transform.createFixedPointAndMatrix(rotatePoint, rMatrix);
+  rotateTransform = rotateTransform.inverse();
+  if (!rotateTransform)
+    return;
+
+  newFrustum.multiply(rotateTransform);
+
+  theViewport.animateFrustumChange(startFrustum, newFrustum);
   theViewport.synchWithView(true);
   showStatus(label, "view");
 }
@@ -482,10 +459,11 @@ async function changeView(event: any) {
 }
 
 async function clearViews() {
-  if (configuration.standalone)
-    await activeViewState.iModelConnection!.closeStandalone();
-  else
-    await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
+  if (activeViewState.iModelConnection !== undefined)
+    if (configuration.standalone)
+      await activeViewState.iModelConnection.closeStandalone();
+    else
+      await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
   activeViewState = new SimpleViewState();
   viewMap.clear();
   document.getElementById("viewList")!.innerHTML = "";
@@ -503,15 +481,35 @@ async function resetStandaloneIModel(filename: string) {
   spinner.style.display = "none";
 }
 
-function selectIModel(): void {
-  const options: Electron.OpenDialogOptions = {
-    properties: ["openFile"],
-    filters: [{ name: "IModels", extensions: ["ibim", "bim"] }],
-  };
-  remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
-    if (undefined !== filePaths)
-      await resetStandaloneIModel(filePaths[0]);
-  });
+async function selectIModel() {
+  if (ElectronRpcConfiguration.isElectron) {  // Electron
+    const options = {
+      properties: ["openFile"],
+      filters: [{ name: "IModels", extensions: ["ibim", "bim"] }],
+    };
+    remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
+      if (undefined !== filePaths)
+        await resetStandaloneIModel(filePaths[0]);
+    });
+  } else {  // Browser
+    if (configuration.standalonePath === undefined || !document.createEvent) { // Do not have standalone path for files or support for document.createEvent... request full file path
+      const filePath = prompt("Enter the full local path of the iModel you wish to open:");
+      if (filePath !== null) {
+        try {
+          await resetStandaloneIModel(filePath);
+        } catch {
+          alert("Error - The file path given is invalid.");
+          const spinner = document.getElementById("spinner") as HTMLDivElement;
+          spinner.style.display = "none";
+        }
+      }
+    } else {  // Was given a base path for all standalone files. Let them select file using file selector
+      const selector = document.getElementById("browserFileSelector");
+      const evt = document.createEvent("MouseEvents");
+      evt.initEvent("click", true, false);
+      selector!.dispatchEvent(evt);
+    }
+  }
 }
 
 // undo prev view manipulation
@@ -592,53 +590,64 @@ function wireIconsToFunctions() {
     }
   });
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
+
+  // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
+  document.getElementById("browserFileSelector")!.addEventListener("change", async function onChange(this: HTMLElement) {
+    const files = (this as any).files;
+    if (files !== undefined && files.length > 0) {
+      try {
+        await resetStandaloneIModel(configuration.standalonePath + "/" + files[0].name);
+      } catch {
+        alert("Error Opening iModel - Make you are selecting files from " + configuration.standalonePath);
+        const spinner = document.getElementById("spinner") as HTMLDivElement;
+        spinner.style.display = "none";
+      }
+    }
+  });
 }
+
+// If we are using a browser, close the current iModel before leaving
+window.onbeforeunload = () => {
+  if (activeViewState.iModelConnection !== undefined)
+    if (configuration.standalone)
+      activeViewState.iModelConnection.closeStandalone();
+    else
+      activeViewState.iModelConnection.close(activeViewState.accessToken!);
+};
 
 // main entry point.
 async function main() {
-  // this is the default configuration
-  configuration = {
-    userName: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
-    projectName: "plant-sta",
-    iModelName: "NabeelQATestiModel",
-  } as SVTConfiguration;
-
-  // override anything that's in the configuration
-  retrieveConfigurationOverrides(configuration);
-  applyConfigurationOverrides(configuration);
-
+  // retrieve, set, and output the global configuration variable
+  await retrieveConfiguration();
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
   IModelApp.startup();
 
-  if (ElectronRpcConfiguration.isElectron)
-    ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  // Choose RpcConfiguration based on whether we are in electron or browser
+  let rpcConfiguration: RpcConfiguration;
+  if (ElectronRpcConfiguration.isElectron) {
+    rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  } else {
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    Config.devCorsProxyServer = "http://localhost:3001";
+  }
+
+  // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
+  // RPC without any imodel and fails...
+  for (const definition of rpcConfiguration.interfaces())
+    RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
   const spinner = document.getElementById("spinner") as HTMLDivElement;
   spinner.style.display = "block";
 
   try {
-    // initialize the Project and IModel Api
-    await ProjectApi.init();
-    await IModelApi.init();
-
-    if (!configuration.standalone) {
-      // log in.
-      showStatus("logging in as", configuration.userName);
-      await loginToConnect(activeViewState, configuration.userName, configuration.password);
-
-      // open the specified project
-      showStatus("opening Project", configuration.projectName);
-      await openProject(activeViewState, configuration.projectName);
-
-      // open the specified iModel
-      showStatus("opening iModel", configuration.iModelName);
-      await openIModel(activeViewState, configuration.iModelName);
+    if (configuration.standalone) {
+      await openStandaloneIModel(activeViewState, configuration.iModelName!);
     } else {
-      showStatus("Opening", configuration.iModelName);
-      await openStandaloneIModel(activeViewState, configuration.iModelName);
+      IModelApp.hubDeploymentEnv = configuration.environment || "QA";
+      const projectMgr: ProjectAbstraction = configuration.useIModelBank ? new NonConnectProject() : new ConnectProject();
+      await projectMgr.loginAndOpenImodel(activeViewState);
     }
 
     // open the specified view

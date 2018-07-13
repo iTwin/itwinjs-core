@@ -54,6 +54,7 @@ export class Checker {
     bsijsonValuesQuick: false,
     testTransitionSpiral: true,
     newtonRtoRD: false,
+    ACSArrows: false,
   };
   public constructor() { this.numErrors = 0; this.numOK = 0; this.savedErrors = 0; this.savedOK = 0; }
   public getNumErrors(): number { return this.savedErrors + this.numErrors; }

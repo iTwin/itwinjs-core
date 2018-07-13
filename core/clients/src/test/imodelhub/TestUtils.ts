@@ -9,14 +9,14 @@ import { Guid } from "@bentley/bentleyjs-core";
 
 import {
   ECJsonTypeMap, AccessToken, UserProfile, ConnectClient, Project,
-  ProgressInfo, UrlDescriptor, DeploymentEnv,
+  ProgressInfo, UrlDescriptor, DeploymentEnv, IModelClient,
 } from "../../";
 import {
   IModelHubClient, Code, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery,
-} from "../../imodelhub/";
-import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
+} from "../../";
+import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
@@ -46,13 +46,13 @@ export class IModelHubUrlMock {
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(IModelHubBaseHandler.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, env, this.urlDescriptor[env]);
   }
 }
 
 export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
 
-export function getDefaultClient() {
+export function getDefaultClient(): IModelClient {
   IModelHubUrlMock.mockGetUrl(TestConfig.deploymentEnv);
   return imodelHubClient;
 }
@@ -100,7 +100,7 @@ export async function login(user?: UserCredentials): Promise<AccessToken> {
     return new MockAccessToken();
 
   const authToken = await TestConfig.login(user);
-  const client = getDefaultClient();
+  const client = getDefaultClient() as IModelHubClient;
 
   return await client.getAccessToken(authToken);
 }
@@ -539,7 +539,7 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createNewIModel(client: IModelHubClient, accessToken: AccessToken, name: string, projectId: string) {
+export async function createNewIModel(client: IModelClient, accessToken: AccessToken, name: string, projectId: string) {
   if (TestConfig.enableMocks)
     return;
 

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { DeploymentEnv, IModelHubClient } from "@bentley/imodeljs-clients";
+import { DeploymentEnv, IModelHubClient, IModelClient } from "@bentley/imodeljs-clients";
 import { ViewManager } from "./ViewManager";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { AccuDraw } from "./AccuDraw";
@@ -16,6 +16,7 @@ import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-commo
 import { NotificationManager } from "./NotificationManager";
 import { System } from "./render/webgl/System";
 import { RenderSystem } from "./render/System";
+import { dispose, RepositoryStatus } from "@bentley/bentleyjs-core";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -32,7 +33,8 @@ import * as idleTool from "./tools/IdleTool";
  */
 export class IModelApp {
   protected static _initialized = false;
-  public static renderSystem: RenderSystem;
+  private static _renderSystem?: RenderSystem;
+  public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
   public static toolAdmin: ToolAdmin;
@@ -47,14 +49,23 @@ export class IModelApp {
 
   public static readonly features = new FeatureGates();
   public static readonly tools = new ToolRegistry();
-  protected static _iModelHubClient?: IModelHubClient;
+  protected static _imodelClient?: IModelClient;
   public static get initialized() { return IModelApp._initialized; }
-  public static get iModelHubClient(): IModelHubClient {
-    if (!this._iModelHubClient || this._iModelHubClient.deploymentEnv !== this.hubDeploymentEnv)
-      this._iModelHubClient = new IModelHubClient(this.hubDeploymentEnv);
-    return this._iModelHubClient;
+
+  /** IModel Server Client to be used for all frontend operations */
+  public static get iModelClient(): IModelClient {
+    if (!this._imodelClient)
+      this._imodelClient = new IModelHubClient(this.hubDeploymentEnv);
+    else if (this._imodelClient.deploymentEnv !== this.hubDeploymentEnv)
+      throw new IModelError(RepositoryStatus.ServerUnavailable);
+    return this._imodelClient;
   }
-  public static get hasRenderSystem() { return this.renderSystem.isValid(); }
+
+  public static set iModelClient(client: IModelClient) {
+    this._imodelClient = client;
+  }
+
+  public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid(); }
 
   /**
    * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp
@@ -69,11 +80,14 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    */
-  public static startup() {
+  public static startup(imodelClient?: IModelClient) {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     IModelApp._initialized = true;
+
+    if (imodelClient !== undefined)
+      this._imodelClient = imodelClient;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
@@ -87,7 +101,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.renderSystem) IModelApp.renderSystem = this.supplyRenderSystem();
+    if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
     if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
@@ -96,7 +110,7 @@ export class IModelApp {
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
-    IModelApp.renderSystem.onInitialized();
+    IModelApp._renderSystem.onInitialized();
     IModelApp.viewManager.onInitialized();
     IModelApp.toolAdmin.onInitialized();
     IModelApp.accuDraw.onInitialized();
@@ -108,7 +122,7 @@ export class IModelApp {
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
     IModelApp.toolAdmin.onShutDown();
-    IModelApp.renderSystem.onShutDown();
+    IModelApp._renderSystem = dispose(IModelApp._renderSystem);
     IModelApp._initialized = false;
   }
 

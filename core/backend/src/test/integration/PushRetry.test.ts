@@ -128,12 +128,12 @@ describe("PushRetry", () => {
     let actualVersionCount: number = 0;
 
     // Subscribe to change set and version events
-    const changeSetSubscription = await BriefcaseManager.hubClient.Events().Subscriptions().create(accessToken, testIModelId, ["ChangeSetPostPushEvent"]);
-    const deleteChangeSetListener = BriefcaseManager.hubClient.Events().createListener(async () => accessToken, changeSetSubscription.wsgId, testIModelId, async (_receivedEvent: ChangeSetPostPushEvent) => {
+    const changeSetSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(accessToken, testIModelId, ["ChangeSetPostPushEvent"]);
+    const deleteChangeSetListener = BriefcaseManager.imodelClient.Events().createListener(async () => accessToken, changeSetSubscription.wsgId, testIModelId, async (_receivedEvent: ChangeSetPostPushEvent) => {
       actualChangeSetCount++;
     });
-    const namedVersionSubscription = await BriefcaseManager.hubClient.Events().Subscriptions().create(accessToken, testIModelId, ["VersionEvent"]);
-    const deleteNamedVersionListener = BriefcaseManager.hubClient.Events().createListener(async () => accessToken, namedVersionSubscription.wsgId, testIModelId, async (receivedEvent: NamedVersionCreatedEvent) => {
+    const namedVersionSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(accessToken, testIModelId, ["VersionEvent"]);
+    const deleteNamedVersionListener = BriefcaseManager.imodelClient.Events().createListener(async () => accessToken, namedVersionSubscription.wsgId, testIModelId, async (receivedEvent: NamedVersionCreatedEvent) => {
       actualVersionCount++;
       extractChangeSummary(receivedEvent.changeSetId!);
     });
@@ -150,9 +150,9 @@ describe("PushRetry", () => {
   });
 
   it.skip("should retry to push changes (#integration)", async () => {
-    const iModels: IModelRepository[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
     }
 
     const pushRetryIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
@@ -187,13 +187,13 @@ describe("PushRetry", () => {
 
     await pushRetryIModel.pushChanges(accessToken);
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
+    await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
   });
 
   it.skip("should fail to push and not retry again (#integration)", async () => {
-    const iModels: IModelRepository[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
     }
 
     const pushRetryIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
@@ -217,7 +217,7 @@ describe("PushRetry", () => {
       assert.equal(error.name, "UnknownPushError");
     }
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
+    await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
   });
 
 });

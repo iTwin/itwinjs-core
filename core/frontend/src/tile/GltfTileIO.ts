@@ -692,7 +692,7 @@ export namespace GltfTileIO {
 
         const width = JsonUtils.asInt(binaryImageJson.width, 512);
         const height = JsonUtils.asInt(binaryImageJson.height, 512);
-        const params = new RenderTexture.Params(undefined, false, false, false);
+        const params = RenderTexture.Params.defaults;
         return this.system.createTextureFromImageSource(imageSource, width, height, this.model.iModel, params);
       } catch (e) { return undefined; }
     }

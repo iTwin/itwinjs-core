@@ -12,7 +12,6 @@ import {
   CurveChain,
   Point3d,
   StrokeOptions,
-  Angle,
   IndexedPolyface,
   PolyfaceBuilder,
   SweepContour,
@@ -60,6 +59,12 @@ export abstract class Geometry {
   public getPolyfaces(tolerance: number): PolyfacePrimitiveList | undefined {
     const facetOptions = StrokeOptions.createForFacets();
     facetOptions.chordTol = tolerance;
+    if (this.displayParams.isTextured)
+      facetOptions.needParams = true;
+
+    // if (!this.displayParams.ignoreLighting) // ###TODO And not 2D...
+    //   facetOptions.needNormals = true;
+
     return this._getPolyfaces(facetOptions);
   }
 
@@ -73,17 +78,6 @@ export abstract class Geometry {
   public doDecimate() { return false; }
   public doVertexCluster() { return true; }
   public part() { return undefined; }
-
-  public static createFacetOptions(chordTolerance: number): StrokeOptions {
-    const strkOpts: StrokeOptions = StrokeOptions.createForFacets();
-    strkOpts.chordTol = chordTolerance;
-    strkOpts.angleTol = Angle.createRadians(Angle.piOver2Radians);
-    // ###TODO: strkOpts.convexFacetsRequired = true; // not available yet
-    strkOpts.needParams = true;
-    strkOpts.needNormals = true;
-
-    return strkOpts;
-  }
 }
 
 export class PrimitivePathGeometry extends Geometry {
@@ -200,7 +194,7 @@ export class PrimitiveLoopGeometry extends Geometry {
     const contour = SweepContour.createForLinearSweep(this.loop);
     if (contour !== undefined) {
       const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
-      contour.emitFacets(pfBuilder, facetOptions, false, this.transform); // build facets and emit them to the builder
+      contour.emitFacets(pfBuilder, false, this.transform); // build facets and emit them to the builder
       const polyface = pfBuilder.claimPolyface();
       const wantEdges = DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType;
       const isPlanar = true;

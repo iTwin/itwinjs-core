@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -22,8 +22,10 @@ interface TextureImageSource {
   loadCallback?: TextureLoadCallback;
 }
 
-/** Associate texture data with a WebGLTexture from a canvas OR a bitmap. */
-function loadTextureImageData(handle: TextureHandle, params: TextureCreateParams, bytes?: Uint8Array, canvas?: HTMLCanvasElement): void {
+type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
+
+/** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
+function loadTextureImageData(handle: TextureHandle, params: TextureCreateParams, bytes?: Uint8Array, element?: CanvasOrImage): void {
   const tex = handle.getHandle()!;
   const gl = System.instance.context;
 
@@ -35,8 +37,8 @@ function loadTextureImageData(handle: TextureHandle, params: TextureCreateParams
   gl.bindTexture(gl.TEXTURE_2D, tex);
 
   // send the texture data
-  if (undefined !== canvas) {
-    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, canvas);
+  if (undefined !== element) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, element);
   } else {
     const pixelData = undefined !== bytes ? bytes : null;
     gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixelData);
@@ -88,7 +90,6 @@ function loadTextureFromImageSource(handle: TextureHandle, params: TextureCreate
 
 type TextureFlag = true | undefined;
 type LoadImageData = (handle: TextureHandle, params: TextureCreateParams) => void;
-export const enum ImageTextureType { Normal, Glyph, TileSection }
 
 interface TextureImageProperties {
   wrapMode: GL.Texture.WrapMode;
@@ -108,7 +109,7 @@ export class Texture extends RenderTexture {
 
   /** Free this object in the WebGL wrapper. */
   public dispose() {
-    this.texture.dispose();
+    dispose(this.texture);
   }
 
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
@@ -132,7 +133,7 @@ class TextureCreateParams {
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, preserveData ? data : undefined);
   }
 
-  public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
+  public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
     const props = this.getImageProperties(ImageBufferFormat.Rgba === image.format, type);
 
     return new TextureCreateParams(image.width, image.height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
@@ -144,14 +145,14 @@ class TextureCreateParams {
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, undefined);
   }
 
-  public static createForImageSource(source: ImageSource, width: number, height: number, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
+  public static createForImageSource(source: ImageSource, width: number, height: number, type: RenderTexture.Type, loadCallback?: TextureLoadCallback) {
     const props = this.getImageProperties(ImageSourceFormat.Png === source.format, type);
 
     let targetWidth = width;
     let targetHeight = height;
 
     const caps = System.instance.capabilities;
-    if (ImageTextureType.Glyph === type) {
+    if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
     } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
@@ -174,10 +175,50 @@ class TextureCreateParams {
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromImageSource(tex, params, { source, canvas, loadCallback }), props.useMipMaps, props.interpolate);
   }
 
-  private static getImageProperties(isTranslucent: boolean, type: ImageTextureType): TextureImageProperties {
-    const wrapMode = ImageTextureType.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
-    const useMipMaps: TextureFlag = (ImageTextureType.TileSection !== type) ? true : undefined;
-    const interpolate: TextureFlag = true; // WTF? (ImageTextureType.TileSection === type) ? true : undefined;
+  public static createForImage(image: HTMLImageElement, type: RenderTexture.Type) {
+    // ###TODO: Determine if we need alpha channel...
+    const props = this.getImageProperties(true, type);
+
+    let targetWidth = image.naturalWidth;
+    let targetHeight = image.naturalHeight;
+
+    const caps = System.instance.capabilities;
+    if (RenderTexture.Type.Glyph === type) {
+      targetWidth = nextHighestPowerOfTwo(targetWidth);
+      targetHeight = nextHighestPowerOfTwo(targetHeight);
+    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+      if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
+        // NPOT are supported but not mipmaps
+        // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
+        // Above comment is not necessarily true - WebGL doesn't support NPOT mipmapping, only supporting base NPOT caps
+        props.useMipMaps = undefined;
+      } else if (GL.Texture.WrapMode.Repeat === props.wrapMode) {
+        targetWidth = nextHighestPowerOfTwo(targetWidth);
+        targetHeight = nextHighestPowerOfTwo(targetHeight);
+      }
+    }
+
+    let element: CanvasOrImage = image;
+    if (targetWidth !== image.naturalWidth || targetHeight !== image.naturalHeight) {
+      // Resize so dimensions are powers-of-two
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      const context = canvas.getContext("2d")!;
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      element = canvas;
+    }
+
+    return new TextureCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
+      (tex: TextureHandle, params: TextureCreateParams) => loadTextureImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate);
+  }
+
+  private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
+    const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
+    const useMipMaps: TextureFlag = (RenderTexture.Type.TileSection !== type) ? true : undefined;
+    const interpolate: TextureFlag = true; // WTF? (RenderTexture.Type.TileSection === type) ? true : undefined;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     return { format, wrapMode, useMipMaps, interpolate };
   }
@@ -249,9 +290,11 @@ export class TextureHandle implements IDisposable {
     return true;
   }
 
+  public get isDisposed(): boolean { return this._glTexture === undefined; }
+
   public dispose() {
-    if (undefined !== this._glTexture) {
-      System.instance.context.deleteTexture(this._glTexture);
+    if (!this.isDisposed) {
+      System.instance.context.deleteTexture(this._glTexture!);
       this._glTexture = undefined;
     }
   }
@@ -262,7 +305,7 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Create a texture from a jpeg or png */
-  public static createForImageSource(width: number, height: number, source: ImageSource, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
+  public static createForImageSource(width: number, height: number, source: ImageSource, type: RenderTexture.Type, loadCallback?: TextureLoadCallback) {
     return this.create(TextureCreateParams.createForImageSource(source, width, height, type, loadCallback));
   }
 
@@ -277,9 +320,13 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Create a texture from a bitmap */
-  public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
-    // ###TODO: Support non-power-of-two if necessary...
+  public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
+    assert(isPowerOfTwo(image.width) && isPowerOfTwo(image.height), "###TODO: Resize image dimensions to powers-of-two if necessary");
     return this.create(TextureCreateParams.createForImageBuffer(image, type));
+  }
+
+  public static createForImage(image: HTMLImageElement, type: RenderTexture.Type) {
+    return this.create(TextureCreateParams.createForImage(image, type));
   }
 
   // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.

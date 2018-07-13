@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { AccessToken } from "../../";
+import { AccessToken, IModelClient } from "../../";
 import {
-  IModelHubClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
+  Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
   AggregateResponseError, ConflictingLocksError,
   IModelHubRequestError,
-} from "../../imodelhub";
+} from "../../";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -29,7 +29,7 @@ describe("iModelHubClient LockHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   const imodelName = "imodeljs-clients Locks test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
   let briefcases: Briefcase[];
   let changeSet: ChangeSet;
   let lastObjectId: string;

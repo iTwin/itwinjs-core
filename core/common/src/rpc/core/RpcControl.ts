@@ -153,6 +153,11 @@ export class RpcControlChannel {
         this.dequeuePending(request);
         break;
       }
+
+      case RpcRequestStatus.NotFound: {
+        this.dequeuePending(request);
+        break;
+      }
     }
   }
 
@@ -234,7 +239,7 @@ export class RpcControlChannel {
     if (this.disposeInterval)
       return;
 
-    this.disposeInterval = setInterval(this.disposeIntervalHandler, 60000);
+    this.disposeInterval = setInterval(this.disposeIntervalHandler, 1000);
   }
 
   private channelInterface = class extends RpcInterface {

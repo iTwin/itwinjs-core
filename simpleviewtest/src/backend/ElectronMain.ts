@@ -4,9 +4,8 @@
 import * as path from "path";
 import * as url from "url";
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
+import { initializeBackend, getRpcInterfaces } from "./backend";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -15,11 +14,10 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 const electron = require("electron");
 
 // --------------------------------------------------------------------------------------
-// -------------- This part copied from ProtogistBackend.ts ---------------------------
-// Start the backend
-IModelHost.startup();
+// ------- Initialization and setup of host and tools before starting app ---------------
 
-Logger.initializeToConsole(); // configure logging for imodeljs-core
+// Start the backend
+initializeBackend();
 
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
@@ -63,10 +61,20 @@ function createWindow() {
 
 electron.app.on("ready", () => {
   // Initialize application gateway configuration for the backend
-  ElectronRpcManager.initializeImpl({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  ElectronRpcManager.initializeImpl({}, getRpcInterfaces());
 
   createWindow();
 });
+
+// tslint:disable-next-line:no-var-requires
+const configuration = require(path.join(__dirname, "public", "configuration.json"));
+if (configuration.useIModelBank) {
+  electron.app.on("certificate-error", (event: any, _webContents: any, _url: string, _error: any, _certificate: any, callback: any) => {
+    // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+    event.preventDefault();
+    callback(true);
+  });
+}
 
 electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin")

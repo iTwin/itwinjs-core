@@ -26,6 +26,8 @@ export class FrameBuffer implements IDisposable {
   private readonly colorAttachments: GLenum[] = [];
   public readonly depthBuffer?: DepthBuffer;
 
+  public get isDisposed(): boolean { return this._fbo === undefined; }
+
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
@@ -76,8 +78,8 @@ export class FrameBuffer implements IDisposable {
 
   public dispose(): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
-    if (undefined !== this._fbo) {
-      System.instance.context.deleteFramebuffer(this._fbo);
+    if (!this.isDisposed) {
+      System.instance.context.deleteFramebuffer(this._fbo!);
       this._fbo = undefined;
     }
   }
@@ -102,10 +104,7 @@ export class FrameBuffer implements IDisposable {
     gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
 
     if (bindAttachments) {
-      const dbExt: WEBGL_draw_buffers | undefined = System.instance.drawBuffersExtension;
-      if (undefined !== dbExt) {
-        dbExt.drawBuffersWEBGL(this.colorAttachments);
-      }
+      System.instance.setDrawBuffers(this.colorAttachments);
       this._bindState = FrameBufferBindState.BoundWithAttachments;
 
       if (TextureHandle.wantDebugIds)
@@ -158,6 +157,7 @@ interface Binding {
 }
 
 export class FrameBufferStack {
+  // FrameBuffers within this array are not owned, as this is only a storage device holding references
   private readonly _stack: Binding[] = [];
 
   private get top() { return !this.isEmpty ? this._stack[this._stack.length - 1] : undefined; }

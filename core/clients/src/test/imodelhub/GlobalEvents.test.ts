@@ -5,12 +5,12 @@ import * as chai from "chai";
 
 import { Guid } from "@bentley/bentleyjs-core";
 
-import { AccessToken } from "../../";
+import { AccessToken, IModelClient } from "../../";
 import {
-  IModelHubClient, IModelRepository, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
+  IModelRepository, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent,
-} from "../../imodelhub";
+} from "../../";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -94,7 +94,7 @@ describe("iModelHub GlobalEventHandler", () => {
   let globalEventSas: GlobalEventSAS;
   let projectId: string;
   const imodelName = "imodeljs-clients GlobalEvents test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
     projectId = await utils.getProjectId();

@@ -15,19 +15,19 @@ import { WebGLTestContext } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
-class FakeGMState extends GeometricModelState {
+export class FakeGMState extends GeometricModelState {
   public get is3d(): boolean { return true; }
   public get is2d(): boolean { return !this.is3d; }
   public constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
-class FakeModelProps implements ModelProps {
+export class FakeModelProps implements ModelProps {
   public modeledElement: RelatedElementProps;
   public classFullName: string = "fake";
   public constructor(props: RelatedElementProps) { this.modeledElement = props; }
 }
 
-class FakeREProps implements RelatedElementProps {
+export class FakeREProps implements RelatedElementProps {
   public id: Id64Props;
   public constructor() { this.id = Id64.invalidId; }
 }
@@ -866,6 +866,7 @@ describe("TileIO", () => {
     expect(rootTile.contentRange).not.to.be.undefined;
 
     expect(rootTile.childIds).not.to.be.undefined;
+
     expect(rootTile.childIds.length).to.equal(1); // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
   });
 });

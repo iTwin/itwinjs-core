@@ -4,7 +4,7 @@
 
 /** @module CartesianGeometry */
 
-import { Geometry, Angle, BeJSONFunctions, AngleProps, AxisOrder } from "./Geometry";
+import { Geometry, Angle, BeJSONFunctions, AngleProps } from "./Geometry";
 import { Ray3d } from "./AnalyticGeometry";
 import { RotMatrix, Transform } from "./Transform";
 
@@ -1296,66 +1296,10 @@ export class YawPitchRollAngles {
       result,
     );
   }
-  /**
-   * Expand the angles into a rotation matrix with a specified axis ordering for rotations
-   * @param axisOrder optional ordering of axis rotations (defaults to XYZ)
-   * @param result optional pre-allocated `RotMatrix`
-   */
-  public toRotMatrixOrderedRotations(axisOrder: AxisOrder = AxisOrder.XYZ, result?: RotMatrix) {
-    const rot = result !== undefined ? result : new RotMatrix();
-    const x = this.roll, y = this.pitch, z = this.yaw;
-    const a = Math.cos(x.radians), b = Math.sin(x.radians);
-    const c = Math.cos(y.radians), d = Math.sin(y.radians);
-    const e = Math.cos(z.radians), f = Math.sin(z.radians);
-
-    if (axisOrder === AxisOrder.XYZ) {
-      const ae = a * e, af = a * f, be = b * e, bf = b * f;
-      rot.setRowValues(
-        c * e, af + be * d, bf - ae * d,
-        -c * f, ae - bf * d, be + af * d,
-        d, -b * c, a * c,
-      );
-    } else if (axisOrder === AxisOrder.YXZ) {
-      const ce = c * e, cf = c * f, de = d * e, df = d * f;
-      rot.setRowValues(
-        ce + df * b, a * f, cf * b - de,
-        de * b - cf, a * e, df + ce * b,
-        a * d, -b, a * c,
-      );
-    } else if (axisOrder === AxisOrder.ZXY) {
-      const ce = c * e, cf = c * f, de = d * e, df = d * f;
-      rot.setRowValues(
-        ce - df * b, cf + de * b, -a * d,
-        -a * f, a * e, b,
-        de + cf * b, df - ce * b, a * c,
-      );
-    } else if (axisOrder === AxisOrder.ZYX) {
-      const ae = a * e, af = a * f, be = b * e, bf = b * f;
-      rot.setRowValues(
-        c * e, c * f, -d,
-        be * d - af, bf * d + ae, b * c,
-        ae * d + bf, af * d - be, a * c,
-      );
-    } else if (axisOrder === AxisOrder.YZX) {
-      const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-      rot.setRowValues(
-        c * e, f, -d * e,
-        bd - ac * f, a * e, ad * f + bc,
-        bc * f + ad, -b * e, ac - bd * f,
-      );
-    } else if (axisOrder === AxisOrder.XZY) {
-      const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-      rot.setRowValues(
-        c * e, ac * f + bd, bc * f - ad,
-        -f, a * e, b * e,
-        ad * f - bc, ad * f - bc, bd * f + ac,
-      );
-    }
-
-    return rot;
+  /** @returns Return the largest angle in radians */
+  public maxAbsRadians(): number {
+    return Geometry.maxAbsXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
   }
-  /** Return the largest angle in radians */
-  public maxAbsRadians(): number { return Geometry.maxAbsXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians); }
 
   /** Return the sum of the angles in squared radians */
   public sumSquaredRadians(): number {
@@ -1442,86 +1386,6 @@ export class YawPitchRollAngles {
     return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
   }
 
-  /**
-   * Create a YawPitchRollAngles from a RotMatrix with ordered rotations
-   * * Assumes that the matrix is a pure rotational matrix, and is unscaled
-   * @param rot the input matrix
-   * @param axisOrder optional ordering of axis rotations (defaults to XYZ)
-   * @param result optional pre-allocated `YawPitchRollAngles`
-   */
-  public static createFromRotMatrixOrderedRotations(rot: RotMatrix, axisOrder: AxisOrder = AxisOrder.XYZ, result?: YawPitchRollAngles): YawPitchRollAngles {
-    const angles = result ? result : new YawPitchRollAngles();
-    const m11 = rot.coffs[0], m12 = rot.coffs[4], m13 = rot.coffs[8];
-    const m21 = rot.coffs[1], m22 = rot.coffs[5], m23 = rot.coffs[9];
-    const m31 = rot.coffs[2], m32 = rot.coffs[6], m33 = rot.coffs[10];
-
-    if (axisOrder === AxisOrder.XYZ) {
-      angles.pitch.setRadians(Math.asin(Math.max(-1, Math.min(1, m13))));
-
-      if (Math.abs(m13) < 0.99999) {
-
-        angles.roll.setRadians(Math.atan2(- m23, m33));
-        angles.yaw.setRadians(Math.atan2(- m12, m11));
-
-      } else {
-
-        angles.roll.setRadians(Math.atan2(m32, m22));
-        angles.yaw.setRadians(0);
-
-      }
-    } else if (axisOrder === AxisOrder.YXZ) {
-      angles.roll.setRadians(Math.asin(-Math.max(-1, Math.min(1, m23))));
-
-      if (Math.abs(m23) < 0.99999) {
-        angles.pitch.setRadians(Math.atan2(m13, m33));
-        angles.yaw.setRadians(Math.atan2(m21, m22));
-      } else {
-        angles.pitch.setRadians(Math.atan2(-m31, m11));
-        angles.yaw.setRadians(0);
-      }
-    } else if (axisOrder === AxisOrder.ZXY) {
-      angles.roll.setRadians(Math.asin(Math.max(-1, Math.min(1, m32))));
-
-      if (Math.abs(m32) < 0.99999) {
-        angles.pitch.setRadians(Math.atan2(-m31, m33));
-        angles.yaw.setRadians(Math.atan2(-m12, m22));
-      } else {
-        angles.pitch.setRadians(0);
-        angles.yaw.setRadians(Math.atan2(m21, m11));
-      }
-    } else if (axisOrder === AxisOrder.ZYX) {
-      angles.pitch.setRadians(-Math.asin(Math.max(-1, Math.min(1, m31))));
-
-      if (Math.abs(m31) < 0.99999) {
-        angles.roll.setRadians(Math.atan2(m32, m33));
-        angles.yaw.setRadians(Math.atan2(m21, m11));
-      } else {
-        angles.roll.setRadians(0);
-        angles.yaw.setRadians(Math.atan2(-m12, m22));
-      }
-    } else if (axisOrder === AxisOrder.YZX) {
-      angles.yaw.setRadians(Math.asin(Math.max(-1, Math.min(1, m21))));
-
-      if (Math.abs(m21) < 0.99999) {
-        angles.roll.setRadians(Math.atan2(-m23, m22));
-        angles.pitch.setRadians(Math.atan2(-m31, m11));
-      } else {
-        angles.roll.setRadians(0);
-        angles.pitch.setRadians(Math.atan2(m13, m33));
-      }
-    } else if (axisOrder === AxisOrder.XZY) {
-      angles.yaw.setRadians(-Math.asin(Math.max(-1, Math.min(1, m12))));
-
-      if (Math.abs(m12) < 0.99999) {
-        angles.roll.setRadians(Math.atan2(m32, m22));
-        angles.pitch.setRadians(Math.atan2(m13, m11));
-      } else {
-        angles.roll.setRadians(Math.atan2(-m23, m33));
-        angles.pitch.setRadians(0);
-      }
-    }
-    return angles;
-  }
 }
 
 export class Point2d extends XY implements BeJSONFunctions {

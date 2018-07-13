@@ -97,7 +97,7 @@ export class IModelTestUtils {
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-      iModelInfo.changeSets = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelInfo.id);
+      iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");

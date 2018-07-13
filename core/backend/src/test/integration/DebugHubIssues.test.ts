@@ -40,8 +40,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await iModelDb.pushChanges(accessToken!);
 
     // Create a named version on the just uploaded change set
-    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, iModelId, BriefcaseManager.hubClient);
-    await BriefcaseManager.hubClient.Versions().create(accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, iModelId, BriefcaseManager.imodelClient);
+    await BriefcaseManager.imodelClient.Versions().create(accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {

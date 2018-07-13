@@ -13,17 +13,17 @@
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets && npm run build-code",
+    "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/backend/test\""
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "8",
-    "@bentley/geometry-core": "9",
-    "@bentley/imodeljs-backend": "0",
-    "@bentley/imodeljs-clients": "7",
-    "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-frontend": "0",
+    "@bentley/bentleyjs-core": "0.98.0-3",
+    "@bentley/geometry-core": "0.98.0-3",
+    "@bentley/imodeljs-backend": "0.98.0-3",
+    "@bentley/imodeljs-clients": "0.98.0-3",
+    "@bentley/imodeljs-common": "0.98.0-3",
+    "@bentley/imodeljs-frontend": "0.98.0-3",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
@@ -39,7 +39,7 @@
     "webpack": "^3.10.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "5",
+    "@bentley/bentleyjs-tools": "0.98.0-3",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.11.1",
