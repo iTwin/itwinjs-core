@@ -55,6 +55,8 @@ export class IModelBankHandler extends IModelBaseHandler {
     return this._defaultIModelBankOptionsProvider.assignOptions(options);
   }
 
+  public formatProjectIdForUrl(_projectId: string) { return ""; }
+
   protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected getDefaultUrl(): string { return this._url; }

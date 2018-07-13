@@ -246,14 +246,23 @@ export class BriefcaseManager {
 
   /** Make sure that BriefcaseManager is configured to access iModels in the specified context. */
   public static setClientFromIModelTokenContext(contextId: string | undefined) {
-    if (contextId === undefined)
+    if (this._lastIModelClientContext === contextId)
       return;
-    if (this._lastIModelClientContext !== undefined && this._lastIModelClientContext === contextId)
-      return;
-    this._lastIModelClientContext = contextId;
-    const iModelBankAccessContext = IModelBankAccessContext.fromIModelTokenContextId(contextId);
-    if (iModelBankAccessContext !== undefined)
+    if (contextId === undefined) {    // Go back to the default iModelHub client
+      this._lastIModelClientContext = undefined;
+      this._imodelClient = undefined;
+    } else {                          // Go to a non-default iModelServer client.
+      const iModelBankAccessContext = IModelBankAccessContext.fromIModelTokenContextId(contextId);
+      if (iModelBankAccessContext === undefined)
+        throw new IModelError(BentleyStatus.ERROR, "Only IModelBankAccessContext is supported");
+      this._lastIModelClientContext = contextId;
       this.setClientFromAccessContext(iModelBankAccessContext);
+    }
+  }
+
+  /** Make sure that BriefcaseManager is configured to access the specified iModel in the appropriate context. */
+  public static setClientForBriefcase(briefcase: BriefcaseEntry) {
+    this.setClientFromIModelTokenContext(briefcase.imodelClientContext);
   }
 
   private static _connectClient?: ConnectClient;
@@ -768,7 +777,7 @@ export class BriefcaseManager {
     if (briefcase.briefcaseId === BriefcaseId.Standalone)
       return;
 
-    this.setClientFromIModelTokenContext(briefcase.imodelClientContext);
+    this.setClientForBriefcase(briefcase);
 
     try {
       await BriefcaseManager.imodelClient.Briefcases().get(accessToken, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
@@ -1030,7 +1039,7 @@ export class BriefcaseManager {
   private static async applyChangeSets(accessToken: AccessToken, briefcase: BriefcaseEntry, targetVersion: IModelVersion, processOption: ChangeSetApplyOption): Promise<void> {
     assert(!!briefcase.nativeDb && briefcase.isOpen);
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId, "Mismatch between briefcase and the native Db");
-    this.setClientFromIModelTokenContext(briefcase.imodelClientContext);
+    this.setClientForBriefcase(briefcase);
 
     if (briefcase.changeSetIndex === undefined)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file"));
@@ -1199,7 +1208,7 @@ export class BriefcaseManager {
 
   /** Update codes for all pending ChangeSets */
   private static async updatePendingChangeSets(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
-    this.setClientFromIModelTokenContext(briefcase.imodelClientContext);
+    this.setClientForBriefcase(briefcase);
 
     let pendingChangeSets = BriefcaseManager.getPendingChangeSets(briefcase);
     if (pendingChangeSets.length === 0)
