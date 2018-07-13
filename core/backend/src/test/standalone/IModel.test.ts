@@ -8,7 +8,7 @@ import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
-  IModelDb, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType, Entity, EntityMetaData, PrimitiveTypeCode,
+  IModelDb, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType, Entity,
   Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
 } from "../../backend";
 import {
