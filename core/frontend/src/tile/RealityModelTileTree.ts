@@ -42,16 +42,16 @@ class CesiumUtils {
   }
 }
 
-class ScalableMeshTileTreeProps implements TileTreeProps {
+class RealityModelTileTreeProps implements TileTreeProps {
   public id: Id64Props = "";
   public rootTile: TileProps;
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  constructor(json: any, public client: ScalableMeshTileClient, ecefToDb: Transform, rootGeometry: ArrayBuffer | undefined) {
+  constructor(json: any, public client: RealityModelTileClient, ecefToDb: Transform, rootGeometry: ArrayBuffer | undefined) {
     this.tilesetJson = json.root;
     this.id = new Id64();
-    this.rootTile = new ScalableMeshTileProps(json.root, "", this, rootGeometry);
+    this.rootTile = new RealityModelTileProps(json.root, "", this, rootGeometry);
     let tileToDb = CesiumUtils.transformFromJson(json.asset.TileToDB);
 
     if (undefined === tileToDb) {
@@ -65,7 +65,7 @@ class ScalableMeshTileTreeProps implements TileTreeProps {
   }
 }
 
-class ScalableMeshTileProps implements TileProps {
+class RealityModelTileProps implements TileProps {
   public id: TileId;
   public range: Range3dProps;
   public contentRange?: Range3dProps;
@@ -73,7 +73,7 @@ class ScalableMeshTileProps implements TileProps {
   public childIds: string[];
   public geometry?: string | ArrayBuffer;
   public yAxisUp: boolean;
-  constructor(json: any, thisId: string, public tree: ScalableMeshTileTreeProps, geometry: ArrayBuffer | undefined) {
+  constructor(json: any, thisId: string, public tree: RealityModelTileTreeProps, geometry: ArrayBuffer | undefined) {
     this.id = new TileId(new Id64(), thisId);
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
     this.maximumSize = 0.0; // nonzero only if content present.   CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
@@ -92,12 +92,12 @@ class ScalableMeshTileProps implements TileProps {
   }
 }
 
-class ScalableMeshTileLoader {
-  constructor(private tree: ScalableMeshTileTreeProps) { }
+class RealityModelTileLoader {
+  constructor(private tree: RealityModelTileTreeProps) { }
   public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
 
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
-    const props: ScalableMeshTileProps[] = [];
+    const props: RealityModelTileProps[] = [];
     const stopWatch = new StopWatch("", true);
     debugPrint("requesting " + tileIds.length + " tiles");
     await Promise.all(tileIds.map(async (tileId) => {
@@ -115,7 +115,7 @@ class ScalableMeshTileLoader {
 
     return props;
   }
-  private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<ScalableMeshTileProps | undefined> {
+  private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<RealityModelTileProps | undefined> {
     const separatorIndex = id.indexOf("_");
     const childId = (separatorIndex < 0) ? id : id.substring(0, separatorIndex);
     const childIndex = parseInt(childId, 10);
@@ -129,7 +129,7 @@ class ScalableMeshTileLoader {
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (undefined === foundChild.content)
-      return new ScalableMeshTileProps(foundChild, thisParentId, this.tree, undefined);
+      return new RealityModelTileProps(foundChild, thisParentId, this.tree, undefined);
 
     if (foundChild.content.url.endsWith("json")) {
       const subTree = await this.tree.client.getTileJson(foundChild.content.url);
@@ -139,32 +139,22 @@ class ScalableMeshTileLoader {
 
     const content = await this.tree.client.getTileContent(foundChild.content.url);
     assert(content !== undefined, "scalable mesh tile content not found.");
-    return new ScalableMeshTileProps(foundChild, thisParentId, this.tree, content);
+    return new RealityModelTileProps(foundChild, thisParentId, this.tree, content);
   }
 }
 
 /** @hidden */
-export class ScalableMeshModelState extends SpatialModelState {
-  public static schemaName = "ScalableMesh"; // must override - base class uses "BisCore"
+export class RealityModelTileTree {
 
-  public loadTileTree(): TileTree.LoadStatus {
-    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
-      return this._loadStatus;
+  public static loadRealityModelTileTree(url: string, modelState: SpatialModelState): void {
 
-    this._loadStatus = TileTree.LoadStatus.Loading;
-
-    const json = this.jsonProperties.scalablemesh;
-    if (json !== undefined && json.FileId !== undefined) {
-      this.getTileTreeProps(json.FileId, this.iModel).then((tileTreeProps: ScalableMeshTileTreeProps) => {
-        this.setTileTree(tileTreeProps, new ScalableMeshTileLoader(tileTreeProps));
-        IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
-    }
-
-    return this._loadStatus;
+    this.getTileTreeProps(url, modelState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
+      modelState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
+      IModelApp.viewManager.onNewTilesReady();
+    }).catch((_err) => modelState.loadStatus = TileTree.LoadStatus.NotFound);
   }
 
-  private async getTileTreeProps(url: string, iModel: IModelConnection): Promise<ScalableMeshTileTreeProps> {
+  private static async getTileTreeProps(url: string, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
 
     if (undefined !== url) {
       const urlParts = url.split("/");
@@ -181,7 +171,7 @@ export class ScalableMeshModelState extends SpatialModelState {
         clientProps = { accessToken, projectId, tilesId, client };
       }
 
-      const tileClient = new ScalableMeshTileClient(clientProps);
+      const tileClient = new RealityModelTileClient(clientProps);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
       let dbToEcef: Transform = Transform.createIdentity();
@@ -196,11 +186,10 @@ export class ScalableMeshModelState extends SpatialModelState {
       if (undefined !== json.root.content && undefined !== json.root.content.url)
         rootGeometry = await tileClient.getTileContent(json.root.content.url);
 
-      return new ScalableMeshTileTreeProps(json, tileClient, ecefToDb, rootGeometry);
+      return new RealityModelTileTreeProps(json, tileClient, ecefToDb, rootGeometry);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     }
-    throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
   }
 }
 
@@ -211,7 +200,7 @@ interface RDSClientProps {
   client: RealityDataServicesClient;
 }
 
-class ScalableMeshTileClient {
+class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
   private baseUrl: string = "";
   constructor(props?: RDSClientProps) { this.rdsProps = props; }
