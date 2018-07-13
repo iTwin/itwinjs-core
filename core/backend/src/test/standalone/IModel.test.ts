@@ -8,7 +8,7 @@ import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
-  IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
+  IModelDb, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType, Entity, EntityMetaData, PrimitiveTypeCode,
   Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
 } from "../../backend";
 import {
@@ -1203,5 +1203,65 @@ describe("iModel", () => {
     // tslint:disable-next-line:no-console
     console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
 
+  });
+
+  it("Run plain SQL", () => {
+    imodel1.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    imodel1.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+      stmt.bindValue(1, "Dummy 1");
+      stmt.bindValue(2, 100);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    imodel1.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+      stmt.bindValues(["Dummy 2", 200]);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    imodel1.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+      stmt.bindValue(":p1", "Dummy 3");
+      stmt.bindValue(":p2", 300);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    imodel1.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+      stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    imodel1.saveChanges();
+
+    imodel1.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
+      for (let i: number = 1; i <= 4; i++) {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        assert.equal(stmt.getColumnCount(), 3);
+        const val0: SqliteValue = stmt.getValue(0);
+        assert.equal(val0.columnName, "Id");
+        assert.equal(val0.type, SqliteValueType.Integer);
+        assert.isFalse(val0.isNull());
+        assert.equal(val0.getInteger(), i);
+
+        const val1: SqliteValue = stmt.getValue(1);
+        assert.equal(val1.columnName, "Name");
+        assert.equal(val1.type, SqliteValueType.String);
+        assert.isFalse(val1.isNull());
+        assert.equal(val1.getString(), `Dummy ${i}`);
+
+        const val2: SqliteValue = stmt.getValue(2);
+        assert.equal(val2.columnName, "Code");
+        assert.equal(val2.type, SqliteValueType.Integer);
+        assert.isFalse(val2.isNull());
+        assert.equal(val2.getInteger(), i * 100);
+
+        const row: any = stmt.getRow();
+        assert.equal(row.id, i);
+        assert.equal(row.name, `Dummy ${i}`);
+        assert.equal(row.code, i * 100);
+      }
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
   });
 });
