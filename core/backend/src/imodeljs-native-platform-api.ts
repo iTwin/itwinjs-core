@@ -943,11 +943,6 @@ export declare class NativeECPresentationManager implements IDisposable {
    */
   public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<NativeECPresentationStatus, void>;
   /**
-   * Set the locale that should be used for localizing
-   * presentation data.
-   */
-  public setActiveLocale(locale: string): ErrorStatusOrResult<NativeECPresentationStatus, void>;
-  /**
    * Set user setting value.
    * @param ruleSetId Id of the ruleset setting is associated with.
    * @param settingId Id of the setting.

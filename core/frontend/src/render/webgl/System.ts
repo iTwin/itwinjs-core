@@ -236,11 +236,6 @@ export class IdMap implements IDisposable {
     return this.materialMap.get(key);
   }
 
-  /** Find a cached texture using its key. If not found, returns undefined. */
-  public findTexture(key: string): RenderTexture | undefined {
-    return this.textureMap.get(key);
-  }
-
   /** Find a cached gradient using the gradient symbology. If not found, returns undefined. */
   public findGradient(symb: Gradient.Symb): RenderTexture | undefined {
     return this.gradientMap.get(symb);
@@ -259,56 +254,46 @@ export class IdMap implements IDisposable {
     return material;
   }
 
+  private createTexture(params: RenderTexture.Params, handle?: TextureHandle): Texture | undefined {
+    if (undefined === handle)
+      return undefined;
+
+    const texture = new Texture(params, handle);
+    this.addTexture(texture);
+    return texture;
+  }
+
   /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
   private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const textureHandle = TextureHandle.createForImageBuffer(img, params.type);
-    if (textureHandle === undefined)
-      return undefined;
-    const texture = new Texture(params, textureHandle);
-    if (params.key)
-      this.textureMap.set(params.key, texture);
-    else
-      this.keylessTextures.push(texture);
-    return texture;
+    return this.createTexture(params, TextureHandle.createForImageBuffer(img, params.type));
   }
 
   /** Attempt to create and return a new texture from an ImageSource. This will cache the texture if its key is valid. */
   private createTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key && this.textureMap.get(params.key) !== undefined)
-      return undefined;
-
-    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc, params.type);
-    if (textureHandle === undefined)
-      return undefined;
-    const texture = new Texture(params, textureHandle);
-    if (params.key)
-      this.textureMap.set(params.key, texture);
-    else
-      this.keylessTextures.push(texture);
-    return texture;
+    return this.createTexture(params, TextureHandle.createForImageSource(width, height, imgSrc, params.type));
   }
+
+  private createTextureFromImage(image: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForImage(image, params.type));
+  }
+
+  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textureMap.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageSource. If a new texture was created, it will be cached provided its key is valid. */
   public getTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key) {
-      const existingTexture = this.textureMap.get(params.key);
-      if (existingTexture)
-        return existingTexture;
-    }
-
-    // const image = this.extractImage(imgSrc);
-    return this.createTextureFromImageSource(imgSrc, width, height, params);
+    const tex = this.findTexture(params.key);
+    return undefined !== tex ? tex : this.createTextureFromImageSource(imgSrc, width, height, params);
   }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key) {
-      const existingTexture = this.textureMap.get(params.key);
-      if (existingTexture)
-        return existingTexture;
-    }
+    const tex = this.findTexture(params.key);
+    return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
+  }
 
-    return this.createTextureFromImageBuffer(img, params);
+  public getTextureFromImage(image: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
+    const tex = this.findTexture(params.key);
+    return undefined !== tex ? tex : this.createTextureFromImage(image, params);
   }
 
   /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
@@ -322,6 +307,7 @@ export class IdMap implements IDisposable {
     const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
     if (!textureHandle)
       return undefined;
+
     const texture = new Texture(Texture.Params.defaults, textureHandle);
     this.addGradient(grad, texture);
     return texture;
@@ -459,10 +445,7 @@ export class System extends RenderSystem {
    * If no render map exists for the imodel, returns undefined.
    */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
-    }
+    const idMap = this.getIdMap(imodel);
     const material = idMap.getMaterial(params);
     return material;
   }
@@ -477,12 +460,7 @@ export class System extends RenderSystem {
 
   /** Creates a texture using an ImageBuffer and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
-    }
-    const texture = idMap.getTexture(image, params);
-    return texture;
+    return this.getIdMap(imodel).getTexture(image, params);
   }
 
   /**
@@ -496,20 +474,22 @@ export class System extends RenderSystem {
       return (textureHandle === undefined) ? undefined : new Texture(params, textureHandle);
     }
 
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
+    return this.getIdMap(imodel).getTextureFromImageSource(source, width, height, params);
+  }
+
+  public createTextureFromImage(image: HTMLImageElement, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
+    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
+    if (undefined === imodel) {
+      const textureHandle = TextureHandle.createForImage(image, params.type);
+      return undefined !== textureHandle ? new Texture(params, textureHandle) : undefined;
     }
-    const texture = idMap.getTextureFromImageSource(source, width, height, params);
-    return texture;
+
+    return this.getIdMap(imodel).getTextureFromImage(image, params);
   }
 
   /** Creates a texture using gradient symbology and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
-    }
+    const idMap = this.getIdMap(imodel);
     const texture = idMap.getGradient(symb);
     return texture;
   }
@@ -532,6 +512,11 @@ export class System extends RenderSystem {
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
+  }
+
+  private getIdMap(imodel: IModelConnection): IdMap {
+    const map = this.resourceCache.get(imodel);
+    return undefined !== map ? map : this.createIModelMap(imodel);
   }
 }
 

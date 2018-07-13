@@ -136,6 +136,19 @@ describe.skip("Test pixel values of resized texture in callback (async texture l
       }
     }
   });
+
+  it("should produce a texture from an html image and resize to power of two", async () => {
+    if (!WebGLTestContext.isInitialized)
+      return;
+
+    const imageSource = new ImageSource(pixels, ImageSourceFormat.Png);
+    const image = await ImageUtil.extractImage(imageSource);
+    assert(undefined !== image);
+    const imageTexture = TextureHandle.createForImage(image!, RenderTexture.Type.Normal);
+    assert(undefined !== imageTexture);
+    expect(imageTexture!.width).to.equal(4);
+    expect(imageTexture!.height).to.equal(4);
+  });
 });
 
 describe("ImageUtil", () => {
