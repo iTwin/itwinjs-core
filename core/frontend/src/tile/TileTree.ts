@@ -122,12 +122,8 @@ export class Tile implements IDisposable {
         }
     }
 
-    if (undefined !== reader) {
-      const result = reader.read();
-      if (undefined !== result) {
-        this._graphic = result.renderGraphic;
-      }
-    }
+    if (undefined !== reader)
+      reader.read().then(result => this._graphic = result.renderGraphic).catch(_err => { });
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }

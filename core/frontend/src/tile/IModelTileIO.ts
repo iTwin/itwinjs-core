@@ -77,7 +77,7 @@ export namespace IModelTileIO {
       return undefined !== header;
     }
 
-    public read(): GltfTileIO.ReaderResult {
+    public async read(): Promise<GltfTileIO.ReaderResult> {
       // ###TODO don't re-read the headers...
       this.buffer.reset();
       const header = new Header(this.buffer);
@@ -92,7 +92,7 @@ export namespace IModelTileIO {
 
       const isComplete = Flags.None === (header.flags & Flags.Incomplete);
       const isCurved = Flags.None !== (header.flags & Flags.ContainsCurves);
-      return this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange);
+      return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
     }
 
     private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem) {

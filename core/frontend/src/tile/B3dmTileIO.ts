@@ -52,7 +52,7 @@ export namespace B3dmTileIO {
     private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, private range: ElementAlignedBox3d) {
       super(props, model, system);
     }
-    public read(): GltfTileIO.ReaderResult {
+    public async read(): Promise<GltfTileIO.ReaderResult> {
       const isLeaf = true;    // TBD...
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
@@ -60,7 +60,7 @@ export namespace B3dmTileIO {
       const feature = new Feature();
       featureTable.insert(feature);
 
-      return this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range);
+      return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
       const feature = new Feature();

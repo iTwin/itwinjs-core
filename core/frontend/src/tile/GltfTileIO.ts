@@ -238,12 +238,11 @@ export namespace GltfTileIO {
     protected readonly returnToCenter: number[] | undefined;
     protected readonly yAxisUp: boolean;
 
-    public abstract read(): ReaderResult;
+    public async abstract read(): Promise<ReaderResult>;
 
     public get modelId(): Id64 { return this.model.id; }
 
-    public readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
-
+    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
       const readStatus = this.readGltf(geometry);
 
