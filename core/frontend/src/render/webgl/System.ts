@@ -254,31 +254,27 @@ export class IdMap implements IDisposable {
     return material;
   }
 
-  /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
-  private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const textureHandle = TextureHandle.createForImageBuffer(img, params.type);
-    if (textureHandle === undefined)
+  private createTexture(params: RenderTexture.Params, handle?: TextureHandle): Texture | undefined {
+    if (undefined === handle)
       return undefined;
-    const texture = new Texture(params, textureHandle);
+
+    const texture = new Texture(params, handle);
     this.addTexture(texture);
     return texture;
+  }
+
+  /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
+  private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForImageBuffer(img, params.type));
   }
 
   /** Attempt to create and return a new texture from an ImageSource. This will cache the texture if its key is valid. */
   private createTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key && this.textureMap.get(params.key) !== undefined)
-      return undefined;
-
-    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc, params.type);
-    if (textureHandle === undefined)
-      return undefined;
-    const texture = new Texture(params, textureHandle);
-    this.addTexture(texture);
-    return texture;
+    return this.createTexture(params, TextureHandle.createForImageSource(width, height, imgSrc, params.type));
   }
 
-  private createTextureFromImage(_image: HTMLImageElement, _params: RenderTexture.Params): RenderTexture | undefined {
-    return undefined; // ###TODO
+  private createTextureFromImage(image: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForImage(image, params.type));
   }
 
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textureMap.get(key) : undefined; }
@@ -482,8 +478,11 @@ export class System extends RenderSystem {
   }
 
   public createTextureFromImage(image: HTMLImageElement, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    if (undefined === imodel)
-      return undefined; // ###TODO: if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
+    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
+    if (undefined === imodel) {
+      const textureHandle = TextureHandle.createForImage(image, params.type);
+      return undefined !== textureHandle ? new Texture(params, textureHandle) : undefined;
+    }
 
     return this.getIdMap(imodel).getTextureFromImage(image, params);
   }
