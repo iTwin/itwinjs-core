@@ -417,8 +417,8 @@ describe("Polyface.Faces", () => {
     ];
 
     const options = new StrokeOptions();
-    options.needParams = true;
-    options.needNormals = true;
+    options._needParams = true;
+    options._needParams = true;
     options.shouldTriangulate = false;
     options.maxEdgeLength = 4;
 
@@ -469,8 +469,8 @@ describe("Polyface.Faces", () => {
 
   it.skip("Solid primitive param verification with native", () => {
     const options = new StrokeOptions();
-    options.needNormals = true;
-    options.needParams = true;
+    options._needParams = true;
+    options._needParams = true;
     const builder = PolyfaceBuilder.create(options);
     builder.toggleReversedFacetFlag();
     const torusPipes = Sample.createTorusPipes();
@@ -525,11 +525,11 @@ it("facets from sweep contour", () => {
     const sweepContour = SweepContour.createForLinearSweep(loop);
 
     const options = new StrokeOptions();
-    options.needNormals = false;
-    options.needParams = false;
+    options._needParams = false;
+    options._needParams = false;
     const builder = PolyfaceBuilder.create(options);
 
-    sweepContour!.emitFacets(builder, options, false);
+    sweepContour!.emitFacets(builder, false);
     const polyface = builder.claimPolyface(true);
     if (!ck.testExactNumber(polygonPoints.length - 2, polyface.facetCount, "Triangle count in polygon")) {
       const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
@@ -543,7 +543,7 @@ it("facets for ACS", () => {
   const ck = new Checker();
   const savedMeshes = [];
   let counter0 = 0;
-  for (const a of [4.5, 4.1, 3.5, 3]) {
+  for (const a of [4.5]) { // , 4.1, 3.5, 3]) {
     // sawtooth. Triangulate leading portions that are valid polygons (edge from origin does not cross)
     const basePoints = [
       Point3d.create(0, 1, 0),
@@ -554,6 +554,7 @@ it("facets for ACS", () => {
       Point3d.create(4, 3, 0),
       Point3d.create(0, 3, 0)];
     let counter1 = 0;
+    const needParams = true;
     for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
       const arrowPoints = [];
       for (let j = 0; j < basePoints.length; j++)
@@ -562,16 +563,19 @@ it("facets for ACS", () => {
       const sweepContour = SweepContour.createForLinearSweep(loop);
 
       const options = new StrokeOptions();
-      options.needNormals = false;
-      options.needParams = false;
+      options._needParams = false;
+      options._needParams = needParams;
       const builder = PolyfaceBuilder.create(options);
 
-      sweepContour!.emitFacets(builder, options, false);
+      sweepContour!.emitFacets(builder, false);
       const polyface = builder.claimPolyface(true);
-      if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, "Triangle count in arrow " + counter0 + "." + counter1)) {
-        console.log(" Triangulation From Start index " + startIndex);
-        const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
+      if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, "Triangle count in arrow " + counter0 + "." + counter1 + " needParams" + needParams)
+        || Checker.noisy.ACSArrows) {
+        console.log(" Triangulation From Start index " + startIndex, " (needParams " + needParams + ")");
+        console.log("   arrow parameter " + a);
+        console.log("    Facet Count " + polyface.facetCount, " case " + counter0 + "." + counter1);
         console.log(prettyPrint(arrowPoints));
+        const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
         console.log(prettyPrint(jsPolyface));
       }
       polyface.tryTranslateInPlace(counter1 * 10, counter0 * 10, 0);
@@ -592,11 +596,11 @@ it("facets from sweep contour with holes", () => {
   const sweepContour = SweepContour.createForLinearSweep(region);
 
   const options = new StrokeOptions();
-  options.needNormals = false;
-  options.needParams = false;
+  options._needParams = false;
+  options._needParams = false;
   const builder = PolyfaceBuilder.create(options);
 
-  sweepContour!.emitFacets(builder, options, false);
+  sweepContour!.emitFacets(builder, false);
   const polyface = builder.claimPolyface(true);
   //    The real test -- when triangulator is ready . . .if (!ck.testExactNumber(8, polyface.facetCount, "Triangle count in retangle with rectangle hole")) {
   if (true) {

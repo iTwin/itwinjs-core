@@ -140,6 +140,8 @@ class ScalableMeshTileLoader {
 
 /** @hidden */
 export class ScalableMeshModelState extends SpatialModelState {
+  public static schemaName = "ScalableMesh"; // must override - base class uses "BisCore"
+
   public loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
       return this._loadStatus;

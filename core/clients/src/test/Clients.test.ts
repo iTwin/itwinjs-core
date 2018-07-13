@@ -5,7 +5,7 @@ import * as chai from "chai";
 import { UrlDiscoveryClient } from "../Client";
 import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
 import { ConnectClient, RbacClient } from "../ConnectClients";
-import { IModelHubBaseHandler } from "../imodelhub/BaseHandler";
+import { IModelBaseHandler } from "..";
 import { IModelWebNavigatorClient } from "../IModelWebNavigatorClient";
 import { RealityDataServicesClient } from "../RealityDataServicesClient";
 import { TileDataAccessClient } from "../TileDataAccessClient";
@@ -75,19 +75,19 @@ describe("UrlDiscoveryClient", () => {
 
   it("should discover IModelHubService URLs correctly", async () => {
     IModelHubUrlMock.mockGetUrl("DEV");
-    let url = await urlDiscoveryClient.discoverUrl(IModelHubBaseHandler.searchKey, "DEV");
+    let url = await urlDiscoveryClient.discoverUrl(IModelBaseHandler.searchKey, "DEV");
     chai.expect(url).equals("https://dev-imodelhubapi.bentley.com");
 
     IModelHubUrlMock.mockGetUrl("QA");
-    url = await urlDiscoveryClient.discoverUrl(IModelHubBaseHandler.searchKey, "QA");
+    url = await urlDiscoveryClient.discoverUrl(IModelBaseHandler.searchKey, "QA");
     chai.expect(url).equals("https://qa-imodelhubapi.bentley.com");
 
     IModelHubUrlMock.mockGetUrl("PROD");
-    url = await urlDiscoveryClient.discoverUrl(IModelHubBaseHandler.searchKey, "PROD");
+    url = await urlDiscoveryClient.discoverUrl(IModelBaseHandler.searchKey, "PROD");
     chai.expect(url).equals("https://imodelhubapi.bentley.com");
 
     IModelHubUrlMock.mockGetUrl("PERF");
-    url = await urlDiscoveryClient.discoverUrl(IModelHubBaseHandler.searchKey, "PERF");
+    url = await urlDiscoveryClient.discoverUrl(IModelBaseHandler.searchKey, "PERF");
     chai.expect(url).equals("https://perf-imodelhubapi.bentley.com");
   });
 

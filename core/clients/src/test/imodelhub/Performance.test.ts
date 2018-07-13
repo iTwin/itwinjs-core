@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, ResponseError, AuthenticationError } from "../../";
+import { AccessToken, ResponseError, AuthenticationError, IModelClient } from "../../";
 
 import {
-  IModelHubClient, Briefcase, Code, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
-} from "../../imodelhub";
+  Briefcase, Code, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
+} from "../../";
 
 import * as utils from "./TestUtils";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -16,7 +16,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
   const imodelName = "imodeljs-clients Performance test";
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   async function setup(recreate = false) {
     accessToken = await utils.login();

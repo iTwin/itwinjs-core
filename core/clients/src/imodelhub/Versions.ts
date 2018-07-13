@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubBaseHandler } from "./BaseHandler";
 
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { InstanceIdQuery } from "./Query";
 import { ThumbnailSize } from "./Thumbnails";
+import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -81,12 +81,12 @@ export class VersionQuery extends InstanceIdQuery {
  * Handler for all methods related to @see Version instances.
  */
 export class VersionHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelBaseHandler;
   /**
-   * Constructor for VersionHandler. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for VersionHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelHubBaseHandler) {
+  constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 

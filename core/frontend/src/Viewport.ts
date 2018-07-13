@@ -24,6 +24,9 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
+/** A function which customizes the appearance of Features within a Viewport. */
+export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
+
 /** Viewport synchronization flags */
 export class SyncFlags {
   private decorations = false;
@@ -366,6 +369,8 @@ export class Viewport {
   public static nearScale24 = 0.0003;
   private _evController?: EventController;
   private _view!: ViewState;
+  private _addFeatureOverrides?: AddFeatureOverrides;
+
   /** @hidden */
   public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
@@ -443,6 +448,19 @@ export class Viewport {
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
+
+  /**
+   * Sets a function which can customize the appearance of features within a viewport.
+   * If defined, this function will be invoked whenever the overrides are determined to need refreshing.
+   * The overrides can be explicitly marked as needing a refresh by calling ViewState.setFeatureOverridesDirty().
+   */
+  public set addFeatureOverrides(addFeatureOverrides: AddFeatureOverrides | undefined) {
+    if (addFeatureOverrides !== this._addFeatureOverrides) {
+      this._addFeatureOverrides = addFeatureOverrides;
+      this.view.setFeatureOverridesDirty(true);
+    }
+  }
+
   /** True if this is a 3d view with the camera turned on. */
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   /** @hidden */
@@ -491,7 +509,7 @@ export class Viewport {
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents(this) as Range3d;
+    let extents = view.getViewedExtents() as Range3d;
     if (extents.isNull())
       return;
 
@@ -793,7 +811,7 @@ export class Viewport {
         // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
         this.alignWithRootZ(); // make sure we're in a z Up view
 
-        const extents = view.getViewedExtents(this);
+        const extents = view.getViewedExtents();
         if (extents.isNull()) {
           extents.low.z = -Viewport.get2dFrustumDepth();
           extents.high.z = Viewport.get2dFrustumDepth();
@@ -1239,7 +1257,7 @@ export class Viewport {
   /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
-    const viewRange = this.view.computeFitRange(this);
+    const viewRange = this.view.computeFitRange();
 
     return viewRange;
   }
@@ -1416,59 +1434,67 @@ export class Viewport {
 
   /** Show the surface normal for geometry under the cursor when snapping. */
   private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    const vp = context.viewport!;
-    if (!vp.view.is3d())
+    if (!context.viewport.view.is3d())
       return; // Not valuable feedback in 2d...
 
     if (!hit.isSnapDetail() || !hit.normal || hit.isPointAdjusted())
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
-    const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
+    const graphic = context.createWorldOverlay();
+    const color = new ColorDef(~context.viewport.hilite.color.getRgb); // Invert hilite color for good contrast...
     const colorFill = color.clone();
-    const pt = hit.snapPoint;
-    const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
-    const normal = hit.normal;
-    const rMatrix = RotMatrix.createRigidHeadsUp(normal);
+
     color.setTransparency(100);
     colorFill.setTransparency(200);
-
-    const ellipse = Arc3d.createScaledXYColumns(pt, rMatrix, radius, radius, AngleSweep.create360())!;
-    const graphic = context.createWorldOverlay();
     graphic.setSymbology(color, colorFill, 1);
+
+    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
+    const rMatrix = RotMatrix.createRigidHeadsUp(hit.normal);
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+
     graphic.addArc(ellipse, true, true);
     graphic.addArc(ellipse, false, false);
 
     const length = (0.6 * radius);
+    const normal = Vector3d.create();
+
     ellipse.vector0.normalize(normal);
-    const pt1 = pt.plusScaled(normal, length);
-    const pt2 = pt.plusScaled(normal, -length);
+    const pt1 = hit.snapPoint.plusScaled(normal, length);
+    const pt2 = hit.snapPoint.plusScaled(normal, -length);
     graphic.addLineString([pt1, pt2]);
+
     ellipse.vector90.normalize(normal);
-    pt.plusScaled(normal, length, pt1);
-    pt.plusScaled(normal, -length, pt2);
-    graphic.addLineString([pt1, pt2]);
-    context.addWorldOverlay(graphic.finish()!);
+    const pt3 = hit.snapPoint.plusScaled(normal, length);
+    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    graphic.addLineString([pt3, pt4]);
+
+    context.addWorldOverlay(graphic.finish());
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
   private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const radius = (aperture / 2.0) + .5;
-    const center = context.viewport!.worldToView(pt);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
     const graphic = context.createViewOverlay();
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
+
+    const radius = (aperture / 2.0) + .5;
+    const center = context.viewport.worldToView(pt);
+    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
+    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
+
     white.setTransparency(165);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
+
     black.setTransparency(100);
     graphic.setSymbology(black, black, 1);
     graphic.addArc2d(ellipse2, false, false, 0.0);
+
     white.setTransparency(20);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, false, false, 0.0);
-    context.addViewOverlay(graphic.finish()!);
+
+    context.addViewOverlay(graphic.finish());
   }
 
   /** @hidden */
@@ -1545,7 +1571,11 @@ export class Viewport {
     }
 
     if (view.areFeatureOverridesDirty) {
-      target.overrideFeatureSymbology(new FeatureSymbology.Overrides(view));
+      const ovrs = new FeatureSymbology.Overrides(view);
+      if (undefined !== this._addFeatureOverrides)
+        this._addFeatureOverrides(ovrs, this);
+
+      target.overrideFeatureSymbology(ovrs);
       view.setFeatureOverridesDirty(false);
       isRedrawNeeded = true;
     }

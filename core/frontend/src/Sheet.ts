@@ -42,16 +42,16 @@ export class SheetBorder {
     const shadowWidth = .01 * Math.sqrt(width * width + height * height);
     const shadow: Point3d[] = [
       Point3d.create(shadowWidth, 0),
-      Point3d.create(shadowWidth, -shadowWidth),
-      Point3d.create(width + shadowWidth, -shadowWidth),
-      Point3d.create(width + shadowWidth, height - shadowWidth),
-      Point3d.create(width, height - shadowWidth),
       Point3d.create(width, 0),
+      Point3d.create(width, height - shadowWidth),
+      Point3d.create(width + shadowWidth, height - shadowWidth),
+      Point3d.create(width + shadowWidth, -shadowWidth),
+      Point3d.create(shadowWidth, -shadowWidth),
       Point3d.create(shadowWidth, 0),
     ];
-    if (context) {
+
+    if (context)
       context.viewport.worldToViewArray(shadow);
-    }
 
     // Gradient
     const gradient = new Gradient.Symb();

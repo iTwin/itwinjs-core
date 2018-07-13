@@ -149,7 +149,7 @@ export class ChangeSummaryManager {
     let startChangeSetId: string = "";
     if (options) {
       if (options.startVersion)
-        startChangeSetId = await options.startVersion.evaluateChangeSet(ctx.accessToken, ctx.iModelId, BriefcaseManager.hubClient);
+        startChangeSetId = await options.startVersion.evaluateChangeSet(ctx.accessToken, ctx.iModelId, BriefcaseManager.imodelClient);
       else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
       }
@@ -222,7 +222,7 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (foundUserEmail === undefined) {
-            const userInfo: UserInfo = (await BriefcaseManager.hubClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
+            const userInfo: UserInfo = (await BriefcaseManager.imodelClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
             userInfoCache.set(userId, !!userEmail ? userEmail : "");
@@ -261,7 +261,7 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(ctx.accessToken, ctx.iModelId, query);
+      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(ctx.accessToken, ctx.iModelId, query);
       if (changeSets.length === 0)
         return Promise.reject(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
 

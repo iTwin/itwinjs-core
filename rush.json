@@ -75,6 +75,11 @@
       "packageName": "testbed",
       "projectFolder": "testbed",
       "shouldPublish": false
+    },
+    {
+      "packageName": "bank-demo",
+      "projectFolder": "bank-demo",
+      "shouldPublish": false
     }
   ]
 }

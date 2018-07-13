@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend/lib/frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
-import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModelRepository, Config } from "@bentley/imodeljs-clients";
+import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
   ElectronRpcManager,
   ElectronRpcConfiguration,
@@ -11,7 +11,6 @@ import {
   IModelTileRpcInterface,
   IModelReadRpcInterface,
   ViewQueryParams,
-  ViewDefinitionProps,
   ModelProps,
   ModelQueryParams,
   RenderMode,
@@ -19,11 +18,13 @@ import {
   BentleyCloudRpcManager,
   RpcOperation,
   IModelToken,
-} from "@bentley/imodeljs-common";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { IModelApi } from "./IModelApi";
-import { ProjectApi, ProjectScope } from "./ProjectApi";
-import { Transform } from "@bentley/geometry-core/lib/Transform";
+} from "@bentley/imodeljs-common/lib/common";
+import { Transform } from "@bentley/geometry-core/lib/geometry-core";
+import { showStatus } from "./Utils";
+import { SimpleViewState } from "./SimpleViewState";
+import { ProjectAbstraction } from "./ProjectAbstraction";
+import { ConnectProject } from "./ConnectProject";
+import { NonConnectProject } from "./NonConnectProject";
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -34,18 +35,6 @@ if (ElectronRpcConfiguration.isElectron) {
 }
 
 // tslint:disable:no-console
-
-/** Global information on the currently opened iModel and the state of the view. */
-class SimpleViewState {
-  public accessToken?: AccessToken;
-  public project?: Project;
-  public iModel?: IModelRepository;
-  public iModelConnection?: IModelConnection;
-  public viewDefinition?: ViewDefinitionProps;
-  public viewState?: ViewState;
-  public viewPort?: Viewport;
-  constructor() { }
-}
 
 interface RenderModeOptions {
   flags: Map<string, boolean>;
@@ -69,67 +58,39 @@ let curFPSIntervalId: NodeJS.Timer;
 
 /** Parameters for starting SimpleViewTest with a specified initial configuration */
 interface SVTConfiguration {
-  userName: string;
-  password: string;
-  projectName: string;
-  iModelName: string;
-  standalone?: boolean;
-  filename?: string;
+  useIModelBank: boolean;
   viewName?: string;
-  standalonePath?: string;    // Used when ran in the browser - a common base path for all standalone imodels
+  environment?: DeploymentEnv;
+  // standalone-specific config:
+  standalone?: boolean;
+  iModelName?: string;
+  filename?: string;
+  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
 }
 
 // Entry point - run the main function
 setTimeout(() => main(), 1000);
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
-function retrieveConfiguration() {
-  const request: XMLHttpRequest = new XMLHttpRequest();
-  request.open("GET", "configuration.json", false);
-  request.setRequestHeader("Cache-Control", "no-cache");
-  request.onreadystatechange = ((_event: Event) => {
-    if (request.readyState === XMLHttpRequest.DONE) {
-      if (request.status === 200) {
-        const newConfigurationInfo: any = JSON.parse(request.responseText);
-        Object.assign(configuration, newConfigurationInfo);
+function retrieveConfiguration(): Promise<void> {
+  return new Promise((resolve, _reject) => {
+    const request: XMLHttpRequest = new XMLHttpRequest();
+    request.open("GET", "configuration.json", false);
+    request.setRequestHeader("Cache-Control", "no-cache");
+    request.onreadystatechange = ((_event: Event) => {
+      if (request.readyState === XMLHttpRequest.DONE) {
+        if (request.status === 200) {
+          const newConfigurationInfo: any = JSON.parse(request.responseText);
+          Object.assign(configuration, newConfigurationInfo);
+          resolve();
+        }
+        // Everything is good, the response was received.
+      } else {
+        // Not ready yet.
       }
-      // Everything is good, the response was received.
-    } else {
-      // Not ready yet.
-    }
+    });
+    request.send();
   });
-  request.send();
-}
-
-// show status in the output HTML
-function showStatus(string1: string, string2?: string) {
-  let outString: string = string1;
-  if (string2)
-    outString = outString.concat(" ", string2);
-  document.getElementById("showstatus")!.innerHTML = outString;
-}
-
-// log in to connect
-async function loginToConnect(state: SimpleViewState, userName: string, password: string) {
-  // tslint:disable-next-line:no-console
-  console.log("Attempting login with userName", userName, "password", password);
-
-  const authClient = new ImsActiveSecureTokenClient("QA");
-  const accessClient = new ImsDelegationSecureTokenClient("QA");
-
-  const authToken: AuthorizationToken = await authClient.getToken(userName, password);
-  state.accessToken = await accessClient.getToken(authToken);
-}
-
-// opens the configured project
-async function openProject(state: SimpleViewState, projectName: string) {
-  state.project = await ProjectApi.getProjectByName(state.accessToken!, ProjectScope.Invited, projectName);
-}
-
-// opens the configured iModel
-async function openIModel(state: SimpleViewState, iModelName: string) {
-  state.iModel = await IModelApi.getIModelByName(state.accessToken!, state.project!.wsgId, iModelName);
-  state.iModelConnection = await IModelApi.openIModel(state.accessToken!, state.project!.wsgId, state.iModel!.wsgId, undefined, OpenMode.Readonly);
 }
 
 // opens the configured iModel from disk
@@ -657,7 +618,7 @@ window.onbeforeunload = () => {
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
-  retrieveConfiguration();
+  await retrieveConfiguration();
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
@@ -681,25 +642,12 @@ async function main() {
   spinner.style.display = "block";
 
   try {
-    // initialize the Project and IModel Api
-    await ProjectApi.init();
-    await IModelApi.init();
-
-    if (!configuration.standalone) {
-      // log in.
-      showStatus("logging in as", configuration.userName);
-      await loginToConnect(activeViewState, configuration.userName, configuration.password);
-
-      // open the specified project
-      showStatus("opening Project", configuration.projectName);
-      await openProject(activeViewState, configuration.projectName);
-
-      // open the specified iModel
-      showStatus("opening iModel", configuration.iModelName);
-      await openIModel(activeViewState, configuration.iModelName);
+    if (configuration.standalone) {
+      await openStandaloneIModel(activeViewState, configuration.iModelName!);
     } else {
-      showStatus("Opening", configuration.iModelName);
-      await openStandaloneIModel(activeViewState, configuration.iModelName);
+      IModelApp.hubDeploymentEnv = configuration.environment || "QA";
+      const projectMgr: ProjectAbstraction = configuration.useIModelBank ? new NonConnectProject() : new ConnectProject();
+      await projectMgr.loginAndOpenImodel(activeViewState);
     }
 
     // open the specified view

@@ -1,14 +1,17 @@
 import * as express from "express";
-import * as fs from "fs";
 import * as bodyParser from "body-parser";
 import * as cp from "child_process";
 
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyCloudRpcManager } from "@bentley/imodeljs-common/lib/common";
 import { Config } from "@bentley/imodeljs-clients/lib";
+import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { IModelHost } from "@bentley/imodeljs-backend";
 
 // tslint:disable:no-console
+
+export function getRpcInterfaces() {
+  return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+}
 
 // Start the dev-cors-proxy-server
 const proxyServer = cp.spawn("node", ["./node_modules/@bentley/dev-cors-proxy-server/server.js"]);
@@ -22,32 +25,12 @@ proxyServer.on("close", (code) => {
   console.log(`proxy server terminated with code ${code}`);
 });
 
-// tslint:disable
-
-// Store SVT settings in the configuration.json file, which will be read by the application
-const configuration = {
-  userName: "bistroDEV_pmadm1@mailinator.com",
-  password: "pmadm1",
-  projectName: "plant-sta",
-  iModelName: "NabeelQATestiModel",
-};
-const filename = process.env.SVT_STANDALONE_FILENAME;
-if (filename !== undefined) {
-  configuration.iModelName = filename;
-  (configuration as any).viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
-  (configuration as any).standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional
-  (configuration as any).standalone = true;
-}
-fs.writeFileSync("./lib/backend/public/configuration.json", JSON.stringify(configuration), "utf8");
-
 // Initialize backend functionality and logging
 Config.devCorsProxyServer = "http://localhost:3001";
 IModelHost.startup();
-Logger.initializeToConsole();
-const rpcInterfaces = [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
 
 // Set up the ability to serve the supported rpcInterfaces via web requests
-const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, rpcInterfaces);
+const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, getRpcInterfaces());
 
 const app = express();
 app.use(bodyParser.text());

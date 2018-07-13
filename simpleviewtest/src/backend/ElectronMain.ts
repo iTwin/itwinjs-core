@@ -2,12 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as fs from "fs";
 import * as url from "url";
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
+import { initializeBackend, getRpcInterfaces } from "./backend";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -15,28 +13,11 @@ import { Logger } from "@bentley/bentleyjs-core";
 // tslint:disable-next-line:no-var-requires
 const electron = require("electron");
 
-// Store SVT settings in the configuration.json file, which will be read by the application
-const configuration = {
-  userName: "bistroDEV_pmadm1@mailinator.com",
-  password: "pmadm1",
-  projectName: "plant-sta",
-  iModelName: "NabeelQATestiModel",
-};
-const filename = process.env.SVT_STANDALONE_FILENAME;
-if (filename !== undefined) {
-  configuration.iModelName = filename;
-  (configuration as any).viewName = process.env.SVT_STANDALONE_VIEWNAME;  // optional
-  (configuration as any).standalone = true;
-}
-fs.writeFileSync("./lib/backend/public/configuration.json", JSON.stringify(configuration), "utf8");
-
 // --------------------------------------------------------------------------------------
 // ------- Initialization and setup of host and tools before starting app ---------------
 
 // Start the backend
-IModelHost.startup();
-
-Logger.initializeToConsole(); // configure logging for imodeljs-core
+initializeBackend();
 
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
@@ -80,10 +61,20 @@ function createWindow() {
 
 electron.app.on("ready", () => {
   // Initialize application gateway configuration for the backend
-  ElectronRpcManager.initializeImpl({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  ElectronRpcManager.initializeImpl({}, getRpcInterfaces());
 
   createWindow();
 });
+
+// tslint:disable-next-line:no-var-requires
+const configuration = require(path.join(__dirname, "public", "configuration.json"));
+if (configuration.useIModelBank) {
+  electron.app.on("certificate-error", (event: any, _webContents: any, _url: string, _error: any, _certificate: any, callback: any) => {
+    // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+    event.preventDefault();
+    callback(true);
+  });
+}
 
 electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin")

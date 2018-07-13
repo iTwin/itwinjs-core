@@ -1603,7 +1603,8 @@ export class WindowAreaTool extends ViewTool {
   private viewport: Viewport;
   private corners = [new Point3d(), new Point3d()];
   private shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
-  private linePts = [new Point3d(), new Point3d()];
+  private lineHorzPts = [new Point3d(), new Point3d()];
+  private lineVertPts = [new Point3d(), new Point3d()];
   private fillColor = ColorDef.from(0, 0, 255, 200);
 
   constructor(viewport: Viewport) {
@@ -1652,56 +1653,49 @@ export class WindowAreaTool extends ViewTool {
       if (undefined === corners)
         return;
 
-      const shape = this.shapePts;
-      shape[0].x = shape[3].x = corners[0].x;
-      shape[1].x = shape[2].x = corners[1].x;
-      shape[0].y = shape[1].y = corners[0].y;
-      shape[2].y = shape[3].y = corners[1].y;
-      shape[0].z = shape[1].z = shape[2].z = shape[3].z = corners[0].z;
-      shape[4].setFrom(shape[0]);
-
-      this.viewport.viewToWorldArray(shape);
+      this.shapePts[0].x = this.shapePts[3].x = corners[0].x;
+      this.shapePts[1].x = this.shapePts[2].x = corners[1].x;
+      this.shapePts[0].y = this.shapePts[1].y = corners[0].y;
+      this.shapePts[2].y = this.shapePts[3].y = corners[1].y;
+      this.shapePts[0].z = this.shapePts[1].z = this.shapePts[2].z = this.shapePts[3].z = corners[0].z;
+      this.shapePts[4].setFrom(this.shapePts[0]);
+      this.viewport.viewToWorldArray(this.shapePts);
 
       const graphic = context.createWorldOverlay();
 
       graphic.setBlankingFill(this.fillColor);
-      graphic.addShape(shape);
+      graphic.addShape(this.shapePts);
 
       graphic.setSymbology(color, color, ViewHandleWeight.Thin);
-      graphic.addLineString(shape);
+      graphic.addLineString(this.shapePts);
 
       graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
       graphic.addPointString([this.firstPtWorld]);
 
-      context.addWorldOverlay(graphic.finish()!);
+      context.addWorldOverlay(graphic.finish());
       return;
     }
 
     const gf = context.createViewOverlay();
-
     gf.setSymbology(color, color, ViewHandleWeight.Thin);
 
     const viewRect = this.viewport.viewRect;
     const cursorPt = this.lastPtView;
-    const line = this.linePts;
-
     cursorPt.z = 0;
 
-    line[0].setFrom(cursorPt);
-    line[1].setFrom(cursorPt);
-    line[0].x = viewRect.left;
-    line[1].x = viewRect.right;
+    this.lineHorzPts[0].setFrom(cursorPt);
+    this.lineHorzPts[1].setFrom(cursorPt);
+    this.lineHorzPts[0].x = viewRect.left;
+    this.lineHorzPts[1].x = viewRect.right;
+    gf.addLineString(this.lineHorzPts);
 
-    gf.addLineString(line);
+    this.lineVertPts[0].setFrom(cursorPt);
+    this.lineVertPts[1].setFrom(cursorPt);
+    this.lineVertPts[0].y = viewRect.top;
+    this.lineVertPts[1].y = viewRect.bottom;
+    gf.addLineString(this.lineVertPts);
 
-    line[0].setFrom(cursorPt);
-    line[1].setFrom(cursorPt);
-    line[0].y = viewRect.top;
-    line[1].y = viewRect.bottom;
-
-    gf.addLineString(line);
-
-    context.addViewOverlay(gf.finish()!);
+    context.addViewOverlay(gf.finish());
   }
 
   private computeWindowCorners(): Point3d[] | undefined {
