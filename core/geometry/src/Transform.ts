@@ -132,6 +132,9 @@ export class RotMatrix implements BeJSONFunctions {
   public inverseCoffs: Float64Array | undefined;
   public inverseState: InverseMatrixState;
   public static readonly identity = RotMatrix.createIdentity();
+
+  /** Freeze this RotMatrix. */
+  public freeze() { Object.freeze(this); }
   /**
    *
    * @param coffs optional coefficient array.  This is captured.
@@ -1223,9 +1226,9 @@ export class RotMatrix implements BeJSONFunctions {
 
   /** return the transposed matrix */
   public transposeInPlace() {
-    transpose3x3InPlace (this.coffs);
+    transpose3x3InPlace(this.coffs);
     if (this.inverseCoffs)
-      transpose3x3InPlace (this.inverseCoffs);
+      transpose3x3InPlace(this.inverseCoffs);
   }
 
   /** return the inverse matrix.  The return is  null if the matrix is singular (has columns that are coplanar or colinear) */
@@ -1721,6 +1724,7 @@ export class Transform implements BeJSONFunctions {
   // Constructor accepts and uses POINTER to content .. no copy here.
   private constructor(origin: XYZ, matrix: RotMatrix) { this._origin = origin; this._matrix = matrix; }
 
+  public freeze() { Object.freeze(this); Object.freeze(this._origin); Object.freeze(this._matrix); }
   public setFrom(other: Transform) { this._origin.setFrom(other._origin), this._matrix.setFrom(other._matrix); }
   /** Set this Transform to be an identity. */
   public setIdentity() { this._origin.setZero(); this._matrix.setIdentity(); }

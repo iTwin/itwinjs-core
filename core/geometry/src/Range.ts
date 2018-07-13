@@ -85,6 +85,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     this.high.z = RangeBase.EXTREME_NEGATIVE;
   }
 
+  public freeze() { Object.freeze(this); Object.freeze(this.low); Object.freeze(this.high); }
   public static toFloat64Array(val: LowAndHighXYZ): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.low.z, val.high.x, val.high.y, val.high.z); }
   public toFloat64Array(): Float64Array { return Range3d.toFloat64Array(this); }
   /**
@@ -946,6 +947,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     }
   }
 
+  public freeze() { Object.freeze(this.low); Object.freeze(this.high); }
   public toJSON(): Range2dProps { return this.isNull() ? [] : [this.low.toJSON(), this.high.toJSON()]; }
 
   public static fromJSON(json?: Range2dProps): Range2d {
