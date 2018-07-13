@@ -177,7 +177,7 @@ class TextureCreateParams {
 
   public static createForImage(image: HTMLImageElement, type: RenderTexture.Type) {
     // ###TODO: Determine if we need alpha channel...
-    const props = this.getImageProperties(true, type);
+    const props = this.getImageProperties(false, type);
 
     let targetWidth = image.naturalWidth;
     let targetHeight = image.naturalHeight;
