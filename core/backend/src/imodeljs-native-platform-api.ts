@@ -812,12 +812,6 @@ export declare class NativeSqliteStatement implements IDisposable {
   public prepare(db: NativeDgnDb | NativeECDb, sql: string): StatusCodeWithMessage<DbResult>;
 
   /**
-   * Indicates whether the statement is prepared or not.Prepare a SQLite SQL statement.
-   * @return Returns True, if the statement is prepared. False otherwise.
-   */
-  public isPrepared(): boolean;
-
-  /**
    * Indicates whether the prepared statement makes no **direct* changes to the content of the file
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    * @return Returns True, if the statement is readonly. False otherwise.
