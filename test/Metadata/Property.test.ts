@@ -62,12 +62,12 @@ describe("Property", () => {
 
     beforeEach(() => {
       primitiveProperty = new PrimitiveProperty(testClass, "A");
-      enumProperty = new EnumerationProperty(testClass, "B", new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration));
-      structProperty = new StructProperty(testClass, "C", new DelayedPromiseWithProps(testStruct.key, async () => testStruct));
+      enumProperty = new EnumerationProperty(testClass, "B", testEnumeration);
+      structProperty = new StructProperty(testClass, "C", testStruct);
       navProperty = new NavigationProperty(testClass, "D", new DelayedPromiseWithProps(testRelationship.key, async () => testRelationship));
       primitiveArrayProperty = new PrimitiveArrayProperty(testClass, "E");
-      enumArrayProperty = new EnumerationArrayProperty(testClass, "F", new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration));
-      structArrayProperty = new StructArrayProperty(testClass, "G", new DelayedPromiseWithProps(testStruct.key, async () => testStruct));
+      enumArrayProperty = new EnumerationArrayProperty(testClass, "F", testEnumeration);
+      structArrayProperty = new StructArrayProperty(testClass, "G", testStruct);
     });
 
     it("should correctly determine when a property is an ArrayProperty", async () => {
@@ -163,8 +163,9 @@ describe("Property", () => {
       // Also test for a PropertyCategory that doesn't exist
       const propertyJson = { category: "TestSchema.NonExistentPropertyCategory"};
       const testProp = new MockProperty("BadProp");
-      expect(testProp).to.exist;
-      await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
+      await testProp.fromJson(propertyJson);
+      await expect(testProp.category).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
+
     });
 
     it("should throw for invalid kindOfQuantity", async () => {
@@ -173,8 +174,8 @@ describe("Property", () => {
       // Also test for a KindOfQuantity that doesn't exist
       const propertyJson = { kindOfQuantity: "TestSchema.NonExistentKindOfQuantity"};
       const testProp = new MockProperty("BadProp");
-      expect(testProp).to.exist;
-      await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
+      await testProp.fromJson(propertyJson);
+      await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
     });
   });
 });
@@ -232,7 +233,7 @@ describe("EnumerationProperty", () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
-      testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
+      testProperty = new EnumerationProperty(testClass, "TestProperty", testEnum);
     });
 
     it("should successfully deserialize valid JSON", async () => {
@@ -266,7 +267,7 @@ describe("StructProperty", () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
-      testProperty = new StructProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testStruct.key, async () => testStruct));
+      testProperty = new StructProperty(testClass, "TestProperty", testStruct);
     });
 
     it("should successfully deserialize valid JSON", async () => {

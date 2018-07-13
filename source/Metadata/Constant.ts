@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { SchemaItemType } from "../ECObjects";
+import { SchemaItemType, SchemaItemKey } from "../ECObjects";
 import { SchemaItemVisitor, LazyLoadedPhenomenon } from "../Interfaces";
 import Schema from "./Schema";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -59,16 +59,7 @@ export default class Constant extends SchemaItem {
    * Populates this Constant with the values from the provided.
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-    if (undefined === jsonObj.phenomenon)
-    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} does not have the required 'phenomenon' attribute.`);
-    if (typeof(jsonObj.phenomenon) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-    const phenomenon = await this.schema.getItem<Phenomenon>(jsonObj.phenomenon, true);
-    if (!phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    this._phenomenon = new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon);
-    this.loadConstantProperties(jsonObj);
+    this.fromJsonSync(jsonObj);
   }
 
   /**
@@ -80,10 +71,16 @@ export default class Constant extends SchemaItem {
     throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} does not have the required 'phenomenon' attribute.`);
     if (typeof(jsonObj.phenomenon) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-    const phenomenon = this.schema.getItemSync<Phenomenon>(jsonObj.phenomenon, true);
-    if (!phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    this._phenomenon = new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon);
+    const schemaItemKey = this.schema.getSchemaItemKey(jsonObj.phenomenon);
+    if (!schemaItemKey)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey,
+       async () => {
+        const phenom = await this.schema.getItem<Phenomenon>(schemaItemKey.name);
+        if (undefined === phenom)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
+        return phenom;
+    });
     this.loadConstantProperties(jsonObj);
   }
 

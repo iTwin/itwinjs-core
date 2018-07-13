@@ -4,17 +4,13 @@
 
 import Enumeration from "./Enumeration";
 import SchemaItem from "./SchemaItem";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType } from "../ECObjects";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType, SchemaItemKey } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
 import { AnyClass, LazyLoadedECClass, SchemaItemVisitor, LazyLoadedSchemaItem } from "../Interfaces";
-
-function createLazyLoadedItem<T extends SchemaItem>(c: T) {
-  return new DelayedPromiseWithProps(c.key, async () => c);
-}
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -176,7 +172,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationProperty(this, name, createLazyLoadedItem(propType)));
+    return this.addProperty(new EnumerationProperty(this, name, propType));
   }
 
   /**
@@ -195,7 +191,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationProperty(this, name, createLazyLoadedItem(propType)));
+    return this.addProperty(new EnumerationProperty(this, name, propType));
   }
 
   /**
@@ -213,7 +209,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationArrayProperty(this, name, createLazyLoadedItem(propType)));
+    return this.addProperty(new EnumerationArrayProperty(this, name, propType));
   }
 
   /**
@@ -231,7 +227,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationArrayProperty(this, name, createLazyLoadedItem(propType)));
+    return this.addProperty(new EnumerationArrayProperty(this, name, propType));
   }
 
   /**
@@ -243,8 +239,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedItem(await this.loadStructType(structType, this.schema));
-    return this.addProperty(new StructProperty(this, name, lazyStructClass));
+    return this.addProperty(new StructProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
 
   /**
@@ -256,8 +251,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (this.getPropertySync(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedItem(this.loadStructTypeSync(structType, this.schema));
-    return this.addProperty(new StructProperty(this, name, lazyStructClass));
+    return this.addProperty(new StructProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
 
   /**
@@ -269,8 +263,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedItem(await this.loadStructType(structType, this.schema));
-    return this.addProperty(new StructArrayProperty(this, name, lazyStructClass));
+    return this.addProperty(new StructArrayProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
 
   /**
@@ -282,8 +275,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (this.getPropertySync(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedItem(this.loadStructTypeSync(structType, this.schema));
-    return this.addProperty(new StructArrayProperty(this, name, lazyStructClass));
+    return this.addProperty(new StructArrayProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
 
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
@@ -347,28 +339,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
-    if (undefined !== jsonObj.modifier) {
-      if (typeof(jsonObj.modifier) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
-
-      const modifier = parseClassModifier(jsonObj.modifier);
-      if (undefined === modifier)
-        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${jsonObj.modifier}' is not a valid ECClassModifier.`);
-      this._modifier = modifier;
-    }
-
-    if (undefined !== jsonObj.baseClass) {
-      if (typeof(jsonObj.baseClass) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
-
-      const baseClass = await this.schema.getItem<ECClass>(jsonObj.baseClass, true);
-      if (!baseClass)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-
-      this._baseClass = createLazyLoadedItem(baseClass);
-    }
+    this.fromJsonSync(jsonObj);
   }
 
   /**
@@ -392,11 +363,16 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       if (typeof(jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
-      const baseClass = this.schema.getItemSync<ECClass>(jsonObj.baseClass, true);
-      if (!baseClass)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-
-      this._baseClass = createLazyLoadedItem(baseClass);
+      const ecClassSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.baseClass);
+      if (!ecClassSchemaItemKey)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${jsonObj.baseClass}.`);
+      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
+        async () => {
+          const baseClass = await this.schema.getItem<ECClass>(jsonObj.baseClass, true);
+          if (undefined === baseClass)
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${jsonObj.baseClass}.`);
+          return baseClass;
+      });
     }
   }
 

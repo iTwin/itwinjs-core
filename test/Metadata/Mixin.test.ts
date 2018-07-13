@@ -140,7 +140,7 @@ describe("Mixin", () => {
     });
   });
 
-  describe("fromJson", () => {
+  describe("Async fromJson", () => {
     let testEntity: EntityClass;
     let testMixin: Mixin;
     const baseJson = { schemaItemType: "Mixin" };
@@ -174,6 +174,42 @@ describe("Mixin", () => {
 
       const unloadedAppliesToJson = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
       await expect(testMixin.fromJson(unloadedAppliesToJson)).to.be.rejectedWith(ECObjectsError);
+    });
+  });
+  describe("Sync fromJson", () => {
+    let testEntity: EntityClass;
+    let testMixin: Mixin;
+    const baseJson = { schemaItemType: "Mixin" };
+
+    beforeEach( () => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testEntity = (schema as MutableSchema).createEntityClassSync("TestEntity");
+      testMixin = new Mixin(schema, "TestMixin");
+    });
+
+    it("should successfully deserialize valid JSON", async () => {
+      const json = {
+        ...baseJson,
+        appliesTo: "TestSchema.TestEntity",
+      };
+      expect(testMixin).to.exist;
+      testMixin.fromJsonSync(json);
+
+      expect(await testMixin.appliesTo).to.eql(testEntity);
+    });
+
+    it("should throw for missing appliesTo", async () => {
+      expect(testMixin).to.exist;
+      assert.throws(() => testMixin.fromJsonSync({...baseJson}), ECObjectsError, `The Mixin TestMixin is missing the required 'appliesTo' attribute.`);
+    });
+
+    it("should throw for invalid appliesTo", async () => {
+      expect(testMixin).to.exist;
+      const invalidAppliesToJson = { ...baseJson, appliesTo: 0 };
+      assert.throws(() => testMixin.fromJsonSync(invalidAppliesToJson), ECObjectsError, `The Mixin TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+
+      const unloadedAppliesToJson = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
+      assert.throws(() => testMixin.fromJsonSync(unloadedAppliesToJson), ECObjectsError);
     });
   });
 });

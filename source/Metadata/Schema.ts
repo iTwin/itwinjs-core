@@ -13,7 +13,7 @@ import KindOfQuantity from "./KindOfQuantity";
 import Unit from "./Unit";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion } from "../ECObjects";
+import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion, SchemaItemKey } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -87,6 +87,22 @@ export default class Schema implements CustomAttributeContainerProps {
   get description() {return this._description; }
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+
+  /**
+   * Returns a SchemaItemKey given the item name and the schema it belongs to
+   * @param fullName: fully qualified name {Schema name}.{Item Name}
+   */
+  public getSchemaItemKey(fullName: string): SchemaItemKey {
+    const [schemaName, itemName] = SchemaItem.parseFullName(fullName);
+    let schemaKey = this.schemaKey;
+    if (this.name !== schemaName) {
+      const newSchemaRef = this.getReferenceSync(schemaName);
+      if (undefined === newSchemaRef)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to find the referenced SchemaItem ${itemName}.`);
+      schemaKey = newSchemaRef.schemaKey;
+    }
+    return new SchemaItemKey(itemName, schemaKey);
+  }
 
   /**
    * Creates a EntityClass with the provided name in this schema.

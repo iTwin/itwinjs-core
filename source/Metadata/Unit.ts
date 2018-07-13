@@ -4,7 +4,7 @@
 
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType } from "../ECObjects";
+import { SchemaItemType, SchemaItemKey } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 import UnitSystem from "../Metadata/UnitSystem";
@@ -74,26 +74,7 @@ export default class Unit extends SchemaItem {
    * Populates this Unit with the values from the provided.
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-    if (undefined === jsonObj.phenomenon)
-    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'phenomenon' attribute.`);
-    if (typeof(jsonObj.phenomenon) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-    const phenomenon = await this.schema.getItem<Phenomenon>(jsonObj.phenomenon, true);
-    if (!phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Phenomenon ${jsonObj.phenomenon}.`);
-    this._phenomenon =   new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon);
-
-    if (undefined === jsonObj.unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'unitSystem' attribute.`);
-    if (typeof(jsonObj.unitSystem) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-    const unitSystem = await this.schema.getItem<UnitSystem>(jsonObj.unitSystem, true);
-    if (!unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Unit System ${jsonObj.unitSystem}.`);
-    this._unitSystem =   new DelayedPromiseWithProps(unitSystem.key, async () => unitSystem);
-
-    this.loadUnitProperties(jsonObj);
+    this.fromJsonSync(jsonObj);
   }
 
   /**
@@ -105,19 +86,31 @@ export default class Unit extends SchemaItem {
     throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'phenomenon' attribute.`);
     if (typeof(jsonObj.phenomenon) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-    const phenomenon = this.schema.getItemSync<Phenomenon>(jsonObj.phenomenon, true);
-    if (!phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Phenomenon ${jsonObj.phenomenon}.`);
-    this._phenomenon =   new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon);
+    const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.phenomenon);
+    if (!phenomenonSchemaItemKey)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
+      async () => {
+        const phenom = await this.schema.getItem<Phenomenon>(phenomenonSchemaItemKey.name);
+        if (undefined === phenom)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
+        return phenom;
+    });
 
     if (undefined === jsonObj.unitSystem)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'unitSystem' attribute.`);
     if (typeof(jsonObj.unitSystem) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-    const unitSystem = this.schema.getItemSync<UnitSystem>(jsonObj.unitSystem, true);
-    if (!unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Unit System ${jsonObj.unitSystem}.`);
-    this._unitSystem =   new DelayedPromiseWithProps(unitSystem.key, async () => unitSystem);
+    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.unitSystem);
+    if (!unitSystemSchemaItemKey)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
+    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
+      async () => {
+        const unitSystem = await this.schema.getItem<UnitSystem>(unitSystemSchemaItemKey.name);
+        if (undefined === unitSystem)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
+        return unitSystem;
+    });
 
     this.loadUnitProperties(jsonObj);
   }

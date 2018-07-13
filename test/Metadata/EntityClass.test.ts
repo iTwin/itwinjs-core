@@ -505,7 +505,7 @@ describe("EntityClass", () => {
       await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
       json = { ...baseJson, mixins: [ "DoesNotExist" ] };
-      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has a mixin ("DoesNotExist") that cannot be found.`);
+      await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
 
     it("should throw for invalid mixins synchronously", () => {
@@ -517,7 +517,7 @@ describe("EntityClass", () => {
       expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
       json = { ...baseJson, mixins: [ "DoesNotExist" ] };
-      expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `The ECEntityClass TestEntity has a mixin ("DoesNotExist") that cannot be found.`);
+      expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
   });
 });

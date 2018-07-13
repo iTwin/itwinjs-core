@@ -4,7 +4,7 @@
 
 import ECClass from "./Class";
 import { ECClassModifier, StrengthDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
-        parseStrength, parseStrengthDirection } from "../ECObjects";
+        parseStrength, parseStrengthDirection, SchemaItemKey } from "../ECObjects";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
@@ -183,11 +183,16 @@ export class RelationshipConstraint {
       if (typeof(jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
 
-      const tempAbstractConstraint = await relClassSchema.getItem<AnyConstraintClass>(jsonObj.abstractConstraint, true);
-      if (!tempAbstractConstraint)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-
-      this.abstractConstraint = new DelayedPromiseWithProps(tempAbstractConstraint.key, async () => tempAbstractConstraint);
+      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(jsonObj.abstractConstraint);
+      if (!abstractConstraintSchemaItemKey)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
+      this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
+      async () => {
+        const tempAbstractConstraint = await relClassSchema.getItem<AnyConstraintClass>(jsonObj.abstractConstraint, true);
+        if (undefined === tempAbstractConstraint)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
+        return tempAbstractConstraint;
+      });
     }
 
     if (undefined !== jsonObj.constraintClasses) {
@@ -242,11 +247,16 @@ export class RelationshipConstraint {
       if (typeof(jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
 
-      const tempAbstractConstraint = relClassSchema.getItemSync<AnyConstraintClass>(jsonObj.abstractConstraint, true);
-      if (!tempAbstractConstraint)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-
-      this.abstractConstraint = new DelayedPromiseWithProps(tempAbstractConstraint.key, async () => tempAbstractConstraint);
+      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(jsonObj.abstractConstraint);
+      if (!abstractConstraintSchemaItemKey)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
+      this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
+      async () => {
+        const tempAbstractConstraint = await relClassSchema.getItem<AnyConstraintClass>(jsonObj.abstractConstraint, true);
+        if (undefined === tempAbstractConstraint)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
+        return tempAbstractConstraint;
+      });
     }
 
     if (undefined !== jsonObj.constraintClasses) {

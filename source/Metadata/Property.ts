@@ -2,17 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass, LazyLoadedSchemaItem } from "../Interfaces";
-import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType } from "../ECObjects";
+import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedRelationshipClass, LazyLoadedSchemaItem } from "../Interfaces";
+import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType, SchemaItemKey } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
-import ECClass from "./Class";
+import ECClass, { StructClass } from "./Class";
 import SchemaItem from "./SchemaItem";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import { AnyClass } from "../Interfaces";
 import { RelationshipClass } from "..";
+import Enumeration from "./Enumeration";
 
 /**
  * A common abstract class for all ECProperty types.
@@ -87,62 +88,9 @@ export abstract class Property {
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    if (undefined !== jsonObj.name) {
-      if (typeof(jsonObj.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
-
-      if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    }
-
-    if (undefined !== jsonObj.label) {
-      if (typeof(jsonObj.label) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
-      this._label = jsonObj.label;
-    }
-
-    if (undefined !== jsonObj.description) {
-      if (typeof(jsonObj.description) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
-      this._description = jsonObj.description;
-    }
-
-    if (undefined !== jsonObj.priority) {
-      if (typeof(jsonObj.priority) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);
-      this._priority = jsonObj.priority;
-    }
-
-    if (undefined !== jsonObj.readOnly) {
-      if (typeof(jsonObj.readOnly) !== "boolean")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'readOnly' attribute. It should be of type 'boolean'.`);
-      this._isReadOnly = jsonObj.readOnly;
-    }
-
-    if (undefined !== jsonObj.category) {
-      if (typeof(jsonObj.category) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'category' attribute. It should be of type 'string'.`);
-
-      const propertyCategory = await this.class.schema.getItem<PropertyCategory>(jsonObj.category, true);
-      if (!propertyCategory)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
-
-      this._category = new DelayedPromiseWithProps(propertyCategory.key, async () => propertyCategory);
-    }
-
-    if (undefined !== jsonObj.kindOfQuantity) {
-      if (typeof(jsonObj.kindOfQuantity) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
-
-      const kindOfQuantity = await this.class.schema.getItem<KindOfQuantity>(jsonObj.kindOfQuantity, true);
-      if (!kindOfQuantity)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
-
-      this._kindOfQuantity = new DelayedPromiseWithProps(kindOfQuantity.key, async () => kindOfQuantity);
-    }
-
-    // TODO CustomAttributes
+    this.fromJsonSync(jsonObj);
   }
+
   public fromJsonSync(jsonObj: any): void {
     if (undefined !== jsonObj.name) {
       if (typeof(jsonObj.name) !== "string")
@@ -180,22 +128,32 @@ export abstract class Property {
       if (typeof(jsonObj.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'category' attribute. It should be of type 'string'.`);
 
-      const propertyCategory = this.class.schema.getItemSync<PropertyCategory>(jsonObj.category, true);
-      if (!propertyCategory)
+      const propertyCategorySchemaItemKey = this.class.schema.getSchemaItemKey(jsonObj.category);
+      if (!propertyCategorySchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
-
-      this._category = new DelayedPromiseWithProps(propertyCategory.key, async () => propertyCategory);
+      this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey,
+        async () => {
+          const category = await this.class.schema.getItem<PropertyCategory>(propertyCategorySchemaItemKey.name);
+          if (undefined === category)
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
+          return category;
+      });
     }
 
     if (undefined !== jsonObj.kindOfQuantity) {
       if (typeof(jsonObj.kindOfQuantity) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
 
-      const kindOfQuantity = this.class.schema.getItemSync<KindOfQuantity>(jsonObj.kindOfQuantity, true);
-      if (!kindOfQuantity)
+      const koqSchemaItemKey = this.class.schema.getSchemaItemKey(jsonObj.kindOfQuantity);
+      if (!koqSchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
-
-      this._kindOfQuantity = new DelayedPromiseWithProps(kindOfQuantity.key, async () => kindOfQuantity);
+      this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey,
+          async () => {
+            const koq = await this.class.schema.getItem<KindOfQuantity>(koqSchemaItemKey.name);
+            if (undefined === koq)
+              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
+            return koq;
+      });
     }
     // TODO CustomAttributes
   }
@@ -222,37 +180,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
-    if (undefined !== jsonObj.minLength) {
-      if (typeof(jsonObj.minLength) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'minLength' attribute. It should be of type 'number'.`);
-      this._minLength = jsonObj.minLength;
-    }
-
-    if (undefined !== jsonObj.maxLength) {
-      if (typeof(jsonObj.maxLength) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'maxLength' attribute. It should be of type 'number'.`);
-      this._maxLength = jsonObj.maxLength;
-    }
-
-    if (undefined !== jsonObj.minValue) {
-      if (typeof(jsonObj.minValue) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'minValue' attribute. It should be of type 'number'.`);
-      this._minValue = jsonObj.minValue;
-    }
-
-    if (undefined !== jsonObj.maxValue) {
-      if (typeof(jsonObj.maxValue) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'maxValue' attribute. It should be of type 'number'.`);
-      this._maxValue = jsonObj.maxValue;
-    }
-
-    if (undefined !== jsonObj.extendedTypeName) {
-      if (typeof(jsonObj.extendedTypeName) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'extendedTypeName' attribute. It should be of type 'string'.`);
-      this._extendedTypeName = jsonObj.extendedTypeName;
-    }
+    this.fromJsonSync(jsonObj);
   }
 
   public fromJsonSync(jsonObj: any): void {
@@ -298,15 +226,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
-    if (undefined !== jsonObj.typeName) {
-      if (typeof(jsonObj.typeName) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
-
-      if (this.primitiveType !== parsePrimitiveType(jsonObj.typeName))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    }
+    this.fromJsonSync(jsonObj);
   }
 
   public fromJsonSync(jsonObj: any): void {
@@ -323,26 +243,18 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 }
 
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
-  protected _enumeration: LazyLoadedEnumeration;
+  protected _enumeration: Enumeration;
 
-  get enumeration(): LazyLoadedEnumeration { return this._enumeration; }
+  get enumeration(): Enumeration { return this._enumeration; }
 
-  constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
+  constructor(ecClass: ECClass, name: string, type: Enumeration) {
     // TODO: Should we allow specifying the backing type?
     super(ecClass, name, PropertyType.Integer_Enumeration);
     this._enumeration = type;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
-    if (undefined !== jsonObj.typeName) {
-      if (typeof(jsonObj.typeName) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
-
-      if (!this.enumeration.matchesFullName(jsonObj.typeName))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    }
+    this.fromJsonSync(jsonObj);
   }
 
   public fromJsonSync(jsonObj: any): void {
@@ -352,32 +264,24 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
       if (typeof(jsonObj.typeName) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
 
-      if (!this.enumeration.matchesFullName(jsonObj.typeName))
+      if (!this.enumeration.key.matchesFullName(jsonObj.typeName))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
 }
 
 export class StructProperty extends Property {
-  protected _structClass: LazyLoadedStructClass;
+  protected _structClass: StructClass;
 
-  get structClass(): LazyLoadedStructClass { return this._structClass; }
+  get structClass(): StructClass { return this._structClass; }
 
-  constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
+  constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, PropertyType.Struct);
     this._structClass = type;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
-    if (undefined !== jsonObj.typeName) {
-      if (typeof(jsonObj.typeName) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
-
-      if (!this.structClass.matchesFullName(jsonObj.typeName))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    }
+    this.fromJsonSync(jsonObj);
   }
 
   public fromJsonSync(jsonObj: any): void {
@@ -387,7 +291,7 @@ export class StructProperty extends Property {
       if (typeof(jsonObj.typeName) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'typeName' attribute. It should be of type 'string'.`);
 
-      if (!this.structClass.matchesFullName(jsonObj.typeName))
+      if (!this.structClass.key.matchesFullName(jsonObj.typeName))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
@@ -478,12 +382,12 @@ export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty
 }
 
 export class EnumerationArrayProperty extends ArrayPropertyMixin(EnumerationProperty) {
-  constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
+  constructor(ecClass: ECClass, name: string, type: Enumeration) {
     super(ecClass, name, type);
   }
 }
 export class StructArrayProperty extends ArrayPropertyMixin(StructProperty) {
-  constructor(ecClass: ECClass, name: string, type: LazyLoadedStructClass) {
+  constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, type);
   }
 }

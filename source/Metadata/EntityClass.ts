@@ -6,7 +6,7 @@ import ECClass from "./Class";
 import Mixin from "./Mixin";
 import RelationshipClass from "./RelationshipClass";
 import { LazyLoadedMixin } from "../Interfaces";
-import { ECClassModifier, StrengthDirection, SchemaItemType, parseStrengthDirection } from "../ECObjects";
+import { ECClassModifier, StrengthDirection, SchemaItemType, parseStrengthDirection, SchemaItemKey } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty, AnyProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -123,23 +123,7 @@ export default class EntityClass extends ECClass {
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-
-    if (undefined !== jsonObj.mixins) {
-      if (!Array.isArray(jsonObj.mixins))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
-
-      for (const name of jsonObj.mixins) {
-        if (typeof(name) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
-
-        const tempMixin = await this.schema.getItem<Mixin>(name, true);
-        if (!tempMixin)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-
-        this.addMixin(tempMixin);
-      }
-    }
+   this.fromJsonSync(jsonObj);
   }
 
   /**
@@ -152,16 +136,21 @@ export default class EntityClass extends ECClass {
     if (undefined !== jsonObj.mixins) {
       if (!Array.isArray(jsonObj.mixins))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
-
+      if (!this._mixins)
+        this._mixins = [];
       for (const name of jsonObj.mixins) {
         if (typeof(name) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
-
-        const tempMixin = this.schema.getItemSync<Mixin>(name, true);
-        if (!tempMixin)
+        const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
+        if (!mixinSchemaItemKey)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-
-        this.addMixin(tempMixin);
+        this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
+          async () => {
+            const mixin = await this.schema.getItem<Mixin>(mixinSchemaItemKey.name);
+            if (undefined === mixin)
+              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+            return mixin;
+        }));
       }
     }
   }

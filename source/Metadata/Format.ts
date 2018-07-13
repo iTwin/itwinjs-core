@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType } from "../ECObjects";
+import { SchemaItemType, SchemaItemKey } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 import Unit from "./Unit";
@@ -78,8 +78,7 @@ export default class Format extends SchemaItem {
    * @param name The name of the Unit
    * @param label A localized display label that is used instead of the name in a GUI.
    */
-  private createUnitSync(name: string, label?: string) {
-    let newUnit: Unit | InvertedUnit | undefined;
+  private createUnit(name: string, label?: string) {
     if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     const units =  this._composite!.units!;
@@ -88,28 +87,17 @@ export default class Format extends SchemaItem {
       if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // no duplicate names- take unit name after "."
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
     }
-    newUnit = this.schema.getItemSync<Unit | InvertedUnit>(name, true);
-    if (!newUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    const unitToBeAdded = new DelayedPromiseWithProps(newUnit.key, async () => newUnit) as LazyLoadedUnit | LazyLoadedInvertedUnit;
-    this._composite!.units!.push([unitToBeAdded, label]);
-  }
-
-  private async createUnit(name: string, label?: string) {
-    let newUnit: Unit | InvertedUnit | undefined;
-    if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    const units =  this._composite!.units!;
-    for (const unit of units) {
-      const unitObj = unit[0].name;
-      if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // no duplicate names- take unit name after "."
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
-    }
-    newUnit = await this.schema.getItem<Unit | InvertedUnit>(name, true);
-    if (!newUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    const unitToBeAdded = new DelayedPromiseWithProps(newUnit.key, async () => newUnit) as LazyLoadedUnit | LazyLoadedInvertedUnit;
-    this._composite!.units!.push([unitToBeAdded, label]);
+    const schemaItemKey = this.schema.getSchemaItemKey(name);
+    if (!schemaItemKey)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unit ${name}.`);
+    const newUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit | InvertedUnit>(schemaItemKey,
+      async () => {
+        const unit = await this.schema.getItem<Unit | InvertedUnit>(schemaItemKey.name);
+        if (undefined === unit)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unit ${name}.`);
+        return unit;
+    }) as LazyLoadedUnit | LazyLoadedInvertedUnit;
+    this._composite!.units!.push([newUnit, label]);
   }
 
   private loadFormatProperties(jsonObj: any) {
@@ -209,35 +197,7 @@ export default class Format extends SchemaItem {
    * Populates this Format with the values from the provided.
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-    this.loadFormatProperties(jsonObj);
-    if (undefined !== jsonObj.composite) { // optional
-      this._composite = {includeZero: true, spacer: " ", units: new Array<[ LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>()};
-      if (jsonObj.composite.includeZero !== undefined) {
-        if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
-        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
-      }
-      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
-        if (typeof(jsonObj.composite.spacer) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
-        if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
-        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
-      }
-      if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
-        if (!Array.isArray(jsonObj.composite.units)) { // must be an array
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
-        }
-        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          const units = jsonObj.composite.units;
-          for (const unit of units) {
-             await this.createUnit(unit.name, unit.label); // create the unit
-          }
-        }
-      } else
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'Composite' attribute. It must have 1-4 units.`);
-    }
+    this.fromJsonSync(jsonObj);
   }
 
   /**
@@ -267,7 +227,7 @@ export default class Format extends SchemaItem {
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
           const units = jsonObj.composite.units;
           for (const unit of units) {
-             this.createUnitSync(unit.name, unit.label); // create the unit
+             this.createUnit(unit.name, unit.label); // create the unit
           }
         }
       } else
