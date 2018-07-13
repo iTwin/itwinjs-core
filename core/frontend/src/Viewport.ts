@@ -976,7 +976,6 @@ export class Viewport {
      */
     const now = BeTimePoint.now();
     if (backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
-      console.log("saving org=", this.currentBaseline!.getOrigin(), " ext=", this.currentBaseline!.getExtents());
       this.currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
       this.backStack.push(this.currentBaseline); // save previous state
       this.forwardStack.length = 0; // not possible to do redo after this
@@ -1334,7 +1333,6 @@ export class Viewport {
   /** @hidden */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
-    console.log("apply org=", val.getOrigin(), " ext=", val.getExtents());
     this._view = val.clone<ViewState>();
     this.synchWithView(false);
     this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);

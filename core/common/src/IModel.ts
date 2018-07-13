@@ -60,7 +60,7 @@ export interface RootSubjectProps {
   description?: string;
 }
 
-/** Properties that are global to an iModel. */
+/** Properties that are about an iModel. */
 export interface IModelProps {
   /** The name and description of the root subject of this iModel */
   rootSubject: RootSubjectProps;
@@ -72,7 +72,7 @@ export interface IModelProps {
   ecefLocation?: EcefLocationProps;
 }
 
-/** The properties that can be supplied when creating a new iModel. */
+/** The properties that can be supplied when creating a *new* iModel. */
 export interface CreateIModelProps extends IModelProps {
   /** The GUID of new iModel. If not present, a GUID will be generated. */
   guid?: GuidProps;
@@ -103,16 +103,21 @@ export abstract class IModel implements IModelProps {
   public rootSubject!: RootSubjectProps;
 
   private _projectExtents!: AxisAlignedBox3d;
-  /** The volume, in spatial coordinates, inside which the entire project is contained. */
+  /**
+   * The volume, in spatial coordinates, inside which the entire project is contained.
+   * @note The object returned from this method is frozen. You *must* make a copy before you do anything that might attempt to modify it.
+   */
   public get projectExtents() { return this._projectExtents; }
   public set projectExtents(extents: AxisAlignedBox3d) {
-    this._projectExtents = extents;
-    this._projectExtents.ensureMinLengths(1.0);  // don't allow any axis of the pro
+    this._projectExtents = extents.clone();
+    this._projectExtents.ensureMinLengths(1.0);  // don't allow any axis of the project extents to be less than 1 meter.
     this._projectExtents.freeze();
   }
 
+  private _globalOrigin!: Point3d;
   /** An offset to be applied to all spatial coordinates. */
-  public globalOrigin!: Point3d;
+  public get globalOrigin(): Point3d { return this._globalOrigin; }
+
   private _ecefLocation?: EcefLocation;
   private _ecefTrans?: Transform;
 
@@ -151,7 +156,8 @@ export abstract class IModel implements IModelProps {
     this.name = name;
     this.rootSubject = props.rootSubject;
     this.projectExtents = AxisAlignedBox3d.fromJSON(props.projectExtents);
-    this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
+    this._globalOrigin = Point3d.fromJSON(props.globalOrigin);
+    this._globalOrigin.freeze(); // cannot be modified
     if (props.ecefLocation)
       this.setEcefLocation(props.ecefLocation);
   }

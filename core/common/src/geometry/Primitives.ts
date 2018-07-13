@@ -19,6 +19,7 @@ export class AxisAlignedBox3d extends Range3d {
     else
       super(low.x, low.y, low.z, high.x, high.y, high.z);
   }
+  public clone() { return new AxisAlignedBox3d(this.low, this.high); }
 
   /** Construct a new AxisAlignedBox3d from a LowAndHighXY */
   public static fromRange2d(r: LowAndHighXY) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }

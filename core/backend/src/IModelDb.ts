@@ -533,7 +533,7 @@ export class IModelDb extends IModel {
    * ```
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this.projectExtents.setFrom(newExtents);
+    this.projectExtents = newExtents;
     this.updateIModelProps();
   }
 

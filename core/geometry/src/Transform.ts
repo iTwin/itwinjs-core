@@ -134,7 +134,7 @@ export class RotMatrix implements BeJSONFunctions {
   public static readonly identity = RotMatrix.createIdentity();
 
   /** Freeze this RotMatrix. */
-  public freeze() { Object.freeze(this); }
+  public freeze() { this.computeCachedInverse(true); Object.freeze(this); }
   /**
    *
    * @param coffs optional coefficient array.  This is captured.
@@ -1724,7 +1724,7 @@ export class Transform implements BeJSONFunctions {
   // Constructor accepts and uses POINTER to content .. no copy here.
   private constructor(origin: XYZ, matrix: RotMatrix) { this._origin = origin; this._matrix = matrix; }
 
-  public freeze() { Object.freeze(this); Object.freeze(this._origin); Object.freeze(this._matrix); }
+  public freeze() { Object.freeze(this); Object.freeze(this._origin); this._matrix.freeze(); }
   public setFrom(other: Transform) { this._origin.setFrom(other._origin), this._matrix.setFrom(other._matrix); }
   /** Set this Transform to be an identity. */
   public setIdentity() { this._origin.setZero(); this._matrix.setIdentity(); }
