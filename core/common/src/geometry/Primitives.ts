@@ -19,24 +19,35 @@ export class AxisAlignedBox3d extends Range3d {
     else
       super(low.x, low.y, low.z, high.x, high.y, high.z);
   }
+
+  /** Construct a new AxisAlignedBox3d from a LowAndHighXY */
   public static fromRange2d(r: LowAndHighXY) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
 
+  /** Get the center point of this AxisAlignedBox3d */
   public getCenter(): Point3d { return this.low.interpolate(.5, this.high); }
 
-  public fixRange() {
-    if (this.low.x === this.high.x) {
-      this.low.x -= .0005;
-      this.high.x += .0005;
+  /** Ensure that the length of each dimension of this AxisAlignedBox3d is at least a minimum size. If not, expand to minimum about the center.
+   * @param min The minimum length for each dimension.
+   */
+  public ensureMinLengths(min: number = .001) {
+    let size = (min - this.xLength()) / 2.0;
+    if (size > 0) {
+      this.low.x -= size;
+      this.high.x += size;
     }
-    if (this.low.y === this.high.y) {
-      this.low.y -= .0005;
-      this.high.y += .0005;
+    size = (min - this.yLength()) / 2.0;
+    if (size > 0) {
+      this.low.y -= size;
+      this.high.y += size;
     }
-    if (this.low.z === this.high.z) {
-      this.low.z -= .0005;
-      this.high.z += .0005;
+    size = (min - this.zLength()) / 2.0;
+    if (size > 0) {
+      this.low.z -= size;
+      this.high.z += size;
     }
   }
+
+  /** @hidden */
   public static fromJSON(json: any): AxisAlignedBox3d {
     const val = new AxisAlignedBox3d();
     val.setFromJSON(json);
@@ -120,7 +131,7 @@ export class Placement3d implements Placement3dProps {
     this.getTransform().multiplyRange(this.bbox, range);
 
     // low and high are not allowed to be equal
-    range.fixRange();
+    range.ensureMinLengths();
     return range;
   }
 }
@@ -152,7 +163,7 @@ export class Placement2d implements Placement2dProps {
     this.getTransform().multiplyRange(Range3d.createRange2d(this.bbox, 0), range);
 
     // low and high are not allowed to be equal
-    range.fixRange();
+    range.ensureMinLengths();
 
     range.low.z = - 1.0;  // is the 2dFrustumDepth, which === 1 meter
     range.high.z = 1.0;
