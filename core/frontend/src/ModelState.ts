@@ -14,6 +14,7 @@ import { DecorateContext } from "./ViewContext";
 import { SheetBorder } from "./Sheet";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/System";
+import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 
 /** The state of a Model */
 export class ModelState extends EntityState implements ModelProps {
@@ -64,6 +65,7 @@ export abstract class GeometricModelState extends ModelState {
   public get tileTree(): TileTree | undefined { return this._tileTree; }
   /** Override of ModelState method, returns true */
   public get isGeometricModel(): boolean { return true; }
+  public set loadStatus(status: TileTree.LoadStatus) { this._loadStatus = status; }
 
   public getOrLoadTileTree(): TileTree | undefined {
     if (undefined === this.tileTree)
@@ -78,6 +80,12 @@ export abstract class GeometricModelState extends ModelState {
       return this._loadStatus;
 
     this._loadStatus = TileTree.LoadStatus.Loading;
+
+    if (this.jsonProperties.tilesetUrl !== undefined) {
+      RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this);
+      return this._loadStatus;
+    }
+
     const ids = Id64.toIdSet(this.id);
     this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
       this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
@@ -87,7 +95,7 @@ export abstract class GeometricModelState extends ModelState {
     return this._loadStatus;
   }
 
-  protected setTileTree(props: TileTreeProps, loader: TileLoader) {
+  public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
