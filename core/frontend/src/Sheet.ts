@@ -5,18 +5,22 @@
 
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
-import { ViewContext } from "./ViewContext";
+import { ViewContext, SceneContext } from "./ViewContext";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ColorByName } from "@bentley/imodeljs-common/lib/common";
-import { Range2d } from "@bentley/geometry-core/lib/Range";
+import { Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderTarget } from "./render/System";
 import { Target } from "./render/webgl/Target";
-import { ViewState, SheetViewState } from "./ViewState";
-import { ClipVector, Transform } from "@bentley/geometry-core/lib/geometry-core";
+import { ViewState, SheetViewState, ViewState2d } from "./ViewState";
+import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { TileTreeRoot } from "./tile/TileTree";
+import { Tile, TileTree } from "./tile/TileTree";
+import { FeatureSymbology } from "./render/FeatureSymbology";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { IModelConnection } from "./IModelConnection";
+import { RenderSystem, RenderTarget } from "./render/System";
 // import { GeometricModelState } from "./ModelState";
 // import { Target } from "./render/webgl/Target";
 
@@ -105,23 +109,116 @@ export namespace Sheet {
     }
   }
 
-  /** Stores a pointer to the root of a tile tree for an attachment view. */
-  export class Root extends TileTreeRoot {
+  /** Wraps a pointer to a tile for use by a 2d attachment. */
+  export class Tile2d {
+    // ##TODO
+  }
+
+  /** Wraps a pointer to a tile for use by a 3d attachment. */
+  export class Tile3d {
+    // ##TODO
+  }
+
+  /** Wraps a pointer to a tile tree with additional location and styling information, for use by an attachment. */
+  export class Root {
+    public iModel: IModelConnection;
+    public location: Transform;
+    public renderSystem?: RenderSystem;
+    public modelId: Id64;
+    public is3d: boolean;
+    public rootTile?: Tile2d | Tile3d;
     public boundingBoxColor: ColorDef = Attachments.boundingColors[0];
     public biasDistance?: number;
-    private _clip?: ClipVector;
+    protected _clip?: ClipVector;
 
-    public constructor(modelId: Id64, sheetView: SheetViewState) {
-      super(sheetView.iModel, modelId, false, Transform.createIdentity(), undefined, undefined);
+    public constructor(iModel: IModelConnection, modelId: Id64, is3d: boolean, system?: RenderSystem) {
+      this.iModel = iModel;
+      this.modelId = modelId;
+      this.location = Transform.createIdentity();
+      this.is3d = is3d;
+      this.renderSystem = system;
     }
   }
 
-  /** Stores a pointer to the root of a tile tree for a 2d attachment view. */
-  export class Root2d {
+  /** TileTree wrapper for 2d view attachments. Contains a pointer to a model's tile tree, while storing  */
+  export class Root2d extends Root {
+    public view: ViewState2d;
+    public viewRoot?: TileTree;
+    public drawingToAttachment: Transform;
+    public graphicsClip?: ClipVector;
+    public symbologyOverrides: FeatureSymbology.Overrides;
 
+    private constructor(iModel: IModelConnection, modelId: Id64, attachment: Attachment, context: SceneContext, view: ViewState2d, viewRoot: TileTree) {
+      super(iModel, modelId, false);
+
+      this.view = view;
+      this.viewRoot = viewRoot;
+
+      // Ensure the elements inside the view attachment are not affected to changes to category display etc for the sheet view.
+      this.symbologyOverrides = new FeatureSymbology.Overrides(view);
+
+      const attachmentRange = attachment.placement.calculateRange();
+      const attachWidth = attachmentRange.high.x - attachmentRange.low.x;
+      const attachHeight = attachmentRange.high.y - attachmentRange.low.y;
+
+      const viewExtents = view.getExtents();
+      const scale = Point2d.create(attachWidth / viewExtents.x, attachHeight / viewExtents.y);
+
+      const worldToAttachment = Point3d.createFrom(attachment.placement.origin);
+      worldToAttachment.z = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
+
+      const location = Transform.createOriginAndMatrix(worldToAttachment, RotMatrix.createIdentity());
+      this.location.setFrom(location);
+
+      const aspectRatioSkew = view.getAspectRatioSkew();
+      this.drawingToAttachment = Transform.createOriginAndMatrix(Point3d.create(), view.getRotation());
+      this.drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1);
+      const viewOrg = view.getOrigin();
+      const translation = Point3d.createFrom(viewRoot.location.origin);
+      viewOrg.minus(translation, viewOrg);
+      this.drawingToAttachment.multiplyPoint3d(viewOrg, viewOrg);
+      viewOrg.plus(translation, viewOrg);
+      viewOrg.z = 0;
+      const viewOrgToAttachment = worldToAttachment.minus(viewOrg);
+      translation.plus(viewOrgToAttachment, translation);
+      this.drawingToAttachment.origin.setFrom(translation);
+
+      // Renderer needs the unclipped range of the attachment in order to produce polys to be rendered as clip mask...
+      // (Containment tests can also be more efficiently performed if the boundary range is specified)
+      const clipTf = location.inverse();
+      if (clipTf !== undefined) {
+        this._clip = attachment.getOrCreateClip(clipTf);
+        const clipRange = clipTf.multiplyRange(attachmentRange);
+        this._clip!.boundingRange.setFrom(clipRange);
+      }
+
+      const sheetToDrawing = this.drawingToAttachment.inverse();
+      if (sheetToDrawing !== undefined) {
+        this.graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
+        const graphicsClipRange = sheetToDrawing.multiplyRange(attachmentRange);
+        this.graphicsClip!.boundingRange.setFrom(graphicsClipRange);
+      }
+
+      this.rootTile = new Tile2d();
+    }
+
+    /** Create a new tile tree root for a 2d view attachment. */
+    public static create(sheetView: SheetViewState, attachment: Attachment, context: SceneContext): Root2d | undefined {
+      assert(!attachment.view.is3d());
+      const iModel = sheetView.iModel;
+      const view = attachment.view as ViewState2d;
+
+      const viewModel = view.getViewedModel();
+      if (viewModel === undefined)
+        return undefined;
+      if (viewModel.tileTree === undefined)
+        return undefined;
+
+      return new Root2d(iModel, viewModel.id, attachment, context, view, viewModel.tileTree);
+    }
   }
 
-  /** Stores a pointer to the root of a tile tree for a 3d attachment view. */
+  /** Tile tree wrapper for 2d view attachments. */
   export class Root3d {
 
   }
@@ -140,8 +237,6 @@ export namespace Sheet {
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies the id of the view and its position on the sheet. */
   export abstract class Attachment {
-    // ###TODO: This class may need to store the actu and modelstate of the attachment in order to avoid unneccessary
-    // requests when working with tiles and displaying
     public readonly view: ViewState;
     public scale: number;
     public placement: Placement2d;
@@ -158,11 +253,9 @@ export namespace Sheet {
       } else {
         this.scale = 0;
         this.clip = ClipVector.createEmpty();
-        this.displayPriority = 0;
+        this.displayPriority = 0; // ###TODO: is there a valid "default" value here?
       }
     }
-
-    // ###TODO: Provide ability in subclasses to create using only a view and a placement or scale
 
     /** Given a view and placement, compute a scale for an attachment. */
     protected static computeScale(view: ViewState, placement: ElementAlignedBox2d): number {
