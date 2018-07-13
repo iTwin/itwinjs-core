@@ -10,7 +10,7 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "version": "4.0.10",
+  "version": "4.0.11",
   "engines": {
     "node": "8.9.1"
   },
@@ -78,6 +78,7 @@
     "webpack-manifest-plugin": "2.0.0-rc.2",
     "webpack-merge": "^4.1.1",
     "webpack-node-externals": "^1.6.0",
+    "webpack-sources": "^1.1.0",
     "whatwg-fetch": "2.0.3",
     "yargonaut": "^1.1.2",
     "yargs": "^10.0.3"
