@@ -534,7 +534,7 @@ export class ToolAdmin {
   }
 
   public onMouseLeave(vp: Viewport): void {
-    IModelApp.viewManager.clearInfoWindow();
+    IModelApp.notifications.clearToolTip();
     this.cursorInView = false;
     vp.invalidateDecorations();
   }
