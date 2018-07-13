@@ -170,23 +170,36 @@ export class SnapDetail extends HitDetail {
     if (undefined !== this.primitive) {
       const graphic = context.createWorldOverlay();
       graphic.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + Subcaetegory Appearance...
-      if (this.primitive instanceof LineString3d) {
-        const ls = this.primitive as LineString3d;
-        if (ls.points.length > 2) {
-          const loc = ls.closestPoint(this.snapPoint, false);
-          const nSegments = ls.points.length - 1;
-          const uSegRange = (1.0 / nSegments);
-          let segmentNo = Math.floor(loc.fraction / uSegRange);
-          if (segmentNo >= nSegments)
-            segmentNo = nSegments - 1;
-          const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
-          graphic.addLineString(points);
-          context.addWorldOverlay(graphic.finish());
-          return;
+
+      switch (this.snapMode) {
+        case SnapMode.Center:
+        case SnapMode.Origin:
+        case SnapMode.Bisector:
+          break; // Snap point for these is computed using entire linestring, not just the hit segment...
+
+        default: {
+          if (this.primitive instanceof LineString3d) {
+            const ls = this.primitive as LineString3d;
+            if (ls.points.length > 2) {
+              const loc = ls.closestPoint(this.snapPoint, false);
+              const nSegments = ls.points.length - 1;
+              const uSegRange = (1.0 / nSegments);
+              let segmentNo = Math.floor(loc.fraction / uSegRange);
+              if (segmentNo >= nSegments)
+                segmentNo = nSegments - 1;
+              const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
+              graphic.addLineString(points);
+              context.addWorldOverlay(graphic.finish());
+              return;
+            }
+          }
+          break;
         }
       }
+
       graphic.addPath(Path.create(this.primitive));
       context.addWorldOverlay(graphic.finish());
+      return;
     }
     super.draw(context);
   }

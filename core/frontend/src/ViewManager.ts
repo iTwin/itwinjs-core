@@ -14,7 +14,6 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { WebMercatorModelState } from "./tile/WebMercatorTileTree";
-import { ScalableMeshModelState } from "./tile/ScalableMeshTileTree";
 
 /**
  * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
@@ -39,7 +38,6 @@ export class ViewManager {
     models.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
     models.registerClass(SheetModelState.getClassFullName(), SheetModelState);
     models.registerClass(WebMercatorModelState.getClassFullName(), WebMercatorModelState);
-    models.registerClass(ScalableMeshModelState.getClassFullName(), ScalableMeshModelState);
   }
 
   /** Called after the selected view changes.

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added SqliteStatement.ts to default imports of the backend package.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Krischan.Eberle@bentley.com"
+}

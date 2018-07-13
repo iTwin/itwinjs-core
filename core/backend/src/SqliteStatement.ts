@@ -57,6 +57,18 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat.status, stat.message);
   }
 
+  /**
+   * Indicates whether the prepared statement makes no **direct* changes to the content of the file
+   * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
+   * @return Returns True, if the statement is readonly. False otherwise.
+   */
+  public isReadonly(): boolean {
+    if (!this.isPrepared())
+      throw new Error("SqliteStatement is not prepared.");
+
+    return this._stmt!.isReadonly();
+  }
+
   /** Reset this statement so that the next call to step will return the first row, if any.
    */
   public reset(): void {

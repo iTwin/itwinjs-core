@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
@@ -48,7 +48,7 @@ export const enum StandardViewId {
   RightIso = 7,
 }
 
-/** @private */
+/** @hidden */
 // tslint:disable-next-line:variable-name
 export const StandardView = {
   Top: RotMatrix.identity,
@@ -115,10 +115,10 @@ export class ViewSubCategories {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
 
-  /** Get the IDs of all subcategories belonging to the category with the specified ID, or undefined if no such information is present. */
+  /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
-  /** Get the base appearance of the subcategory with the specified ID, or undefined if no such information is present. */
+  /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
   public getSubCategoryAppearance(subCategoryId: string): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId); }
 
   /** Asynchronously populates this cache with information about subcategories belonging to the specified set of categories. */
@@ -177,6 +177,8 @@ export abstract class ViewState extends ElementState {
   private _auxCoordSystem?: AuxCoordSystemState;
   public description?: string;
   public isPrivate?: boolean;
+  /** Time this ViewState was saved in view undo. */
+  public undoTime?: BeTimePoint;
   public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
 
@@ -298,9 +300,7 @@ export abstract class ViewState extends ElementState {
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
-    return this.displayStyle.getSubCategoryOverride(id);
-  }
+  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
 
   /** Returns the appearance of the subcategory with the specified ID within this view, possibly as overridden by the display style. */
   public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
@@ -345,8 +345,8 @@ export abstract class ViewState extends ElementState {
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
-  public abstract getViewedExtents(_vp: Viewport): AxisAlignedBox3d;
-  public computeFitRange(_vp: Viewport): Range3d { return this.getViewedExtents(_vp); } // ###TODO
+  public abstract getViewedExtents(): AxisAlignedBox3d;
+  public abstract computeFitRange(): Range3d;
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
@@ -379,9 +379,7 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  public createScene(context: SceneContext): void {
-    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));
-  }
+  public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -951,7 +949,7 @@ export abstract class ViewState3d extends ViewState {
     val.cameraOn = this.cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
-    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation);
+    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation)!.toJSON();
     assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
@@ -1514,25 +1512,27 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
-  public getGroundExtents(vp: Viewport, ignoreDisplayStyleFlag: boolean = false): AxisAlignedBox3d {
+  public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (!ignoreDisplayStyleFlag && !displayStyle.getEnvironment().ground.display)
+    if (undefined !== vp && !displayStyle.getEnvironment().ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
 
-    const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
-    const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+    if (undefined !== vp) {
+      const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+      const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
 
-    // first determine whether the ground plane is displayed in the view
-    const worldFrust = vp.getFrustum();
-    for (const point of worldFrust.points) {
-      viewRay.origin = point;   // We never modify the reference
-      const xyzPoint = Point3d.create();
-      const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
-      if (param === undefined)
-        return extents;   // View does not show ground plane
+      // first determine whether the ground plane is displayed in the view
+      const worldFrust = vp.getFrustum();
+      for (const point of worldFrust.points) {
+        viewRay.origin = point;   // We never modify the reference
+        const xyzPoint = Point3d.create();
+        const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+        if (param === undefined)
+          return extents;   // View does not show ground plane
+      }
     }
 
     extents.setFrom(this.iModel.projectExtents);
@@ -1614,7 +1614,6 @@ export abstract class ViewState3d extends ViewState {
  */
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
-  private _viewedExtents?: AxisAlignedBox3d;
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
@@ -1638,7 +1637,7 @@ export class SpatialViewState extends ViewState3d {
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
 
-  public computeFitRange(vp: Viewport): AxisAlignedBox3d {
+  public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
@@ -1646,16 +1645,20 @@ export class SpatialViewState extends ViewState3d {
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
-    return range.isNull() ? this.getViewedExtents(vp) : range;
+
+    if (range.isNull())
+      range.setFrom(this.getViewedExtents());
+
+    range.ensureMinLengths(1.0);
+
+    return range;
   }
 
-  public getViewedExtents(vp: Viewport): AxisAlignedBox3d {
-    if (undefined === this._viewedExtents) {
-      this._viewedExtents = this.getGroundExtents(vp, true);
-      this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
-    }
-
-    return this._viewedExtents;
+  public getViewedExtents(): AxisAlignedBox3d {
+    const extents = AxisAlignedBox3d.fromJSON(this.iModel.projectExtents);
+    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
+    extents.extendRange(this.getGroundExtents());
+    return extents;
   }
 
   public toJSON(): SpatialViewDefinitionProps {
@@ -1665,18 +1668,9 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
-
-  public clearViewedModels() {
-    this.modelSelector.models.clear();
-  }
-
-  public addViewedModel(id: Id64Props) {
-    this.modelSelector.addModels(id);
-  }
-
-  public removeViewedModel(id: Id64Props) {
-    this.modelSelector.dropModels(id);
-  }
+  public clearViewedModels() { this.modelSelector.models.clear(); }
+  public addViewedModel(id: Id64Props) { this.modelSelector.addModels(id); }
+  public removeViewedModel(id: Id64Props) { this.modelSelector.dropModels(id); }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
@@ -1750,10 +1744,8 @@ export class ViewState2d extends ViewState {
     return super.equalState(other);
   }
 
-  private static readonly _scratchViewedExtents = new AxisAlignedBox3d();
-  public getViewedExtents(_vp: Viewport) {
-    // ###TODO: Would prefer not to have to (asynchronously and possibly needlessly) load the tile tree solely to obtain the model range...
-    // Seems like GeometricModelState ought to be able to report its range independent of a TileTree or ViewState.
+  public computeFitRange(): Range3d { return this.getViewedExtents(); }
+  public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
       const model = this.iModel.models.getLoaded(this.baseModelId.value);
       if (undefined !== model && model.isGeometricModel) {
@@ -1765,7 +1757,7 @@ export class ViewState2d extends ViewState {
       }
     }
 
-    return undefined !== this._viewedExtents ? this._viewedExtents : ViewState2d._scratchViewedExtents;
+    return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
   }
 
   public onRenderFrame(): void { }

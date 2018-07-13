@@ -533,7 +533,7 @@ export class IModelDb extends IModel {
    * ```
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this.projectExtents.setFrom(newExtents);
+    this.projectExtents = newExtents;
     this.updateIModelProps();
   }
 
@@ -712,7 +712,7 @@ export class IModelDb extends IModel {
     return new Id64(result);
   }
 
-  /** @hidden @deprecated */
+  /** @hidden */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this.newNotOpenError();

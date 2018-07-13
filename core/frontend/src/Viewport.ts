@@ -24,6 +24,8 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
+// tslint:disable:no-console
+
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
 
@@ -367,6 +369,8 @@ export class Viewport {
   private currentBaseline?: ViewState;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
   public static nearScale24 = 0.0003;
+  /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
+  public static undoDelay = BeDuration.fromSeconds(.5);
   private _evController?: EventController;
   private _view!: ViewState;
   private _addFeatureOverrides?: AddFeatureOverrides;
@@ -509,7 +513,7 @@ export class Viewport {
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents(this) as Range3d;
+    let extents = view.getViewedExtents() as Range3d;
     if (extents.isNull())
       return;
 
@@ -811,7 +815,7 @@ export class Viewport {
         // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
         this.alignWithRootZ(); // make sure we're in a z Up view
 
-        const extents = view.getViewedExtents(this);
+        const extents = view.getViewedExtents();
         if (extents.isNull()) {
           extents.low.z = -Viewport.get2dFrustumDepth();
           extents.high.z = Viewport.get2dFrustumDepth();
@@ -949,25 +953,35 @@ export class Viewport {
 
   /**
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
-   * If so, save a *clone* of the previous state in the view undo stack to permit View Undo.
+   * If so, save a *copy* of the **previous** state in the view undo stack for future View Undo.
    */
   public saveViewUndo(): void {
     if (!this._view)
       return;
 
-    // the first time we're called we need to establish the "baseline"
-    if (!this.currentBaseline) { this.currentBaseline = this.view.clone<ViewState>(); return; }
+    // the first time we're called we need to establish the baseline
+    if (!this.currentBaseline)
+      this.currentBaseline = this.view.clone<ViewState>();
 
-    if (this.view.equalState(this.currentBaseline)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+    if (this.view.equalState(this.currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
       return; // nothing changed, we're done
 
-    if (this.backStack.length >= this.maxUndoSteps) // don't save more than max
-      this.backStack.shift(); // remove the oldest entry
+    const backStack = this.backStack;
+    if (backStack.length >= this.maxUndoSteps) // don't save more than max
+      backStack.shift(); // remove the oldest entry
 
-    this.backStack.push(this.currentBaseline); // save previous state
-    this.forwardStack.length = 0; // not possible to do redo now
+    /** Sometimes we get requests to save undo entries from rapid viewing operations (e.g. mouse wheel rolls). To avoid lots of
+     * little useless intermediate view undo steps that mean nothing, if we get a call to this within a minimum time (1/2 second by default)
+     * we don't add a new entry to the view undo buffer.
+     */
+    const now = BeTimePoint.now();
+    if (backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
+      this.currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
+      this.backStack.push(this.currentBaseline); // save previous state
+      this.forwardStack.length = 0; // not possible to do redo after this
+    }
 
-    this.currentBaseline = this.view.clone<ViewState>(); // now update our baseline to match the current state
+    this.currentBaseline = this.view.clone<ViewState>();
   }
 
   /** Call [[setupFromView]] on this Viewport and save previous state in view undo stack */
@@ -1257,7 +1271,7 @@ export class Viewport {
   /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
-    const viewRange = this.view.computeFitRange(this);
+    const viewRange = this.view.computeFitRange();
 
     return viewRange;
   }
@@ -1441,7 +1455,7 @@ export class Viewport {
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
     const graphic = context.createWorldOverlay();
-    const color = new ColorDef(~context.viewport.hilite.color.getRgb); // Invert hilite color for good contrast...
+    const color = ColorDef.from(255 - context.viewport.hilite.color.colors.r, 255 - context.viewport.hilite.color.colors.g, 255 - context.viewport.hilite.color.colors.b); // Invert hilite color for good contrast...
     const colorFill = color.clone();
 
     color.setTransparency(100);
