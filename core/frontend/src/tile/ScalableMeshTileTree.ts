@@ -45,10 +45,10 @@ export class ScalableMeshTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  constructor(json: any, public client: ScalableMeshTileClient, ecefToDb: Transform) {
+  constructor(json: any, public client: ScalableMeshTileClient, ecefToDb: Transform, rootGeometry: ArrayBuffer | undefined) {
     this.tilesetJson = json.root;
     this.id = new Id64();
-    this.rootTile = new ScalableMeshTileProps(json.root, "", this, undefined);
+    this.rootTile = new ScalableMeshTileProps(json.root, "", this, rootGeometry);
     let tileToDb = CesiumUtils.transformFromJson(json.asset.TileToDB);
 
     if (undefined === tileToDb) {
@@ -105,7 +105,8 @@ export class ScalableMeshTileLoader {
 
     let totalBytes = 0;
     for (const prop of props) {
-      totalBytes += (prop.geometry as ArrayBuffer).byteLength;
+      if (undefined !== prop.geometry)
+        totalBytes += (prop.geometry as ArrayBuffer).byteLength;
     }
     debugPrint("returning " + props.length + " tiles, Size: " + totalBytes + " Elapsed time: " + stopWatch.elapsedSeconds);
 
@@ -168,7 +169,11 @@ export namespace ScalableMeshTileTree {
         dbToEcef = CesiumUtils.transformFromJson(json.asset.SpatialToEcef);
       }
       const ecefToDb = dbToEcef.inverse() as Transform;
-      return new ScalableMeshTileTreeProps(json, tileClient, ecefToDb);
+      let rootGeometry: ArrayBuffer | undefined;
+      if (undefined !== json.root.content && undefined !== json.root.content.url)
+        rootGeometry = await tileClient.getTileContent(json.root.content.url);
+
+      return new ScalableMeshTileTreeProps(json, tileClient, ecefToDb, rootGeometry);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     }
