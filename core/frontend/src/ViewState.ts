@@ -1764,31 +1764,42 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
-  private _size?: Point2d;
-  private _attachments?: Sheet.Attachments;
+  private _size: Point2d = Point2d.create();
+  private _attachments: Sheet.Attachments = new Sheet.Attachments();
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
   }
 
-  /** If the view has been loaded, returns the size of this sheet view as (width, height). Otherwise, returns undefined. */
-  public get size(): Point2d | undefined { return this._size; }
-  /** If the view has been loaded, returns the attachments of this sheet view. Otherwise, returns undefined. */
+  /** If the view has been loaded, returns a valid sheet size in the form (width, height). */
+  public get sheetSize(): Point2d | undefined { return this._size; }
+  /** If the view has been loaded, returns valid extents of the sheet. */
+  public get sheetExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(Point3d.create(), Point3d.create(this._size.x, this._size.y, 0)); }
+  /** If the view has been loaded, returns the attachments of this sheet. */
   public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
 
+  /**
+   * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
+   * request for the modeled element.
+   */
+  private async getSheetSize(model: SheetModelState) {
+    const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
+    assert(sheetElement !== undefined, "Sheet modeled element is undefined");
+    this._size.set(sheetElement.width, sheetElement.height);
+  }
+
+  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
   public async load(): Promise<void> {
     await super.load();
 
-    // Get the size of the sheet from the modeled element
+    // Set the size of the sheet
     const model = this.getViewedModel();
-    if (model === undefined || !(model instanceof SheetModelState))
+    if (model === undefined)
       return;
-    const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
-    assert(sheetElement !== undefined, "Sheet modeled element is undefined");
-    this._size = Point2d.create(sheetElement.width, sheetElement.height);
+    this.getSheetSize(model);
 
     // Query the attachment ids
-    const attachmentList = new Sheet.Attachments();
+    this._attachments.clear();
     const queryResult = (await this.iModel.executeQuery("SELECT ECInstanceId FROM BisCore.ViewAttachment WHERE Model.Id=" + model.id));
     const attachmentIds: string[] = [];
     for (const row of queryResult)
@@ -1809,11 +1820,10 @@ export class SheetViewState extends ViewState2d {
     // Create the attachment objects and store them on this SheetViewState
     for (let i = 0; i < attachments.length; i++) {
       if (attachmentViews[i].is3d())
-        attachmentList.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+        this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
       else
-        attachmentList.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i]));
+        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i]));
     }
-    this._attachments = attachmentList;
   }
 
   /** Create a sheet border decoration graphic. */

@@ -8,7 +8,7 @@ import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileT
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
-import { RenderGraphic, GraphicBranch } from "../render/System";
+import { RenderGraphic, GraphicBranch, RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
@@ -469,6 +469,55 @@ export namespace Tile {
       } else { tileBytes = undefined; }
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
       return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, props.yAxisUp, parent, contentRange, props.zoomFactor, tileBytes);
+    }
+  }
+}
+
+/**
+ * The root of a tree of tiles. This object stores the location of the tree relative to world coordinates.
+ * It also facilitates local caching of HTTP-based tiles.
+ */
+export class TileTreeRoot {
+  public isHTTP: boolean;
+  public pickable: boolean = false;
+  public ignoreChanges: boolean = false;
+  public haveDisplayTransform: boolean = false;
+  public is3d: boolean;
+  // public activeLoads: Map<TileLoadState, TileLoader>;
+  public iModel: IModelConnection;
+  public modelId: Id64;
+  // public localCacheName: BeFileName;
+  public location: Transform; // transform from tile coordinates to world coordinates
+  public rootTile?: Tile;
+  public rootResource?: string;  // either directory or URL
+  public expirationTime: BeDuration = BeDuration.fromSeconds(20);   // save unused tiles for 20 seconds
+  public renderSystem?: RenderSystem;
+  // public cache: RealityDataCache;
+  // public cv: BeConditionVariable;
+  // public damagedRanges: DirtyRangeList;
+  // public displayTransform: Transform;
+
+  public constructor(iModel: IModelConnection, modelId: Id64, is3d: boolean, location: Transform, rootResource?: string, system?: RenderSystem) {
+    this.iModel = iModel;
+    this.location = location;
+    this.renderSystem = system;
+    this.modelId = modelId;
+    this.is3d = is3d;
+
+    // unless a root directory is specified, assume HTTP
+    this.isHTTP = true;
+
+    if (rootResource === undefined)
+      return;
+
+    this.isHTTP = (rootResource.substr(0, 5) === "http:") || (rootResource.substr(0, 6) === "https:");
+
+    this.rootResource = rootResource;
+    if (this.isHTTP) {
+      this.rootResource = this.rootResource.substr(0, this.rootResource.lastIndexOf("/"));
+    } else {
+      // ###TODO.. In backend, root resource would become a directory. Does this make sense in web environment?
+      this.isHTTP = false;
     }
   }
 }

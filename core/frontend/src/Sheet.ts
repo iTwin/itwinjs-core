@@ -7,15 +7,16 @@ import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ViewContext } from "./ViewContext";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps } from "@bentley/imodeljs-common/lib/common";
+import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ColorByName } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderTarget } from "./render/System";
 import { Target } from "./render/webgl/Target";
-import { ViewState } from "./ViewState";
-import { ClipVector } from "@bentley/geometry-core/lib/geometry-core";
+import { ViewState, SheetViewState } from "./ViewState";
+import { ClipVector, Transform } from "@bentley/geometry-core/lib/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
+import { TileTreeRoot } from "./tile/TileTree";
 // import { GeometricModelState } from "./ModelState";
 // import { Target } from "./render/webgl/Target";
 
@@ -104,11 +105,29 @@ export namespace Sheet {
     }
   }
 
-  /**
-   * Describes the state of the scene for an attachment for a given level of the tile tree. All tiles on a given level use the same
-   * scene to generate their graphics.
-   */
-  export enum AttachmentState {
+  /** Stores a pointer to the root of a tile tree for an attachment view. */
+  export class Root extends TileTreeRoot {
+    public boundingBoxColor: ColorDef = Attachments.boundingColors[0];
+    public biasDistance?: number;
+    private _clip?: ClipVector;
+
+    public constructor(modelId: Id64, sheetView: SheetViewState) {
+      super(sheetView.iModel, modelId, false, Transform.createIdentity(), undefined, undefined);
+    }
+  }
+
+  /** Stores a pointer to the root of a tile tree for a 2d attachment view. */
+  export class Root2d {
+
+  }
+
+  /** Stores a pointer to the root of a tile tree for a 3d attachment view. */
+  export class Root3d {
+
+  }
+
+  /** Describes the state of an attachment or attachment list. */
+  export enum State {
     /** Haven't tried to create the scene for this level of the tree */
     NotLoaded,
     /** This level of the tree has an empty scene */
@@ -121,7 +140,7 @@ export namespace Sheet {
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies the id of the view and its position on the sheet. */
   export abstract class Attachment {
-    // ###TODO: This class may need to store the actual viewstate and modelstate of the attachment in order to avoid unneccessary
+    // ###TODO: This class may need to store the actu and modelstate of the attachment in order to avoid unneccessary
     // requests when working with tiles and displaying
     public readonly view: ViewState;
     public scale: number;
@@ -167,6 +186,8 @@ export namespace Sheet {
 
   /** A 2d sheet view attachment. */
   export class Attachment2d extends Attachment {
+    private _tree: Root2d;
+
     public constructor(props: ViewAttachmentProps, view: ViewState) {
       super(props, view);
     }
@@ -174,6 +195,8 @@ export namespace Sheet {
 
   /** A 3d sheet view attachment. */
   export class Attachment3d extends Attachment {
+    private _tree: Root3d;
+
     public constructor(props: ViewAttachmentProps, view: ViewState) {
       super(props, view);
     }
@@ -181,6 +204,18 @@ export namespace Sheet {
 
   /** A list of view attachments for a sheet. */
   export class Attachments {
+    /** Re-usable bounding box colors for attachments. */
+    public static boundingColors: ColorDef[] = [
+      new ColorDef(ColorByName.darkOrange),
+      new ColorDef(ColorByName.darkBlue),
+      new ColorDef(ColorByName.darkRed),
+      new ColorDef(ColorByName.darkCyan),
+      new ColorDef(ColorByName.olive),
+      new ColorDef(ColorByName.darkMagenta),
+      new ColorDef(ColorByName.darkBrown),
+      new ColorDef(ColorByName.darkGray),
+    ];
+
     public readonly list: Attachment[] = [];
     private allAttachmentsLoaded: boolean = true;
 
@@ -214,6 +249,15 @@ export namespace Sheet {
       const idx = this.list.indexOf(attachment);
       if (idx !== -1)
         this.list.splice(idx, 1);
+    }
+
+    /** Set the bounding box color of each attachment. */
+    public initBoundingBoxColors() {
+      for (let i = 0; i < this.length; i++) {
+        const tree = this.list[i].getTree();
+        if (tree !== undefined)
+          tree.boundingBoxColor = Attachments.boundingColors[i % 8];
+      }
     }
   }
 }
