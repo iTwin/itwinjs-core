@@ -36,16 +36,19 @@ export interface EcefLocationProps {
 
 /** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
 export class EcefLocation implements EcefLocationProps {
-  /** The origin of the ECEF transform */
+  /** The origin of the ECEF transform. */
   public readonly origin: Point3d;
   /** The orientation of the ECEF transform */
   public readonly orientation: YawPitchRollAngles;
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
   public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toRotMatrix()); }
 
+  /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
     this.origin = Point3d.fromJSON(props.origin);
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation);
+    this.origin.freeze(); // may not be modified
+    this.orientation.freeze(); // may not be modified
   }
 }
 
@@ -98,8 +101,16 @@ export abstract class IModel implements IModelProps {
   public name!: string;
   /** The name and description of the root subject of this iModel */
   public rootSubject!: RootSubjectProps;
+
+  private _projectExtents!: AxisAlignedBox3d;
   /** The volume, in spatial coordinates, inside which the entire project is contained. */
-  public projectExtents!: AxisAlignedBox3d;
+  public get projectExtents() { return this._projectExtents; }
+  public set projectExtents(extents: AxisAlignedBox3d) {
+    this._projectExtents = extents;
+    this._projectExtents.ensureMinLengths(1.0);  // don't allow any axis of the pro
+    this._projectExtents.freeze();
+  }
+
   /** An offset to be applied to all spatial coordinates. */
   public globalOrigin!: Point3d;
   private _ecefLocation?: EcefLocation;
@@ -109,15 +120,18 @@ export abstract class IModel implements IModelProps {
   public get ecefLocation(): EcefLocation | undefined { return this._ecefLocation; }
 
   /** Set the [EcefLocation]($docs/learning/glossary#ecefLocation) for this iModel. */
-  public setEcefLocation(ecef: EcefLocationProps) { this._ecefLocation = new EcefLocation(ecef); this._ecefTrans = undefined; }
+  public setEcefLocation(ecef: EcefLocationProps) {
+    this._ecefLocation = new EcefLocation(ecef);
+    this._ecefTrans = undefined;
+  }
 
   /** @hidden */
-  public toJSON(): any {
+  public toJSON(): IModelProps {
     const out: any = {};
     out.name = this.name;
     out.rootSubject = this.rootSubject;
-    out.projectExtents = this.projectExtents;
-    out.globalOrigin = this.globalOrigin;
+    out.projectExtents = this.projectExtents.toJSON();
+    out.globalOrigin = this.globalOrigin.toJSON();
     out.ecefLocation = this.ecefLocation;
     out.iModelToken = this.iModelToken;
     return out;
@@ -155,8 +169,10 @@ export abstract class IModel implements IModelProps {
     if (undefined === this._ecefLocation)
       throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (this._ecefTrans === undefined)
+    if (this._ecefTrans === undefined) {
       this._ecefTrans = this._ecefLocation.getTransform();
+      this._ecefTrans.freeze();
+    }
 
     return this._ecefTrans;
   }
