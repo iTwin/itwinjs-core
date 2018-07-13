@@ -230,34 +230,27 @@ export class BriefcaseManager {
   }
 
   /** Make sure that BriefcaseManager is configured to access iModels in the specified context. */
-  private static setClientFromAccessContext(context: IModelAccessContext) {
-    const client = context.client;
-    if (client === this._imodelClient)
-      return;
-
-    if (client !== undefined) {
+  private static setClientFromAccessContext(context: IModelAccessContext | undefined) {
+    if (context !== undefined && context.client !== undefined) {
       // This context requires a custom handler. Force a switch to a new IModelHubClient that is based on this handler.
-      this._imodelClient = client;
+      this._imodelClient = context.client;
     } else {
       // This context requires the standard iModelHub handler. Force a switch to a new IModelHubClient that is based on iModelHub.
       this._imodelClient = this._defaultHubClient!;
     }
   }
 
-  /** Make sure that BriefcaseManager is configured to access iModels in the specified context. */
+  /** Make sure that BriefcaseManager is configured to access iModels in the specified context.
+   * For now, there are only two cases: the default iModelHub client or a specific iModelBank client.
+   * In the case of iModelHub, contextId will be a Connect project GUID. That means use _defaultHubClient.
+   * In the case of iModelBank, contextId will be a JSON-encoded object that contains the iModelBankClient parameters that should be used.
+   */
   public static setClientFromIModelTokenContext(contextId: string | undefined) {
     if (this._lastIModelClientContext === contextId)
       return;
-    if (contextId === undefined) {    // Go back to the default iModelHub client
-      this._lastIModelClientContext = undefined;
-      this._imodelClient = undefined;
-    } else {                          // Go to a non-default iModelServer client.
-      const iModelBankAccessContext = IModelBankAccessContext.fromIModelTokenContextId(contextId);
-      if (iModelBankAccessContext === undefined)
-        throw new IModelError(BentleyStatus.ERROR, "Only IModelBankAccessContext is supported");
-      this._lastIModelClientContext = contextId;
-      this.setClientFromAccessContext(iModelBankAccessContext);
-    }
+    this._lastIModelClientContext = contextId;
+    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId) : undefined;
+    this.setClientFromAccessContext(iModelBankAccessContext);
   }
 
   /** Make sure that BriefcaseManager is configured to access the specified iModel in the appropriate context. */
