@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-export function createSchemaJsonWithItems(itemsJson: any, useEC32: boolean = false): any {
+export function createSchemaJsonWithItems(itemsJson: any, useEC32: boolean = false, referenceJson?: any): any {
   let schemaUri;
   if (useEC32)
     schemaUri = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
@@ -16,5 +16,6 @@ export function createSchemaJsonWithItems(itemsJson: any, useEC32: boolean = fal
     items: {
       ...itemsJson,
     },
+    ...referenceJson,
   };
 }
