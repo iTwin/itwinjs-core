@@ -1621,8 +1621,6 @@ export namespace TextureMapping {
     FrontProject = 8, // Only valid for lights.
   }
 
-  export type NumArr6 = [number, number, number, number, number, number];
-
   export class Trans2x3 {
     private _vals = new Array<[number, number, number]>(2);
     private _transform?: Transform;
