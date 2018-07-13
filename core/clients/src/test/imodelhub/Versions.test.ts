@@ -46,6 +46,9 @@ describe("iModelHub VersionHandler", () => {
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
 
   before(async () => {
+    utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
+    imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
@@ -78,6 +81,11 @@ describe("iModelHub VersionHandler", () => {
         }
       }
     }
+  });
+
+  after(() => {
+    utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+    imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
   });
 
   afterEach(() => {

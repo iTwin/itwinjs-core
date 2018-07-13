@@ -8,6 +8,7 @@ import { BriefcaseHandler, IModelHandler, ChangeSetHandler, LockHandler, CodeHan
 import { ThumbnailHandler } from "./Thumbnails";
 import { GlobalEventHandler } from "./GlobalEvents";
 import { UserStatisticsHandler } from "./UserStatistics";
+import { CustomRequestOptions } from "./CustomRequestOptions";
 
 /** Class that allows access to different iModel Hub class handlers.
  * Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -119,5 +120,12 @@ export class IModelHubClient {
    */
   public UserStatistics(): UserStatisticsHandler {
     return new UserStatisticsHandler(this._handler);
+  }
+
+  /**
+   * Get the @see CustomRequestOptions object for controlling future request options.
+   */
+  public CustomRequestOptions(): CustomRequestOptions {
+    return this._handler.getCustomRequestOptions();
   }
 }
