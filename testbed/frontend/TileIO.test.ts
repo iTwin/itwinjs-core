@@ -74,6 +74,18 @@ describe("TileIO", () => {
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
   });
 
+  it("should support canceling operation", async () => {
+    if (WebGLTestContext.isInitialized) {
+      const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
+      const stream = new TileIO.StreamBuffer(rectangle);
+      const reader = IModelTileIO.Reader.create(stream, model, System.instance, (_) => true);
+      expect(reader).not.to.be.undefined;
+
+      const result = await reader!.read();
+      expect(result.readStatus).to.equal(TileIO.ReadStatus.Canceled);
+    }
+  });
+
   it("should read an iModel tile containing a single rectangle", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);

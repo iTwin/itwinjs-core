@@ -220,6 +220,9 @@ export namespace GltfTileIO {
     }
   }
 
+  /** A function that returns true if Reader.read() should abort because the tile data is no longer needed. */
+  export type IsCanceled = (reader: Reader) => boolean;
+
   /** Deserializes glTF tile data. */
   export abstract class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
@@ -237,12 +240,17 @@ export namespace GltfTileIO {
     protected readonly system: RenderSystem;
     protected readonly returnToCenter: number[] | undefined;
     protected readonly yAxisUp: boolean;
+    private readonly _isCanceled?: IsCanceled;
 
     public async abstract read(): Promise<ReaderResult>;
 
     public get modelId(): Id64 { return this.model.id; }
+    protected get isCanceled(): boolean { return undefined !== this._isCanceled && this._isCanceled(this); }
 
     protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
+      if (this.isCanceled)
+        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf };
+
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
       const readStatus = this.readGltf(geometry);
 
@@ -322,7 +330,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem) {
+    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem, isCanceled?: IsCanceled) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
@@ -339,6 +347,7 @@ export namespace GltfTileIO {
 
       this.model = model;
       this.system = system;
+      this._isCanceled = isCanceled;
     }
 
     protected readBufferData(json: any, accessorName: string, type: DataType): BufferData | undefined {

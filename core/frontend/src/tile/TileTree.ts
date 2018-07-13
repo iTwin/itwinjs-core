@@ -94,7 +94,9 @@ export class Tile implements IDisposable {
     if (this._children)
       for (const child of this._children)
         dispose(child);
+
     this._children = undefined;
+    this.loadStatus = Tile.LoadStatus.Abandoned;
   }
 
   private loadGraphics(blob?: Uint8Array): void {
@@ -107,15 +109,16 @@ export class Tile implements IDisposable {
 
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
     const format = streamBuffer.nextUint32;
+    const isCanceled = () => !this.isLoading;
     let reader: GltfTileIO.Reader | undefined;
     streamBuffer.rewind(4);
     switch (format) {
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
+        reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp, isCanceled);
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem);
+        reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem, isCanceled);
         break;
 
       case TileIO.Format.Pnts:
@@ -134,14 +137,18 @@ export class Tile implements IDisposable {
     const read = reader.read();
     read.catch((_err) => this.setNotFound());
     read.then((result) => {
-      this._graphic = result.renderGraphic;
-      this.setIsReady();
+      // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
+      if (this.isLoading) {
+        this._graphic = result.renderGraphic;
+        this.setIsReady();
+      }
     });
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
   public get isAbandoned(): boolean { return Tile.LoadStatus.Abandoned === this.loadStatus; }
   public get isNotLoaded(): boolean { return Tile.LoadStatus.NotLoaded === this.loadStatus; }
+  public get isLoading(): boolean { return Tile.LoadStatus.Loading === this.loadStatus; }
   public get isNotFound(): boolean { return Tile.LoadStatus.NotFound === this.loadStatus; }
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
 

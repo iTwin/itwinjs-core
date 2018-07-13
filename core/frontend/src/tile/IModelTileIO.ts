@@ -53,7 +53,7 @@ export namespace IModelTileIO {
 
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -64,7 +64,7 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream);
-      return undefined !== props ? new Reader(props, model, system) : undefined;
+      return undefined !== props ? new Reader(props, model, system, isCanceled) : undefined;
     }
 
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }  // Original IModel Tile creator set RTC unnecessarily and incorrectly.
@@ -95,8 +95,8 @@ export namespace IModelTileIO {
       return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem) {
-      super(props, model, system);
+    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, model, system, isCanceled);
     }
 
     protected readFeatureTable(): FeatureTable | undefined {

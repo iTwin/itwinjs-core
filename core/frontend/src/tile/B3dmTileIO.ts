@@ -41,16 +41,16 @@ export namespace B3dmTileIO {
 
   /** Deserializes an B3DM tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
 
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
-      return undefined !== props ? new Reader(props, model, system, range) : undefined;
+      return undefined !== props ? new Reader(props, model, system, range, isCanceled) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, private range: ElementAlignedBox3d) {
-      super(props, model, system);
+    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, private range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, model, system, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
       const isLeaf = true;    // TBD...
