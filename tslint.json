@@ -1,6 +1,6 @@
 {
-  "extends": "./node_modules/@bentley/bentleyjs-tools/tslint.json",
-  "rulesDirectory": ["tslint-consistent-codestyle"],
+  "extends": "./packages/integration-tests/node_modules/@bentley/bentleyjs-tools/tslint.json",
+  "rulesDirectory": ["./packages/integration-tests/node_modules/tslint-consistent-codestyle/rules"],
   "rules": {
     "align": [
       true,

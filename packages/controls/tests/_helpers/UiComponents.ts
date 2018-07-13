@@ -4,7 +4,7 @@
 import * as faker from "faker";
 import { TreeNodeItem } from "@bentley/ui-components";
 import * as h from "@common/Hierarchy";
-import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey } from "@helpers/random";
 
 export const createRandomTreeNodeItem = (key?: h.NodeKey, parentId?: string): TreeNodeItem => {
   return {

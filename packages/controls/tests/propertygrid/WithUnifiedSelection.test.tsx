@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
+import { createRandomECInstanceKey } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import {

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { initialize, terminate } from ".././IntegrationTests";
+import { initialize, terminate } from "../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { ECPresentationError } from "@common/index";

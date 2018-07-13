@@ -8,7 +8,8 @@ import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import * as spies from "@helpers/Spies";
-import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey } from "@helpers/random";
+import { createRandomTreeNodeItem } from "@helpers/UiComponents";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, BaseNodeKey, ECInstanceNodeKey } from "@bentley/ecpresentation-common";
 import {
@@ -16,10 +17,9 @@ import {
   SelectionHandler, SelectionManager, SelectionChangeEvent, ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/ecpresentation-frontend";
 import { Tree, TreeNodeItem } from "@bentley/ui-components";
-import { Props as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
+import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
 import { ECPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "@src/tree";
-import { createRandomTreeNodeItem } from "../test-helpers/UiComponents";
 
 // tslint:disable-next-line:variable-name naming-convention
 const ECPresentationTree = withUnifiedSelection(Tree);

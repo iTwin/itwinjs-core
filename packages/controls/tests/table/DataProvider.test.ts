@@ -14,8 +14,7 @@ import * as content from "@bentley/ecpresentation-common/lib/content";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
 import ECPresentationTableDataProvider from "@src/table/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
-import { createRandomDescriptor } from "@helpers/random/Content";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
+import { createRandomDescriptor, createRandomECInstanceKey } from "@helpers/random";
 import { PromiseContainer } from "@helpers/Promises";
 import "@helpers/Snapshots";
 

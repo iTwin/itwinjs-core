@@ -1,5 +1,5 @@
 # dependencies
-/node_modules
+/scripts/node_modules
 /packages/common/node_modules
 /packages/backend/node_modules
 /packages/frontend/node_modules

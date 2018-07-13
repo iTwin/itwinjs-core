@@ -15,8 +15,10 @@ import * as content from "@bentley/ecpresentation-common/lib/content";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
 import ECPresentationPropertyDataProvider from "@src/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
-import { createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription } from "@helpers/random/Content";
-import { createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath } from "@helpers/random/EC";
+import {
+  createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
+  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath,
+} from "@helpers/random";
 import "@helpers/Snapshots";
 
 const favoritesCategoryName = "Favorite";

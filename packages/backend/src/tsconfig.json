@@ -1,5 +1,5 @@
 {
-  "extends": "../../../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
+  "extends": "../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
     "skipLibCheck": true,
     "outDir": "../lib",

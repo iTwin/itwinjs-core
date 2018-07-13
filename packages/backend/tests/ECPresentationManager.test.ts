@@ -13,9 +13,11 @@ import { PageOptions, SelectionInfo, KeySet, ECPresentationError, SettingValueTy
 import { Node, NodeKey, ECInstanceNodeKey } from "@common/index";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@src/ECPresentationManager";
 import UserSettingsManager from "@src/UserSettingsManager";
-import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random/Hierarchy";
-import { createRandomECInstanceKey, createRandomECClassInfoJSON, createRandomRelationshipPathJSON, createRandomECInstanceKeyJSON } from "@helpers/random/EC";
-import { createRandomDescriptor, createRandomCategory } from "@helpers/random/Content";
+import {
+  createRandomECInstanceNodeKey, createRandomNodePathElement,
+  createRandomECInstanceKey, createRandomECClassInfoJSON, createRandomRelationshipPathJSON, createRandomECInstanceKeyJSON,
+  createRandomDescriptor, createRandomCategory,
+} from "@helpers/random";
 import { ContentJSON } from "@common/content/Content";
 import { DescriptorJSON, SelectClassInfoJSON } from "@common/content/Descriptor";
 import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@common/index";

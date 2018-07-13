@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import { PromiseContainer } from "@helpers/Promises";
 import * as faker from "faker";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "@helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { PageOptions } from "@bentley/ui-components";

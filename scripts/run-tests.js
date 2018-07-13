@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 const fs = require("fs");
 const path = require("path");
+const utils = require("./utils");
 const yargs = require("yargs").argv;
 const chokidar = require("chokidar");
-const Mocha = require("mocha");
-const utils = require("./utils");
+const Mocha = utils.cwdRequire("mocha");
 
 const options = {
   testsDir: path.resolve(yargs.testsDir || "./"), // the directory where test files are located
@@ -30,17 +30,17 @@ require('cache-require-paths');
 
 const setupTestingFramework = () => {
   // setup chai
-  const chai = require("chai");
-  const chaiAsPromised = require("chai-as-promised");
+  const chai = utils.cwdRequire("chai");
+  const chaiAsPromised = utils.cwdRequire("chai-as-promised");
   chai.use(chaiAsPromised);
 
   if (options.react) {
     // configure enzyme (testing utils for React)
-    const enzyme = require("enzyme");
-    const Adapter = require("enzyme-adapter-react-16");
+    const enzyme = utils.cwdRequire("enzyme");
+    const Adapter = utils.cwdRequire("enzyme-adapter-react-16");
     enzyme.configure({ adapter: new Adapter() });
-    const chaiJestSnapshot = require("chai-jest-snapshot");
-    chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
+    const chaiJestSnapshot = utils.cwdRequire("chai-jest-snapshot");
+    chaiJestSnapshot.addSerializer(utils.cwdRequire("enzyme-to-json/serializer"));
   }
 }
 setupTestingFramework();

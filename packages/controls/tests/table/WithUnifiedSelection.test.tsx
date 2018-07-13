@@ -8,7 +8,7 @@ import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as spies from "@helpers/Spies";
 import * as moq from "@helpers/Mocks";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
+import { createRandomECInstanceKey } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys } from "@bentley/ecpresentation-common";
 import {

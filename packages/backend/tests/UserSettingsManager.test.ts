@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
-import { createRandomId } from "@helpers/random/Misc";
+import { createRandomId } from "@helpers/random";
 import * as faker from "faker";
 import { SettingValueTypes, ECPresentationError } from "@common/index";
 import { NodeAddonDefinition } from "@src/ECPresentationManager";

@@ -7,11 +7,9 @@ import "@helpers/Snapshots";
 import {
   createRandomECClassInfo, createRandomECClassInfoJSON,
   createRandomRelationshipPath, createRandomRelationshipPathJSON,
-} from "@helpers/random/EC";
-import {
   createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomEditorDescription, createRandomPrimitiveField,
-} from "@helpers/random/Content";
+} from "@helpers/random";
 import { BaseFieldJSON, PropertiesFieldJSON, NestedContentFieldJSON } from "@src/content/Fields";
 import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "@src/content";
 

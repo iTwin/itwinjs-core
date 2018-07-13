@@ -9,9 +9,11 @@ import { IModelDb } from "@bentley/imodeljs-backend";
 import { PageOptions, KeySet, SettingValueTypes, ECPresentationError, InstanceKey } from "@common/index";
 import { Node } from "@common/hierarchy";
 import { Descriptor, Content } from "@common/content";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "@helpers/random/Hierarchy";
-import { createRandomDescriptor } from "@helpers/random/Content";
+import {
+  createRandomECInstanceKey,
+  createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
+  createRandomDescriptor,
+} from "@helpers/random";
 import ECPresentationManager from "@src/ECPresentationManager";
 import ECPresentationRpcImpl from "@src/ECPresentationRpcImpl";
 import ECPresentation from "@src/ECPresentation";

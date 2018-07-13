@@ -9,9 +9,11 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, Content, Descriptor, ECPresentationRpcInterface } from "@common/index";
 import { ECPresentationManager } from "@src/index";
 import UserSettingsManager from "@src/UserSettingsManager";
-import { createRandomDescriptor } from "@helpers/random/Content";
-import { createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random/Hierarchy";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
+import {
+  createRandomDescriptor,
+  createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
+  createRandomECInstanceKey,
+} from "@helpers/random";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 

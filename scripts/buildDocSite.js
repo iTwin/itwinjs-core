@@ -16,6 +16,7 @@ function runExtract() {
 
 // rush docs
 function runDocs() {
+  childProcess.execSync("cpx ./docs/**/* ./out/docs", { stdio: [0, 1, 2] });
   childProcess.execSync("rush docs", { stdio: [0, 1, 2] });
 }
 

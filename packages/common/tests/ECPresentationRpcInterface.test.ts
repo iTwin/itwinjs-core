@@ -7,9 +7,7 @@ import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, SettingValueTypes } from "@src/index";
 import { ECPresentationRpcInterface } from "@src/index";
-import { createRandomDescriptor } from "@helpers/random/Content";
-import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
+import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "@helpers/random";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 
 describe("ECPresentationRpcInterface", () => {

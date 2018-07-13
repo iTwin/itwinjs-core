@@ -1,67 +1,68 @@
 {
   "$schema": "https://raw.githubusercontent.com/Microsoft/web-build-tools/master/apps/rush-lib/src/schemas/command-line.schema.json",
-  "customCommands": [
+  "commands": [
     {
+      "commandKind": "bulk",
       "name": "clean",
       "summary": "Cleans all projects",
-      "documentation": "Cleans build output from every project",
-      "parallelized": true,
+      "description": "Cleans build output from every project",
+      "enableParallelism": true,
       "ignoreMissingScript": true
     },
     {
+      "commandKind": "bulk",
       "name": "lint",
       "summary": "Lints all projects",
-      "documentation": "Runs Linter on every project",
-      "parallelized": true,
+      "description": "Runs Linter on every project",
+      "enableParallelism": true,
       "ignoreMissingScript": true
     },
     {
+      "commandKind": "bulk",
       "name": "test",
       "summary": "Runs tests on all projects",
-      "documentation": "Runs tests on every project",
-      "parallelized": false,
+      "description": "Runs tests on every project",
+      "enableParallelism": false,
       "ignoreMissingScript": true
     },
     {
+      "commandKind": "bulk",
       "name": "cover",
       "summary": "Runs test coverage on all projects",
-      "documentation": "Runs tests coverage on every project",
-      "parallelized": false,
+      "description": "Runs tests coverage on every project",
+      "enableParallelism": false,
       "ignoreMissingScript": true
     },
     {
-      "name": "validatePackageJson",
-      "summary": "Validate package.json files",
-      "documentation": "Making a mistake in package.json by leaving a trailing comma or similar ir an easy to make mistake. This step checks if the JSON specified in package.json is valid.",
-      "parallelized": true,
-      "ignoreMissingScript": true
-    },
-    {
-      "name": "test+cover",
+      "commandKind": "bulk",
+      "name": "test-cover",
       "summary": "Runs tests and generates test and coverage reports",
-      "documentation": "",
-      "parallelized": false,
+      "description": "",
+      "enableParallelism": false,
       "ignoreMissingScript": true
     },
     {
+      "commandKind": "bulk",
       "name": "pack",
       "summary": "Pack publishable packages",
-      "documentation": "For each published packages creates a packed .tgz package in the out/packages directory",
-      "parallelized": true,
+      "description": "For each published packages creates a packed .tgz package in the out/packages directory",
+      "enableParallelism": true,
       "ignoreMissingScript": true
     },
     {
+      "commandKind": "bulk",
       "name": "extract",
       "summary": "Extract code samples",
-      "documentation": "Extract code pieces that can be used in documentation",
-      "parallelized": true,
+      "description": "Extract code pieces that can be used in documentation",
+      "enableParallelism": true,
       "ignoreMissingScript": true
     },
     {
+      "commandKind": "bulk",
       "name": "docs",
       "summary": "Extract documentation",
-      "documentation": "Extract API documentation from source files",
-      "parallelized": true,
+      "description": "Extract API documentation from source files",
+      "enableParallelism": true,
       "ignoreMissingScript": true
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "extends": "../../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
+  "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
     "skipLibCheck": true,
     "outDir": "./lib",
@@ -7,9 +7,8 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
-      "@helpers/*": ["../../test-helpers/*"],
       "@common/*": ["@bentley/ecpresentation-common/lib/*"],
-      "*": ["../../node_modules/*", "*"]
+      "@helpers/*": ["../../common/tests/_helpers/*", "../../frontend/tests/_helpers/*"]
     }
   },
   "include": [

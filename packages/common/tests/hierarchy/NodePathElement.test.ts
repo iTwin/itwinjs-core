@@ -4,8 +4,10 @@
 import { expect } from "chai";
 import { NodeJSON } from "@src/hierarchy/Node";
 import { NodePathElementJSON, fromJSON, listFromJSON } from "@src/hierarchy/NodePathElement";
-import { createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random/Hierarchy";
-import { createRandomECInstanceKeyJSON } from "@helpers/random/EC";
+import {
+  createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
+  createRandomECInstanceKeyJSON,
+} from "@helpers/random";
 import { ECInstanceNodeKeyJSON } from "@src/hierarchy/Key";
 
 const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {

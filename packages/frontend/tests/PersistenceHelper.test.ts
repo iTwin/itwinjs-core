@@ -7,8 +7,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/ecpresentation-common";
 import { PersistenceHelper } from "@src/index";
-import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
-import { createRandomId } from "@helpers/random/Misc";
+import { createRandomECInstanceNodeKey, createRandomId } from "@helpers/random";
 import { RelatedElementProps } from "@bentley/imodeljs-common/lib/common";
 
 describe("PersistenceHelper", () => {

@@ -7,7 +7,7 @@ import { initialize, terminate } from "./IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import { UserSettingsItem, UserSettingsGroup, SettingValueTypes, PresentationRuleSet, UserSettingsManager } from "@bentley/ecpresentation-common";
-import { createRandomId } from "@helpers/random/Misc";
+import { createRandomId } from "@helpers/random";
 
 let settings: UserSettingsManager;
 

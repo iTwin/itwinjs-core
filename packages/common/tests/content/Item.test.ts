@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import "@helpers/Snapshots";
-import { createRandomECClassInfoJSON } from "@helpers/random/EC";
+import { createRandomECClassInfoJSON } from "@helpers/random";
 import Item, { ItemJSON } from "@src/content/Item";
 
 describe("Item", () => {

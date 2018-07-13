@@ -11,8 +11,8 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import FilteredECPresentationTreeDataProvider from "@src/tree/FilteredDataProvider";
 import IECPresentationTreeDataProvider from "@src/tree/IECPresentationTreeDataProvider";
 import { createTreeNodeItem } from "@src/tree/Utils";
-import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random/Hierarchy";
-import { createRandomTreeNodeItem } from "../test-helpers/UiComponents";
+import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random";
+import { createRandomTreeNodeItem } from "@helpers/UiComponents";
 
 describe("FilteredTreeDataProvider", () => {
 

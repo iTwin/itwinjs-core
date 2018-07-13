@@ -12,7 +12,7 @@ import * as content from "@bentley/ecpresentation-common/lib/content";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
 import ContentDataProvider, { CacheInvalidationProps } from "@src/common/ContentDataProvider";
-import { createRandomDescriptor } from "@helpers/random/Content";
+import { createRandomDescriptor } from "@helpers/random";
 
 /**
  * The Provider class is used to make protected ContentDataProvider

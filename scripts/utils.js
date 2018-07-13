@@ -14,6 +14,11 @@ const ensureDirectoryExists = (directoryPath) => {
   createDirs.reverse().forEach((dir) => fs.mkdirSync(dir));
 };
 
+const cwdRequire = (id) => {
+  return require(path.join(process.cwd(), "node_modules", id));
+};
+
 module.exports = {
   ensureDirectoryExists,
+  cwdRequire,
 }

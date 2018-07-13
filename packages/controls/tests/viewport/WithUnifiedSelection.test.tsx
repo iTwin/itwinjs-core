@@ -8,10 +8,12 @@ import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import * as spies from "@helpers/Spies";
-import { createRandomId } from "@helpers/random/Misc";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
-import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
-import { createRandomDescriptor } from "@helpers/random/Content";
+import {
+  createRandomId,
+  createRandomECInstanceKey,
+  createRandomECInstanceNodeKey,
+  createRandomDescriptor,
+} from "@helpers/random";
 import { PromiseContainer } from "@helpers/Promises";
 import "@helpers/Snapshots";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";

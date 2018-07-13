@@ -5,9 +5,11 @@ import { expect } from "chai";
 import KeySet, { KeySetJSON } from "@src/KeySet";
 import { InstanceKey } from "@src/EC";
 import { ECPresentationError } from "@src/Error";
-import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
-import { createRandomECInstanceKey, createRandomECInstanceId } from "@helpers/random/EC";
-import { createRandomEntityProps } from "@helpers/random/IModelJs";
+import {
+  createRandomECInstanceNodeKey,
+  createRandomECInstanceKey, createRandomECInstanceId,
+  createRandomEntityProps,
+} from "@helpers/random";
 import "@helpers/Snapshots";
 
 describe("KeySet", () => {

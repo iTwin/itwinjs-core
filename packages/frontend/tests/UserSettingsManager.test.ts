@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
-import { createRandomId } from "@helpers/random/Misc";
+import { createRandomId } from "@helpers/random";
 import { ECPresentationRpcInterface, SettingValueTypes } from "@common/index";
 import UserSettingsManager from "@src/UserSettingsManager";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
