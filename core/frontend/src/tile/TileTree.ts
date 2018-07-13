@@ -98,9 +98,12 @@ export class Tile implements IDisposable {
   }
 
   private loadGraphics(blob?: Uint8Array): void {
-    this.loadStatus = Tile.LoadStatus.Ready;
-    if (undefined === blob)
+    if (undefined === blob) {
+      this.setIsReady();
       return;
+    }
+
+    this.loadStatus = Tile.LoadStatus.Loading;
 
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
     const format = streamBuffer.nextUint32;
@@ -118,12 +121,22 @@ export class Tile implements IDisposable {
       case TileIO.Format.Pnts:
         {
           this._graphic = PntsTileIO.readPointCloud(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
+          this.setIsReady();
           return;
         }
     }
 
-    if (undefined !== reader)
-      reader.read().then(result => this._graphic = result.renderGraphic).catch(_err => { });
+    if (undefined === reader) {
+      this.setNotFound();
+      return;
+    }
+
+    const read = reader.read();
+    read.catch((_err) => this.setNotFound());
+    read.then((result) => {
+      this._graphic = result.renderGraphic;
+      this.setIsReady();
+    });
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
