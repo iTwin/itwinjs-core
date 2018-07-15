@@ -98,7 +98,7 @@ export class DecorateContext extends RenderContext {
 
     // Limit non-view aligned grid to project extents in spatial views...
     if (limitRange) {
-      range = vp.view.iModel.projectExtents as Range3d;
+      range = vp.view.iModel.projectExtents.clone();
       if (range.isNull())
         return [];
     }

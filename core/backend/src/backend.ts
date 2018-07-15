@@ -23,6 +23,7 @@ export * from "./LinkTableRelationship";
 export * from "./LineStyle";
 export * from "./Model";
 export * from "./Schema";
+export * from "./SqliteStatement";
 export * from "./ViewDefinition";
 export * from "./BisCore";
 export * from "./IModelDb"; // must be last

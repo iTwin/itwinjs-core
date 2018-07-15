@@ -227,7 +227,7 @@ export class IModelHandler {
    * @param imodelId Id of the iModel.
    */
   private getRelativeUrl(projectId: string, imodelId?: string) {
-    return `/Repositories/Project--${projectId}/ProjectScope/iModel/${imodelId || ""}`;
+    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/iModel/${imodelId || ""}`;
   }
 
   /**

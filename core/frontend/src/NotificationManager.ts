@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Notifications */
 import { Viewport } from "./Viewport";
-import { Point2d } from "@bentley/geometry-core";
+import { Point2d, XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 /** Message Types for outputMessage */
 export const enum OutputMessageType {
@@ -84,8 +85,12 @@ export const enum MessageBoxValue {
   NoToAll = 12,
 }
 
+export interface ToolTipOptions {
+  duration?: BeDuration;
+}
+
 export class NotifyMessageDetails {
-  public displayTime = 3500;
+  public displayTime = BeDuration.fromSeconds(3.5);
   public viewport?: Viewport;
   public displayPoint?: Point2d;
   public relativePosition = RelativePosition.TopRight;
@@ -104,9 +109,9 @@ export class NotifyMessageDetails {
    * @param displayPoint        Point at which to display the Pointer type message.
    * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
    */
-  public setPointerTypeDetails(viewport: Viewport, displayPoint: Point2d, relativePosition = RelativePosition.TopRight) {
+  public setPointerTypeDetails(viewport: Viewport, displayPoint: XAndY, relativePosition = RelativePosition.TopRight) {
     this.viewport = viewport;
-    this.displayPoint = displayPoint.clone();
+    this.displayPoint = Point2d.fromJSON(displayPoint);
     this.relativePosition = relativePosition;
   }
 }
@@ -140,39 +145,55 @@ export class NotificationManager {
   /** Output a prompt, given an i18n key. */
   public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.i18n.translate(key)); }
 
-  /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
+  /** Output a localized prompt to the user. A 'prompt' indicates an action the user should take to proceed.
+   * @param _prompt The localized string with the prompt message.
+   */
   public outputPrompt(_prompt: string) { }
 
   /** Output a message and/or alert to the user. */
   public outputMessage(_message: NotifyMessageDetails) { }
 
   /** Output a MessageBox and wait for response from the user.
-   * @param mbType       The MessageBox type.
-   * @param message      The message to display.
-   * @param icon         The MessageBox icon type.
+   * @param _mbType       The MessageBox type.
+   * @param _message      The message to display.
+   * @param _icon         The MessageBox icon type.
    * @return the response from the user.
    */
   public openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return Promise.resolve(MessageBoxValue.Ok); }
 
   /**
    * Set up for activity messages.
-   * @param details  The activity message details.
+   * @param _details  The activity message details.
    * @return true if the message was displayed, false if an invalid priority is specified.
    */
   public setupActivityMessage(_details: ActivityMessageDetails) { return true; }
 
   /**
    * Output an activity message to the user.
-   * @param messageText      The message text.
-   * @param percentComplete  The percentage of completion.
+   * @param _messageText The message text.
+   * @param _percentComplete The percentage of completion.
    * @return true if the message was displayed, false if the message could not be displayed.
    */
   public outputActivityMessage(_messageText: string, _percentComplete: number) { return true; }
 
   /**
    * End an activity message.
-   * @param reason       Reason for the end of the Activity Message.
+   * @param _reason The reason for the end of the Activity Message.
    * @return true if the message was ended successfully, false if the activityMessage could not be ended.
    */
   public endActivityMessage(_reason: ActivityMessageEndReason) { return true; }
+
+  /** Return true if the ToolTip is current open. */
+  public isToolTipOpen(): boolean { return false; }
+
+  /** Clear the ToolTip if it is current open. If not open, does nothing. */
+  public clearToolTip(): void { }
+
+  /** Show a ToolTip window.
+   * @param _htmlElement The HTMLElement that that anchors the toolTip.
+   * @param _message The message to display inside the ToolTip
+   * @param _location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, determined by _options.
+   * @param _options Options that supply additional information about how the ToolTip should function.
+   */
+  public showToolTip(_htmlElement: HTMLElement, _message: string, _pt?: XAndY, _options?: ToolTipOptions): void { }
 }

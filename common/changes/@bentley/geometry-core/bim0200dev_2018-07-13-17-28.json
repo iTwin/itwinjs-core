@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added freeze methods ",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "keith.bentley@bentley.com"
+}
