@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Freeze IModel.projectExtents. Drawing grids was destroying it",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

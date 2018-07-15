@@ -107,13 +107,31 @@ export class AccuSnap {
   }
   private doSnapping(): boolean { return this.isSnapEnabled() && this.userWantsSnaps() && !this.isSnapSuspended(); }
   private isSnapSuspended(): boolean { return (0 !== this.suppressed || 0 !== this.toolState.suspended); }
+
+  /**
+   * Get the SnapMode that was used to generate the SnapDetail. Since getActiveSnapModes can return multiple SnapMode values, candidateSnapMode holds
+   * the SnapMode that was chosen.
+   */
   public getSnapMode(): SnapMode { return this.candidateSnapMode; }
 
-  private isActivePointSnap(snapModeToFind: SnapMode): boolean {
-    const snaps = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.AccuSnap);
-    for (const snap of snaps) { if (snap === snapModeToFind) return true; }
-    return false;
+  /** Get the current snap divisor to use to use for SnapMode.NearestKeypoint.
+   * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a snap divisor ui component.
+   */
+  public getKeypointDivisor() { return 2; }
+
+  /** Get the current active SnapModes. SnapMode position determines priority, with the first entry being the highest. The SnapDetail will be returned for the first SnapMode that produces a hot snap.
+   * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a SnapMode ui component.
+   */
+  public getActiveSnapModes(): SnapMode[] {
+    const snaps: SnapMode[] = [];
+    snaps.push(SnapMode.NearestKeypoint);
+    return snaps;
   }
+
+  /** Can be used by a subclass of AccuSnap to implement a SnapMode override that applies only to the next point.
+   * This method will be called whenever a new tool is installed and on a button event.
+   */
+  public synchSnapMode(): void { }
 
   /**
    * Check to see whether its appropriate to generate an AccuSnap point, given the current user
@@ -121,8 +139,13 @@ export class AccuSnap {
    */
   public isActive(): boolean {
     // Unless we're snapping in intersect mode (to find extended intersections), skip if tentative point active...
-    if (IModelApp.tentativePoint.isActive)
-      return this.isActivePointSnap(SnapMode.Intersection) && this.doSnapping();
+    if (IModelApp.tentativePoint.isActive) {
+      if (!this.doSnapping())
+        return false;
+      const snaps = this.getActiveSnapModes();
+      for (const snap of snaps) { if (snap === SnapMode.Intersection) return true; }
+      return false;
+    }
 
     return this.doSnapping() || this.doLocateTesting();
   }
@@ -206,9 +229,6 @@ export class AccuSnap {
     if (!hit || !this.hitShouldBeHilited(hit))
       return;
     this.setNeedsFlashView(hit.viewport!);
-    const snap = AccuSnap.toSnapDetail(hit);
-    if (snap && snap.isHot())
-      IModelApp.locateManager.onFlashHit(snap);
   }
 
   public erase(): void {
@@ -479,7 +499,7 @@ export class AccuSnap {
         viewFlags: thisHit.viewport.viewFlags,
         snapMode,
         snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
-        snapDivisor: IModelApp.locateManager.getKeypointDivisor(),
+        snapDivisor: this.getKeypointDivisor(),
       }); // ### TODO offSubCategories...
 
     if (out) out.snapStatus = result.status;
@@ -723,18 +743,19 @@ export class AccuSnap {
     other by sneaking up from right or left. Otherwise, the first one in the list is chosen.
 */
   private async getPreferredSnap(ev: BeButtonEvent, out: LocateResponse): Promise<SnapDetail | undefined> {
-    //    IModelApp.locateManager.setChosenSnapMode(SnapType.Points, SnapMode.Invalid);
-    //    IModelApp.locateManager.setChosenSnapMode(SnapType.Constraints, SnapMode.Invalid);
-
     // Get the list of point snap modes to consider
     let snapModes: SnapMode[];
 
-    //  Special case: If tentative point is active, then we can only do intersections.
+    // Special case: If tentative point is active, then we can only do intersections.
     if (IModelApp.tentativePoint.isActive) {
       snapModes = [];
       snapModes.push(SnapMode.Intersection);
     } else {
-      snapModes = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.AccuSnap);
+      // The user's finger is likely to create unwanted AccuSnaps, so don't snap unless source is a mouse.
+      if (IModelApp.toolAdmin.isCurrentInputSourceMouse())
+        snapModes = this.getActiveSnapModes();
+      else
+        snapModes = [];
     }
 
     // Consider each point snap mode and find the preferred one.
@@ -769,8 +790,6 @@ export class AccuSnap {
       return undefined;
     }
 
-    // Report which of the multiple active modes we used
-    IModelApp.locateManager.setChosenSnapMode(preferred.snapMode);
     return preferred;
   }
 
@@ -781,7 +800,6 @@ export class AccuSnap {
 
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
-    const wasHot = this.isHot();
 
     this.clearInfoBalloon(ev);
 
@@ -799,7 +817,6 @@ export class AccuSnap {
 
     // indicate errors
     this.showSnapError(out.snapStatus, ev);
-    IModelApp.locateManager.onAccuSnapMotion(hit, wasHot, ev);
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { }

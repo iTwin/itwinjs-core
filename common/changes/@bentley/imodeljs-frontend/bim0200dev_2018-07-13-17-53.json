@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Move snap related setting from ElementLocateManager to AccuSnap.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

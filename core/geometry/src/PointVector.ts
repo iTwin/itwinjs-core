@@ -297,9 +297,10 @@ export class XYZ implements XYAndZ {
    * @param other target of created vector.
    * @param result optional result vector.
    */
-  public unitVectorTo(target: XYAndZ, result?: Vector3d): Vector3d | undefined {
-    return this.vectorTo(target, result).normalize(result);
-  }
+  public unitVectorTo(target: XYAndZ, result?: Vector3d): Vector3d | undefined { return this.vectorTo(target, result).normalize(result); }
+
+  /** Freeze this XYZ */
+  public freeze() { Object.freeze(this); }
 }
 
 export class Point3d extends XYZ {
@@ -1218,6 +1219,10 @@ export class YawPitchRollAngles {
     this.pitch = pitch;
     this.roll = roll;
   }
+
+  /** Freeze this YawPitchRollAngles */
+  public freeze() { Object.freeze(this.yaw); Object.freeze(this.pitch); Object.freeze(this.roll); }
+
   /** constructor for YawPitchRollAngles with angles in degrees. */
   public static createDegrees(yawDegrees: number, pitchDegrees: number, rollDegrees: number): YawPitchRollAngles {
     return new YawPitchRollAngles(

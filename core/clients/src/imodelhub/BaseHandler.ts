@@ -51,6 +51,8 @@ export class IModelBaseHandler extends WsgClient {
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
 
+  public formatProjectIdForUrl(projectId: string) { return projectId; }
+
   public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
   /**
