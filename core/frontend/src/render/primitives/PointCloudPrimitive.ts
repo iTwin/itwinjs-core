@@ -4,10 +4,11 @@
 /** @module Rendering */
 
 import { Range3d } from "@bentley/geometry-core";
-import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
+import { QParams3d } from "@bentley/imodeljs-common";
 
 export class PointCloudArgs {
-  public points: QPoint3dList;
+  public points: Uint16Array;
+  public pointParams: QParams3d;
   public colors: Uint8Array;
-  public constructor(points: QPoint3dList = new QPoint3dList(QParams3d.fromRange(Range3d.createNull())), colors = new Uint8Array()) { this.points = points; this.colors = colors; }
+  public constructor(points: Uint16Array = new Uint16Array(), pointParams = QParams3d.fromRange(Range3d.createNull()), colors = new Uint8Array()) { this.points = points; this.pointParams = pointParams, this.colors = colors; }
 }
