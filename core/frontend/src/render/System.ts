@@ -255,6 +255,10 @@ export namespace Pixel {
 export abstract class RenderTarget implements IDisposable {
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
+  public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
+  public static get displayPriorityFactor(): number { return this.frustumDepth2d / (this.maxDisplayPriority + 1); }
+
+  public static depthFromDisplayPriority(priority: number): number { return this.displayPriorityFactor * priority; }
 
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;

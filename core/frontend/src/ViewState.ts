@@ -1615,7 +1615,7 @@ export class SpatialViewState extends ViewState3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined) {   // can we assume that a loaded model
+      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined) {   // can we assume that a loaded model
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
@@ -1689,6 +1689,7 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  /** Return the model for this 2d view. */
   public getViewedModel(): GeometricModel2dState | undefined {
     const model = this.iModel.models.getLoaded(this.baseModelId.value);
     if (model && !(model instanceof GeometricModel2dState))
@@ -1820,9 +1821,9 @@ export class SheetViewState extends ViewState2d {
     // Create the attachment objects and store them on this SheetViewState
     for (let i = 0; i < attachments.length; i++) {
       if (attachmentViews[i].is3d())
-        this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+        return; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
       else
-        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i]));
+        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
     }
   }
 
@@ -1838,6 +1839,24 @@ export class SheetViewState extends ViewState2d {
     if (this._size !== undefined) {
       const border = this.createBorder(this._size.x, this._size.y, context);
       context.setViewBackground(border);
+    }
+    { // ###TODO: Debug.... DELETE
+      for (const attachment of this._attachments.list) {
+        const origin = attachment.placement.origin;
+        const bbox = attachment.placement.bbox;
+        const rect: Point2d[] = [
+          Point2d.create(origin.x, origin.y),
+          Point2d.create(origin.x + bbox.high.x, origin.y),
+          Point2d.create(origin.x + bbox.high.x, origin.y + bbox.high.y),
+          Point2d.create(origin.x, origin.y + bbox.high.y),
+          Point2d.create(origin.x, origin.y)];
+
+        const builder = context.createViewBackground();
+        builder.setSymbology(ColorDef.black, ColorDef.black, 2);
+        builder.addLineString2d(rect, 0);
+        const attachmentBorder = builder.finish();
+        context.addWorldDecoration(attachmentBorder);
+      }
     }
   }
 

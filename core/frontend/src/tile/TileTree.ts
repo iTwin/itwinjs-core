@@ -8,7 +8,7 @@ import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileT
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
-import { RenderGraphic, GraphicBranch, RenderSystem } from "../render/System";
+import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
@@ -73,7 +73,7 @@ export class Tile implements IDisposable {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
-    this.yAxisUp = props.yAxisUp;
+    this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
 
     // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
     this.loadGraphics(props.geometry);
@@ -346,7 +346,7 @@ export class Tile implements IDisposable {
   private loadChildren(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
       this._childrenLoadStatus = TileTree.LoadStatus.Loading;
-      this.root.loader.getTileProps(this._childIds).then((props: TileProps[]) => {
+      this.root.loader!.getTileProps(this._childIds).then((props: TileProps[]) => {
         this._children = [];
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
@@ -354,7 +354,7 @@ export class Tile implements IDisposable {
           const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
           for (const prop of props) {
             // ###TODO if child is empty don't bother adding it to list...
-            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth());
+            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader!.getMaxDepth());
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
               parentRange.extendRange(child.contentRange);
@@ -452,7 +452,7 @@ export namespace Tile {
       public readonly range: ElementAlignedBox3d,
       public readonly maximumSize: number,
       public readonly childIds: string[],
-      public readonly yAxisUp: boolean,
+      public readonly yAxisUp?: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
       public readonly zoomFactor?: number,
@@ -473,65 +473,16 @@ export namespace Tile {
   }
 }
 
-/**
- * The root of a tree of tiles. This object stores the location of the tree relative to world coordinates.
- * It also facilitates local caching of HTTP-based tiles.
- */
-export class TileTreeRoot {
-  public isHTTP: boolean;
-  public pickable: boolean = false;
-  public ignoreChanges: boolean = false;
-  public haveDisplayTransform: boolean = false;
-  public is3d: boolean;
-  // public activeLoads: Map<TileLoadState, TileLoader>;
-  public iModel: IModelConnection;
-  public modelId: Id64;
-  // public localCacheName: BeFileName;
-  public location: Transform; // transform from tile coordinates to world coordinates
-  public rootTile?: Tile;
-  public rootResource?: string;  // either directory or URL
-  public expirationTime: BeDuration = BeDuration.fromSeconds(20);   // save unused tiles for 20 seconds
-  public renderSystem?: RenderSystem;
-  // public cache: RealityDataCache;
-  // public cv: BeConditionVariable;
-  // public damagedRanges: DirtyRangeList;
-  // public displayTransform: Transform;
-
-  public constructor(iModel: IModelConnection, modelId: Id64, is3d: boolean, location: Transform, rootResource?: string, system?: RenderSystem) {
-    this.iModel = iModel;
-    this.location = location;
-    this.renderSystem = system;
-    this.modelId = modelId;
-    this.is3d = is3d;
-
-    // unless a root directory is specified, assume HTTP
-    this.isHTTP = true;
-
-    if (rootResource === undefined)
-      return;
-
-    this.isHTTP = (rootResource.substr(0, 5) === "http:") || (rootResource.substr(0, 6) === "https:");
-
-    this.rootResource = rootResource;
-    if (this.isHTTP) {
-      this.rootResource = this.rootResource.substr(0, this.rootResource.lastIndexOf("/"));
-    } else {
-      // ###TODO.. In backend, root resource would become a directory. Does this make sense in web environment?
-      this.isHTTP = false;
-    }
-  }
-}
-
 export class TileTree implements IDisposable {
   public readonly model: GeometricModelState;
   public readonly location: Transform;
-  public readonly rootTile: Tile;
-  public readonly expirationTime: BeDuration;
   public readonly clipVector?: ClipVector;
   public readonly id: Id64;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
-  public readonly loader: TileLoader;
+  public expirationTime: BeDuration;
+  protected _rootTile?: Tile;
+  protected _loader?: TileLoader;
 
   public constructor(props: TileTree.Params) {
     this.model = props.model;
@@ -541,23 +492,28 @@ export class TileTree implements IDisposable {
     this.clipVector = props.clipVector;
     this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
-    this.loader = props.loader;
+    this._rootTile = props.rootTile ? new Tile(Tile.Params.fromJSON(props.rootTile, this)) : undefined;
+    this._loader = props.loader;
   }
 
-  public dispose() { dispose(this.rootTile); }
+  public get rootTile(): Tile | undefined { return this._rootTile; }
+  public get loader(): TileLoader | undefined { return this._loader; }
+
+  public dispose() {
+    dispose(this._rootTile);
+  }
 
   public get is3d(): boolean { return this.model.is3d; }
   public get is2d(): boolean { return this.model.is2d; }
   public get modelId(): Id64 { return this.model.id; }
   public get iModel(): IModelConnection { return this.model.iModel; }
-  public get range(): ElementAlignedBox3d { return this.rootTile.range; }
+  public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new ElementAlignedBox3d(); }
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
     const selected: Tile[] = [];
-    if (undefined !== this.rootTile)
-      this.rootTile.selectTiles(selected, args);
+    if (undefined !== this._rootTile)
+      this._rootTile.selectTiles(selected, args);
 
     return selected;
   }
@@ -601,9 +557,9 @@ export namespace TileTree {
   export class Params {
     public constructor(
       public readonly id: Id64,
-      public readonly rootTile: TileProps,
+      public readonly rootTile: TileProps | undefined,
       public readonly model: GeometricModelState,
-      public readonly loader: TileLoader,
+      public readonly loader: TileLoader | undefined,
       public readonly location: Transform,
       public readonly maxTilesToSkip?: number,
       public readonly clipVector?: ClipVector,

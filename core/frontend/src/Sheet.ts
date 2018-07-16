@@ -7,22 +7,19 @@ import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ColorByName } from "@bentley/imodeljs-common/lib/common";
-import { Range2d, Range3d } from "@bentley/geometry-core/lib/Range";
+import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps } from "@bentley/imodeljs-common/lib/common";
+import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderTarget } from "./render/System";
 import { Target } from "./render/webgl/Target";
-import { ViewState, SheetViewState, ViewState2d } from "./ViewState";
+import { ViewState, ViewState2d, SheetViewState } from "./ViewState";
 import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { Tile, TileTree } from "./tile/TileTree";
+import { TileTree, Tile } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { IModelConnection } from "./IModelConnection";
-import { RenderSystem, RenderTarget } from "./render/System";
-// import { GeometricModelState } from "./ModelState";
-// import { Target } from "./render/webgl/Target";
+import { GeometricModel2dState } from "./ModelState";
+import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 
 /** Contains functionality specific to Sheet views. */
 export namespace Sheet {
@@ -109,118 +106,95 @@ export namespace Sheet {
     }
   }
 
-  /** Wraps a pointer to a tile for use by a 2d attachment. */
-  export class Tile2d {
-    // ##TODO
+  /** An extension of Tile specific to rendering 2d attachments. */
+  export class Tile2d extends Tile {
+
   }
 
-  /** Wraps a pointer to a tile for use by a 3d attachment. */
-  export class Tile3d {
-    // ##TODO
-  }
+  /** An extension of TileTree specific to rendering 2d attachments. */
+  export class Tree2d extends TileTree {
+    private _view: ViewState2d;
+    private _viewRoot: TileTree;
+    private _drawingToAttachment: Transform;
+    private _graphicsClip: ClipVector;
+    private _clip: ClipVector;
+    private _symbologyOverrides: FeatureSymbology.Overrides;
+    private _biasDistance: number = 0;
+    public boundingBoxColor: ColorDef = ColorDef.black;   // ***DEBUG
 
-  /** Wraps a pointer to a tile tree with additional location and styling information, for use by an attachment. */
-  export class Root {
-    public iModel: IModelConnection;
-    public location: Transform;
-    public renderSystem?: RenderSystem;
-    public modelId: Id64;
-    public is3d: boolean;
-    public rootTile?: Tile2d | Tile3d;
-    public boundingBoxColor: ColorDef = Attachments.boundingColors[0];
-    public biasDistance?: number;
-    protected _clip?: ClipVector;
+    private constructor(sheetView: SheetViewState, model: GeometricModel2dState, attachment: Attachment2d, context: SceneContext, view: ViewState2d, viewRoot: TileTree) {
+      super(new TileTree.Params(
+        new Id64(),
+        undefined,
+        model,
+        undefined,
+        Transform.createIdentity(),
+        undefined,
+        undefined,
+        undefined,
+      ));
 
-    public constructor(iModel: IModelConnection, modelId: Id64, is3d: boolean, system?: RenderSystem) {
-      this.iModel = iModel;
-      this.modelId = modelId;
-      this.location = Transform.createIdentity();
-      this.is3d = is3d;
-      this.renderSystem = system;
-    }
-  }
+      this._view = view;
+      this._viewRoot = viewRoot;
 
-  /** TileTree wrapper for 2d view attachments. Contains a pointer to a model's tile tree, while storing  */
-  export class Root2d extends Root {
-    public view: ViewState2d;
-    public viewRoot?: TileTree;
-    public drawingToAttachment: Transform;
-    public graphicsClip?: ClipVector;
-    public symbologyOverrides: FeatureSymbology.Overrides;
+      // Ensure elements inside the view attachment are not affected to changes to category display for the sheet view
+      this._symbologyOverrides = new FeatureSymbology.Overrides(view);
 
-    private constructor(iModel: IModelConnection, modelId: Id64, attachment: Attachment, context: SceneContext, view: ViewState2d, viewRoot: TileTree) {
-      super(iModel, modelId, false);
-
-      this.view = view;
-      this.viewRoot = viewRoot;
-
-      // Ensure the elements inside the view attachment are not affected to changes to category display etc for the sheet view.
-      this.symbologyOverrides = new FeatureSymbology.Overrides(view);
-
-      const attachmentRange = attachment.placement.calculateRange();
-      const attachWidth = attachmentRange.high.x - attachmentRange.low.x;
-      const attachHeight = attachmentRange.high.y - attachmentRange.low.y;
+      const attachRange = attachment.placement.calculateRange();
+      const attachWidth = attachRange.high.x - attachRange.low.x;
+      const attachHeight = attachRange.high.y - attachRange.low.y;
 
       const viewExtents = view.getExtents();
       const scale = Point2d.create(attachWidth / viewExtents.x, attachHeight / viewExtents.y);
 
       const worldToAttachment = Point3d.createFrom(attachment.placement.origin);
-      worldToAttachment.z = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
+      worldToAttachment.z = Target.depthFromDisplayPriority(attachment.displayPriority);
 
       const location = Transform.createOriginAndMatrix(worldToAttachment, RotMatrix.createIdentity());
       this.location.setFrom(location);
 
       const aspectRatioSkew = view.getAspectRatioSkew();
-      this.drawingToAttachment = Transform.createOriginAndMatrix(Point3d.create(), view.getRotation());
-      this.drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1);
-      const viewOrg = view.getOrigin();
-      const translation = Point3d.createFrom(viewRoot.location.origin);
-      viewOrg.minus(translation, viewOrg);
-      this.drawingToAttachment.multiplyPoint3d(viewOrg, viewOrg);
-      viewOrg.plus(translation, viewOrg);
+      this._drawingToAttachment = Transform.createOriginAndMatrix(Point3d.create(), view.getRotation());
+      this._drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1);
+      const translation = viewRoot.location.origin.cloneAsPoint3d();
+      const viewOrg = view.getOrigin().minus(translation);
+      this._drawingToAttachment.multiplyPoint3d(viewOrg, viewOrg);
+      translation.plus(viewOrg, viewOrg);
       viewOrg.z = 0;
       const viewOrgToAttachment = worldToAttachment.minus(viewOrg);
       translation.plus(viewOrgToAttachment, translation);
-      this.drawingToAttachment.origin.setFrom(translation);
+      this._drawingToAttachment.origin.setFrom(translation);
 
-      // Renderer needs the unclipped range of the attachment in order to produce polys to be rendered as clip mask...
-      // (Containment tests can also be more efficiently performed if the boundary range is specified)
+      this.expirationTime = BeDuration.fromSeconds(15);
+
+      // The renderer needs the unclipped range of the attachment in order to produce polys to be rendered as clip mask...
+      // (Containment tests can also be more efficiently performed if boundary range is specified)
       const clipTf = location.inverse();
       if (clipTf !== undefined) {
         this._clip = attachment.getOrCreateClip(clipTf);
-        const clipRange = clipTf.multiplyRange(attachmentRange);
-        this._clip!.boundingRange.setFrom(clipRange);
+        clipTf.multiplyRange(attachRange, this._clip.boundingRange);
+      } else {
+        this._clip = ClipVector.createEmpty();
       }
 
-      const sheetToDrawing = this.drawingToAttachment.inverse();
+      const sheetToDrawing = this._drawingToAttachment.inverse();
       if (sheetToDrawing !== undefined) {
-        this.graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
-        const graphicsClipRange = sheetToDrawing.multiplyRange(attachmentRange);
-        this.graphicsClip!.boundingRange.setFrom(graphicsClipRange);
+        this._graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
+        sheetToDrawing.multiplyRange(attachRange, this._graphicsClip.boundingRange);
+      } else {
+        this._graphicsClip = ClipVector.createEmpty();
       }
 
-      this.rootTile = new Tile2d();
+      this._rootTile = new Tile2d(this, attachment.placement.bbox);
     }
 
-    /** Create a new tile tree root for a 2d view attachment. */
-    public static create(sheetView: SheetViewState, attachment: Attachment, context: SceneContext): Root2d | undefined {
-      assert(!attachment.view.is3d());
-      const iModel = sheetView.iModel;
-      const view = attachment.view as ViewState2d;
-
-      const viewModel = view.getViewedModel();
-      if (viewModel === undefined)
+    /** Create a Tree2d tile tree for a 2d attachment. */
+    public static create(sheetView: SheetViewState, attachment: Attachment2d, context: SceneContext): Tree2d | undefined {
+      const viewedModel = attachment.view.getViewedModel();
+      if (!viewedModel || !viewedModel.tileTree)
         return undefined;
-      if (viewModel.tileTree === undefined)
-        return undefined;
-
-      return new Root2d(iModel, viewModel.id, attachment, context, view, viewModel.tileTree);
+      return new Tree2d(sheetView, viewedModel, attachment, context, attachment.view, viewedModel.tileTree);
     }
-  }
-
-  /** Tile tree wrapper for 2d view attachments. */
-  export class Root3d {
-
   }
 
   /** Describes the state of an attachment or attachment list. */
@@ -237,13 +211,15 @@ export namespace Sheet {
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies the id of the view and its position on the sheet. */
   export abstract class Attachment {
-    public readonly view: ViewState;
+    public id: Id64;
+    public readonly view: ViewState2d;
     public scale: number;
     public placement: Placement2d;
     public clip: ClipVector;
     public displayPriority: number;
 
-    protected constructor(props: ViewAttachmentProps, view: ViewState) {
+    protected constructor(props: ViewAttachmentProps, view: ViewState2d) {
+      this.id = new Id64(props.id);
       this.view = view;
       this.placement = Placement2d.fromJSON(props.placement);
       if (props.jsonProperties) {
@@ -273,42 +249,31 @@ export namespace Sheet {
       return new Placement2d(origin, Angle.createDegrees(0), box);
     }
 
+    /** Load the tile tree for this attachment. Returns true if successful. */
+    public abstract load(sheetView: ViewState): boolean;
+
+    // public abstract getTree(): TileTree;
+
     /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clip.clear(); }
   }
 
   /** A 2d sheet view attachment. */
   export class Attachment2d extends Attachment {
-    private _tree: Root2d;
+    // private _tree?: Tree2d;
 
-    public constructor(props: ViewAttachmentProps, view: ViewState) {
+    public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }
-  }
 
-  /** A 3d sheet view attachment. */
-  export class Attachment3d extends Attachment {
-    private _tree: Root3d;
-
-    public constructor(props: ViewAttachmentProps, view: ViewState) {
-      super(props, view);
+    public load(_sheetView: ViewState): boolean {
+      // ###TODO
+      return false;
     }
   }
 
   /** A list of view attachments for a sheet. */
   export class Attachments {
-    /** Re-usable bounding box colors for attachments. */
-    public static boundingColors: ColorDef[] = [
-      new ColorDef(ColorByName.darkOrange),
-      new ColorDef(ColorByName.darkBlue),
-      new ColorDef(ColorByName.darkRed),
-      new ColorDef(ColorByName.darkCyan),
-      new ColorDef(ColorByName.olive),
-      new ColorDef(ColorByName.darkMagenta),
-      new ColorDef(ColorByName.darkBrown),
-      new ColorDef(ColorByName.darkGray),
-    ];
-
     public readonly list: Attachment[] = [];
     private allAttachmentsLoaded: boolean = true;
 
@@ -342,15 +307,6 @@ export namespace Sheet {
       const idx = this.list.indexOf(attachment);
       if (idx !== -1)
         this.list.splice(idx, 1);
-    }
-
-    /** Set the bounding box color of each attachment. */
-    public initBoundingBoxColors() {
-      for (let i = 0; i < this.length; i++) {
-        const tree = this.list[i].getTree();
-        if (tree !== undefined)
-          tree.boundingBoxColor = Attachments.boundingColors[i % 8];
-      }
     }
   }
 }
