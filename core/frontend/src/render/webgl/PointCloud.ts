@@ -36,8 +36,8 @@ export class PointCloudGeometry extends CachedGeometry {
 
   constructor(pointCloud: PointCloudArgs) {
     super();
-    this.vertices = QBufferHandle3d.create(pointCloud.points.params, pointCloud.points.toTypedArray()) as QBufferHandle3d;
-    this.vertexCount = pointCloud.points.length;
+    this.vertices = QBufferHandle3d.create(pointCloud.pointParams, pointCloud.points) as QBufferHandle3d;
+    this.vertexCount = pointCloud.points.length / 3;
     if (undefined !== pointCloud.colors)
       this.colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
   }

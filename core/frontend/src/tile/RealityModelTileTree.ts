@@ -48,17 +48,10 @@ class RealityModelTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  constructor(json: any, public client: RealityModelTileClient, ecefToDb: Transform, rootGeometry: ArrayBuffer | undefined) {
+  constructor(json: any, public client: RealityModelTileClient, tileToDb: Transform, rootGeometry: ArrayBuffer | undefined) {
     this.tilesetJson = json.root;
     this.id = new Id64();
     this.rootTile = new RealityModelTileProps(json.root, "", this, rootGeometry);
-    let tileToDb = CesiumUtils.transformFromJson(json.asset.TileToDB);
-
-    if (undefined === tileToDb) {
-      tileToDb = Transform.createIdentity();
-      const tileToEcef = CesiumUtils.transformFromJson(json.root.transform);
-      tileToDb.setMultiplyTransformTransform(ecefToDb, tileToEcef);
-    }
     this.location = tileToDb.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
       this.yAxisUp = true;
@@ -174,19 +167,21 @@ export class RealityModelTileTree {
       const tileClient = new RealityModelTileClient(clientProps);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
-      let dbToEcef: Transform = Transform.createIdentity();
+      const rootTransform: Transform = CesiumUtils.transformFromJson(json.root.transform);
+      let tileToDb = Transform.createIdentity();
 
       if (ecefLocation !== undefined) {
-        dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
-      } else if (json.asset.SpatialToEcef !== undefined) {
-        dbToEcef = CesiumUtils.transformFromJson(json.asset.SpatialToEcef);
+        const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+        const ecefToDb = dbToEcef.inverse() as Transform;
+        tileToDb.setMultiplyTransformTransform(ecefToDb, rootTransform);
+      } else {
+        tileToDb = rootTransform;
       }
-      const ecefToDb = dbToEcef.inverse() as Transform;
       let rootGeometry: ArrayBuffer | undefined;
       if (undefined !== json.root.content && undefined !== json.root.content.url)
         rootGeometry = await tileClient.getTileContent(json.root.content.url);
 
-      return new RealityModelTileTreeProps(json, tileClient, ecefToDb, rootGeometry);
+      return new RealityModelTileTreeProps(json, tileClient, tileToDb, rootGeometry);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     }

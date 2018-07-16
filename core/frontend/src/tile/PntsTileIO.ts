@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { TileIO } from "./TileIO";
-import { ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d, Quantization } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, QParams3d, Quantization } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../render/System";
 import { GeometricModelState } from "../ModelState";
@@ -55,23 +55,17 @@ export namespace PntsTileIO {
     const qOrigin = new Point3d(featureValue.QUANTIZED_VOLUME_OFFSET[0], featureValue.QUANTIZED_VOLUME_OFFSET[1], featureValue.QUANTIZED_VOLUME_OFFSET[2]);
     const qScale = new Point3d(Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[0]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[1]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[2]));
     const qParams = QParams3d.fromOriginAndScale(qOrigin, qScale);
-    const qPoints = new QPoint3dList(qParams);
+    const qPoints = new Uint16Array(stream.arrayBuffer, featureTableJsonOffset + header.featureTableJsonLength + featureValue.POSITION_QUANTIZED.byteOffset, 3 * featureValue.POINTS_LENGTH);
     let colors: Uint8Array | undefined;
 
-    stream.curPos = featureTableJsonOffset + header.featureTableJsonLength + featureValue.POSITION_QUANTIZED.byteOffset;
-    const qPoint = QPoint3d.fromScalars(0, 0, 0);
-    for (let i = 0; i < featureValue.POINTS_LENGTH; i++)
-      qPoints.push(QPoint3d.fromScalars(stream.nextUint16, stream.nextUint16, stream.nextUint16, qPoint));
-
     if (undefined !== featureValue.RGB) {
-      stream.curPos = featureTableJsonOffset + header.featureTableJsonLength + featureValue.RGB.byteOffset;
-      colors = stream.nextBytes(3 * featureValue.POINTS_LENGTH);
+      colors = new Uint8Array(stream.arrayBuffer, featureTableJsonOffset + header.featureTableJsonLength + featureValue.RGB.byteOffset, 3 * featureValue.POINTS_LENGTH);
     } else {
       colors = new Uint8Array(3 * featureValue.POINTS_LENGTH);
       colors.fill(0xff, 0, colors.length);    // TBD... Default color?
     }
 
-    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, colors), model.iModel);
+    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors), model.iModel);
 
     if (yAxisUp) {
       const branch = new GraphicBranch();
