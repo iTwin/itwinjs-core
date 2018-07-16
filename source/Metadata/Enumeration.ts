@@ -83,21 +83,30 @@ export default class Enumeration extends SchemaItem {
   }
 
   /**
-   * Creates an Enumerator with the provided value and label and adds it to the this Enumeration.
+   * Creates an Enumerator with the provided name and value as well as optional parameters label and description
    * @param name The name of the enumerator
    * @param value The value of the enumerator. The type of this value is dependent on the backing type of the this Enumeration.
    * @param label A localized display label that is used instead of the name in a GUI.
    * @param description A localized description for the enumerator.
+   * @return AnyEnumerator object
    */
-  public createEnumerator(name: string, value: string | number, label?: string, description?: string) {
+  public createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator {
     if (this.isInt() && typeof(value) === "string") // throws if backing type is int and value is string
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
     if (!this.isInt() && typeof(value) === "number") // also throws if backing type is string and value is number
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
     if (!ECName.validate(name))
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-    this.enumerators.push({name, value, label, description});
+    return {name, value, label, description};
+  }
+
+  /**
+   * Adds enumerator to list of enumerators on this Enumeration
+   * @param enumerator The enumerator to add
+   */
+  protected addEnumerator(enumerator: AnyEnumerator) {
+    this.enumerators.push(enumerator);
   }
 
   /**
@@ -158,9 +167,9 @@ export default class Enumeration extends SchemaItem {
           if (typeof(enumerator.description) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
         }
-        // Creates a new enumerator with the specified name, value, label and description- label and description are optional.
+        // Creates a new enumerator (with the specified name, value, label and description- label and description are optional) and adds to the list of enumerators.
         // Throws ECObjectsError if there are duplicate names or values present in the enumeration
-        this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description);
+        this.addEnumerator(this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description));
       });
     }
   }
@@ -185,4 +194,7 @@ export default class Enumeration extends SchemaItem {
     if (visitor.visitEnumeration)
       await visitor.visitEnumeration(this);
   }
+}
+export abstract class MutableEnumeration extends Enumeration {
+  public abstract addEnumerator(enumerator: AnyEnumerator): void;
 }

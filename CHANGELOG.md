@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added needed methods to support lazy loading
 
 ### Changed
+- Updated enumeration logic to separate the creation and addition of an enumerator
 - Updated SchemaItemTypeToString for new EC3.2 item types
 
 ## [0.7.0]  -  2018-07-13
