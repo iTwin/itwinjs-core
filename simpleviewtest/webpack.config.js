@@ -1,14 +1,13 @@
 const path = require("path");
-const glob = require("glob");
 
 module.exports = {
-  entry: glob.sync(path.resolve(__dirname, "lib/frontend/**/*.js")),
+  entry: "./lib/frontend/SimpleViewTest.js",
   output: {
     path: path.resolve(__dirname, "./lib/backend/public"),
-    filename: "bundle.js",
+    filename: '[name].bundle.js',
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
   },
-  devtool: "nosources-source-map",
+  devtool: "cheap-module-source-map",
   module: {
     rules: [
       {

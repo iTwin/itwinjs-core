@@ -45,7 +45,7 @@ export class TentativePoint {
   public clear(doErase: boolean): void {
     if (doErase) {
       this.removeTentative();
-      IModelApp.locateManager.synchSnapMode();
+      IModelApp.accuSnap.synchSnapMode();
     }
     IModelApp.accuSnap.destroy();
     this.isActive = false;
@@ -102,7 +102,7 @@ export class TentativePoint {
 
   public onButtonEvent(): void {
     this.removeTentative();
-    IModelApp.locateManager.synchSnapMode();
+    IModelApp.accuSnap.synchSnapMode();
     this.snapList.empty();
     this.setCurrSnap(undefined);
     this.tpHits = undefined;
@@ -161,7 +161,6 @@ export class TentativePoint {
     const snap = this.snapList.getNextHit();
     if (!snap || !snap.isSnapDetail())
       return undefined;
-    IModelApp.locateManager.setChosenSnapMode(snap.snapMode);
     return snap;
   }
 
@@ -309,7 +308,7 @@ export class TentativePoint {
     }
 
     // Construct each active point snap mode
-    const snaps = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.TentativeSnap);
+    const snaps = IModelApp.accuSnap.getActiveSnapModes();
     for (const snap of snaps) {
       await this.testHitsForSnapMode(snap);
     }

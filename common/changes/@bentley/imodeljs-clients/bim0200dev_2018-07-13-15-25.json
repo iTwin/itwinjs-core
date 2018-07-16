@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add support for Reality Model tileset display",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "ray.bentley@bentley.com"
+}

@@ -67,7 +67,7 @@ export class ThumbnailHandler {
    * @param size Size of the thumbnail.
    */
   private getRelativeProjectUrl(projectId: string, imodelId: string, size: ThumbnailSize) {
-    return `/Repositories/Project--${projectId}/ProjectScope/${size}Thumbnail/${imodelId}/$file`;
+    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/${size}Thumbnail/${imodelId}/$file`;
   }
 
   /**

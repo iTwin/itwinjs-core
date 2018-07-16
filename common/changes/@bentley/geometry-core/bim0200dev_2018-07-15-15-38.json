@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Point Cloud support for Reality Models",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "ray.bentley@bentley.com"
+}

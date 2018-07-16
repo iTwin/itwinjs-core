@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend/lib/frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
@@ -19,7 +19,7 @@ import {
   RpcOperation,
   IModelToken,
 } from "@bentley/imodeljs-common/lib/common";
-import { Transform } from "@bentley/geometry-core/lib/geometry-core";
+import { Transform, Point3d } from "@bentley/geometry-core/lib/geometry-core";
 import { showStatus } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -302,6 +302,11 @@ function toggleRenderModeMenu(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
+function toggleSnapModeMenu(_event: any) {
+  const menu = document.getElementById("changeSnapModeMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
 function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === theViewport)
     return;
@@ -415,6 +420,23 @@ async function _changeView(view: ViewState) {
   updateRenderModeOptionsMap();
 }
 
+export class MeasurePointsTool extends PrimitiveTool {
+  public static toolId = "Measure.Points";
+  public readonly points: Point3d[] = [];
+
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); IModelApp.accuSnap.enableSnap(true); }
+
+  public onRestartTool(): void {
+    this.exitTool();
+  }
+}
+
+// starts Mesure between points tool
+function startMeasurePoints(_event: any) {
+  IModelApp.tools.run("Measure.Points", theViewport!);
+}
+
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
 function startToggleCamera(_event: any) {
   IModelApp.tools.run("View.ToggleCamera", theViewport!);
@@ -522,6 +544,11 @@ function doRedo(_event: any) {
   IModelApp.tools.run("View.Redo", theViewport!);
 }
 
+// do iModel synchronization
+function doSyncIModel(_event: any) {
+  console.log("IModel Synchronization");
+}
+
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
@@ -543,13 +570,16 @@ function wireIconsToFunctions() {
   document.getElementById("startToggleCamera")!.addEventListener("click", startToggleCamera);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
-  document.getElementById("startZoom")!.addEventListener("click", startSelect);
+  document.getElementById("startSelect")!.addEventListener("click", startSelect);
+  document.getElementById("startMeasurePoints")!.addEventListener("click", startMeasurePoints);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", toggleStandardViewMenu);
   document.getElementById("renderModeToggle")!.addEventListener("click", toggleRenderModeMenu);
+  document.getElementById("snapModeToggle")!.addEventListener("click", toggleSnapModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
+  document.getElementById("doSync")!.addEventListener("click", doSyncIModel);
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
@@ -615,6 +645,35 @@ window.onbeforeunload = () => {
       activeViewState.iModelConnection.close(activeViewState.accessToken!);
 };
 
+function stringToSnapMode(name: string): SnapMode {
+  switch (name) {
+    case "Keypoint": return SnapMode.NearestKeypoint;
+    case "Nearest": return SnapMode.Nearest;
+    case "Center": return SnapMode.Center;
+    case "Origin": return SnapMode.Origin;
+    case "Intersection": return SnapMode.Intersection;
+    default: return SnapMode.NearestKeypoint;
+  }
+}
+
+class SVTAccuSnap extends AccuSnap {
+  public getActiveSnapModes(): SnapMode[] {
+    const select = (document.getElementById("snapModeList") as HTMLSelectElement)!;
+    const snapMode = stringToSnapMode(select.value);
+    const snaps: SnapMode[] = [];
+    snaps.push(snapMode);
+    return snaps;
+  }
+}
+
+class SVTIModelApp extends IModelApp {
+  protected static onStartup(): void {
+    IModelApp.accuSnap = new SVTAccuSnap();
+    const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
+    MeasurePointsTool.register(svtToolNamespace);
+  }
+}
+
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
@@ -622,7 +681,7 @@ async function main() {
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
-  IModelApp.startup();
+  SVTIModelApp.startup();
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
@@ -630,7 +689,7 @@ async function main() {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-    Config.devCorsProxyServer = "http://localhost:3001";
+    Config.devCorsProxyServer = "https://localhost:3001";
   }
 
   // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
