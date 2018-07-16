@@ -112,12 +112,14 @@ export class ClipVector {
         this._clips.push(clip);
     }
 
-    /** Create a new ClipShape from the given parameters, and if successful, append it to this ClipVector. */
+    /** Create and append a new ClipPrimitive to the array given a shape as an array of points. Returns true if successful. */
     public appendShape(shape: Point3d[], zLow?: number, zHigh?: number,
-        transform?: Transform, isMask: boolean = false, invisible: boolean = false) {
+        transform?: Transform, isMask: boolean = false, invisible: boolean = false): boolean {
         const clip = ClipShape.createShape(shape, zLow, zHigh, transform, isMask, invisible);
-        if (clip)
-            this._clips.push(clip);
+        if (!clip)
+            return false;
+        this._clips.push(clip);
+        return true;
     }
 
     /** Returns the three-dimensional range that this ClipVector spans, which may be null. */

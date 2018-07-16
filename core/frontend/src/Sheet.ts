@@ -4,12 +4,12 @@
 /** @module Views */
 
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Gradient, GraphicParams, ViewFlag } from "@bentley/imodeljs-common/lib/Render";
-import { ViewContext, SceneContext } from "./ViewContext";
+import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
+import { ViewContext } from "./ViewContext";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder } from "./render/GraphicBuilder";
 import { Target } from "./render/webgl/Target";
 import { ViewState, ViewState2d, SheetViewState } from "./ViewState";
 import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
@@ -19,7 +19,9 @@ import { TileTree, Tile } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState } from "./ModelState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { RenderTarget, GraphicBranch } from "./render/System";
+import { RenderTarget } from "./render/System";
+import { IModelConnection } from "./IModelConnection";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Contains functionality specific to Sheet views. */
 export namespace Sheet {
@@ -175,7 +177,7 @@ export namespace Sheet {
     public readonly biasDistance: number = 0;
     public readonly boundingBoxColor: ColorDef = ColorDef.black;   // ***DEBUG
 
-    private constructor(sheetView: SheetViewState, model: GeometricModel2dState, attachment: Attachment2d, context: SceneContext, view: ViewState2d, viewRoot: TileTree) {
+    private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
       super(new TileTree.Params(
         new Id64(),
         undefined,    // we will build and set root tile manually below
@@ -242,11 +244,11 @@ export namespace Sheet {
     }
 
     /** Create a Tree2d tile tree for a 2d attachment. */
-    public static create(sheetView: SheetViewState, attachment: Attachment2d, context: SceneContext): Tree2d | undefined {
+    public static create(attachment: Attachment2d): Tree2d | undefined {
       const viewedModel = attachment.view.getViewedModel();
       if (!viewedModel || !viewedModel.tileTree)
         return undefined;
-      return new Tree2d(sheetView, viewedModel, attachment, context, attachment.view, viewedModel.tileTree);
+      return new Tree2d(viewedModel, attachment, attachment.view, viewedModel.tileTree);
     }
   }
 
@@ -305,13 +307,25 @@ export namespace Sheet {
     /** Load the tile tree for this attachment. Returns true if successful. */
     public abstract load(sheetView: ViewState): boolean;
 
+    /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
+    public get tree(): Tree2d | undefined { return this.tree; }
+
     /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clip.clear(); }
 
     /** Create a boundary clip vector around this attachment. */
     public createBoundaryClip(): ClipVector {
-      // ###TODO
-      return this.clip;
+      const range = this.placement.calculateRange();
+      const box: Point3d[] = [
+        Point3d.create(range.low.x, range.low.y),
+        Point3d.create(range.high.x, range.low.y),
+        Point3d.create(range.high.x, range.high.y),
+        Point3d.create(range.low.x, range.high.y),
+        Point3d.create(range.low.x, range.low.y),
+      ];
+      const clip = ClipVector.createEmpty();
+      clip.appendShape(box);
+      return clip;
     }
 
     /** Returns the current clipping if it is defined and not null. Otherwise, attempt to create a new stored boundary clipping. */
@@ -326,15 +340,16 @@ export namespace Sheet {
 
   /** A 2d sheet view attachment. */
   export class Attachment2d extends Attachment {
-    // private _tree?: Tree2d;
+    private _tree?: Tree2d;
 
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }
 
     public load(_sheetView: ViewState): boolean {
-      // ###TODO
-      return false;
+      if (this._tree === undefined)
+        this._tree = Tree2d.create(this);
+      return this._tree !== undefined;
     }
   }
 
@@ -373,6 +388,33 @@ export namespace Sheet {
       const idx = this.list.indexOf(attachment);
       if (idx !== -1)
         this.list.splice(idx, 1);
+    }
+
+    /** If all attachments are loaded, set the allAttachmentsLoaded flag to true. */
+    protected updateAllLoaded() {
+      this.allAttachmentsLoaded = true;
+      for (const attachment of this.list) {
+        if (attachment.tree === undefined) {
+          this.allAttachmentsLoaded = false;
+          break;
+        }
+      }
+    }
+
+    /** Load the tile tree for the attachment at the given index. Returns true if successful. */
+    public load(idx: number, sheetView: SheetViewState): boolean {
+      assert(idx < this.length);
+
+      const attachment = this.list[idx];
+      if (attachment.tree !== undefined)
+        return true;
+
+      const loaded = attachment.load(sheetView);
+      if (!loaded)
+        this.list.splice(idx, 1);
+
+      this.updateAllLoaded();
+      return loaded;
     }
   }
 }
