@@ -58,14 +58,17 @@ export default class KindOfQuantityEC32 extends SchemaItem {
   protected addPresentationFormat(parent: Format, precision: number | undefined, unitLabelOverrides: Array<[Unit|InvertedUnit, string | undefined]> | undefined, isDefault: boolean = false): Format {
     // TODO need to verify that the format provided isn't already an override
 
+    if (unitLabelOverrides && parent.composite && parent.composite.units && parent.composite.units.length !== unitLabelOverrides.length)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presetantion format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
+
     // no overrides
     if (undefined === precision && (undefined === unitLabelOverrides || 0 === unitLabelOverrides.length)) {
       (isDefault) ? this._presentationUnits.splice(0, 0, parent) : this._presentationUnits.push(parent);
       return parent;
     }
 
-    if (parent.composite && (!parent.composite.units || parent.composite.units.length === 0) && unitLabelOverrides && unitLabelOverrides.length > 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    if (parent.composite && (!parent.composite.units || parent.composite.units.length === 0) && unitLabelOverrides && unitLabelOverrides.length > 0 )
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add a presetantion format to KindOfQuantity '${this.name}' without any units and no unit overrides.`);
 
     // TODO check compatibility of Unit overrides with the persisitence unit
 
@@ -97,7 +100,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
 
       const format = await this.schema.getItem<Format>(presFormat.formatName, true);
       if (undefined === format)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormat.formatName}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
       const unitAndLabels: Array<[Unit|InvertedUnit, string | undefined]> = [];
       if (undefined !== presFormat.unitLabels) {
@@ -121,7 +124,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
 
       const format = this.schema.getItemSync<Format>(presFormat.formatName, true);
       if (undefined === format)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormat.formatName}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
       const unitAndLabels: Array<[Unit|InvertedUnit, string | undefined]> = [];
       if (undefined !== presFormat.unitLabels) {
