@@ -24,6 +24,7 @@ export const enum TechniqueId {
   CopyColorNoAlpha,
   ClearPickAndColor,
   ClipMask,
+  SkyBox,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,
