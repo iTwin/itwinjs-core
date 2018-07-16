@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageSource, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -268,22 +268,11 @@ export class IdMap implements IDisposable {
     return this.createTexture(params, TextureHandle.createForImageBuffer(img, params.type));
   }
 
-  /** Attempt to create and return a new texture from an ImageSource. This will cache the texture if its key is valid. */
-  private createTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForImageSource(width, height, imgSrc, params.type));
-  }
-
   private createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
     return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
   }
 
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textureMap.get(key) : undefined; }
-
-  /** Find or attempt to create a new texture using an ImageSource. If a new texture was created, it will be cached provided its key is valid. */
-  public getTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
-    const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromImageSource(imgSrc, width, height, params);
-  }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
@@ -461,20 +450,6 @@ export class System extends RenderSystem {
   /** Creates a texture using an ImageBuffer and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTexture(image, params);
-  }
-
-  /**
-   * Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
-   * If no render map exists for the imodel, returns undefined.
-   */
-  public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
-    if (undefined === imodel) {
-      const textureHandle = TextureHandle.createForImageSource(width, height, source, params.type);
-      return (textureHandle === undefined) ? undefined : new Texture(params, textureHandle);
-    }
-
-    return this.getIdMap(imodel).getTextureFromImageSource(source, width, height, params);
   }
 
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {

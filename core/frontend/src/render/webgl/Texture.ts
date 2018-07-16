@@ -4,23 +4,12 @@
 /** @module WebGL */
 
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
+import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
 import { debugPrint } from "./debugPrint";
-import { IModelApp } from "../../IModelApp";
-
-/** A callback when a TextureHandle is finished loading.  Only relevant for createForImage creation method. */
-export type TextureLoadCallback = (t: TextureHandle, c: HTMLCanvasElement) => void;
-
-/** Describes texture data coming from binary jpeg or png data */
-interface TextureImageSource {
-  source: ImageSource;
-  canvas: HTMLCanvasElement;
-  loadCallback?: TextureLoadCallback;
-}
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -60,33 +49,6 @@ function loadTextureImageData(handle: TextureHandle, params: TextureCreateParams
 }
 
 function loadTextureFromBytes(handle: TextureHandle, params: TextureCreateParams, bytes?: Uint8Array): void { loadTextureImageData(handle, params, bytes); }
-
-const singleWhitePixel = new Uint8Array([255, 255, 255, 255]);
-
-/** Asynchronously load texture data from a jpeg or png */
-function loadTextureFromImageSource(handle: TextureHandle, params: TextureCreateParams, source: TextureImageSource): void {
-  // Immediately load a 1x1 pixel placeholder image
-  loadTextureImageData(handle, TextureCreateParams.placeholderParams, singleWhitePixel);
-
-  // Queue loading the actual image
-  const imgSrc = source.source;
-  const blob = new Blob([imgSrc.data], ImageSourceFormat.Jpeg === imgSrc.format ? { type: "image/jpeg" } : { type: "image/png" });
-  const url = URL.createObjectURL(blob);
-  const img = new Image();
-  img.onload = () => {
-    const canvas = source.canvas;
-    const context = canvas.getContext("2d")!;
-    context.drawImage(img, 0, 0, canvas.width, canvas.height);
-    loadTextureImageData(handle, params, undefined, canvas);
-    if (undefined !== source.loadCallback)
-      source.loadCallback(handle, canvas);
-
-    IModelApp.viewManager.invalidateScenes();
-  };
-
-  // Load the image from the URL - will call onload above when finished.
-  img.src = url;
-}
 
 type TextureFlag = true | undefined;
 type LoadImageData = (handle: TextureHandle, params: TextureCreateParams) => void;
@@ -143,36 +105,6 @@ class TextureCreateParams {
   public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
     return new TextureCreateParams(width, height, format, dataType, GL.Texture.WrapMode.ClampToEdge,
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, undefined);
-  }
-
-  public static createForImageSource(source: ImageSource, width: number, height: number, type: RenderTexture.Type, loadCallback?: TextureLoadCallback) {
-    const props = this.getImageProperties(ImageSourceFormat.Png === source.format, type);
-
-    let targetWidth = width;
-    let targetHeight = height;
-
-    const caps = System.instance.capabilities;
-    if (RenderTexture.Type.Glyph === type) {
-      targetWidth = nextHighestPowerOfTwo(targetWidth);
-      targetHeight = nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
-      if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
-        // NPOT are supported but not mipmaps
-        // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
-        // Above comment is not necessarily true - WebGL doesn't support NPOT mipmapping, only supporting base NPOT caps
-        props.useMipMaps = undefined;
-      } else if (GL.Texture.WrapMode.Repeat === props.wrapMode) {
-        targetWidth = nextHighestPowerOfTwo(targetWidth);
-        targetHeight = nextHighestPowerOfTwo(targetHeight);
-      }
-    }
-
-    const canvas = document.createElement("canvas");
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-
-    return new TextureCreateParams(width, height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromImageSource(tex, params, { source, canvas, loadCallback }), props.useMipMaps, props.interpolate);
   }
 
   public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
@@ -301,11 +233,6 @@ export class TextureHandle implements IDisposable {
   private static create(params: TextureCreateParams): TextureHandle | undefined {
     const glTex = System.instance.context.createTexture();
     return null !== glTex ? new TextureHandle(glTex, params) : undefined;
-  }
-
-  /** Create a texture from a jpeg or png */
-  public static createForImageSource(width: number, height: number, source: ImageSource, type: RenderTexture.Type, loadCallback?: TextureLoadCallback) {
-    return this.create(TextureCreateParams.createForImageSource(source, width, height, type, loadCallback));
   }
 
   /** Create a texture for use as a color attachment for rendering */
