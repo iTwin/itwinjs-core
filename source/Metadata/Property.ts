@@ -27,7 +27,6 @@ export abstract class Property {
   protected _label?: string;
   protected _isReadOnly: boolean = false;
   protected _priority: number = 0;
-  protected _inherited?: boolean;
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
 
@@ -54,8 +53,6 @@ export abstract class Property {
   get isReadOnly() { return this._isReadOnly; }
 
   get priority() { return this._priority; }
-
-  get inherited() { return this._inherited; }
 
   get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
 

@@ -406,7 +406,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     }
   }
 
-public *getAllBaseClassesSync(): Iterable<AnyClass> {
+  public *getAllBaseClassesSync(): Iterable<AnyClass> {
   const baseClasses: ECClass[] = [ this ];
   const addBaseClasses = (ecClass: AnyClass) => {
     if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
@@ -427,6 +427,73 @@ public *getAllBaseClassesSync(): Iterable<AnyClass> {
       yield baseClass;
     }
   }
+
+  public async *getProperties(): AsyncIterableIterator<Property> {
+    const baseClasses: ECClass[] = [];
+    for await (const baseClass of this.getAllBaseClasses()) {
+      baseClasses.push(baseClass);
+    }
+
+    baseClasses.reverse();
+    baseClasses.push(this);
+
+    const results: Property[] = [];
+
+    const visitedProperties = new Map<string, number>();
+    const visitedClasses = new Set<ECClass>();
+    for (const c of baseClasses) {
+      // FIXME: This shouldn't? be necessary...
+      if (visitedClasses.has(c))
+        continue;
+
+      visitedClasses.add(c);
+      for (const prop of c.properties || []) {
+        const existing = visitedProperties.get(prop.name);
+        if (undefined !== existing) {
+          results[existing] = prop;
+        } else {
+          visitedProperties.set(prop.name, results.length);
+          results.push(prop);
+        }
+      }
+    } // for base class
+
+    for (const prop of results)
+      yield prop;
+  } // method
+
+  public getPropertiesSync(): Iterable<Property> {
+    const baseClasses: ECClass[] = [];
+    for (const baseClass of this.getAllBaseClassesSync()) {
+      baseClasses.push(baseClass);
+    }
+
+    baseClasses.reverse();
+    baseClasses.push(this);
+
+    const results: Property[] = [];
+
+    const visitedProperties = new Map<string, number>();
+    const visitedClasses = new Set<ECClass>();
+    for (const c of baseClasses) {
+      // FIXME: This shouldn't? be necessary...
+      if (visitedClasses.has(c))
+        continue;
+
+      visitedClasses.add(c);
+      for (const prop of c.properties || []) {
+        const existing = visitedProperties.get(prop.name);
+        if (undefined !== existing) {
+          results[existing] = prop;
+        } else {
+          visitedProperties.set(prop.name, results.length);
+          results.push(prop);
+        }
+      }
+    } // for base class
+
+    return results;
+  } // method
 }
 
 /**

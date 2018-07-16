@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+- Iterator for properties of a class
 - Added needed methods to support lazy loading
 
 ## [0.7.0]  -  2018-07-13

@@ -498,4 +498,70 @@ describe("ECClass", () => {
       assert.throw(() => Schema.fromJsonSync(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
     });
   });
+
+  describe("iterate properties with complex hierarchy", () => {
+      // This is the class hierarchy used in this test. The numbers indicate override priority,
+      // i.e., the order that they should be returned by testClass.getAllBaseClasses():
+      //
+      //  2[A]  3(B)  5(C)  7(D)          [] := EntityClass
+      //     \   /     /     /            () := Mixin
+      //    1[ G ]  4(E)  6(F)
+      //        \    /     /
+      //        [    H    ]
+      // We are using the labels to tell the properties apart which have been overwritten
+      const testSchemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "01.00.00",
+        alias: "ts",
+        items: {
+          A: { schemaItemType: "EntityClass",
+            properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string", label : "P1A" },
+                          {name : "P2", propertyType : "PrimitiveProperty", typeName : "string", label : "P2A" }]},
+          B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+          C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A",
+            properties : [{name : "P3", propertyType : "PrimitiveProperty", typeName : "string", label : "P3C" }]},
+          D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A",
+            properties : [{name : "P4", propertyType : "PrimitiveProperty", typeName : "string", label : "P4D" }]},
+          E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
+          F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+          G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ],
+            properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string", label : "P1G" }]},
+          H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ],
+            properties : [{name : "P2", propertyType : "PrimitiveProperty", typeName : "string", label : "P2H" }]},
+        },
+      };
+      const expectedLabels = ["P4D", "P3C", "P1G", "P2H"];
+
+      it("should correctly overwrite inherited properties", async () => {
+        schema = await Schema.fromJson(testSchemaJson);
+        expect(schema).to.exist;
+
+        const testClass = await schema.getClass("H");
+        expect(testClass).to.exist;
+        const labels: string[] = [];
+        for await (const prop of testClass!.getProperties()) {
+          assert(prop.label !== undefined);
+          labels.push(prop.label as string);
+        }
+
+        expect(labels).to.eql(expectedLabels);
+      });
+
+      it("should correctly overwrite inherited properties synchronously", () => {
+        schema = Schema.fromJsonSync(testSchemaJson);
+        expect(schema).to.exist;
+
+        const testClass = schema.getClassSync("H");
+        expect(testClass).to.exist;
+        const labels: string[] = [];
+        const result = testClass!.getPropertiesSync();
+        for (const prop of result) {
+          assert(prop.label !== undefined);
+          labels.push(prop.label as string);
+        }
+
+        expect(labels).to.eql(expectedLabels);
+      });
+    });
 });
