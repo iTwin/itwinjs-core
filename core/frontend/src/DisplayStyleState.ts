@@ -8,6 +8,7 @@ import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem } from "./rendering";
+import { SkyBoxCreateParams } from "./render/System";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -197,7 +198,7 @@ export class Environment {
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3dState extends DisplayStyleState {
   public skyboxMaterial: RenderMaterial | undefined;
-  public skyBoxTextures: RenderTexture[] = []; // ###TODO: make this a cubemap if possible
+  public skyBoxParams?: SkyBoxCreateParams;
   public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
@@ -243,29 +244,31 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
-  public loadSkyBoxTextures(system: RenderSystem): boolean {
-    if (this.skyBoxTextures.length > 0)
+  public loadSkyBoxParams(system: RenderSystem): boolean {
+    if (this.skyBoxParams !== undefined)
       return true;  // skybox textures have already been loaded
 
     // const env = this.getEnvironment();
     // ###TODO - Use actual textures - just defining our own textures for now (different colors to distinguish them); can key off env.sky.jpegFile (needs more than one file though!)
-
     // ###TODO - If possible, use a cubemap texture to store all six images in one fell swoop (better use of GPU resources)
 
-    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // front
+    const params = new RenderTexture.Params(undefined, false, false, false, true);
 
-    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // back
+    const front = system.createTextureFromImageBuffer(
+      ImageBuffer.create(new Uint8Array([
+        0, 255, 255,
+        0, 255, 255,
+        0, 104, 10,
+        0, 104, 10]), ImageBufferFormat.Rgb, 2)!, this.iModel, params)!;
+    const back = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 255, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
+    const top = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 0, 255]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
+    const bottom = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([255, 255, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
+    const left = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 255, 255]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
+    const right = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([255, 0, 255]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
 
-    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // top
-
-    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // bottom
-
-    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // left
-
-    this.skyBoxTextures.push(system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([1, 0, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, RenderTexture.Params.defaults)!); // right
+    this.skyBoxParams = SkyBoxCreateParams.createForTexturedCube(front, back, top, bottom, left, right);
 
     // ###TODO - if any image buffer or texture fails to load, bail out.
-
     return true;
   }
 

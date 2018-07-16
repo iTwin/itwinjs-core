@@ -45,6 +45,7 @@ export class DrawParams extends ShaderProgramParams {
   public readonly geometry: CachedGeometry;
   public readonly modelViewMatrix: Matrix4;
   public readonly modelMatrix: Matrix4;
+  public readonly viewMatrix: Matrix4;
 
   private static readonly _scratchTransform = Transform.createIdentity();
   public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = System.identityTransform, pass: RenderPass = RenderPass.OpaqueGeneral) {
@@ -63,6 +64,7 @@ export class DrawParams extends ShaderProgramParams {
       mvMat = Matrix4.fromTransform(modelViewMatrix);
     }
 
+    this.viewMatrix = Matrix4.fromTransform(target.viewMatrix);
     this.modelViewMatrix = mvMat;
   }
 }
@@ -190,7 +192,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], []];
+  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], [], []];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -265,6 +267,19 @@ export class RenderCommands {
     assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.Background;
+    this._stack.pushState(this.target.decorationState);
+    (gf as Graphic).addCommands(this);
+    this._stack.pop();
+    this._forcedRenderPass = RenderPass.None;
+  }
+
+  public addSkyBox(gf?: Graphic): void {
+    if (undefined === gf)
+      return;
+
+    assert(RenderPass.None === this._forcedRenderPass);
+
+    this._forcedRenderPass = RenderPass.SkyBox;
     this._stack.pushState(this.target.decorationState);
     (gf as Graphic).addCommands(this);
     this._stack.pop();
@@ -426,6 +441,9 @@ export class RenderCommands {
 
     if (undefined !== dec) {
       this.addBackground(dec.viewBackground as Graphic);
+
+      this.addSkyBox(dec.skyBox as Graphic);
+
       if (undefined !== dec.normal && 0 < dec.normal.length) {
         this.addGraphics(dec.normal);
       }

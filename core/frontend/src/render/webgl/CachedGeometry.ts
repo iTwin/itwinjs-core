@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture } from "@bentley/imodeljs-common";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
@@ -19,6 +19,7 @@ import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
+import { SkyBoxCreateParams } from "../System";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable {
@@ -157,6 +158,84 @@ export abstract class IndexedGeometry extends CachedGeometry {
 
   public get qOrigin() { return this._params.positions.origin; }
   public get qScale() { return this._params.positions.scale; }
+}
+
+// a cube of quads in normalized device coordinates for skybox rendering techniques
+class SkyBoxQuads {
+  public readonly vertices: Uint16Array;
+  public readonly vertexParams: QParams3d;
+  public readonly indices: Uint32Array;
+
+  public constructor() {
+    const skyBoxSz = 1.0;
+
+    const qVerts = new QPoint3dList(QParams3d.fromNormalizedRange());
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+
+    this.vertices = qVerts.toTypedArray();
+    this.vertexParams = qVerts.params;
+
+    this.indices = new Uint32Array([ // (after rotation is applied in shader, how it actually appears)
+      0, 1, 2, 1, 3, 2, // back (BOTTOM)
+      4, 5, 6, 5, 7, 6, // front (TOP)
+      4, 5, 1, 4, 0, 1, // top (FRONT)
+      2, 3, 6, 3, 7, 6, // bottom (BACK)
+      0, 4, 2, 4, 6, 2, // left (RIGHT)
+      1, 5, 3, 5, 7, 3, // right (LEFT)
+    ]);
+  }
+
+  public createParams() {
+    return IndexedGeometryParams.create(this.vertices, this.vertexParams, this.indices);
+  }
+}
+
+namespace SkyBoxQuads {
+  let _skyBoxQuads: SkyBoxQuads | undefined;
+
+  export function getInstance(): SkyBoxQuads {
+    if (undefined === _skyBoxQuads)
+      _skyBoxQuads = new SkyBoxQuads();
+
+    return _skyBoxQuads;
+  }
+}
+
+// Geometry used for view-space rendering techniques.
+export class SkyBoxQuadsGeometry extends IndexedGeometry {
+  protected _techniqueId: TechniqueId;
+  public readonly front: RenderTexture;
+  public readonly back: RenderTexture;
+  public readonly top: RenderTexture;
+  public readonly bottom: RenderTexture;
+  public readonly left: RenderTexture;
+  public readonly right: RenderTexture;
+
+  protected constructor(ndxGeomParams: IndexedGeometryParams, sbxParams: SkyBoxCreateParams) {
+    super(ndxGeomParams);
+    this.front = sbxParams.front!;
+    this.back = sbxParams.back!;
+    this.top = sbxParams.top!;
+    this.bottom = sbxParams.bottom!;
+    this.left = sbxParams.left!;
+    this.right = sbxParams.right!;
+    this._techniqueId = TechniqueId.SkyBox;
+  }
+  public static create(sbxParams: SkyBoxCreateParams): SkyBoxQuadsGeometry | undefined {
+    const ndxGeomParams = SkyBoxQuads.getInstance().createParams();
+    return undefined !== ndxGeomParams ? new SkyBoxQuadsGeometry(ndxGeomParams, sbxParams) : undefined;
+  }
+
+  public getTechniqueId(_target: Target) { return this._techniqueId; }
+  public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
+  public get renderOrder() { return RenderOrder.Surface; }
 }
 
 // A quad with its corners mapped to the dimensions as the viewport, used for special rendering techniques.

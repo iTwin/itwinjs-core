@@ -88,7 +88,7 @@ function loadTextureFromImageSource(handle: TextureHandle, params: TextureCreate
 
 type TextureFlag = true | undefined;
 type LoadImageData = (handle: TextureHandle, params: TextureCreateParams) => void;
-export const enum ImageTextureType { Normal, Glyph, TileSection }
+export const enum ImageTextureType { Normal, Glyph, TileSection, SkyBox }
 
 interface TextureImageProperties {
   wrapMode: GL.Texture.WrapMode;
@@ -175,10 +175,16 @@ class TextureCreateParams {
   }
 
   private static getImageProperties(isTranslucent: boolean, type: ImageTextureType): TextureImageProperties {
-    const wrapMode = ImageTextureType.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
-    const useMipMaps: TextureFlag = (ImageTextureType.TileSection !== type) ? true : undefined;
-    const interpolate: TextureFlag = true; // WTF? (ImageTextureType.TileSection === type) ? true : undefined;
+    let wrapMode = ImageTextureType.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
+
+    let useMipMaps: TextureFlag = (ImageTextureType.TileSection !== type) ? true : undefined;
+    let interpolate: TextureFlag = true; // WTF? (ImageTextureType.TileSection === type) ? true : undefined;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
+    if (ImageTextureType.SkyBox === type) {
+      wrapMode = GL.Texture.WrapMode.ClampToEdge;
+      useMipMaps = undefined;
+      interpolate = undefined;
+    }
     return { format, wrapMode, useMipMaps, interpolate };
   }
 

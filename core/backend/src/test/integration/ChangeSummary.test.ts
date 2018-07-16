@@ -384,7 +384,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it.skip("Extract ChangeSummaries with invalid input", async () => {
+  it("Extract ChangeSummaries with invalid input", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -395,7 +395,9 @@ describe("ChangeSummary", () => {
       await ChangeSummaryManager.extractChangeSummaries(iModel);
     } catch (e) {
       assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+      assert.equal(e.errorNumber, ChangeSetStatus.CannotMergeIntoReadonly);
+    } finally {
+      await iModel.close(accessToken);
     }
 
     // extract on fixedVersion(shared access) iModel should fail
@@ -406,6 +408,8 @@ describe("ChangeSummary", () => {
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+    } finally {
+      await iModel.close(accessToken);
     }
 
     // extract on closed iModel should fail

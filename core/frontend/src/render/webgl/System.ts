@@ -19,13 +19,14 @@ import { ViewRect } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle, Texture } from "./Texture";
+import { TextureHandle, Texture, ImageTextureType } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
+import { SkyBoxCreateParams, SkyBoxQuadsGeometry, SkyBoxPrimitive } from "../../rendering";
 
 export const enum ContextState {
   Uninitialized,
@@ -259,7 +260,7 @@ export class IdMap implements IDisposable {
 
   /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
   private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const textureHandle = TextureHandle.createForImageBuffer(img);
+    const textureHandle = TextureHandle.createForImageBuffer(img, params.isSkyBox ? ImageTextureType.SkyBox : ImageTextureType.Normal);
     if (textureHandle === undefined)
       return undefined;
     const texture = new Texture(params, textureHandle);
@@ -405,6 +406,14 @@ export class System extends RenderSystem {
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
+  public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
+    if (params.isTexturedCube) {
+      const cachedGeom = SkyBoxQuadsGeometry.create(params);
+      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+    }
+    // ###TODO: Gradient approach
+    return undefined;
+  }
 
   public applyRenderState(newState: RenderState) {
     newState.apply(this._currentRenderState);

@@ -197,11 +197,13 @@ export abstract class RenderTexture implements IDisposable {
   public readonly key: string | undefined;
   public readonly isGlyph: boolean;
   public readonly isTileSection: boolean;
+  public readonly isSkyBox: boolean;
 
   protected constructor(params: RenderTexture.Params) {
     this.key = params.key;
     this.isGlyph = params.isGlyph;
     this.isTileSection = params.isTileSection;
+    this.isSkyBox = params.isSkyBox;
   }
 
   public abstract dispose(): void;
@@ -213,12 +215,14 @@ export namespace RenderTexture {
     public readonly isTileSection: boolean;
     public readonly isGlyph: boolean;
     public readonly isRGBE: boolean;
+    public readonly isSkyBox: boolean;
 
-    public constructor(key?: string, isTileSection: boolean = false, isGlyph: boolean = false, isRGBE: boolean = false) {
+    public constructor(key?: string, isTileSection: boolean = false, isGlyph: boolean = false, isRGBE: boolean = false, isSkyBox = false) {
       this.key = key;
       this.isTileSection = isTileSection;
       this.isGlyph = isGlyph;
       this.isRGBE = isRGBE;
+      this.isSkyBox = isSkyBox;
     }
 
     /** Obtain a RenderTexture params object with default values. */
