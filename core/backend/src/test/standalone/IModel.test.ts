@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64, BeEvent } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, BeEvent, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
@@ -1263,5 +1263,46 @@ describe("iModel", () => {
       }
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     });
+  });
+
+  it("Run plain SQL against readonly connection", () => {
+    let iModel: IModelDb = IModelTestUtils.createStandaloneIModel("sqlitesqlreadonlyconnection.bim", { rootSubject: { name: "test" } });
+    const iModelPath: string = iModel.briefcase.pathname;
+    iModel.closeStandalone();
+    iModel = IModelDb.openStandalone(iModelPath, OpenMode.Readonly);
+
+    iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
+      let rowCount: number = 0;
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rowCount++;
+        assert.equal(stmt.getColumnCount(), 2);
+        const nameVal: SqliteValue = stmt.getValue(0);
+        assert.equal(nameVal.columnName, "Name");
+        assert.equal(nameVal.type, SqliteValueType.String);
+        assert.isFalse(nameVal.isNull());
+        const name: string = nameVal.getString();
+
+        const versionVal: SqliteValue = stmt.getValue(1);
+        assert.equal(versionVal.columnName, "StrData");
+        assert.equal(versionVal.type, SqliteValueType.String);
+        assert.isFalse(versionVal.isNull());
+        const profileVersion: any = JSON.parse(versionVal.getString());
+
+        assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");
+        if (name === "SchemaVersion") {
+          assert.equal(profileVersion.major, 4);
+          assert.equal(profileVersion.minor, 0);
+          assert.equal(profileVersion.sub1, 0);
+          assert.isAtLeast(profileVersion.sub2, 1);
+        } else if (name === "InitialSchemaVersion") {
+          assert.equal(profileVersion.major, 4);
+          assert.equal(profileVersion.minor, 0);
+          assert.equal(profileVersion.sub1, 0);
+          assert.isAtLeast(profileVersion.sub2, 1);
+        }
+      }
+      assert.equal(rowCount, 2);
+    });
+    iModel.closeStandalone();
   });
 });
