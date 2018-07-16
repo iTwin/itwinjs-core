@@ -65,6 +65,7 @@ export default class Format extends SchemaItem {
   }
 
   protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]> | undefined) {
+    // TODO: Need to do validation
     if (this._composite === undefined)
       this._composite = {includeZero: true, spacer: " ", units: new Array<[Unit | InvertedUnit, string | undefined]>()};
     this._composite!.units = units;
