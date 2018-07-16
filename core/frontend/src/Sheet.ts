@@ -10,8 +10,7 @@ import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { Target } from "./render/webgl/Target";
-// import { Target } from "./render/webgl/Target";
+import { RenderTarget } from "./render/System";
 
 /** Describes the geometry of a sheet border. */
 export class SheetBorder {
@@ -92,6 +91,6 @@ export class SheetBorder {
 
     builder.activateGraphicParams(params);
 
-    builder.addShape2d(this.shadow, Target.frustumDepth2d);
+    builder.addShape2d(this.shadow, RenderTarget.frustumDepth2d);
   }
 }
