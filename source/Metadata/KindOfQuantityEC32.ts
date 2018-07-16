@@ -142,7 +142,23 @@ export default class KindOfQuantityEC32 extends SchemaItem {
   }
 
   public async fromJson(jsonObj: any) {
-    this.fromJsonSync(jsonObj);
+    await super.fromJson(jsonObj);
+    this.loadKOQProperties(jsonObj);
+    if (undefined === jsonObj.persistenceUnit)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
+    if (typeof(jsonObj.persistenceUnit) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
+
+    const persistenceUnit = await this.schema.getItem<Unit>(jsonObj.persistenceUnit, true);
+    if (!persistenceUnit)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find the persistence unit ${jsonObj.persistenceUnit}.`);
+    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+
+    if (undefined !== jsonObj.presentationUnits) {
+      if (!Array.isArray(jsonObj.presentationUnits) && typeof(jsonObj.presentationUnits) !== "string") // must be a string or an array
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be either type 'string[]' or type 'string'.`);
+      await this.processPresentationUnits(jsonObj.presentationUnits);
+    }
   }
 
   public fromJsonSync(jsonObj: any) {
@@ -152,21 +168,15 @@ export default class KindOfQuantityEC32 extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
     if (typeof(jsonObj.persistenceUnit) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
-    const persistenceUnitSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.persistenceUnit);
-    if (!persistenceUnitSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the persistence unit ${jsonObj.persistenceUnit}.`);
-    this._persistenceUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(persistenceUnitSchemaItemKey,
-      async () => {
-        const unit = await this.schema.getItem<Unit>(persistenceUnitSchemaItemKey.name);
-        if (undefined === unit)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the persistence unit ${jsonObj.persistenceUnit}.`);
-        return unit;
-      });
+    const persistenceUnit = this.schema.getItemSync<Unit>(jsonObj.persistenceUnit, true);
+    if (!persistenceUnit)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find the persistence unit ${jsonObj.persistenceUnit}.`);
+    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== jsonObj.presentationUnits) {
       if (!Array.isArray(jsonObj.presentationUnits) && typeof(jsonObj.presentationUnits) !== "string") // must be a string or an array
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be either type 'string[]' or type 'string'.`);
-      this.processPresentationUnits(jsonObj.presentationUnits);
+      this.processPresentationUnitsSync(jsonObj.presentationUnits);
     }
   }
 

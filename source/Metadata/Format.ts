@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType, SchemaItemKey } from "../ECObjects";
+import { SchemaItemType } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 import Unit from "./Unit";
