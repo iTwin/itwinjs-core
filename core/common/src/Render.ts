@@ -1658,6 +1658,7 @@ export namespace TextureMapping {
     public weight: number;
     public mode: TextureMapping.Mode;
     public worldMapping: boolean;
+
     constructor(props = {} as TextureMapping.ParamProps) {
       const { textureMat2x3 = new Trans2x3(), textureWeight = 1.0, mapMode = Mode.Parametric, worldMapping = false } = props;
       this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;

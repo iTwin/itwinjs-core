@@ -60,6 +60,10 @@ export namespace B3dmTileIO {
       const feature = new Feature();
       featureTable.insert(feature);
 
+      await this.loadTextures();
+      if (this.isCanceled)
+        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
+
       return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
@@ -76,7 +80,7 @@ export namespace B3dmTileIO {
       let textureMapping: TextureMapping | undefined;
       if (undefined !== materialJson &&
         undefined !== materialJson.values.tex) {
-        textureMapping = this.readTexture(materialJson.values.tex);
+        textureMapping = this.findTextureMapping(materialJson.values.tex);
       }
       const grey: ColorDef = new ColorDef(0x77777777);
       return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, true, textureMapping);
