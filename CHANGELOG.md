@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Iterator for properties of a class
 - Added needed methods to support lazy loading
 
+### Changed
+- Updated SchemaItemTypeToString for new EC3.2 item types
+
 ## [0.7.0]  -  2018-07-13
 ### Added
 - Added EC3.2 support

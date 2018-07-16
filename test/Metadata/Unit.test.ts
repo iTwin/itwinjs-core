@@ -10,6 +10,7 @@ import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
 import Phenomenon from "../../source/Metadata/Phenomenon";
 import UnitSystem from "../../source/Metadata/UnitSystem";
+import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
 
 describe("Unit tests", () => {
   let testUnit: Unit;
@@ -32,6 +33,16 @@ describe("Unit tests", () => {
       await testUnit.accept({});
     });
   });
+
+  describe("SchemaItemType", () => {
+    const schema = new Schema("TestSchema", 1, 0, 0);
+    testUnit = new Unit(schema, "Test");
+    it("should return correct item type and string", () => {
+      assert.equal(testUnit.schemaItemType, SchemaItemType.Unit);
+      assert.equal(schemaItemTypeToString(testUnit.schemaItemType), "Unit");
+    });
+  });
+
   describe("Async fromJson", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);

@@ -8,6 +8,7 @@ import Constant from "../../source/Metadata/Constant";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
 import Phenomenon from "../../source/Metadata/Phenomenon";
+import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
 
 describe("Constant tests", () => {
   let testConstant: Constant;
@@ -35,6 +36,16 @@ describe("Constant tests", () => {
       await testConstant.accept({});
     });
   });
+
+  describe("SchemaItemType", () => {
+    const schema = new Schema("TestSchema", 1, 0, 0);
+    testConstant = new Constant(schema, "Test");
+    it("should return correct item type and string", () => {
+      assert.equal(testConstant.schemaItemType, SchemaItemType.Constant);
+      assert.equal(schemaItemTypeToString(testConstant.schemaItemType), "Constant");
+    });
+  });
+
   describe("Async fromJson", () => {
     beforeEach(() => {
       Schema.ec32 = true;

@@ -10,6 +10,7 @@ import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from ".
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
 import Unit from "../../source/Metadata/Unit";
+import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
 
 describe("Format tests", () => {
   let testFormat: Format;
@@ -32,6 +33,16 @@ describe("Format tests", () => {
       await testFormat.accept({});
     });
   });
+
+  describe("SchemaItemType", () => {
+    const schema = new Schema("TestSchema", 1, 0, 0);
+    testFormat = new Format(schema, "Test");
+    it("should return correct item type and string", () => {
+      assert.equal(testFormat.schemaItemType, SchemaItemType.Format);
+      assert.equal(schemaItemTypeToString(testFormat.schemaItemType), "Format");
+    });
+  });
+
   describe("Async Tests without Composite", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);

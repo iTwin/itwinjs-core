@@ -6,6 +6,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import UnitSystem from "../../source/Metadata/UnitSystem";
 import { ECObjectsError } from "../../source/Exception";
+import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
 import * as sinon from "sinon";
 
 describe("UnitSystem tests", () => {
@@ -29,6 +30,16 @@ describe("UnitSystem tests", () => {
       await testUnitSystem.accept({});
     });
   });
+
+  describe("SchemaItemType", () => {
+    const schema = new Schema("TestSchema", 1, 0, 0);
+    testUnitSystem = new UnitSystem(schema, "Test");
+    it("should return correct item type and string", () => {
+      assert.equal(testUnitSystem.schemaItemType, SchemaItemType.UnitSystem);
+      assert.equal(schemaItemTypeToString(testUnitSystem.schemaItemType), "UnitSystem");
+    });
+  });
+
   describe("Async fromJson", () => {
     beforeEach(() => {
       const schema = new Schema("ExampleSchema", 1, 0, 0);

@@ -178,6 +178,12 @@ export function schemaItemTypeToString(value: SchemaItemType): string {
     case SchemaItemType.Enumeration: return "Enumeration";
     case SchemaItemType.KindOfQuantity: return "KindOfQuantity";
     case SchemaItemType.PropertyCategory: return "PropertyCategory";
+    case SchemaItemType.Unit: return "Unit";
+    case SchemaItemType.InvertedUnit: return "InvertedUnit";
+    case SchemaItemType.Constant: return "Constant";
+    case SchemaItemType.Phenomenon: return "Phenomenon";
+    case SchemaItemType.UnitSystem: return "UnitSystem";
+    case SchemaItemType.Format: return "Format";
     default: throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
   }
 }
