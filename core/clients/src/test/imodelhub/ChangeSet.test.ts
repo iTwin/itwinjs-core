@@ -104,7 +104,7 @@ describe("iModelHub ChangeSetHandler", () => {
     mockPostUpdatedChangeSet(imodelId, changeSet);
   }
 
-  it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
+  it.skip("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
 
     utils.mockGetChangeSet(iModelId, false, undefined, mockChangeSets[0], mockChangeSets[1]);

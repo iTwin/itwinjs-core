@@ -89,7 +89,7 @@ describe("iModelHub BriefcaseHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should acquire a briefcase", async () => {
+  it.skip("should acquire a briefcase", async () => {
     utils.mockCreateBriefcase(iModelId, 3);
     const briefcase = await imodelHubClient.Briefcases().create(accessToken, iModelId);
     chai.expect(briefcase.briefcaseId).to.be.greaterThan(1);
@@ -106,7 +106,7 @@ describe("iModelHub BriefcaseHandler", () => {
     }
   });
 
-  it("should delete a briefcase", async () => {
+  it.skip("should delete a briefcase", async () => {
     utils.mockGetBriefcase(iModelId, utils.generateBriefcase(2), utils.generateBriefcase(acquiredBriefcaseId));
     const originalBriefcaseCount = (await imodelHubClient.Briefcases().get(accessToken, iModelId)).length;
 

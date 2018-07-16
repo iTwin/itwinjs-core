@@ -92,7 +92,7 @@ describe("iModelHub VersionHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should create named version", async function (this: Mocha.ITestCallbackContext) {
+  it.skip("should create named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(iModelId, false, undefined, ...mockedChangeSets);
     const changeSetsCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
@@ -173,7 +173,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(smallThumbnail.wsgId).to.be.not.equal(largeThumbnail.wsgId);
   });
 
-  it("should update named version", async function (this: Mocha.ITestCallbackContext) {
+  it.skip("should update named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(iModelId, undefined, ...mockedVersions);
 
