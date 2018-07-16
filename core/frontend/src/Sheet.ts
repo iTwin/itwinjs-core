@@ -4,13 +4,12 @@
 /** @module Views */
 
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
+import { Gradient, GraphicParams, ViewFlag } from "@bentley/imodeljs-common/lib/Render";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps } from "@bentley/imodeljs-common/lib/common";
+import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
-import { GraphicBuilder } from "./render/GraphicBuilder";
-import { RenderTarget } from "./render/System";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Target } from "./render/webgl/Target";
 import { ViewState, ViewState2d, SheetViewState } from "./ViewState";
 import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
@@ -20,6 +19,7 @@ import { TileTree, Tile } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState } from "./ModelState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
+import { RenderTarget, GraphicBranch } from "./render/System";
 
 /** Contains functionality specific to Sheet views. */
 export namespace Sheet {
@@ -108,24 +108,77 @@ export namespace Sheet {
 
   /** An extension of Tile specific to rendering 2d attachments. */
   export class Tile2d extends Tile {
+    public constructor(root: Tree2d, range: ElementAlignedBox2d) {
+      super(new Tile.Params(
+        root,
+        "",
+        new ElementAlignedBox3d(),
+        512,  // does not matter... have no children
+        [],
+      ));
+      this.range.low.set(0, 0, -RenderTarget.frustumDepth2d);
+      this.range.high.set(range.high.x, range.high.y, RenderTarget.frustumDepth2d);
+    }
 
+    // override
+    public get hasChildren(): boolean { return false; }
+    // override
+    public get hasGraphics(): boolean { return true; }
+    // override
+    public get maximumSize(): number { return 512; }
+
+    // override
+    public drawGraphics(args: Tile.DrawArgs) {
+      const myRoot = this.root as Tree2d;
+      const viewRoot = myRoot.viewRoot;
+
+      const drawArgs = viewRoot.createDrawArgs(args.context);
+      drawArgs.location.setFrom(myRoot.drawingToAttachment);
+      // drawArgs.viewFlagOverrides = new ViewFlag.Overrides(myRoot.view.viewFlags);
+      drawArgs.clip = myRoot.graphicsClip;
+      drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
+
+      myRoot.view.createScene(drawArgs.context);
+
+      // DEBUG
+      /*
+      if (false)
+        myRoot.drawClipPolys(args);
+      if (true)
+        return;
+
+      const params = new GraphicParams();
+      params.linePixels = 2;
+      params.setLineColor(myRoot.boundingBoxColor);
+      params.setFillColor(myRoot.boundingBoxColor);
+
+      const gf = args.context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
+      gf.activateGraphicParams(params);
+      gf.addRangeBox(this.range);
+
+      // Put in a branch so it doesn't get clipped...
+      const branch = new GraphicBranch();
+      branch.add(gf.finish());
+      args.graphics.add(drawArgs.context.createBranch(branch, Transform.createIdentity()));
+      */
+    }
   }
 
   /** An extension of TileTree specific to rendering 2d attachments. */
   export class Tree2d extends TileTree {
-    private _view: ViewState2d;
-    private _viewRoot: TileTree;
-    private _drawingToAttachment: Transform;
-    private _graphicsClip: ClipVector;
-    private _clip: ClipVector;
-    private _symbologyOverrides: FeatureSymbology.Overrides;
-    private _biasDistance: number = 0;
-    public boundingBoxColor: ColorDef = ColorDef.black;   // ***DEBUG
+    public readonly view: ViewState2d;
+    public readonly viewRoot: TileTree;
+    public readonly drawingToAttachment: Transform;
+    public readonly graphicsClip: ClipVector;
+    public readonly clip: ClipVector;
+    public readonly symbologyOverrides: FeatureSymbology.Overrides;
+    public readonly biasDistance: number = 0;
+    public readonly boundingBoxColor: ColorDef = ColorDef.black;   // ***DEBUG
 
     private constructor(sheetView: SheetViewState, model: GeometricModel2dState, attachment: Attachment2d, context: SceneContext, view: ViewState2d, viewRoot: TileTree) {
       super(new TileTree.Params(
         new Id64(),
-        undefined,
+        undefined,    // we will build and set root tile manually below
         model,
         undefined,
         Transform.createIdentity(),
@@ -134,11 +187,11 @@ export namespace Sheet {
         undefined,
       ));
 
-      this._view = view;
-      this._viewRoot = viewRoot;
+      this.view = view;
+      this.viewRoot = viewRoot;
 
       // Ensure elements inside the view attachment are not affected to changes to category display for the sheet view
-      this._symbologyOverrides = new FeatureSymbology.Overrides(view);
+      this.symbologyOverrides = new FeatureSymbology.Overrides(view);
 
       const attachRange = attachment.placement.calculateRange();
       const attachWidth = attachRange.high.x - attachRange.low.x;
@@ -148,22 +201,22 @@ export namespace Sheet {
       const scale = Point2d.create(attachWidth / viewExtents.x, attachHeight / viewExtents.y);
 
       const worldToAttachment = Point3d.createFrom(attachment.placement.origin);
-      worldToAttachment.z = Target.depthFromDisplayPriority(attachment.displayPriority);
+      worldToAttachment.z = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
 
       const location = Transform.createOriginAndMatrix(worldToAttachment, RotMatrix.createIdentity());
       this.location.setFrom(location);
 
       const aspectRatioSkew = view.getAspectRatioSkew();
-      this._drawingToAttachment = Transform.createOriginAndMatrix(Point3d.create(), view.getRotation());
-      this._drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1);
+      this.drawingToAttachment = Transform.createOriginAndMatrix(Point3d.create(), view.getRotation());
+      this.drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1);
       const translation = viewRoot.location.origin.cloneAsPoint3d();
       const viewOrg = view.getOrigin().minus(translation);
-      this._drawingToAttachment.multiplyPoint3d(viewOrg, viewOrg);
+      this.drawingToAttachment.multiplyPoint3d(viewOrg, viewOrg);
       translation.plus(viewOrg, viewOrg);
       viewOrg.z = 0;
       const viewOrgToAttachment = worldToAttachment.minus(viewOrg);
       translation.plus(viewOrgToAttachment, translation);
-      this._drawingToAttachment.origin.setFrom(translation);
+      this.drawingToAttachment.origin.setFrom(translation);
 
       this.expirationTime = BeDuration.fromSeconds(15);
 
@@ -171,18 +224,18 @@ export namespace Sheet {
       // (Containment tests can also be more efficiently performed if boundary range is specified)
       const clipTf = location.inverse();
       if (clipTf !== undefined) {
-        this._clip = attachment.getOrCreateClip(clipTf);
-        clipTf.multiplyRange(attachRange, this._clip.boundingRange);
+        this.clip = attachment.getOrCreateClip(clipTf);
+        clipTf.multiplyRange(attachRange, this.clip.boundingRange);
       } else {
-        this._clip = ClipVector.createEmpty();
+        this.clip = ClipVector.createEmpty();
       }
 
-      const sheetToDrawing = this._drawingToAttachment.inverse();
+      const sheetToDrawing = this.drawingToAttachment.inverse();
       if (sheetToDrawing !== undefined) {
-        this._graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
-        sheetToDrawing.multiplyRange(attachRange, this._graphicsClip.boundingRange);
+        this.graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
+        sheetToDrawing.multiplyRange(attachRange, this.graphicsClip.boundingRange);
       } else {
-        this._graphicsClip = ClipVector.createEmpty();
+        this.graphicsClip = ClipVector.createEmpty();
       }
 
       this._rootTile = new Tile2d(this, attachment.placement.bbox);
@@ -252,10 +305,23 @@ export namespace Sheet {
     /** Load the tile tree for this attachment. Returns true if successful. */
     public abstract load(sheetView: ViewState): boolean;
 
-    // public abstract getTree(): TileTree;
-
     /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clip.clear(); }
+
+    /** Create a boundary clip vector around this attachment. */
+    public createBoundaryClip(): ClipVector {
+      // ###TODO
+      return this.clip;
+    }
+
+    /** Returns the current clipping if it is defined and not null. Otherwise, attempt to create a new stored boundary clipping. */
+    public getOrCreateClip(transform?: Transform): ClipVector {
+      if (!this.clip.isValid())
+        this.clip = this.createBoundaryClip();
+      if (transform !== undefined)
+        this.clip.transformInPlace(transform);
+      return this.clip;
+    }
   }
 
   /** A 2d sheet view attachment. */
