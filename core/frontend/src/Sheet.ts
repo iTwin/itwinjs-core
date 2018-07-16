@@ -5,11 +5,11 @@
 
 import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
-import { ViewContext } from "./ViewContext";
+import { ViewContext, SceneContext } from "./ViewContext";
 import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
-import { GraphicBuilder } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Target } from "./render/webgl/Target";
 import { ViewState, ViewState2d, SheetViewState } from "./ViewState";
 import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
@@ -20,7 +20,6 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState } from "./ModelState";
 import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { RenderTarget } from "./render/System";
-import { IModelConnection } from "./IModelConnection";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Contains functionality specific to Sheet views. */
@@ -126,8 +125,6 @@ export namespace Sheet {
     public get hasChildren(): boolean { return false; }
     // override
     public get hasGraphics(): boolean { return true; }
-    // override
-    public get maximumSize(): number { return 512; }
 
     // override
     public drawGraphics(args: Tile.DrawArgs) {
@@ -142,7 +139,7 @@ export namespace Sheet {
 
       myRoot.view.createScene(drawArgs.context);
 
-      // DEBUG
+      // DEBUG - Currently being drawn in SheetViewState.decorate()
       /*
       if (false)
         myRoot.drawClipPolys(args);
@@ -166,21 +163,16 @@ export namespace Sheet {
     }
   }
 
-  /** An extension of TileTree specific to rendering 2d attachments. */
-  export class Tree2d extends TileTree {
-    public readonly view: ViewState2d;
-    public readonly viewRoot: TileTree;
-    public readonly drawingToAttachment: Transform;
-    public readonly graphicsClip: ClipVector;
-    public readonly clip: ClipVector;
-    public readonly symbologyOverrides: FeatureSymbology.Overrides;
+  /** An extension of TileTree specific to rendering attachments. */
+  export abstract class Tree extends TileTree {
+    protected _clip: ClipVector;
     public readonly biasDistance: number = 0;
     public readonly boundingBoxColor: ColorDef = ColorDef.black;   // ***DEBUG
 
-    private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
+    public constructor(model: GeometricModel2dState) {
       super(new TileTree.Params(
         new Id64(),
-        undefined,    // we will build and set root tile manually below
+        undefined,    // we will build and set root tile manually in child constructors
         model,
         undefined,
         Transform.createIdentity(),
@@ -188,6 +180,33 @@ export namespace Sheet {
         undefined,
         undefined,
       ));
+      this._clip = ClipVector.createEmpty();
+    }
+
+    public get clip(): ClipVector { return this._clip; }
+
+    public drawInView(context: SceneContext) {
+      const args = this.createDrawArgs(context);
+      assert(this._rootTile !== undefined);
+
+      const selectedTiles = this.selectTiles(args);
+      for (const selectedTile of selectedTiles)
+        selectedTile.drawGraphics(args);
+
+      args.drawGraphics();
+    }
+  }
+
+  /** An extension of TileTree specific to rendering 2d attachments. */
+  export class Tree2d extends Tree {
+    public readonly view: ViewState2d;
+    public readonly viewRoot: TileTree;
+    public readonly drawingToAttachment: Transform;
+    public readonly graphicsClip: ClipVector;
+    public readonly symbologyOverrides: FeatureSymbology.Overrides;
+
+    private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
+      super(model);
 
       this.view = view;
       this.viewRoot = viewRoot;
@@ -226,10 +245,8 @@ export namespace Sheet {
       // (Containment tests can also be more efficiently performed if boundary range is specified)
       const clipTf = location.inverse();
       if (clipTf !== undefined) {
-        this.clip = attachment.getOrCreateClip(clipTf);
-        clipTf.multiplyRange(attachRange, this.clip.boundingRange);
-      } else {
-        this.clip = ClipVector.createEmpty();
+        this._clip = attachment.getOrCreateClip(clipTf);
+        clipTf.multiplyRange(attachRange, this._clip.boundingRange);
       }
 
       const sheetToDrawing = this.drawingToAttachment.inverse();
@@ -243,12 +260,15 @@ export namespace Sheet {
       this._rootTile = new Tile2d(this, attachment.placement.bbox);
     }
 
-    /** Create a Tree2d tile tree for a 2d attachment. */
-    public static create(attachment: Attachment2d): Tree2d | undefined {
+    /** Create a Tree2d tile tree for a 2d attachment. Returns a Tree2d if the model tile tree is ready. Otherwise, returns the status of the tiles. */
+    public static create(attachment: Attachment2d): TileTree.LoadStatus {
       const viewedModel = attachment.view.getViewedModel();
-      if (!viewedModel || !viewedModel.tileTree)
-        return undefined;
-      return new Tree2d(viewedModel, attachment, attachment.view, viewedModel.tileTree);
+      if (!viewedModel)
+        return TileTree.LoadStatus.NotFound;
+      const tileTree = viewedModel.getOrLoadTileTree();
+      if (tileTree !== undefined)
+        attachment.tree = new Tree2d(viewedModel, attachment, attachment.view, tileTree);
+      return viewedModel.loadStatus;
     }
   }
 
@@ -272,25 +292,52 @@ export namespace Sheet {
     public placement: Placement2d;
     public clip: ClipVector;
     public displayPriority: number;
+    protected _tree?: Tree;
+    protected _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
 
     protected constructor(props: ViewAttachmentProps, view: ViewState2d) {
       this.id = new Id64(props.id);
       this.view = view;
-      this.placement = Placement2d.fromJSON(props.placement);
-      if (props.jsonProperties) {
-        this.scale = JsonUtils.asDouble(props.jsonProperties.scale);
-        this.clip = ClipVector.fromJSON(props.jsonProperties.clip);
+      this.displayPriority = 0;
+      let scale: number | undefined;
+      let placement: Placement2d | undefined;
+      const jsonProps = props.jsonProperties;
+
+      if (props.placement)
+        placement = Placement2d.fromJSON(props.placement);
+
+      if (jsonProps !== undefined) {
+        scale = jsonProps.scale !== undefined ? JsonUtils.asDouble(jsonProps.scale) : undefined;
+        this.clip = jsonProps.clip !== undefined ? ClipVector.fromJSON(jsonProps.clip) : ClipVector.createEmpty();
         this.displayPriority = JsonUtils.asInt(props.jsonProperties.displayPriority);
       } else {
-        this.scale = 0;
         this.clip = ClipVector.createEmpty();
-        this.displayPriority = 0; // ###TODO: is there a valid "default" value here?
       }
+
+      // Compute placement from scale, or scale from placement if necessary
+      if (scale === undefined && placement === undefined) {
+        scale = 1;
+        placement = Attachment.computePlacement(view, Point2d.create(), scale);
+      } else if (scale === undefined) {
+        scale = Attachment.computeScale(view, placement!);
+      } else if (placement === undefined) {
+        placement = Attachment.computePlacement(view, Point2d.create(), scale);
+      }
+
+      this.scale = scale;
+      this.placement = placement!;
     }
 
+    /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
+    public get tree(): Tree | undefined { return this._tree; }
+    /** Sets the reference to the tile tree corresponding to this attachment view's model. */
+    public set tree(tree: Tree | undefined) { this._tree = tree; }
+    /** Returns the load status of this attachment view's tile tree. */
+    public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
+
     /** Given a view and placement, compute a scale for an attachment. */
-    protected static computeScale(view: ViewState, placement: ElementAlignedBox2d): number {
-      return view.getExtents().x / placement.width;
+    protected static computeScale(view: ViewState, placement: Placement2d): number {
+      return view.getExtents().x / placement.bbox.width;
     }
 
     /** Given a view and an origin point, compute a placement for an attachment. */
@@ -305,10 +352,7 @@ export namespace Sheet {
     }
 
     /** Load the tile tree for this attachment. Returns true if successful. */
-    public abstract load(sheetView: ViewState): boolean;
-
-    /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
-    public get tree(): Tree2d | undefined { return this.tree; }
+    public abstract load(sheetView: ViewState): void;
 
     /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clip.clear(); }
@@ -336,34 +380,50 @@ export namespace Sheet {
         this.clip.transformInPlace(transform);
       return this.clip;
     }
+
+    // DEBUG ONLY
+    public drawDebugBorder(context: SceneContext) {
+      const origin = this.placement.origin;
+      const bbox = this.placement.bbox;
+      const rect: Point2d[] = [
+        Point2d.create(origin.x, origin.y),
+        Point2d.create(origin.x + bbox.high.x, origin.y),
+        Point2d.create(origin.x + bbox.high.x, origin.y + bbox.high.y),
+        Point2d.create(origin.x, origin.y + bbox.high.y),
+        Point2d.create(origin.x, origin.y)];
+
+      const builder = context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
+      builder.setSymbology(ColorDef.black, ColorDef.black, 2);
+      builder.addLineString2d(rect, 0);
+      const attachmentBorder = builder.finish();
+      context.outputGraphic(attachmentBorder);
+    }
   }
 
   /** A 2d sheet view attachment. */
   export class Attachment2d extends Attachment {
-    private _tree?: Tree2d;
-
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }
 
-    public load(_sheetView: ViewState): boolean {
-      if (this._tree === undefined)
-        this._tree = Tree2d.create(this);
-      return this._tree !== undefined;
+    public load(_sheetView: ViewState) {
+      if (this._loadStatus === TileTree.LoadStatus.Loaded)
+        return;
+      this._loadStatus = Tree2d.create(this);
     }
   }
 
   /** A list of view attachments for a sheet. */
   export class Attachments {
     public readonly list: Attachment[] = [];
-    private allAttachmentsLoaded: boolean = true;
+    private _allLoaded: boolean = true;
 
     public constructor() { }
 
-    /** Returns true if every attachment has a valid reference to a root. Otherwise, returns false. */
-    public get allLoaded(): boolean { return this.allAttachmentsLoaded; }
     /** The number of attachments in this list. */
     public get length(): number { return this.list.length; }
+    /** Returns true if all of the attachments in the list have loaded tile trees. */
+    public get allLoaded(): boolean { return this._allLoaded; }
 
     /** Given a view id, return an attachment containing that view from the list. If no attachment in the list stores that view, returns undefined. */
     public findByViewId(viewId: Id64): Attachment | undefined {
@@ -380,6 +440,7 @@ export namespace Sheet {
 
     /** Add an attachment to this list of attachments. */
     public add(attachment: Attachment) {
+      this._allLoaded = this._allLoaded && (attachment.loadStatus === TileTree.LoadStatus.Loaded);
       this.list.push(attachment);
     }
 
@@ -388,33 +449,34 @@ export namespace Sheet {
       const idx = this.list.indexOf(attachment);
       if (idx !== -1)
         this.list.splice(idx, 1);
+      this.updateAllLoaded();
     }
 
-    /** If all attachments are loaded, set the allAttachmentsLoaded flag to true. */
-    protected updateAllLoaded() {
-      this.allAttachmentsLoaded = true;
+    /** Update the flag on this attachments list recording whether or not all attachments have loaded tile trees. */
+    public updateAllLoaded() {
+      this._allLoaded = true;
       for (const attachment of this.list) {
-        if (attachment.tree === undefined) {
-          this.allAttachmentsLoaded = false;
+        if (attachment.loadStatus !== TileTree.LoadStatus.Loaded) {
+          this._allLoaded = false;
           break;
         }
       }
     }
 
-    /** Load the tile tree for the attachment at the given index. Returns true if successful. */
-    public load(idx: number, sheetView: SheetViewState): boolean {
+    /** Load the tile tree for the attachment at the given index. Returns the load status of that attachment. */
+    public load(idx: number, sheetView: SheetViewState): TileTree.LoadStatus {
       assert(idx < this.length);
 
       const attachment = this.list[idx];
       if (attachment.tree !== undefined)
-        return true;
+        return TileTree.LoadStatus.Loaded;
 
-      const loaded = attachment.load(sheetView);
-      if (!loaded)
+      attachment.load(sheetView);
+      if (attachment.loadStatus === TileTree.LoadStatus.NotFound || attachment.loadStatus === TileTree.LoadStatus.NotLoaded)
         this.list.splice(idx, 1);
 
       this.updateAllLoaded();
-      return loaded;
+      return attachment.loadStatus;
     }
   }
 }

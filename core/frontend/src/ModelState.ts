@@ -65,6 +65,8 @@ export abstract class GeometricModelState extends ModelState {
   public get is2d(): boolean { return !this.is3d; }
   /** @hidden */
   public get tileTree(): TileTree | undefined { return this._tileTree; }
+  /** @hidden */
+  public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
   /** Override of ModelState method, returns true */
   public get isGeometricModel(): boolean { return true; }
   public set loadStatus(status: TileTree.LoadStatus) { this._loadStatus = status; }

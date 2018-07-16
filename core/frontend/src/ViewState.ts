@@ -28,6 +28,7 @@ import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/
 import { GeometricModelState, GeometricModel2dState, SheetModelState } from "./ModelState";
 import { RenderGraphic } from "./render/System";
 import { Sheet } from "./Sheet";
+import { TileTree } from "./tile/TileTree";
 
 export const enum GridOrientationType {
   View = 0,
@@ -351,7 +352,7 @@ export abstract class ViewState extends ElementState {
   public abstract computeFitRange(): Range3d;
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
-  public abstract onRenderFrame(): void;
+  public abstract onRenderFrame(_viewport: Viewport): void;
 
   public abstract decorate(context: DecorateContext): void;
 
@@ -934,7 +935,7 @@ export abstract class ViewState3d extends ViewState {
   public forceMinFrontDist = 0.0;
   /** @hidden */
   public static get className() { return "ViewDefinition3d"; }
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
@@ -1735,7 +1736,7 @@ export class ViewState2d extends ViewState {
     return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
   }
 
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
     await super.load();
     return this.iModel.models.load(this.baseModelId);
@@ -1766,7 +1767,9 @@ export class DrawingViewState extends ViewState2d {
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
   private _size: Point2d = Point2d.create();
-  private _attachments: Sheet.Attachments = new Sheet.Attachments();
+  private _attachments = new Sheet.Attachments();
+  private DEBUGATTACHMENTS = new Sheet.Attachments();
+  private allAttachmentTilesReady: boolean = true;
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -1778,6 +1781,9 @@ export class SheetViewState extends ViewState2d {
   public get sheetExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(Point3d.create(), Point3d.create(this._size.x, this._size.y, 0)); }
   /** If the view has been loaded, returns the attachments of this sheet. */
   public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
+
+  /** Mark this sheet view state as not ready to render. */
+  public markAttachmentSceneIncomplete() { this.allAttachmentTilesReady; }
 
   /**
    * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
@@ -1821,10 +1827,52 @@ export class SheetViewState extends ViewState2d {
     // Create the attachment objects and store them on this SheetViewState
     for (let i = 0; i < attachments.length; i++) {
       if (attachmentViews[i].is3d())
-        return; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+        continue; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
       else
         this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
     }
+
+    // DEBUG... DELETE
+    for (const attach of this._attachments.list)
+      this.DEBUGATTACHMENTS.add(attach);
+  }
+
+  /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
+  public onRenderFrame(_viewport: Viewport) {
+    if (!this.allAttachmentTilesReady || !this._attachments.allLoaded)
+      _viewport.sync.invalidateScene();
+  }
+
+  /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
+  public createScene(context: SceneContext) {
+    // This will be reset to false by the end of this function if any attachments are waiting on tiles...
+    this.allAttachmentTilesReady = true;
+    super.createScene(context);
+
+    { // DEBUG ONLY
+      for (const attach of this.DEBUGATTACHMENTS.list) {
+        attach.drawDebugBorder(context);
+      }
+    }
+
+    if (!this._attachments.allLoaded) {
+      // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
+      let i = 0;
+      while (i < this._attachments.length) {
+        const attachStatus = this._attachments.load(i, this);
+
+        // If load fails, attachment gets dropped from the list
+        if (attachStatus !== TileTree.LoadStatus.NotFound && attachStatus !== TileTree.LoadStatus.NotLoaded)
+          i++;
+      }
+    }
+
+    // Draw all attachments that have a status of loaded
+    for (const attachment of this._attachments.list)
+      if (attachment.loadStatus === TileTree.LoadStatus.Loaded) {
+        assert(attachment.tree !== undefined);
+        attachment.tree!.drawInView(context);
+      }
   }
 
   /** Create a sheet border decoration graphic. */
@@ -1839,24 +1887,6 @@ export class SheetViewState extends ViewState2d {
     if (this._size !== undefined) {
       const border = this.createBorder(this._size.x, this._size.y, context);
       context.setViewBackground(border);
-    }
-    { // ###TODO: Debug.... DELETE
-      for (const attachment of this._attachments.list) {
-        const origin = attachment.placement.origin;
-        const bbox = attachment.placement.bbox;
-        const rect: Point2d[] = [
-          Point2d.create(origin.x, origin.y),
-          Point2d.create(origin.x + bbox.high.x, origin.y),
-          Point2d.create(origin.x + bbox.high.x, origin.y + bbox.high.y),
-          Point2d.create(origin.x, origin.y + bbox.high.y),
-          Point2d.create(origin.x, origin.y)];
-
-        const builder = context.createViewBackground();
-        builder.setSymbology(ColorDef.black, ColorDef.black, 2);
-        builder.addLineString2d(rect, 0);
-        const attachmentBorder = builder.finish();
-        context.addWorldDecoration(attachmentBorder);
-      }
     }
   }
 
