@@ -19,7 +19,7 @@ import { ViewRect } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle, Texture } from "./Texture";
+import { TextureHandle, Texture, ImageTextureType } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
@@ -260,7 +260,7 @@ export class IdMap implements IDisposable {
 
   /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
   private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const textureHandle = TextureHandle.createForImageBuffer(img);
+    const textureHandle = TextureHandle.createForImageBuffer(img, params.isSkyBox ? ImageTextureType.SkyBox : ImageTextureType.Normal);
     if (textureHandle === undefined)
       return undefined;
     const texture = new Texture(params, textureHandle);
