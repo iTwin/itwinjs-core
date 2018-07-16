@@ -32,7 +32,8 @@
     "@bentley/imodeljs-common": "0.98.0-3",
     "@bentley/imodeljs-frontend": "0.98.0-3",
     "@bentley/imodeljs-backend": "0.98.0-3",
-    "electron-devtools-installer": "^2.2.4"
+    "electron-devtools-installer": "^2.2.4",
+    "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",

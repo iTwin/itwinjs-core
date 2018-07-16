@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions } from "@bentley/imodeljs-frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
@@ -19,7 +19,7 @@ import {
   RpcOperation,
   IModelToken,
 } from "@bentley/imodeljs-common/lib/common";
-import { Transform, Point3d } from "@bentley/geometry-core/lib/geometry-core";
+import { Transform, Point3d, XAndY } from "@bentley/geometry-core";
 import { showStatus } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -660,9 +660,42 @@ class SVTAccuSnap extends AccuSnap {
   }
 }
 
+class SVTNotifications extends NotificationManager {
+  private anchor?: HTMLElement;
+  private toolTip?: HTMLSpanElement;
+  // private timer = 0;
+
+  public isToolTipOpen(): boolean { return this.anchor !== undefined; }
+  public clearToolTip(): void {
+    if (!this.toolTip || !this.anchor)
+      return;
+    console.log("clear tooltip");
+
+    //    clearTimeout(this.timer);
+    this.anchor.removeChild(this.toolTip);
+    this.anchor = undefined;
+    this.toolTip = undefined;
+    // // this.timer = 0;
+  }
+  public showToolTip(el: HTMLElement, message: string, pt: XAndY, _options?: ToolTipOptions): void {
+    this.clearToolTip();
+    el.addEventListener("mousedown", this.clearToolTip);
+    el.addEventListener("mouseleave", this.clearToolTip);
+    this.toolTip = document.createElement("span");
+    this.toolTip.innerHTML = message;
+    this.toolTip.style.top = pt.y + "px";
+    this.toolTip.style.left = pt.x + "px";
+    this.toolTip.className = "toolTip";
+    this.anchor = el.parentElement!;
+    this.anchor.appendChild(this.toolTip);
+    console.log("show tooltip");
+  }
+}
+
 class SVTIModelApp extends IModelApp {
   protected static onStartup(): void {
     IModelApp.accuSnap = new SVTAccuSnap();
+    IModelApp.notifications = new SVTNotifications();
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     MeasurePointsTool.register(svtToolNamespace);
   }

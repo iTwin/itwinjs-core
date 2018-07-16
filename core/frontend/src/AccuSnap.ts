@@ -66,7 +66,7 @@ export class AccuSnap {
   private suppressed = 0;
   /** Number of times "noMotion" has been called since last motion */
   private noMotionCount = 0;
-  /** Anchor point for infoWindow. window is cleared when cursor moves away from this point. */
+  /** Anchor point for tooltip window is cleared when cursor moves away from this point. */
   private readonly infoPt = new Point3d();
   /** Location of cursor when we last checked for motion */
   private readonly lastCursorPos = new Point2d();
@@ -236,19 +236,19 @@ export class AccuSnap {
     this.clearSprites(); // remove all sprites from the screen
   }
 
-  public showElemInfo(viewPt: Point3d, vp: Viewport, hit: HitDetail): void {
+  public showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): void {
     if (IModelApp.viewManager.doesHostHaveFocus())
       this.showLocateMessage(viewPt, vp, IModelApp.toolAdmin.getInfoString(hit, "\n"));
   }
 
-  private showLocateMessage(viewPt: Point3d, vp: Viewport, msg: string) {
+  private showLocateMessage(viewPt: XAndY, vp: Viewport, msg: string) {
     if (IModelApp.viewManager.doesHostHaveFocus())
-      IModelApp.viewManager.showInfoWindow(viewPt, vp, msg);
+      IModelApp.notifications.showToolTip(vp.canvas, msg, viewPt);
   }
 
-  public displayInfoBalloon(viewPt: Point3d, vp: Viewport, uorPt?: Point3d): void {
-    // if the info balloon is already displayed, or if he doesn't want it, quit.
-    if (IModelApp.viewManager.isInfoWindowUp() || !this.wantInfoBalloon())
+  public displayInfoBalloon(viewPt: XAndY, vp: Viewport, uorPt?: Point3d): void {
+    // if the tooltip is already displayed, or if user doesn't want it, quit.
+    if (IModelApp.notifications.isToolTipOpen() || !this.wantInfoBalloon())
       return;
 
     const accuSnapHit = this.currHit;
@@ -273,7 +273,7 @@ export class AccuSnap {
 
         timeout = 3;
       } else {
-        // if uorPt is nullptr, that means that we want to display the infoWindow immediately.
+        // if uorPt is nullptr, that means that we want to display the tooltip immediately.
         timeout = 0;
       }
 
@@ -322,13 +322,13 @@ export class AccuSnap {
   public clearInfoBalloon(ev?: BeButtonEvent): void {
     this.noMotionCount = 0;
 
-    if (!IModelApp.viewManager.isInfoWindowUp())
+    if (!IModelApp.notifications.isToolTipOpen())
       return;
 
     if (ev && (5 > ev.viewPoint.distanceXY(this.infoPt)))
       return;
 
-    IModelApp.viewManager.clearInfoWindow();
+    IModelApp.notifications.clearToolTip();
   }
 
   /** For a given snap path, display the sprites to indicate its position on the screen and what snap mode it represents. */

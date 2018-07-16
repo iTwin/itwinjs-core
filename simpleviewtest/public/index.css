@@ -281,6 +281,31 @@
   overflow-y: auto;
   height: 400px;
 }
+
+.toolTip {
+  background: #111;
+  color: white;
+  font-family: sans-serif;
+  font-size: 0.8rem;
+  font-weight: normal;
+  text-decoration: none;
+  text-align: left;
+  padding: 0.6em 0.75rem;
+  border-radius: 4px;
+  position: absolute;
+  transition: opacity 0.4s;
+  white-space: nowrap;
+  box-shadow: 0 0.5rem 1rem -0.5rem black;
+  z-index: 1000;
+  visibility: visible;
+  opacity: 0.9;
+}
+
+.toolTip-visible {
+  visibility: visible;
+  opacity: 0.9;
+}
+
 #standardRotationMenu .simpleicon {
   float:left;
 }
