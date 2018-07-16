@@ -695,25 +695,16 @@ export namespace GltfTileIO {
         const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
         const bufferView = this.bufferViews[binaryImageJson.bufferView];
         const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
-        let imageSource;
+        const format = ImageUtil.getImageSourceFormatForMimeType(mimeType);
+        if (undefined === format)
+          return undefined;
 
         const offset = bufferView.byteOffset;
         const bytes = this.binaryData.subarray(offset, offset + bufferView.byteLength);
-        switch (mimeType) {
-          case "image/jpeg":
-            imageSource = new ImageSource(bytes, ImageSourceFormat.Jpeg);
-            break;
-          case "image/png":
-            imageSource = new ImageSource(bytes, ImageSourceFormat.Png);
-            break;
-
-        }
-
-        if (imageSource === undefined)
-          return undefined;
+        const imageSource = new ImageSource(bytes, format);
 
         return ImageUtil.extractImage(imageSource)
-          .then((image) => this.isCanceled ? undefined : this.system.createTextureFromImage(image, this.model.iModel, RenderTexture.Params.defaults))
+          .then((image) => this.isCanceled ? undefined : this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.model.iModel, RenderTexture.Params.defaults))
           .catch((_) => undefined);
       } catch (e) {
         return undefined;

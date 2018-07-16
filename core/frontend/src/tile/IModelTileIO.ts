@@ -7,11 +7,25 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels, TextureMapping, ImageSource, RenderTexture, RenderMaterial, Gradient } from "@bentley/imodeljs-common";
 import { JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
 import { ImageUtil } from "../ImageUtil";
+import {
+  Feature,
+  FeatureTable,
+  ElementAlignedBox3d,
+  GeometryClass,
+  FillFlags,
+  ColorDef,
+  LinePixels,
+  TextureMapping,
+  ImageSource,
+  ImageSourceFormat,
+  RenderTexture,
+  RenderMaterial,
+  Gradient,
+} from "@bentley/imodeljs-common";
 
 /** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
@@ -298,7 +312,7 @@ export namespace IModelTileIO {
           textureType = RenderTexture.Type.TileSection;
 
         const params = new RenderTexture.Params(name, textureType);
-        return this.system.createTextureFromImage(image, this.model.iModel, params);
+        return this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.model.iModel, params);
       });
     }
   }

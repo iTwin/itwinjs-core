@@ -175,9 +175,8 @@ class TextureCreateParams {
       (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromImageSource(tex, params, { source, canvas, loadCallback }), props.useMipMaps, props.interpolate);
   }
 
-  public static createForImage(image: HTMLImageElement, type: RenderTexture.Type) {
-    // ###TODO: Determine if we need alpha channel...
-    const props = this.getImageProperties(false, type);
+  public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
+    const props = this.getImageProperties(hasAlpha, type);
 
     let targetWidth = image.naturalWidth;
     let targetHeight = image.naturalHeight;
@@ -325,8 +324,8 @@ export class TextureHandle implements IDisposable {
     return this.create(TextureCreateParams.createForImageBuffer(image, type));
   }
 
-  public static createForImage(image: HTMLImageElement, type: RenderTexture.Type) {
-    return this.create(TextureCreateParams.createForImage(image, type));
+  public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
+    return this.create(TextureCreateParams.createForImage(image, hasAlpha, type));
   }
 
   // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.

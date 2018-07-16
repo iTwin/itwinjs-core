@@ -11,6 +11,15 @@ export class ImageUtil {
   /** Get a string describing the mime type associated with an ImageSource format. */
   public static getImageSourceMimeType(format: ImageSourceFormat): string { return ImageSourceFormat.Jpeg === format ? "image/jpeg" : "image/png"; }
 
+  /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify an ImageSourceFormat. */
+  public static getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
+    switch (mimeType) {
+      case "image/jpeg": return ImageSourceFormat.Jpeg;
+      case "image/png": return ImageSourceFormat.Png;
+      default: return undefined;
+    }
+  }
+
   /**
    * Extract an html Image element from a binary jpeg or png.
    * @param source The ImageSource containing the binary jpeg or png data.

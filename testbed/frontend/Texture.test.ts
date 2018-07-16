@@ -144,7 +144,7 @@ describe.skip("Test pixel values of resized texture in callback (async texture l
     const imageSource = new ImageSource(pixels, ImageSourceFormat.Png);
     const image = await ImageUtil.extractImage(imageSource);
     assert(undefined !== image);
-    const imageTexture = TextureHandle.createForImage(image!, RenderTexture.Type.Normal);
+    const imageTexture = TextureHandle.createForImage(image!, true, RenderTexture.Type.Normal);
     assert(undefined !== imageTexture);
     expect(imageTexture!.width).to.equal(4);
     expect(imageTexture!.height).to.equal(4);

@@ -273,8 +273,8 @@ export class IdMap implements IDisposable {
     return this.createTexture(params, TextureHandle.createForImageSource(width, height, imgSrc, params.type));
   }
 
-  private createTextureFromImage(image: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForImage(image, params.type));
+  private createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
   }
 
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textureMap.get(key) : undefined; }
@@ -291,9 +291,9 @@ export class IdMap implements IDisposable {
     return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
   }
 
-  public getTextureFromImage(image: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
+  public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
     const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromImage(image, params);
+    return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
   }
 
   /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
@@ -477,14 +477,14 @@ export class System extends RenderSystem {
     return this.getIdMap(imodel).getTextureFromImageSource(source, width, height, params);
   }
 
-  public createTextureFromImage(image: HTMLImageElement, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
+  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
     if (undefined === imodel) {
-      const textureHandle = TextureHandle.createForImage(image, params.type);
+      const textureHandle = TextureHandle.createForImage(image, hasAlpha, params.type);
       return undefined !== textureHandle ? new Texture(params, textureHandle) : undefined;
     }
 
-    return this.getIdMap(imodel).getTextureFromImage(image, params);
+    return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
   }
 
   /** Creates a texture using gradient symbology and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
