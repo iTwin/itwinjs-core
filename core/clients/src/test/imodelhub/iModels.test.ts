@@ -260,7 +260,7 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
-  it.skip("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
+  it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
@@ -273,7 +273,7 @@ describe("iModelHub iModelHandler", () => {
     progressTracker.check();
   });
 
-  it.skip("should continue creating not initialized iModel", async function (this: Mocha.ITestCallbackContext) {
+  it("should continue creating not initialized iModel", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 

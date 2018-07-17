@@ -46,8 +46,10 @@ describe("iModelHub VersionHandler", () => {
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
 
   before(async () => {
-    utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
-    imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
 
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
@@ -84,15 +86,17 @@ describe("iModelHub VersionHandler", () => {
   });
 
   after(() => {
-    utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-    imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
   });
 
   afterEach(() => {
     ResponseBuilder.clearMocks();
   });
 
-  it.skip("should create named version", async function (this: Mocha.ITestCallbackContext) {
+  it("should create named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(iModelId, false, undefined, ...mockedChangeSets);
     const changeSetsCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
@@ -173,7 +177,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(smallThumbnail.wsgId).to.be.not.equal(largeThumbnail.wsgId);
   });
 
-  it.skip("should update named version", async function (this: Mocha.ITestCallbackContext) {
+  it("should update named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(iModelId, undefined, ...mockedVersions);
 

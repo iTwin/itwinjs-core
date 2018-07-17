@@ -87,7 +87,7 @@ function mockGetGlobalEventSASToken() {
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-describe.skip("iModelHub GlobalEventHandler", () => {
+describe("iModelHub GlobalEventHandler", () => {
   let accessToken: AccessToken;
   let serviceAccountAccessToken: AccessToken;
   let globalEventSubscription: GlobalEventSubscription;
@@ -97,8 +97,10 @@ describe.skip("iModelHub GlobalEventHandler", () => {
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
-    imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
 
     projectId = await utils.getProjectId();
     serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
@@ -109,8 +111,10 @@ describe.skip("iModelHub GlobalEventHandler", () => {
   after(async () => {
     await utils.deleteIModelByName(accessToken, projectId, imodelName);
 
-    utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-    imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
   });
 
   afterEach(() => {
