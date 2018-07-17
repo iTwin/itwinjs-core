@@ -10,6 +10,64 @@ import { PrimitiveType } from "../../source/ECObjects";
 import * as sinon from "sinon";
 
 describe("Enumeration", () => {
+  describe("accept", () => {
+    let testEnum: Enumeration;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+    });
+
+    it("should call visitEnumeration on a SchemaItemVisitor object", async () => {
+      expect(testEnum).to.exist;
+      const mockVisitor = { visitEnumeration: sinon.spy() };
+      await testEnum.accept(mockVisitor);
+      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
+      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
+    });
+
+    it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
+      expect(testEnum).to.exist;
+      await testEnum.accept({});
+    });
+  });
+
+  describe("addEnumerator tests", () => {
+    let testEnum: Enumeration;
+    let testStringEnum: Enumeration;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+      testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
+    });
+    it("Basic String Enumeration Test", async () => {
+      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum1", "Val1"));
+      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum2", "Val2"));
+      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum3", "Val3"));
+      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum4", "Val4"));
+      assert(testStringEnum.enumerators.length === 4);
+    });
+    it("Basic Integer Enumeration Test", async () => {
+      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum1", 1));
+      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum2", 2));
+      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum3", 3));
+      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum4", 4));
+      assert(testEnum.enumerators.length === 4);
+    });
+    it("Add duplicate enumerator", async () => {
+      const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
+      (testStringEnum as MutableEnumeration).addEnumerator(newEnum);
+      assert.throws(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
+    });
+    it("Add int enumerator to string enumeration", async () => {
+      assert.throws(() => testStringEnum.createEnumerator("Enum1", 1), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
+    });
+    it("Add string enumerator to int enumeration", async () => {
+      assert.throws(() => testEnum.createEnumerator("Enum1", "Value1"), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
+    });
+  });
+
   describe("deserialization", () => {
     it("minimum values", async () => {
       const testSchema = {
@@ -62,28 +120,6 @@ describe("Enumeration", () => {
       const ecSchema = await Schema.fromJson(testSchema);
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
-    });
-  });
-
-  describe("accept", () => {
-    let testEnum: Enumeration;
-
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
-    });
-
-    it("should call visitEnumeration on a SchemaItemVisitor object", async () => {
-      expect(testEnum).to.exist;
-      const mockVisitor = { visitEnumeration: sinon.spy() };
-      await testEnum.accept(mockVisitor);
-      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
-      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
-      expect(testEnum).to.exist;
-      await testEnum.accept({});
     });
   });
 
@@ -188,6 +224,44 @@ describe("Enumeration", () => {
         };
         await testEnumSansPrimType.fromJson(json);
         assertValidEnumeration(testEnumSansPrimType);
+      });
+
+      it(`no name with backingTypeName="string"`, async () => {
+        const json = {
+          ...baseJson,
+          backingTypeName: "string",
+          isStrict: false,
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          enumerators: [
+            { value: "A" },
+            { value: "B" },
+          ],
+        };
+        await testEnumSansPrimType.fromJson(json);
+        assertValidEnumeration(testEnumSansPrimType);
+
+        expect(testEnumSansPrimType.enumerators[0].name).eql("A");
+        expect(testEnumSansPrimType.enumerators[1].name).eql("B");
+      });
+
+      it(`no name with backingTypeName="int"`, async () => {
+        const json = {
+          ...baseJson,
+          backingTypeName: "int",
+          isStrict: false,
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          enumerators: [
+            { value: 6 },
+            { value: 8 },
+          ],
+        };
+        await testEnum.fromJson(json);
+        assertValidEnumeration(testEnum);
+
+        expect(testEnum.enumerators[0].name).eql("TestEnumeration6");
+        expect(testEnum.enumerators[1].name).eql("TestEnumeration8");
       });
     });
 
@@ -365,7 +439,9 @@ describe("Enumeration", () => {
           { value: "one", label: "Label for the first value", description: "Description for the first value" },
         ],
       };
+      Schema.ec32 = true;
       await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
+      Schema.ec32 = false;
     });
     it("Value is required", async () => {
       const json = {
@@ -394,39 +470,5 @@ describe("Enumeration", () => {
       await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
     });
   });
-  describe("addEnumerator tests", () => {
-    let testEnum: Enumeration;
-    let testStringEnum: Enumeration;
-
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
-      testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
-    });
-    it("Basic String Enumeration Test", async () => {
-      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum1", "Val1"));
-      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum2", "Val2"));
-      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum3", "Val3"));
-      (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum4", "Val4"));
-      assert(testStringEnum.enumerators.length === 4);
-    });
-    it("Basic Integer Enumeration Test", async () => {
-      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum1", 1));
-      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum2", 2));
-      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum3", 3));
-      (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum4", 4));
-      assert(testEnum.enumerators.length === 4);
-    });
-    it("Add duplicate enumerator", async () => {
-      const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
-      (testStringEnum as MutableEnumeration).addEnumerator(newEnum);
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
-    });
-    it("Add int enumerator to string enumeration", async () => {
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", 1), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
-    });
-    it("Add string enumerator to int enumeration", async () => {
-      assert.throws(() => testEnum.createEnumerator("Enum1", "Value1"), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
-    });
-  });
+  
 });
