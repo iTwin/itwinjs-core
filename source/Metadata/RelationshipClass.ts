@@ -138,9 +138,8 @@ export class RelationshipConstraint {
    * @param constraint The class to add as a constraint class.
    */
   public addClass(constraint: EntityClass | Mixin | RelationshipClass): void {
-    // Ensure we don't start mixing constraint class types
-    if (this.constraintClasses && this.constraintClasses.length > 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    // TODO: Ensure we don't start mixing constraint class types
+    // TODO: Check that this class is or subclasses abstract constraint?
 
     if (!this._constraintClasses)
       this._constraintClasses = [];

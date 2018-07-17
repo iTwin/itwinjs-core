@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updated SchemaItemTypeToString for new EC3.2 item types
 
 ### Fixed
+- Loading a relationship constraint with multiple constraint classes
 - Fixed sync 3.1 kind of quantity loading
 
 ## [0.7.0]  -  2018-07-13
