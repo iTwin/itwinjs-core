@@ -248,6 +248,10 @@ export class DisplayStyle3dState extends DisplayStyleState {
     if (this.skyBoxParams !== undefined)
       return true;  // skybox textures have already been loaded
 
+    const useImages: boolean = true;
+    if (useImages)
+      return this.loadImageSkyBoxParams(system);
+
     // const env = this.getEnvironment();
     // ###TODO - Use actual textures - just defining our own textures for now (different colors to distinguish them); can key off env.sky.jpegFile (needs more than one file though!)
     // ###TODO - If possible, use a cubemap texture to store all six images in one fell swoop (better use of GPU resources)
@@ -269,6 +273,46 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.skyBoxParams = SkyBoxCreateParams.createForTexturedCube(front, back, top, bottom, left, right);
 
     // ###TODO - if any image buffer or texture fails to load, bail out.
+    return true;
+  }
+
+  private _loadingImages: boolean = false;
+  private loadImageSkyBoxParams(system: RenderSystem): boolean {
+    if (this._loadingImages)
+      return true;
+
+    this._loadingImages = true;
+
+    const promises: Array<Promise<HTMLImageElement>> = [];
+    const prefix = "sor_sea/sea_";
+    const ext = ".JPG";
+    const suffixes = ["ft", "bk", "up", "dn", "lf", "rt"];
+    for (let i = 0; i < suffixes.length; i++) {
+      const suffix = suffixes[i];
+      const url = "./skyboxes/" + prefix + suffix + ext;
+      const promise = new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = url;
+        (image as any).faceIndex = i;
+        });
+
+      promises.push(promise);
+    }
+
+    Promise.all(promises).then((images: HTMLImageElement[]) => {
+      const textures: Array<RenderTexture> = [];
+      const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
+      for (const image of images) {
+        const texture = system.createTextureFromImage(image, false, this.iModel, params)!;
+        textures[(image as any).faceIndex] = texture;
+      }
+
+      this.skyBoxParams = SkyBoxCreateParams.createForTexturedCube(textures[0], textures[1], textures[2], textures[3], textures[4], textures[5]);
+      this._loadingImages = false;
+    });
+
     return true;
   }
 
