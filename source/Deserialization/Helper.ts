@@ -332,7 +332,10 @@ export default class SchemaReadHelper {
         break;
       case SchemaItemType.KindOfQuantity:
         schemaItem = (schema as MutableSchema).createKindOfQuantitySync(itemName);
-        this.loadKindOfQuantitySync(schemaItem, schemaItemJson);
+        if (Schema.ec32)
+          this.loadKindOfQuantitySync(schemaItem, schemaItemJson);
+        else
+          schemaItem.fromJsonSync(schemaItemJson);
         break;
       case SchemaItemType.Unit:
         schemaItem = (schema as MutableSchema).createUnitSync(itemName);
