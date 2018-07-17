@@ -145,9 +145,18 @@ export namespace Sheet {
     public readonly biasDistance: number = 0;
 
     public constructor(model: GeometricModel2dState) {
+      // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
         new Id64(),
-        undefined,    // RootTile set in child class constructors
+        {
+          id: { treeId: "", tileId: "" },
+          range: {
+            low: { x: 0, y: 0, z: 0 },
+            high: { x: 0, y: 0, z: 0 },
+          },
+          maximumSize: 512,
+          childIds: [],
+        },
         model,
         undefined,
         Transform.createIdentity(),

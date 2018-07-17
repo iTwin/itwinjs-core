@@ -480,7 +480,7 @@ export class TileTree implements IDisposable {
   public readonly maxTilesToSkip: number;
   public expirationTime: BeDuration;
   public clipVector?: ClipVector;
-  protected _rootTile?: Tile;
+  protected _rootTile: Tile;
   protected _loader?: TileLoader;
 
   public constructor(props: TileTree.Params) {
@@ -491,11 +491,11 @@ export class TileTree implements IDisposable {
     this.clipVector = props.clipVector;
     this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-    this._rootTile = props.rootTile ? new Tile(Tile.Params.fromJSON(props.rootTile, this)) : undefined;
+    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this));
     this._loader = props.loader;
   }
 
-  public get rootTile(): Tile | undefined { return this._rootTile; }
+  public get rootTile(): Tile { return this._rootTile; }
   public get loader(): TileLoader | undefined { return this._loader; }
 
   public dispose() {
@@ -556,7 +556,7 @@ export namespace TileTree {
   export class Params {
     public constructor(
       public readonly id: Id64,
-      public readonly rootTile: TileProps | undefined,
+      public readonly rootTile: TileProps,
       public readonly model: GeometricModelState,
       public readonly loader: TileLoader | undefined,
       public readonly location: Transform,
