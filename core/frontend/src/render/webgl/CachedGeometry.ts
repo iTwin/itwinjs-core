@@ -183,25 +183,28 @@ class SkyBoxQuads {
     this.sides = new Float32Array(36);
     this.uvs = new Float32Array(36 * 2);
 
-    // Back (Bottom)
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 0);  // back upper left - 0
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 2);   // back upper right - 1
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 0], 4); // back lower left - 2
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 6);   // back upper right - 1
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 0], 8);  // back lower right - 3
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 0], 10); // back lower left - 2
+    // NB: After applying the rotation matrix in the shader, Back becomes (Bottom), etc.
+    // See the notes in the parens below.
+
+    // Back (Bottom after rotation)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 0], 0);  // back upper left - 0
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 2);   // back upper right - 1
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 0], 4); // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 6);   // back upper right - 1
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 8);  // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 0], 10); // back lower left - 2
     this.sides.set([SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom], 0);
 
-    // Front (Top)
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 1], 12);  // front upper left - 4
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 1], 14);   // front upper right - 5
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 16); // front lower left - 6
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 1], 18);   // front upper right - 5
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 20);  // front lower right - 7
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 22); // front lower left - 6
+    // Front (Top after rotation)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 1], 12);  // front upper left - 4
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 14);   // front upper right - 5
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 1], 16); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 18);   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 20);  // front lower right - 7
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 1], 22); // front lower left - 6
     this.sides.set([SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top], 6);
 
-    // Top (Front)
+    // Top (Front after rotation)
     qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 24); // front upper left - 4
     qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 26);  // front upper right - 5
     qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 28);   // back upper right - 1
@@ -210,7 +213,7 @@ class SkyBoxQuads {
     qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 34);   // back upper right - 1
     this.sides.set([SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front], 12);
 
-    // Bottom (Back)
+    // Bottom (Back after rotation)
     qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 36);  // back lower left - 2
     qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 38);   // back lower right - 3
     qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 40); // front lower left - 6
@@ -219,7 +222,7 @@ class SkyBoxQuads {
     qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 46); // front lower left - 6
     this.sides.set([SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back], 18);
 
-    // Left (Right)
+    // Left (Right after rotation)
     qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 48);   // back upper left - 0
     qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 50);  // front upper left - 4
     qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 52);  // back lower left - 2
@@ -228,7 +231,7 @@ class SkyBoxQuads {
     qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 58);  // back lower left - 2
     this.sides.set([SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right], 24);
 
-    // Right (Left)
+    // Right (Left after rotation)
     qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 60);   // back upper right - 1
     qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 62);  // front upper right - 5
     qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 64);  // back lower right - 3
