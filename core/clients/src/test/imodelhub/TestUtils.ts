@@ -66,7 +66,9 @@ export class RequestBehaviorOptions {
 
 const imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
 const requestBehaviorOptions = new RequestBehaviorOptions();
-imodelHubClient.CustomRequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
+if (!TestConfig.enableMocks) {
+  imodelHubClient.CustomRequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
+}
 
 export class IModelHubUrlMock {
   private static readonly urlDescriptor: UrlDescriptor = {

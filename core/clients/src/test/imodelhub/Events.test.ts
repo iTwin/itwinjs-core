@@ -88,7 +88,7 @@ function mockDeleteEventSubscription(imodelId: string, subscriptionId: string) {
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
 }
 
-describe.skip("iModelHub EventHandler", () => {
+describe("iModelHub EventHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   let subscription: EventSubscription;
