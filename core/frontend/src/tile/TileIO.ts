@@ -17,6 +17,7 @@ export namespace TileIO {
     InvalidBatchTable,
     InvalidScene,
     InvalidFeatureTable,
+    Canceled,
   }
 
   /** Type codes for various tile formats. Often these are embedded as 'magic numbers' in a binary stream to indicate the format. */

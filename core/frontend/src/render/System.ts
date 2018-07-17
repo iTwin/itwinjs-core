@@ -17,12 +17,13 @@ import {
   RenderMaterial,
   ImageBuffer,
   RenderTexture,
-  ImageSource,
   FeatureTable,
   Gradient,
   ElementAlignedBox3d,
   QParams3d,
   QPoint3dList,
+  ImageSource,
+  ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -30,6 +31,9 @@ import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { ImageUtil } from "../ImageUtil";
+import { IModelApp } from "../IModelApp";
+
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  */
@@ -109,6 +113,7 @@ export class DecorationList implements IDisposable {
  * in addition to the Scene.
  */
 export class Decorations implements IDisposable {
+  private _skyBox?: RenderGraphic;
   private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
   private _world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
@@ -116,6 +121,11 @@ export class Decorations implements IDisposable {
   private _viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 
   // Getters & Setters - dispose of members before resetting
+  public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
+  public set skyBox(skyBox: RenderGraphic | undefined) {
+    dispose(this._skyBox);
+    this._skyBox = skyBox;
+  }
   public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
   public set viewBackground(viewBackground: RenderGraphic | undefined) {
     dispose(this._viewBackground);  // no effect if already disposed
@@ -145,6 +155,7 @@ export class Decorations implements IDisposable {
   }
 
   public dispose() {
+    this._skyBox = dispose(this._skyBox);
     this._viewBackground = dispose(this._viewBackground);
     this._world = dispose(this._world);
     this._worldOverlay = dispose(this._worldOverlay);
@@ -271,6 +282,39 @@ export abstract class RenderTarget implements IDisposable {
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
 }
 
+export class SkyBoxCreateParams {
+  private _isGradient: boolean;
+
+  public readonly front?: RenderTexture;
+  public readonly back?: RenderTexture;
+  public readonly top?: RenderTexture;
+  public readonly bottom?: RenderTexture;
+  public readonly left?: RenderTexture;
+  public readonly right?: RenderTexture;
+
+  public get isTexturedCube() { return !this._isGradient; }
+  public get isGradient() { return this._isGradient; }
+
+  private constructor(isGradient: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture) {
+    this._isGradient = isGradient;
+    this.front = front;
+    this.back = back;
+    this.top = top;
+    this.bottom = bottom;
+    this.left = left;
+    this.right = right;
+  }
+
+  public static createForTexturedCube(front: RenderTexture, back: RenderTexture, top: RenderTexture, bottom: RenderTexture, left: RenderTexture, right: RenderTexture) {
+    return new SkyBoxCreateParams(false, front, back, top, bottom, left, right);
+  }
+
+  public static createForGradient() {
+    // ###TODO
+    return new SkyBoxCreateParams(true);
+  }
+}
+
 /**
  * A RenderSystem is the renderer-specific factory for creating RenderGraphics, RenderTexture, and RenderMaterials.
  */
@@ -338,6 +382,9 @@ export abstract class RenderSystem implements IDisposable {
     return this.createTriMesh(rasterTile);
   }
 
+  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBoxCreateParams. */
+  public createSkyBox(_params: SkyBoxCreateParams): RenderGraphic | undefined { return undefined; }
+
   /** Create a RenderGraphic consisting of a list of Graphics */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
@@ -359,17 +406,13 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new Texture from an ImageBuffer. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** Create a new Texture from an ImageSource.
-   * @param _source The image source data
-   * @param _width The width of the texture
-   * @param _height The height of the texture
-   * @param _imodel The IModelConnection this texture is to be associated with. When the IModelConnection is closed, the texture is disposed. If undefined, caller is responsible for disposing the texture.
-   * @param _params Parameters that describe the texture
-   */
-  public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
-
   /** Create a new Texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
-  public createTextureFromImage(_image: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+  public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+
+  /** Create a new Texture from an ImageSource. */
+  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    return ImageUtil.extractImage(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
+  }
 
   // /** Create a Light from Light.Parameters */
   // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;

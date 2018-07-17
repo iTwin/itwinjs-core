@@ -547,6 +547,11 @@ function doRedo(_event: any) {
   IModelApp.tools.run("View.Redo", theViewport!);
 }
 
+// do iModel synchronization
+function doSyncIModel(_event: any) {
+  console.log("IModel Synchronization");
+}
+
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
@@ -577,6 +582,7 @@ function wireIconsToFunctions() {
   document.getElementById("snapModeToggle")!.addEventListener("click", toggleSnapModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
+  document.getElementById("doSync")!.addEventListener("click", doSyncIModel);
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));

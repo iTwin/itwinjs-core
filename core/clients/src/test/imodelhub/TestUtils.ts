@@ -31,7 +31,44 @@ export class MockAccessToken extends AccessToken {
   public toTokenString() { return ""; }
 }
 
+export type RequestBehaviorOptionsList =
+  "DoNotScheduleRenderThumbnailJob" |
+  "DisableGlobalEvents" |
+  "DisableNotifications";
+
+export class RequestBehaviorOptions {
+  private _currentOptions: RequestBehaviorOptionsList[] = this.getDefaultOptions();
+
+  private getDefaultOptions(): RequestBehaviorOptionsList[] {
+    return ["DoNotScheduleRenderThumbnailJob", "DisableGlobalEvents", "DisableNotifications"];
+  }
+
+  public resetDefaultBehaviorOptions(): void {
+    this._currentOptions = this.getDefaultOptions();
+  }
+
+  public enableBehaviorOption(option: RequestBehaviorOptionsList) {
+    if (!this._currentOptions.find((el) => el === option)) {
+      this._currentOptions.push(option);
+    }
+  }
+  public disableBehaviorOption(option: RequestBehaviorOptionsList) {
+    const foundIdx: number = this._currentOptions.findIndex((el) => el === option);
+    if (-1 < foundIdx) {
+      this._currentOptions.splice(foundIdx, 1);
+    }
+  }
+
+  public toCustomRequestOptions(): { [index: string]: string } {
+    return { BehaviourOptions: this._currentOptions.join(",") };
+  }
+}
+
 const imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+const requestBehaviorOptions = new RequestBehaviorOptions();
+if (!TestConfig.enableMocks) {
+  imodelHubClient.CustomRequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
+}
 
 export class IModelHubUrlMock {
   private static readonly urlDescriptor: UrlDescriptor = {
@@ -55,6 +92,10 @@ export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentE
 export function getDefaultClient(): IModelClient {
   IModelHubUrlMock.mockGetUrl(TestConfig.deploymentEnv);
   return imodelHubClient;
+}
+
+export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
+  return requestBehaviorOptions;
 }
 
 export const assetsPath = __dirname + "/../../../lib/test/assets/";

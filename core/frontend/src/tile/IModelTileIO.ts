@@ -7,10 +7,25 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels, TextureMapping, ImageSource, RenderTexture, RenderMaterial, Gradient } from "@bentley/imodeljs-common";
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
+import { ImageUtil } from "../ImageUtil";
+import {
+  Feature,
+  FeatureTable,
+  ElementAlignedBox3d,
+  GeometryClass,
+  FillFlags,
+  ColorDef,
+  LinePixels,
+  TextureMapping,
+  ImageSource,
+  ImageSourceFormat,
+  RenderTexture,
+  RenderMaterial,
+  Gradient,
+} from "@bentley/imodeljs-common";
 
 /** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
@@ -53,7 +68,7 @@ export namespace IModelTileIO {
 
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -64,7 +79,7 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream);
-      return undefined !== props ? new Reader(props, model, system) : undefined;
+      return undefined !== props ? new Reader(props, model, system, isCanceled) : undefined;
     }
 
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }  // Original IModel Tile creator set RTC unnecessarily and incorrectly.
@@ -77,7 +92,7 @@ export namespace IModelTileIO {
       return undefined !== header;
     }
 
-    public read(): GltfTileIO.ReaderResult {
+    public async read(): Promise<GltfTileIO.ReaderResult> {
       // ###TODO don't re-read the headers...
       this.buffer.reset();
       const header = new Header(this.buffer);
@@ -92,11 +107,17 @@ export namespace IModelTileIO {
 
       const isComplete = Flags.None === (header.flags & Flags.Incomplete);
       const isCurved = Flags.None !== (header.flags & Flags.ContainsCurves);
-      return this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange);
+
+      // Textures must be loaded asynchronously first...
+      await this.loadNamedTextures();
+      if (this.isCanceled)
+        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
+      else
+        return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem) {
-      super(props, model, system);
+    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, model, system, isCanceled);
     }
 
     protected readFeatureTable(): FeatureTable | undefined {
@@ -222,46 +243,9 @@ export namespace IModelTileIO {
 
       const name = JsonUtils.asString(json.name);
       const namedTex = 0 !== name.length ? this.namedTextures[name] : undefined;
-      if (undefined === namedTex)
+      const texture = undefined !== namedTex ? namedTex.renderTexture as RenderTexture : undefined;
+      if (undefined === texture)
         return undefined;
-
-      // If we've already seen this texture name before, it will be in the RenderSystem's cache.
-      const imodel = this.model.iModel;
-      let texture = this.system.findTexture(name, imodel);
-      if (undefined === texture) {
-        // First time encountering this texture name - create it.
-        // ###TODO: We are currently not writing the width and height to json!
-        const width = JsonUtils.asInt(namedTex.width);
-        const height = JsonUtils.asInt(namedTex.height);
-        if (0 >= width || 0 >= height)
-          return undefined;
-
-        const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-        const bufferViewJson = 0 !== bufferViewId.length ? this.bufferViews[bufferViewId] : undefined;
-        if (undefined === bufferViewJson)
-          return undefined;
-
-        const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
-        const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-        if (0 === byteLength)
-          return undefined;
-
-        const bytes = this.binaryData.subarray(byteOffset, byteOffset + byteLength);
-        const format = namedTex.format;
-        const imageSource = new ImageSource(bytes, format);
-
-        let textureType = RenderTexture.Type.Normal;
-        if (JsonUtils.asBool(namedTex.isGlyph))
-          textureType = RenderTexture.Type.Glyph;
-        else if (JsonUtils.asBool(namedTex.isTileSection))
-          textureType = RenderTexture.Type.TileSection;
-
-        const params = new RenderTexture.Params(name, textureType);
-        texture = this.system.createTextureFromImageSource(imageSource, width, height, imodel, params);
-
-        if (undefined === texture)
-          return undefined;
-      }
 
       const paramsJson = json.params;
       const tf = paramsJson.transform;
@@ -273,6 +257,63 @@ export namespace IModelTileIO {
       };
 
       return new TextureMapping(texture, new TextureMapping.Params(paramProps));
+    }
+
+    private async loadNamedTextures(): Promise<void> {
+      if (undefined === this.namedTextures)
+        return Promise.resolve();
+
+      const promises = new Array<Promise<void>>();
+      for (const name of Object.keys(this.namedTextures))
+        promises.push(this.loadNamedTexture(name));
+
+      return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
+    }
+
+    private async loadNamedTexture(name: string): Promise<void> {
+      if (this.isCanceled)
+        return Promise.resolve();
+
+      const namedTex = this.namedTextures[name];
+      assert(undefined !== namedTex); // we got here by iterating the keys of this.namedTextures...
+      if (undefined === namedTex)
+        return Promise.resolve();
+
+      const imodel = this.model.iModel;
+      const texture = this.system.findTexture(name, imodel);
+      if (undefined !== texture)
+        return Promise.resolve();
+
+      return this.readNamedTexture(namedTex).then((result) => { namedTex.renderTexture = result; });
+    }
+    private async readNamedTexture(namedTex: any): Promise<RenderTexture | undefined> {
+      const bufferViewId = JsonUtils.asString(namedTex.bufferView);
+      const bufferViewJson = 0 !== bufferViewId.length ? this.bufferViews[bufferViewId] : undefined;
+      if (undefined === bufferViewJson)
+        return Promise.resolve(undefined);
+
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return Promise.resolve(undefined);
+
+      const bytes = this.binaryData.subarray(byteOffset, byteOffset + byteLength);
+      const format = namedTex.format;
+      const imageSource = new ImageSource(bytes, format);
+
+      return ImageUtil.extractImage(imageSource).then((image) => {
+        if (this.isCanceled)
+          return undefined;
+
+        let textureType = RenderTexture.Type.Normal;
+        if (JsonUtils.asBool(namedTex.isGlyph))
+          textureType = RenderTexture.Type.Glyph;
+        else if (JsonUtils.asBool(namedTex.isTileSection))
+          textureType = RenderTexture.Type.TileSection;
+
+        const params = new RenderTexture.Params(name, textureType);
+        return this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.model.iModel, params);
+      });
     }
   }
 }

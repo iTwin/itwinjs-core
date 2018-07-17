@@ -150,7 +150,7 @@ export class RealityModelTileTree {
   private static async getTileTreeProps(url: string, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
 
     if (undefined !== url) {
-      const urlParts = url.split("/");
+      const urlParts = url.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
       const tilesId = urlParts.find(Guid.isGuid);
 
       let clientProps: RDSClientProps | undefined;

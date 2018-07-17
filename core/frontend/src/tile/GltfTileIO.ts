@@ -15,6 +15,7 @@ import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { ImageUtil } from "../ImageUtil";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -220,6 +221,9 @@ export namespace GltfTileIO {
     }
   }
 
+  /** A function that returns true if Reader.read() should abort because the tile data is no longer needed. */
+  export type IsCanceled = (reader: Reader) => boolean;
+
   /** Deserializes glTF tile data. */
   export abstract class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
@@ -237,12 +241,16 @@ export namespace GltfTileIO {
     protected readonly system: RenderSystem;
     protected readonly returnToCenter: number[] | undefined;
     protected readonly yAxisUp: boolean;
+    private readonly _isCanceled?: IsCanceled;
 
-    public abstract read(): ReaderResult;
+    public async abstract read(): Promise<ReaderResult>;
 
     public get modelId(): Id64 { return this.model.id; }
+    protected get isCanceled(): boolean { return undefined !== this._isCanceled && this._isCanceled(this); }
 
-    public readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
+      if (this.isCanceled)
+        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf };
 
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
       const readStatus = this.readGltf(geometry);
@@ -323,7 +331,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem) {
+    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem, isCanceled?: IsCanceled) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
@@ -340,6 +348,7 @@ export namespace GltfTileIO {
 
       this.model = model;
       this.system = system;
+      this._isCanceled = isCanceled;
     }
 
     protected readBufferData(json: any, accessorName: string, type: DataType): BufferData | undefined {
@@ -669,41 +678,52 @@ export namespace GltfTileIO {
 
       return true;
     }
-    protected readTextureImage(imageJson: any): RenderTexture | undefined {
+
+    protected async loadTextures(): Promise<void> {
+      if (undefined === this.textures)
+        return Promise.resolve();
+
+      const promises = new Array<Promise<void>>();
+      for (const name of Object.keys(this.textures))
+        promises.push(this.loadTexture(name));
+
+      return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
+    }
+
+    protected async loadTextureImage(imageJson: any): Promise<RenderTexture | undefined> {
       try {
         const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
         const bufferView = this.bufferViews[binaryImageJson.bufferView];
         const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
-        let imageSource;
+        const format = ImageUtil.getImageSourceFormatForMimeType(mimeType);
+        if (undefined === format)
+          return undefined;
 
         const offset = bufferView.byteOffset;
         const bytes = this.binaryData.subarray(offset, offset + bufferView.byteLength);
-        switch (mimeType) {
-          case "image/jpeg":
-            imageSource = new ImageSource(bytes, ImageSourceFormat.Jpeg);
-            break;
-          case "image/png":
-            imageSource = new ImageSource(bytes, ImageSourceFormat.Png);
-            break;
+        const imageSource = new ImageSource(bytes, format);
 
-        }
-        if (imageSource === undefined)
-          return undefined;
+        return ImageUtil.extractImage(imageSource)
+          .then((image) => this.isCanceled ? undefined : this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.model.iModel, RenderTexture.Params.defaults))
+          .catch((_) => undefined);
+      } catch (e) {
+        return undefined;
+      }
+    }
+    protected async loadTexture(textureId: string): Promise<void> {
+      const textureJson = JsonUtils.asObject(this.textures[textureId]);
+      if (undefined === textureJson)
+        return Promise.resolve();
 
-        const width = JsonUtils.asInt(binaryImageJson.width, 512);
-        const height = JsonUtils.asInt(binaryImageJson.height, 512);
-        const params = RenderTexture.Params.defaults;
-        return this.system.createTextureFromImageSource(imageSource, width, height, this.model.iModel, params);
-      } catch (e) { return undefined; }
+      return this.loadTextureImage(this.images[textureJson.source]).then((texture) => {
+        textureJson.renderTexture = texture;
+      });
     }
 
-    protected readTexture(textureId: string): TextureMapping | undefined {
-      const texture = JsonUtils.asObject(this.textures[textureId]);
-      if (texture === undefined) { return undefined; }
-      const image = this.readTextureImage(this.images[texture.source]);
-      if (image === undefined) { return undefined; }
-
-      return new TextureMapping(image, new TextureMapping.Params());
+    protected findTextureMapping(textureId: string): TextureMapping | undefined {
+      const textureJson = JsonUtils.asObject(this.textures[textureId]);
+      const texture = undefined !== textureJson ? textureJson.renderTexture as RenderTexture : undefined;
+      return undefined !== texture ? new TextureMapping(texture, new TextureMapping.Params()) : undefined;
     }
   }
 }

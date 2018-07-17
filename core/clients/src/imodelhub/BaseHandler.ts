@@ -10,6 +10,7 @@ import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import * as https from "https";
 import { Config, FileHandler } from "..";
+import { CustomRequestOptions } from "./CustomRequestOptions";
 
 /**
  * Provides default options for iModel Hub requests.
@@ -32,6 +33,7 @@ export class IModelBaseHandler extends WsgClient {
   public static readonly searchKey: string = "iModelHubApi";
   protected _agent: https.Agent;
   protected _fileHandler: FileHandler | undefined;
+  private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
 
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
@@ -128,10 +130,17 @@ export class IModelBaseHandler extends WsgClient {
    * @param token Delegation token
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Instance to be deleted.
+   * @param requestOptions WSG options for the request.
    * @returns Promise resolves after successfully deleting instance.
    */
-  public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T): Promise<void> {
-    return super.deleteInstance<T>(token, relativeUrlPath, instance);
+  public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
+    if (this._customRequestOptions.isSet()) {
+      if (!requestOptions) {
+        requestOptions = {};
+      }
+      requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
+    }
+    return super.deleteInstance<T>(token, relativeUrlPath, instance, requestOptions);
   }
 
   /**
@@ -144,6 +153,12 @@ export class IModelBaseHandler extends WsgClient {
    * @returns The posted instance that's returned back from the server.
    */
   public postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+    if (this._customRequestOptions.isSet()) {
+      if (!requestOptions) {
+        requestOptions = {};
+      }
+      requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
+    }
     return super.postInstance<T>(typedConstructor, token, relativeUrlPath, instance, requestOptions);
   }
 
@@ -182,5 +197,12 @@ export class IModelBaseHandler extends WsgClient {
    */
   public postQuery<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
     return super.postQuery(typedConstructor, token, relativeUrlPath, queryOptions);
+  }
+
+  /**
+   * Used by clients to set custom request parameters for all future requests made by this handler.
+   */
+  public getCustomRequestOptions(): CustomRequestOptions {
+    return this._customRequestOptions;
   }
 }
