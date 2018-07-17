@@ -10,13 +10,7 @@ import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, Ti
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
-import { DecorateContext } from "./ViewContext";
-import { SheetBorder } from "./Sheet";
-import { GraphicBuilder } from "./render/GraphicBuilder";
-import { RenderGraphic } from "./render/System";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
-import { ScalableMeshTileTree, ScalableMeshTileLoader, ScalableMeshTileTreeProps } from "./tile/ScalableMeshTileTree";
-import { WebMercatorTileTree, WebMercatorTileLoader, WebMercatorTileTreeProps } from "./tile/WebMercatorTileTree";
 
 /** The state of a Model */
 export class ModelState extends EntityState implements ModelProps {
@@ -67,9 +61,9 @@ export abstract class GeometricModelState extends ModelState {
   public get tileTree(): TileTree | undefined { return this._tileTree; }
   /** @hidden */
   public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
+  public set loadStatus(status: TileTree.LoadStatus) { this._loadStatus = status; }
   /** Override of ModelState method, returns true */
   public get isGeometricModel(): boolean { return true; }
-  public set loadStatus(status: TileTree.LoadStatus) { this._loadStatus = status; }
 
   public getOrLoadTileTree(): TileTree | undefined {
     if (undefined === this.tileTree)
