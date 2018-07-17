@@ -1768,7 +1768,6 @@ export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
   private _size: Point2d = Point2d.create();
   private _attachments = new Sheet.Attachments();
-  private DEBUGATTACHMENTS = new Sheet.Attachments();
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -1827,10 +1826,6 @@ export class SheetViewState extends ViewState2d {
       else
         this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
     }
-
-    // DEBUG... DELETE
-    for (const attach of this._attachments.list)
-      this.DEBUGATTACHMENTS.add(attach);
   }
 
   /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
@@ -1843,12 +1838,6 @@ export class SheetViewState extends ViewState2d {
   public createScene(context: SceneContext) {
     super.createScene(context);
 
-    { // DEBUG ONLY
-      for (const attach of this.DEBUGATTACHMENTS.list) {
-        attach.drawDebugBorder(context);
-      }
-    }
-
     if (!this._attachments.allLoaded) {
       // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
       let i = 0;
@@ -1860,6 +1849,12 @@ export class SheetViewState extends ViewState2d {
           i++;
       }
     }
+
+    // DEBUG ONLY
+    /*
+    for (const attachment of this._attachments.list)
+      attachment.drawDebugBorder();
+    */
 
     // Draw all attachments that have a status of loaded
     for (const attachment of this._attachments.list)
