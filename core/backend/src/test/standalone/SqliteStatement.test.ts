@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { SqliteStatement, SqliteValue, SqliteValueType } from "../../SqliteStatement";
-import { ECDb } from "../../ECDb";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { DbResult, using } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("SqliteStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
@@ -227,6 +227,52 @@ describe("SqliteStatement", () => {
         }
 
         assert.equal(rowCount, 6);
+      });
+    });
+  });
+
+  it("Run plain SQL against readonly connection", () => {
+    const fileName = "sqlitesqlagainstreadonlyconnection.ecdb";
+    const ecdbPath: string = path.join(_outDir, fileName);
+    using(ECDbTestHelper.createECDb(_outDir, fileName), (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen());
+    });
+
+    using(new ECDb(), (ecdb: ECDb) => {
+      ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
+      assert.isTrue(ecdb.isOpen());
+
+      ecdb.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
+        let rowCount: number = 0;
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rowCount++;
+          assert.equal(stmt.getColumnCount(), 2);
+          const nameVal: SqliteValue = stmt.getValue(0);
+          assert.equal(nameVal.columnName, "Name");
+          assert.equal(nameVal.type, SqliteValueType.String);
+          assert.isFalse(nameVal.isNull());
+          const name: string = nameVal.getString();
+
+          const versionVal: SqliteValue = stmt.getValue(1);
+          assert.equal(versionVal.columnName, "StrData");
+          assert.equal(versionVal.type, SqliteValueType.String);
+          assert.isFalse(versionVal.isNull());
+          const profileVersion: any = JSON.parse(versionVal.getString());
+
+          assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");
+          if (name === "SchemaVersion") {
+            assert.equal(profileVersion.major, 4);
+            assert.equal(profileVersion.minor, 0);
+            assert.equal(profileVersion.sub1, 0);
+            assert.isAtLeast(profileVersion.sub2, 1);
+          } else if (name === "InitialSchemaVersion") {
+            assert.equal(profileVersion.major, 4);
+            assert.equal(profileVersion.minor, 0);
+            assert.equal(profileVersion.sub1, 0);
+            assert.isAtLeast(profileVersion.sub2, 1);
+          }
+        }
+        assert.equal(rowCount, 2);
       });
     });
   });

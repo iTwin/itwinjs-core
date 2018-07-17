@@ -210,7 +210,7 @@ describe("Disposal of WebGL Resources", () => {
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
     const stream = new TileIO.StreamBuffer(TileData.triangles.buffer);
     const reader = IModelTileIO.Reader.create(stream, model, system);
-    const readerRes = reader!.read();
+    const readerRes = await reader!.read();
     const tileGraphic = readerRes.renderGraphic!;
     assert.isDefined(tileGraphic);
 

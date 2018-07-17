@@ -74,7 +74,19 @@ describe("TileIO", () => {
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
   });
 
-  it("should read an iModel tile containing a single rectangle", () => {
+  it("should support canceling operation", async () => {
+    if (WebGLTestContext.isInitialized) {
+      const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
+      const stream = new TileIO.StreamBuffer(rectangle);
+      const reader = IModelTileIO.Reader.create(stream, model, System.instance, (_) => true);
+      expect(reader).not.to.be.undefined;
+
+      const result = await reader!.read();
+      expect(result.readStatus).to.equal(TileIO.ReadStatus.Canceled);
+    }
+  });
+
+  it("should read an iModel tile containing a single rectangle", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
@@ -82,7 +94,7 @@ describe("TileIO", () => {
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
-        const result = reader.read();
+        const result = await reader.read();
         expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
         expect(result.isLeaf).to.be.true;
         expect(result.contentRange).not.to.be.undefined;
@@ -180,7 +192,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", () => {
+  it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(triangles);
@@ -188,7 +200,7 @@ describe("TileIO", () => {
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
-        const result = reader.read();
+        const result = await reader.read();
         expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
         expect(result.isLeaf).to.be.true;
         expect(result.contentRange).not.to.be.undefined;
@@ -398,7 +410,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing single open yellow line string", () => {
+  it("should read an iModel tile containing single open yellow line string", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineString);
@@ -406,7 +418,7 @@ describe("TileIO", () => {
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
-        const result = reader.read();
+        const result = await reader.read();
         expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
         expect(result.isLeaf).to.be.true;
         expect(result.contentRange).not.to.be.undefined;
@@ -516,7 +528,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing multiple line strings", () => {
+  it("should read an iModel tile containing multiple line strings", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineStrings);
@@ -524,7 +536,7 @@ describe("TileIO", () => {
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
-        const result = reader.read();
+        const result = await reader.read();
         expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
         expect(result.isLeaf).to.be.true;
         expect(result.contentRange).not.to.be.undefined;
@@ -717,7 +729,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing edges and silhouettes", () => {
+  it("should read an iModel tile containing edges and silhouettes", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(cylinder);
@@ -725,7 +737,7 @@ describe("TileIO", () => {
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
-        const result = reader.read();
+        const result = await reader.read();
         expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
         expect(result.isLeaf).to.be.true;
         expect(result.contentRange).not.to.be.undefined;

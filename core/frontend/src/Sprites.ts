@@ -58,9 +58,11 @@ export class Sprite implements IDisposable {
    * @note This method creates the texture from the ImageSource asynchronously. The texture will appear as a white square until it is fully loaded.
    */
   public fromImageSource(src: ImageSource): void {
-    ImageUtil.extractImageDimensions(src).then((size: Point2d) => {
-      this.size.setFrom(size);
-      this.texture = IModelApp.renderSystem.createTextureFromImageSource(src, size.x, size.y, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection));
+    ImageUtil.extractImage(src).then((image) => {
+      this.size.x = image.naturalWidth;
+      this.size.y = image.naturalHeight;
+      if (IModelApp.hasRenderSystem)
+        this.texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection));
     });
   }
 }

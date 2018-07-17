@@ -195,13 +195,15 @@ export class PolylineEdgeArgs {
 /** A Texture for rendering */
 export abstract class RenderTexture implements IDisposable {
   public readonly key: string | undefined;
-  public readonly isGlyph: boolean;
-  public readonly isTileSection: boolean;
+  public readonly type: RenderTexture.Type;
+
+  public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
+  public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
+  public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
 
   protected constructor(params: RenderTexture.Params) {
     this.key = params.key;
-    this.isGlyph = params.isGlyph;
-    this.isTileSection = params.isTileSection;
+    this.type = params.type;
   }
 
   public abstract dispose(): void;
@@ -212,6 +214,7 @@ export namespace RenderTexture {
     Normal,
     Glyph,
     TileSection,
+    SkyBox,
     // ###TODO? RGBE
   }
 
@@ -226,6 +229,7 @@ export namespace RenderTexture {
 
     public get isTileSection(): boolean { return Type.TileSection === this.type; }
     public get isGlyph(): boolean { return Type.Glyph === this.type; }
+    public get isSkyBox(): boolean { return Type.SkyBox === this.type; }
 
     /** Obtain a RenderTexture params object with default values. */
     public static readonly defaults = new Params();
@@ -1621,8 +1625,6 @@ export namespace TextureMapping {
     FrontProject = 8, // Only valid for lights.
   }
 
-  export type NumArr6 = [number, number, number, number, number, number];
-
   export class Trans2x3 {
     private _vals = new Array<[number, number, number]>(2);
     private _transform?: Transform;
@@ -1660,6 +1662,7 @@ export namespace TextureMapping {
     public weight: number;
     public mode: TextureMapping.Mode;
     public worldMapping: boolean;
+
     constructor(props = {} as TextureMapping.ParamProps) {
       const { textureMat2x3 = new Trans2x3(), textureWeight = 1.0, mapMode = Mode.Parametric, worldMapping = false } = props;
       this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;

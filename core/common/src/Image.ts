@@ -68,9 +68,6 @@ export const enum ImageSourceFormat {
   Png = 2,
 }
 
-/** Is image stored bottom-up or top-up? This determines whether the rows should be flipped top-to-bottom */
-export const enum BottomUp { No = 0, Yes = 1 }
-
 /** Image data encoded and compressed in either Jpeg or Png format. */
 export class ImageSource {
   /** The content of the image, compressed */

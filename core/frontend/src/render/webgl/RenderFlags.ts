@@ -15,6 +15,7 @@ export const enum RenderPass {
     Hilite,
     WorldOverlay,
     ViewOverlay,
+    SkyBox,
     COUNT,
 }
 
