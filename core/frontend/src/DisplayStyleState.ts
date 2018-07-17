@@ -254,17 +254,34 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
 
-    const front = system.createTextureFromImageBuffer(
+    const horizon = system.createTextureFromImageBuffer(
       ImageBuffer.create(new Uint8Array([
-        0, 255, 255,
-        0, 255, 255,
-        0, 104, 10,
-        0, 104, 10]), ImageBufferFormat.Rgb, 2)!, this.iModel, params)!;
-    const back = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 255, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
-    const top = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 0, 255]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
-    const bottom = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([255, 255, 0]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
-    const left = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 255, 255]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
-    const right = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([255, 0, 255]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 255, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
+        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
+        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
+        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10]), ImageBufferFormat.Rgb, 4)!, this.iModel, params)!;
+    const sky = system.createTextureFromImageBuffer(
+      ImageBuffer.create(new Uint8Array([
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 255, 255, 0, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 255, 255, 0, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255]), ImageBufferFormat.Rgb, 4)!, this.iModel, params)!;
+    const ground = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 104, 10]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
+
+    const front = horizon;
+    const back = horizon;
+    const left = horizon;
+    const right = horizon;
+    const top = sky;
+    const bottom = ground;
 
     this.skyBoxParams = SkyBoxCreateParams.createForTexturedCube(front, back, top, bottom, left, right);
 
