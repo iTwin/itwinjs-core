@@ -1,18 +1,18 @@
 {
-   "$schema": "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-   "alias" : "b",
-   "description" : "This is a test Schema.",
-   "label" : "SchemaB",
-   "name" : "SchemaB",
-   "references" : [
+  "$schema": "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+  "alias" : "b",
+  "description" : "This is a test Schema.",
+  "label" : "SchemaB",
+  "name" : "SchemaB",
+  "references" : [
       {
-         "name" : "SchemaC",
-         "version" : "03.03.03"
+        "name" : "SchemaC",
+        "version" : "03.03.03"
       },
       {
-         "name" : "SchemaD",
-         "version" : "04.04.04"
+        "name" : "SchemaD",
+        "version" : "04.04.04"
       }
-   ],
-   "version" : "02.02.02"
+  ],
+  "version" : "02.02.02"
 }

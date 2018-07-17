@@ -3,6 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import CustomAttributeClass from "../../source/Metadata/CustomAttributeClass";
@@ -12,16 +14,6 @@ import { CustomAttributeContainerType } from "../../source/index";
 describe("CustomAttributeClass", () => {
 
   describe("deserialization", () => {
-    function createSchemaJsonWithItems(itemsJson: any): any {
-      return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          ...itemsJson,
-        },
-      };
-    }
     function createSchemaJson(caClassJson: any): any {
       return createSchemaJsonWithItems({
         TestCAClass: {

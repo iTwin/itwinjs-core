@@ -1,21 +1,21 @@
 {
-	"$schema" : "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-	"alias" : "a",
-	"description" : "This is a test schema.",
-	"label" : "SchemaA",
-	"references" : [
-		{
-			"name" : "SchemaC",
-			"version" : "3.3"
-		},
-		{
-			"name" : "SchemaB",
-			"version" : "2.2"
-		},
-		{
-			"name" : "SchemaD",
-			"version" : "4.4"
-		}
-	],
-	"version" : "1.1.1"
+  "$schema" : "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+  "alias" : "a",
+  "description" : "This is a test schema.",
+  "label" : "SchemaA",
+  "references" : [
+    {
+      "name" : "SchemaC",
+      "version" : "3.3"
+    },
+    {
+      "name" : "SchemaB",
+      "version" : "2.2"
+    },
+    {
+      "name" : "SchemaD",
+      "version" : "4.4"
+    }
+  ],
+  "version" : "1.1.1"
 }

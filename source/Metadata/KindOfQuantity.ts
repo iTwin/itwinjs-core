@@ -38,9 +38,7 @@ export default class KindOfQuantity extends SchemaItem {
     return this.presentationUnits.length === 0 ? undefined : this.presentationUnits[0];
   }
 
-  public async fromJson(jsonObj: any) {
-    await super.fromJson(jsonObj);
-
+  private koqFromJson(jsonObj: any) {
     if (undefined !== jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
@@ -78,6 +76,16 @@ export default class KindOfQuantity extends SchemaItem {
       validateFUS(jsonObj.persistenceUnit, "persistenceUnit");
       this._persistenceUnit = jsonObj.persistenceUnit as FormatUnitSet;
     }
+  }
+
+  public fromJsonSync(jsonObj: any) {
+    super.fromJsonSync(jsonObj);
+    this.koqFromJson(jsonObj);
+  }
+
+  public async fromJson(jsonObj: any) {
+    await super.fromJson(jsonObj);
+    this.koqFromJson(jsonObj);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

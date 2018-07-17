@@ -3,6 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+
 import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
@@ -12,16 +14,6 @@ import { StrengthDirection } from "../../source/ECObjects";
 
 describe("Mixin", () => {
   describe("deserialization", () => {
-    function createSchemaJsonWithItems(itemsJson: any): any {
-      return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          ...itemsJson,
-        },
-      };
-    }
     function createSchemaJson(mixinJson: any): any {
       return createSchemaJsonWithItems({
         TestMixin: {
