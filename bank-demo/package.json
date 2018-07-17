@@ -11,16 +11,16 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": ">0.98.0-0 <1",
-    "@bentley/geometry-core": ">0.98.0-0 <1",
-    "@bentley/imodeljs-backend": ">0.98.0-0 <1",
-    "@bentley/imodeljs-clients": ">0.98.0-0 <1",
-    "@bentley/imodeljs-common": ">0.98.0-0 <1",
+    "@bentley/bentleyjs-core": "0.98.0-4",
+    "@bentley/geometry-core": "0.98.0-4",
+    "@bentley/imodeljs-backend": "0.98.0-4",
+    "@bentley/imodeljs-clients": "0.98.0-4",
+    "@bentley/imodeljs-common": "0.98.0-4",
     "prompt": "1.0.0",
     "fs-extra": "^6.0.1"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": ">0.98.0-0 <1",
+    "@bentley/bentleyjs-tools": "0.98.0-4",
     "@types/fs-extra": "^4.0.7",
     "tslint": "^5.10.0",
     "typescript": "~2.7.2"

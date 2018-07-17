@@ -10,10 +10,6 @@ import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, Ti
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
-import { DecorateContext } from "./ViewContext";
-import { SheetBorder } from "./Sheet";
-import { GraphicBuilder } from "./render/GraphicBuilder";
-import { RenderGraphic } from "./render/System";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 
 /** The state of a Model */
@@ -63,9 +59,11 @@ export abstract class GeometricModelState extends ModelState {
   public get is2d(): boolean { return !this.is3d; }
   /** @hidden */
   public get tileTree(): TileTree | undefined { return this._tileTree; }
+  /** @hidden */
+  public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
+  public set loadStatus(status: TileTree.LoadStatus) { this._loadStatus = status; }
   /** Override of ModelState method, returns true */
   public get isGeometricModel(): boolean { return true; }
-  public set loadStatus(status: TileTree.LoadStatus) { this._loadStatus = status; }
 
   public getOrLoadTileTree(): TileTree | undefined {
     if (undefined === this.tileTree)
@@ -136,15 +134,7 @@ export class GeometricModel3dState extends GeometricModelState {
  * * Has finite extents, specified in meters (the *page size*.)
  * * Can contain views of other models, like pictures pasted on a photo album.
  */
-export class SheetModelState extends GeometricModel2dState {
-  /** Draw border graphics (called during update) */
-  public static createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, viewContext);
-    const builder: GraphicBuilder = viewContext.createViewBackground();
-    border.addToBuilder(builder);
-    return builder.finish();
-  }
-}
+export class SheetModelState extends GeometricModel2dState { }
 
 /** The state of a SpatialModel */
 export class SpatialModelState extends GeometricModel3dState { }

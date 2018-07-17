@@ -1559,7 +1559,7 @@ export class Viewport {
     this.animate();
 
     // Allow ViewState instance to change any state which might affect logic below...
-    view.onRenderFrame();
+    view.onRenderFrame(this);
 
     let isRedrawNeeded = sync.isRedrawPending || this._doContinuousRendering;
     sync.invalidateRedrawPending();

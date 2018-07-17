@@ -10,10 +10,10 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState } from "./EntityState";
+import { ElementState, EntityState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -25,7 +25,10 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, SheetModelState, GeometricModel2dState } from "./ModelState";
+import { GeometricModelState, GeometricModel2dState, SheetModelState } from "./ModelState";
+import { RenderGraphic } from "./render/System";
+import { Sheet } from "./Sheet";
+import { TileTree } from "./tile/TileTree";
 
 export const enum GridOrientationType {
   View = 0,
@@ -349,7 +352,7 @@ export abstract class ViewState extends ElementState {
   public abstract computeFitRange(): Range3d;
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
-  public abstract onRenderFrame(): void;
+  public abstract onRenderFrame(_viewport: Viewport): void;
 
   public abstract decorate(context: DecorateContext): void;
 
@@ -932,7 +935,7 @@ export abstract class ViewState3d extends ViewState {
   public forceMinFrontDist = 0.0;
   /** @hidden */
   public static get className() { return "ViewDefinition3d"; }
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
@@ -1613,7 +1616,7 @@ export class SpatialViewState extends ViewState3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined) {   // can we assume that a loaded model
+      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined) {   // can we assume that a loaded model
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
@@ -1687,6 +1690,7 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  /** Return the model for this 2d view. */
   public getViewedModel(): GeometricModel2dState | undefined {
     const model = this.iModel.models.getLoaded(this.baseModelId.value);
     if (model && !(model instanceof GeometricModel2dState))
@@ -1732,7 +1736,7 @@ export class ViewState2d extends ViewState {
     return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
   }
 
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
     await super.load();
     return this.iModel.models.load(this.baseModelId);
@@ -1762,28 +1766,130 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
-  public readonly size: Point2d;
+  private _size: Point2d = Point2d.create();
+  private _attachments = new Sheet.Attachments();
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
+  }
 
-    // sheetProps is necessary for a Sheet View, and contains a height and width for the size of the sheet itself
-    // if it does not appear as given by a sheetProps object, we expect it to be included on the props object (from cloning)
-    if (sheetProps)
-      this.size = Point2d.create(sheetProps.width, sheetProps.height);
-    else
-      this.size = Point2d.create(props.sheetProps.width, props.sheetProps.height);
+  /** If the view has been loaded, returns a valid sheet size in the form (width, height). */
+  public get sheetSize(): Point2d | undefined { return this._size; }
+  /** If the view has been loaded, returns valid extents of the sheet. */
+  public get sheetExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(Point3d.create(), Point3d.create(this._size.x, this._size.y, 0)); }
+  /** If the view has been loaded, returns the attachments of this sheet. */
+  public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
+
+  /**
+   * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
+   * request for the modeled element.
+   */
+  private async getSheetSize(model: SheetModelState) {
+    const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
+    assert(sheetElement !== undefined, "Sheet modeled element is undefined");
+    this._size.set(sheetElement.width, sheetElement.height);
+  }
+
+  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
+  public async load(): Promise<void> {
+    await super.load();
+
+    // Set the size of the sheet
+    const model = this.getViewedModel();
+    if (model === undefined)
+      return;
+    this.getSheetSize(model);
+
+    // Query the attachment ids
+    this._attachments.clear();
+    const queryResult = (await this.iModel.executeQuery("SELECT ECInstanceId FROM BisCore.ViewAttachment WHERE Model.Id=" + model.id));
+    const attachmentIds: string[] = [];
+    for (const row of queryResult)
+      attachmentIds.push(row.id);
+
+    // Query the attachments using the id list, and grab all of their corresponding view ids
+    const attachments = await this.iModel.elements.getProps(attachmentIds) as ViewAttachmentProps[];
+    const attachmentViewIds: Id64Props[] = [];
+    for (const attachment of attachments)
+      attachmentViewIds.push((attachment.view as any).id);
+
+    // Load each view state corresponding to each attachment in the attachments array
+    // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
+    const attachmentViews: ViewState[] = [];
+    for (const viewId of attachmentViewIds)
+      attachmentViews.push(await this.iModel.views.load(viewId));
+
+    // Create the attachment objects and store them on this SheetViewState
+    for (let i = 0; i < attachments.length; i++) {
+      if (attachmentViews[i].is3d())
+        continue; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+      else
+        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
+    }
+  }
+
+  /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
+  public onRenderFrame(_viewport: Viewport) {
+    if (!this._attachments.allLoaded)
+      _viewport.sync.invalidateScene();
+  }
+
+  /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
+  public createScene(context: SceneContext) {
+    super.createScene(context);
+
+    if (!this._attachments.allLoaded) {
+      // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
+      let i = 0;
+      while (i < this._attachments.length) {
+        const attachStatus = this._attachments.load(i, this);
+
+        // If load fails, attachment gets dropped from the list
+        if (attachStatus !== TileTree.LoadStatus.NotFound && attachStatus !== TileTree.LoadStatus.NotLoaded)
+          i++;
+      }
+    }
+
+    // DEBUG ONLY
+    /*
+    for (const attachment of this._attachments.list)
+      attachment.drawDebugBorder();
+    */
+
+    // Draw all attachments that have a status of loaded
+    for (const attachment of this._attachments.list)
+      if (attachment.loadStatus === TileTree.LoadStatus.Loaded) {
+        assert(attachment.tree !== undefined);
+        attachment.tree!.drawInView(context);
+      }
+  }
+
+  /** Create a sheet border decoration graphic. */
+  private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
+    const border = Sheet.Border.create(width, height, viewContext);
+    const builder: GraphicBuilder = viewContext.createViewBackground();
+    border.addToBuilder(builder);
+    return builder.finish();
   }
 
   public decorate(context: DecorateContext): void {
-    const border = SheetModelState.createBorder(this.size.x, this.size.y, context);
-    context.setViewBackground(border);
+    if (this._size !== undefined) {
+      const border = this.createBorder(this._size.x, this._size.y, context);
+      context.setViewBackground(border);
+    }
   }
 
   /** Serialize this SheetViewState into a JSON object. */
   public toJSON(): any {
     const json = super.toJSON();
-    json.sheetProps = { width: this.size.x, height: this.size.y };
     return json;
+  }
+
+  // override - copy references to view attachments and sheet size
+  public clone<T extends EntityState>(): T {
+    const viewStateClone = super.clone();
+    (viewStateClone as any)._size = this._size;
+    (viewStateClone as any)._attachments = this._attachments;
+    return viewStateClone as T;
   }
 }

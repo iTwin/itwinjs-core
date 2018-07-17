@@ -24,7 +24,7 @@ import { SkyBoxCreateParams } from "../System";
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable {
   // Returns true if white portions of this geometry should render as black on white background
-  protected _wantWoWReversal(_target: Target): boolean { return false; }
+  protected abstract _wantWoWReversal(_target: Target): boolean;
   // Returns the edge/line weight used to render this geometry
   protected _getLineWeight(_params: ShaderProgramParams): number { return 0; }
   // Returns the edge/line pattern used to render this geometry
@@ -138,7 +138,7 @@ export class IndexedGeometryParams implements IDisposable {
 // A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
 export abstract class IndexedGeometry extends CachedGeometry {
   protected readonly _params: IndexedGeometryParams;
-
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
   protected constructor(params: IndexedGeometryParams) {
     super();
     this._params = params;
@@ -160,40 +160,120 @@ export abstract class IndexedGeometry extends CachedGeometry {
   public get qScale() { return this._params.positions.scale; }
 }
 
+class SkyBoxSides {
+  public static readonly front = 0.0;
+  public static readonly back = 0.2;
+  public static readonly top = 0.4;
+  public static readonly bottom = 0.6;
+  public static readonly left = 0.8;
+  public static readonly right = 1.0;
+}
+
 // a cube of quads in normalized device coordinates for skybox rendering techniques
 class SkyBoxQuads {
   public readonly vertices: Uint16Array;
   public readonly vertexParams: QParams3d;
-  public readonly indices: Uint32Array;
+  public readonly uvs: Float32Array;
+  public readonly sides: Float32Array;
 
   public constructor() {
     const skyBoxSz = 1.0;
 
     const qVerts = new QPoint3dList(QParams3d.fromNormalizedRange());
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+    this.sides = new Float32Array(36);
+    this.uvs = new Float32Array(36 * 2);
+
+    // Back (Bottom)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 0);  // back upper left - 0
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 2);   // back upper right - 1
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 0], 4); // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 6);   // back upper right - 1
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 0], 8);  // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 0], 10); // back lower left - 2
+    this.sides.set([SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom], 0);
+
+    // Front (Top)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 1], 12);  // front upper left - 4
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 1], 14);   // front upper right - 5
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 16); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 1], 18);   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 20);  // front lower right - 7
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 22); // front lower left - 6
+    this.sides.set([SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top], 6);
+
+    // Top (Front)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 24); // front upper left - 4
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 26);  // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 28);   // back upper right - 1
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 30); // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 32);  // back upper left - 0
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 34);   // back upper right - 1
+    this.sides.set([SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front], 12);
+
+    // Bottom (Back)
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 36);  // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 38);   // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 40); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 42);   // back lower right - 3
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 44);  // front lower right - 7
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 46); // front lower left - 6
+    this.sides.set([SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back], 18);
+
+    // Left (Right)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 48);   // back upper left - 0
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 50);  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 52);  // back lower left - 2
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 54);  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 56); // front lower left - 6
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 58);  // back lower left - 2
+    this.sides.set([SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right], 24);
+
+    // Right (Left)
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 60);   // back upper right - 1
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 62);  // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 64);  // back lower right - 3
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 66);  // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 68); // front lower right - 7
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 70);  // back lower right - 3
+    this.sides.set([SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left], 30);
 
     this.vertices = qVerts.toTypedArray();
     this.vertexParams = qVerts.params;
-
-    this.indices = new Uint32Array([ // (after rotation is applied in shader, how it actually appears)
-      0, 1, 2, 1, 3, 2, // back (BOTTOM)
-      4, 5, 6, 5, 7, 6, // front (TOP)
-      4, 5, 1, 4, 0, 1, // top (FRONT)
-      2, 3, 6, 3, 7, 6, // bottom (BACK)
-      0, 4, 2, 4, 6, 2, // left (RIGHT)
-      1, 5, 3, 5, 7, 3, // right (LEFT)
-    ]);
   }
 
   public createParams() {
-    return IndexedGeometryParams.create(this.vertices, this.vertexParams, this.indices);
+    return SkyBoxGeometryParams.create(this.vertices, this.vertexParams, this.uvs, this.sides);
+  }
+}
+
+// Parameters used to construct an SkyBox
+export class SkyBoxGeometryParams implements IDisposable {
+  public readonly positions: QBufferHandle3d;
+  public readonly uvs: BufferHandle;
+  public readonly sides: BufferHandle;
+
+  protected constructor(positions: QBufferHandle3d, uvs: BufferHandle, sides: BufferHandle) {
+    this.positions = positions;
+    this.uvs = uvs;
+    this.sides = sides;
+  }
+
+  public static create(positions: Uint16Array, qparams: QParams3d, uvs: Float32Array, sides: Float32Array) {
+    const posBuf = QBufferHandle3d.create(qparams, positions);
+    const uvBuf = BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, uvs);
+    const sideBuf = BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, sides);
+    if (undefined === posBuf || undefined === uvBuf || undefined === sideBuf) {
+      assert(false);
+      return undefined;
+    }
+
+    assert(!posBuf.isDisposed && !sideBuf.isDisposed);
+    return new SkyBoxGeometryParams(posBuf, uvBuf, sideBuf);
+  }
+
+  public dispose() {
+    dispose(this.positions);
+    dispose(this.sides);
   }
 }
 
@@ -209,7 +289,7 @@ namespace SkyBoxQuads {
 }
 
 // Geometry used for view-space rendering techniques.
-export class SkyBoxQuadsGeometry extends IndexedGeometry {
+export class SkyBoxQuadsGeometry extends CachedGeometry {
   protected _techniqueId: TechniqueId;
   public readonly front: RenderTexture;
   public readonly back: RenderTexture;
@@ -217,25 +297,53 @@ export class SkyBoxQuadsGeometry extends IndexedGeometry {
   public readonly bottom: RenderTexture;
   public readonly left: RenderTexture;
   public readonly right: RenderTexture;
+  protected readonly _params: SkyBoxGeometryParams;
 
-  protected constructor(ndxGeomParams: IndexedGeometryParams, sbxParams: SkyBoxCreateParams) {
-    super(ndxGeomParams);
-    this.front = sbxParams.front!;
-    this.back = sbxParams.back!;
-    this.top = sbxParams.top!;
-    this.bottom = sbxParams.bottom!;
-    this.left = sbxParams.left!;
-    this.right = sbxParams.right!;
+  protected constructor(ndxGeomParams: SkyBoxGeometryParams, sbxCreateParams: SkyBoxCreateParams) {
+    super();
+    this.front = sbxCreateParams.front!;
+    this.back = sbxCreateParams.back!;
+    this.top = sbxCreateParams.top!;
+    this.bottom = sbxCreateParams.bottom!;
+    this.left = sbxCreateParams.left!;
+    this.right = sbxCreateParams.right!;
     this._techniqueId = TechniqueId.SkyBox;
+    this._params = ndxGeomParams;
   }
-  public static create(sbxParams: SkyBoxCreateParams): SkyBoxQuadsGeometry | undefined {
-    const ndxGeomParams = SkyBoxQuads.getInstance().createParams();
-    return undefined !== ndxGeomParams ? new SkyBoxQuadsGeometry(ndxGeomParams, sbxParams) : undefined;
+
+  public static create(sbxCreateParams: SkyBoxCreateParams): SkyBoxQuadsGeometry | undefined {
+    const sbxGeomParams = SkyBoxQuads.getInstance().createParams();
+    return undefined !== sbxGeomParams ? new SkyBoxQuadsGeometry(sbxGeomParams, sbxCreateParams) : undefined;
   }
 
   public getTechniqueId(_target: Target) { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
   public get renderOrder() { return RenderOrder.Surface; }
+
+  public bindVertexArray(attr: AttributeHandle): void {
+    attr.enableArray(this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
+  }
+
+  public bindTexCoordArray(attr: AttributeHandle): void {
+    attr.enableArray(this._params.uvs, 2, GL.DataType.Float, false, 0, 0);
+  }
+
+  public bindSideArray(attr: AttributeHandle): void {
+    attr.enableArray(this._params.sides, 1, GL.DataType.Float, false, 0, 0);
+  }
+
+  public draw(): void {
+    System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
+  }
+
+  public get qOrigin() { return this._params.positions.origin; }
+  public get qScale() { return this._params.positions.scale; }
+
+  public dispose() {
+    dispose(this._params);
+  }
+
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
 }
 
 // A quad with its corners mapped to the dimensions as the viewport, used for special rendering techniques.

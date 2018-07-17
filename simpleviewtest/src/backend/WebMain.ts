@@ -58,4 +58,4 @@ app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostReques
 // ---------------------------------------------
 app.set("port", 3000);
 // tslint:disable-next-line:no-console
-app.listen(app.get("port"), () => console.log("SimpleViewTest running on localhost:" + app.get("port")));
+app.listen(app.get("port"), () => console.log("***** SimpleViewTest running on localhost:" + app.get("port")));

@@ -1213,7 +1213,7 @@ export class ClipPlaneSet implements ClipperMethods {
   public classifyPointContainment(points: Point3d[], onIsOutside: boolean): number {
     for (const convexSet of this._convexSets) {
       const thisStatus = convexSet.classifyPointContainment(points, onIsOutside);
-      if (thisStatus !== 3)
+      if (thisStatus !== ClipPlaneContainment.StronglyOutside)
         return thisStatus;
     }
     return ClipPlaneContainment.StronglyOutside;

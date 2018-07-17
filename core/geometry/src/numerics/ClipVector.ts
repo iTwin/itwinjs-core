@@ -7,7 +7,7 @@
 import { ClipShape, ClipPlaneContainment, ClipMask } from "./ClipPrimitives";
 import { Point3d, Segment1d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform} from "../Transform";
+import { Transform } from "../Transform";
 
 import { Geometry } from "../Geometry";
 import { Matrix4d } from "./Geometry4d";
@@ -16,6 +16,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 /** Class holding an array structure of shapes defined by clip plane sets */
 export class ClipVector {
     private _clips: ClipShape[];
+    public boundingRange: Range3d = Range3d.createNull();
 
     /** Returns a reference to the array of ClipShapes. */
     public get clips() { return this._clips; }
@@ -60,6 +61,7 @@ export class ClipVector {
         for (const clip of donor._clips) {
             retVal._clips.push(clip.clone());
         }
+        retVal.boundingRange.setFrom(donor.boundingRange);
         return retVal;
     }
 
@@ -77,17 +79,17 @@ export class ClipVector {
 
     /** Parse a JSON object into a new ClipVector. */
     public static fromJSON(json: any, result?: ClipVector): ClipVector {
-      result = result ? result : new ClipVector();
-      result.clear();
-
-      try {
-        for (const clip of json)
-          result.clips.push(ClipShape.fromJSON(clip));
-      } catch (e) {
+        result = result ? result : new ClipVector();
         result.clear();
-      }
 
-      return result;
+        try {
+            for (const clip of json)
+                result.clips.push(ClipShape.fromJSON(clip));
+        } catch (e) {
+            result.clear();
+        }
+
+        return result;
     }
 
     /** Returns a deep copy of this ClipVector (optionally stores it in the result param rather than create using new()) */
@@ -110,15 +112,17 @@ export class ClipVector {
         this._clips.push(clip);
     }
 
-    /** Create a new ClipShape from the given parameters, and if successful, append it to this ClipVector. */
+    /** Create and append a new ClipPrimitive to the array given a shape as an array of points. Returns true if successful. */
     public appendShape(shape: Point3d[], zLow?: number, zHigh?: number,
-        transform?: Transform, isMask: boolean = false, invisible: boolean = false) {
+        transform?: Transform, isMask: boolean = false, invisible: boolean = false): boolean {
         const clip = ClipShape.createShape(shape, zLow, zHigh, transform, isMask, invisible);
-        if (clip)
-            this._clips.push(clip);
+        if (!clip)
+            return false;
+        this._clips.push(clip);
+        return true;
     }
 
-    /** Returns the three-dimensional range that this ClipVector spans. */
+    /** Returns the three-dimensional range that this ClipVector spans, which may be null. */
     public getRange(transform?: Transform, result?: Range3d): Range3d | undefined {
         const range = Range3d.createNull(result);
 
@@ -131,24 +135,32 @@ export class ClipVector {
                     range.intersect(thisRange, range);
             }
         }
-        if (range.isNull())
-            return undefined;
+        if (!this.boundingRange.isNull())
+            range.intersect(this.boundingRange, range);
+
         return range;
     }
 
     /** Returns true if the given point lies inside all of this ClipVector's ClipShapes (by rule of intersection). */
     public pointInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
+        if (!this.boundingRange.isNull() && !this.boundingRange.containsPoint(point))
+            return false;
+
         for (const clip of this._clips)
             if (!clip.pointInside(point, onTolerance))
                 return false;
         return true;
     }
 
-    /** Transforms this ClipVector to a new coordinate-system. */
+    /** Transforms this ClipVector to a new coordinate-system. Returns true if successful. */
     public transformInPlace(transform: Transform): boolean {
         for (const clip of this._clips)
             if (clip.transformInPlace(transform) === false)
                 return false;
+
+        if (!this.boundingRange.isNull())
+            transform.multiplyRange(this.boundingRange, this.boundingRange);
+
         return true;
     }
 
