@@ -1769,7 +1769,6 @@ export class SheetViewState extends ViewState2d {
   private _size: Point2d = Point2d.create();
   private _attachments = new Sheet.Attachments();
   private DEBUGATTACHMENTS = new Sheet.Attachments();
-  private allAttachmentTilesReady: boolean = true;
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -1781,9 +1780,6 @@ export class SheetViewState extends ViewState2d {
   public get sheetExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(Point3d.create(), Point3d.create(this._size.x, this._size.y, 0)); }
   /** If the view has been loaded, returns the attachments of this sheet. */
   public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
-
-  /** Mark this sheet view state as not ready to render. */
-  public markAttachmentSceneIncomplete() { this.allAttachmentTilesReady; }
 
   /**
    * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
@@ -1839,14 +1835,12 @@ export class SheetViewState extends ViewState2d {
 
   /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this.allAttachmentTilesReady || !this._attachments.allLoaded)
+    if (!this._attachments.allLoaded)
       _viewport.sync.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
   public createScene(context: SceneContext) {
-    // This will be reset to false by the end of this function if any attachments are waiting on tiles...
-    this.allAttachmentTilesReady = true;
     super.createScene(context);
 
     { // DEBUG ONLY

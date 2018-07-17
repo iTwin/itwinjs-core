@@ -247,6 +247,8 @@ export class PolylineGeometry extends LUTGeometry {
     dispose(this.buffers);
   }
 
+  protected _wantWoWReversal(_target: Target): boolean { return true; }
+
   public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }
 
   private _computeEdgePass(target: Target, colorInfo: ColorInfo): RenderPass {

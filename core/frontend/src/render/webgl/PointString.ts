@@ -44,6 +44,8 @@ export class PointStringGeometry extends LUTGeometry {
     this.pointString = info;
   }
 
+  protected _wantWoWReversal(_target: Target): boolean { return true; }
+
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
   public get featuresInfo(): FeaturesInfo | undefined { return this.pointString.features; }

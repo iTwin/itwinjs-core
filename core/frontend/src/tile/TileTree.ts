@@ -88,7 +88,6 @@ export class Tile implements IDisposable {
     this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
-  // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
   public dispose() {
     this._graphic = dispose(this._graphic);
     if (this._children)
@@ -476,11 +475,11 @@ export namespace Tile {
 export class TileTree implements IDisposable {
   public readonly model: GeometricModelState;
   public readonly location: Transform;
-  public readonly clipVector?: ClipVector;
   public readonly id: Id64;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
   public expirationTime: BeDuration;
+  public clipVector?: ClipVector;
   protected _rootTile?: Tile;
   protected _loader?: TileLoader;
 

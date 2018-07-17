@@ -10,7 +10,6 @@ import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { Target } from "./render/webgl/Target";
 import { ViewState, ViewState2d, SheetViewState } from "./ViewState";
 import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
@@ -22,7 +21,7 @@ import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { RenderTarget } from "./render/System";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
-/** Contains functionality specific to Sheet views. */
+/** Contains functionality specific to sheet views. */
 export namespace Sheet {
   /** Describes the geometry and styling of a sheet border decoration. */
   export class Border {
@@ -103,7 +102,7 @@ export namespace Sheet {
 
       builder.activateGraphicParams(params);
 
-      builder.addShape2d(this.shadow, Target.frustumDepth2d);
+      builder.addShape2d(this.shadow, RenderTarget.frustumDepth2d);
     }
   }
 
@@ -138,52 +137,25 @@ export namespace Sheet {
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
       myRoot.view.createScene(drawArgs.context);
-
-      // DEBUG - Currently being drawn in SheetViewState.decorate()
-      /*
-      if (false)
-        myRoot.drawClipPolys(args);
-      if (true)
-        return;
-
-      const params = new GraphicParams();
-      params.linePixels = 2;
-      params.setLineColor(myRoot.boundingBoxColor);
-      params.setFillColor(myRoot.boundingBoxColor);
-
-      const gf = args.context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
-      gf.activateGraphicParams(params);
-      gf.addRangeBox(this.range);
-
-      // Put in a branch so it doesn't get clipped...
-      const branch = new GraphicBranch();
-      branch.add(gf.finish());
-      args.graphics.add(drawArgs.context.createBranch(branch, Transform.createIdentity()));
-      */
     }
   }
 
   /** An extension of TileTree specific to rendering attachments. */
   export abstract class Tree extends TileTree {
-    protected _clip: ClipVector;
     public readonly biasDistance: number = 0;
-    public readonly boundingBoxColor: ColorDef = ColorDef.black;   // ***DEBUG
 
     public constructor(model: GeometricModel2dState) {
       super(new TileTree.Params(
         new Id64(),
-        undefined,    // we will build and set root tile manually in child constructors
+        undefined,    // RootTile set in child class constructors
         model,
         undefined,
         Transform.createIdentity(),
         undefined,
-        undefined,
+        undefined,    // ClipVector build in child class constructors
         undefined,
       ));
-      this._clip = ClipVector.createEmpty();
     }
-
-    public get clip(): ClipVector { return this._clip; }
 
     public drawInView(context: SceneContext) {
       const args = this.createDrawArgs(context);
@@ -229,7 +201,7 @@ export namespace Sheet {
 
       const aspectRatioSkew = view.getAspectRatioSkew();
       this.drawingToAttachment = Transform.createOriginAndMatrix(Point3d.create(), view.getRotation());
-      this.drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1);
+      this.drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1, this.drawingToAttachment.matrix);
       const translation = viewRoot.location.origin.cloneAsPoint3d();
       const viewOrg = view.getOrigin().minus(translation);
       this.drawingToAttachment.multiplyPoint3d(viewOrg, viewOrg);
@@ -245,8 +217,8 @@ export namespace Sheet {
       // (Containment tests can also be more efficiently performed if boundary range is specified)
       const clipTf = location.inverse();
       if (clipTf !== undefined) {
-        this._clip = attachment.getOrCreateClip(clipTf);
-        clipTf.multiplyRange(attachRange, this._clip.boundingRange);
+        this.clipVector = attachment.getOrCreateClip(clipTf);
+        clipTf.multiplyRange(attachRange, this.clipVector.boundingRange);
       }
 
       const sheetToDrawing = this.drawingToAttachment.inverse();
@@ -267,24 +239,12 @@ export namespace Sheet {
         return TileTree.LoadStatus.NotFound;
       const tileTree = viewedModel.getOrLoadTileTree();
       if (tileTree !== undefined)
-        attachment.tree = new Tree2d(viewedModel, attachment, attachment.view, tileTree);
+        attachment.tree = new Tree2d(viewedModel, attachment, attachment.view, tileTree);   // this sets the tile tree of this attachment
       return viewedModel.loadStatus;
     }
   }
 
-  /** Describes the state of an attachment or attachment list. */
-  export enum State {
-    /** Haven't tried to create the scene for this level of the tree */
-    NotLoaded,
-    /** This level of the tree has an empty scene */
-    Empty,
-    /** All of the roots for this level of the tree have been created and we are loading their tiles */
-    Loading,
-    /** All of the tiles required for this level of the tree are ready for rendering */
-    Ready,
-  }
-
-  /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies the id of the view and its position on the sheet. */
+  /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies its view and its position on the sheet. */
   export abstract class Attachment {
     public id: Id64;
     public readonly view: ViewState2d;
@@ -294,6 +254,7 @@ export namespace Sheet {
     public displayPriority: number;
     protected _tree?: Tree;
     protected _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+    public static readonly boundingBoxColor: ColorDef = ColorDef.red;   // ***DEBUG
 
     protected constructor(props: ViewAttachmentProps, view: ViewState2d) {
       this.id = new Id64(props.id);
@@ -313,6 +274,7 @@ export namespace Sheet {
       } else {
         this.clip = ClipVector.createEmpty();
       }
+      this.clip.parseClipPlanes();
 
       // Compute placement from scale, or scale from placement if necessary
       if (scale === undefined && placement === undefined) {
@@ -358,7 +320,7 @@ export namespace Sheet {
     public clearClipping() { this.clip.clear(); }
 
     /** Create a boundary clip vector around this attachment. */
-    public createBoundaryClip(): ClipVector {
+    private createBoundaryClip(): ClipVector {
       const range = this.placement.calculateRange();
       const box: Point3d[] = [
         Point3d.create(range.low.x, range.low.y),
@@ -372,13 +334,15 @@ export namespace Sheet {
       return clip;
     }
 
-    /** Returns the current clipping if it is defined and not null. Otherwise, attempt to create a new stored boundary clipping. */
+    /** Returns a clone of the current clipping if it is defined and not null. Otherwise, attempt to create a new stored boundary clipping. */
     public getOrCreateClip(transform?: Transform): ClipVector {
       if (!this.clip.isValid())
         this.clip = this.createBoundaryClip();
+
+      const clipReturn = this.clip.clone();
       if (transform !== undefined)
-        this.clip.transformInPlace(transform);
-      return this.clip;
+        clipReturn.transformInPlace(transform);
+      return clipReturn;
     }
 
     // DEBUG ONLY
@@ -393,7 +357,7 @@ export namespace Sheet {
         Point2d.create(origin.x, origin.y)];
 
       const builder = context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
-      builder.setSymbology(ColorDef.black, ColorDef.black, 2);
+      builder.setSymbology(Attachment.boundingBoxColor, Attachment.boundingBoxColor, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();
       context.outputGraphic(attachmentBorder);

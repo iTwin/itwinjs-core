@@ -24,7 +24,7 @@ import { SkyBoxCreateParams } from "../System";
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable {
   // Returns true if white portions of this geometry should render as black on white background
-  protected _wantWoWReversal(_target: Target): boolean { return false; }
+  protected abstract _wantWoWReversal(_target: Target): boolean;
   // Returns the edge/line weight used to render this geometry
   protected _getLineWeight(_params: ShaderProgramParams): number { return 0; }
   // Returns the edge/line pattern used to render this geometry
@@ -138,7 +138,7 @@ export class IndexedGeometryParams implements IDisposable {
 // A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
 export abstract class IndexedGeometry extends CachedGeometry {
   protected readonly _params: IndexedGeometryParams;
-
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
   protected constructor(params: IndexedGeometryParams) {
     super();
     this._params = params;
