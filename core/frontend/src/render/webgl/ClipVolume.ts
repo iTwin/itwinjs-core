@@ -6,10 +6,10 @@
 import { ClipVector, ClipPlane, Transform } from "@bentley/geometry-core";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target, Clips } from "./Target";
-import { ClipVolume } from "../System";
+import { RenderClipVolume } from "../System";
 
 // A 3D clip volume defined by up to 6 planes.
-export class ClipVolumePlanes implements ClipVolume {
+export class ClipVolumePlanes extends RenderClipVolume {
   private readonly _planes: ClipPlane[];
 
   public static create(clipVec: ClipVector): ClipVolumePlanes | undefined {
@@ -46,11 +46,11 @@ export class ClipVolumePlanes implements ClipVolume {
 
   public apply(clips: Clips, viewMatrix: Transform) { clips.setFrom(this._planes, viewMatrix); }
 
-  private constructor(planes: ClipPlane[]) { this._planes = planes; }
+  private constructor(planes: ClipPlane[]) { super(); this._planes = planes; }
 }
 
 // A 2D clip volume defined by any number of planes.
-export class ClipVolumeMask implements ClipVolume {
+export class ClipVolumeMask extends RenderClipVolume {
   public static create(_clipVector: ClipVector): ClipVolumeMask | undefined {
     // ###TODO: Requires ClipVector.boundingRange, ClipMaskGeometry, etc
     return undefined;

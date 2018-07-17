@@ -7,7 +7,7 @@ import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, DecorationList, ClipVolume } from "../System";
+import { RenderGraphic, GraphicBranch, DecorationList, RenderClipVolume } from "../System";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, TextureDataUpdater } from "./Texture";
@@ -497,9 +497,9 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public readonly localToWorldTransform: Transform;
-  public readonly clips?: ClipVolume;
+  public readonly clips?: RenderClipVolume;
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVolume, viewFlags?: ViewFlags) {
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: RenderClipVolume, viewFlags?: ViewFlags) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;

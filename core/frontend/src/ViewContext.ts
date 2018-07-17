@@ -10,7 +10,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/Analyti
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch, ClipVolume } from "./render/System";
+import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ViewState3d } from "./ViewState";
 
@@ -51,7 +51,7 @@ export class RenderContext extends ViewContext {
   public createGraphic(tf: Transform, type: GraphicType): GraphicBuilder {
     return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
   }
-  public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVolume): RenderGraphic {
+  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic {
     return this.target.renderSystem.createBranch(branch, location, clip);
   }
 }

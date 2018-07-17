@@ -5,7 +5,7 @@
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, ClipVolume } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -195,13 +195,13 @@ export class IdMap implements IDisposable {
   /** Array of textures without key values (unnamed). */
   public readonly keylessTextures: RenderTexture[] = [];
   /** Mapping of ClipVectors to corresponding clipping volumes. */
-  public readonly clipVolumes: Map<ClipVector, ClipVolume>;
+  public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
 
   public constructor() {
     this.materialMap = new Map<string, RenderMaterial>();
     this.textureMap = new Map<string, RenderTexture>();
     this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
-    this.clipVolumes = new Map<ClipVector, ClipVolume>();
+    this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
   }
 
   public dispose() {
@@ -309,12 +309,12 @@ export class IdMap implements IDisposable {
   }
 
   /** Find or cache a new clipping volume using the given clip vector. */
-  public getClipVolume(clipVector: ClipVector): ClipVolume | undefined {
+  public getClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
     const existingClipVolume = this.clipVolumes.get(clipVector);
     if (existingClipVolume)
       return existingClipVolume;
 
-    let clipVolume: ClipVolume | undefined = ClipVolumePlanes.create(clipVector);
+    let clipVolume: RenderClipVolume | undefined = ClipVolumePlanes.create(clipVector);
     if (!clipVolume)
       clipVolume = ClipVolumeMask.create(clipVector);
     if (!clipVolume)
@@ -403,7 +403,7 @@ export class System extends RenderSystem {
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudGraphic.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVolume): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
   public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
     if (params.isTexturedCube) {
@@ -501,7 +501,7 @@ export class System extends RenderSystem {
   }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
-  public getClipVolume(clipVector: ClipVector, imodel: IModelConnection): ClipVolume | undefined {
+  public getClipVolume(clipVector: ClipVector, imodel: IModelConnection): RenderClipVolume | undefined {
     const idMap = this.getIdMap(imodel);
     return idMap.getClipVolume(clipVector);
   }

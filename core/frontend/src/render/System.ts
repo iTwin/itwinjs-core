@@ -76,11 +76,8 @@ export abstract class RenderGraphic implements IDisposable {
 }
 
 /** Interface adopted by a type which can apply a clipping volume to a Target. */
-export interface ClipVolume {
-  /** Push the clipping volume. */
-  push(shaderProgramExecutor: any): void;
-  // Pop the clipping volume.
-  pop(target: RenderTarget): void;
+export abstract class RenderClipVolume implements IDisposable {
+  public dispose(): void { }
 }
 
 export type GraphicList = RenderGraphic[];
@@ -371,7 +368,7 @@ export abstract class RenderSystem implements IDisposable {
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
-  public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): ClipVolume | undefined { return undefined; }
+  public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
 
   /** Create a tile primitive */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
@@ -404,7 +401,7 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVolume): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
