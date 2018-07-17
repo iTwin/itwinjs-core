@@ -20,6 +20,7 @@ import {
   IModelToken,
   LinePixels,
   RgbColor,
+  ColorDef,
 } from "@bentley/imodeljs-common/lib/common";
 import { Transform, Point3d } from "@bentley/geometry-core/lib/geometry-core";
 import { showStatus } from "./Utils";
@@ -57,9 +58,14 @@ let curNumModels = 0;
 const curCategories: Set<string> = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
+let overrideColor: ColorDef | undefined;
 
 function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
-  const app = FeatureSymbology.Appearance.fromJSON({ rgb: new RgbColor(0x7f, 0x2f, 0xbf), weight: 4, linePixels: LinePixels.Code1 });
+  if (undefined === overrideColor)
+    return;
+
+  const color = RgbColor.fromColorDef(overrideColor);
+  const app = FeatureSymbology.Appearance.fromJSON({ rgb: color, weight: 4, linePixels: LinePixels.Code1 });
   for (const elemId of viewport.iModel.selectionSet.elements)
     ovrs.overrideElement(elemId, app);
 }
@@ -487,7 +493,9 @@ function startRotateView(_event: any) {
 }
 
 // override symbology for selected elements
-function overrideSymbology() {
+function changeOverrideColor() {
+  const select = (document.getElementById("colorList") as HTMLSelectElement)!;
+  overrideColor = new ColorDef(select.value);
   theViewport!.view.setFeatureOverridesDirty();
 }
 
@@ -605,7 +613,6 @@ function wireIconsToFunctions() {
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
   document.getElementById("doSync")!.addEventListener("click", doSyncIModel);
-  document.getElementById("override-symbology")!.addEventListener("click", overrideSymbology);
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
@@ -647,6 +654,7 @@ function wireIconsToFunctions() {
   });
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
   document.getElementById("skyBoxList")!.addEventListener("change", () => changeSkyBox());
+  document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
   document.getElementById("browserFileSelector")!.addEventListener("change", async function onChange(this: HTMLElement) {
