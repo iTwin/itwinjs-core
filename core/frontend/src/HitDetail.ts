@@ -70,7 +70,8 @@ export const enum HitDetailType {
 }
 
 /**
- * A HitDetail identifies an approximate location on an element or pickable decoration. A HitDetail stores the result when locating geometry displayed in a view.
+ * A HitDetail stores the result when locating geometry displayed in a view.
+ * It holds an approximate location on an element (or decoration) from a *pick*.
  */
 export class HitDetail {
   /**
@@ -87,33 +88,60 @@ export class HitDetail {
   public constructor(public readonly testPoint: Point3d, public readonly viewport: Viewport, public readonly hitSource: HitSource,
     public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number) { }
 
+  /** Get the type of HitDetail.
+   * @returns HitDetailType.Hit if this is a HitDetail, HitDetailType.Snap if it is a SnapDetail
+   */
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
+
+  /** Get the *hit point* for this HitDetail. If this is a HitDetail, it returns the approximate point on the element that cause the hit.
+   * If this is a SnapDetail, and if the snap is *hot*, retuns the *exact* point on the Element for the snap mode.
+   */
   public getPoint(): Point3d { return this.hitPoint; }
+
+  /** Type guard for SnapDetail. */
   public isSnapDetail(): this is SnapDetail { return false; }
+
+  /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
+  /** @hidden */
   public isElementHit(): boolean { return true; } // NEEDSWORK: Check that sourceId is a valid Id64 for an element...
+
+  /** Make a copy of this HitDetail. */
   public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
+
+  /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 
   /**
    * Get the tooltip string for this HitDetail.
-   * Calls the backend method [IModelDb.getLocateMessage]($backend), and replaces all instances of "${localizeTag}" with localized string from IModelApp.i18n.
+   * Calls the backend method [IModelDb.getLocateMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<string> {
-    const msg = await this.viewport.iModel.getLocateMessage(this.sourceId);
+    const msg: string[] = await this.viewport.iModel.getLocateMessage(this.sourceId); // wait for the locate message(s) from the backend
+    // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
+    // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
     let out = "";
     msg.forEach((line) => out += line.replace(/\%\{(.+?)\}/g, (_match, tag) => IModelApp.i18n.translate(tag)) + "<br>");
     return out;
   }
 }
 
+/** A SnapDetail is generated from the result of [IModelDb.requestSnap]($backend) call. In addition to the HitDetail about the reason the element was *picked*,
+ * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
+ */
 export class SnapDetail extends HitDetail {
+  /** A sprite to show the user the type of snap performed */
   public sprite?: Sprite;
-  public readonly snapPoint: Point3d;     // hitPoint adjusted by snap
-  public readonly adjustedPoint: Point3d; // AccuSnap/AccuDraw can adjust the point after the snap
-  public primitive?: CurvePrimitive;      // curve primitive for snap.
-  public normal?: Vector3d;               // surface normal at snapPoint
-  public geomType?: HitGeomType;          // the HitGeomType of this SnapDetail
+  /** HitPoint adjusted by snap */
+  public readonly snapPoint: Point3d;
+  /** AccuSnap/AccuDraw can adjust the point after the snap. */
+  public readonly adjustedPoint: Point3d;
+  /** Curve primitive for snap. */
+  public primitive?: CurvePrimitive;
+  /** Surface normal at snapPoint */
+  public normal?: Vector3d;
+  /** The HitGeomType of this SnapDetail */
+  public geomType?: HitGeomType;
 
   /** Constructor for SnapDetail.
    * @param from The HitDetail that created this snap
@@ -128,11 +156,17 @@ export class SnapDetail extends HitDetail {
     this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport);
   }
 
+  /** Returns `HitDetailType.Snap` */
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
+  /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
   public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
+  /** Type guard for SnapDetail. */
   public isSnapDetail(): this is SnapDetail { return true; }
+  /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($backend) from the generated snap point. */
   public isHot(): boolean { return this.heat !== SnapHeat.None; }
+  /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+  /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
@@ -166,6 +200,7 @@ export class SnapDetail extends HitDetail {
       this.geomType = geomType;
   }
 
+  /** Make a copy of this SnapDetail. */
   public clone(): SnapDetail {
     const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint);
     val.sprite = this.sprite;
@@ -181,7 +216,7 @@ export class SnapDetail extends HitDetail {
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
       const graphic = context.createWorldOverlay();
-      graphic.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + Subcaetegory Appearance...
+      graphic.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
 
       switch (this.snapMode) {
         case SnapMode.Center:
@@ -216,6 +251,7 @@ export class SnapDetail extends HitDetail {
     super.draw(context);
   }
 
+  /**  */
   private static getSnapSprite(snapType: SnapMode): string {
     switch (snapType) {
       case SnapMode.Nearest: return "SnapPointOn";
@@ -228,7 +264,6 @@ export class SnapDetail extends HitDetail {
     }
     return "";
   }
-
 }
 
 export class IntersectDetail extends SnapDetail {
@@ -237,7 +272,7 @@ export class IntersectDetail extends SnapDetail {
 
 /**
  * The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
- *  are somehow "better" than those later on.
+ *  are somehow *better* than those later on.
  */
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];
