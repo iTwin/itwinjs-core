@@ -87,7 +87,7 @@ function mockGetGlobalEventSASToken() {
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-describe.only("iModelHub GlobalEventHandler", () => {
+describe("iModelHub GlobalEventHandler", () => {
   let accessToken: AccessToken;
   let serviceAccountAccessToken: AccessToken;
   let globalEventSubscription: GlobalEventSubscription;
