@@ -49,6 +49,11 @@ describe("iModelHub ThumbnailHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
+
     accessToken = await utils.login();
     projectId = await utils.getProjectId();
     await utils.createIModel(accessToken, imodelName, projectId);
@@ -82,6 +87,13 @@ describe("iModelHub ThumbnailHandler", () => {
           break;
         await utils.delay(6000);
       }
+    }
+  });
+
+  after(() => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 

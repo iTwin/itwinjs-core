@@ -379,6 +379,10 @@ export class SceneCompositor implements IDisposable {
     this.renderBackground(commands, needComposite);
     this._target.setFrameTime();
 
+    // Render the sky box
+    this.renderSkyBox(commands, needComposite);
+    this._target.setFrameTime();
+
     // Enable clipping
     this._target.pushActiveVolume();
     this._target.setFrameTime();
@@ -510,6 +514,27 @@ export class SceneCompositor implements IDisposable {
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
     }
+  }
+
+  private renderSkyBox(commands: RenderCommands, needComposite: boolean) {
+    const cmds = commands.getCommands(RenderPass.SkyBox);
+    if (0 === cmds.length) {
+      return;
+    }
+
+    // ###TODO: Alter viewport so skyBox maintains aspect ratio of textures.
+    // const dim = this._target.viewRect.width > this._target.viewRect.height ? this._target.viewRect.width : this._target.viewRect.height;
+    // System.instance.context.viewport(0, 0, dim, dim);
+
+    const fbStack = System.instance.frameBufferStack;
+    fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
+      this._target.pushState(this._target.decorationState);
+      System.instance.applyRenderState(this.getRenderState(RenderPass.SkyBox));
+      this._target.techniques.execute(this._target, cmds, RenderPass.SkyBox);
+      this._target.popBranch();
+    });
+
+    // System.instance.context.viewport(0, 0, this._target.viewRect.width, this._target.viewRect.height);
   }
 
   private renderBackground(commands: RenderCommands, needComposite: boolean) {

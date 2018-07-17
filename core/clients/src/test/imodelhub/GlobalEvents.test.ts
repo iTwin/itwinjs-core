@@ -97,6 +97,14 @@ describe("iModelHub GlobalEventHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
+
     projectId = await utils.getProjectId();
     serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
     accessToken = await utils.login();
@@ -104,7 +112,15 @@ describe("iModelHub GlobalEventHandler", () => {
   });
 
   after(async () => {
+    if (!TestConfig.enableMocks)
+      return;
+
     await utils.deleteIModelByName(accessToken, projectId, imodelName);
+
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
   });
 
   afterEach(() => {

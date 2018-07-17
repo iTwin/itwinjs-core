@@ -195,13 +195,15 @@ export class PolylineEdgeArgs {
 /** A Texture for rendering */
 export abstract class RenderTexture implements IDisposable {
   public readonly key: string | undefined;
-  public readonly isGlyph: boolean;
-  public readonly isTileSection: boolean;
+  public readonly type: RenderTexture.Type;
+
+  public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
+  public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
+  public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
 
   protected constructor(params: RenderTexture.Params) {
     this.key = params.key;
-    this.isGlyph = params.isGlyph;
-    this.isTileSection = params.isTileSection;
+    this.type = params.type;
   }
 
   public abstract dispose(): void;
@@ -212,6 +214,7 @@ export namespace RenderTexture {
     Normal,
     Glyph,
     TileSection,
+    SkyBox,
     // ###TODO? RGBE
   }
 
@@ -226,6 +229,7 @@ export namespace RenderTexture {
 
     public get isTileSection(): boolean { return Type.TileSection === this.type; }
     public get isGlyph(): boolean { return Type.Glyph === this.type; }
+    public get isSkyBox(): boolean { return Type.SkyBox === this.type; }
 
     /** Obtain a RenderTexture params object with default values. */
     public static readonly defaults = new Params();

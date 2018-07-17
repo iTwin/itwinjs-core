@@ -5,7 +5,7 @@ import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
 import { UserProfile } from "../UserProfile";
-import { TestConfig, TestUsers } from "./TestConfig";
+import { TestConfig, TestUsers, UserCredentials } from "./TestConfig";
 
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
@@ -161,7 +161,7 @@ describe("ImsDelegationSecureTokenClient", () => {
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/DelegationSTSService");
   });
 
-  it("should find the delegation token with the right credentials", async function (this: Mocha.ITestCallbackContext) {
+  it.skip("should find the delegation token with the right credentials for all test users", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -169,22 +169,30 @@ describe("ImsDelegationSecureTokenClient", () => {
       new ImsDelegationSecureTokenClient("DEV"),
       new ImsDelegationSecureTokenClient("QA"),
     ];
+    const users: UserCredentials[] = [
+      TestUsers.regular,
+      TestUsers.manager,
+      TestUsers.super,
+      TestUsers.superManager,
+    ];
 
     for (const accessClient of clients) {
-      const authToken: AuthorizationToken = await authorizationClient.getToken(TestUsers.user1.email, TestUsers.user1.password);
-      chai.expect(!!authToken);
+      for (const user of users) {
+        const authToken: AuthorizationToken = await authorizationClient.getToken(user.email, user.password);
+        chai.expect(!!authToken);
 
-      const accessToken: AccessToken = await accessClient.getToken(authToken);
-      chai.expect(!!accessToken);
+        const accessToken: AccessToken = await accessClient.getToken(authToken);
+        chai.expect(!!accessToken);
 
-      const tokenString = accessToken.toTokenString();
-      chai.expect(!!tokenString);
-      chai.expect(tokenString!.startsWith("Token "));
-      chai.expect(tokenString!.length).is.greaterThan(1000);
+        const tokenString = accessToken.toTokenString();
+        chai.expect(!!tokenString);
+        chai.expect(tokenString!.startsWith("Token "));
+        chai.expect(tokenString!.length).is.greaterThan(1000);
 
-      const roundTrippedTokenString = AccessToken.fromTokenString(tokenString!)!.toTokenString();
-      chai.expect(roundTrippedTokenString).equals(tokenString);
+        const roundTrippedTokenString = AccessToken.fromTokenString(tokenString!)!.toTokenString();
+        chai.expect(roundTrippedTokenString).equals(tokenString);
+      }
     }
-  }).timeout(15000);
+  }); // .timeout(15000);
 
 });

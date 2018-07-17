@@ -8,6 +8,7 @@ import { ThumbnailHandler } from "./imodelhub/Thumbnails";
 import { GlobalEventHandler } from "./imodelhub/GlobalEvents";
 import { UserStatisticsHandler } from "./imodelhub/UserStatistics";
 import { IModelBaseHandler } from "./imodelhub/BaseHandler";
+import { CustomRequestOptions } from "./imodelhub/CustomRequestOptions";
 
 /** Class that allows access to different iModel related Class handlers.
  * Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -110,5 +111,12 @@ export abstract class IModelClient {
    */
   public UserStatistics(): UserStatisticsHandler {
     return new UserStatisticsHandler(this._handler);
+  }
+
+  /**
+   * Get the @see CustomRequestOptions object for controlling future request options.
+   */
+  public CustomRequestOptions(): CustomRequestOptions {
+    return this._handler.getCustomRequestOptions();
   }
 }

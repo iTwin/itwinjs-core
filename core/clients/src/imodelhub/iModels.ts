@@ -257,7 +257,15 @@ export class IModelHandler {
   public async delete(token: AccessToken, projectId: string, imodelId: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting iModel with id ${imodelId} from project ${projectId}`);
 
-    await this._handler.delete(token, this.getRelativeUrl(projectId, imodelId));
+    if (this._handler.getCustomRequestOptions().isSet()) {
+      // In order to add custom request options, request with body is needed.
+      const iModelRepository = new IModelRepository();
+      iModelRepository.wsgId = imodelId;
+      iModelRepository.changeState = "deleted";
+      await this._handler.deleteInstance(token, this.getRelativeUrl(projectId, imodelId), iModelRepository);
+    } else {
+      await this._handler.delete(token, this.getRelativeUrl(projectId, imodelId));
+    }
 
     Logger.logTrace(loggingCategory, `Deleted iModel with id ${imodelId} from project ${projectId}`);
   }
