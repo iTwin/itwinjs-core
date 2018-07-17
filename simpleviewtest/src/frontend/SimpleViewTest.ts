@@ -25,6 +25,9 @@ import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
+import * as ttjs from "tooltip.js";
+
+type Tooltip = ttjs.default;
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -661,34 +664,37 @@ class SVTAccuSnap extends AccuSnap {
 }
 
 class SVTNotifications extends NotificationManager {
-  private anchor?: HTMLElement;
-  private toolTip?: HTMLSpanElement;
-  // private timer = 0;
+  private toolTip?: Tooltip;
 
-  public isToolTipOpen(): boolean { return this.anchor !== undefined; }
+  public isToolTipOpen(): boolean { return !!this.toolTip && this.toolTip._isOpen; }
   public clearToolTip(): void {
-    if (!this.toolTip || !this.anchor)
-      return;
-    console.log("clear tooltip");
-
-    //    clearTimeout(this.timer);
-    this.anchor.removeChild(this.toolTip);
-    this.anchor = undefined;
-    this.toolTip = undefined;
-    // // this.timer = 0;
+    if (this.isToolTipOpen())
+      this.toolTip!.hide();
   }
-  public showToolTip(el: HTMLElement, message: string, pt: XAndY, _options?: ToolTipOptions): void {
+  public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
     this.clearToolTip();
-    el.addEventListener("mousedown", this.clearToolTip);
-    el.addEventListener("mouseleave", this.clearToolTip);
-    this.toolTip = document.createElement("span");
-    this.toolTip.innerHTML = message;
-    this.toolTip.style.top = pt.y + "px";
-    this.toolTip.style.left = pt.x + "px";
-    this.toolTip.className = "toolTip";
-    this.anchor = el.parentElement!;
-    this.anchor.appendChild(this.toolTip);
-    console.log("show tooltip");
+
+    const position = document.getElementById("tooltip-location");
+    if (!position)
+      return;
+
+    if (!this.toolTip)
+      this.toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
+
+    this.toolTip!.updateTitleContent(message);
+
+    const rect = el.getBoundingClientRect();
+    if (undefined === pt) {
+      pt = { x: rect.width / 2, y: rect.height / 2 };
+    }
+    const height = 20; // parseInt(position.style.height!, 10) / 2;
+    const width = 20; // parseInt(position.style.width!, 10) / 2;
+    position.style.top = (pt.y + rect.top - height / 2) + "px";
+    position.style.left = (pt.x + rect.left - width / 2) + "px";
+    position.style.width = width + "px";
+    position.style.height = height + "px";
+
+    this.toolTip!.show();
   }
 }
 

@@ -238,7 +238,7 @@ export class AccuSnap {
 
   public showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): void {
     if (IModelApp.viewManager.doesHostHaveFocus())
-      this.showLocateMessage(viewPt, vp, IModelApp.toolAdmin.getInfoString(hit, "\n"));
+      IModelApp.toolAdmin.getToolTip(hit).then((msg) => this.showLocateMessage(viewPt, vp, msg));
   }
 
   private showLocateMessage(viewPt: XAndY, vp: Viewport, msg: string) {

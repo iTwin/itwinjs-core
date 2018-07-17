@@ -6,6 +6,7 @@ import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegm
 import { Viewport } from "./Viewport";
 import { Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./frontend";
+import { IModelApp } from "./IModelApp";
 
 // tslint:disable:variable-name
 
@@ -93,6 +94,17 @@ export class HitDetail {
   public isElementHit(): boolean { return true; } // NEEDSWORK: Check that sourceId is a valid Id64 for an element...
   public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
+
+  /**
+   * Get the tooltip string for this HitDetail.
+   * Calls the backend method [IModelDb.getLocateMessage]($backend), and replaces all instances of "${localizeTag}" with localized string from IModelApp.i18n.
+   */
+  public async getToolTip(): Promise<string> {
+    const msg = await this.viewport.iModel.getLocateMessage(this.sourceId);
+    let out = "";
+    msg.forEach((line) => out += line.replace(/\%\{(.+?)\}/g, (_match, tag) => IModelApp.i18n.translate(tag)) + "<br>");
+    return out;
+  }
 }
 
 export class SnapDetail extends HitDetail {

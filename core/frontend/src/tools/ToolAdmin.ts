@@ -478,13 +478,10 @@ export class ToolAdmin {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }
 
-  public getInfoString(_hit: HitDetail, _delimiter: string): string {
-    return "line 1<p>line 2<p>long line number 3";
-    // let tool = this.activeTool;
-    // if (!tool)
-    //   tool = this.idleTool;
-
-    // return tool.getInfoString(hit, delimiter);
+  /** Ask the active tool to provide a tooltip message for the supplied HitDetail. */
+  public async getToolTip(hit: HitDetail): Promise<string> {
+    const tool = this.activeTool ? this.activeTool : this.idleTool;
+    return tool.getToolTip(hit);
   }
 
   // public onToolStateIdChanged(_tool: InteractiveTool, _toolStateId?: string): boolean { return false; }

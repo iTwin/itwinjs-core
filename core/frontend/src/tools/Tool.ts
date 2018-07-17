@@ -564,8 +564,7 @@ export abstract class InteractiveTool extends Tool {
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */
-  //  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; } // NEEDSWORK
-  public getInfoString(_hit: HitDetail, _delimiter: string): string { return ""; }
+  public async getToolTip(_hit: HitDetail): Promise<string> { return _hit.getToolTip(); }
 
   /**   * Fill the supplied button event from the current cursor location.   */
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }

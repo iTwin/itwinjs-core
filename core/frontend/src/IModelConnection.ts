@@ -322,6 +322,8 @@ export class IModelConnection extends IModel {
       return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
     }
   }
+
+  public async getLocateMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getLocateMessage(this.iModelToken, id); }
 }
 
 export namespace IModelConnection {
