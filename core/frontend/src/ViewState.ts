@@ -1842,7 +1842,7 @@ export class SheetViewState extends ViewState2d {
       // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
       let i = 0;
       while (i < this._attachments.length) {
-        const attachStatus = this._attachments.load(i, this);
+        const attachStatus = this._attachments.load(i);
 
         // If load fails, attachment gets dropped from the list
         if (attachStatus !== TileTree.LoadStatus.NotFound && attachStatus !== TileTree.LoadStatus.NotLoaded)
@@ -1858,7 +1858,7 @@ export class SheetViewState extends ViewState2d {
 
     // Draw all attachments that have a status of loaded
     for (const attachment of this._attachments.list)
-      if (attachment.loadStatus === TileTree.LoadStatus.Loaded) {
+      if (attachment.getLoadStatus() === TileTree.LoadStatus.Loaded) {
         assert(attachment.tree !== undefined);
         attachment.tree!.drawInView(context);
       }

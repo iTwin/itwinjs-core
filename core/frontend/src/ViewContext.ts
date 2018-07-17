@@ -5,12 +5,12 @@
 
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, ClipVector, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch } from "./render/System";
+import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch, ClipVolume } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ViewState3d } from "./ViewState";
 
@@ -51,7 +51,7 @@ export class RenderContext extends ViewContext {
   public createGraphic(tf: Transform, type: GraphicType): GraphicBuilder {
     return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
   }
-  public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVector): RenderGraphic {
+  public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVolume): RenderGraphic {
     return this.target.renderSystem.createBranch(branch, location, clip);
   }
 }

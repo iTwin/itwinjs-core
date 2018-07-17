@@ -7,8 +7,8 @@ import { Transform } from "@bentley/geometry-core";
 import { ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { Clip } from "./ClipVolume";
 import { Branch } from "./Graphic";
+import { ClipVolume } from "../System";
 
 /**
  * Represents a branch node in the scene graph, with associated view flags and transform to be applied to
@@ -18,7 +18,7 @@ export class BranchState {
   public readonly transform: Transform;
   private readonly _viewFlags: ViewFlags;
   public symbologyOverrides: FeatureSymbology.Overrides;
-  public readonly clipVolume?: Clip.Volume;
+  public readonly clipVolume?: ClipVolume;
 
   public static fromBranch(prev: BranchState, branch: Branch) {
     const vf = branch.branch.getViewFlags(prev.viewFlags);
@@ -27,7 +27,7 @@ export class BranchState {
     return new BranchState(vf, transform, ovrs, branch.clips);
   }
 
-  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: Clip.Volume) {
+  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipVolume) {
     return new BranchState(ViewFlags.createFrom(flags), undefined !== transform ? transform.clone() : Transform.createIdentity(), ovrs, clip);
   }
 
@@ -44,7 +44,7 @@ export class BranchState {
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
   public get showClipVolume(): boolean { return this.viewFlags.showClipVolume(); }
 
-  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: Clip.Volume) {
+  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipVolume) {
     this._viewFlags = flags;
     this.transform = transform;
     this.symbologyOverrides = ovrs;
