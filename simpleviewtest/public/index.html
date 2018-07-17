@@ -99,11 +99,19 @@
           <i class="bim-icon-settings"></i>
         </div>
         <div class="toolMenu" id="changeRenderModeMenu">
-          <select id="renderModeList">
+          <label for="renderModeList">Mode:</label>
+          <select id="renderModeList" name="renderModeList">
             <option>Smooth Shade</option>
             <option>Solid Fill</option>
             <option>Hidden Line</option>
             <option>Wireframe</option>
+          </select>
+          <br>
+          <label for="skyBoxList">Sky box:</label>
+          <select id="skyBoxList" name="skyBoxList">
+            <option value="default">Default</option>
+            <option value="sor_sea/sea_;JPG">Sea</option>
+            <option value="mp_plains/plains-of-abraham_;png">Plains</option>
           </select>
           <br>
           <input id="skybox" type="checkbox"> Skybox
@@ -147,7 +155,7 @@
         <i class="bim-icon-redo"></i>
       </div>
       <img class="simpleicon" src="sync.svg" id="doSync" />
-      <button id="override-symbology">Test</button>
+      <button id="override-symbology">Change<br>Color</button>
       <span class="fsp-info" id="showfps" style="display: none;">Avg. FPS (ms): ---- Render Time (ms): ----
         <br />Scene Time (ms): ----</span>
       <span class="statusspan" id="showstatus" style="display:inline;"></span>

@@ -243,13 +243,14 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
+  private _useSkyBoxImages: boolean = false;
+
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
   public loadSkyBoxParams(system: RenderSystem): boolean {
     if (this.skyBoxParams !== undefined)
       return true;  // skybox textures have already been loaded
 
-    const useImages: boolean = true;
-    if (useImages)
+    if (this._useSkyBoxImages)
       return this.loadImageSkyBoxParams(system);
 
     // const env = this.getEnvironment();
@@ -291,6 +292,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     // ###TODO - if any image buffer or texture fails to load, bail out.
     return true;
+  }
+
+  public setSkyBox(skyBox?: string): void {
+    this._useSkyBoxImages = undefined !== skyBox;
+    this.skyBoxParams = undefined;
   }
 
   private _loadingImages: boolean = false;

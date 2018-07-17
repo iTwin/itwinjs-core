@@ -1331,13 +1331,19 @@ export abstract class ViewState3d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
+  private _useOldSkyBox: boolean = true;
   public decorate(context: DecorateContext): void {
-    const useOldSkyBox = false;
-    if (useOldSkyBox)
+    if (this._useOldSkyBox)
       this.drawSkyBox(context);
     else
       this.drawRealSkyBox(context);
+
     this.drawGroundPlane(context);
+  }
+
+  public setSkyBox(skyBox: string): void {
+    this._useOldSkyBox = "default" === skyBox;
+    this.getDisplayStyle3d().setSkyBox(this._useOldSkyBox ? undefined : skyBox);
   }
 
   /** Attempt to extract the eyepoint if the camera is on. Otherwise, compute the eye point from the given frustum. */
