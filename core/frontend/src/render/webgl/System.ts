@@ -5,7 +5,7 @@
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageSource, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -26,7 +26,8 @@ import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
-import { SkyBoxCreateParams, SkyBoxQuadsGeometry, SkyBoxPrimitive } from "../../rendering";
+import { SkyBoxQuadsGeometry } from "./CachedGeometry";
+import { SkyBoxPrimitive } from "./Primitive";
 
 export const enum ContextState {
   Uninitialized,
