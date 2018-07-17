@@ -301,8 +301,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this._loadingImages = true;
 
     const promises: Array<Promise<HTMLImageElement>> = [];
-    const prefix = "sor_sea/sea_";
-    const ext = ".JPG";
+    const prefix = "mp_plains/plains-of-abraham_"; // "sor_sea/sea_";
+    const ext = ".png"; // ".JPG";
     const suffixes = ["ft", "bk", "up", "dn", "lf", "rt"];
     for (let i = 0; i < suffixes.length; i++) {
       const suffix = suffixes[i];
