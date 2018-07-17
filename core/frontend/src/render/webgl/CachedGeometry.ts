@@ -342,6 +342,8 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   public dispose() {
     dispose(this._params);
   }
+
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
 }
 
 // A quad with its corners mapped to the dimensions as the viewport, used for special rendering techniques.
