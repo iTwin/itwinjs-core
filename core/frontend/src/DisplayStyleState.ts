@@ -302,7 +302,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
 
     Promise.all(promises).then((images: HTMLImageElement[]) => {
-      const textures: Array<RenderTexture> = [];
+      const textures: RenderTexture[] = [];
       const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
       for (const image of images) {
         const texture = system.createTextureFromImage(image, false, this.iModel, params)!;

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend/lib/frontend";
-import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, FeatureSymbology } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
   ElectronRpcManager,
@@ -18,6 +18,8 @@ import {
   BentleyCloudRpcManager,
   RpcOperation,
   IModelToken,
+  LinePixels,
+  RgbColor,
 } from "@bentley/imodeljs-common/lib/common";
 import { Transform, Point3d } from "@bentley/geometry-core/lib/geometry-core";
 import { showStatus } from "./Utils";
@@ -55,6 +57,12 @@ let curNumModels = 0;
 const curCategories: Set<string> = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
+
+function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
+  const app = FeatureSymbology.Appearance.fromJSON({ rgb: new RgbColor(0x7f, 0x2f, 0xbf), weight: 4, linePixels: LinePixels.Code1 });
+  for (const elemId of viewport.iModel.selectionSet.elements)
+    ovrs.overrideElement(elemId, app);
+}
 
 /** Parameters for starting SimpleViewTest with a specified initial configuration */
 interface SVTConfiguration {
@@ -407,6 +415,7 @@ async function openView(state: SimpleViewState) {
   if (htmlCanvas) {
     theViewport = new Viewport(htmlCanvas, state.viewState!);
     await _changeView(state.viewState!);
+    theViewport.addFeatureOverrides = addFeatureOverrides;
     theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
     IModelApp.viewManager.addViewport(theViewport);
   }
@@ -464,6 +473,11 @@ function startWalk(_event: any) {
 // start rotate view.
 function startRotateView(_event: any) {
   IModelApp.tools.run("View.Rotate", theViewport!);
+}
+
+// override symbology for selected elements
+function overrideSymbology() {
+  theViewport!.view.setFeatureOverridesDirty();
 }
 
 // change active view.
@@ -580,6 +594,7 @@ function wireIconsToFunctions() {
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
   document.getElementById("doSync")!.addEventListener("click", doSyncIModel);
+  document.getElementById("override-symbology")!.addEventListener("click", overrideSymbology);
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
