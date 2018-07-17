@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updated enumeration logic to separate the creation and addition of an enumerator
 - Updated SchemaItemTypeToString for new EC3.2 item types
 
+### Fixed
+- Fixed sync 3.1 kind of quantity loading
+
 ## [0.7.0]  -  2018-07-13
 ### Added
 - Added EC3.2 support
