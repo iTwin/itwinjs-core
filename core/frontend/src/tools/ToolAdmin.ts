@@ -15,7 +15,7 @@ import { IdleTool } from "./IdleTool";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
+import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { NpcCenter } from "@bentley/imodeljs-common";
@@ -38,7 +38,7 @@ export class ToolState {
 
 export class SuspendedToolState {
   private readonly toolState: ToolState;
-  private readonly accuSnapState: AccuSnapToolState;
+  private readonly accuSnapState: AccuSnap.ToolState;
   private readonly viewCursor?: BeCursor;
   private inDynamics: boolean;
   private shuttingDown = false;

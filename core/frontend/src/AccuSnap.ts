@@ -13,29 +13,6 @@ import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 
-/** @hidden */
-export class AccuSnapToolState {
-  public enabled = false;
-  public locate = false;
-  public suspended = 0;
-  public setFrom(other: AccuSnapToolState): void {
-    this.enabled = other.enabled;
-    this.locate = other.locate;
-    this.suspended = other.suspended;
-  }
-  public clone(): AccuSnapToolState { const val = new AccuSnapToolState(); val.setFrom(this); return val; }
-}
-
-class AccuSnapSettings {
-  public hotDistanceFactor = 1.2;
-  public stickyFactor = 1.0;
-  public searchDistance = 2.0;
-  public hiliteColdHits = true;
-  public enableFlag = true;
-  public toolTip = true;
-  public toolTipDelay = 5; // delay before tooltip pops up - in 10th of a second
-}
-
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap {
   /** Currently active hit */
@@ -70,8 +47,8 @@ export class AccuSnap {
   private totalMotionSq = 0;
   /** How much mouse movement constitutes a "move" (squared) */
   private motionToleranceSq = 0;
-  public readonly toolState = new AccuSnapToolState();
-  protected settings = new AccuSnapSettings();
+  public readonly toolState = new AccuSnap.ToolState();
+  protected settings = new AccuSnap.Settings();
 
   public onInitialized() { }
   private doLocateTesting() { return this.isLocateEnabled(); }
@@ -90,7 +67,7 @@ export class AccuSnap {
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   public isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot(); }
 
-  /** */
+  /** @hidden */
   public destroy(): void {
     this.currHit = undefined;
     this.aSnapHits = undefined;
@@ -899,5 +876,29 @@ export class TentativeOrAccuSnap {
   public static getCurrentView(): Viewport | undefined {
     const snap = IModelApp.accuSnap.getCurrSnapDetail();
     return snap ? snap.viewport : IModelApp.tentativePoint.viewport;
+  }
+}
+
+export namespace AccuSnap {
+  export class ToolState {
+    public enabled = false;
+    public locate = false;
+    public suspended = 0;
+    public setFrom(other: ToolState): void {
+      this.enabled = other.enabled;
+      this.locate = other.locate;
+      this.suspended = other.suspended;
+    }
+    public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+  }
+
+  export class Settings {
+    public hotDistanceFactor = 1.2;
+    public stickyFactor = 1.0;
+    public searchDistance = 2.0;
+    public hiliteColdHits = true;
+    public enableFlag = true;
+    public toolTip = true;
+    public toolTipDelay = 5; // delay before tooltip pops up - in 10th of a second
   }
 }
