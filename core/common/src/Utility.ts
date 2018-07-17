@@ -60,5 +60,3 @@ export class RangeUtil {
   }
   public static clone(range: Range): Range { return RangeUtil.fromPoints(range.low, range.high)!; }
 }
-
-export interface Cloneable<T> { clone: () => T; }
