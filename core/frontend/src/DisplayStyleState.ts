@@ -244,6 +244,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
   private _useSkyBoxImages: boolean = false;
+  private _skyBoxImagePrefix: string = "";
+  private _skyBoxImageSuffix: string = "";
 
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
   public loadSkyBoxParams(system: RenderSystem): boolean {
@@ -259,8 +261,14 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
 
-    const horizon = system.createTextureFromImageBuffer(
-      ImageBuffer.create(new Uint8Array([
+    let horizonImage: ImageBuffer;
+    let skyImage: ImageBuffer;
+    const wantSolidTextures = true;
+    if (wantSolidTextures) {
+      horizonImage = ImageBuffer.create(new Uint8Array([0x7f, 0, 0]), ImageBufferFormat.Rgb, 1)!;
+      skyImage = ImageBuffer.create(new Uint8Array([0, 0x7f, 0xff]), ImageBufferFormat.Rgb, 1)!;
+    } else {
+      horizonImage = ImageBuffer.create(new Uint8Array([
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 255, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
@@ -268,9 +276,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
         0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
         0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
         0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
-        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10]), ImageBufferFormat.Rgb, 4)!, this.iModel, params)!;
-    const sky = system.createTextureFromImageBuffer(
-      ImageBuffer.create(new Uint8Array([
+        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10]), ImageBufferFormat.Rgb, 4)!;
+      skyImage = ImageBuffer.create(new Uint8Array([
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
@@ -278,7 +285,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
         0, 255, 255, 255, 255, 0, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
-        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255]), ImageBufferFormat.Rgb, 4)!, this.iModel, params)!;
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255]), ImageBufferFormat.Rgb, 4)!;
+    }
+
+    const horizon = system.createTextureFromImageBuffer(horizonImage, this.iModel, params)!;
+    const sky = system.createTextureFromImageBuffer(skyImage, this.iModel, params)!;
     const ground = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 104, 10]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
 
     const front = horizon;
@@ -295,8 +306,19 @@ export class DisplayStyle3dState extends DisplayStyleState {
   }
 
   public setSkyBox(skyBox?: string): void {
-    this._useSkyBoxImages = undefined !== skyBox;
+    this._useSkyBoxImages = false;
     this.skyBoxParams = undefined;
+
+    if (undefined === skyBox)
+      return;
+
+    const parts = skyBox.split(";");
+    if (2 !== parts.length)
+      return;
+
+    this._useSkyBoxImages = true;
+    this._skyBoxImagePrefix = parts[0];
+    this._skyBoxImageSuffix = parts[1];
   }
 
   private _loadingImages: boolean = false;
@@ -307,12 +329,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this._loadingImages = true;
 
     const promises: Array<Promise<HTMLImageElement>> = [];
-    const prefix = "mp_plains/plains-of-abraham_"; // "sor_sea/sea_";
-    const ext = ".png"; // ".JPG";
+    const prefix = this._skyBoxImagePrefix; // "mp_plains/plains-of-abraham_"; // "sor_sea/sea_";
+    const ext = this._skyBoxImageSuffix; // ".png"; // ".JPG";
     const suffixes = ["ft", "bk", "up", "dn", "lf", "rt"];
     for (let i = 0; i < suffixes.length; i++) {
       const suffix = suffixes[i];
-      const url = "./skyboxes/" + prefix + suffix + ext;
+      const url = "./skyboxes/" + prefix + suffix + "." + ext;
       const promise = new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
         const image = new Image();
         image.onload = () => resolve(image);
