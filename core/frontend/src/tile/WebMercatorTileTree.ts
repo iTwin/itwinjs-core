@@ -88,7 +88,7 @@ class WebMercatorTileProps implements TileProps {
   public parentId?: string;
   public range: Range3dProps;
   public contentRange?: Range3dProps;
-  public maximumSize: number = 30;
+  public maximumSize: number = 100;
   public childIds: string[];
   public yAxisUp: boolean = true;
   public geometry?: any;
@@ -163,9 +163,10 @@ class WebMercatorTileLoader extends TileLoader {
 
   private async loadTextureImage(imageSource: ImageSource, model: GeometricModelState, system: RenderSystem): Promise<RenderTexture | undefined> {
     try {
-      const isCanceled = false;
+      const isCanceled = false;// Tbd...
+      const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection)
       return ImageUtil.extractImage(imageSource)
-        .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, model.iModel, RenderTexture.Params.defaults))
+        .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, model.iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {
       return undefined;
