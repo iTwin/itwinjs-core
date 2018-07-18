@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { FrustumUniforms, FrustumUniformType, Clip, Clips } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FrustumUniforms, FrustumUniformType, ClipVolumePlanes, Clips } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ClipVector, ClipShape, Point3d, Transform, RotMatrix } from "@bentley/geometry-core";
 
 describe("FrustumUniforms", () => {
@@ -51,7 +51,7 @@ describe("Clips", () => {
       const clips: Clips = new Clips();
       expect(clips.isValid).to.equal(false);
       expect(clips.length).to.equal(0);
-      const clipVolume = Clip.Planes.create(clipVector);
+      const clipVolume = ClipVolumePlanes.create(clipVector);
       expect(clipVolume).to.not.be.undefined;
       expect(clipVolume!.length).to.equal(6);
 

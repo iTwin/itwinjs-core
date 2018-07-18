@@ -10,7 +10,7 @@ import { Angle } from "@bentley/geometry-core/lib/Geometry";
 import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
 import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { ViewState, ViewState2d, SheetViewState } from "./ViewState";
+import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
 import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
@@ -243,29 +243,34 @@ export namespace Sheet {
 
     /** Create a Tree2d tile tree for a 2d attachment. Returns a Tree2d if the model tile tree is ready. Otherwise, returns the status of the tiles. */
     public static create(attachment: Attachment2d): TileTree.LoadStatus {
-      const viewedModel = attachment.view.getViewedModel();
+      const view = attachment.view as ViewState2d;
+      const viewedModel = view.getViewedModel();
       if (!viewedModel)
         return TileTree.LoadStatus.NotFound;
+
       const tileTree = viewedModel.getOrLoadTileTree();
       if (tileTree !== undefined)
-        attachment.tree = new Tree2d(viewedModel, attachment, attachment.view, tileTree);   // this sets the tile tree of this attachment
+        attachment.tree = new Tree2d(viewedModel, attachment, view, tileTree);
+
       return viewedModel.loadStatus;
     }
   }
 
+  /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
+  export class Tree3d /* extends Tree */ { }
+
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies its view and its position on the sheet. */
   export abstract class Attachment {
     public id: Id64;
-    public readonly view: ViewState2d;
+    public readonly view: ViewState;
     public scale: number;
     public placement: Placement2d;
     public clip: ClipVector;
     public displayPriority: number;
     protected _tree?: Tree;
-    protected _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
     public static readonly boundingBoxColor: ColorDef = ColorDef.red;   // ***DEBUG
 
-    protected constructor(props: ViewAttachmentProps, view: ViewState2d) {
+    protected constructor(props: ViewAttachmentProps, view: ViewState) {
       this.id = new Id64(props.id);
       this.view = view;
       this.displayPriority = 0;
@@ -301,18 +306,16 @@ export namespace Sheet {
 
     /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
     public get tree(): Tree | undefined { return this._tree; }
-    /** Sets the reference to the tile tree corresponding to this attachment view's model. */
+    /** @hidden - Sets the reference to the tile tree corresponding to this attachment view's model. */
     public set tree(tree: Tree | undefined) { this._tree = tree; }
-    /** Returns the load status of this attachment view's tile tree. */
-    public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
 
     /** Given a view and placement, compute a scale for an attachment. */
-    protected static computeScale(view: ViewState, placement: Placement2d): number {
+    private static computeScale(view: ViewState, placement: Placement2d): number {
       return view.getExtents().x / placement.bbox.width;
     }
 
     /** Given a view and an origin point, compute a placement for an attachment. */
-    protected static computePlacement(view: ViewState, origin: Point2d, scale: number): Placement2d {
+    private static computePlacement(view: ViewState, origin: Point2d, scale: number): Placement2d {
       const viewExtents = view.getExtents();
       const box = new ElementAlignedBox2d();
       box.low.setZero();
@@ -322,8 +325,11 @@ export namespace Sheet {
       return new Placement2d(origin, Angle.createDegrees(0), box);
     }
 
-    /** Load the tile tree for this attachment. Returns true if successful. */
-    public abstract load(sheetView: ViewState): void;
+    /** Returns the load status of this attachment view's tile tree. */
+    public abstract getLoadStatus(_depth?: number): TileTree.LoadStatus;
+
+    /** Load the tile tree member for this attachment. Returns true if successful. */
+    public abstract load(): void;
 
     /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clip.clear(); }
@@ -375,14 +381,53 @@ export namespace Sheet {
 
   /** A 2d sheet view attachment. */
   export class Attachment2d extends Attachment {
+    protected _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }
 
-    public load(_sheetView: ViewState) {
+    public getLoadStatus(): TileTree.LoadStatus { return this._loadStatus; }
+
+    public load() {
       if (this._loadStatus === TileTree.LoadStatus.Loaded)
         return;
       this._loadStatus = Tree2d.create(this);
+    }
+  }
+
+  /** A 3d sheet view attachment. */
+  export class Attachment3d extends Attachment {
+    // private sheetView: SheetViewState;
+    private states: TileTree.LoadStatus[];  // per level of the tree
+
+    public constructor(props: ViewAttachmentProps/*, sheetView: SheetViewState*/, view: ViewState3d) {
+      super(props, view);
+      // this.sheetView = sheetView;
+      this.states = [];
+    }
+
+    /** Returns true if every level of the tree has a load status of 'Loaded'. */
+    /*
+    private get allDepthsLoaded(): boolean {
+      for (const state of this.states)
+        if (state !== TileTree.LoadStatus.Loaded)
+          return false;
+      return true;
+    }
+    */
+
+    /** Returns the load status of the tile tree up to the depth level provided. */
+    public getLoadStatus(depth: number): TileTree.LoadStatus {
+      return depth < this.states.length ? this.states[depth] : TileTree.LoadStatus.NotLoaded;
+    }
+
+    public load() {
+      /*
+      if (this.allDepthsLoaded)
+        return;
+      Tree3d.create(this.sheetView, this);
+      */
     }
   }
 
@@ -413,7 +458,7 @@ export namespace Sheet {
 
     /** Add an attachment to this list of attachments. */
     public add(attachment: Attachment) {
-      this._allLoaded = this._allLoaded && (attachment.loadStatus === TileTree.LoadStatus.Loaded);
+      this._allLoaded = this._allLoaded && (attachment.getLoadStatus() === TileTree.LoadStatus.Loaded);
       this.list.push(attachment);
     }
 
@@ -429,7 +474,7 @@ export namespace Sheet {
     public updateAllLoaded() {
       this._allLoaded = true;
       for (const attachment of this.list) {
-        if (attachment.loadStatus !== TileTree.LoadStatus.Loaded) {
+        if (attachment.getLoadStatus() !== TileTree.LoadStatus.Loaded) {
           this._allLoaded = false;
           break;
         }
@@ -437,19 +482,19 @@ export namespace Sheet {
     }
 
     /** Load the tile tree for the attachment at the given index. Returns the load status of that attachment. */
-    public load(idx: number, sheetView: SheetViewState): TileTree.LoadStatus {
+    public load(idx: number): TileTree.LoadStatus {
       assert(idx < this.length);
 
       const attachment = this.list[idx];
       if (attachment.tree !== undefined)
         return TileTree.LoadStatus.Loaded;
 
-      attachment.load(sheetView);
-      if (attachment.loadStatus === TileTree.LoadStatus.NotFound || attachment.loadStatus === TileTree.LoadStatus.NotLoaded)
+      attachment.load();
+      if (attachment.getLoadStatus() === TileTree.LoadStatus.NotFound || attachment.getLoadStatus() === TileTree.LoadStatus.NotLoaded)
         this.list.splice(idx, 1);
 
       this.updateAllLoaded();
-      return attachment.loadStatus;
+      return attachment.getLoadStatus();
     }
   }
 }

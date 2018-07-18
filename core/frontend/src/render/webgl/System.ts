@@ -5,7 +5,7 @@
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -30,6 +30,7 @@ import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive } from "./Primitive";
+import { ClipVolumePlanes, ClipVolumeMask } from "./ClipVolume";
 
 export const enum ContextState {
   Uninitialized,
@@ -193,11 +194,14 @@ export class IdMap implements IDisposable {
   public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
   /** Array of textures without key values (unnamed). */
   public readonly keylessTextures: RenderTexture[] = [];
+  /** Mapping of ClipVectors to corresponding clipping volumes. */
+  public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
 
   public constructor() {
     this.materialMap = new Map<string, RenderMaterial>();
     this.textureMap = new Map<string, RenderTexture>();
     this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+    this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
   }
 
   public dispose() {
@@ -303,6 +307,22 @@ export class IdMap implements IDisposable {
     this.addGradient(grad, texture);
     return texture;
   }
+
+  /** Find or cache a new clipping volume using the given clip vector. */
+  public getClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
+    const existingClipVolume = this.clipVolumes.get(clipVector);
+    if (existingClipVolume)
+      return existingClipVolume;
+
+    let clipVolume: RenderClipVolume | undefined = ClipVolumePlanes.create(clipVector);
+    if (!clipVolume)
+      clipVolume = ClipVolumeMask.create(clipVector);
+    if (!clipVolume)
+      return undefined;
+
+    this.clipVolumes.set(clipVector, clipVolume);
+    return clipVolume;
+  }
 }
 
 export class System extends RenderSystem {
@@ -383,7 +403,7 @@ export class System extends RenderSystem {
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudGraphic.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
   public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
     if (params.isTexturedCube) {
@@ -415,11 +435,6 @@ export class System extends RenderSystem {
     }
   }
 
-  /** Find a rendering map using an IModelConnection. Returns undefined if not found. */
-  public findIModelMap(imodel: IModelConnection): IdMap | undefined {
-    return this.resourceCache.get(imodel);
-  }
-
   /** Returns the corresponding IdMap for an IModelConnection. Creates a new one if it doesn't exist. */
   public createIModelMap(imodel: IModelConnection): IdMap {
     let idMap = this.resourceCache.get(imodel);
@@ -439,17 +454,14 @@ export class System extends RenderSystem {
     this.resourceCache.delete(imodel);
   }
 
-  /**
-   * Creates a material and adds it to the corresponding IdMap for that iModel. If the material already exists in the map, simply return it.
-   * If no render map exists for the imodel, returns undefined.
-   */
+  /** Attempt to create a material for the given iModel using a set of material parameters. */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.getIdMap(imodel);
     const material = idMap.getMaterial(params);
     return material;
   }
 
-  /** Given a key and an iModel, returns the corresponding material for that key in the iModel's IdMap. Returns undefined if none found. */
+  /** Using its key, search for an existing material of an open iModel. */
   public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
@@ -457,11 +469,12 @@ export class System extends RenderSystem {
     return idMap.findMaterial(key);
   }
 
-  /** Creates a texture using an ImageBuffer and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
+  /** Attempt to create a texture for the given iModel using an ImageBuffer. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTexture(image, params);
   }
 
+  /** Attempt to create a texture for the given iModel using an HTML image element. */
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
     if (undefined === imodel) {
@@ -472,19 +485,25 @@ export class System extends RenderSystem {
     return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
   }
 
-  /** Creates a texture using gradient symbology and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
+  /** Attempt to create a texture using gradient symbology. */
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.getIdMap(imodel);
     const texture = idMap.getGradient(symb);
     return texture;
   }
 
-  /** Given a key and an iModel, returns the corresponding texture for that key in the iModel's IdMap. Returns undefined if none found. */
+  /** Using its key, search for an existing texture of an open iModel. */
   public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
       return undefined;
     return idMap.findTexture(key);
+  }
+
+  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
+  public getClipVolume(clipVector: ClipVector, imodel: IModelConnection): RenderClipVolume | undefined {
+    const idMap = this.getIdMap(imodel);
+    return idMap.getClipVolume(clipVector);
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
