@@ -58,7 +58,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
   protected addPresentationFormat(parent: Format, precision: number | undefined, unitLabelOverrides: Array<[Unit|InvertedUnit, string | undefined]> | undefined, isDefault: boolean = false): Format {
     // TODO need to verify that the format provided isn't already an override
 
-    if (unitLabelOverrides && parent.composite && parent.composite.units && parent.composite.units.length !== unitLabelOverrides.length)
+    if (unitLabelOverrides && parent.units && parent.units.length !== unitLabelOverrides.length)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presetantion format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
 
     // no overrides
@@ -67,7 +67,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
       return parent;
     }
 
-    if (parent.composite && (!parent.composite.units || parent.composite.units.length === 0) && unitLabelOverrides && unitLabelOverrides.length > 0 )
+    if (parent.units && parent.units.length === 0 && unitLabelOverrides && unitLabelOverrides.length > 0 )
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add a presetantion format to KindOfQuantity '${this.name}' without any units and no unit overrides.`);
 
     // TODO check compatibility of Unit overrides with the persisitence unit

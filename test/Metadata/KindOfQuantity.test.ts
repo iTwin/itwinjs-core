@@ -119,7 +119,7 @@ describe("KindOfQuantity", () => {
     const presentationUnitWithMissingUnitJson = {
       ...baseJson,
       presentationUnits: [{}],
-    }
+    };
     it("async - should throw for presentationUnit with missing unit", async () => {
       await expect(testKoQ.fromJson(presentationUnitWithMissingUnitJson)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
     });

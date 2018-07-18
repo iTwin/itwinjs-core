@@ -11,13 +11,6 @@ import InvertedUnit from "./InvertedUnit";
 import { FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits,
         parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption } from "../utils/FormatEnums";
 
-// A Composite defines additional information about a format and whether the magnitude should be split and display using multiple Units.
-export interface Composite {
-  spacer?: string;
-  includeZero: boolean;
-  units?: Array<[Unit | InvertedUnit, string | undefined]>;
-}
-
 export default class Format extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
   protected _roundFactor: number = 0.0;
@@ -31,8 +24,10 @@ export default class Format extends SchemaItem {
   protected _uomSeparator = " "; // optional; default is " "; defined separator between magnitude and the unit
   protected _stationSeparator = "+"; // optional; default is "+"
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
-  protected _composite?: Composite;
   protected _formatTraits = 0x0;
+  protected _spacer: string = " "; // optional; default is " "
+  protected _includeZero: boolean = true; // optional; default is true
+  protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -50,8 +45,10 @@ export default class Format extends SchemaItem {
   get uomSeparator(): string  { return this._uomSeparator; }
   get stationSeparator(): string  { return this._stationSeparator; }
   get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  get composite(): Composite | undefined { return this._composite; }
   get formatTraits(): FormatTraits { return this._formatTraits; }
+  get spacer(): string { return this._spacer; }
+  get includeZero(): boolean { return this._includeZero; }
+  get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined  { return this._units; }
 
   private verifyFormatTraitsOptions(formatTraitsFromJson: string | string[]) {
     const formatTraits = (Array.isArray(formatTraitsFromJson)) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
@@ -66,14 +63,12 @@ export default class Format extends SchemaItem {
 
   protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]> | undefined) {
     // TODO: Need to do validation
-    if (this._composite === undefined)
-      this._composite = {includeZero: true, spacer: " ", units: new Array<[Unit | InvertedUnit, string | undefined]>()};
-    this._composite!.units = units;
+    this._units = units;
   }
   protected setPrecision(precision: number | undefined) { this._precision = precision; }
 
   /**
-   * Creates a Unit with the provided name and label and adds it to the this Composite.
+   * Creates a Unit with the provided name and label and adds it to this unit array
    * @param name The name of the Unit
    * @param label A localized display label that is used instead of the name in a GUI.
    */
@@ -81,8 +76,7 @@ export default class Format extends SchemaItem {
     let newUnit: Unit | InvertedUnit | undefined;
     if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    const units =  this._composite!.units!;
-    for (const unit of units) {
+    for (const unit of this.units!) {
       const unitObj = unit[0].name;
       if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // no duplicate names- take unit name after "."
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
@@ -90,23 +84,22 @@ export default class Format extends SchemaItem {
     newUnit = this.schema.getItemSync<Unit | InvertedUnit>(name, true);
     if (!newUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    this._composite!.units!.push([newUnit, label]);
+    this.units!.push([newUnit, label]);
   }
 
   private async createUnit(name: string, label?: string) {
     let newUnit: Unit | InvertedUnit | undefined;
     if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    const units =  this._composite!.units!;
-    for (const unit of units) {
+    for ( const unit of this.units! ) {
       const unitObj = unit[0].name;
-      if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // no duplicate names- take unit name after "."
+      if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // duplicate names are not allowed- take unit name after "."
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
     }
     newUnit = await this.schema.getItem<Unit | InvertedUnit>(name, true);
     if (!newUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    this._composite!.units!.push([newUnit, label]);
+    this.units!.push([newUnit, label]);
   }
 
   private loadFormatProperties(jsonObj: any) {
@@ -209,26 +202,25 @@ export default class Format extends SchemaItem {
     await super.fromJson(jsonObj);
     this.loadFormatProperties(jsonObj);
     if (undefined !== jsonObj.composite) { // optional
-      this._composite = {includeZero: true, spacer: " ", units: new Array<[Unit | InvertedUnit, string | undefined]>()};
+      this._units = new Array<[Unit | InvertedUnit, string | undefined]>();
       if (jsonObj.composite.includeZero !== undefined) {
         if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
-        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
+        this._includeZero = jsonObj.composite.includeZero;
       }
       if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
         if (typeof(jsonObj.composite.spacer) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
         if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
-        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
+        this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
         if (!Array.isArray(jsonObj.composite.units)) { // must be an array
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          const units = jsonObj.composite.units;
-          for (const unit of units) {
+          for (const unit of jsonObj.composite.units) {
              await this.createUnit(unit.name, unit.label); // create the unit
           }
         }
@@ -244,26 +236,25 @@ export default class Format extends SchemaItem {
     super.fromJsonSync(jsonObj);
     this.loadFormatProperties(jsonObj);
     if (undefined !== jsonObj.composite) { // optional
-      this._composite = {includeZero: true, spacer: " ", units: new Array<[Unit | InvertedUnit, string | undefined]>()};
+      this._units = new Array<[Unit | InvertedUnit, string | undefined]>();
       if (jsonObj.composite.includeZero !== undefined) {
         if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
-        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
+        this._includeZero = jsonObj.composite.includeZero;
       }
       if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
         if (typeof(jsonObj.composite.spacer) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
         if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
-        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
+        this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
         if (!Array.isArray(jsonObj.composite.units)) { // must be an array
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          const units = jsonObj.composite.units;
-          for (const unit of units) {
+          for (const unit of jsonObj.composite.units) {
              this.createUnitSync(unit.name, unit.label); // create the unit
           }
         }

@@ -239,10 +239,9 @@ describe("KindOfQuantity EC3.2", () => {
 
         assert.notEqual(defaultFormat, await schema.getItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
 
-        assert.isDefined(defaultFormat!.composite);
-        assert.isDefined(defaultFormat!.composite!.units);
-        expect(defaultFormat!.composite!.units!.length).to.eql(1);
-        const unitOverride = defaultFormat!.composite!.units![0];
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
         const unitFromSchema = await schema.getItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
         assert.equal(await unitOverride[0], unitFromSchema);
         assert.isUndefined(unitOverride[1]);
@@ -258,10 +257,9 @@ describe("KindOfQuantity EC3.2", () => {
 
         assert.notEqual(defaultFormat, schema.getItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name, true), "The format in the KOQ should be different than the one in the schema");
 
-        assert.isDefined(defaultFormat!.composite);
-        assert.isDefined(defaultFormat!.composite!.units);
-        expect(defaultFormat!.composite!.units!.length).to.eql(1);
-        const unitOverride = defaultFormat!.composite!.units![0];
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
         const unitFromSchema = schema.getItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
         assert.equal(unitOverride[0], unitFromSchema);
         assert.isUndefined(unitOverride[1]);
@@ -284,10 +282,9 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.isDefined(defaultFormat!.composite);
-        assert.isDefined(defaultFormat!.composite!.units);
-        expect(defaultFormat!.composite!.units!.length).to.eql(1);
-        const unitOverride = defaultFormat!.composite!.units![0];
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
         const unitFromSchema = await schema.getItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
         assert.equal(await unitOverride[0], unitFromSchema);
         expect(unitOverride[1]).to.be.eql(" in");
@@ -301,10 +298,9 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.isDefined(defaultFormat!.composite);
-        assert.isDefined(defaultFormat!.composite!.units);
-        expect(defaultFormat!.composite!.units!.length).to.eql(1);
-        const unitOverride = defaultFormat!.composite!.units![0];
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
         const unitFromSchema = schema.getItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
         assert.equal(unitOverride[0], unitFromSchema);
         expect(unitOverride[1]).to.be.eql(" in");
