@@ -3,6 +3,4 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-export { default as ECPresentationManager } from "./ECPresentationManager";
-export { default as ECPresentationRpcImpl } from "./ECPresentationRpcImpl";
 export { default as ECPresentation } from "./ECPresentation";

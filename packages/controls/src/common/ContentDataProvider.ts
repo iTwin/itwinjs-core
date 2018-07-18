@@ -5,7 +5,7 @@
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PageOptions, SelectionInfo } from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions, SelectionInfo, ContentRequestOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import * as content from "@bentley/ecpresentation-common";
 
@@ -127,13 +127,10 @@ export default abstract class ContentDataProvider {
       this.getContent.cache.clear();
   }
 
-  /**
-   * Called to create extended options for content requests. The actual options depend on the
-   * presentation manager implementation.
-   */
-  private createRequestOptions(): object {
+  private createRequestOptions(): ContentRequestOptions<IModelConnection> {
     return {
-      RulesetId: this._rulesetId,
+      imodel: this._connection,
+      rulesetId: this._rulesetId,
     };
   }
 
@@ -166,8 +163,8 @@ export default abstract class ContentDataProvider {
 
   // tslint:disable-next-line:naming-convention
   private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
-    return await ECPresentation.presentation.getContentDescriptor(this._connection,
-      this._displayType, this.keys, this.selectionInfo, this.createRequestOptions());
+    return await ECPresentation.presentation.getContentDescriptor(this.createRequestOptions(),
+      this._displayType, this.keys, this.selectionInfo);
   });
 
   /**
@@ -187,8 +184,8 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return 0;
-    return await ECPresentation.presentation.getContentSetSize(this._connection,
-      descriptor, this.keys, this.createRequestOptions());
+    return await ECPresentation.presentation.getContentSetSize(this.createRequestOptions(),
+      descriptor, this.keys);
   });
 
   /**
@@ -199,13 +196,13 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return undefined;
-    return await ECPresentation.presentation.getContent(this._connection,
-      descriptor, this.keys, pageOptions, this.createRequestOptions());
+    return await ECPresentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions },
+      descriptor, this.keys);
   }, createKeyForPageOptions);
 }
 
 const createKeyForPageOptions = (pageOptions?: PageOptions) => {
   if (!pageOptions)
     return "0/0";
-  return `${(pageOptions.pageStart) ? pageOptions.pageStart : 0}/${(pageOptions.pageSize) ? pageOptions.pageSize : 0}`;
+  return `${(pageOptions.start) ? pageOptions.start : 0}/${(pageOptions.size) ? pageOptions.size : 0}`;
 };

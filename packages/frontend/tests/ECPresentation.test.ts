@@ -5,28 +5,24 @@ import "@helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import { spy } from "@helpers/Spies";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ECPresentationRpcInterface, ECPresentationError } from "@common/index";
-import { ECPresentation, ECPresentationManager } from "@src/index";
-import { SelectionManager } from "@src/selection";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { ECPresentationRpcInterface, ECPresentationError } from "@common/index";
+import { ECPresentation } from "@src/index";
+import { SelectionManager } from "@src/selection";
+import ECPresentationManager from "@src/ECPresentationManager";
 
 describe("ECPresentation", () => {
 
   const shutdownIModelApp = () => {
-    try {
-      IModelApp.shutdown();
-    } catch (_e) {
-      // calling `IModelApp.shutdown` on uninitialized IModelApp throws
-      // `Cannot read property 'onShutDown' of undefined` because it's trying
-      // to shutdown undefined renderSystem...
-    }
+    if (NoRenderApp.initialized)
+      NoRenderApp.shutdown();
   };
 
   beforeEach(() => {
     shutdownIModelApp();
-    IModelApp.startup();
+    NoRenderApp.startup();
     initializeRpcInterface(ECPresentationRpcInterface);
     const interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
     ECPresentationRpcInterface.getClient = () => interfaceMock.object;
@@ -62,7 +58,7 @@ describe("ECPresentation", () => {
       const i18nMock = moq.Mock.ofType<I18N>();
       IModelApp.i18n = i18nMock.object;
       ECPresentation.initialize({ activeLocale: "test" });
-      expect(ECPresentation.i18n).to.eq(i18nMock.object);
+      expect(ECPresentation.i18n).to.equal(i18nMock.object);
     });
 
     it("initializes ECPresentationManager with ECPresentation.i18 locale if no props provided", () => {

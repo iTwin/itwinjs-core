@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Fixed KeySet serialization.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

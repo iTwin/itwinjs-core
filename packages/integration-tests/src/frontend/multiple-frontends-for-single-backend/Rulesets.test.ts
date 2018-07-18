@@ -1,0 +1,79 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { initialize, terminate } from "../../IntegrationTests";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PresentationRuleSet, PresentationRuleTypes, PresentationRuleSpecificationTypes } from "@bentley/ecpresentation-common";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+
+before(() => {
+  initialize();
+});
+
+after(() => {
+  terminate();
+});
+
+describe("Multiple frontends for one backend", async () => {
+
+  describe("Rulesets", () => {
+
+    let imodel: IModelConnection;
+    let frontends: ECPresentationManager[];
+
+    before(async () => {
+      const testIModelName: string = "assets/datasets/1K.bim";
+      imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+      expect(imodel).is.not.null;
+
+      frontends = [0, 1].map(() => ECPresentationManager.create());
+    });
+
+    after(async () => {
+      await imodel.closeStandalone();
+    });
+
+    it("Handles multiple simultaneous requests from different frontends with different rulesets with same id", async () => {
+      const rulesets: PresentationRuleSet[] = [];
+      rulesets[0] = {
+        ruleSetId: "test",
+        rules: [{
+          type: PresentationRuleTypes.RootNodeRule,
+          specifications: [{
+            type: PresentationRuleSpecificationTypes.CustomNodeSpecification,
+            nodeType: "test",
+            label: "label 0",
+            description: "description 0",
+            imageId: "image 0",
+          }],
+        }],
+      };
+      rulesets[1] = {
+        ruleSetId: "test",
+        rules: [{
+          type: PresentationRuleTypes.RootNodeRule,
+          specifications: [{
+            type: PresentationRuleSpecificationTypes.CustomNodeSpecification,
+            nodeType: "test",
+            label: "label 1",
+            description: "description 1",
+            imageId: "image 1",
+          }],
+        }],
+      };
+
+      const registeredRulesets = await Promise.all(frontends.map((f, i) => f.rulesets().add(rulesets[i])));
+
+      const nodes = await Promise.all(frontends.map((f) => f.getRootNodes({ imodel, rulesetId: "test" })));
+      frontends.forEach((_f, i) => {
+        expect(nodes[i][0].label).to.eq(`label ${i}`);
+      });
+
+      registeredRulesets.forEach((r) => r.dispose());
+    });
+
+  });
+
+});

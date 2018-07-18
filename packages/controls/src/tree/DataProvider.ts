@@ -5,7 +5,7 @@
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodeKey, NodePathElement } from "@bentley/ecpresentation-common";
+import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import { PageOptions } from "@bentley/ui-components/lib/common/PageOptions";
@@ -17,7 +17,7 @@ import IECPresentationTreeDataProvider from "./IECPresentationTreeDataProvider";
  */
 export default class ECPresentationTreeDataProvider implements IECPresentationTreeDataProvider {
   private _rulesetId: string;
-  private _imodelConnection: IModelConnection;
+  private _connection: IModelConnection;
 
   /**
    * Constructor.
@@ -26,18 +26,32 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    */
   public constructor(connection: IModelConnection, rulesetId: string) {
     this._rulesetId = rulesetId;
-    this._imodelConnection = connection;
+    this._connection = connection;
   }
 
   /** Id of the ruleset used by this data provider */
   public get rulesetId(): string { return this._rulesetId; }
   /** [[IModelConnection]] used by this data provider */
-  public get connection(): IModelConnection { return this._imodelConnection; }
+  public get connection(): IModelConnection { return this._connection; }
+  public set connection(value: IModelConnection) {
+    if (this._connection === value)
+      return;
+    this._connection = value;
+    this.clearCaches();
+  }
+
+  private clearCaches(): void {
+    this.getRootNodesCount.cache.clear();
+    this.getRootNodes.cache.clear();
+    this.getChildNodesCount.cache.clear();
+    this.getChildNodes.cache.clear();
+  }
 
   /** Called to get extended options for node requests */
-  private createRequestOptions(): object {
+  private createRequestOptions(): HierarchyRequestOptions<IModelConnection> {
     return {
-      RulesetId: this._rulesetId,
+      imodel: this._connection,
+      rulesetId: this._rulesetId,
     };
   }
 
@@ -54,7 +68,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    * @param pageOptions Information about the requested page of data.
    */
   public getRootNodes = _.memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const nodes = await ECPresentation.presentation.getRootNodes(this.connection, pageOptionsUiToPresentation(pageOptions), this.createRequestOptions());
+    const nodes = await ECPresentation.presentation.getRootNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) });
     return createTreeNodeItems(nodes);
   }, MemoizationHelpers.getRootNodesKeyResolver);
 
@@ -62,7 +76,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    * Returns the total number of root nodes.
    */
   public getRootNodesCount = _.memoize(async (): Promise<number> => {
-    return await ECPresentation.presentation.getRootNodesCount(this.connection, this.createRequestOptions());
+    return await ECPresentation.presentation.getRootNodesCount(this.createRequestOptions());
   });
 
   /**
@@ -72,7 +86,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    */
   public getChildNodes = _.memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const parentKey = this.getNodeKey(parentNode);
-    const nodes = await ECPresentation.presentation.getChildren(this.connection, parentKey, pageOptionsUiToPresentation(pageOptions), this.createRequestOptions());
+    const nodes = await ECPresentation.presentation.getChildren({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
     const items = createTreeNodeItems(nodes, parentNode.id);
     return items;
   }, MemoizationHelpers.getChildNodesKeyResolver);
@@ -82,7 +96,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    * @param filter Filter.
    */
   public getFilteredNodePaths = async (filter: string): Promise<ReadonlyArray<Readonly<NodePathElement>>> => {
-    return ECPresentation.presentation.getFilteredNodePaths(this.connection, filter, this.createRequestOptions());
+    return ECPresentation.presentation.getFilteredNodePaths(this.createRequestOptions(), filter);
   }
 
   /**
@@ -91,7 +105,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    */
   public getChildNodesCount = _.memoize(async (parentNode: TreeNodeItem): Promise<number> => {
     const parentKey = this.getNodeKey(parentNode);
-    return await ECPresentation.presentation.getChildrenCount(this.connection, parentKey, this.createRequestOptions());
+    return await ECPresentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
   }, MemoizationHelpers.getChildNodesCountKeyResolver);
 }
 class MemoizationHelpers {

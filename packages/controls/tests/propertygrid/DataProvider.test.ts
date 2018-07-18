@@ -12,7 +12,8 @@ import { PropertyRecord } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ValuesDictionary } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
-import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
+import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 import ECPresentationPropertyDataProvider from "@src/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import {

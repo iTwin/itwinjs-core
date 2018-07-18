@@ -12,9 +12,10 @@ import { createRandomECInstanceKey } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys } from "@bentley/ecpresentation-common";
 import {
-  ECPresentation, ECPresentationManager,
+  ECPresentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
 } from "@bentley/ecpresentation-frontend";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
 import { ECPresentationTableDataProvider, withUnifiedSelection } from "@src/table";
@@ -92,7 +93,7 @@ describe("Table withUnifiedSelection", () => {
 
     const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
     presentationManagerMock
-      .setup((x) => x.getContentDescriptor(imodelMock.object, moq.It.isAnyString(), moq.It.isAny(), undefined, moq.It.isAny()))
+      .setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()))
       .returns(async () => undefined);
     ECPresentation.presentation = presentationManagerMock.object;
 
@@ -155,7 +156,7 @@ describe("Table withUnifiedSelection", () => {
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />, { disableLifecycleMethods: true });
-    component.instance().componentDidUpdate!(component.props(), component.state());
+    component.instance().componentDidUpdate!(component.props(), component.state()!);
   });
 
   describe("selection handling", () => {

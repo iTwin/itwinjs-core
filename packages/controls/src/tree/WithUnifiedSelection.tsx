@@ -4,12 +4,12 @@
 /** @module Hierarchies */
 
 import * as React from "react";
-import { Keys } from "@bentley/ecpresentation-common";
+import { Keys, Subtract } from "@bentley/ecpresentation-common";
 import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/ecpresentation-common/lib/hierarchy/Key";
 import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
-import { getDisplayName, Subtract } from "../common/Utils";
+import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import IECPresentationTreeDataProvider from "./IECPresentationTreeDataProvider";
 

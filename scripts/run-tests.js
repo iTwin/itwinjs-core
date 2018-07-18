@@ -15,14 +15,13 @@ const options = {
   timeoutsEnabled: yargs.noTimeouts || true, // measure tests' coverage
   coverage: yargs.coverage || false, // create test coverage report
   report: yargs.report || false, // create test run report
-  cache: yargs.cache || true, // enable/disable ts-node caching
   extensions: [".ts", ".tsx"], // source file extensions
   react: yargs.react || false, // init for react components testing
 };
 const testsName = path.basename(path.resolve("./"));
 
 process.env.TS_NODE_PROJECT = path.join(options.testsDir, "tsconfig.json");
-process.env.TS_NODE_CACHE = options.cache;
+process.env.TS_NODE_CACHE_DIRECTORY = `../../out/temp/test-caches/${testsName}/`;
 process.env.CACHE_REQUIRE_PATHS_FILE = `../../out/temp/test-caches/${testsName}/cache-require-paths.json`;
 
 utils.ensureDirectoryExists(path.dirname(process.env.CACHE_REQUIRE_PATHS_FILE));
@@ -142,7 +141,10 @@ const runOnce = () => {
   });
 
   return new Promise((resolve, reject) => {
+    const start = new Date();
     mocha.run((failures) => {
+      const end = new Date();
+      console.log(`Total time to run tests: ${(end - start) / 1000} s`);
       if (failures)
         reject();
       else

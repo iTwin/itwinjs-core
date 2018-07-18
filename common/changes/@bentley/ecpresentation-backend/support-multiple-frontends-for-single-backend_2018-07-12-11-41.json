@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-backend",
+      "comment": "Dispose client presentation managers after they're unused for more than 1 hour",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

@@ -42,7 +42,7 @@ export {
 } from "./content/modifiers/PropertyEditorsSpecification";
 
 export { PresentationRuleSet } from "./PresentationRuleSet";
-export { PresentationRuleTypes } from "./PresentationRule";
+export { PresentationRule, PresentationRuleTypes } from "./PresentationRule";
 export { PresentationRuleSpecificationTypes } from "./PresentationRuleSpecification";
 export { UserSettingsGroup, UserSettingsItem } from "./UserSettings";
 export { RelatedInstanceSpecification } from "./RelatedInstanceSpecification";

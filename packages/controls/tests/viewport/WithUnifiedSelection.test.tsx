@@ -18,12 +18,13 @@ import { PromiseContainer } from "@helpers/Promises";
 import "@helpers/Snapshots";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SelectionSet, ViewState3d, IModelApp, SelectEventType } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/ecpresentation-common";
 import {
-  ECPresentation, ECPresentationManager,
+  ECPresentation,
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/ecpresentation-frontend";
+import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 import { ViewportComponent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
 import { default as withUnifiedSelection, ViewportSelectionHandler } from "@src/viewport/WithUnifiedSelection";
@@ -34,10 +35,10 @@ const ECPresentationViewport = withUnifiedSelection(ViewportComponent);
 describe("Viewport withUnifiedSelection", () => {
 
   before(() => {
-    IModelApp.startup();
+    NoRenderApp.startup();
   });
   after(() => {
-    IModelApp.shutdown();
+    NoRenderApp.shutdown();
   });
 
   let viewDefinitionId: Id64;
@@ -162,7 +163,7 @@ describe("Viewport withUnifiedSelection", () => {
         viewDefinitionId={viewDefinitionId}
         selectionHandler={selectionHandlerMock.object}
       />, { disableLifecycleMethods: true });
-      viewport.instance().componentDidUpdate!(viewport.props(), viewport.state());
+      viewport.instance().componentDidUpdate!(viewport.props(), viewport.state()!);
     });
 
   });
@@ -178,13 +179,13 @@ describe("ViewportSelectionHandler", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(() => {
-    IModelApp.startup();
+    NoRenderApp.startup();
     rulesetId = faker.random.word();
     ECPresentation.presentation = presentationManagerMock.object;
     ECPresentation.selection = selectionManagerMock.object;
   });
   after(() => {
-    IModelApp.shutdown();
+    NoRenderApp.shutdown();
   });
 
   beforeEach(() => {
@@ -215,7 +216,6 @@ describe("ViewportSelectionHandler", () => {
       classFullName: `class_name_${id}`,
     }));
   };
-  const createExtendedOptions = () => ({ RulesetId: rulesetId });
 
   describe("imodel", () => {
 
@@ -301,8 +301,8 @@ describe("ViewportSelectionHandler", () => {
         providerName: selectionProviderName,
         level: selectionLevel,
       };
-      presentationManagerMock.setup((x) => x.getContentDescriptor(imodelMock.object, DefaultContentDisplayTypes.VIEWPORT,
-        keys, descriptor.selectionInfo, createExtendedOptions())).returns(async () => descriptor);
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
+        DefaultContentDisplayTypes.VIEWPORT, keys, descriptor.selectionInfo)).returns(async () => descriptor);
 
       const content: Content = {
         descriptor,
@@ -311,10 +311,10 @@ describe("ViewportSelectionHandler", () => {
           new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
         ],
       };
-      presentationManagerMock.setup((x) => x.getContentSetSize(imodelMock.object, descriptor, keys,
-        createExtendedOptions())).returns(async () => content.contentSet.length);
-      presentationManagerMock.setup((x) => x.getContent(imodelMock.object, descriptor, keys, undefined,
-        createExtendedOptions())).returns(async () => content);
+      presentationManagerMock.setup((x) => x.getContentSetSize({ imodel: imodelMock.object, rulesetId }, descriptor, keys))
+        .returns(async () => content.contentSet.length);
+      presentationManagerMock.setup((x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, descriptor, keys))
+        .returns(async () => content);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -350,8 +350,8 @@ describe("ViewportSelectionHandler", () => {
         providerName: faker.random.word(),
         level: 0,
       };
-      presentationManagerMock.setup((x) => x.getContentDescriptor(imodelMock.object, DefaultContentDisplayTypes.VIEWPORT,
-        keys, selectionInfo, createExtendedOptions())).returns(async () => undefined);
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
+        DefaultContentDisplayTypes.VIEWPORT, keys, selectionInfo)).returns(async () => undefined);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -382,8 +382,8 @@ describe("ViewportSelectionHandler", () => {
         providerName: faker.random.word(),
         level: 0,
       };
-      presentationManagerMock.setup((x) => x.getContentDescriptor(imodelMock.object, DefaultContentDisplayTypes.VIEWPORT,
-        keys, selectionInfo, createExtendedOptions())).returns(async () => undefined);
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
+        DefaultContentDisplayTypes.VIEWPORT, keys, selectionInfo)).returns(async () => undefined);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {

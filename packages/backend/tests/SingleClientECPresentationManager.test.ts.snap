@@ -1,0 +1,491 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns child nodes 1`] = `
+Array [
+  Object {
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Future",
+        "id": "0x6e0a0000015652",
+      },
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "test2",
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "type 2",
+    },
+    "label": "test3",
+  },
+]
+`;
+
+exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns content 1`] = `
+Content {
+  "contentSet": Array [
+    Item {
+      "classInfo": Object {
+        "id": "0x5886000000bd6a",
+        "label": "overriding",
+        "name": "Awesome Rubber Hat",
+      },
+      "displayValues": Object {
+        "circuit": "virtual",
+      },
+      "imageId": "4a177fa9-beb3-4b5f-97d2-5d76081a04a4",
+      "label": "calculating",
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "needs-based",
+          "id": "0x540c000000735a",
+        },
+      ],
+      "values": Object {
+        "circuit": "generate synergistic",
+      },
+    },
+  ],
+  "descriptor": Descriptor {
+    "contentFlags": 0,
+    "displayType": "qui et ullam",
+    "fields": Array [
+      PropertiesField {
+        "category": Object {
+          "description": "Eos in iure repudiandae.",
+          "expand": false,
+          "label": "XML",
+          "name": "Manager",
+          "priority": 50538,
+        },
+        "isReadonly": true,
+        "label": "mint green",
+        "name": "circuit",
+        "priority": 23443,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0xb937000000803a",
+                "label": "robust Personal Loan Account Borders",
+                "name": "Lao People's Democratic Republic",
+              },
+              "name": "morph",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "pathToPrimaryClass": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x14ceb0000004ca8",
+          "label": "Mauritius",
+          "name": "Incredible Frozen Cheese",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns content descriptor 1`] = `
+Descriptor {
+  "connectionId": "f4054dcf-de39-4e45-b637-a1a6a0a649d5",
+  "contentFlags": 0,
+  "contentOptions": "car",
+  "displayType": "frictionless",
+  "fields": Array [
+    PropertiesField {
+      "category": Object {
+        "description": "In possimus suscipit quod numquam accusamus labore consequatur dolore qui.",
+        "expand": true,
+        "label": "convergence Gloves Keyboard",
+        "name": "Czech Republic",
+        "priority": 51915,
+      },
+      "editor": Object {
+        "name": "Money Market Account",
+        "params": Object {
+          "some_param": 37389,
+        },
+      },
+      "isReadonly": false,
+      "label": "Investment Account Pants",
+      "name": "Primitive property field with editor",
+      "priority": 43236,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x195b000000c700",
+              "label": "Music Metal",
+              "name": "Norfolk Island",
+            },
+            "enumerationInfo": Object {
+              "choices": Array [
+                Object {
+                  "label": "Minnesota 3rd generation wireless",
+                  "value": "975d6648-4c46-46eb-a392-6dad758d74f0",
+                },
+                Object {
+                  "label": "Borders methodologies SQL",
+                  "value": "1811b819-3d15-4d3d-9102-8d100f5e21a9",
+                },
+              ],
+              "isStrict": false,
+            },
+            "name": "Hong Kong Dollar",
+            "type": "string",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    PropertiesField {
+      "category": Object {
+        "description": "Voluptas sit dolore non consequuntur omnis consequatur temporibus a perspiciatis.",
+        "expand": false,
+        "label": "hack",
+        "name": "ubiquitous",
+        "priority": 48254,
+      },
+      "isReadonly": false,
+      "label": "National Timor-Leste",
+      "name": "Complex array of structs property field",
+      "priority": 33544,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x180cf00000017cf",
+              "label": "Coordinator calculating Kansas",
+              "name": "Generic Fresh Keyboard",
+            },
+            "kindOfQuantity": Object {
+              "currentFusId": "3c57ae9f-46c6-409e-8d00-b8587db99fbe",
+              "label": "digital Bahamian Dollar",
+              "name": "initiatives",
+              "persistenceUnit": "generate",
+            },
+            "name": "syndicate",
+            "type": "double",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+      "type": Object {
+        "memberType": Object {
+          "members": Array [
+            Object {
+              "label": "Money Market Account",
+              "name": "Personal Loan Account",
+              "type": Object {
+                "typeName": "string",
+                "valueFormat": "Primitive",
+              },
+            },
+            Object {
+              "label": "District",
+              "name": "Liechtenstein",
+              "type": Object {
+                "memberType": Object {
+                  "typeName": "string",
+                  "valueFormat": "Primitive",
+                },
+                "typeName": "string[]",
+                "valueFormat": "Array",
+              },
+            },
+          ],
+          "typeName": "SomeClass",
+          "valueFormat": "Struct",
+        },
+        "typeName": "string[]",
+        "valueFormat": "Array",
+      },
+    },
+    NestedContentField {
+      "category": Object {
+        "description": "Distinctio quas nobis aut.",
+        "expand": true,
+        "label": "Branding",
+        "name": "Identity",
+        "priority": 77581,
+      },
+      "contentClassInfo": Object {
+        "id": "0x1246e000000fb77",
+        "label": "PNG",
+        "name": "transform",
+      },
+      "isReadonly": true,
+      "label": "Future iterate Illinois",
+      "name": "Nested content field",
+      "nestedFields": Array [
+        Field {
+          "category": Object {
+            "description": "Consequuntur non omnis enim ea non optio laboriosam adipisci ut.",
+            "expand": true,
+            "label": "Gorgeous microchip Soap",
+            "name": "e-business",
+            "priority": 75956,
+          },
+          "isReadonly": true,
+          "label": "mint green compressing",
+          "name": "Simple property field",
+          "priority": 62951,
+          "type": Object {
+            "typeName": "string",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0xb6d6000000edf7",
+            "label": "index Tasty Rubber Bacon",
+            "name": "Toys",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x477a00000045b8",
+            "label": "Monitored",
+            "name": "Swaziland",
+          },
+          "targetClassInfo": Object {
+            "id": "0xd40600000106d7",
+            "label": "Forest indigo RAM",
+            "name": "USB",
+          },
+        },
+      ],
+      "priority": 45922,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Outdoors",
+            "name": "Ball",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "Shoes",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "inputKeysHash": "a5e90dfa-33bf-4888-b56d-5979fb2ca549",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": true,
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x11ac200000127f0",
+            "label": "Assistant impactful Bedfordshire",
+            "name": "grid-enabled",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xa54a000000e882",
+            "label": "Crest Open-source Rufiyaa",
+            "name": "Down-sized",
+          },
+          "targetClassInfo": Object {
+            "id": "0x13dd5000001095e",
+            "label": "compress Small Frozen Mouse Steel",
+            "name": "Electronics",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "relationshipInfo": Object {
+              "id": "0x91f6000000c65c",
+              "label": "deposit",
+              "name": "Beauty",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x11366000001085b",
+              "label": "Gorgeous Fresh Shirt Gateway Sleek",
+              "name": "Investment Account",
+            },
+            "targetClassInfo": Object {
+              "id": "0x9ca70000003456",
+              "label": "Soft Rustic Towels",
+              "name": "synergize",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0x155bf000000a6bf",
+        "label": "Courts",
+        "name": "paradigms",
+      },
+    },
+  ],
+}
+`;
+
+exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns filtered node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 79,
+    "isMarked": false,
+    "node": Object {
+      "backColor": "rgb(
+    2,
+    67,
+    128
+  )",
+      "description": "Illum nostrum sunt voluptatum aut magni ut perspiciatis incidunt blanditiis.",
+      "foreColor": "#D547B3",
+      "hasChildren": false,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": false,
+      "isSelectable": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Kwacha",
+          "id": "0x3ab7000000de99",
+        },
+        "pathFromRoot": Array [
+          "2f1063bc-d79f-4ef7-830b-f0f612a06ee8",
+          "4fc62306-a623-4008-9379-37021a66417b",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Interactions Hryvnia",
+    },
+  },
+]
+`;
+
+exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 880,
+    "isMarked": false,
+    "node": Object {
+      "foreColor": "#AEAF95",
+      "hasChildren": true,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": false,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": false,
+      "isSelectable": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "protocol",
+          "id": "0xf4980000008074",
+        },
+        "pathFromRoot": Array [
+          "b6ecb24e-50fa-4575-97cf-d9733b2c81bd",
+          "47cd6648-d3b1-46f0-b332-7c46acbfb7fc",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "red panel compress",
+    },
+  },
+]
+`;
+
+exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns root nodes 1`] = `
+Array [
+  Object {
+    "backColor": "backColor1",
+    "description": "description1",
+    "fontStyle": "fontStyle1",
+    "foreColor": "foreColor1",
+    "hasChildren": true,
+    "imageId": "img_1",
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectable": true,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p2",
+        "p3",
+      ],
+      "type": "type1",
+    },
+    "label": "test1",
+  },
+  Object {
+    "backColor": "",
+    "description": "description2",
+    "fontStyle": "",
+    "foreColor": "",
+    "hasChildren": false,
+    "imageId": "",
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "SQL",
+        "id": "0x156210000007adc",
+      },
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "test2",
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "some node",
+    },
+    "label": "test2",
+  },
+]
+`;

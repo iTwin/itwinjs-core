@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Move Omit & Subtract definitions from `controls` to `common`",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

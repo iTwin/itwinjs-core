@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-backend",
+      "comment": "Moved ruleset management functions from ECPresentationManager to RulesetManager which is accessible from ECPresentationManager through `rulesets` property",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

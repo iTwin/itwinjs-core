@@ -8,7 +8,8 @@ import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ECPresentationError } from "@common/Error";
 import ECPresentation from "@src/ECPresentation";
-import ECPresentationManager from "@src/ECPresentationManager";
+import SingleClientECPresentationManager from "@src/SingleClientECPresentationManager";
+import MultiClientECPresentationManager from "@src/MultiClientECPresentationManager";
 import "./IModeHostSetup";
 
 describe("ECPresentation", () => {
@@ -34,7 +35,7 @@ describe("ECPresentation", () => {
     it("creates a manager instance", () => {
       expect(() => ECPresentation.manager).to.throw(ECPresentationError);
       ECPresentation.initialize();
-      expect(ECPresentation.manager).to.be.instanceof(ECPresentationManager);
+      expect(ECPresentation.manager).to.be.instanceof(MultiClientECPresentationManager);
     });
 
   });
@@ -54,8 +55,8 @@ describe("ECPresentation", () => {
 
     it("disposes and overwrites manager instance", () => {
       ECPresentation.initialize();
-      const otherManager = new ECPresentationManager();
-      const disposeSpy = spy.on(ECPresentation.manager, ECPresentationManager.prototype.dispose.name);
+      const otherManager = new SingleClientECPresentationManager();
+      const disposeSpy = spy.on(ECPresentation.manager, SingleClientECPresentationManager.prototype.dispose.name);
       expect(ECPresentation.manager).to.be.not.null;
       expect(ECPresentation.manager).to.not.eq(otherManager);
       ECPresentation.setManager(otherManager);

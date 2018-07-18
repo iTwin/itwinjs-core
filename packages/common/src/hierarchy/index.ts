@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Hierarchies */
 
-export { NodeKey, NodeKeyPath } from "./Key";
+export { NodeKey, NodeKeyPath, StandardNodeTypes } from "./Key";
 export { BaseNodeKey, ECInstanceNodeKey, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey } from "./Key";
 export { default as Node } from "./Node";
 export { default as NodePathElement } from "./NodePathElement";

@@ -1,0 +1,13 @@
+{
+  "ruleSetId": "default",
+  "rules": [{
+    "type": "RootNode",
+    "specifications": [{
+      "type": "CustomNode",
+      "nodeType": "nodeType",
+      "label": "label",
+      "description": "description",
+      "imageId": "imageId"
+    }]
+  }]
+}

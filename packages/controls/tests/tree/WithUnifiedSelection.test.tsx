@@ -137,7 +137,7 @@ describe("Tree withUnifiedSelection", () => {
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />, { disableLifecycleMethods: true });
-    component.instance().componentDidUpdate!(component.props(), component.state());
+    component.instance().componentDidUpdate!(component.props(), component.state()!);
   });
 
   describe("selection handling", () => {

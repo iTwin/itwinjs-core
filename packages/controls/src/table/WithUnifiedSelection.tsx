@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { KeySet, InstanceKey } from "@bentley/ecpresentation-common";
+import { KeySet, InstanceKey, Subtract } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
 import { Table as BaseTable, TableProps, RowItem } from "@bentley/ui-components";
-import { getDisplayName, Subtract } from "../common/Utils";
+import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import ECPresentationTableDataProvider from "./DataProvider";
 
