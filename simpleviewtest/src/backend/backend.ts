@@ -18,7 +18,7 @@ function setupStandaloneConfiguration() {
   if (filename !== undefined) {
     const configuration: any = {};
     configuration.standalone = true;
-    configuration.standalonePath = filename;
+    configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
     fs.writeFileSync(path.join(__dirname, "public", "configuration.json"), JSON.stringify(configuration), "utf8");

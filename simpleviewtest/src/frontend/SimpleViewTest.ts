@@ -628,7 +628,7 @@ function wireIconsToFunctions() {
       try {
         await resetStandaloneIModel(configuration.standalonePath + "/" + files[0].name);
       } catch {
-        alert("Error Opening iModel - Make you are selecting files from " + configuration.standalonePath);
+        alert("Error Opening iModel - Make sure you are selecting files from the following directory: " + configuration.standalonePath);
         const spinner = document.getElementById("spinner") as HTMLDivElement;
         spinner.style.display = "none";
       }
