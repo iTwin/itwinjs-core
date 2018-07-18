@@ -135,7 +135,7 @@ export class IndexedGeometryParams implements IDisposable {
   }
 }
 
-// A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
+/** A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer. */
 export abstract class IndexedGeometry extends CachedGeometry {
   protected readonly _params: IndexedGeometryParams;
   protected _wantWoWReversal(_target: Target): boolean { return false; }
@@ -158,6 +158,17 @@ export abstract class IndexedGeometry extends CachedGeometry {
 
   public get qOrigin() { return this._params.positions.origin; }
   public get qScale() { return this._params.positions.scale; }
+}
+
+/** A geometric primitive representative of a set of clipping planes to clip a volume of space. */
+export class ClipMaskGeometry extends IndexedGeometry {
+  public constructor(indices: Uint32Array, vertices: QPoint3dList) {
+    super(IndexedGeometryParams.create(vertices.toTypedArray(), vertices.params, indices)!);
+  }
+
+  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }
+  public getRenderPass(_target: Target): RenderPass { return RenderPass.None; }
+  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }
 
 class SkyBoxSides {
