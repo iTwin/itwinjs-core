@@ -16,6 +16,7 @@ import { IModelVersion } from "../IModelVersion";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
+import { ViewStateData } from "../ViewProps";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -62,7 +63,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public loadMetaDataForClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<any[]> { return this.forward.apply(this, arguments); }
   public getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]> { return this.forward.apply(this, arguments); }
   public getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> { return this.forward.apply(this, arguments); }
+  public getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateData> { return this.forward.apply(this, arguments); }
   public readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward.apply(this, arguments); }
   public isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
   public attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }

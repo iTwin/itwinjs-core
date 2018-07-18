@@ -12,12 +12,10 @@ import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentl
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import { AccuDrawFlags } from "../AccuDraw";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
-import { HitDetail, HitSource } from "../HitDetail";
-import { LocateOptions, LocateResponse } from "../ElementLocateManager";
+import { TentativeOrAccuSnap } from "../AccuSnap";
+import { GraphicBuilder } from "../rendering";
 
 const scratchFrustum = new Frustum();
 const scratchTransform1 = Transform.createIdentity();
@@ -269,6 +267,7 @@ export abstract class ViewManip extends ViewTool {
   public stoppedOverHandle = false;
   public wantMotionStop = true;
   public targetCenterValid = false;
+  public targetCenterLocked = false;
   public supportsOrientationEvents = true;
   public nPts = 0;
   public forcedHandle = ViewHandleType.None;
@@ -278,16 +277,10 @@ export abstract class ViewManip extends ViewTool {
     public isDragOperationRequired: boolean = false) {
     super();
     this.viewHandles = new ViewHandleArray(this);
-    // if (handleMask & ViewHandleType.ViewPan) this.viewHandles.add(new ViewPan(this));
-    // if (handleMask & ViewHandleType.Rotate) {
-    //   this.synchViewBallInfo(true);
-    //   this.viewHandles.add(new ViewRotate(this));
-    // }
-    // if (handleMask & ViewHandleType.ViewWalk) this.viewHandles.add(new ViewWalk(this));
 
-    // We call ChangeViewport here and in _PostInstall.  There is some code that relies on it being
+    // We call changeViewport here and in postInstall.  There is some code that relies on it being
     // set up after the constructor. However, when this tool is installed there may be a call to
-    // OnCleanup that makes it appear that the viewport is not attached to a view command.
+    // onCleanup that makes it appear that the viewport is not attached to a view command.
     this.changeViewport(viewport);
   }
 
@@ -309,22 +302,6 @@ export abstract class ViewManip extends ViewTool {
     this.frustumValid = false;
 
     this.viewHandles.onReinitialize();
-  }
-
-  public static getTargetHitDetail(viewport: Viewport, worldPoint: Point3d): HitDetail | undefined {
-    // NOTE: Don't change options without restoring the old values or it will affect the suspended primitive...
-    const options: LocateOptions = IModelApp.locateManager.options; // this is a reference
-    const saveDisabled = options.disableIModelFilter;
-    const saveHitSource = options.hitSource;
-
-    options.disableIModelFilter = true;
-    options.hitSource = HitSource.MotionLocate;
-
-    const path = IModelApp.locateManager.doLocate(new LocateResponse(), true, worldPoint, viewport, false);
-
-    options.disableIModelFilter = saveDisabled;
-    options.hitSource = saveHitSource;
-    return path;
   }
 
   public onDataButtonDown(ev: BeButtonEvent): boolean {
@@ -478,99 +455,27 @@ export abstract class ViewManip extends ViewTool {
     return false;
   }
 
-  /** Get the geometric center of the union of the ranges of all selected elements. */
-  private getSelectedElementCenter(): Point3d | undefined {
-    // DgnElementIdSet const& elemSet = SelectionSetManager:: GetManager().GetElementIds();
-
-    // if (0 == elemSet.size())
-    //   return ERROR;
-
-    // DRange3d range = DRange3d:: NullRange();
-    // DgnDbR dgnDb = SelectionSetManager:: GetManager().GetDgnDbR();
-
-    // for (DgnElementId elemId : elemSet)
-    // {
-    //   DgnElementCP el = dgnDb.Elements().FindLoadedElement(elemId); // Only care about already loaded elements...
-
-    //   if (NULL == el)
-    //     continue;
-
-    //   DPoint3d origin;
-    //   GeometrySourceCP geom = el -> ToGeometrySource();
-    //   if (geom && geom -> HasGeometry()) {
-    //     DRange3d elRange = geom -> CalculateRange3d();
-
-    //     origin.Interpolate(elRange.low, 0.5, elRange.high);
-    //     range.Extend(origin);
-    //   }
-    // }
-
-    // if (range.IsNull())
-    //   return ERROR;
-
-    // center.Interpolate(range.low, 0.5, range.high);
-    // return SUCCESS;
-    return undefined;
-  }
-
   public updateTargetCenter(): void {
     const vp = this.viewport;
     if (!vp)
       return;
 
-    if (this.targetCenterValid) {
-      // React to AccuDraw compass being moved using "O" shortcut or tentative snap...
-      if (this.isDragging)
-        return;
-
-      // DPoint3d  center = this.getTargetCenterWorld();
-      // AccuDrawR accudraw = AccuDraw:: GetInstance();
-
-      // if (accudraw.IsActive()) {
-      //   DPoint3d    testPoint;
-      //   accudraw.GetOrigin(testPoint);
-      //   // Redefine target center if changed...world-locked if moved by user after tool starts...
-      //   if (!testPoint.IsEqual(center, 1.0e-10))
-      //     SetTargetCenterWorld(& testPoint, true);
-      // }
-      // else if (TentativePoint:: GetInstance().IsActive())
-      // {
-      //   // Clear current tentative, i.e. no datapoint to accept...
-      //   DPoint3d    testPoint = * TentativePoint:: GetInstance().GetPoint();
-
-      //   // Redefine target center if changed...world-locked if moved by user after tool starts...
-      //   if (!testPoint.IsEqual(center, 1.0e-10))
-      //     SetTargetCenterWorld(& testPoint, true);
-
-      //   TentativePoint:: GetInstance().Clear(true);
-
-      //   // NOTE: AccuDraw won't normally grab focus because it is disabled for viewing tools...
-      //   AccuDrawShortcuts:: RequestInputFocus();
-      // }
-
+    if (this.targetCenterValid)
       return;
-    }
-    // TentativePoint & tentPoint = TentativePoint:: GetInstance();
-    // // Define initial target center for view ball...
-    // if (tentPoint.IsActive()) {
-    //   SetTargetCenterWorld(tentPoint.GetPoint(), true);
-    //   return;
-    // }
 
-    // if (tentPoint.IsSnapped() || AccuSnap:: GetInstance().IsHot())
-    // {
-    //   SetTargetCenterWorld(TentativeOrAccuSnap:: GetCurrentPoint(), true);
-    //   return;
-    // }
-
-    let center = this.getSelectedElementCenter();
-    if (center && this.isPointVisible(center)) {
-      this.setTargetCenterWorld(center, true);
+    if (IModelApp.tentativePoint.isActive) {
+      this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), false);
+      this.targetCenterLocked = true; // Consider point locked for this tool instance...
       return;
     }
 
-    center = vp.viewCmdTargetCenter;
+    if (TentativeOrAccuSnap.isHot()) {
+      this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), false);
+      this.targetCenterLocked = true; // Consider point locked for this tool instance...
+      return;
+    }
 
+    let center = vp.viewCmdTargetCenter;
     if (center && this.isPointVisible(center)) {
       this.setTargetCenterWorld(center, true);
       return;
@@ -578,8 +483,7 @@ export abstract class ViewManip extends ViewTool {
 
     center = scratchPoint3d1;
     if (!vp.view.allow3dManipulations()) {
-      vp.npcToWorld(NpcCenter, center);
-      center.z = 0.0;
+      vp.npcToWorld(NpcCenter, center); center.z = 0.0;
     } else {
       vp.determineDefaultRotatePoint(center);
     }
@@ -642,25 +546,22 @@ export abstract class ViewManip extends ViewTool {
     // we currently have no built-in support for dynamics, therefore nothing to update.
   }
 
-  public setTargetCenterWorld(pt: Point3d, snapOrPrecision: boolean) {
+  public setTargetCenterWorld(pt: Point3d, lockTarget: boolean) {
     this.targetCenterWorld.setFrom(pt);
     this.targetCenterValid = true;
-    const vp = this.viewport;
-    if (!vp)
+    this.targetCenterLocked = lockTarget;
+
+    if (!this.viewport)
       return;
 
-    if (!vp.view.allow3dManipulations())
+    if (!this.viewport.view.allow3dManipulations())
       this.targetCenterWorld.z = 0.0;
 
-    vp.viewCmdTargetCenter = (snapOrPrecision ? pt : undefined);
-
-    const viewPt = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
-    const ev = new BeButtonEvent();
-    ev.initEvent(this.targetCenterWorld, this.targetCenterWorld, viewPt, vp, CoordSource.User, 0);
-    IModelApp.toolAdmin.setAdjustedDataPoint(ev);
+    this.viewport.viewCmdTargetCenter = (lockTarget ? pt : undefined);
   }
 
-  public invalidateTargetCenter() { this.targetCenterValid = false; }
+  public invalidateTargetCenter() { this.targetCenterValid = this.targetCenterLocked = false; }
+  public isTargetCenterLocked(): boolean { return this.targetCenterLocked; }
 
   /** Determine whether the supplied point is visible in this Viewport. */
   public isPointVisible(testPt: Point3d): boolean {
@@ -819,8 +720,8 @@ export abstract class ViewManip extends ViewTool {
       this.viewHandles.add(new ViewRotate(this));
     }
 
-    // if (this.handleMask & ViewHandleType.TargetCenter)
-    //   this.viewHandles.add(new TargetCenter(this));
+    if (this.handleMask & ViewHandleType.TargetCenter)
+      this.viewHandles.add(new ViewTargetCenter(this));
 
     // if (this.handleMask & ViewHandleType.ViewScroll)
     //   this.viewHandles.add(new ViewScroll(this));
@@ -843,10 +744,97 @@ export abstract class ViewManip extends ViewTool {
     // if (this.handleMask & ViewHandleType.ViewLook)
     //   this.viewHandles.add(new ViewLook(this));
   }
+}
 
-  // public showProjectExtentsOff(): void {
-  //   if (!this.)
-  // }
+/** ViewingToolHandle for modifying the view's target point for operations like rotate */
+class ViewTargetCenter extends ViewingToolHandle {
+  public get handleType() { return ViewHandleType.TargetCenter; }
+  public checkOneShot(): boolean { return false; } // Don't exit tool after moving target in single-shot mode...
+
+  public firstPoint(ev: BeButtonEvent) {
+    if (!ev.viewport)
+      return false;
+    IModelApp.accuSnap.enableSnap(true);
+    return true;
+  }
+
+  public testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
+    if (this.viewTool.isDragOperationRequired)
+      return false; // Target center handle is not usable in this mode...
+
+    const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
+    const distance = targetPt.distanceXY(ptScreen);
+    const locateThreshold = this.viewTool.viewport!.pixelsFromInches(0.15);
+
+    if (distance > locateThreshold)
+      return false;
+
+    out.distance = distance;
+    out.priority = ViewManipPriority.High;
+    return true;
+  }
+
+  public addCross(graphic: GraphicBuilder, size: number, x: number, y: number): void {
+    const lineHorzPts = [new Point2d(), new Point2d()];
+    const lineVertPts = [new Point2d(), new Point2d()];
+
+    lineHorzPts[0].x = x - size;
+    lineHorzPts[0].y = y;
+
+    lineHorzPts[1].x = x + size;
+    lineHorzPts[1].y = y;
+
+    lineVertPts[0].x = x;
+    lineVertPts[0].y = y - size;
+
+    lineVertPts[1].x = x;
+    lineVertPts[1].y = y + size;
+
+    graphic.addLineString2d(lineHorzPts, 0.0);
+    graphic.addLineString2d(lineVertPts, 0.0);
+  }
+
+  public drawHandle(context: DecorateContext, hasFocus: boolean): void {
+    if (context.viewport !== this.viewTool.viewport)
+      return;
+
+    let sizeInches = 0.2;
+    if (!hasFocus && this.viewTool.isDragging) {
+      sizeInches = 0.1; // Display small target when dragging...
+      hasFocus = false;
+    }
+
+    const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
+    const pixelSize = context.viewport.pixelsFromInches(sizeInches);
+    const graphic = context.createViewOverlay();
+
+    const shadow = ColorDef.from(0, 0, 0, 225);
+    graphic.setSymbology(shadow, shadow, hasFocus ? 9 : 6);
+    this.addCross(graphic, pixelSize + 2, targetPt.x + 1, targetPt.y + 1);
+
+    const outline = ColorDef.from(0, 0, 0, 10);
+    graphic.setSymbology(outline, outline, hasFocus ? 5 : 3);
+    this.addCross(graphic, pixelSize + 1, targetPt.x, targetPt.y);
+
+    const cross = ColorDef.from(254, 255, 255, 10);
+    graphic.setSymbology(cross, cross, hasFocus ? 3 : 1);
+    this.addCross(graphic, pixelSize, targetPt.x, targetPt.y);
+
+    context.addViewOverlay(graphic.finish());
+  }
+
+  public doManipulation(ev: BeButtonEvent, inDynamics: boolean) {
+    if (ev.viewport !== this.viewTool.viewport)
+      return false;
+
+    this.viewTool.setTargetCenterWorld(ev.point, !inDynamics);
+    ev.viewport!.invalidateDecorations();
+
+    if (!inDynamics)
+      IModelApp.accuSnap.enableSnap(false);
+
+    return false; // false means don't do screen update
+  }
 }
 
 /** ViewingToolHandle for performing the "pan view" operation */
@@ -932,14 +920,8 @@ class ViewRotate extends ViewingToolHandle {
   public getHandleCursor() { return BeCursor.Rotate; }
 
   public testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
-    const tool = this.viewTool;
-    const targetPt = tool.viewport!.worldToView(tool.targetCenterWorld);
-    const dist = targetPt.distanceXY(ptScreen);
-
-    // add 3 to give a little slop around circle
-    // if (m_viewTool->UseSphere() && viewport->Allow3dManipulations() && distance > (m_viewTool->GetBallRadius() + 3))
-    //     return false;
-    out.distance = dist;
+    const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
+    out.distance = targetPt.distanceXY(ptScreen);
     out.priority = ViewManipPriority.Normal;
     return true;
   }
@@ -951,45 +933,14 @@ class ViewRotate extends ViewingToolHandle {
     const tool = this.viewTool;
     const vp = ev.viewport!;
 
-    if (/*###TODO !tool.isTargetCenterLocked && */ vp.view.allow3dManipulations()) {
+    if (!tool.isTargetCenterLocked() && vp.view.allow3dManipulations()) {
       const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
       if (undefined !== visiblePoint)
         tool.setTargetCenterWorld(visiblePoint, false);
     }
 
-    let pickPt: Point3d;
-    let pickPtOrig: Point3d;
-
-    const accudraw = IModelApp.accuDraw;
-    if (accudraw.isActive()) {
-      const aDrawOrigin = accudraw.origin;
-      const aDrawMatrix = accudraw.getRotation();
-      pickPt = ev.point.clone(); // Use adjusted point when AccuDraw is active...
-      pickPtOrig = pickPt.clone();
-
-      // Lock to the construction plane
-      const distWorld = pickPt.clone();
-      const viewZWorld = (vp.view.is3d() && vp.isCameraOn()) ? vp.view.camera.eye.vectorTo(distWorld) : vp.rotMatrix.getRow(2);
-      const aDrawZWorld = aDrawMatrix.getRow(2);
-      LegacyMath.linePlaneIntersect(distWorld, distWorld, viewZWorld, aDrawOrigin, aDrawZWorld, false);
-
-      let flags = AccuDrawFlags.AlwaysSetOrigin | AccuDrawFlags.SetModePolar | AccuDrawFlags.FixedOrigin;
-      const activeOrg = this.viewTool.targetCenterWorld;
-      const aDrawX = activeOrg.vectorTo(distWorld);
-
-      if (aDrawX.normalizeWithLength(aDrawX).mag > 0.00001) {
-        const aDrawZ = aDrawMatrix.getRow(2);
-        const aDrawY = aDrawZ.crossProduct(aDrawX);
-        RotMatrix.createRows(aDrawX, aDrawY, aDrawZ, aDrawMatrix);
-        aDrawMatrix.normalizeRowsInPlace();
-        flags |= AccuDrawFlags.SetRMatrix;
-      }
-
-      accudraw.setContext(flags, activeOrg, aDrawMatrix);
-    } else {
-      pickPt = ev.rawPoint.clone(); // Use raw point when AccuDraw is not active, don't want tentative location...
-      pickPtOrig = pickPt.clone();
-    }
+    const pickPt = ev.rawPoint.clone();
+    const pickPtOrig = pickPt.clone();
 
     const viewPt = vp.worldToView(pickPt);
     tool.viewPtToSpherePt(viewPt, true, this.ballVector0);
@@ -1084,45 +1035,6 @@ class ViewRotate extends ViewingToolHandle {
     this.viewTool.viewport!.setupViewFromFrustum(frustum);
   }
 }
-
-// class WalkDecoration {
-//   constructor(parentElement, origin, color) {
-//     this.parentElement = parentElement;
-
-//     const ruleColor = '1px solid ' + Cesium.defaultValue(color, 'white');
-//     const halfLen = 7;
-//     const fullLen = halfLen * 2 + 1;
-
-//     const hor = document.createElement('div');
-//     hor.className = 'bim-overlay-box-rule-horizontal';
-//     this.hor = hor;
-//     const style = hor.style;
-//     style.height = '0px';
-//     style.width = fullLen + 'px';
-//     style.top = origin.y + 'px';
-//     style.left = (origin.x - halfLen) + 'px';
-//     style.borderBottom = ruleColor;
-//     parentElement.appendChild(hor);
-
-//     const ver = document.createElement('div');
-//     ver.className = 'bim-overlay-box-rule-vertical';
-//     this.ver = ver;
-//     style = ver.style;
-//     style.width = '0px';
-//     style.height = fullLen + 'px';
-//     style.left = origin.x + 'px';
-//     style.top = (origin.y - halfLen) + 'px';
-//     style.borderLeft = ruleColor;
-//     parentElement.appendChild(ver);
-//   }
-//   public destroy() {
-//      if (!this.destroyed) {
-//        this.destroyed = true;
-//        this.parentElement.removeChild(this.hor);
-//        this.parentElement.removeChild(this.ver);
-//     }
-//   }
-// }
 
 class NavigateMotion {
   public deltaTime = 0;
@@ -1582,7 +1494,7 @@ export class PanTool extends ViewManip {
 export class RotateTool extends ViewManip {
   public static toolId = "View.Rotate";
   constructor(vp: Viewport, oneShot = false, scrollOnNoMotion = false, isDragOperationRequired = false) {
-    super(vp, ViewHandleType.ViewPan | ViewHandleType.Rotate, oneShot, scrollOnNoMotion, isDragOperationRequired);
+    super(vp, isDragOperationRequired ? ViewHandleType.Rotate : ViewHandleType.TargetCenter | ViewHandleType.ViewPan | ViewHandleType.Rotate, oneShot, scrollOnNoMotion, isDragOperationRequired);
   }
 }
 
@@ -2059,16 +1971,17 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     const vp = this.viewport!;
     const info = ev.gestureInfo!;
-
     const zoomRatio = this.computeZoomRatio(info);
 
     // reset frustum to original position
     if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
-    const zoomCenter = Point3d.create();
-    ev.getTargetPoint(zoomCenter);
-    vp.zoom(zoomCenter, zoomRatio);
+    let zoomCenter = (vp.view.allow3dManipulations() ? vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0) : undefined); // ### TODO - Test if this is useful when using gesture to zoom...
+    if (undefined === zoomCenter)
+      zoomCenter = ev.point;
+
+    vp.zoom(ev.point, zoomRatio);
     this.saveTouchStopData(info);
     this.doUpdate(true);
 
@@ -2090,6 +2003,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     return this.endGesture();
   }
 }
+
 export class ViewLookTool extends ViewManip {
   public static toolId = "View.Look";
   constructor(vp: Viewport) {

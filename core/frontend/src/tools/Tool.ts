@@ -253,26 +253,6 @@ export class BeButtonEvent {
     result.setFrom(this);
     return result;
   }
-
-  /**
-   * Get the anchor point for a Zoom operation, based on this button event, by supplying a point
-   * for the result.
-   * @return boolean value of whether the point comes from an AccuSnap location
-   */
-  public getTargetPoint(result: Point3d): boolean {
-    let isSnap: boolean;
-    if (IModelApp.tentativePoint.isActive) {
-      isSnap = true;
-      result.setFrom(IModelApp.tentativePoint.getPoint());
-    } else if (IModelApp.accuSnap.isHot()) {
-      isSnap = false;
-      result.setFrom(this.rawPoint);
-    } else {
-      isSnap = CoordSource.User !== this.coordsFrom;
-      result.setFrom(isSnap ? this.point : this.rawPoint);
-    }
-    return isSnap;
-  }
 }
 
 /** Describes a "gesture" input originating from a touch-input device. */

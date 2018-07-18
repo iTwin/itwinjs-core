@@ -46,14 +46,14 @@ export class IdleTool extends InteractiveTool {
       viewTool = IModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
       viewTool = IModelApp.tools.create("View.Rotate", vp, true, false, true) as ViewTool | undefined;
-    } else if (false) {
-      /* ###TODO: Other view tools if needed... */
     } else {
       const currTool = IModelApp.toolAdmin.activeViewTool;
       if (currTool && currTool instanceof ViewManip) {
+        // A current tool is active. If it's not already changing the view, tell it to choose the pan handle if it has one (leave it active regardless)...
         if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
           currTool.forcedHandle = ViewHandleType.ViewPan;
-
+        // Since we won't get a data button, we need to explicitly clear the tentative...
+        IModelApp.tentativePoint.clear(true);
         return true;
       }
 

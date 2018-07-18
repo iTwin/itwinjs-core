@@ -10,6 +10,12 @@
     "ProjectExtents": "Project Extents",
     "ModifyProjectExtents": "Modify Project Extents"
   },
+  "Viewing": {
+    "InvalidWindow": "Invalid window",
+    "MinWindow": "Minimum window",
+    "MaxWindow": "Maximum window",
+    "MaxZoom": "Maximum Zoom"
+  },
   "ElementUndo": {
     "NothingToUndo": "No actions to undo",
     "NothingToRedo": "Nothing has been undone",
