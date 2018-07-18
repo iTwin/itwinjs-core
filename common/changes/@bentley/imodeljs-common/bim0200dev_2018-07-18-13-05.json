@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Make fit tool ignore web mercator tile range.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "ray.bentley@bentley.com"
+}

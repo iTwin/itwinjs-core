@@ -555,7 +555,7 @@ function doSyncIModel(_event: any) {
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
-    "Avg. FPS (ms): " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
+    "Avg. FPS: " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
     + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
     + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2);
 }
