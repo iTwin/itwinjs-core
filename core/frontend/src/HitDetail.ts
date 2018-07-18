@@ -7,8 +7,7 @@ import { Viewport } from "./Viewport";
 import { Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./frontend";
 import { IModelApp } from "./IModelApp";
-
-// tslint:disable:variable-name
+import { Id64 } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 
 export const enum SnapMode { // NEEDSWORK: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,
@@ -103,10 +102,9 @@ export class HitDetail {
 
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
-  /** @hidden */
-  public isElementHit(): boolean { return true; } // NEEDSWORK: Check that sourceId is a valid Id64 for an element...
-
-  /** Make a copy of this HitDetail. */
+  /** Return whether sourceId is for a persistent element and not a pickable decoration. */
+  public isElementHit(): boolean { const id = new Id64(this.sourceId); return (id.isValid() && (0xffffffff !== id.getHigh())); }
+  /** Create a deep copy of this HitDetail */
   public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */

@@ -23,6 +23,7 @@ import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./
 import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
+import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 
 // tslint:disable:no-console
 
@@ -1667,48 +1668,7 @@ export class Viewport {
     return this.target.readPixels(rect, selector);
   }
 
-  /**
-   * Attempt to determine the nearest visible geometry point within radius of supplied pick point.
-   * @param pickPoint Center point in world coordinates
-   * @param radius Integer radius of the circular area to include, in pixels
-   * @param out Optional Point3d pre-allocated to hold the result
-   * @returns the coordinates of the point within the circular area which is closest to the camera.
-   */
-  public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
-    radius = Math.floor(radius + 0.5);
-    const inView = this.worldToView(pickPoint);
-    const viewCenter = new Point2d(Math.floor(inView.x + 0.5), Math.floor(inView.y + 0.5));
-    const viewRect = this.viewRect;
-    const pickRect = new ViewRect(viewCenter.x - radius, viewCenter.y - radius, viewCenter.x + radius + 1, viewCenter.y + radius + 1);
-
-    const overlapRect = pickRect.computeOverlap(viewRect);
-    if (undefined === overlapRect)
-      return undefined;
-
-    const pixels = this.readPixels(overlapRect, Pixel.Selector.Distance);
-    if (undefined === pixels)
-      return undefined;
-
-    const testPoint = new Point2d();
-    const result = undefined !== out ? out : new Point3d();
-    for (testPoint.x = viewCenter.x - radius; testPoint.x <= viewCenter.x + radius; testPoint.x++) {
-      for (testPoint.y = viewCenter.y - radius; testPoint.y <= viewCenter.y + radius; testPoint.y++) {
-        if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
-          return result;
-      }
-    }
-
-    return undefined;
-  }
-
-  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
-    const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
-    if (undefined !== npc)
-      this.npcToWorld(npc, npc);
-
-    return npc;
-  }
-
+  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
     if (z <= 0.0)
@@ -1723,6 +1683,34 @@ export class Viewport {
     else
       result.z = z;
 
+    return result;
+  }
+
+  /** Get the point at the specified x and y location in the pixel buffer in world coordinates */
+  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+    const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
+    if (undefined !== npc)
+      this.npcToWorld(npc, npc);
+
+    return npc;
+  }
+
+  /**
+   * Find a point on geometry within radius of supplied pick point.
+   * @param pickPoint Center point in world coordinates
+   * @param radius radius of the circular area to include in pixels
+   * @param out Optional Point3d pre-allocated to hold the result
+   * @returns the coordinates of the geometry point within the circular area nearest to the supplied pick point
+   */
+  public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
+    const picker = new ElementPicker();
+    const options = new LocateOptions();
+
+    if (0 === picker.doPick(this, pickPoint, radius, options))
+      return undefined;
+
+    const result = undefined !== out ? out : new Point3d();
+    result.setFrom(picker.getHit(0)!.getPoint());
     return result;
   }
 }
