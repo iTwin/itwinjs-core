@@ -383,7 +383,6 @@ function changeSkyBox(): void {
 
   const select = (document.getElementById("skyBoxList") as HTMLSelectElement)!;
   spatialView.setSkyBox(select.value);
-  showStatus("skybox", select.value);
 }
 
 function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
