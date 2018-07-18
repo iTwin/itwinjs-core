@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
 import { Primitive } from "./Primitive";
 import { Target } from "./Target";
@@ -61,15 +61,27 @@ export class PointStringGeometry extends LUTGeometry {
   }
 
   public static create(args: PolylineArgs): PointStringGeometry | undefined {
-    assert(args.polylines.length === 1);
-    const vertexIndices = VertexLUT.convertIndicesToTriplets(args.polylines[0].vertIndices);
+    if (0 === args.polylines.length)
+      return undefined;
+    let vertIndices = args.polylines[0].vertIndices;
+    if (1 < args.polylines.length) {
+      // ###TODO: This shouldn't happen, and similar assertion in C++ is not triggered...
+      // assert(args.polylines.length === 1);
+      vertIndices = [];
+      for (const polyline of args.polylines) {
+        for (const vertIndex of polyline.vertIndices) {
+          vertIndices.push(vertIndex);
+        }
+      }
+    }
+    const vertexIndices = VertexLUT.convertIndicesToTriplets(vertIndices);
     const indices = BufferHandle.createArrayBuffer(vertexIndices);
     if (undefined !== indices) {
       const lutParams: VertexLUT.Params = new VertexLUT.Params(new VertexLUT.SimpleBuilder(args), args.colors);
       const info = new PointStringInfo(args);
       const lut = lutParams.toData(info.vertexParams);
       if (undefined !== lut) {
-        return new PointStringGeometry(indices, args.polylines[0].vertIndices.length, lut, info);
+        return new PointStringGeometry(indices, vertIndices.length, lut, info);
       }
     }
     return undefined;
