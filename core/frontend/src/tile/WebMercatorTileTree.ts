@@ -163,8 +163,8 @@ class WebMercatorTileLoader extends TileLoader {
 
   private async loadTextureImage(imageSource: ImageSource, model: GeometricModelState, system: RenderSystem): Promise<RenderTexture | undefined> {
     try {
-      const isCanceled = false;// Tbd...
-      const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection)
+      const isCanceled = false;  // Tbd...
+      const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
       return ImageUtil.extractImage(imageSource)
         .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, model.iModel, textureParams))
         .catch((_) => undefined);
