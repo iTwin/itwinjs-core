@@ -74,8 +74,10 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public provider: ImageryProvider;
 
-  public constructor(provider: ImageryProvider, projectExtents: Range3d) {
-    this.rootTile = new WebMercatorTileProps("0_0_0", projectExtents, undefined);
+  public constructor(provider: ImageryProvider) {
+    const worldRadius = 6.5E6;
+    const worldRange = Range3d.createXYZXYZ(-worldRadius, -worldRadius, -worldRadius, worldRadius, worldRadius, worldRadius);
+    this.rootTile = new WebMercatorTileProps("0_0_0", worldRange, undefined);
     this.location = Transform.createIdentity();
     this.provider = provider;
   }
@@ -466,7 +468,7 @@ class MapBoxProvider extends ImageryProvider {
 /** @hidden */
 export class WebMercatorModelState extends SpatialModelState {
   // The Tile Tree generated from a WebMercator map model.
-  private static async getTileTreeProps(jsonProperties: any, iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
+  private static async getTileTreeProps(jsonProperties: any, _iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
 
     if (jsonProperties.hasOwnProperty("providerName") && jsonProperties.hasOwnProperty("providerData")) {
       const providerName: string = jsonProperties.providerName;
@@ -482,7 +484,7 @@ export class WebMercatorModelState extends SpatialModelState {
         throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
       }
       await (provider.initialize());
-      return new WebMercatorTileTreeProps(provider, iModel.projectExtents);
+      return new WebMercatorTileTreeProps(provider);
     }
     throw new BentleyError(IModelStatus.BadModel, "WebMercator specification invalid");
   }
