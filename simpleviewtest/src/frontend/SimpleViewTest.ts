@@ -71,9 +71,6 @@ interface SVTConfiguration {
   standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
 }
 
-// Entry point - run the main function
-setTimeout(() => main(), 1000);
-
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
 function retrieveConfiguration(): Promise<void> {
   return new Promise((resolve, _reject) => {
@@ -771,3 +768,6 @@ async function main() {
   wireIconsToFunctions();
   console.log("This is from frontend/main");
 }
+
+// Entry point - run the main function
+setImmediate(() => main());
