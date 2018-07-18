@@ -6,7 +6,6 @@
 import { Vector3d, XYAndZ } from "@bentley/geometry-core";
 
 export class OctEncodedNormal {
-  private readonly _value: number;
   private static scratchUInt16 = new Uint16Array(1);
   private static clamp(val: number, minVal: number, maxVal: number): number { return val < minVal ? minVal : (val > maxVal ? maxVal : val); }
   private static clampUint8(val: number): number { return this.roundUint16(0.5 + (this.clamp(val, -1, 1) * 0.5 + 0.5) * 255); }
@@ -25,8 +24,8 @@ export class OctEncodedNormal {
     return this.clampUint8(ry) << 8 | this.clampUint8(rx);
   }
 
-  public get value(): number { return this._value; }
-  constructor(val: number) { this._value = OctEncodedNormal.roundUint16(val); }
+  public readonly value: number;
+  public constructor(val: number) { this.value = OctEncodedNormal.roundUint16(val); }
 
   public static fromVector(val: XYAndZ) { return new OctEncodedNormal(this.encode(val)); }
   public decode(): Vector3d | undefined {
