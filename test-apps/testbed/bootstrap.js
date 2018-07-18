@@ -4,7 +4,7 @@
 const path = require("path");
 const fs = require("fs");
 const { ipcRenderer, remote } = require("electron");
-global.___IMODELJS_CORE_DIRNAME___ = path.join(__dirname, "..");
+global.___IMODELJS_CORE_DIRNAME___ = path.join(__dirname, "../..");
 global.___TESTBED_IPC_RENDERER___ = ipcRenderer;
 remote.getCurrentWindow().setTitle("iModelJs Testbed");
 remote.require(path.join(__dirname, "lib/backend/index"));
