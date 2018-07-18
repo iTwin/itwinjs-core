@@ -1196,7 +1196,7 @@ export class Viewport {
     delta.y *= factor;
 
     // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-    const validSize = view.validateViewDelta(delta, false);
+    const validSize = view.validateViewDelta(delta, true);
     if (ViewStatus.Success !== validSize)
       return validSize;
 

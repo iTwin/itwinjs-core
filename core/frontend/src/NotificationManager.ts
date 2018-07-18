@@ -22,9 +22,6 @@ export const enum OutputMessagePriority {
   Warning = 11,
   Info = 12,
   Debug = 13,
-  OldStyle = 14,
-  TempRight = 15,
-  TempLeft = 16,
   Fatal = 17,
 }
 
