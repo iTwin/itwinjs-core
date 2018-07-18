@@ -234,7 +234,7 @@ export declare class NativeDgnDb {
   /**
    * Get an element's properties
    * @param opts Identifies the element
-   * @param In case of success, the result property of the returned object will be the element's properties.
+   * @returns In case of success, the result property of the returned object will be the element's properties.
    */
   public getElement(opts: string): ErrorStatusOrResult<IModelStatus, any>;
 

@@ -15,7 +15,7 @@ import { IdleTool } from "./IdleTool";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
+import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { NpcCenter } from "@bentley/imodeljs-common";
@@ -38,7 +38,7 @@ export class ToolState {
 
 export class SuspendedToolState {
   private readonly toolState: ToolState;
-  private readonly accuSnapState: AccuSnapToolState;
+  private readonly accuSnapState: AccuSnap.ToolState;
   private readonly viewCursor?: BeCursor;
   private inDynamics: boolean;
   private shuttingDown = false;
@@ -478,12 +478,10 @@ export class ToolAdmin {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }
 
-  public getInfoString(hit: HitDetail, delimiter: string): string {
-    let tool = this.activeTool;
-    if (!tool)
-      tool = this.idleTool;
-
-    return tool.getInfoString(hit, delimiter);
+  /** Ask the active tool to provide a tooltip message for the supplied HitDetail. */
+  public async getToolTip(hit: HitDetail): Promise<string> {
+    const tool = this.activeTool ? this.activeTool : this.idleTool;
+    return tool.getToolTip(hit);
   }
 
   // public onToolStateIdChanged(_tool: InteractiveTool, _toolStateId?: string): boolean { return false; }

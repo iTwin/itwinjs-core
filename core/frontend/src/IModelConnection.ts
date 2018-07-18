@@ -310,17 +310,36 @@ export class IModelConnection extends IModel {
 
   private _snapPending = false;
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    if (this._snapPending)
+      throw Error("busy");
+
     this._snapPending = true; // save flag indicating we're in the process of generating a snap
     const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
     await response; // after snap completes, turn off flag
     this._snapPending = false;
     return response; // return fulfilled promise
   }
+  public _cancelPending = false;
   public async cancelSnap(): Promise<void> {
+    if (this._cancelPending)
+      throw Error("busy");
+
+    this._cancelPending = true; // save flag indicating we're in the process of generating a snap
     if (this._snapPending) { // if we're waiting for a snap, cancel it.
+      await IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
       this._snapPending = false;
-      return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
     }
+    this._cancelPending = false;
+  }
+
+  private _locateMsgPending = false;
+  public async getLocateMessage(id: string): Promise<string[]> {
+    if (this._locateMsgPending)
+      throw Error("busy");
+    this._locateMsgPending = true;
+    const val = await IModelReadRpcInterface.getClient().getLocateMessage(this.iModelToken, id);
+    this._locateMsgPending = false;
+    return val;
   }
 }
 

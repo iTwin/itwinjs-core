@@ -5,7 +5,7 @@
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -28,6 +28,8 @@ import { MeshGraphic } from "./Mesh";
 import { PointCloudGraphic } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
+import { SkyBoxQuadsGeometry } from "./CachedGeometry";
+import { SkyBoxPrimitive } from "./Primitive";
 
 export const enum ContextState {
   Uninitialized,
@@ -383,6 +385,14 @@ export class System extends RenderSystem {
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
+  public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
+    if (params.isTexturedCube) {
+      const cachedGeom = SkyBoxQuadsGeometry.create(params);
+      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+    }
+    // ###TODO: Gradient approach
+    return undefined;
+  }
 
   public applyRenderState(newState: RenderState) {
     newState.apply(this._currentRenderState);

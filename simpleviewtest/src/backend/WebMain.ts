@@ -1,6 +1,8 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as cp from "child_process";
+import * as fs from "fs";
+import * as path from "path";
 
 import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { Config } from "@bentley/imodeljs-clients";
@@ -12,6 +14,18 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 export function getRpcInterfaces() {
   return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+}
+
+function setupStandaloneConfiguration() {
+  const filename = process.env.SVT_STANDALONE_FILENAME;
+  if (filename !== undefined) {
+    const configuration: any = {};
+    configuration.standalone = true;
+    configuration.standalonePath = filename;
+    configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
+    configuration.iModelName = filename;
+    fs.writeFileSync(path.join(__dirname, "configuration.json"), JSON.stringify(configuration), "utf8");
+  }
 }
 
 // Start the dev-cors-proxy-server
@@ -28,6 +42,7 @@ proxyServer.on("close", (code) => {
 
 // Initialize backend functionality and logging
 Config.devCorsProxyServer = "https://localhost:3001";
+setupStandaloneConfiguration();
 IModelHost.startup();
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Error);

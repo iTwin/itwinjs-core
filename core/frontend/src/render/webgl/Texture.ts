@@ -147,10 +147,14 @@ class TextureCreateParams {
   }
 
   private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
+    const isSky = RenderTexture.Type.SkyBox === type;
+    const isTile = RenderTexture.Type.TileSection === type;
+
     const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
-    const useMipMaps: TextureFlag = (RenderTexture.Type.TileSection !== type) ? true : undefined;
-    const interpolate: TextureFlag = true; // WTF? (RenderTexture.Type.TileSection === type) ? true : undefined;
+    const useMipMaps: TextureFlag = (!isSky && !isTile) ? true : undefined;
+    const interpolate: TextureFlag = !isSky ? true : undefined;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
+
     return { format, wrapMode, useMipMaps, interpolate };
   }
 

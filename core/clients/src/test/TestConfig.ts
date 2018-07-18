@@ -44,7 +44,7 @@ export class TestConfig {
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
-  public static async login(user: UserCredentials = TestUsers.user1): Promise<AuthorizationToken> {
+  public static async login(user: UserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
     if (TestConfig.deploymentEnv === "DEV" || TestConfig.deploymentEnv === "PERF")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
 

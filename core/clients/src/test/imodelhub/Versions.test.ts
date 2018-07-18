@@ -46,6 +46,11 @@ describe("iModelHub VersionHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
+
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
@@ -77,6 +82,13 @@ describe("iModelHub VersionHandler", () => {
           await utils.delay(6000);
         }
       }
+    }
+  });
+
+  after(() => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 

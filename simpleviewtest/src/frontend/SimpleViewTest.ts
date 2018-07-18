@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions } from "@bentley/imodeljs-frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
@@ -19,12 +19,15 @@ import {
   RpcOperation,
   IModelToken,
 } from "@bentley/imodeljs-common/lib/common";
-import { Transform, Point3d } from "@bentley/geometry-core/lib/geometry-core";
+import { Transform, Point3d, XAndY } from "@bentley/geometry-core";
 import { showStatus } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
+import * as ttjs from "tooltip.js";
+
+type Tooltip = ttjs.default;
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -666,9 +669,45 @@ class SVTAccuSnap extends AccuSnap {
   }
 }
 
+class SVTNotifications extends NotificationManager {
+  private toolTip?: Tooltip;
+
+  public isToolTipOpen(): boolean { return !!this.toolTip && this.toolTip._isOpen; }
+  public clearToolTip(): void {
+    if (this.isToolTipOpen())
+      this.toolTip!.hide();
+  }
+  public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
+    this.clearToolTip();
+
+    const position = document.getElementById("tooltip-location");
+    if (!position)
+      return;
+
+    if (!this.toolTip)
+      this.toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
+
+    this.toolTip!.updateTitleContent(message);
+
+    const rect = el.getBoundingClientRect();
+    if (undefined === pt) {
+      pt = { x: rect.width / 2, y: rect.height / 2 };
+    }
+    const height = 20; // parseInt(position.style.height!, 10) / 2;
+    const width = 20; // parseInt(position.style.width!, 10) / 2;
+    position.style.top = (pt.y + rect.top - height / 2) + "px";
+    position.style.left = (pt.x + rect.left - width / 2) + "px";
+    position.style.width = width + "px";
+    position.style.height = height + "px";
+
+    this.toolTip!.show();
+  }
+}
+
 class SVTIModelApp extends IModelApp {
   protected static onStartup(): void {
     IModelApp.accuSnap = new SVTAccuSnap();
+    IModelApp.notifications = new SVTNotifications();
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     MeasurePointsTool.register(svtToolNamespace);
   }

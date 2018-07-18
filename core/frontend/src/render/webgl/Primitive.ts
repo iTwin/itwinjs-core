@@ -139,6 +139,11 @@ export abstract class Primitive extends Graphic {
   public get debugString(): string { return this.cachedGeometry.debugString; }
 }
 
+export class SkyBoxPrimitive extends Primitive {
+  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
+}
+
 export class PointCloudPrimitive extends Primitive {
   public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }

@@ -7,7 +7,6 @@ import { BeCursor } from "./tools/Tool";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
-import { Point3d } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { UpdatePlan } from "./render/UpdatePlan";
@@ -78,13 +77,6 @@ export class ViewManager {
   }
   public beginDynamicsMode() { this.inDynamicsMode = true; }
   public doesHostHaveFocus(): boolean { return document.hasFocus(); }
-  public isInfoWindowUp(): boolean { return false; } // NEEDS_WORK
-  public clearInfoWindow(): void { }
-
-  public showInfoWindow(_viewPt: Point3d, _vp: Viewport, _msg: string) {
-    //   if (this.doesHostHaveFocus())
-    //     this.getInfoWindow().show(viewPt, vp, msg);
-  }
 
   public clearSelectedView(): void {
     const previousVp = this.selectedView;
@@ -219,7 +211,7 @@ export class ViewManager {
   }
 
   private processIdle(): void {
-    // ###TODO: precompile shaders?
+    // ###TODO: pre-compile shaders?
   }
 
   /** Called when rendering a frame to allow decorations to be added */
