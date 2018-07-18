@@ -90,7 +90,7 @@ class WebMercatorTileProps implements TileProps {
   public parentId?: string;
   public range: Range3dProps;
   public contentRange?: Range3dProps;
-  public maximumSize: number = 100;
+  public maximumSize: number = 256;
   public childIds: string[];
   public yAxisUp: boolean = true;
   public geometry?: any;
@@ -467,6 +467,9 @@ class MapBoxProvider extends ImageryProvider {
 
 /** @hidden */
 export class WebMercatorModelState extends SpatialModelState {
+
+  public useRangeForFit(): boolean { return false; }    // The webmercator range should not be included for fit...
+
   // The Tile Tree generated from a WebMercator map model.
   private static async getTileTreeProps(jsonProperties: any, _iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
 

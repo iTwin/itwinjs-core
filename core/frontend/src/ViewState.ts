@@ -1613,7 +1613,7 @@ export class SpatialViewState extends ViewState3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined) {   // can we assume that a loaded model
+      if (model.tileTree !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });

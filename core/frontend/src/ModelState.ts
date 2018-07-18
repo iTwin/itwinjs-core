@@ -52,6 +52,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   /** Runs when the iModel this iModelState represents closes. */
   public onIModelConnectionClose() { }
+
+  /** Return whether this models range should be used for "fit" tool */
+  public useRangeForFit(): boolean { return true; }
 }
 
 /** The state of a geometric model */
