@@ -38,6 +38,6 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Tre
 
 export const pageOptionsUiToPresentation = (pageOptions?: UiPageOptions): PresentationPageOptions | undefined => {
   if (pageOptions)
-    return { pageSize: pageOptions.size, pageStart: pageOptions.start };
+    return { ...pageOptions };
   return undefined;
 };

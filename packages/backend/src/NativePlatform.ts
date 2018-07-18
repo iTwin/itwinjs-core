@@ -72,7 +72,7 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
       this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));
     }
     public getImodelAddon(imodel: IModelDb): any {
-      if (!imodel.nativeDb)
+      if (!imodel.briefcase || !imodel.nativeDb)
         throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "imodel");
       return imodel.nativeDb;
     }

@@ -15,6 +15,7 @@ import UserSettingsManager from "@src/UserSettingsManager";
 import RulesetManager from "@src/RulesetManager";
 import {
   createRandomNodePathElementJSON, createRandomECInstanceNodeKey,
+  createRandomECInstanceNodeKeyJSON,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
   createRandomDescriptor, createRandomCategory,

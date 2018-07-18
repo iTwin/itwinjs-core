@@ -154,14 +154,14 @@ describe("default NativePlatform", () => {
 
   it("returns imodel addon from IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
-    mock.setup((x) => x.nativeDb).returns(() => ({})).verifiable(moq.Times.atLeastOnce());
+    mock.setup((x) => x.nativeDb).returns(() => ({} as any)).verifiable(moq.Times.atLeastOnce());
     expect(nativePlatform.getImodelAddon(mock.object)).be.instanceOf(Object);
     mock.verifyAll();
   });
 
   it("throws when fails to find imodel using IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
-    mock.setup((x) => x.nativeDb).returns(() => undefined).verifiable(moq.Times.atLeastOnce());
+    mock.setup((x) => x.nativeDb).returns(() => (undefined as any)).verifiable(moq.Times.atLeastOnce());
     expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(ECPresentationError);
     mock.verifyAll();
   });

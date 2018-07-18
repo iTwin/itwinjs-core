@@ -18,7 +18,7 @@ import { PromiseContainer } from "@helpers/Promises";
 import "@helpers/Snapshots";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SelectionSet, ViewState3d, IModelApp, SelectEventType } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/ecpresentation-common";
 import {
   ECPresentation,
@@ -35,10 +35,10 @@ const ECPresentationViewport = withUnifiedSelection(ViewportComponent);
 describe("Viewport withUnifiedSelection", () => {
 
   before(() => {
-    IModelApp.startup();
+    NoRenderApp.startup();
   });
   after(() => {
-    IModelApp.shutdown();
+    NoRenderApp.shutdown();
   });
 
   let viewDefinitionId: Id64;
@@ -179,13 +179,13 @@ describe("ViewportSelectionHandler", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(() => {
-    IModelApp.startup();
+    NoRenderApp.startup();
     rulesetId = faker.random.word();
     ECPresentation.presentation = presentationManagerMock.object;
     ECPresentation.selection = selectionManagerMock.object;
   });
   after(() => {
-    IModelApp.shutdown();
+    NoRenderApp.shutdown();
   });
 
   beforeEach(() => {

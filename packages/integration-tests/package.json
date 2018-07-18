@@ -48,8 +48,9 @@
     "cpx": "^1.5",
     "deep-equal": "^1",
     "faker": "^4.1.0",
-    "gl": "^4",
     "mocha": "^5.1.1",
+    "ts-node": "^3.3.0",
+    "tsconfig-paths": "^3.3.1",
     "typemoq": "^2.1.0",
     "xmlhttprequest": "^1.8.0"
   },

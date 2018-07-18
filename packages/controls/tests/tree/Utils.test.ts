@@ -56,8 +56,8 @@ describe("Utils", () => {
       const result = pageOptionsUiToPresentation(pageOptions);
 
       expect(result).to.not.be.undefined;
-      expect(result!.pageSize).to.be.equal(size);
-      expect(result!.pageStart).to.be.equal(start);
+      expect(result!.size).to.be.equal(size);
+      expect(result!.start).to.be.equal(start);
     });
 
   });

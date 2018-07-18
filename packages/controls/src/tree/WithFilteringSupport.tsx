@@ -4,8 +4,9 @@
 /** @module Hierarchies */
 
 import * as React from "react";
+import { Subtract } from "@bentley/ecpresentation-common";
 import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
-import { getDisplayName, Subtract } from "../common/Utils";
+import { getDisplayName } from "../common/Utils";
 import IECPresentationTreeDataProvider from "./IECPresentationTreeDataProvider";
 import FilteredECPresentationTreeDataProvider from "./FilteredDataProvider";
 import "./WithFilteringSupport.scss";
