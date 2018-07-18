@@ -26,12 +26,12 @@ function _roundTrip(vec: Vector3d, normalized: boolean = true, tolerance: number
     vec.normalize(vec);
   }
 
-  const oen = new OctEncodedNormal(vec);
+  const oen = OctEncodedNormal.fromVector(vec);
   const out = oen.decode();
   expectPointsEqual(vec, out!, tolerance);
   expectSignsEqual(vec, out!);
 
-  const rep = new OctEncodedNormal(out!);
+  const rep = OctEncodedNormal.fromVector(out!);
   assert.isTrue(rep.value === oen.value);
 }
 
