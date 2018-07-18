@@ -375,16 +375,6 @@ function changeRenderMode(): void {
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
-function changeSkyBox(): void {
-  const view = theViewport!.view;
-  const spatialView = view.is3d() ? view as ViewState3d : undefined;
-  if (undefined === spatialView)
-    return;
-
-  const select = (document.getElementById("skyBoxList") as HTMLSelectElement)!;
-  spatialView.setSkyBox(select.value);
-}
-
 function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
   (document.getElementById(id)! as HTMLInputElement).checked = enabled;
   options.set(id, enabled);
@@ -652,7 +642,6 @@ function wireIconsToFunctions() {
     }
   });
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
-  document.getElementById("skyBoxList")!.addEventListener("change", () => changeSkyBox());
   document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files

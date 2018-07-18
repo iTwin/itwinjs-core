@@ -305,22 +305,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return true;
   }
 
-  public setSkyBox(skyBox?: string): void {
-    this._useSkyBoxImages = false;
-    this.skyBoxParams = undefined;
-
-    if (undefined === skyBox)
-      return;
-
-    const parts = skyBox.split(";");
-    if (2 !== parts.length)
-      return;
-
-    this._useSkyBoxImages = true;
-    this._skyBoxImagePrefix = parts[0];
-    this._skyBoxImageSuffix = parts[1];
-  }
-
+  // ###TODO: This is all temporary...
   private _loadingImages: boolean = false;
   private loadImageSkyBoxParams(system: RenderSystem): boolean {
     if (this._loadingImages)
