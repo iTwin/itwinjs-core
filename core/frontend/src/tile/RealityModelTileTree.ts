@@ -160,7 +160,12 @@ export class RealityModelTileTree {
         const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
         const client: RealityDataServicesClient = new RealityDataServicesClient("QA");
         const accessToken: AccessToken = await client.getAccessToken(authToken);
-        const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
+        let projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
+
+        // ##TODO This is a temporary workaround for accessing the reality meshes with a test account
+        if (projectId === "Server")
+          projectId = "fb1696c8-c074-4c76-a539-a5546e048cc6";
+
         clientProps = { accessToken, projectId, tilesId, client };
       }
 
@@ -197,39 +202,23 @@ interface RDSClientProps {
 
 class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
-  private baseUrl: string = "";
   constructor(props?: RDSClientProps) { this.rdsProps = props; }
-
-  private setBaseUrl(url: string): void {
-    const urlParts = url.split("/");
-    urlParts.pop();
-    this.baseUrl = urlParts.join("/") + "/";
-  }
 
   public async getRootDocument(url: string): Promise<any> {
     if (undefined !== this.rdsProps)
       return this.rdsProps.client.getRootDocumentJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId);
-    this.setBaseUrl(url);
     return getJson(url);
   }
 
   public async getTileContent(url: string): Promise<any> {
     if (undefined !== this.rdsProps)
       return this.rdsProps.client.getTileContent(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
-    if (undefined !== this.baseUrl) {
-      const tileUrl = this.baseUrl + url;
-      return getArrayBuffer(tileUrl);
-    }
-    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
+    return getArrayBuffer(url);
   }
 
   public async getTileJson(url: string): Promise<any> {
     if (undefined !== this.rdsProps)
       return this.rdsProps.client.getTileJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
-    if (undefined !== this.baseUrl) {
-      const tileUrl = this.baseUrl + url;
-      return getJson(tileUrl);
-    }
-    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
+    return getJson(url);
   }
 }
