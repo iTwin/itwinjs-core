@@ -12,7 +12,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:ourpublic && npm run webpack:frontend && cpx ./lib/backend/WebMain.js ./lib/backend/public",
+    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:ourpublic && npm run webpack:frontend",
     "clean": "rimraf lib package-deps.json",
     "copy:frontendpublic": "cpx \"../core/frontend/src/public/**/*\" ./lib/backend/public",
     "copy:ourpublic": "cpx \"public/**/*\" ./lib/backend/public",
@@ -21,7 +21,7 @@
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
     "start": "npm run start:electron",
     "start:electron": "electron ./lib/backend/ElectronMain.js",
-    "start:web": "node ./lib/backend/public/WebMain.js",
+    "start:web": "node ./lib/backend/WebMain.js",
     "start:dev-cors-proxy-server": "node ./node_modules/@bentley/dev-cors-proxy-server/server.js"
   },
   "repository": {},
