@@ -8,7 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback,
+  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback, ViewStateData, CategorySelectorProps, ModelSelectorProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -1204,15 +1204,15 @@ export namespace IModelDb {
       return props;
     }
 
-    public getViewStateData(viewDefinitionId: string): any {
-      const viewStateData: any = {};
+    public getViewStateData(viewDefinitionId: string): ViewStateData {
+      const viewStateData: ViewStateData = {} as any;
       const elements = this._iModel.elements;
       const viewDefinitionElement = elements.getElement(viewDefinitionId) as ViewDefinition;
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
-      viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId);
+      viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId) as CategorySelectorProps;
       viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
       if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined) {
-        viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
+        viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId) as ModelSelectorProps;
       } else if (viewDefinitionElement instanceof SheetViewDefinition) {
         viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId); // For SheetViewDefinition, include sheetProps
       }

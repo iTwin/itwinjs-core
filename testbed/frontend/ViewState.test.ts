@@ -8,7 +8,7 @@ import * as path from "path";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import {
   SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
-  ModelSelectorState, IModelConnection, DisplayStyle3dState,
+  ModelSelectorState, IModelConnection, DisplayStyle3dState, IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 
@@ -19,6 +19,7 @@ describe("ViewState", () => {
   let viewState: SpatialViewState;
 
   before(async () => {
+    IModelApp.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");

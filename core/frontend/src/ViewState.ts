@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -26,6 +26,7 @@ import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GeometricModelState, SheetModelState, GeometricModel2dState } from "./ModelState";
+import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 
 export const enum GridOrientationType {
   View = 0,
@@ -193,7 +194,9 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** get the ViewFlags from the displayStyle of this ViewState. */
+  public static createFromStateData(_viewStateData: ViewStateData, _cat: CategorySelectorState, _iModel: IModelConnection): ViewState | undefined { return undefined; }
+
+  /** Get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
 
   /** Set the ViewFlags and mark them as dirty if they have changed. */
@@ -204,27 +207,17 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** determine whether this ViewState exactly matches another */
+  /** Determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
-  /** determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
+  /** Determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
   public equalState(other: ViewState): boolean {
-    if (this.isPrivate !== other.isPrivate)
-      return false;
-
-    if (!this.categorySelector.id.equals(other.categorySelector.id))
-      return false;
-
-    if (!this.displayStyle.id.equals(other.displayStyle.id))
-      return false;
-
-    if (!this.categorySelector.equalState(other.categorySelector))
-      return false;
-
-    if (!this.displayStyle.equalState(other.displayStyle))
-      return false;
-
-    return JSON.stringify(this.getDetails()) === (JSON.stringify(other.getDetails()));
+    return (this.isPrivate === other.isPrivate &&
+      this.categorySelector.id.equals(other.categorySelector.id) &&
+      this.displayStyle.id.equals(other.displayStyle.id) &&
+      this.categorySelector.equalState(other.categorySelector) &&
+      this.displayStyle.equalState(other.displayStyle) &&
+      JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails()));
   }
 
   public toJSON(): ViewDefinitionProps {
@@ -560,10 +553,10 @@ export abstract class ViewState extends ElementState {
     return ViewStatus.Success;
   }
 
-  /** get the largest and smallest values allowed for the extents for this ViewState
+  /** Get the largest and smallest values allowed for the extents for this ViewState
    * @returns an object with members {min, max}
    */
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: 2.0 * Constant.diameterOfEarth }; }
+  public abstract getExtentLimits(): { min: number, max: number };
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
@@ -593,6 +586,19 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
   }
 
+  public showFrustumErrorMessage(status: ViewStatus): void {
+    let key: string;
+    switch (status) {
+      case ViewStatus.InvalidWindow: key = "InvalidWindow"; break;
+      case ViewStatus.MaxWindow: key = "MaxWindow"; break;
+      case ViewStatus.MinWindow: key = "MinWindow"; break;
+      case ViewStatus.MaxZoom: key = "MaxZoom"; break;
+      default:
+        return;
+    }
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + key)));
+  }
+
   public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
@@ -614,14 +620,13 @@ export abstract class ViewState extends ElementState {
     delta.y = limitWindowSize(delta.y, false);
     delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2D views
 
-    if (messageNeeded && error !== ViewStatus.Success) {
-      //      Viewport::OutputFrustumErrorMessage(error);
-    }
+    if (messageNeeded && error !== ViewStatus.Success)
+      this.showFrustumErrorMessage(error);
 
     return error;
   }
 
-  /** Peek to see if a detail is defined. May return undefined. */
+  /** Peek to see if a view detail is defined. May return undefined. */
   public peekDetail(name: string): any { return this.getDetails()[name]; }
 
   /** Get the current value of a view detail. If not present, return empty object. */
@@ -1587,6 +1592,14 @@ export abstract class ViewState3d extends ViewState {
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
 
+  public static createFromStateData(viewStateData: ViewStateData, categorySelectorState: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, iModel);
+    const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps!, iModel);
+
+    // use "new this" so subclasses are correct.
+    return new this(viewStateData.viewDefinitionProps as SpatialViewDefinitionProps, iModel, categorySelectorState, displayStyleState, modelSelectorState);
+  }
+
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
     this.modelSelector = modelSelector;
@@ -1608,6 +1621,7 @@ export class SpatialViewState extends ViewState3d {
 
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
 
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
@@ -1661,7 +1675,7 @@ export class OrthographicViewState extends SpatialViewState {
 }
 
 /** Defines the state of a view of a single 2d model. */
-export class ViewState2d extends ViewState {
+export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
@@ -1694,26 +1708,12 @@ export class ViewState2d extends ViewState {
     return model;
   }
 
-  /**
-   * This should be overridden by more specific leaf classes of ViewState2d
-   * @hidden
-   */
-  public decorate(_context: DecorateContext): void { }
-
   public equalState(other: ViewState2d): boolean {
-    if (!this.baseModelId.equals(other.baseModelId))
-      return false;
-
-    if (!this.origin.isAlmostEqual(other.origin))
-      return false;
-
-    if (!this.delta.isAlmostEqual(other.delta))
-      return false;
-
-    if (!this.angle.isAlmostEqualNoPeriodShift(other.angle))
-      return false;
-
-    return super.equalState(other);
+    return this.baseModelId.equals(other.baseModelId) &&
+      this.origin.isAlmostEqual(other.origin) &&
+      this.delta.isAlmostEqual(other.delta) &&
+      this.angle.isAlmostEqualNoPeriodShift(other.angle) &&
+      super.equalState(other);
   }
 
   public computeFitRange(): Range3d { return this.getViewedExtents(); }
@@ -1734,7 +1734,7 @@ export class ViewState2d extends ViewState {
 
   public onRenderFrame(): void { }
   public async load(): Promise<void> {
-    await super.load();
+    super.load();
     return this.iModel.models.load(this.baseModelId);
   }
 
@@ -1756,13 +1756,28 @@ export class ViewState2d extends ViewState {
 
 /** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
+  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
+    // use "new this" so subclasses are correct
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState);
+  }
+
   public static get className() { return "DrawingViewDefinition"; }
+  public getExtentLimits() { return { min: Constant.oneCentimeter, max: this.iModel.projectExtents.xLength() * 2 }; }
+  public decorate(_context: DecorateContext): void { }
 }
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
+  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
+    // use "new this" so subclasses are correct
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps);
+  }
+
   public static get className() { return "SheetViewDefinition"; }
   public readonly size: Point2d;
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.size.magnitude() * 10 }; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
     super(props, iModel, categories, displayStyle);
