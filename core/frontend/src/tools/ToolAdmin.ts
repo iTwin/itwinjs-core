@@ -488,8 +488,6 @@ export class ToolAdmin {
     return tool.getToolTip(hit);
   }
 
-  // public onToolStateIdChanged(_tool: InteractiveTool, _toolStateId?: string): boolean { return false; }
-
   /**
    * Event that is raised whenever the active tool changes. This includes both primitive and viewing tools.
    * @param newTool The newly activated tool
@@ -501,7 +499,7 @@ export class ToolAdmin {
   public onAccuSnapDisabled() { }
   public onAccuSnapSyncUI() { }
 
-  /** called when a viewport is closed */
+  /** Called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
     //  Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
     IModelApp.accuSnap.clear();

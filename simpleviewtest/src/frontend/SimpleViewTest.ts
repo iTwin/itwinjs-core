@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
@@ -20,7 +20,7 @@ import {
   IModelToken,
 } from "@bentley/imodeljs-common/lib/common";
 import { Transform, Point3d, XAndY } from "@bentley/geometry-core";
-import { showStatus } from "./Utils";
+import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
@@ -671,6 +671,11 @@ class SVTAccuSnap extends AccuSnap {
 
 class SVTNotifications extends NotificationManager {
   private toolTip?: Tooltip;
+
+  public outputPrompt(prompt: string) { showStatus(prompt); }
+
+  /** Output a message and/or alert to the user. */
+  public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
   public isToolTipOpen(): boolean { return !!this.toolTip && this.toolTip._isOpen; }
   public clearToolTip(): void {

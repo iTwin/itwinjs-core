@@ -13,6 +13,7 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { WebMercatorModelState } from "./tile/WebMercatorTileTree";
+import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
 
 /**
  * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
@@ -29,14 +30,17 @@ export class ViewManager {
   private _skipSceneCreation = false;
 
   public onInitialized(): void {
-    const models = IModelConnection.Models;
-    models.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
-    models.registerClass("BisCore:PhysicalModel", SpatialModelState);
-    models.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
-    models.registerClass(DrawingModelState.getClassFullName(), DrawingModelState);
-    models.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
-    models.registerClass(SheetModelState.getClassFullName(), SheetModelState);
-    models.registerClass(WebMercatorModelState.getClassFullName(), WebMercatorModelState);
+    IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
+    IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
+    IModelConnection.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
+    IModelConnection.registerClass(DrawingModelState.getClassFullName(), DrawingModelState);
+    IModelConnection.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
+    IModelConnection.registerClass(SheetModelState.getClassFullName(), SheetModelState);
+    IModelConnection.registerClass(WebMercatorModelState.getClassFullName(), WebMercatorModelState);
+    IModelConnection.registerClass(OrthographicViewState.getClassFullName(), OrthographicViewState as any); // the "as any" is to get around problem with abstract base classes
+    IModelConnection.registerClass(SpatialViewState.getClassFullName(), SpatialViewState as any);
+    IModelConnection.registerClass(DrawingViewState.getClassFullName(), DrawingViewState as any);
+    IModelConnection.registerClass(SheetViewState.getClassFullName(), SheetViewState as any);
   }
 
   /** Called after the selected view changes.

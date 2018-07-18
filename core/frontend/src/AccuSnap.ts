@@ -132,7 +132,7 @@ export class AccuSnap {
 
     this.lastCursorPos.setFrom(curPos); //  Remember the new pos
 
-    //  See if distance moved since we started checking is over the "move" threshold
+    // See if distance moved since we started checking is over the "move" threshold
     const dsq = dx * dx + dy * dy;
     this.totalMotionSq += dsq;
     return this.totalMotionSq > this.motionToleranceSq;
@@ -288,7 +288,6 @@ export class AccuSnap {
 
   public clearToolTip(ev?: BeButtonEvent): void {
     this.noMotionCount = 0;
-
     if (!IModelApp.notifications.isToolTipOpen())
       return;
 
@@ -298,7 +297,7 @@ export class AccuSnap {
     IModelApp.notifications.clearToolTip();
   }
 
-  /** For a given snap path, display the sprites to indicate its position on the screen and what snap mode it represents. */
+  /** Display the sprites for the current snap to indicate its position on the screen and what snap mode it represents. */
   private showSnapSprite(): void {
     const snap = this.getCurrSnapDetail();
     if (!snap)
@@ -779,10 +778,9 @@ export class AccuSnap {
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { }
+
   public onNoMotion(ev: BeButtonEvent): void {
     this.noMotionCount++;
-    // if (1 === this.noMotionCount)
-    //   this.flashInOtherViews();
     this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
   }
 
