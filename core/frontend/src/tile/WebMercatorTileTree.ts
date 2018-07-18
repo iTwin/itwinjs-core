@@ -4,15 +4,67 @@
 /** @module Tile */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { TileTreeProps, TileProps, TileId } from "@bentley/imodeljs-common";
+import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64 } from "@bentley/bentleyjs-core";
-import { Range3dProps, Range3d, TransformProps, Transform } from "@bentley/geometry-core";
-import { TileLoader, TileTree } from "./TileTree";
+import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Angle } from "@bentley/geometry-core";
+import { TileLoader, TileTree, Tile } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { SpatialModelState } from "../ModelState";
+import { ImageUtil } from "../ImageUtil";
+import { IModelApp } from "../IModelApp";
+import { GeometricModelState } from "../ModelState";
+import { RenderSystem } from "../render/System";
 
+function columnToLongitude(column: number, nTiles: number) { return column / nTiles * 360.0 - 180.; }
+function rowToLatitude(row: number, nTiles: number) {
+  const n = Angle.piRadians - Angle.pi2Radians * row / nTiles;
+  return Angle.degreesPerRadian * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+}
+
+class QuadId {
+  public level: number;
+  public column: number;
+  public row: number;
+  public isValid() { return this.level >= 0; }
+
+  public constructor(stringId: string) {
+    const idParts = stringId.split("_");
+    if (3 !== idParts.length) {
+      assert(false, "Unvalid quadtree ID");
+      this.level = this.row = this.column = -1;
+      return;
+    }
+
+    this.level = parseInt(idParts[0], 10);
+    this.column = parseInt(idParts[1], 10);
+    this.row = parseInt(idParts[2], 10);
+  }
+  public getCartographicCorners(): Cartographic[] {
+    const nTiles = (1 << this.level);
+    const west = columnToLongitude(this.column, nTiles);
+    const east = columnToLongitude(this.column + 1, nTiles);
+    const north = rowToLatitude(this.row, nTiles);
+    const south = rowToLatitude(this.row + 1, nTiles);
+
+    const corners: Cartographic[] = [];             //    ----x----->
+    corners.push(Cartographic.fromDegrees(west, north, 0.0));   //  | [0]     [1]
+    corners.push(Cartographic.fromDegrees(east, north, 0.0));   //  y
+    corners.push(Cartographic.fromDegrees(west, south, 0.0));   //  | [2]     [3]
+    corners.push(Cartographic.fromDegrees(east, south, 0.0));   //  v
+
+    return corners;
+  }
+  public getEcefCorners(): Point3d[] {
+    const cartographicsCorners = this.getCartographicCorners();
+    const ecefCorners: Point3d[] = [];
+    for (const cartographicCorner of cartographicsCorners) {
+      ecefCorners.push(cartographicCorner.toEcef());
+    }
+    return ecefCorners;
+  }
+}
 class WebMercatorTileTreeProps implements TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
   public id: Id64Props = "";
@@ -20,39 +72,112 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
-  public _provider: ImageryProvider;
+  public provider: ImageryProvider;
 
   public constructor(provider: ImageryProvider) {
-    this.rootTile = new WebMercatorTileProps();
+    const worldRadius = 6.5E6;
+    const worldRange = Range3d.createXYZXYZ(-worldRadius, -worldRadius, -worldRadius, worldRadius, worldRadius, worldRadius);
+    this.rootTile = new WebMercatorTileProps("0_0_0", worldRange, undefined);
     this.location = Transform.createIdentity();
-    this._provider = provider;
+    this.provider = provider;
+  }
+}
+class WebMercatorGeometry {
+  constructor(public imageSource: ImageSource, public corners: Point3d[]) { }
+}
+class WebMercatorTileProps implements TileProps {
+  public id: TileId;
+  public parentId?: string;
+  public range: Range3dProps;
+  public contentRange?: Range3dProps;
+  public maximumSize: number = 100;
+  public childIds: string[];
+  public yAxisUp: boolean = true;
+  public geometry?: any;
+
+  // Quad tree location...
+  private quadId: QuadId;
+
+  constructor(thisId: string, range: Range3dProps, geometry: WebMercatorGeometry | undefined) {
+    this.id = new TileId(new Id64(), thisId);
+    this.quadId = new QuadId(thisId);
+    this.range = range;
+    this.maximumSize = (undefined === geometry) ? 0.0 : 30.0; // nonzero only if content present.
+    this.geometry = geometry;
+
+    this.childIds = [];
+    const level = this.quadId.level + 1;
+    const column = this.quadId.column * 2;
+    const row = this.quadId.row * 2;
+    for (let i = 0; i < 2; ++i) {
+      for (let j = 0; j < 2; ++j) {
+        this.childIds.push(level + "_" + (column + i) + "_" + (row + j));
+      }
+    }
   }
 }
 
 class WebMercatorTileLoader extends TileLoader {
-  public async getTileProps(_ids: string[]): Promise<TileProps[]> { return [new WebMercatorTileProps()]; }
-  public getMaxDepth(): number { return this._props._provider.maximumZoomLevel; }
-  constructor(private _props: WebMercatorTileTreeProps) { super(); }
-}
+  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+    const props: WebMercatorTileProps[] = [];
+    await Promise.all(tileIds.map(async (tileId) => {
+      const tile = await this.loadTileContents(tileId);
+      if (tile !== undefined)
+        props.push(tile);
+    }));
+    return props;
+  }
+  private async loadTileContents(id: string): Promise<WebMercatorTileProps | undefined> {
+    if (undefined === this.ecefToDb) return undefined;
 
-class WebMercatorTileProps implements TileProps {
-  /** The unique identifier of the tile within the iModel */
-  public id: TileId;
-  /** The id of the tile's parent within its TileTree, if it is not the root tile. */
-  public parentId?: string;
-  /** The volume in which all of the tile's contents reside */
-  public range: Range3dProps;
-  /** The maximum size in pixels at which the tile should be drawn on the screen. */
-  public maximumSize: number = 30;
-  /** The IDs of this tile's child tiles within its TileTree */
-  public childIds: string[];
-  /** Optional - set to True for Y Axis Up */
-  public yAxisUp: boolean = true;
+    const quadId = new QuadId(id);
+    if (!quadId.isValid) return undefined;
 
-  constructor() {
-    this.id = new TileId(new Id64(""), "");
-    this.childIds = new Array<string>();
-    this.range = new Range3d();
+    const imageSource = await this.tree.provider.loadTile(quadId.row, quadId.column, quadId.level);
+    if (undefined === imageSource)
+      return undefined;
+
+    const corners = quadId.getEcefCorners();
+    this.ecefToDb.multiplyPoint3dArrayInPlace(corners);
+
+    const range = Range3d.createArray(corners);
+    return new WebMercatorTileProps(id, range, new WebMercatorGeometry(imageSource, corners));
+  }
+  public loadGraphics(tile: Tile, geometry: any): void {
+    if (undefined === geometry) {
+      tile.setIsReady();
+      return;
+    }
+
+    tile.loadStatus = Tile.LoadStatus.Loading;
+    const webMercatorGeometry = geometry as WebMercatorGeometry;
+    const textureLoad = this.loadTextureImage(webMercatorGeometry.imageSource, tile.root.model, IModelApp.renderSystem);
+
+    textureLoad.catch((_err) => tile.setNotFound());
+    textureLoad.then((result) => {
+      // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
+      if (tile.isLoading) {
+        tile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, webMercatorGeometry.corners));
+        tile.setIsReady();
+      }
+    });
+  }
+
+  private async loadTextureImage(imageSource: ImageSource, model: GeometricModelState, system: RenderSystem): Promise<RenderTexture | undefined> {
+    try {
+      const isCanceled = false;  // Tbd...
+      const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
+      return ImageUtil.extractImage(imageSource)
+        .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, model.iModel, textureParams))
+        .catch((_) => undefined);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  public getMaxDepth(): number { return this.tree.provider.maximumZoomLevel; }
+  constructor(private tree: WebMercatorTileTreeProps, private ecefToDb: Transform) {
+    super();
   }
 }
 
@@ -88,7 +213,7 @@ abstract class ImageryProvider {
   }
 
   // returns a Uint8Array with the contents of the tile.
-  public async loadTile(row: number, column: number, zoomLevel: number): Promise<Uint8Array | undefined> {
+  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const tileUrl: string = this.constructUrl(row, column, zoomLevel);
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
@@ -98,7 +223,20 @@ abstract class ImageryProvider {
         return undefined;
       if (this.matchesMissingTile(byteArray))
         return undefined;
-      return byteArray;
+      let imageFormat: ImageSourceFormat;
+      switch (tileResponse.header["content-type"]) {
+        case "image/jpeg":
+          imageFormat = ImageSourceFormat.Jpeg;
+          break;
+        case "image/png":
+          imageFormat = ImageSourceFormat.Png;
+          break;
+        default:
+          assert(false, "Unknown image type");
+          return undefined;
+      }
+
+      return new ImageSource(byteArray, imageFormat);
     } catch (error) {
       return undefined;
     }
@@ -235,8 +373,8 @@ class BingMapProvider extends ImageryProvider {
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
-      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: Uint8Array | undefined) => {
-        this._missingTileData = tileData;
+      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => {
+        if (tileData !== undefined) this._missingTileData = tileData.data;
       });
     } catch (error) {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
@@ -331,6 +469,7 @@ class MapBoxProvider extends ImageryProvider {
 export class WebMercatorModelState extends SpatialModelState {
   // The Tile Tree generated from a WebMercator map model.
   private static async getTileTreeProps(jsonProperties: any, _iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
+
     if (jsonProperties.hasOwnProperty("providerName") && jsonProperties.hasOwnProperty("providerData")) {
       const providerName: string = jsonProperties.providerName;
       const providerData: any = jsonProperties.providerData;
@@ -357,9 +496,15 @@ export class WebMercatorModelState extends SpatialModelState {
     this._loadStatus = TileTree.LoadStatus.Loading;
 
     WebMercatorModelState.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
-      this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps));
+      const ecefLocation = this.iModel.ecefLocation;
+      if (ecefLocation === undefined)
+        throw new BentleyError(IModelStatus.BadModel, "WebMercator not valid without ecefLocation");
+
+      const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+      const ecefToDb = dbToEcef.inverse() as Transform;
+
+      this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps, ecefToDb));
     }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
     return this._loadStatus;
   }
-
 }

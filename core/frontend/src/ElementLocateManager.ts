@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
+
 import { HitSource, HitDetail, HitList, HitPriority } from "./HitDetail";
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { Viewport, ViewRect } from "./Viewport";

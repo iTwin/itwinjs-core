@@ -4,14 +4,16 @@
 /** @module Rendering */
 
 import { Vector3d } from "@bentley/geometry-core";
-import { PointUtil } from "./Utility";
 import { assert } from "@bentley/bentleyjs-core";
 
 export class OctEncodedNormal {
   private _value = 0;
-  public get value(): number { return PointUtil.toUint16(this._value); }
+  private static isNaN(val: any): boolean { return Number.isNaN(Number.parseFloat(val)); }
+  private static toUint16(val: number): number { return new Uint16Array([val])[0]; }
+  private static isNumber(val: any): val is number { return !OctEncodedNormal.isNaN(val); }
+  public get value(): number { return OctEncodedNormal.toUint16(this._value); }
   constructor(val: number | Vector3d) { this.init(val); }
-  public init(val: number | Vector3d) { this._value = PointUtil.isNumber(val) ? val : OctEncodedNormal.encode(val); }
+  public init(val: number | Vector3d) { this._value = OctEncodedNormal.isNumber(val) ? val : OctEncodedNormal.encode(val); }
   public decode(): Vector3d | undefined { return OctEncodedNormal.decode(this.value); }
   public static clamp(val: number, minVal: number, maxVal: number): number {
     return val < minVal ? minVal : (val > maxVal ? maxVal : val);
@@ -20,7 +22,7 @@ export class OctEncodedNormal {
     return val < 0.0 ? -1.0 : 1.0;
   }
   public static toUInt16(val: number): number {
-    return PointUtil.toUint16(0.5 + (OctEncodedNormal.clamp(val, -1, 1) * 0.5 + 0.5) * 255);
+    return OctEncodedNormal.toUint16(0.5 + (OctEncodedNormal.clamp(val, -1, 1) * 0.5 + 0.5) * 255);
   }
   public static decode(val: number): Vector3d | undefined {
     let ex = val & 0xff;

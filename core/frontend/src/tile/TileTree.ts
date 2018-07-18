@@ -52,7 +52,7 @@ export class Tile implements IDisposable {
   public readonly center: Point3d;
   public readonly radius: number;
   public readonly zoomFactor?: number;
-  private readonly yAxisUp: boolean;
+  public readonly yAxisUp: boolean;
   private readonly _childIds: string[];
   private _childrenLastUsed: BeTimePoint;
   private _childrenLoadStatus: TileTree.LoadStatus;
@@ -62,7 +62,7 @@ export class Tile implements IDisposable {
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
 
-  public constructor(props: Tile.Params, private _maxDepth = 32) {
+  public constructor(props: Tile.Params, loader: TileLoader) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
@@ -76,7 +76,7 @@ export class Tile implements IDisposable {
     this.yAxisUp = props.yAxisUp;
 
     // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
-    this.loadGraphics(props.geometry);
+    loader.loadGraphics(this, props.geometry);
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
@@ -85,7 +85,7 @@ export class Tile implements IDisposable {
     if (undefined === this.maximumSize)
       this.maximumSize = this.hasGraphics ? 512 : 0;
 
-    this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
+    this._childrenLoadStatus = this.hasChildren && this.depth < loader.getMaxDepth() ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
   // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
@@ -99,52 +99,6 @@ export class Tile implements IDisposable {
     this.loadStatus = Tile.LoadStatus.Abandoned;
   }
 
-  private loadGraphics(blob?: Uint8Array): void {
-    if (undefined === blob) {
-      this.setIsReady();
-      return;
-    }
-
-    this.loadStatus = Tile.LoadStatus.Loading;
-
-    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
-    const format = streamBuffer.nextUint32;
-    const isCanceled = () => !this.isLoading;
-    let reader: GltfTileIO.Reader | undefined;
-    streamBuffer.rewind(4);
-    switch (format) {
-      case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp, isCanceled);
-        break;
-
-      case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem, isCanceled);
-        break;
-
-      case TileIO.Format.Pnts:
-        {
-          this._graphic = PntsTileIO.readPointCloud(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
-          this.setIsReady();
-          return;
-        }
-    }
-
-    if (undefined === reader) {
-      this.setNotFound();
-      return;
-    }
-
-    const read = reader.read();
-    read.catch((_err) => this.setNotFound());
-    read.then((result) => {
-      // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
-      if (this.isLoading) {
-        this._graphic = result.renderGraphic;
-        this.setIsReady();
-      }
-    });
-  }
-
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
   public get isAbandoned(): boolean { return Tile.LoadStatus.Abandoned === this.loadStatus; }
   public get isNotLoaded(): boolean { return Tile.LoadStatus.NotLoaded === this.loadStatus; }
@@ -152,6 +106,7 @@ export class Tile implements IDisposable {
   public get isNotFound(): boolean { return Tile.LoadStatus.NotFound === this.loadStatus; }
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
 
+  public setGraphic(graphic: RenderGraphic | undefined): void { this._graphic = graphic; }
   public setIsReady(): void { this.loadStatus = Tile.LoadStatus.Ready; }
   public setIsQueued(): void { this.loadStatus = Tile.LoadStatus.Queued; }
   public setNotLoaded(): void { this.loadStatus = Tile.LoadStatus.NotLoaded; }
@@ -354,7 +309,7 @@ export class Tile implements IDisposable {
           const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
           for (const prop of props) {
             // ###TODO if child is empty don't bother adding it to list...
-            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth());
+            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader);
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
               parentRange.extendRange(child.contentRange);
@@ -456,19 +411,13 @@ export namespace Tile {
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
       public readonly zoomFactor?: number,
-      public readonly geometry?: Uint8Array) { }
+      public readonly geometry?: any) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
       // ###TODO: We should be requesting the geometry separately, when needed
       // ###TODO: Transmit as binary, not base-64
-      let tileBytes: Uint8Array | undefined;
-      if (typeof props.geometry === "string") {
-        tileBytes = new Uint8Array(atob(props.geometry as string).split("").map((c) => c.charCodeAt(0)));
-      } else if (props.geometry instanceof ArrayBuffer) {
-        tileBytes = new Uint8Array(props.geometry as ArrayBuffer);
-      } else { tileBytes = undefined; }
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, props.yAxisUp, parent, contentRange, props.zoomFactor, tileBytes);
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, props.yAxisUp, parent, contentRange, props.zoomFactor, props.geometry);
     }
   }
 }
@@ -484,7 +433,7 @@ export class TileTree implements IDisposable {
   public readonly maxTilesToSkip: number;
   public readonly loader: TileLoader;
 
-  public constructor(props: TileTree.Params) {
+  public constructor(props: TileTree.Params, loader: TileLoader) {
     this.model = props.model;
     this.id = props.id;
     this.location = props.location;
@@ -492,7 +441,7 @@ export class TileTree implements IDisposable {
     this.clipVector = props.clipVector;
     this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
+    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this), loader); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.loader = props.loader;
   }
 
@@ -536,9 +485,59 @@ export class TileTree implements IDisposable {
 export abstract class TileLoader {
   public abstract async getTileProps(ids: string[]): Promise<TileProps[]>;
   public abstract getMaxDepth(): number;
+  public loadGraphics(tile: Tile, geometry: any): void {
+    let blob: Uint8Array | undefined;
+    if (typeof geometry === "string") {
+      blob = new Uint8Array(atob(geometry as string).split("").map((c) => c.charCodeAt(0)));
+    } else if (geometry instanceof ArrayBuffer) {
+      blob = new Uint8Array(geometry as ArrayBuffer);
+    } else {
+      tile.setIsReady();
+      return;
+    }
+
+    tile.loadStatus = Tile.LoadStatus.Loading;
+
+    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    const format = streamBuffer.nextUint32;
+    const isCanceled = () => !tile.isLoading;
+    let reader: GltfTileIO.Reader | undefined;
+    streamBuffer.rewind(4);
+    switch (format) {
+      case TileIO.Format.B3dm:
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.model, tile.range, IModelApp.renderSystem, tile.yAxisUp, isCanceled);
+        break;
+
+      case TileIO.Format.IModel:
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.model, IModelApp.renderSystem, isCanceled);
+        break;
+
+      case TileIO.Format.Pnts:
+        {
+          tile.setGraphic(PntsTileIO.readPointCloud(streamBuffer, tile.root.model, tile.range, IModelApp.renderSystem, tile.yAxisUp));
+          tile.setIsReady();
+          return;
+        }
+    }
+
+    if (undefined === reader) {
+      tile.setNotFound();
+      return;
+    }
+
+    const read = reader.read();
+    read.catch((_err) => tile.setNotFound());
+    read.then((result) => {
+      // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
+      if (tile.isLoading) {
+        tile.setGraphic(result.renderGraphic);
+        tile.setIsReady();
+      }
+    });
+  }
 }
-export class IModelTileLoader {
-  constructor(private iModel: IModelConnection, private rootId: Id64) { }
+export class IModelTileLoader extends TileLoader {
+  constructor(private iModel: IModelConnection, private rootId: Id64) { super(); }
   public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {

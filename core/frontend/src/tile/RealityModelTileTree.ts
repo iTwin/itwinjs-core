@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { TileTreeProps, TileProps, TileId, IModelError } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps, TileId } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Id64Props, Id64, BentleyStatus, assert, StopWatch, Guid } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
 import { SpatialModelState } from "../ModelState";
-import { TileTree } from "./TileTree";
+import { TileTree, TileLoader } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
 function debugPrint(str: string): void {
@@ -85,8 +85,8 @@ class RealityModelTileProps implements TileProps {
   }
 }
 
-class RealityModelTileLoader {
-  constructor(private tree: RealityModelTileTreeProps) { }
+class RealityModelTileLoader extends TileLoader {
+  constructor(private tree: RealityModelTileTreeProps) { super(); }
   public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
 
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
