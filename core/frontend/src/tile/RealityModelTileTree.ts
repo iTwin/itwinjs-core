@@ -202,23 +202,39 @@ interface RDSClientProps {
 
 class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
+  private baseUrl: string = "";
   constructor(props?: RDSClientProps) { this.rdsProps = props; }
+
+  private setBaseUrl(url: string): void {
+    const urlParts = url.split("/");
+    urlParts.pop();
+    this.baseUrl = urlParts.join("/") + "/";
+  }
 
   public async getRootDocument(url: string): Promise<any> {
     if (undefined !== this.rdsProps)
       return this.rdsProps.client.getRootDocumentJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId);
+    this.setBaseUrl(url);
     return getJson(url);
   }
 
   public async getTileContent(url: string): Promise<any> {
     if (undefined !== this.rdsProps)
       return this.rdsProps.client.getTileContent(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
-    return getArrayBuffer(url);
+    if (undefined !== this.baseUrl) {
+      const tileUrl = this.baseUrl + url;
+      return getArrayBuffer(tileUrl);
+    }
+    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
   }
 
   public async getTileJson(url: string): Promise<any> {
     if (undefined !== this.rdsProps)
       return this.rdsProps.client.getTileJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
-    return getJson(url);
+    if (undefined !== this.baseUrl) {
+      const tileUrl = this.baseUrl + url;
+      return getJson(tileUrl);
+    }
+    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
   }
 }
