@@ -96,7 +96,7 @@ export abstract class GeometricModelState extends ModelState {
   }
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader));
+    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this, loader), loader);
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
 
