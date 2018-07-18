@@ -4,6 +4,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.8.0]  -  2018-07-17
 ### Added
 - Iterator for properties of a class
 - Added needed methods to support lazy loading
@@ -15,6 +17,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Loading a relationship constraint with multiple constraint classes
 - Fixed sync 3.1 kind of quantity loading
+- Loading EC3.1 Enumerators will automatically upgrade to EC3.2 with a name
+  - If the Enumeration's type is string, the name will be the value of the Enumerator
+  - If the Enumeration's type is number, the name will be the Enumeration's name and value concatenated
+    - i.e. `MyEnumeration6`, where Enumeration's name is `MyEnumeration` and the Enumerator's value is `6`.
+- Fixed KoQ presentation formats that have no overrides to be the Format in the Schema, not a copy of the Format.
 
 ## [0.7.0]  -  2018-07-13
 ### Added
