@@ -87,8 +87,11 @@ export default class KindOfQuantityEC32 extends SchemaItem {
       (newFormat as MutableFormat).setPrecision(precision);
     }
 
-    if (unitLabelOverrides)
+    if (unitLabelOverrides) {
+      if (unitLabelOverrides.length > 4)
+        throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `Cannot add a presentation format to KindOfQuantity '${this.name}' it has more than 4 units.`);
       (newFormat as MutableFormat).setUnits(unitLabelOverrides);
+    }
 
     return newFormat;
   }
@@ -96,15 +99,15 @@ export default class KindOfQuantityEC32 extends SchemaItem {
   private async processPresentationUnits(presentationUnitsJson: string | string[]) {
     const presUnitsArr = (Array.isArray(presentationUnitsJson)) ? presentationUnitsJson : presentationUnitsJson.split(";");
     for (const formatString of presUnitsArr) {
-      const presFormat = this.parseFormatString(formatString);
+      const presFormatOverride: FormatOverride = this.parseFormatString(formatString);
 
-      const format = await this.schema.getItem<Format>(presFormat.formatName, true);
+      const format = await this.schema.getItem<Format>(presFormatOverride.formatName, true);
       if (undefined === format)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormat.formatName}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormatOverride.formatName}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
       const unitAndLabels: Array<[Unit|InvertedUnit, string | undefined]> = [];
-      if (undefined !== presFormat.unitLabels) {
-        for (const unitOverride of presFormat.unitLabels) {
+      if (undefined !== presFormatOverride.unitLabels) {
+        for (const unitOverride of presFormatOverride.unitLabels) {
           const unit = await this.schema.getItem<Unit | InvertedUnit>(unitOverride[0], true);
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -113,7 +116,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
         }
       }
 
-      this.addPresentationFormat(format, presFormat.precision, unitAndLabels);
+      this.addPresentationFormat(format, presFormatOverride.precision, unitAndLabels);
     }
   }
 
@@ -189,24 +192,23 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     if (undefined === match[1])
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-    const returnValue: any = { formatName: match[1]};
+    const returnValue: any = { formatName: match[1] };
 
     if (undefined !== match[2] && undefined !== match[3]) {
       const overrideString = match[2];
       const tokens: string[] = [];
-      let prevPos = 1;
+      let prevPos = 1; // Initial position is the character directly after the opening '(' in the override string.
       let currPos;
 
-      while (-1 !== (currPos = overrideString.indexOf(",)", prevPos))) { // tslint:disable-line
-        tokens.push(overrideString.substring(prevPos, currPos - prevPos));
+      // TODO need to include `,` as a valid search argument.
+      while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) { // tslint:disable-line
+        tokens.push(overrideString.substr(prevPos, currPos - prevPos));
         prevPos = currPos + 1;
       }
 
-      if (overrideString.length > 0 && (() => {
-          for (const token of tokens)
-            if ("" === token)
-              return false;
-          return true;
+      if (overrideString.length > 0 && undefined === tokens.find((token) => {
+        return "" !== token; // there is at least one token that is not empty.
+        return false;
         })) {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       }
@@ -216,8 +218,10 @@ export default class KindOfQuantityEC32 extends SchemaItem {
 
       if (tokens.length >= precisionIndx + 1) {
         if (tokens[precisionIndx].length > 0) {
-          if (Number.isInteger(tokens[precisionIndx] as any))
-            returnValue.precision = (tokens[precisionIndx] as any) as number;
+          const precision = Number.parseInt(tokens[precisionIndx]);
+          if (Number.isNaN(precision))
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+          returnValue.precision = precision;
         }
       }
     }
@@ -228,6 +232,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     while (i < match.length) {
       if (undefined === match[i])
         break;
+      // Unit override required
       if (undefined === match[i + 1])
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 

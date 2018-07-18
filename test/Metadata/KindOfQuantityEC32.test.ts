@@ -14,7 +14,7 @@ import Schema from "../../source/Metadata/Schema";
 
 import Unit from "../../source/Metadata/Unit";
 import Format from "../../source/Metadata/Format";
-import { SchemaContext } from "../../source";
+import { SchemaContext, DecimalPrecision } from "../../source";
 
 describe("KindOfQuantity EC3.2", () => {
   before(() => {
@@ -177,6 +177,49 @@ describe("KindOfQuantity EC3.2", () => {
     });
 
     describe("format overrides", () => {
+      // precision override
+      const precisionOverride = createSchemaJson({
+        precision: 4,
+        persistenceUnit: "Formats.IN",
+        presentationUnits: [
+          "Formats.DefaultReal(2)",
+          "Formats.DefaultReal(3,)",
+          "Formats.DefaultReal(4,,)",
+        ],
+      });
+      it("async - precision override", async () => {
+        const schema = await Schema.fromJson(precisionOverride, context);
+        const testKoQItem = await schema.getItem<KindOfQuantityEC32>("TestKoQ");
+
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(3);
+        const defaultFormat = testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
+
+        assert.notEqual(defaultFormat, await schema.getItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+
+        expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
+
+        expect(testKoQItem!.presentationUnits![1].precision).eql(3);
+        expect(testKoQItem!.presentationUnits![2].precision).eql(4);
+      });
+      it("sync - precision override", () => {
+        const schema = Schema.fromJsonSync(precisionOverride, context);
+        const testKoQItem = schema.getItemSync<KindOfQuantityEC32>("TestKoQ");
+
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(3);
+        const defaultFormat = testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
+
+        assert.notEqual(defaultFormat, schema.getItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+
+        expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
+
+        expect(testKoQItem!.presentationUnits![1].precision).eql(3);
+        expect(testKoQItem!.presentationUnits![2].precision).eql(4);
+      });
+
       // single unit override
       const singleUnitOverride = createSchemaJson({
         precision: 4,
@@ -269,20 +312,34 @@ describe("KindOfQuantity EC3.2", () => {
 
       // TODO add tests for all # of overrides
 
-      // unit override does not exist
-      const unitNonexistent = createSchemaJson({
-        precision: 4,
-        persistenceUnit: "Formats.IN",
-        presentationUnits: [
-          "Formats.DefaultReal[Formats.NonexistentUnit]",
-        ],
-      });
-      it("async - should throw for presentationUnit having a non-existent unit as an override", async () => {
-        await expect(Schema.fromJson(unitNonexistent, context)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem Formats.NonexistentUnit.`);
-      });
-      it("sync - should throw for presentationUnit having a non-existent unit as an override", () => {
-        assert.throws(() => Schema.fromJsonSync(unitNonexistent, context), ECObjectsError,  `Unable to locate SchemaItem Formats.NonexistentUnit.`);
-      });
+      // failure cases
+      function testInvalidFormatStrings(testName: string, formatString: string, expectedErrorMessage: string) {
+        const badOverrideString = createSchemaJson({
+          precision: 4,
+          persistenceUnit: "Formats.IN",
+          presentationUnits: [
+            formatString,
+          ],
+        });
+
+        it("async - " + testName, async () => {
+          await expect(Schema.fromJson(badOverrideString, context)).to.be.rejectedWith(ECObjectsError, expectedErrorMessage);
+        });
+
+        it("sync - " + testName, () => {
+          assert.throws(() => Schema.fromJsonSync(badOverrideString, context), ECObjectsError, expectedErrorMessage);
+        });
+      }
+
+      // The regex doesn't properly catch this case and just ignores the ().
+      // testInvalidFormatStrings("should throw for invalid override string without any overrides", "Formats.DefaultReal()", "");
+      // testInvalidFormatStrings("should throw for invalid override string with empty unit brackets", "Formats.DefaultReal[]", "");
+      // testInvalidFormatStrings("should throw for invalid override string with only vertical bar in unit brackets", "Formats.DefaultReal[|]", "");
+      // testInvalidFormatStrings("should throw for invalid override string with an empty string for unit", "Formats.DefaultReal[|label]", "Unable to locate SchemaItem .");
+      testInvalidFormatStrings("should throw for invalid override string with an invalid precision", "Formats.DefaultReal(banana)", "");
+      testInvalidFormatStrings("should throw for invalid override string without any overrides but still has commas", "Formats.DefaultReal(,,,,,)", "");
+      testInvalidFormatStrings("should throw for invalid override string with 5 unit overrides", "Formats.DefaultReal[Formats.MILE|m][Formats.YRD|yard][Formats.FT|feet][Formats.IN|in][Formats.MILLIINCH|milli]", "");
+      testInvalidFormatStrings("should throw for presentationUnit having a non-existent unit as an override", "Formats.DefaultReal[Formats.NonexistentUnit]", "Unable to locate SchemaItem Formats.NonexistentUnit.");
 
       // number of unit overrides does not match the number in the composite
       const incorrectNumUnit = createSchemaJson({

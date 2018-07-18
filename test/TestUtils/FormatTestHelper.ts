@@ -68,6 +68,13 @@ const testFormatSchema = {
       definition: "MM",
       numerator: 25.4,
     },
+    MILLIINCH: {
+      schemaItemType: "Unit",
+      label: "mil",
+      phenomenon: "Formats.Length",
+      unitSystem: "Formats.USCustom",
+      definition: "[MILLI]*IN",
+    },
     DefaultReal: {
       schemaItemType: "Format",
       type: "decimal",
