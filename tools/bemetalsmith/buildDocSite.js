@@ -11,6 +11,7 @@ let runTypeDoc = argv.noTypeDoc === undefined ? true : false;
 const runRushBuild = argv.noBuild === undefined ? true : false;
 const runQuick = argv.mdOnly === undefined ? false : true;
 const rootDir = argv.rootDir ? argv.rootDir : process.cwd();
+const ignorePackage = argv.ignorePackage;
 runTypeDoc = runQuick === true ? false : runTypeDoc;
 
 if (runTypeDoc) {
@@ -88,7 +89,7 @@ function getPackages() {
   let retProjects = [];
   var projs = obj["projects"];
   projs.forEach(function (proj) {
-    if (proj["shouldPublish"] === true) {
+    if (proj["shouldPublish"] === true && !isPackageIgnored(proj["packageName"])) {
       retProjects.push(proj);
     }
   });
@@ -99,3 +100,17 @@ function clearReference() {
   fs.removeSync(path.resolve(rootDir, "generated-docs", "staging", "reference"));
 }
 
+function isPackageIgnored(packageName) {
+  if (typeof (ignorePackage) === 'string') {
+    //Only one package ignored
+    return packageName === ignorePackage;
+  }
+  else if (typeof (ignorePackage) === 'object') {
+    //Multiple packages ignored
+    return ignorePackage.includes(packageName);
+  }
+  else {
+    //ignorePackage not defined
+    return false;
+  }
+}
