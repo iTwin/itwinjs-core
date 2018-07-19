@@ -1,0 +1,60 @@
+{
+  "overview": {
+    "docSiteId": 1,
+    "displayName": "Overview"
+  },
+  "getting-started": {
+    "docSiteId": 2,
+    "displayName": "Getting Started"
+  },
+  "reference": {
+    "docSiteId": 3,
+    "displayName": "API Reference"
+  },
+  "bis": {
+    "docSiteId": 4,
+    "displayName": "Base Infrastructure Schema"
+  },
+  "learning": {
+    "docSiteId": 5,
+    "displayName": "Learning"
+  },
+  "metadata": {
+    "home": "overview",
+    "logo": "overview/imodeljs.ico",
+    "favicon": "overview/imodeljs.ico",
+    "docSiteOrder": [
+      "getting-started",
+      "overview",
+      "learning",
+      "bis",
+      "reference"
+    ],
+    "headerTabs": {
+      "Overview": {
+        "docSite": "overview"
+      },
+      "Getting Started": {
+        "docSite": "getting-started"
+      },
+      "BIS": {
+        "docSite": "bis"
+      },
+      "Learning": {
+        "docSite": "learning"
+      },
+      "API Reference": {
+        "docSite": "reference"
+      }
+    },
+    "packageAliases": {
+      "common": "imodeljs-common",
+      "frontend": "imodeljs-frontend",
+      "backend": "imodeljs-backend",
+      "clients": "imodeljs-clients",
+      "i18n": "imodeljs-i18n",
+      "geometry": "geometry-core",
+      "bentley": "bentleyjs-core"
+    }
+  }
+}
