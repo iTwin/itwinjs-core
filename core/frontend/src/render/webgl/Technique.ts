@@ -22,7 +22,7 @@ import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
-import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeUniformElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
 import { addFrustum } from "./glsl/Common";
@@ -107,18 +107,18 @@ export abstract class VariedTechnique implements Technique {
     this.addShader(builder, flags, gl);
   }
 
-  protected addElementId(builder: ProgramBuilder, feat: FeatureMode) {
+  protected addElementId(builder: ProgramBuilder, feat: FeatureMode, alwaysUniform: boolean = false) {
     const frag = builder.frag;
     if (FeatureMode.None === feat)
       frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
     else {
       const vert = builder.vert;
-      vert.set(VertexShaderComponent.AddComputeElementId, computeElementId);
+      vert.set(VertexShaderComponent.AddComputeElementId, alwaysUniform ? computeUniformElementId : computeElementId);
       addFrustum(builder);
       builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
       addModelViewMatrix(vert);
       addRenderOrder(frag);
-      addElementId(builder);
+      addElementId(builder, alwaysUniform);
       frag.addExtension("GL_EXT_draw_buffers");
       frag.addFunction(GLSLDecode.encodeDepthRgb);
       frag.addFunction(GLSLFragment.computeLinearDepth);
@@ -337,22 +337,22 @@ class PointStringTechnique extends VariedTechnique {
 
 class PointCloudTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
-  private static readonly kPick = 1;
-  private static readonly kHilite = 2;
-  private static readonly kClip = 3;
+  private static readonly kFeature = 1;
+  private static readonly kHilite = numFeatureVariants(PointCloudTechnique.kFeature);
+  private static readonly kClip = PointCloudTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(6);
+    super((numFeatureVariants(1) + numHiliteVariants) * 2);
 
-    const features = [FeatureMode.None, FeatureMode.Pick]; // NB: no overrides...
     const flags = scratchTechniqueFlags;
     for (const clip of clips) {
       this.addHiliteShader(clip, gl, createPointCloudHiliter);
-      for (const feature of features) {
+      for (const feature of featureModes) {
         flags.reset(feature, clip);
         const builder = createPointCloudBuilder(clip);
-        addFeatureSymbology(builder, feature, FeatureSymbologyOptions.PointCloud);
-        this.addElementId(builder, feature);
+        const opts = FeatureMode.Overrides === feature ? FeatureSymbologyOptions.PointCloud : FeatureSymbologyOptions.None;
+        addFeatureSymbology(builder, feature, opts, true);
+        this.addElementId(builder, feature, true);
         this.addShader(builder, flags, gl);
       }
     }
@@ -360,13 +360,10 @@ class PointCloudTechnique extends VariedTechnique {
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index: number;
-    if (flags.isHilite) {
+    if (flags.isHilite)
       index = PointCloudTechnique.kHilite;
-    } else {
-      index = PointCloudTechnique.kOpaque;
-      if (FeatureMode.Pick === flags.featureMode)
-        index += PointCloudTechnique.kPick;
-    }
+    else
+      index = PointCloudTechnique.kOpaque + PointCloudTechnique.kFeature * flags.featureMode;
 
     if (flags.hasClipVolume)
       index += PointCloudTechnique.kClip;

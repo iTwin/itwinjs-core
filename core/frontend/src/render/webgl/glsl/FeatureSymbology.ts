@@ -36,12 +36,12 @@ export const enum FeatureSymbologyOptions {
   LineCode = 1 << 1,
   HasOverrides = 1 << 2,
   Color = 1 << 3,
-  AlwaysUniform = 1 << 4, // feature index always uniform - never comes from lookup table
+  Alpha = 1 << 4,
 
-  Surface = HasOverrides | Color,
-  Point = HasOverrides | Color | Weight,
-  Linear = HasOverrides | Color | Weight | LineCode,
-  PointCloud = AlwaysUniform,
+  Surface = HasOverrides | Color | Alpha,
+  Point = HasOverrides | Color | Weight | Alpha,
+  Linear = HasOverrides | Color | Weight | LineCode | Alpha,
+  PointCloud = HasOverrides | Color,
 }
 
 function addFlagConstants(builder: ShaderBuilder): void {
@@ -62,12 +62,6 @@ function addDimensionConstants(shader: ShaderBuilder): void {
   shader.addConstant("kFeatureDimension_SingleNonUniform", VariableType.Float, "2.0");
   shader.addConstant("kFeatureDimension_Multiple", VariableType.Float, "3.0");
 }
-
-const getUniformFeatureIndex = `
-float getFeatureIndex() {
-  return u_featureInfo.y;
-}
-`;
 
 const getFeatureIndex = `
 float getFeatureIndex() {
@@ -97,6 +91,12 @@ const computeFeatureTextureCoords = `
 vec2 computeFeatureTextureCoords() { return compute_feature_coords(getFeatureIndex()); }
 `;
 
+const getFirstUniformFeatureRgba = `
+vec4 getFirstFeatureRgba() {
+  return u_featureOverrides1;
+}
+`;
+
 const getFirstFeatureRgba = `
 vec4 getFirstFeatureRgba() {
   if (u_featureInfo.x <= kFeatureDimension_SingleUniform)
@@ -104,6 +104,12 @@ vec4 getFirstFeatureRgba() {
 
   feature_texCoord = computeFeatureTextureCoords();
   return TEXTURE(u_featureLUT, feature_texCoord);
+}
+`;
+
+const getSecondUniformFeatureRgba = `
+vec4 getSecondFeatureRgba() {
+  return u_featureOverrides2;
 }
 `;
 
@@ -133,33 +139,35 @@ float ComputeLineCode() {
 function addFeatureIndex(vert: VertexShaderBuilder, alwaysUniform: boolean = false): void {
   addDimensionConstants(vert);
 
-  vert.addUniform("u_featureInfo", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_featureInfo", (uniform, params) => {
-      let dims = FeatureDimension.Empty;
-      const value = [0, 0];
-      const features = params.geometry.featuresInfo;
-      const featureIndexType = undefined !== features ? features.type : FeatureIndexType.Empty;
-      if (FeatureIndexType.Uniform === featureIndexType)
-        value[1] = features!.uniform!;
+  if (!alwaysUniform) {
+    vert.addUniform("u_featureInfo", VariableType.Vec2, (prog) => {
+      prog.addGraphicUniform("u_featureInfo", (uniform, params) => {
+        let dims = FeatureDimension.Empty;
+        const value = [0, 0];
+        const features = params.geometry.featuresInfo;
+        const featureIndexType = undefined !== features ? features.type : FeatureIndexType.Empty;
+        if (FeatureIndexType.Uniform === featureIndexType)
+          value[1] = features!.uniform!;
 
-      const ovrs = params.target.currentOverrides;
-      if (undefined !== ovrs) {
-        if (params.target.areDecorationOverridesActive)
-          dims = computeFeatureDimension(LUTDimension.Uniform, FeatureIndexType.Uniform);
-        else
-          dims = computeFeatureDimension(ovrs.dimension, featureIndexType);
-      } else {
-        const pickTable = params.target.currentPickTable;
-        if (undefined !== pickTable)
-          dims = computeFeatureDimension(undefined !== pickTable.nonUniform ? LUTDimension.NonUniform : LUTDimension.Uniform, featureIndexType);
-      }
+        const ovrs = params.target.currentOverrides;
+        if (undefined !== ovrs) {
+          if (params.target.areDecorationOverridesActive)
+            dims = computeFeatureDimension(LUTDimension.Uniform, FeatureIndexType.Uniform);
+          else
+            dims = computeFeatureDimension(ovrs.dimension, featureIndexType);
+        } else {
+          const pickTable = params.target.currentPickTable;
+          if (undefined !== pickTable)
+            dims = computeFeatureDimension(undefined !== pickTable.nonUniform ? LUTDimension.NonUniform : LUTDimension.Uniform, featureIndexType);
+        }
 
-      value[0] = dims;
-      uniform.setUniform2fv(value);
+        value[0] = dims;
+        uniform.setUniform2fv(value);
+      });
     });
-  });
 
-  vert.addFunction(alwaysUniform ? getUniformFeatureIndex : getFeatureIndex);
+    vert.addFunction(getFeatureIndex);
+  }
 }
 
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa
@@ -192,6 +200,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const wantWeight = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Weight);
   const wantLineCode = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.LineCode);
   const wantColor = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Color);
+  const wantAlpha = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Alpha);
+  assert(wantColor || !wantAlpha);
 
   vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
   vert.addFunction(GLSLCommon.extractNthBit);
@@ -224,26 +234,30 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
     vert.addFunction(extractNthSurfaceFeatureBit);
   }
 
-  addLookupTable(vert, "feature", "2.0");
-  vert.addGlobal("feature_texCoord", VariableType.Vec2);
-  vert.addFunction(computeFeatureTextureCoords);
-  vert.addFunction(getFirstFeatureRgba);
+  if (alwaysUniform) {
+    vert.addFunction(getFirstUniformFeatureRgba);
+  } else {
+    addLookupTable(vert, "feature", "2.0");
+    vert.addGlobal("feature_texCoord", VariableType.Vec2);
+    vert.addFunction(computeFeatureTextureCoords);
+    vert.addFunction(getFirstFeatureRgba);
 
-  vert.addUniform("u_featureLUT", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_featureLUT", (uniform, params) => {
-      const ovr = params.target.currentOverrides;
-      assert(undefined !== ovr);
-      if (ovr!.isNonUniform)
-        ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
+    vert.addUniform("u_featureLUT", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("u_featureLUT", (uniform, params) => {
+        const ovr = params.target.currentOverrides;
+        assert(undefined !== ovr);
+        if (ovr!.isNonUniform)
+          ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
+      });
     });
-  });
-  vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_featureParams", (uniform, params) => {
-      const ovr = params.target.currentOverrides!;
-      if (ovr.isNonUniform)
-        uniform.setUniform2fv([ovr.lut!.width, ovr.lut!.height]);
+    vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
+      prog.addGraphicUniform("u_featureParams", (uniform, params) => {
+        const ovr = params.target.currentOverrides!;
+        if (ovr.isNonUniform)
+          uniform.setUniform2fv([ovr.lut!.width, ovr.lut!.height]);
+      });
     });
-  });
+  }
 
   vert.addUniform("u_featureOverrides1", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_featureOverrides1", (uniform, params) => {
@@ -254,8 +268,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   });
 
   if (wantColor) {
-    vert.addFunction(getSecondFeatureRgba);
-    addAlpha(vert);
+    vert.addFunction(alwaysUniform ? getSecondUniformFeatureRgba : getSecondFeatureRgba);
+    if (wantAlpha)
+      addAlpha(vert);
+
     vert.addUniform("u_featureOverrides2", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_featureOverrides2", (uniform, params) => {
         const ovr = params.target.currentOverrides!;
@@ -264,7 +280,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       });
     });
 
-    vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
+    if (wantAlpha)
+      vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
   }
 
   return true;
@@ -460,6 +477,11 @@ function addEdgeWidth(builder: ShaderBuilder) {
   });
 }
 
+export const computeUniformElementId = `
+  v_element_id0 = u_element_id0;
+  v_element_id1 = u_element_id1;
+`;
+
 export const computeElementId = `
   if (u_featureInfo.x <= kFeatureDimension_SingleUniform) {
     v_element_id0 = u_element_id0;
@@ -534,33 +556,37 @@ vec2 computeElementIdTextureCoords() {
 }
 `;
 
-export function addElementId(builder: ProgramBuilder) {
+export function addElementId(builder: ProgramBuilder, alwaysUniform: boolean = false) {
   builder.addVarying("v_element_id0", VariableType.Vec4);
   builder.addVarying("v_element_id1", VariableType.Vec4);
 
   const vert = builder.vert;
-  addLookupTable(vert, "elementId", "2.0");
-  vert.addFunction(computeElementIdTextureCoords);
-  vert.addFunction("void computeElementId()", computeElementId);
-  vert.addUniform("u_elementIdLUT", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_elementIdLUT", (uniform, params) => {
-      assert(undefined !== params.target.currentPickTable);
-      const table = params.target.currentPickTable!;
-      if (undefined !== table.nonUniform)
-        table.nonUniform.bindSampler(uniform, TextureUnit.ElementId);
-      else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
-        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.ElementId);
-      }
+  if (alwaysUniform) {
+    vert.addFunction("void computeElementId()", computeUniformElementId);
+  } else {
+    addLookupTable(vert, "elementId", "2.0");
+    vert.addFunction(computeElementIdTextureCoords);
+    vert.addFunction("void computeElementId()", computeElementId);
+    vert.addUniform("u_elementIdLUT", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("u_elementIdLUT", (uniform, params) => {
+        assert(undefined !== params.target.currentPickTable);
+        const table = params.target.currentPickTable!;
+        if (undefined !== table.nonUniform)
+          table.nonUniform.bindSampler(uniform, TextureUnit.ElementId);
+        else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
+          // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
+          System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.ElementId);
+        }
+      });
     });
-  });
-  vert.addUniform("u_elementIdParams", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_elementIdParams", (uniform, params) => {
-      const table = params.target.currentPickTable!;
-      if (undefined !== table.nonUniform)
-        uniform.setUniform2fv([table.nonUniform.width, table.nonUniform.height]);
+    vert.addUniform("u_elementIdParams", VariableType.Vec2, (prog) => {
+      prog.addGraphicUniform("u_elementIdParams", (uniform, params) => {
+        const table = params.target.currentPickTable!;
+        if (undefined !== table.nonUniform)
+          uniform.setUniform2fv([table.nonUniform.width, table.nonUniform.height]);
+      });
     });
-  });
+  }
 
   vert.addUniform("u_element_id0", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_element_id0", (uniform, params) => {
@@ -684,9 +710,7 @@ const applyFlash = `
   return applyPreMultipliedAlpha(baseColor);
 `;
 
-export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions): void {
-  const alwaysUniform = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.AlwaysUniform);
-  opts &= ~FeatureSymbologyOptions.AlwaysUniform;
+export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions, alwaysUniform: boolean = false): void {
   if (!addCommon(builder, feat, opts, alwaysUniform) || FeatureSymbologyOptions.None === opts)
     return;
 

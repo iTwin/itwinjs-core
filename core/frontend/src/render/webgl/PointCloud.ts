@@ -52,6 +52,7 @@ export class PointCloudGeometry extends CachedGeometry {
   public get qScale(): Float32Array { return this.vertices.scale; }
   public get colors(): BufferHandle | undefined { return this.colorHandle; }
   public get featuresInfo(): FeaturesInfo | undefined { return this.features; }
+  public get hasBakedLighting() { return true; }
 
   public bindVertexArray(attr: AttributeHandle): void { attr.enableArray(this.vertices, 3, GL.DataType.UnsignedShort, false, 0, 0); }
   public draw(): void {
