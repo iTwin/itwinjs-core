@@ -13,7 +13,7 @@ import {
   VariablePrecision,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { RenderMode, Hilite, FeatureIndexType } from "@bentley/imodeljs-common";
+import { Hilite, FeatureIndexType } from "@bentley/imodeljs-common";
 import { TextureUnit } from "../RenderFlags";
 import { FloatRgba } from "../FloatRGBA";
 import { FeatureMode } from "../TechniqueFlags";
@@ -266,8 +266,7 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const vf = params.target.currentViewFlags;
-      const useLighting = RenderMode.SmoothShade === vf.renderMode && params.geometry.isLitSurface &&
-        (vf.showSourceLights() || vf.showCameraLights() || vf.showSolarLight());
+      const useLighting = params.geometry.wantMixHiliteColorForFlash(vf);
       const transparency = useLighting ? 0 : 255;
       const hiliteColor = FloatRgba.fromColorDef(params.target.hiliteSettings.color, transparency);
       hiliteColor.bind(uniform);

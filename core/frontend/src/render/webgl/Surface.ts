@@ -64,6 +64,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getTechniqueId(_target: Target) { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
+  public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;

@@ -247,6 +247,7 @@ export namespace GltfTileIO {
 
     public get modelId(): Id64 { return this.model.id; }
     protected get isCanceled(): boolean { return undefined !== this._isCanceled && this._isCanceled(this); }
+    protected get hasBakedLighting(): boolean { return false; }
 
     protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
       if (this.isCanceled)
@@ -388,6 +389,7 @@ export namespace GltfTileIO {
 
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
+      const hasBakedLighting = this.hasBakedLighting;
       const mesh = Mesh.create({
         displayParams,
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
@@ -395,6 +397,7 @@ export namespace GltfTileIO {
         range: Range3d.createNull(),
         is2d: this.model.is2d,
         isPlanar,
+        hasBakedLighting,
       });
 
       if (!this.readVertices(mesh.points, primitive))

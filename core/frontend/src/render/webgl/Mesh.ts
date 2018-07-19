@@ -45,8 +45,9 @@ export class MeshInfo {
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
+  public readonly hasBakedLighting: boolean;
 
-  protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: RenderTexture) {
+  protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: RenderTexture, hasBakedLighting: boolean = false) {
     this.edgeWidth = edgeWidth;
     this.features = features;
     this.texture = texture as Texture;
@@ -54,6 +55,7 @@ export class MeshInfo {
     this.fillFlags = fillFlags;
     this.edgeLineCode = lineCode;
     this.isPlanar = isPlanar;
+    this.hasBakedLighting = hasBakedLighting;
   }
 }
 
@@ -68,7 +70,7 @@ export class MeshData extends MeshInfo implements IDisposable {
   }
 
   private constructor(lut: VertexLUT.Data, params: MeshParams) {
-    super(params.type, params.edgeWidth, params.edgeLineCode, params.fillFlags, params.isPlanar, params.features, params.texture);
+    super(params.type, params.edgeWidth, params.edgeLineCode, params.fillFlags, params.isPlanar, params.features, params.texture, params.hasBakedLighting);
     this.lut = lut;
     this.material = params.material;
     this.animation = undefined;
@@ -92,7 +94,7 @@ export class MeshParams extends MeshInfo {
     const isTextured = undefined !== args.texture;
     const surfaceType = isTextured ? (isLit ? SurfaceType.TexturedLit : SurfaceType.Textured) : isLit ? SurfaceType.Lit : SurfaceType.Unlit;
 
-    super(surfaceType, args.edges.width, LineCode.valueFromLinePixels(args.edges.linePixels), args.fillFlags, args.isPlanar, FeaturesInfo.create(args.features), args.texture);
+    super(surfaceType, args.edges.width, LineCode.valueFromLinePixels(args.edges.linePixels), args.fillFlags, args.isPlanar, FeaturesInfo.create(args.features), args.texture, args.hasBakedLighting);
 
     // ###TODO: MeshArgs should quantize texture UV for us...
     // ###TODO: MeshArgs.textureUV should be undefined unless it is non-empty
@@ -211,6 +213,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
   public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this.mesh.texture; }
+  public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
 
   public get lut() { return this.mesh.lut; }
 

@@ -91,5 +91,7 @@ export namespace B3dmTileIO {
       const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
       return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
     }
+
+    protected get hasBakedLighting(): boolean { return true; } // ###TODO? currently always desired (3mx, 3sm) - may change in future.
   }
 }
