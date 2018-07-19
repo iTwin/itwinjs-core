@@ -30,7 +30,7 @@ import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
 
-/** Viewport synchronization flags */
+/** Viewport synchronization flags. */
 export class SyncFlags {
   private decorations = false;
   private scene = false;
@@ -218,6 +218,7 @@ export const enum CoordSystem {
 class Animator {
   private readonly currFrustum = new Frustum();
   private startTime?: BeTimePoint;
+  private moveToTime(time: number) { this.interpolateFrustum(time / this.totalTime.milliseconds); }
 
   /** Construct a new Animator.
    * @param totalTime The duration of the animation.
@@ -228,15 +229,9 @@ class Animator {
   public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
   private interpolateFrustum(fraction: number): void {
-    for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
+    for (let i = 0; i < Npc.CORNER_COUNT; ++i)
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
-    }
     this.viewport.setupViewFromFrustum(this.currFrustum);
-  }
-
-  private moveToTime(time: number) {
-    const fraction = time / this.totalTime.milliseconds;
-    this.interpolateFrustum(fraction);
   }
 
   /**
@@ -395,10 +390,8 @@ export class Viewport {
   public readonly worldToViewMap = Map4d.createIdentity();
   /** @hidden */
   public readonly worldToNpcMap = Map4d.createIdentity();
-
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
-
   /** The settings that control how elements are hilited in this Viewport. */
   public readonly hilite = new Hilite.Settings();
 
@@ -406,17 +399,15 @@ export class Viewport {
    * Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
    */
-  public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
+  public get isGridOn(): boolean { return this.viewFlags.grid; }
   /** The [ViewFlags]($common) that determine how this Viewport is rendered.  */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   /** @hidden */
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
-
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
-
   /** @hidden */
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   /** @hidden */
@@ -1272,9 +1263,7 @@ export class Viewport {
   /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
-    const viewRange = this.view.computeFitRange();
-
-    return viewRange;
+    return this.view.computeFitRange();
   }
 
   /**
@@ -1290,7 +1279,7 @@ export class Viewport {
   }
 
   /**
-   * Re-applies the most recently un-done change to the Viewport from the redo stack
+   * Re-applies the most recently un-done change to the Viewport from the redo stack.
    */
   public doRedo(animationTime?: BeDuration) {
     if (0 === this.forwardStack.length)
@@ -1303,9 +1292,8 @@ export class Viewport {
 
   /** @hidden */
   public animate() {
-    if (this.animator && this.animator.animate()) {
+    if (this.animator && this.animator.animate())
       this.animator = undefined;
-    }
   }
 
   /** @hidden */
@@ -1342,8 +1330,7 @@ export class Viewport {
   private static roundGrid(num: number, units: number): number {
     const sign = ((num * units) < 0.0) ? -1.0 : 1.0;
     num = (num * sign) / units + 0.5;
-    num = units * sign * Math.floor(num);
-    return num;
+    return units * sign * Math.floor(num);
   }
 
   private getGridOrientation(origin: Point3d, rMatrix: RotMatrix) {
@@ -1606,7 +1593,6 @@ export class Viewport {
 
       isRedrawNeeded = true;
       sync.setValidScene();
-      // ###TODO? IModelApp.viewManager.notifyRenderSceneQueued(this);
     }
 
     if (!sync.isValidRenderPlan) {
@@ -1647,7 +1633,7 @@ export class Viewport {
   public decorate(context: DecorateContext): void {
     this.view.decorate(context);
     this.view.drawGrid(context);
-    if (context.viewFlags.showAcsTriad())
+    if (context.viewFlags.acsTriad)
       this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
   }
 
@@ -1704,9 +1690,7 @@ export class Viewport {
    */
   public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
-    const options = new LocateOptions();
-
-    if (0 === picker.doPick(this, pickPoint, radius, options))
+    if (0 === picker.doPick(this, pickPoint, radius, new LocateOptions()))
       return undefined;
 
     const result = undefined !== out ? out : new Point3d();

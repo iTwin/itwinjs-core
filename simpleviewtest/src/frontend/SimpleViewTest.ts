@@ -378,26 +378,26 @@ function updateRenderModeOptionsMap() {
   }
 
   const viewflags = theViewport!.view.viewFlags;
-  const lights = viewflags.showSourceLights() || viewflags.showSolarLight() || viewflags.showCameraLights();
+  const lights = viewflags.sourceLights || viewflags.solarLight || viewflags.cameraLights;
 
   updateRenderModeOption("skybox", skybox, renderModeOptions.flags);
   updateRenderModeOption("groundplane", groundplane, renderModeOptions.flags);
-  updateRenderModeOption("ACSTriad", viewflags.showAcsTriad(), renderModeOptions.flags);
-  updateRenderModeOption("fill", viewflags.showFill(), renderModeOptions.flags);
-  updateRenderModeOption("grid", viewflags.showGrid(), renderModeOptions.flags);
-  updateRenderModeOption("textures", viewflags.showTextures(), renderModeOptions.flags);
-  updateRenderModeOption("visibleEdges", viewflags.showVisibleEdges(), renderModeOptions.flags);
-  updateRenderModeOption("hiddenEdges", viewflags.showHiddenEdges(), renderModeOptions.flags);
-  updateRenderModeOption("materials", viewflags.showMaterials(), renderModeOptions.flags);
+  updateRenderModeOption("ACSTriad", viewflags.acsTriad, renderModeOptions.flags);
+  updateRenderModeOption("fill", viewflags.fill, renderModeOptions.flags);
+  updateRenderModeOption("grid", viewflags.grid, renderModeOptions.flags);
+  updateRenderModeOption("textures", viewflags.textures, renderModeOptions.flags);
+  updateRenderModeOption("visibleEdges", viewflags.visibleEdges, renderModeOptions.flags);
+  updateRenderModeOption("hiddenEdges", viewflags.hiddenEdges, renderModeOptions.flags);
+  updateRenderModeOption("materials", viewflags.materials, renderModeOptions.flags);
   updateRenderModeOption("lights", lights, renderModeOptions.flags);
-  updateRenderModeOption("monochrome", viewflags.isMonochrome(), renderModeOptions.flags);
-  updateRenderModeOption("constructions", viewflags.showConstructions(), renderModeOptions.flags);
-  updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions.flags);
-  updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions.flags);
-  updateRenderModeOption("transparency", viewflags.showTransparency(), renderModeOptions.flags);
+  updateRenderModeOption("monochrome", viewflags.monochrome, renderModeOptions.flags);
+  updateRenderModeOption("constructions", viewflags.constructions, renderModeOptions.flags);
+  updateRenderModeOption("weights", viewflags.weights, renderModeOptions.flags);
+  updateRenderModeOption("styles", viewflags.styles, renderModeOptions.flags);
+  updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
 
-  renderModeOptions.mode = viewflags.getRenderMode();
-  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.getRenderMode());
+  renderModeOptions.mode = viewflags.renderMode;
+  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
 }
 
 // opens the view and connects it to the HTML canvas element.

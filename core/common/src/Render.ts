@@ -414,7 +414,7 @@ export class ViewFlags {
   public cameraLights: boolean = false;         // Controls whether camera (ambient, portrait, flashbulb) lights are used.
   public solarLight: boolean = false;           // Controls whether sunlight used
   public shadows: boolean = false;              // Shows or hides shadows.
-  public noClipVolume: boolean = false;         // Controls whether the clip volume is applied.
+  public clipVolume: boolean = true;         // Controls whether the clip volume is applied.
   public constructions: boolean = false;        // Shows or hides construction class geometry.
   public monochrome: boolean = false;           // draw all graphics in a single color
   public noGeometryMap: boolean = false;        // ignore geometry maps
@@ -442,7 +442,7 @@ export class ViewFlags {
       val.cameraLights = other.cameraLights;
       val.solarLight = other.solarLight;
       val.shadows = other.shadows;
-      val.noClipVolume = other.noClipVolume;
+      val.clipVolume = other.clipVolume;
       val.constructions = other.constructions;
       val.monochrome = other.monochrome;
       val.noGeometryMap = other.noGeometryMap;
@@ -465,7 +465,6 @@ export class ViewFlags {
 
   public toJSON(): any {
     const out: any = {};
-
     if (!this.constructions) out.noConstruct = true;
     if (!this.dimensions) out.noDim = true;
     if (!this.patterns) out.noPattern = true;
@@ -484,7 +483,7 @@ export class ViewFlags {
     if (this.visibleEdges) out.visEdges = true;
     if (this.hiddenEdges) out.hidEdges = true;
     if (this.shadows) out.shadows = true;
-    if (!this.noClipVolume) out.clipVol = true;
+    if (this.clipVolume) out.clipVol = true;
     if (this.hLineMaterialColors) out.hlMatColors = true;
     if (this.monochrome) out.monochrome = true;
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
@@ -515,7 +514,7 @@ export class ViewFlags {
     val.visibleEdges = JsonUtils.asBool(json.visEdges);
     val.hiddenEdges = JsonUtils.asBool(json.hidEdges);
     val.shadows = JsonUtils.asBool(json.shadows);
-    val.noClipVolume = !JsonUtils.asBool(json.clipVol);
+    val.clipVolume = JsonUtils.asBool(json.clipVol);
     val.monochrome = JsonUtils.asBool(json.monochrome);
     val.edgeMask = JsonUtils.asInt(json.edgeMask);
     val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
@@ -550,60 +549,13 @@ export class ViewFlags {
       && this.cameraLights === other.cameraLights
       && this.solarLight === other.solarLight
       && this.shadows === other.shadows
-      && this.noClipVolume === other.noClipVolume
+      && this.clipVolume === other.clipVolume
       && this.constructions === other.constructions
       && this.monochrome === other.monochrome
       && this.noGeometryMap === other.noGeometryMap
       && this.hLineMaterialColors === other.hLineMaterialColors
       && this.edgeMask === other.edgeMask;
   }
-
-  public showDimensions() { return this.dimensions; }
-  public ignoreGeometryMap() { return this.noGeometryMap; }
-  public isMonochrome() { return this.monochrome; }
-  public showAcsTriad() { return this.acsTriad; }
-  public showCameraLights() { return this.cameraLights; }
-  public showClipVolume() { return this.noClipVolume; }
-  public showConstructions() { return this.constructions; }
-  public showFill() { return this.fill; }
-  public showGrid() { return this.grid; }
-  public showHiddenEdges() { return this.hiddenEdges; }
-  public showMaterials() { return this.materials; }
-  public showPatterns() { return this.patterns; }
-  public showShadows() { return this.shadows; }
-  public showSolarLight() { return this.solarLight; }
-  public showSourceLights() { return this.sourceLights; }
-  public showStyles() { return this.styles; }
-  public showTextures() { return this.textures; }
-  public showTransparency() { return this.transparency; }
-  public showVisibleEdges() { return this.visibleEdges; }
-  public showWeights() { return this.weights; }
-  public useHlineMaterialColors() { return this.hLineMaterialColors; }
-  public getEdgeMask() { return this.edgeMask; }
-  public setEdgeMask(val: number) { this.edgeMask = val; }
-  public setIgnoreGeometryMap(val: boolean) { this.noGeometryMap = val; }
-  public setMonochrome(val: boolean) { this.monochrome = val; }
-  public setShowAcsTriad(val: boolean) { this.acsTriad = val; }
-  public setShowCameraLights(val: boolean) { this.cameraLights = val; }
-  public setShowClipVolume(val: boolean) { this.noClipVolume = !val; }
-  public setShowConstructions(val: boolean) { this.constructions = val; }
-  public setShowDimensions(val: boolean) { this.dimensions = val; }
-  public setShowFill(val: boolean) { this.fill = val; }
-  public setShowGrid(val: boolean) { this.grid = val; }
-  public setShowHiddenEdges(val: boolean) { this.hiddenEdges = val; }
-  public setShowMaterials(val: boolean) { this.materials = val; }
-  public setShowPatterns(val: boolean) { this.patterns = val; }
-  public setShowShadows(val: boolean) { this.shadows = val; }
-  public setShowSolarLight(val: boolean) { this.solarLight = val; }
-  public setShowSourceLights(val: boolean) { this.sourceLights = val; }
-  public setShowStyles(val: boolean) { this.styles = val; }
-  public setShowTextures(val: boolean) { this.textures = val; }
-  public setShowTransparency(val: boolean) { this.transparency = val; }
-  public setShowVisibleEdges(val: boolean) { this.visibleEdges = val; }
-  public setShowWeights(val: boolean) { this.weights = val; }
-  public setUseHlineMaterialColors(val: boolean) { this.hLineMaterialColors = val; }
-  public getRenderMode() { return this.renderMode; }
-  public setRenderMode(value: RenderMode) { this.renderMode = value; }
 }
 
 export namespace ViewFlag {
@@ -664,26 +616,26 @@ export namespace ViewFlag {
       this.present = other.present;
     }
 
-    public setShowDimensions(val: boolean) { this.values.setShowDimensions(val); this.setPresent(PresenceFlag.kDimensions); }
-    public setShowPatterns(val: boolean) { this.values.setShowPatterns(val); this.setPresent(PresenceFlag.kPatterns); }
-    public setShowWeights(val: boolean) { this.values.setShowWeights(val); this.setPresent(PresenceFlag.kWeights); }
-    public setShowStyles(val: boolean) { this.values.setShowStyles(val); this.setPresent(PresenceFlag.kStyles); }
-    public setShowTransparency(val: boolean) { this.values.setShowTransparency(val); this.setPresent(PresenceFlag.kTransparency); }
-    public setShowFill(val: boolean) { this.values.setShowFill(val); this.setPresent(PresenceFlag.kFill); }
-    public setShowTextures(val: boolean) { this.values.setShowTextures(val); this.setPresent(PresenceFlag.kTextures); }
-    public setShowMaterials(val: boolean) { this.values.setShowMaterials(val); this.setPresent(PresenceFlag.kMaterials); }
-    public setShowSourceLights(val: boolean) { this.values.setShowSourceLights(val); this.setPresent(PresenceFlag.kSourceLights); }
-    public setShowCameraLights(val: boolean) { this.values.setShowCameraLights(val); this.setPresent(PresenceFlag.kCameraLights); }
-    public setShowSolarLight(val: boolean) { this.values.setShowSolarLight(val); this.setPresent(PresenceFlag.kSolarLight); }
-    public setShowVisibleEdges(val: boolean) { this.values.setShowVisibleEdges(val); this.setPresent(PresenceFlag.kVisibleEdges); }
-    public setShowHiddenEdges(val: boolean) { this.values.setShowHiddenEdges(val); this.setPresent(PresenceFlag.kHiddenEdges); }
-    public setShowShadows(val: boolean) { this.values.setShowShadows(val); this.setPresent(PresenceFlag.kShadows); }
-    public setShowClipVolume(val: boolean) { this.values.setShowClipVolume(val); this.setPresent(PresenceFlag.kClipVolume); }
-    public setShowConstructions(val: boolean) { this.values.setShowConstructions(val); this.setPresent(PresenceFlag.kConstructions); }
-    public setMonochrome(val: boolean) { this.values.setMonochrome(val); this.setPresent(PresenceFlag.kMonochrome); }
-    public setIgnoreGeometryMap(val: boolean) { this.values.setIgnoreGeometryMap(val); this.setPresent(PresenceFlag.kGeometryMap); }
-    public setUseHlineMaterialColors(val: boolean) { this.values.setUseHlineMaterialColors(val); this.setPresent(PresenceFlag.kHlineMaterialColors); }
-    public setEdgeMask(val: number) { this.values.setEdgeMask(val); this.setPresent(PresenceFlag.kEdgeMask); }
+    public setShowDimensions(val: boolean) { this.values.dimensions = val; this.setPresent(PresenceFlag.kDimensions); }
+    public setShowPatterns(val: boolean) { this.values.patterns = val; this.setPresent(PresenceFlag.kPatterns); }
+    public setShowWeights(val: boolean) { this.values.weights = val; this.setPresent(PresenceFlag.kWeights); }
+    public setShowStyles(val: boolean) { this.values.styles = val; this.setPresent(PresenceFlag.kStyles); }
+    public setShowTransparency(val: boolean) { this.values.transparency = val; this.setPresent(PresenceFlag.kTransparency); }
+    public setShowFill(val: boolean) { this.values.fill = val; this.setPresent(PresenceFlag.kFill); }
+    public setShowTextures(val: boolean) { this.values.textures = val; this.setPresent(PresenceFlag.kTextures); }
+    public setShowMaterials(val: boolean) { this.values.materials = val; this.setPresent(PresenceFlag.kMaterials); }
+    public setShowSourceLights(val: boolean) { this.values.sourceLights = val; this.setPresent(PresenceFlag.kSourceLights); }
+    public setShowCameraLights(val: boolean) { this.values.cameraLights = val; this.setPresent(PresenceFlag.kCameraLights); }
+    public setShowSolarLight(val: boolean) { this.values.solarLight = val; this.setPresent(PresenceFlag.kSolarLight); }
+    public setShowVisibleEdges(val: boolean) { this.values.visibleEdges = val; this.setPresent(PresenceFlag.kVisibleEdges); }
+    public setShowHiddenEdges(val: boolean) { this.values.hiddenEdges = val; this.setPresent(PresenceFlag.kHiddenEdges); }
+    public setShowShadows(val: boolean) { this.values.shadows = val; this.setPresent(PresenceFlag.kShadows); }
+    public setShowClipVolume(val: boolean) { this.values.clipVolume = val; this.setPresent(PresenceFlag.kClipVolume); }
+    public setShowConstructions(val: boolean) { this.values.constructions = val; this.setPresent(PresenceFlag.kConstructions); }
+    public setMonochrome(val: boolean) { this.values.monochrome = val; this.setPresent(PresenceFlag.kMonochrome); }
+    public setIgnoreGeometryMap(val: boolean) { this.values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
+    public setUseHlineMaterialColors(val: boolean) { this.values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
+    public setEdgeMask(val: number) { this.values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
     public setRenderMode(val: RenderMode) { this.values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
     public anyOverridden() { return 0 !== this.present; }
     public clear() { this.present = 0; }
@@ -693,27 +645,27 @@ export namespace ViewFlag {
       if (!this.anyOverridden())
         return base;
 
-      if (this.isPresent(PresenceFlag.kDimensions)) base.setShowDimensions(this.values.showDimensions());
-      if (this.isPresent(PresenceFlag.kPatterns)) base.setShowPatterns(this.values.showPatterns());
-      if (this.isPresent(PresenceFlag.kWeights)) base.setShowWeights(this.values.showWeights());
-      if (this.isPresent(PresenceFlag.kStyles)) base.setShowStyles(this.values.showStyles());
-      if (this.isPresent(PresenceFlag.kTransparency)) base.setShowTransparency(this.values.showTransparency());
-      if (this.isPresent(PresenceFlag.kFill)) base.setShowFill(this.values.showFill());
-      if (this.isPresent(PresenceFlag.kTextures)) base.setShowTextures(this.values.showTextures());
-      if (this.isPresent(PresenceFlag.kMaterials)) base.setShowMaterials(this.values.showMaterials());
-      if (this.isPresent(PresenceFlag.kSolarLight)) base.setShowSolarLight(this.values.showSolarLight());
-      if (this.isPresent(PresenceFlag.kCameraLights)) base.setShowCameraLights(this.values.showCameraLights());
-      if (this.isPresent(PresenceFlag.kSourceLights)) base.setShowSourceLights(this.values.showSourceLights());
-      if (this.isPresent(PresenceFlag.kVisibleEdges)) base.setShowVisibleEdges(this.values.showVisibleEdges());
-      if (this.isPresent(PresenceFlag.kHiddenEdges)) base.setShowHiddenEdges(this.values.showHiddenEdges());
-      if (this.isPresent(PresenceFlag.kShadows)) base.setShowShadows(this.values.showShadows());
-      if (this.isPresent(PresenceFlag.kClipVolume)) base.setShowClipVolume(this.values.showClipVolume());
-      if (this.isPresent(PresenceFlag.kConstructions)) base.setShowConstructions(this.values.showConstructions());
-      if (this.isPresent(PresenceFlag.kMonochrome)) base.setMonochrome(this.values.isMonochrome());
-      if (this.isPresent(PresenceFlag.kGeometryMap)) base.setIgnoreGeometryMap(this.values.ignoreGeometryMap());
-      if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.setUseHlineMaterialColors(this.values.useHlineMaterialColors());
-      if (this.isPresent(PresenceFlag.kEdgeMask)) base.setEdgeMask(this.values.getEdgeMask());
-      if (this.isPresent(PresenceFlag.kRenderMode)) base.setRenderMode(this.values.getRenderMode());
+      if (this.isPresent(PresenceFlag.kDimensions)) base.dimensions = this.values.dimensions;
+      if (this.isPresent(PresenceFlag.kPatterns)) base.patterns = this.values.patterns;
+      if (this.isPresent(PresenceFlag.kWeights)) base.weights = this.values.weights;
+      if (this.isPresent(PresenceFlag.kStyles)) base.styles = this.values.styles;
+      if (this.isPresent(PresenceFlag.kTransparency)) base.transparency = this.values.transparency;
+      if (this.isPresent(PresenceFlag.kFill)) base.fill = this.values.fill;
+      if (this.isPresent(PresenceFlag.kTextures)) base.textures = this.values.textures;
+      if (this.isPresent(PresenceFlag.kMaterials)) base.materials = this.values.materials;
+      if (this.isPresent(PresenceFlag.kSolarLight)) base.solarLight = this.values.solarLight;
+      if (this.isPresent(PresenceFlag.kCameraLights)) base.cameraLights = this.values.cameraLights;
+      if (this.isPresent(PresenceFlag.kSourceLights)) base.sourceLights = this.values.sourceLights;
+      if (this.isPresent(PresenceFlag.kVisibleEdges)) base.visibleEdges = this.values.visibleEdges;
+      if (this.isPresent(PresenceFlag.kHiddenEdges)) base.hiddenEdges = this.values.hiddenEdges;
+      if (this.isPresent(PresenceFlag.kShadows)) base.shadows = this.values.shadows;
+      if (this.isPresent(PresenceFlag.kClipVolume)) base.clipVolume = this.values.clipVolume;
+      if (this.isPresent(PresenceFlag.kConstructions)) base.constructions = this.values.constructions;
+      if (this.isPresent(PresenceFlag.kMonochrome)) base.monochrome = this.values.monochrome;
+      if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this.values.noGeometryMap;
+      if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this.values.hLineMaterialColors;
+      if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this.values.edgeMask;
+      if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this.values.renderMode;
       return base;
     }
   }

@@ -72,10 +72,10 @@ export abstract class CachedGeometry implements IDisposable {
     return !params.isOverlayPass && this._wantWoWReversal(params.target);
   }
   public getLineCode(params: ShaderProgramParams): number {
-    return params.target.currentViewFlags.showStyles() ? this._getLineCode(params) : LineCode.solid;
+    return params.target.currentViewFlags.styles ? this._getLineCode(params) : LineCode.solid;
   }
   public getLineWeight(params: ShaderProgramParams): number {
-    if (!params.target.currentViewFlags.showWeights()) {
+    if (!params.target.currentViewFlags.weights) {
       return 1.0;
     }
 

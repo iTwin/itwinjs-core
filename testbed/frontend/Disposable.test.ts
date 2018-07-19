@@ -246,7 +246,7 @@ describe("Disposal of WebGL Resources", () => {
 
     const viewport = new Viewport(canvas, viewState);
     await viewport.changeView(viewState);
-    viewport.viewFlags.setShowGrid(true);   // force a decoration to be turned on
+    viewport.viewFlags.grid = true;   // force a decoration to be turned on
     viewport.renderFrame(new UpdatePlan()); // force a frame to be rendered
 
     const target = viewport.target as OnScreenTarget;

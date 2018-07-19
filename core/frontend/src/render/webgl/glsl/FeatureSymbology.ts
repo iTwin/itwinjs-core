@@ -267,7 +267,7 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const vf = params.target.currentViewFlags;
       const useLighting = RenderMode.SmoothShade === vf.renderMode && params.geometry.isLitSurface &&
-        (vf.showSourceLights() || vf.showCameraLights() || vf.showSolarLight());
+        (vf.sourceLights || vf.cameraLights || vf.solarLight);
       const transparency = useLighting ? 0 : 255;
       const hiliteColor = FloatRgba.fromColorDef(params.target.hiliteSettings.color, transparency);
       hiliteColor.bind(uniform);

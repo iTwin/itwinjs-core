@@ -2097,24 +2097,24 @@ export class ViewChangeRenderModeTool extends ViewTool {
   // We want changes to happen immediately when checking or unchecking an option
   public onPostInstall() {
     const viewflags = ViewFlags.createFrom(this.viewport.viewFlags);
-    viewflags.setRenderMode(this.renderMode);
-    viewflags.setShowAcsTriad(this.renderOptions.get("ACSTriad")!);
-    viewflags.setShowFill(this.renderOptions.get("fill")!);
-    viewflags.setShowGrid(this.renderOptions.get("grid")!);
-    viewflags.setShowTextures(this.renderOptions.get("textures")!);
-    viewflags.setShowVisibleEdges(this.renderOptions.get("visibleEdges")!);
-    viewflags.setShowMaterials(this.renderOptions.get("materials")!);
-    viewflags.setMonochrome(this.renderOptions.get("monochrome")!);
-    viewflags.setShowConstructions(this.renderOptions.get("constructions")!);
-    viewflags.setShowTransparency(this.renderOptions.get("transparency")!);
-    viewflags.setShowHiddenEdges(this.renderOptions.get("hiddenEdges")!);
-    viewflags.setShowWeights(this.renderOptions.get("weights")!);
-    viewflags.setShowStyles(this.renderOptions.get("styles")!);
+    viewflags.renderMode = this.renderMode;
+    viewflags.acsTriad = this.renderOptions.get("ACSTriad")!;
+    viewflags.fill = this.renderOptions.get("fill")!;
+    viewflags.grid = this.renderOptions.get("grid")!;
+    viewflags.textures = this.renderOptions.get("textures")!;
+    viewflags.visibleEdges = this.renderOptions.get("visibleEdges")!;
+    viewflags.materials = this.renderOptions.get("materials")!;
+    viewflags.monochrome = this.renderOptions.get("monochrome")!;
+    viewflags.constructions = this.renderOptions.get("constructions")!;
+    viewflags.transparency = this.renderOptions.get("transparency")!;
+    viewflags.hiddenEdges = this.renderOptions.get("hiddenEdges")!;
+    viewflags.weights = this.renderOptions.get("weights")!;
+    viewflags.styles = this.renderOptions.get("styles")!;
 
     const lights = this.renderOptions.get("lights")!;
-    viewflags.setShowSourceLights(lights);
-    viewflags.setShowSolarLight(lights);
-    viewflags.setShowCameraLights(lights);
+    viewflags.sourceLights = lights;
+    viewflags.solarLight = lights;
+    viewflags.cameraLights = lights;
 
     // Now handle environment
     if (this.viewport.view.is3d()) {
