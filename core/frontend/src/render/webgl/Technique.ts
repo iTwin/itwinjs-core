@@ -21,7 +21,7 @@ import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
-import { createPointCloudBuilder } from "./glsl/PointCloud";
+import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
@@ -338,14 +338,16 @@ class PointStringTechnique extends VariedTechnique {
 class PointCloudTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kPick = 1;
-  private static readonly kClip = 2;
+  private static readonly kHilite = 2;
+  private static readonly kClip = 3;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(4);
+    super(6);
 
     const features = [FeatureMode.None, FeatureMode.Pick]; // NB: no overrides...
     const flags = scratchTechniqueFlags;
     for (const clip of clips) {
+      this.addHiliteShader(clip, gl, createPointCloudHiliter);
       for (const feature of features) {
         flags.reset(feature, clip);
         const builder = createPointCloudBuilder(clip);
@@ -357,9 +359,14 @@ class PointCloudTechnique extends VariedTechnique {
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    let index = PointCloudTechnique.kOpaque;
-    if (FeatureMode.Pick === flags.featureMode)
-      index += PointCloudTechnique.kPick;
+    let index: number;
+    if (flags.isHilite) {
+      index = PointCloudTechnique.kHilite;
+    } else {
+      index = PointCloudTechnique.kOpaque;
+      if (FeatureMode.Pick === flags.featureMode)
+        index += PointCloudTechnique.kPick;
+    }
 
     if (flags.hasClipVolume)
       index += PointCloudTechnique.kClip;

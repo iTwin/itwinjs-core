@@ -320,12 +320,12 @@ const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
   value.b * 256.0);
 `;
 
-export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false): void {
+export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false, alwaysUniform: boolean = false): void {
   let opts = FeatureSymbologyOptions.HasOverrides;
   if (wantWeight)
     opts |= FeatureSymbologyOptions.Weight; // hiliter never needs line code or color...
 
-  if (!addCommon(builder, FeatureMode.Overrides, opts, false))
+  if (!addCommon(builder, FeatureMode.Overrides, opts, alwaysUniform))
     return;
 
   builder.addVarying("v_feature_hilited", VariableType.Float);
