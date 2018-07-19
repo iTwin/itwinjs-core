@@ -938,8 +938,7 @@ export class Viewport {
     if (!newRootToNpc)
       return undefined;
 
-    rootToNpc.setFrom(newRootToNpc);  // Don't screw this up if we are returning ERROR (TR# 251771).
-    this.frustFraction = frustFraction;
+    rootToNpc.setFrom(newRootToNpc);
     return frustFraction;
   }
 
