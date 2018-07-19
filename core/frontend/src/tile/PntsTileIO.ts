@@ -9,6 +9,7 @@ import { RenderSystem, RenderGraphic, GraphicBranch } from "../render/System";
 import { GeometricModelState } from "../ModelState";
 import { StringUtils } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Transform, RotMatrix, Angle, Vector3d } from "@bentley/geometry-core";
 
@@ -65,13 +66,14 @@ export namespace PntsTileIO {
       colors.fill(0xff, 0, colors.length);    // TBD... Default color?
     }
 
-    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors), model.iModel);
-
     // ###TODO? Do we expect a batch table? not currently handled...
     const feature = new Feature(model.id);
     const featureTable = new FeatureTable(1, model.id);
     featureTable.insert(feature);
+    const features = new Mesh.Features(featureTable);
+    features.add(feature, 1);
 
+    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features), model.iModel);
     renderGraphic = system.createBatch(renderGraphic!, featureTable, range);
 
     if (yAxisUp) {

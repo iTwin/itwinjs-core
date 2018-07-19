@@ -36,10 +36,12 @@ export const enum FeatureSymbologyOptions {
   LineCode = 1 << 1,
   HasOverrides = 1 << 2,
   Color = 1 << 3,
+  AlwaysUniform = 1 << 4, // feature index always uniform - never comes from lookup table
 
   Surface = HasOverrides | Color,
   Point = HasOverrides | Color | Weight,
   Linear = HasOverrides | Color | Weight | LineCode,
+  PointCloud = AlwaysUniform,
 }
 
 function addFlagConstants(builder: ShaderBuilder): void {
@@ -60,6 +62,12 @@ function addDimensionConstants(shader: ShaderBuilder): void {
   shader.addConstant("kFeatureDimension_SingleNonUniform", VariableType.Float, "2.0");
   shader.addConstant("kFeatureDimension_Multiple", VariableType.Float, "3.0");
 }
+
+const getUniformFeatureIndex = `
+float getFeatureIndex() {
+  return u_featureInfo.y;
+}
+`;
 
 const getFeatureIndex = `
 float getFeatureIndex() {
@@ -122,7 +130,7 @@ float ComputeLineCode() {
 }
 `;
 
-function addFeatureIndex(vert: VertexShaderBuilder): void {
+function addFeatureIndex(vert: VertexShaderBuilder, alwaysUniform: boolean = false): void {
   addDimensionConstants(vert);
 
   vert.addUniform("u_featureInfo", VariableType.Vec2, (prog) => {
@@ -151,7 +159,7 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
     });
   });
 
-  vert.addFunction(getFeatureIndex);
+  vert.addFunction(alwaysUniform ? getUniformFeatureIndex : getFeatureIndex);
 }
 
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa
@@ -172,12 +180,12 @@ const checkVertexDiscard = `
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
-function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions): boolean {
+function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions, alwaysUniform: boolean): boolean {
   if (FeatureMode.None === mode)
     return false;
 
   const vert = builder.vert;
-  addFeatureIndex(vert);
+  addFeatureIndex(vert, alwaysUniform);
   if (FeatureSymbologyOptions.None === (opts & FeatureSymbologyOptions.HasOverrides))
     return true;
 
@@ -317,7 +325,7 @@ export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false)
   if (wantWeight)
     opts |= FeatureSymbologyOptions.Weight; // hiliter never needs line code or color...
 
-  if (!addCommon(builder, FeatureMode.Overrides, opts))
+  if (!addCommon(builder, FeatureMode.Overrides, opts, false))
     return;
 
   builder.addVarying("v_feature_hilited", VariableType.Float);
@@ -677,7 +685,9 @@ const applyFlash = `
 `;
 
 export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions): void {
-  if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
+  const alwaysUniform = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.AlwaysUniform);
+  opts &= ~FeatureSymbologyOptions.AlwaysUniform;
+  if (!addCommon(builder, feat, opts, alwaysUniform) || FeatureSymbologyOptions.None === opts)
     return;
 
   assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));

@@ -68,7 +68,7 @@ export namespace B3dmTileIO {
       return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
-      const feature = new Feature();
+      const feature = new Feature(this.model.id);
 
       features.add(feature, 1);
       return true;

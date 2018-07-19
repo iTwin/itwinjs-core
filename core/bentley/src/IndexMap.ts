@@ -46,7 +46,7 @@ export class IndexMap<T> {
   public get length(): number { return this.array.length; }
 
   /** Returns true if the maximum number of elements have been inserted. */
-  public get isFull(): boolean { return this.length >= this.maximumSize; }
+  public get isFull(): boolean { return this.length > this.maximumSize; }
 
   /** Returns true if the map contains no elements. */
   public get isEmpty(): boolean { return 0 === this.length; }

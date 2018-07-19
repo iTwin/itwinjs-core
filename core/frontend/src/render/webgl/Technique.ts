@@ -201,8 +201,8 @@ class PolylineTechnique extends VariedTechnique {
         const builderTrans = createPolylineBuilder(clip);
         addMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
-          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
-          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
           this.addTranslucentShader(builderTrans, flags, gl);
         } else {
           this.addTranslucentShader(builderTrans, flags, gl);
@@ -255,8 +255,8 @@ class EdgeTechnique extends VariedTechnique {
         const builderTrans = createEdgeBuilder(isSilhouette, clip);
         addMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
-          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
-          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
           this.addTranslucentShader(builderTrans, flags, gl);
         } else {
           this.addTranslucentShader(builderTrans, flags, gl);
@@ -337,26 +337,32 @@ class PointStringTechnique extends VariedTechnique {
 
 class PointCloudTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
-  private static readonly kClip = PointCloudTechnique.kOpaque + 1;
+  private static readonly kPick = 1;
+  private static readonly kClip = 2;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(2);
+    super(4);
 
+    const features = [FeatureMode.None, FeatureMode.Pick]; // NB: no overrides...
     const flags = scratchTechniqueFlags;
     for (const clip of clips) {
-      flags.reset(FeatureMode.None, clip);
-      const builder = createPointCloudBuilder(clip);
-      builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
-      this.addShader(builder, flags, gl);
+      for (const feature of features) {
+        flags.reset(feature, clip);
+        const builder = createPointCloudBuilder(clip);
+        addFeatureSymbology(builder, feature, FeatureSymbologyOptions.PointCloud);
+        this.addElementId(builder, feature);
+        this.addShader(builder, flags, gl);
+      }
     }
   }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-
     let index = PointCloudTechnique.kOpaque;
-    if (flags.hasClipVolume) {
+    if (FeatureMode.Pick === flags.featureMode)
+      index += PointCloudTechnique.kPick;
+
+    if (flags.hasClipVolume)
       index += PointCloudTechnique.kClip;
-    }
 
     return index;
   }
