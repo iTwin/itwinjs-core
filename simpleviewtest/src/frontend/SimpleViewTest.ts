@@ -755,8 +755,6 @@ async function main() {
     return;
   }
 
-  console.log("This is from frontend/main");
-
   await uiReady; // Now wait for the HTML UI to finish loading.
 
   // Now we have both the UI and the iModel.
