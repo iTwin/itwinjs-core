@@ -201,8 +201,8 @@ class PolylineTechnique extends VariedTechnique {
         const builderTrans = createPolylineBuilder(clip);
         addMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
-          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
-          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
           this.addTranslucentShader(builderTrans, flags, gl);
         } else {
           this.addTranslucentShader(builderTrans, flags, gl);
@@ -255,8 +255,8 @@ class EdgeTechnique extends VariedTechnique {
         const builderTrans = createEdgeBuilder(isSilhouette, clip);
         addMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
-          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
-          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
           this.addTranslucentShader(builderTrans, flags, gl);
         } else {
           this.addTranslucentShader(builderTrans, flags, gl);
