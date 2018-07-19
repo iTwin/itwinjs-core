@@ -102,14 +102,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     context.drawStandardGrid(this.getOrigin(), this.getRotation(), view.getGridSpacing(), view.getGridsPerRef(), false, fixedRepsAuto);
   }
 
-  /** Returns the value if it falls within the bounds given. Otherwise, returns the offended boundary. */
-  private static limitRange(min: number, max: number, val: number): number {
-    if (val < min)
-      return min;
-    else if (val > max)
-      return max;
-    return val;
-  }
+  /** Returns the value, clamped to the supplied range. */
+  private static limitRange(min: number, max: number, val: number): number { return Math.max(min, Math.min(max, val)); }
 
   /**
    * Given an origin point, returns whether the point falls within the view or not. If adjustOrigin is set to true, a point outside
@@ -117,7 +111,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
    */
   public static isOriginInView(drawOrigin: Point3d, viewport: Viewport, adjustOrigin: boolean): boolean {
     const testPtView = viewport.worldToView(drawOrigin);
-    const frustum = viewport.getFrustum(CoordSystem.View, false);
+    const frustum = viewport.getFrustum(CoordSystem.View);
     const screenRange = Point3d.create();
     screenRange.x = frustum.points[Npc._000].distance(frustum.points[Npc._100]);
     screenRange.y = frustum.points[Npc._000].distance(frustum.points[Npc._010]);
