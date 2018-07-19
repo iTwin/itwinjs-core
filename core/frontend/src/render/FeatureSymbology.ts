@@ -258,7 +258,7 @@ export namespace FeatureSymbology {
       this._constructions = constructions;
       this._dimensions = dimensions;
       this._patterns = patterns;
-      this._lineWeights = viewFlags.showWeights();
+      this._lineWeights = viewFlags.weights;
 
       for (const categoryId of view.categorySelector.categories) {
         const subCategoryIds = view.subCategories.getSubCategories(categoryId);

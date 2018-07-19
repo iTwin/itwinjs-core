@@ -228,12 +228,12 @@ export abstract class MeshGeometry extends LUTGeometry {
   protected computeEdgeColor(target: Target): ColorInfo { return target.isEdgeColorOverridden ? target.edgeColor : this.colorInfo; }
   protected computeEdgePass(target: Target): RenderPass {
     const vf = target.currentViewFlags;
-    if (RenderMode.SmoothShade === vf.renderMode && !vf.showVisibleEdges()) {
+    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges) {
       return RenderPass.None;
     }
 
     // Only want translucent edges in wireframe mode.
-    const isTranslucent = RenderMode.Wireframe === vf.renderMode && vf.showTransparency() && this.colorInfo.hasTranslucency;
+    const isTranslucent = RenderMode.Wireframe === vf.renderMode && vf.transparency && this.colorInfo.hasTranslucency;
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
 }

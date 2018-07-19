@@ -71,9 +71,6 @@ interface SVTConfiguration {
   standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
 }
 
-// Entry point - run the main function
-setTimeout(() => main(), 1000);
-
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
 function retrieveConfiguration(): Promise<void> {
   return new Promise((resolve, _reject) => {
@@ -381,26 +378,26 @@ function updateRenderModeOptionsMap() {
   }
 
   const viewflags = theViewport!.view.viewFlags;
-  const lights = viewflags.showSourceLights() || viewflags.showSolarLight() || viewflags.showCameraLights();
+  const lights = viewflags.sourceLights || viewflags.solarLight || viewflags.cameraLights;
 
   updateRenderModeOption("skybox", skybox, renderModeOptions.flags);
   updateRenderModeOption("groundplane", groundplane, renderModeOptions.flags);
-  updateRenderModeOption("ACSTriad", viewflags.showAcsTriad(), renderModeOptions.flags);
-  updateRenderModeOption("fill", viewflags.showFill(), renderModeOptions.flags);
-  updateRenderModeOption("grid", viewflags.showGrid(), renderModeOptions.flags);
-  updateRenderModeOption("textures", viewflags.showTextures(), renderModeOptions.flags);
-  updateRenderModeOption("visibleEdges", viewflags.showVisibleEdges(), renderModeOptions.flags);
-  updateRenderModeOption("hiddenEdges", viewflags.showHiddenEdges(), renderModeOptions.flags);
-  updateRenderModeOption("materials", viewflags.showMaterials(), renderModeOptions.flags);
+  updateRenderModeOption("ACSTriad", viewflags.acsTriad, renderModeOptions.flags);
+  updateRenderModeOption("fill", viewflags.fill, renderModeOptions.flags);
+  updateRenderModeOption("grid", viewflags.grid, renderModeOptions.flags);
+  updateRenderModeOption("textures", viewflags.textures, renderModeOptions.flags);
+  updateRenderModeOption("visibleEdges", viewflags.visibleEdges, renderModeOptions.flags);
+  updateRenderModeOption("hiddenEdges", viewflags.hiddenEdges, renderModeOptions.flags);
+  updateRenderModeOption("materials", viewflags.materials, renderModeOptions.flags);
   updateRenderModeOption("lights", lights, renderModeOptions.flags);
-  updateRenderModeOption("monochrome", viewflags.isMonochrome(), renderModeOptions.flags);
-  updateRenderModeOption("constructions", viewflags.showConstructions(), renderModeOptions.flags);
-  updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions.flags);
-  updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions.flags);
-  updateRenderModeOption("transparency", viewflags.showTransparency(), renderModeOptions.flags);
+  updateRenderModeOption("monochrome", viewflags.monochrome, renderModeOptions.flags);
+  updateRenderModeOption("constructions", viewflags.constructions, renderModeOptions.flags);
+  updateRenderModeOption("weights", viewflags.weights, renderModeOptions.flags);
+  updateRenderModeOption("styles", viewflags.styles, renderModeOptions.flags);
+  updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
 
-  renderModeOptions.mode = viewflags.getRenderMode();
-  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.getRenderMode());
+  renderModeOptions.mode = viewflags.renderMode;
+  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
 }
 
 // opens the view and connects it to the HTML canvas element.
@@ -547,11 +544,6 @@ function doRedo(_event: any) {
   IModelApp.tools.run("View.Redo", theViewport!);
 }
 
-// do iModel synchronization
-function doSyncIModel(_event: any) {
-  console.log("IModel Synchronization");
-}
-
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
@@ -582,7 +574,6 @@ function wireIconsToFunctions() {
   document.getElementById("snapModeToggle")!.addEventListener("click", toggleSnapModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
-  document.getElementById("doSync")!.addEventListener("click", doSyncIModel);
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
@@ -718,13 +709,19 @@ class SVTIModelApp extends IModelApp {
   }
 }
 
+const docReady = new Promise((resolve) => {
+  window.addEventListener("DOMContentLoaded", () => {
+    resolve();
+  });
+});
+
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
-  await retrieveConfiguration();
+  await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(configuration));
 
-  // start the app.
+  // Start the app. (This tries to fetch a number of localization json files from the orgin.)
   SVTIModelApp.startup();
 
   // Choose RpcConfiguration based on whether we are in electron or browser
@@ -741,9 +738,9 @@ async function main() {
   for (const definition of rpcConfiguration.interfaces())
     RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
-  const spinner = document.getElementById("spinner") as HTMLDivElement;
-  spinner.style.display = "block";
+  const uiReady = displayUi();  // Get the browser started loading our html page and the svgs that it references but DON'T WAIT
 
+  // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
     if (configuration.standalone) {
       await openStandaloneIModel(activeViewState, configuration.iModelName!);
@@ -753,21 +750,46 @@ async function main() {
       await projectMgr.loginAndOpenImodel(activeViewState);
     }
 
-    // open the specified view
-    showStatus("opening View", configuration.viewName);
-    await buildViewList(activeViewState, configuration);
-
-    // now connect the view to the canvas
-    await openView(activeViewState);
-
-    showStatus("View Ready");
   } catch (reason) {
     alert(reason);
     return;
   }
 
-  spinner.style.display = "none";
+  await uiReady; // Now wait for the HTML UI to finish loading.
 
-  wireIconsToFunctions();
-  console.log("This is from frontend/main");
+  // Now we have both the UI and the iModel.
+
+  // open the specified view
+  showStatus("opening View", configuration.viewName);
+  await buildViewList(activeViewState, configuration);
+
+  showStatus("View Ready");
+  hideSpinner();
+
+  // now connect the view to the canvas
+  await openView(activeViewState);
 }
+
+// Set up the HTML UI elements and wire them to our functions
+async function displayUi() {
+  return new Promise(async (resolve) => {
+    await docReady; // We must wait for the document to be in place.
+    showSpinner();
+    wireIconsToFunctions();
+    resolve();
+  });
+}
+
+function showSpinner() {
+  const spinner = document.getElementById("spinner") as HTMLElement;
+  spinner.style.display = "block";
+}
+
+function hideSpinner() {
+  const spinner = document.getElementById("spinner");
+  if (spinner)
+    spinner.style.display = "none";
+}
+
+// Entry point - run the main function
+main();

@@ -33,16 +33,16 @@ export class BranchState {
 
   public static createForDecorations(): BranchState {
     const vf = new ViewFlags();
-    vf.setRenderMode(RenderMode.SmoothShade);
-    vf.setShowSourceLights(false);
-    vf.setShowCameraLights(false);
-    vf.setShowSolarLight(false);
+    vf.renderMode = RenderMode.SmoothShade;
+    vf.sourceLights = false;
+    vf.cameraLights = false;
+    vf.solarLight = false;
     return new BranchState(vf, Transform.createIdentity(), new FeatureSymbology.Overrides());
   }
 
   public get viewFlags() { return this._viewFlags; }
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
-  public get showClipVolume(): boolean { return this.viewFlags.showClipVolume(); }
+  public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
   private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: Clip.Volume) {
     this._viewFlags = flags;

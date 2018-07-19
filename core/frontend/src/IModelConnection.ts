@@ -130,10 +130,9 @@ export class IModelConnection extends IModel {
 
   private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
     // Try opening the iModel repeatedly accommodating any pending responses from the backend
-    // After the first attempt wait for 500 ms.On subsequent attempts, double the wait time the
-    // timeout period has reached
-    let connectionRetryTime: number = 500; // milliseconds
-    connectionRetryTime = Math.min(connectionRetryTime, IModelConnection.connectionTimeout);
+
+    // Set a retry policy for open requests. (Actually, make this half of what you want. See below.)
+    const connectionRetryTime: number = Math.min(25, IModelConnection.connectionTimeout);
 
     let openForReadOperation: RpcOperation | undefined;
     let openForWriteOperation: RpcOperation | undefined;
@@ -150,7 +149,6 @@ export class IModelConnection extends IModel {
     }
 
     Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
-    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
 
     const startTime = Date.now();
 
@@ -167,9 +165,10 @@ export class IModelConnection extends IModel {
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      connectionRetryTime = connectionRetryTime * 2;
-      request.retryInterval = connectionRetryTime;
-      Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+      // Double the time that this request will wait the next time it fails with PendingUpdateReceived (if that happens).
+      // (Actually, this doubles the interval for *this* wait. So, that's why we make the policy half of what we want
+      // the initial wait to be.)
+      request.retryInterval *= 2;
     });
 
     let openResponse: IModel;

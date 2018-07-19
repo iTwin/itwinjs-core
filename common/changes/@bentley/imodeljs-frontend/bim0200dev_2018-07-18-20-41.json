@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix getGridPlaneViewIntersections.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "brien.bastings@bentley.com"
+}

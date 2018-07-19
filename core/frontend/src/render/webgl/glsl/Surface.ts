@@ -65,19 +65,19 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
   frag.addUniform("u_matRgb", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_matRgb", (uniform, params) => {
-      const mat: Material = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      const mat: Material = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform4fv(mat.diffuseUniform);
     });
   });
   frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_matAlpha", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform2fv(mat.alphaUniform);
     });
   });
   frag.addUniform("u_textureWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_textureWeight", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform1f(mat.textureWeight);
     });
   });

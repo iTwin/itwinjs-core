@@ -45,7 +45,7 @@ describe("FeatureSymbology.Appearance", () => {
     const expectedProps = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true, weight: 1, alpha: 200 } as FeatureSymbology.AppearanceProps;
     let app1 = FeatureSymbology.Appearance.fromJSON(props1);
     const app2 = FeatureSymbology.Appearance.fromJSON(props2);
-    app1  = app2.extendAppearance(app1);
+    app1 = app2.extendAppearance(app1);
     const expected = FeatureSymbology.Appearance.fromJSON(expectedProps);
     assert.isTrue(expected.equals(app1));
   });
@@ -95,7 +95,7 @@ describe("FeatureSymbology.Overrides", () => {
     expect(overrides.isClassVisible(GeometryClass.Construction)).to.equal(viewState.viewFlags.constructions);
     expect(overrides.isClassVisible(GeometryClass.Dimension)).to.equal(viewState.viewFlags.dimensions);
     expect(overrides.isClassVisible(GeometryClass.Pattern)).to.equal(viewState.viewFlags.patterns);
-    expect(overrides.lineWeights).to.equal(viewState.viewFlags.showWeights());
+    expect(overrides.lineWeights).to.equal(viewState.viewFlags.weights);
     expect(Array.from(overrides.neverDrawn)).to.deep.equals(Array.from(viewState.neverDrawn!));
     expect(Array.from(overrides.alwaysDrawn)).to.deep.equals(Array.from(viewState.alwaysDrawn!));
   });

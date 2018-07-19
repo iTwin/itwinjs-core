@@ -94,7 +94,7 @@ DisplayStyles describe the *styling* that should be applied to the contents of a
 
 This includes the :
   * [ViewFlags]($common)
-  * SubCategory [Appearance]($common) visibility and overrides
+  * [SubCategoryAppearance]($common) visibility and overrides
   * Background color
   * [RenderMode]($common)
   * [Environment]($frontend)

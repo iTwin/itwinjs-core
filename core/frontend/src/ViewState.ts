@@ -412,13 +412,15 @@ export abstract class ViewState extends ElementState {
     context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 
-  private computeRootToNpc(): Map4d | undefined {
+  /** @hidden */
+  public computeRootToNpc(inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
     const viewRot = this.getRotation();
-    const delta = this.getExtents();
-    const inOrigin = this.getOrigin();
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
+
+    if (delta === undefined) delta = this.getExtents();
+    if (inOrigin === undefined) inOrigin = this.getOrigin();
 
     let frustFraction = 1.0;
     let xExtent: Vector3d;
@@ -448,7 +450,7 @@ export abstract class ViewState extends ElementState {
         zDelta = zFront - eyeToOrigin.z;
       }
 
-      // z out back of eye ====> origin z coordinates are negative.  (Back plane more negative than front plane)
+      // z out back of eye ===> origin z coordinates are negative.  (Back plane more negative than front plane)
       const backFraction = -zBack / focusDistance;    // Perspective fraction at back clip plane.
       const frontFraction = -zFront / focusDistance;  // Perspective fraction at front clip plane.
       frustFraction = frontFraction / backFraction;
@@ -458,11 +460,8 @@ export abstract class ViewState extends ElementState {
       yExtent = yVector.scale(delta.y * backFraction);   // yExtent at back == delta.y * backFraction.
 
       // Calculate the zExtent in the View coordinate system.
-      zExtent = new Vector3d(
-        eyeToOrigin.x * (frontFraction - backFraction), // eyeToOrigin.x * frontFraction - eyeToOrigin.x * backFraction
-        eyeToOrigin.y * (frontFraction - backFraction), // eyeToOrigin.y * frontFraction - eyeToOrigin.y * backFraction
-        zDelta);
-      viewRot.multiplyVectorInPlace(zExtent);   // rotate back to root coordinates.
+      zExtent = new Vector3d(eyeToOrigin.x * (frontFraction - backFraction), eyeToOrigin.y * (frontFraction - backFraction), zDelta);
+      viewRot.multiplyTransposeVectorInPlace(zExtent);   // rotate back to root coordinates.
 
       origin = new Point3d(
         eyeToOrigin.x * backFraction,   // Calculate origin in eye coordinates
@@ -479,7 +478,7 @@ export abstract class ViewState extends ElementState {
     }
 
     // calculate the root-to-npc mapping (using expanded frustum)
-    return Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction);
+    return { map: Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction), frustFraction };
   }
 
   /**
@@ -488,12 +487,12 @@ export abstract class ViewState extends ElementState {
    * @returns The 8-point Frustum with the corners of this ViewState, or undefined if the parameters are invalid.
    */
   public calculateFrustum(result?: Frustum): Frustum | undefined {
-    const rootToNpc = this.computeRootToNpc();
-    if (undefined === rootToNpc)
+    const val = this.computeRootToNpc();
+    if (undefined === val.map)
       return undefined;
 
     const box = result ? result.initNpc() : new Frustum();
-    rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
+    val.map.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
     return box;
   }
 

@@ -30,7 +30,7 @@ import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
 
-/** Viewport synchronization flags */
+/** Viewport synchronization flags. */
 export class SyncFlags {
   private decorations = false;
   private scene = false;
@@ -218,6 +218,7 @@ export const enum CoordSystem {
 class Animator {
   private readonly currFrustum = new Frustum();
   private startTime?: BeTimePoint;
+  private moveToTime(time: number) { this.interpolateFrustum(time / this.totalTime.milliseconds); }
 
   /** Construct a new Animator.
    * @param totalTime The duration of the animation.
@@ -228,15 +229,9 @@ class Animator {
   public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
   private interpolateFrustum(fraction: number): void {
-    for (let i = 0; i < Npc.CORNER_COUNT; ++i) {
+    for (let i = 0; i < Npc.CORNER_COUNT; ++i)
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
-    }
     this.viewport.setupViewFromFrustum(this.currFrustum);
-  }
-
-  private moveToTime(time: number) {
-    const fraction = time / this.totalTime.milliseconds;
-    this.interpolateFrustum(fraction);
   }
 
   /**
@@ -395,10 +390,8 @@ export class Viewport {
   public readonly worldToViewMap = Map4d.createIdentity();
   /** @hidden */
   public readonly worldToNpcMap = Map4d.createIdentity();
-
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
-
   /** The settings that control how elements are hilited in this Viewport. */
   public readonly hilite = new Hilite.Settings();
 
@@ -406,17 +399,15 @@ export class Viewport {
    * Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
    */
-  public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
+  public get isGridOn(): boolean { return this.viewFlags.grid; }
   /** The [ViewFlags]($common) that determine how this Viewport is rendered.  */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   /** @hidden */
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
-
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
-
   /** @hidden */
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   /** @hidden */
@@ -862,11 +853,12 @@ export class Viewport {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const frustFraction = this.computeRootToNpc(this.worldToNpcMap, origin, delta);
-    if (frustFraction === undefined)
+    const newRootToNpc = view.computeRootToNpc(origin, delta);
+    if (newRootToNpc.map === undefined) // invalid frustum
       return ViewStatus.InvalidViewport;
 
-    this.frustFraction = frustFraction;
+    this.worldToNpcMap.setFrom(newRootToNpc.map);
+    this.frustFraction = newRootToNpc.frustFraction;
     this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
 
     this.sync.invalidateRenderPlan();
@@ -874,82 +866,6 @@ export class Viewport {
 
     this.onViewChanged.raiseEvent(this);
     return ViewStatus.Success;
-  }
-
-  /** Compute the root-to-npc map given an origin and delta. View orientation and camera comes from member variables. */
-  private computeRootToNpc(rootToNpc: Map4d, inOrigin: Point3d, delta: Vector3d): number | undefined {
-    const view = this.view;
-    const viewRot = this.rotMatrix;
-    const xVector = viewRot.rowX();
-    const yVector = viewRot.rowY();
-    const zVector = viewRot.rowZ();
-
-    let frustFraction = 1.0;
-    let xExtent: Vector3d;
-    let yExtent: Vector3d;
-    let zExtent: Vector3d;
-    let origin: Point3d;
-
-    // Compute root vectors along edges of view frustum.
-    if (view.is3d() && view.isCameraOn()) {
-      const camera = view.camera;
-      const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
-      this.toView(eyeToOrigin);                            // align with view coordinates.
-
-      const focusDistance = camera.focusDist;
-      let zDelta = delta.z;
-      let zBack = eyeToOrigin.z;              // Distance from eye to backplane.
-      let zFront = zBack + zDelta;            // Distance from eye to frontplane.
-
-      if (zFront / zBack < Viewport.nearScale24) {
-        const maximumBackClip = 10000 * Constant.oneKilometer;
-        if (-zBack > maximumBackClip) {
-          zBack = -maximumBackClip;
-          eyeToOrigin.z = zBack;
-        }
-
-        zFront = zBack * Viewport.nearScale24;
-        zDelta = zFront - eyeToOrigin.z;
-      }
-
-      // z out back of eye ====> origin z coordinates are negative.  (Back plane more negative than front plane)
-      const backFraction = -zBack / focusDistance;    // Perspective fraction at back clip plane.
-      const frontFraction = -zFront / focusDistance;  // Perspective fraction at front clip plane.
-      frustFraction = frontFraction / backFraction;
-
-      // delta.x,delta.y are view rectangle sizes at focus distance.  Scale to back plane:
-      xExtent = xVector.scale(delta.x * backFraction);   // xExtent at back == delta.x * backFraction.
-      yExtent = yVector.scale(delta.y * backFraction);   // yExtent at back == delta.y * backFraction.
-
-      // Calculate the zExtent in the View coordinate system.
-      zExtent = new Vector3d(
-        eyeToOrigin.x * (frontFraction - backFraction), // eyeToOrigin.x * frontFraction - eyeToOrigin.x * backFraction
-        eyeToOrigin.y * (frontFraction - backFraction), // eyeToOrigin.y * frontFraction - eyeToOrigin.y * backFraction
-        zDelta);
-      this.fromView(zExtent);   // rotate back to root coordinates.
-
-      origin = new Point3d(
-        eyeToOrigin.x * backFraction,   // Calculate origin in eye coordinates
-        eyeToOrigin.y * backFraction,
-        eyeToOrigin.z);
-
-      this.fromView(origin);  // Rotate back to root coordinates
-      origin.plus(camera.eye, origin); // Add the eye point.
-    } else {
-      origin = inOrigin;
-      xExtent = xVector.scale(delta.x);
-      yExtent = yVector.scale(delta.y);
-      zExtent = zVector.scale(delta.z);
-    }
-
-    // calculate the root-to-npc mapping (using expanded frustum)
-    const newRootToNpc = Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction);
-    if (!newRootToNpc)
-      return undefined;
-
-    rootToNpc.setFrom(newRootToNpc);  // Don't screw this up if we are returning ERROR (TR# 251771).
-    this.frustFraction = frustFraction;
-    return frustFraction;
   }
 
   /**
@@ -1102,13 +1018,13 @@ export class Viewport {
     // of the root-based maps.)
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
-      const ueRootToNpc = Map4d.createIdentity();
-      if (undefined === this.computeRootToNpc(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded))
+      const ueRootToNpc = this.view.computeRootToNpc(this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
+      if (undefined === ueRootToNpc.map)
         return box; // invalid frustum
 
       // get the root corners of the unexpanded box
       const ueRootBox = new Frustum();
-      ueRootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
+      ueRootToNpc.map.transform1.multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
 
       // and convert them to npc coordinates of the expanded view
       this.worldToNpcArray(ueRootBox.points);
@@ -1272,9 +1188,7 @@ export class Viewport {
   /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
-    const viewRange = this.view.computeFitRange();
-
-    return viewRange;
+    return this.view.computeFitRange();
   }
 
   /**
@@ -1290,7 +1204,7 @@ export class Viewport {
   }
 
   /**
-   * Re-applies the most recently un-done change to the Viewport from the redo stack
+   * Re-applies the most recently un-done change to the Viewport from the redo stack.
    */
   public doRedo(animationTime?: BeDuration) {
     if (0 === this.forwardStack.length)
@@ -1303,9 +1217,8 @@ export class Viewport {
 
   /** @hidden */
   public animate() {
-    if (this.animator && this.animator.animate()) {
+    if (this.animator && this.animator.animate())
       this.animator = undefined;
-    }
   }
 
   /** @hidden */
@@ -1342,8 +1255,7 @@ export class Viewport {
   private static roundGrid(num: number, units: number): number {
     const sign = ((num * units) < 0.0) ? -1.0 : 1.0;
     num = (num * sign) / units + 0.5;
-    num = units * sign * Math.floor(num);
-    return num;
+    return units * sign * Math.floor(num);
   }
 
   private getGridOrientation(origin: Point3d, rMatrix: RotMatrix) {
@@ -1606,7 +1518,6 @@ export class Viewport {
 
       isRedrawNeeded = true;
       sync.setValidScene();
-      // ###TODO? IModelApp.viewManager.notifyRenderSceneQueued(this);
     }
 
     if (!sync.isValidRenderPlan) {
@@ -1647,7 +1558,7 @@ export class Viewport {
   public decorate(context: DecorateContext): void {
     this.view.decorate(context);
     this.view.drawGrid(context);
-    if (context.viewFlags.showAcsTriad())
+    if (context.viewFlags.acsTriad)
       this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
   }
 
@@ -1704,9 +1615,7 @@ export class Viewport {
    */
   public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
-    const options = new LocateOptions();
-
-    if (0 === picker.doPick(this, pickPoint, radius, options))
+    if (0 === picker.doPick(this, pickPoint, radius, new LocateOptions()))
       return undefined;
 
     const result = undefined !== out ? out : new Point3d();

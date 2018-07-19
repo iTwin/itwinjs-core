@@ -112,7 +112,7 @@ export class HitDetail {
 
   /**
    * Get the tooltip string for this HitDetail.
-   * Calls the backend method [IModelDb.getLocateMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
+   * Calls the backend method [Element.getLocateMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<string> {
     const msg: string[] = await this.viewport.iModel.getLocateMessage(this.sourceId); // wait for the locate message(s) from the backend
@@ -160,7 +160,7 @@ export class SnapDetail extends HitDetail {
   public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
   /** Type guard for SnapDetail. */
   public isSnapDetail(): this is SnapDetail { return true; }
-  /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($backend) from the generated snap point. */
+  /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
   public isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
