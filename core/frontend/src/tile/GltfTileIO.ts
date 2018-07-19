@@ -276,7 +276,6 @@ export namespace GltfTileIO {
             branch.add(renderGraphic);
             let transform = (undefined === this.returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this.returnToCenter[0], this.returnToCenter[1], this.returnToCenter[2]);
             if (this.yAxisUp) transform = transform.multiplyTransformRotMatrix(RotMatrix.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as RotMatrix);
-
             renderGraphic = this.system.createBranch(branch, transform);
           }
         }

@@ -136,7 +136,7 @@ export namespace Sheet {
       drawArgs.clip = myRoot.graphicsClip;
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
-      myRoot.view.createScene(drawArgs.context);
+      myRoot.view.createSceneFromDrawArgs(drawArgs);
     }
   }
 
@@ -164,17 +164,6 @@ export namespace Sheet {
         undefined,    // ClipVector build in child class constructors
         undefined,
       ));
-    }
-
-    public drawInView(context: SceneContext) {
-      const args = this.createDrawArgs(context);
-      assert(this._rootTile !== undefined);
-
-      const selectedTiles = this.selectTiles(args);
-      for (const selectedTile of selectedTiles)
-        selectedTile.drawGraphics(args);
-
-      args.drawGraphics();
     }
   }
 

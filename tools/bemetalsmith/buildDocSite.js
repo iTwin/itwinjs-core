@@ -48,7 +48,7 @@ function runStagingCopy() {
   fs.removeSync(outputDir);
 
   //Copy md files.
-  const docsDir = path.resolve(rootDir, "docs");
+  const docsDir = path.resolve(rootDir, "docs/core");
   fs.copySync(docsDir, outputDir);
 
   //Copy extract to staging area

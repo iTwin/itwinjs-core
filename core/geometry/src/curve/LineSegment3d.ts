@@ -14,7 +14,7 @@ import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive, GeometryQuery, CurveLocationDetail, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { LineString3d } from "./LineString3d";
-import { ClipperMethods } from "../numerics/ClipPlanes";
+import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/
 /**
  * A LineSegment3d is:
@@ -246,7 +246,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param clipper clip structure (e.g. clip planes)
    * @param announce function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    */
-  public announceClipIntervals(clipper: ClipperMethods, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  public announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     return clipper.announceClippedSegmentIntervals(0.0, 1.0, this._point0, this._point1,
       announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined);
   }

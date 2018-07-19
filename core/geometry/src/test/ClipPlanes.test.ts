@@ -16,8 +16,8 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
 import { CurvePrimitive, GeometryQuery, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { ClipPlaneContainment } from "../numerics/ClipPrimitives";
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet, ClipperMethods, ClipUtilities } from "../numerics/ClipPlanes";
+import { ClipPlaneContainment, Clipper, ClipUtilities } from "../clipping/ClipUtils";
+import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "../clipping/ClipPlane";
 import { Sample } from "../serialization/GeometrySamples";
 
 import { GeometryCoreTestIO } from "./IModelJson.test";
@@ -519,7 +519,7 @@ describe("ClipPlaneSet", () => {
 });
 
 function clipMovingCurve(
-  clipper: ClipperMethods,
+  clipper: Clipper,
   curve: CurvePrimitive,
   traceCurve: CurvePrimitive,
   numTrace: number,
@@ -559,7 +559,7 @@ describe("CurveClips", () => {
     const outputShiftY = 10.0;
 
     let xCount = 0;
-    let clipper: ClipperMethods;
+    let clipper: Clipper;
     let clipLine: Point3d[];
     clipLine = Sample.createRectangle(-2, -1, 2, 1, 0, true);
     clipper = ConvexClipPlaneSet.createXYPolyLineInsideLeft(clipLine);

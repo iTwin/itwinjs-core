@@ -28,7 +28,7 @@ import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/
 import { GeometricModelState, GeometricModel2dState, SheetModelState } from "./ModelState";
 import { RenderGraphic } from "./render/System";
 import { Sheet } from "./Sheet";
-import { TileTree } from "./tile/TileTree";
+import { TileTree, Tile } from "./tile/TileTree";
 
 export const enum GridOrientationType {
   View = 0,
@@ -1699,6 +1699,12 @@ export class ViewState2d extends ViewState {
     return model;
   }
 
+  /** Create the scene for this view from a set of pre-initialized DrawArgs. */
+  public createSceneFromDrawArgs(args: Tile.DrawArgs) {
+    // ###TODO: Check for a context RenderPlan wait time in the draw arguments given
+    args.root.draw(args);
+  }
+
   /**
    * This should be overridden by more specific leaf classes of ViewState2d
    * @hidden
@@ -1861,7 +1867,7 @@ export class SheetViewState extends ViewState2d {
     for (const attachment of this._attachments.list)
       if (attachment.getLoadStatus() === TileTree.LoadStatus.Loaded) {
         assert(attachment.tree !== undefined);
-        attachment.tree!.drawInView(context);
+        attachment.tree!.drawScene(context);
       }
   }
 

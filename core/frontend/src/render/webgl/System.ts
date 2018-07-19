@@ -30,7 +30,7 @@ import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive } from "./Primitive";
-import { ClipVolumePlanes, ClipVolumeMask } from "./ClipVolume";
+import { ClipVolumePlanes, ClipMaskVolume } from "./ClipVolume";
 
 export const enum ContextState {
   Uninitialized,
@@ -187,64 +187,68 @@ export class Capabilities {
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
 export class IdMap implements IDisposable {
   /** Mapping of materials by their key values. */
-  public readonly materialMap: Map<string, RenderMaterial>;
+  public readonly materials: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
-  public readonly textureMap: Map<string, RenderTexture>;
+  public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
-  public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
+  public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
   /** Array of textures without key values (unnamed). */
   public readonly keylessTextures: RenderTexture[] = [];
   /** Mapping of ClipVectors to corresponding clipping volumes. */
   public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
 
   public constructor() {
-    this.materialMap = new Map<string, RenderMaterial>();
-    this.textureMap = new Map<string, RenderTexture>();
-    this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+    this.materials = new Map<string, RenderMaterial>();
+    this.textures = new Map<string, RenderTexture>();
+    this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
     this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
   }
 
   public dispose() {
-    const textureArr = Array.from(this.textureMap.values());
-    const gradientArr = this.gradientMap.extractArrays().values;
+    const textureArr = Array.from(this.textures.values());
+    const gradientArr = this.gradients.extractArrays().values;
+    const clipVolumeArr = Array.from(this.clipVolumes.values());
     for (const texture of textureArr)
       dispose(texture);
     for (const gradient of gradientArr)
       dispose(gradient);
     for (const texture of this.keylessTextures)
       dispose(texture);
-    this.textureMap.clear();
-    this.gradientMap.clear();
+    for (const clipVolume of clipVolumeArr)
+      dispose(clipVolume);
+    this.textures.clear();
+    this.gradients.clear();
+    this.clipVolumes.clear();
     this.keylessTextures.length = 0;
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
   public addMaterial(material: RenderMaterial) {
     if (material.key)
-      this.materialMap.set(material.key, material);
+      this.materials.set(material.key, material);
   }
 
   /** Add a texture to this IdMap, given that it has a valid key. */
   public addTexture(texture: RenderTexture) {
     if (texture.key)
-      this.textureMap.set(texture.key, texture);
+      this.textures.set(texture.key, texture);
     else
       this.keylessTextures.push(texture);
   }
 
   /** Add a texture to this IdMap using gradient symbology. */
   public addGradient(gradientSymb: Gradient.Symb, texture: RenderTexture) {
-    this.gradientMap.set(gradientSymb, texture);
+    this.gradients.set(gradientSymb, texture);
   }
 
   /** Find a cached material using its key. If not found, returns undefined. */
   public findMaterial(key: string): RenderMaterial | undefined {
-    return this.materialMap.get(key);
+    return this.materials.get(key);
   }
 
   /** Find a cached gradient using the gradient symbology. If not found, returns undefined. */
   public findGradient(symb: Gradient.Symb): RenderTexture | undefined {
-    return this.gradientMap.get(symb);
+    return this.gradients.get(symb);
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
@@ -252,10 +256,10 @@ export class IdMap implements IDisposable {
     if (!params.key)
       return new Material(params);
 
-    let material = this.materialMap.get(params.key);
+    let material = this.materials.get(params.key);
     if (!material) {
       material = new Material(params);
-      this.materialMap.set(params.key, material);
+      this.materials.set(params.key, material);
     }
     return material;
   }
@@ -278,7 +282,7 @@ export class IdMap implements IDisposable {
     return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
   }
 
-  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textureMap.get(key) : undefined; }
+  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
@@ -293,7 +297,7 @@ export class IdMap implements IDisposable {
 
   /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
   public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
-    const existingGrad = this.gradientMap.get(grad);
+    const existingGrad = this.gradients.get(grad);
     if (existingGrad)
       return existingGrad;
 
@@ -316,7 +320,7 @@ export class IdMap implements IDisposable {
 
     let clipVolume: RenderClipVolume | undefined = ClipVolumePlanes.create(clipVector);
     if (!clipVolume)
-      clipVolume = ClipVolumeMask.create(clipVector);
+      clipVolume = ClipMaskVolume.create(clipVector);
     if (!clipVolume)
       return undefined;
 
@@ -326,7 +330,7 @@ export class IdMap implements IDisposable {
 }
 
 export class System extends RenderSystem {
-  private readonly _currentRenderState = new RenderState();
+  public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
   public readonly techniques: Techniques;
@@ -415,8 +419,8 @@ export class System extends RenderSystem {
   }
 
   public applyRenderState(newState: RenderState) {
-    newState.apply(this._currentRenderState);
-    this._currentRenderState.copyFrom(newState);
+    newState.apply(this.currentRenderState);
+    this.currentRenderState.copyFrom(newState);
   }
 
   public createDepthBuffer(width: number, height: number): DepthBuffer | undefined {
