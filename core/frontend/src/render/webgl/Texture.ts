@@ -152,7 +152,7 @@ class TextureCreateParams {
 
     const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
     const useMipMaps: TextureFlag = (!isSky && !isTile) ? true : undefined;
-    const interpolate: TextureFlag = !isSky ? true : undefined;
+    const interpolate: TextureFlag = true;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
 
     return { format, wrapMode, useMipMaps, interpolate };

@@ -19,7 +19,7 @@ import { TestData } from "./TestData";
 
 /* tslint:disable:no-console */
 
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "testbed/node_modules/@bentley/imodeljs-backend/src/test/assets/test.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 let canvas: HTMLCanvasElement;
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;

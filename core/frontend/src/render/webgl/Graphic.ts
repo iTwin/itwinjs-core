@@ -79,12 +79,13 @@ class OvrUniform {
 
     if (app.overridesRgb && app.rgb) {
       this.flags |= OvrFlags.Rgb;
-      this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.g, 1.0)); // ###TODO: alpha 1.0 or 0.0?
+      this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.b, 1.0)); // NB: Alpha ignored unless OvrFlags.Alpha set...
     }
 
     if (app.overridesAlpha && app.alpha) {
+      const alpha = (255.0 - app.alpha) / 255.0; // ###TODO: app.alpha appears to actually be transparency - fix property name!
       this.flags |= OvrFlags.Alpha;
-      this.rgba = FloatRgba.fromColorDef(ColorDef.from(this.rgba.red, this.rgba.green, this.rgba.blue, app.alpha));
+      this.rgba = new FloatRgba(this.rgba.red, this.rgba.green, this.rgba.blue, alpha); // NB: rgb ignored unless OvrFlags.Rgb set...
     }
 
     if (app.overridesWeight && app.weight) {

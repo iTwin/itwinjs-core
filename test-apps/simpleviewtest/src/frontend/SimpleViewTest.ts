@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend/lib/frontend";
-import { Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, FeatureSymbology } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
   ElectronRpcManager,
@@ -18,6 +18,9 @@ import {
   BentleyCloudRpcManager,
   RpcOperation,
   IModelToken,
+  LinePixels,
+  RgbColor,
+  ColorDef,
 } from "@bentley/imodeljs-common/lib/common";
 import { Transform, Point3d } from "@bentley/geometry-core/lib/geometry-core";
 import { showStatus } from "./Utils";
@@ -55,6 +58,17 @@ let curNumModels = 0;
 const curCategories: Set<string> = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
+let overrideColor: ColorDef | undefined;
+
+function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
+  if (undefined === overrideColor)
+    return;
+
+  const color = RgbColor.fromColorDef(overrideColor);
+  const app = FeatureSymbology.Appearance.fromJSON({ rgb: color, weight: 4, linePixels: LinePixels.Code1 });
+  for (const elemId of viewport.iModel.selectionSet.elements)
+    ovrs.overrideElement(elemId, app);
+}
 
 /** Parameters for starting SimpleViewTest with a specified initial configuration */
 interface SVTConfiguration {
@@ -407,6 +421,7 @@ async function openView(state: SimpleViewState) {
   if (htmlCanvas) {
     theViewport = new Viewport(htmlCanvas, state.viewState!);
     await _changeView(state.viewState!);
+    theViewport.addFeatureOverrides = addFeatureOverrides;
     theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
     IModelApp.viewManager.addViewport(theViewport);
   }
@@ -464,6 +479,13 @@ function startWalk(_event: any) {
 // start rotate view.
 function startRotateView(_event: any) {
   IModelApp.tools.run("View.Rotate", theViewport!);
+}
+
+// override symbology for selected elements
+function changeOverrideColor() {
+  const select = (document.getElementById("colorList") as HTMLSelectElement)!;
+  overrideColor = new ColorDef(select.value);
+  theViewport!.view.setFeatureOverridesDirty();
 }
 
 // change active view.
@@ -620,6 +642,7 @@ function wireIconsToFunctions() {
     }
   });
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
+  document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
   document.getElementById("browserFileSelector")!.addEventListener("change", async function onChange(this: HTMLElement) {

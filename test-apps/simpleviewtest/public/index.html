@@ -35,6 +35,12 @@
         <i class="bim-icon-briefcases"></i>
       </div>
       <select id="viewList"></select>
+      <select id="colorList" name="colorList" style="display: none;"><!-- for testing symbology overrides -->
+        <option value="deepPink">Deep pink</option>
+        <option value="darkBrown">Dark brown</option>
+        <option value="lightSeagreen">Light seagreen</option>
+        <option value="peachPuff">Peach puff</option>
+      </select>
       <div class="simpleicon" id="startToggleModel">
         <i class="bim-icon-model"></i>
         <div class="toolMenu" id="toggleModelMenu">
@@ -99,7 +105,8 @@
           <i class="bim-icon-settings"></i>
         </div>
         <div class="toolMenu" id="changeRenderModeMenu">
-          <select id="renderModeList">
+          <label for="renderModeList">Mode:</label>
+          <select id="renderModeList" name="renderModeList">
             <option>Smooth Shade</option>
             <option>Solid Fill</option>
             <option>Hidden Line</option>

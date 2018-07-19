@@ -1332,11 +1332,12 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    const useOldSkyBox = true;
+    const useOldSkyBox: boolean = true;
     if (useOldSkyBox)
       this.drawSkyBox(context);
     else
       this.drawRealSkyBox(context);
+
     this.drawGroundPlane(context);
   }
 

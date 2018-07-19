@@ -11,7 +11,7 @@ import { SpatialViewState, IModelConnection } from "@bentley/imodeljs-frontend";
 import { FeatureSymbology } from "@bentley/imodeljs-frontend/lib/rendering";
 import { CONSTANTS } from "../common/Testbed";
 
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "testbed/node_modules/@bentley/imodeljs-backend/src/test/assets/test.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 describe("FeatureSymbology.Appearance", () => {
   it("default constructor works as expected", () => {
@@ -45,7 +45,7 @@ describe("FeatureSymbology.Appearance", () => {
     const expectedProps = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true, weight: 1, alpha: 200 } as FeatureSymbology.AppearanceProps;
     let app1 = FeatureSymbology.Appearance.fromJSON(props1);
     const app2 = FeatureSymbology.Appearance.fromJSON(props2);
-    app1  = app2.extendAppearance(app1);
+    app1 = app2.extendAppearance(app1);
     const expected = FeatureSymbology.Appearance.fromJSON(expectedProps);
     assert.isTrue(expected.equals(app1));
   });

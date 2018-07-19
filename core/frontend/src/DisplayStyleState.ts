@@ -243,10 +243,17 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
+  private _useSkyBoxImages: boolean = false;
+  private _skyBoxImagePrefix: string = "";
+  private _skyBoxImageSuffix: string = "";
+
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
   public loadSkyBoxParams(system: RenderSystem): boolean {
     if (this.skyBoxParams !== undefined)
       return true;  // skybox textures have already been loaded
+
+    if (this._useSkyBoxImages)
+      return this.loadImageSkyBoxParams(system);
 
     // const env = this.getEnvironment();
     // ###TODO - Use actual textures - just defining our own textures for now (different colors to distinguish them); can key off env.sky.jpegFile (needs more than one file though!)
@@ -254,8 +261,14 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
 
-    const horizon = system.createTextureFromImageBuffer(
-      ImageBuffer.create(new Uint8Array([
+    let horizonImage: ImageBuffer;
+    let skyImage: ImageBuffer;
+    const wantSolidTextures = true;
+    if (wantSolidTextures) {
+      horizonImage = ImageBuffer.create(new Uint8Array([0x7f, 0, 0]), ImageBufferFormat.Rgb, 1)!;
+      skyImage = ImageBuffer.create(new Uint8Array([0, 0x7f, 0xff]), ImageBufferFormat.Rgb, 1)!;
+    } else {
+      horizonImage = ImageBuffer.create(new Uint8Array([
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 255, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
@@ -263,9 +276,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
         0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
         0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
         0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10,
-        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10]), ImageBufferFormat.Rgb, 4)!, this.iModel, params)!;
-    const sky = system.createTextureFromImageBuffer(
-      ImageBuffer.create(new Uint8Array([
+        0, 104, 10, 0, 104, 10, 0, 104, 10, 0, 104, 10]), ImageBufferFormat.Rgb, 4)!;
+      skyImage = ImageBuffer.create(new Uint8Array([
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
@@ -273,7 +285,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
         0, 255, 255, 255, 255, 0, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
         0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255,
-        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255]), ImageBufferFormat.Rgb, 4)!, this.iModel, params)!;
+        0, 255, 255, 0, 255, 255, 0, 255, 255, 0, 255, 255]), ImageBufferFormat.Rgb, 4)!;
+    }
+
+    const horizon = system.createTextureFromImageBuffer(horizonImage, this.iModel, params)!;
+    const sky = system.createTextureFromImageBuffer(skyImage, this.iModel, params)!;
     const ground = system.createTextureFromImageBuffer(ImageBuffer.create(new Uint8Array([0, 104, 10]), ImageBufferFormat.Rgb, 1)!, this.iModel, params)!;
 
     const front = horizon;
@@ -286,6 +302,47 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.skyBoxParams = SkyBoxCreateParams.createForTexturedCube(front, back, top, bottom, left, right);
 
     // ###TODO - if any image buffer or texture fails to load, bail out.
+    return true;
+  }
+
+  // ###TODO: This is all temporary...
+  private _loadingImages: boolean = false;
+  private loadImageSkyBoxParams(system: RenderSystem): boolean {
+    if (this._loadingImages)
+      return true;
+
+    this._loadingImages = true;
+
+    const promises: Array<Promise<HTMLImageElement>> = [];
+    const prefix = this._skyBoxImagePrefix; // "mp_plains/plains-of-abraham_"; // "sor_sea/sea_";
+    const ext = this._skyBoxImageSuffix; // ".png"; // ".JPG";
+    const suffixes = ["ft", "bk", "up", "dn", "lf", "rt"];
+    for (let i = 0; i < suffixes.length; i++) {
+      const suffix = suffixes[i];
+      const url = "./skyboxes/" + prefix + suffix + "." + ext;
+      const promise = new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = url;
+        (image as any).faceIndex = i;
+        });
+
+      promises.push(promise);
+    }
+
+    Promise.all(promises).then((images: HTMLImageElement[]) => {
+      const textures: RenderTexture[] = [];
+      const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
+      for (const image of images) {
+        const texture = system.createTextureFromImage(image, false, this.iModel, params)!;
+        textures[(image as any).faceIndex] = texture;
+      }
+
+      this.skyBoxParams = SkyBoxCreateParams.createForTexturedCube(textures[0], textures[1], textures[2], textures[3], textures[4], textures[5]);
+      this._loadingImages = false;
+    });
+
     return true;
   }
 
