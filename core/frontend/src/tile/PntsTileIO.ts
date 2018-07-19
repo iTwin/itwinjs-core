@@ -67,11 +67,9 @@ export namespace PntsTileIO {
     }
 
     // ###TODO? Do we expect a batch table? not currently handled...
-    const feature = new Feature(model.id);
     const featureTable = new FeatureTable(1, model.id);
-    featureTable.insert(feature);
     const features = new Mesh.Features(featureTable);
-    features.add(feature, 1);
+    features.add(new Feature(model.id), 1);
 
     let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features), model.iModel);
     renderGraphic = system.createBatch(renderGraphic!, featureTable, range);
