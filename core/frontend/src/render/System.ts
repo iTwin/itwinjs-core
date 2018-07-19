@@ -77,7 +77,7 @@ export abstract class RenderGraphic implements IDisposable {
 
 /** Interface adopted by a type which can apply a clipping volume to a Target. */
 export abstract class RenderClipVolume implements IDisposable {
-  public dispose(): void { }
+  public abstract dispose(): void;
 }
 
 export type GraphicList = RenderGraphic[];
