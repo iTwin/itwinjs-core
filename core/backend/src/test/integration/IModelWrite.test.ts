@@ -175,7 +175,7 @@ describe("IModelWriteTest", () => {
 
   });
 
-  it("should build concurrency control request", async () => {
+  it.skip("should build concurrency control request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
 
     const el: Element = iModel.elements.getRootSubject();
@@ -443,7 +443,7 @@ describe("IModelWriteTest", () => {
     await iModel.close(accessToken);
   });
 
-  it("Run plain SQL against pull-only connection", async () => {
+  it.skip("Run plain SQL against pull-only connection", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly());
     iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
