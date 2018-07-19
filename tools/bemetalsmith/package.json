@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "",
-    "buildDocSite": "node buildDocSite --rootDir=../..",
+    "buildDocSite": "node buildDocSite --rootDir=../.. --ignorePackage=@bentley/bentleyjs-tools",
     "clean": "",
     "docs": "",
     "lint": ""
