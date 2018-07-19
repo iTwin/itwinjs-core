@@ -318,10 +318,11 @@ describe("ClipPrimitive", () => {
     ck.testTrue(jsonValue.shape.zhigh !== undefined && jsonValue.shape.zhigh === clipPrimitive1!.zHigh, "ZHigh prop is set in toJSON");
 
     const clipPrimitive1Copy = ClipShape.fromJSON(jsonValue);
-    ck.testTrue(clipShapesAreEqual(clipPrimitive1!, clipPrimitive1Copy), "to and from JSON yields same ClipPrimitive");
+    ck.testTrue(clipPrimitive1Copy !== undefined);
+    ck.testTrue(clipShapesAreEqual(clipPrimitive1!, clipPrimitive1Copy!), "to and from JSON yields same ClipPrimitive");
 
     // Test clone method
-    const clipPrimitive2 = clipPrimitive1Copy.clone();
+    const clipPrimitive2 = clipPrimitive1Copy!.clone();
     ck.testTrue(clipShapesAreEqual(clipPrimitive2, clipPrimitive1!), "clone method produces a copy of ClipShape");
 
     ck.checkpoint();

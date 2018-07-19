@@ -409,32 +409,35 @@ export class ClipShape extends ClipPrimitive {
     return val;
   }
 
-  public static fromJSON(json: any, result?: ClipShape): ClipShape {
-    const clipShape = ClipShape.createEmpty(false, false, undefined, result);
-    if (!json.shape) return clipShape;
-    if (json.shape.points) {
-      for (const pt of json.shape.points)
-        clipShape._polygon.push(Point3d.fromJSON(pt));
-    }
-    if (json.shape.trans) {
-      clipShape._transformFromClip = Transform.fromJSON(json.shape.trans);
-    }
-    if (json.shape.zlow) {
-      clipShape._zLow = json.shape.zlow as number;
-      clipShape._zLowValid = true;
-    }
-    if (json.shape.zhigh) {
-      clipShape._zHigh = json.shape.zhigh as number;
-      clipShape._zHighValid = true;
-    }
-    if (json.shape.mask) {
-      clipShape._isMask = json.shape.mask as boolean;
-    }
-    if (json.shape.invisible) {
-      clipShape._invisible = true;
-    }
+  public static fromJSON(json: any, result?: ClipShape): ClipShape | undefined {
+    if (!json.shape) return undefined;
 
-    return clipShape;
+    const points: Point3d[] = [];
+    if (json.shape.points)
+      for (const pt of json.shape.points)
+        points.push(Point3d.fromJSON(pt));
+
+    let trans: Transform | undefined;
+    if (json.shape.trans)
+      trans = Transform.fromJSON(json.shape.trans);
+
+    let zLow: number | undefined;
+    if (json.shape.zlow)
+      zLow = json.shape.zlow as number;
+
+    let zHigh: number | undefined;
+    if (json.shape.zhigh)
+      zHigh = json.shape.zhigh as number;
+
+    let isMask = false;
+    if (json.shape.mask)
+      isMask = json.shape.mask as boolean;
+
+    let invisible = false;
+    if (json.shape.invisible)
+      invisible = true;
+
+    return ClipShape.createShape(points, zLow, zHigh, trans, isMask, invisible, result);
   }
 
   /** Returns a new ClipShape that is a deep copy of the ClipShape given */

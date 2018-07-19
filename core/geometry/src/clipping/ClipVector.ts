@@ -83,8 +83,11 @@ export class ClipVector {
         result.clear();
 
         try {
-            for (const clip of json)
-                result.clips.push(ClipShape.fromJSON(clip));
+            for (const clip of json) {
+                const clipPrim = ClipShape.fromJSON(clip);
+                if (clipPrim)
+                    result._clips.push(clipPrim);
+            }
         } catch (e) {
             result.clear();
         }
