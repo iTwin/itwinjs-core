@@ -13,7 +13,7 @@ import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../
 import { Quadrature } from "../numerics/Quadrature";
 import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { LineString3d } from "./LineString3d";
-import { ClipperMethods } from "../numerics/ClipPlanes";
+import { Clipper } from "../clipping/ClipUtils";
 
 /**
  * An enumeration of special conditions being described by a CurveLocationDetail.
@@ -344,7 +344,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param announce (optional) function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    * @returns true if any "in" segments are announced.
    */
-  public announceClipIntervals(_clipper: ClipperMethods, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  public announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     // DEFAULT IMPLEMENTATION -- no interior parts
     return false;
   }

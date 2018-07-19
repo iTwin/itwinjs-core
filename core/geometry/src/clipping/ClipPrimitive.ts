@@ -4,18 +4,44 @@
 
 /** @module CartesianGeometry */
 
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "./ClipPlanes";
+import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "./ClipPlane";
+import { ClipPlaneContainment } from "./ClipUtils";
 import { Point3d, Vector2d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
 import { Geometry } from "../Geometry";
 import { PolygonOps } from "../PointHelpers";
-import { Matrix4d } from "./Geometry4d";
+import { Matrix4d } from "../numerics/Geometry4d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 
-/* tslint:disable: no-console */
+/**
+ * Bit mask type for easily keeping track of defined vs undefined values and which parts of a clipping shape
+ * should or should not be used.
+ */
+export const enum ClipMask {
+  None = 0x00,
+  XLow = 0x01,
+  XHigh = 0x02,
+  YLow = 0x04,
+  YHigh = 0x08,
+  ZLow = 0x10,
+  ZHigh = 0x20,
+  XAndY = 0x0f,
+  All = 0x3f,
+}
 
-// ClipPlane helper classes-------------------------------------------------------------------------------------------------
+/** Internal helper class holding XYZ components that serves as a representation of polygon edges defined by clip planes */
+class PolyEdge {
+  public origin: Point3d;
+  public next: Point3d;
+  public normal: Vector2d;
+
+  public constructor(origin: Point3d, next: Point3d, normal: Vector2d, z: number) {
+    this.origin = Point3d.create(origin.x, origin.y, z);
+    this.next = Point3d.create(next.x, next.y, z);
+    this.normal = normal;
+  }
+}
 
 /**
  * Cache structure that holds a ClipPlaneSet and various parameters for adding new ClipPlanes to the set. This structure
@@ -43,43 +69,6 @@ export class PlaneSetParamsCache {
   }
 }
 
-/** Helper class holding XYZ components that serves as a representation of polygon edges defined by clip planes */
-class PolyEdge {
-  public origin: Point3d;
-  public next: Point3d;
-  public normal: Vector2d;
-
-  public constructor(origin: Point3d, next: Point3d, normal: Vector2d, z: number) {
-    this.origin = Point3d.create(origin.x, origin.y, z);
-    this.next = Point3d.create(next.x, next.y, z);
-    this.normal = normal;
-  }
-}
-
-/** Helper enumerated type of defining coordinates as they relate to clip plane sets */
-export const enum ClipPlaneContainment {
-  StronglyInside = 1,
-  Ambiguous = 2,
-  StronglyOutside = 3,
-}
-
-/**
- * Bit mask type for easily keeping track of defined vs undefined values and which parts of a clipping shape
- * should or should not be used.
- */
-export const enum ClipMask {
-  None = 0x00,
-  XLow = 0x01,
-  XHigh = 0x02,
-  YLow = 0x04,
-  YHigh = 0x08,
-  ZLow = 0x10,
-  ZHigh = 0x20,
-  XAndY = 0x0f,
-  All = 0x3f,
-}
-
-// --------------------------------------------------------------------------------------------------------------------------
 /** Base class for clipping implementations that use
  *
  * * A ClipPlaneSet designated "clipPlanes"
@@ -87,8 +76,8 @@ export const enum ClipMask {
  * * an "invisible" flag
  */
 export abstract class ClipPrimitive {
-  protected _clipPlanes: ClipPlaneSet | undefined;
-  protected _maskPlanes: ClipPlaneSet | undefined;
+  protected _clipPlanes?: ClipPlaneSet;
+  protected _maskPlanes?: ClipPlaneSet;
   protected _invisible: boolean;
 
   public abstract fetchClipPlanesRef(): ClipPlaneSet | undefined;

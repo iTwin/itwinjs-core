@@ -13,7 +13,7 @@ import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "
 import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { CurvePrimitive, GeometryQuery, CurveLocationDetail, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { ClipperMethods } from "../numerics/ClipPlanes";
+import { Clipper } from "../clipping/ClipUtils";
 import { LineString3d } from "./LineString3d";
 
 /* tslint:disable:variable-name no-empty*/
@@ -440,7 +440,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param announce(optional) function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    * @returns true if any "in" segments are announced.
    */
-  public announceClipIntervals(clipper: ClipperMethods, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  public announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     return clipper.announceClippedArcIntervals(this, announce);
   }
 }

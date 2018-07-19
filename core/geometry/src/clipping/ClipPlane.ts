@@ -8,90 +8,16 @@ import { Segment1d, Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
 import { Range3d } from "../Range";
 import { Transform, RotMatrix } from "../Transform";
-import { Point4d, Matrix4d } from "./Geometry4d";
+import { Point4d, Matrix4d } from "../numerics/Geometry4d";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { Geometry, Angle } from "../Geometry";
 import { PolygonOps } from "../PointHelpers";
 import { GrowableFloat64Array } from "../GrowableArray";
-import { AnalyticRoots } from "./Polynomials";
+import { AnalyticRoots } from "../numerics/Polynomials";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
-import { ClipPlaneContainment } from "./ClipPrimitives";
-import { CurvePrimitive, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-export interface ClipperMethods {
-  isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
-  /** Find the parts of the line segment  (if any) that is within the convex clip volume.
-   * * The input fractional interval from fraction0 to fraction1 (increasing!!) is the active part to consider.
-   * * To clip to the usual bounded line segment, start with fractions (0,1).
-   * If the clip volume is unbounded, the line interval may also be unbounded.
-   * * An unbounded line portion will have fraction coordinates positive or negative Number.MAX_VALUE.
-   * @param fraction0 fraction that is the initial lower fraction of the active interval. (e.g. 0.0 for bounded segment)
-   * @param fraction1 fraction that is the initial upper fraction of the active interval.  (e.g. 1.0 for bounded segment)
-   * @param pointA segment start (fraction 0)
-   * @param pointB segment end (fraction 1)
-   * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
-   * @returns true if a segment was announced, false if entirely outside.
-   */
-  announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
-  announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
-}
-/**
- * ClipUtilities is a static class whose various methods are useful helpers for clipping.
- */
-export class ClipUtilities {
-  private static sSelectIntervals01TestPoint = Point3d.create();
-  public static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: ClipperMethods, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    unsortedFractions.push(0);
-    unsortedFractions.push(1);
-    unsortedFractions.sort();
-    let f0 = unsortedFractions.at(0);
-    let f1;
-    let fMid;
-    const testPoint = ClipUtilities.sSelectIntervals01TestPoint;
-    const n = unsortedFractions.length;
-    for (let i = 1; i < n; i++ , f0 = f1) {
-      f1 = unsortedFractions.at(i);
-      fMid = 0.5 * (f0 + f1);
-      if (f1 > f0 && (fMid >= 0.0 && fMid <= 1.0)) {
-        curve.fractionToPoint(fMid, testPoint);
-        if (clipper.isPointOnOrInside(testPoint)) {
-          if (announce)
-            announce(f0, f1, curve);
-          else
-            return true;
-        }
-      }
-    }
-    return false;
-  }
-  /**
-   * Announce triples of (low, high, cp) for each entry in intervals
-   * @param intervals source array
-   * @param cp CurvePrimitive for announcement
-   * @param announce funtion to receive data
-   */
-  public static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    if (announce) {
-      for (const ab of intervals) {
-        announce(ab.low, ab.high, cp);
-      }
-    }
-    return intervals.length > 0;
-  }
-
-  public static collectClippedCurves(curve: CurvePrimitive, clipper: ClipperMethods): CurvePrimitive[] {
-    const result: CurvePrimitive[] = [];
-    curve.announceClipIntervals(clipper,
-      (fraction0: number, fraction1: number, curveA: CurvePrimitive) => {
-        if (fraction1 !== fraction0) {
-          const partialCurve = curveA.clonePartialCurve(fraction0, fraction1);
-          if (partialCurve)
-            result.push(partialCurve);
-        }
-      });
-    return result;
-  }
-}
+import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
@@ -104,7 +30,7 @@ export class ClipUtilities {
  * * NEGATIVE value of the halfspace function is "outside"
  * * A representative point on the plane is (signedDistance*u, signedDistance * v, signedDistance *w)
  */
-export class ClipPlane implements ClipperMethods {
+export class ClipPlane implements Clipper {
   // Static variable from original native c++ function ConvexPolygonClipInPlace
   public static fractionTol = 1.0e-8;
   private _inwardNormal: Vector3d;
@@ -522,7 +448,7 @@ export class ClipPlane implements ClipperMethods {
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
  */
-export class ConvexClipPlaneSet implements ClipperMethods {
+export class ConvexClipPlaneSet implements Clipper {
   public static readonly hugeVal = 1e37;
   private _planes: ClipPlane[];
   // private _parity: number;   <--- Not yet used
@@ -1066,7 +992,7 @@ export class ConvexClipPlaneSet implements ClipperMethods {
  * * A point is "in" the clip plane set if it is "in" one or more of  the ConvexClipPlaneSet
  * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constituents.
  */
-export class ClipPlaneSet implements ClipperMethods {
+export class ClipPlaneSet implements Clipper {
   private _convexSets: ConvexClipPlaneSet[];
 
   public get convexSets() { return this._convexSets; }
@@ -1218,6 +1144,21 @@ export class ClipPlaneSet implements ClipperMethods {
     }
     return ClipPlaneContainment.StronglyOutside;
   }
+
+  /** Clip a polygon using this ClipPlaneSet, returning a new polygon boundary. */
+  public polygonClip(input: Point3d[], output: Point3d[]) {
+    output.length = 0;
+    const convexClipOutput: Point3d[] = [];
+
+    for (const convexSet of this._convexSets) {
+      convexSet.polygonClip(input, convexClipOutput, []);
+      input = convexClipOutput.slice();   // input of next convex set is the output from the previous
+      convexClipOutput.length = 0;
+    }
+    for (const point of input)
+      output.push(point);
+  }
+
   /**
    * * announce clipSegment() for each convexSet in this ClipPlaneSet.
    * * all clipPlaneSets are inspected

@@ -263,11 +263,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   /** Create a range around an array of points. */
   public static createArray(points: Point3d[], result?: Range3d): Range3d {
     result = result ? result : new Range3d();
+    result.setNull();
     let point;
     for (point of points)
       result.extendPoint(point);
     return result;
   }
+
   /** extend a range around an array of points (optionally transformed) */
   public extendArray(points: Point3d[] | GrowableXYZArray, transform?: Transform) {
     if (Array.isArray(points))
@@ -285,6 +287,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         for (let i = 0; i < points.length; i++)
           this.extendXYZ(points.getPoint3dAt(i).x, points.getPoint3dAt(i).y, points.getPoint3dAt(i).z);
   }
+
   /** extend a range around an array of points (optionally transformed) */
   public extendInverseTransformedArray(points: Point3d[] | GrowableXYZArray, transform: Transform) {
     if (Array.isArray(points))

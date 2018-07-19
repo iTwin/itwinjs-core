@@ -26,7 +26,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
-import { ClipPlane, ClipPlaneSet, ConvexClipPlaneSet } from "../numerics/ClipPlanes";
+import { ClipPlane, ClipPlaneSet, ConvexClipPlaneSet } from "../clipping/ClipPlane";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
 
 /* tslint:disable:no-console */

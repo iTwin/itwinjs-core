@@ -4,8 +4,8 @@
 
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../numerics/ClipPrimitives";
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "../numerics/ClipPlanes";
+import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../clipping/ClipPrimitive";
+import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "../clipping/ClipPlane";
 import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
