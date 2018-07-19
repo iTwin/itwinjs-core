@@ -138,7 +138,6 @@ class RealityModelTileLoader extends TileLoader {
 
 /** @hidden */
 export class RealityModelTileTree {
-
   public static loadRealityModelTileTree(url: string, modelState: SpatialModelState): void {
 
     this.getTileTreeProps(url, modelState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
@@ -148,28 +147,9 @@ export class RealityModelTileTree {
   }
 
   private static async getTileTreeProps(url: string, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
-
     if (undefined !== url) {
-      const urlParts = url.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
-      const tilesId = urlParts.find(Guid.isGuid);
-
-      let clientProps: RDSClientProps | undefined;
-
-      if (undefined !== tilesId) {
-        // ###TODO determine appropriate way to get token (probably from the imodel, but for standalone testing a workaround is needed)
-        const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
-        const client: RealityDataServicesClient = new RealityDataServicesClient("QA");
-        const accessToken: AccessToken = await client.getAccessToken(authToken);
-        let projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
-
-        // ##TODO This is a temporary workaround for accessing the reality meshes with a test account
-        if (projectId === "Server")
-          projectId = "fb1696c8-c074-4c76-a539-a5546e048cc6";
-
-        clientProps = { accessToken, projectId, tilesId, client };
-      }
-
-      const tileClient = new RealityModelTileClient(clientProps);
+      await RealityModelTileClient.setToken(); // ###TODO we should not set the token here in the future!
+      const tileClient = new RealityModelTileClient(url);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
       const rootTransform: Transform = CesiumUtils.transformFromJson(json.root.transform);
@@ -194,17 +174,57 @@ export class RealityModelTileTree {
 }
 
 interface RDSClientProps {
-  accessToken: AccessToken;
   projectId: string;
   tilesId: string;
-  client: RealityDataServicesClient;
 }
 
+// ##TODO temporarly here for testing, needs to be moved to the clients repo
 class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
   private baseUrl: string = "";
-  constructor(props?: RDSClientProps) { this.rdsProps = props; }
+  private static token?: AccessToken;
+  private static client = new RealityDataServicesClient("QA"); // ###TODO the deployementEnv needs to be customizeable
 
+  // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
+  constructor(url: string) {
+    this.rdsProps = this.parseUrl(url);
+  }
+
+  // ###TODO temporary means of extracting the tileId and projectId from the given url
+  private parseUrl(url: string): RDSClientProps | undefined {
+    const urlParts = url.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
+    const tilesId = urlParts.find(Guid.isGuid);
+    let props: RDSClientProps | undefined;
+    if (undefined !== tilesId) {
+      let projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
+
+      // ###TODO This is a temporary workaround for accessing the reality meshes with a test account
+      // The hardcoded project id corresponds to a project setup to yied access to the test account which is linked to the tileId
+      if (projectId === "Server")
+        projectId = "fb1696c8-c074-4c76-a539-a5546e048cc6";
+
+      props = { projectId, tilesId };
+    }
+    return props;
+  }
+
+  // ###TODO this needs to be integrated with the IModelConnection lifecycle,
+  // when the IModelConnection closes, a listener to that event should set the token as undefined
+  // when a token is used to open an imodel, that token needs to be applied here as well (which at that time should exist in the clients repo, this is just temporarily here for testing)
+  // once the previously described workflow is finished, the SVT will need to explicity call this and pass a test account token when a standalone imodel is opened as a workaround,
+  // for electron apps, there will need to be a mechanism to prompt the user to sign in when opening a local imodels from the disk that has reality tiles referenced in it
+  public static async setToken(token?: AccessToken) {
+    if (undefined !== token) {
+      RealityModelTileClient.token = token;
+    } else if (undefined === RealityModelTileClient.token) {
+      // ###TODO for testing purposes, we are hardcoding a test user's credentials to generate a token that can access the reality tiles
+      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
+      RealityModelTileClient.token = await RealityModelTileClient.client.getAccessToken(authToken);
+    }
+  }
+
+  // this is only used for accessing locally served reality tiles.
+  // The tile's path root will need to be reinserted for child tiles to return a 200
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     urlParts.pop();
@@ -212,15 +232,15 @@ class RealityModelTileClient {
   }
 
   public async getRootDocument(url: string): Promise<any> {
-    if (undefined !== this.rdsProps)
-      return this.rdsProps.client.getRootDocumentJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId);
+    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient.token)
+      return RealityModelTileClient.client.getRootDocumentJson(RealityModelTileClient.token, this.rdsProps.projectId, this.rdsProps.tilesId);
     this.setBaseUrl(url);
     return getJson(url);
   }
 
   public async getTileContent(url: string): Promise<any> {
-    if (undefined !== this.rdsProps)
-      return this.rdsProps.client.getTileContent(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient.token)
+      return RealityModelTileClient.client.getTileContent(RealityModelTileClient.token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this.baseUrl) {
       const tileUrl = this.baseUrl + url;
       return getArrayBuffer(tileUrl);
@@ -229,8 +249,8 @@ class RealityModelTileClient {
   }
 
   public async getTileJson(url: string): Promise<any> {
-    if (undefined !== this.rdsProps)
-      return this.rdsProps.client.getTileJson(this.rdsProps.accessToken, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient.token)
+      return RealityModelTileClient.client.getTileJson(RealityModelTileClient.token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this.baseUrl) {
       const tileUrl = this.baseUrl + url;
       return getJson(tileUrl);
