@@ -1237,7 +1237,7 @@ export class BriefcaseManager {
         return (value as number);
       }
       // If the key is a number, it is an array member.
-      if (!Number.isNaN(Number.parseInt(key))) {
+      if (!Number.isNaN(Number.parseInt(key, 10))) {
         const code = new Code();
         Object.assign(code, value);
         code.briefcaseId = briefcase.briefcaseId;
