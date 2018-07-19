@@ -47,7 +47,7 @@
     "testbed:integration": "cd testbed && node bin/testbed.js --debug --fgrep #integration",
     "cover:geometry": "cd core/geometry && npm run cover",
     "cover:backend": "cd core/backend && npm run cover",
-    "cover:bentley": "cd core/geometry && npm run cover",
+    "cover:bentley": "cd core/bentley && npm run cover",
     "cover:backend:integration": "cd core/backend && npm run cover:integration",
     "cover:clients": "cd core/clients && npm run cover",
     "cover:testbed": "cd testbed && node bin/testbed.js --coveragePattern ../core/frontend/lib/**/*.js",
