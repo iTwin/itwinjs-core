@@ -261,7 +261,6 @@ export abstract class ViewManip extends ViewTool {
   public ballRadius = 0;          // screen coords
   public readonly lastPtScreen = new Point3d();
   public readonly targetCenterWorld = new Point3d();
-  public readonly worldUpVector = new Vector3d();
   public isDragging = false;
   public isDragOperation = false;
   public stoppedOverHandle = false;
@@ -277,10 +276,6 @@ export abstract class ViewManip extends ViewTool {
     public isDragOperationRequired: boolean = false) {
     super();
     this.viewHandles = new ViewHandleArray(this);
-
-    // We call changeViewport here and in postInstall.  There is some code that relies on it being
-    // set up after the constructor. However, when this tool is installed there may be a call to
-    // onCleanup that makes it appear that the viewport is not attached to a view command.
     this.changeViewport(viewport);
   }
 
@@ -417,11 +412,8 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public onPostInstall(): void {
-    this.changeViewport(this.viewport);
     super.onPostInstall();
-
-    // can't _OnReinitialize until tool is installed (have to have saved current tool's state first).
-    this.onReinitialize();
+    this.onReinitialize(); // Call onReinitialize now that tool is installed.
   }
 
   public onCleanup(): void {
@@ -460,44 +452,44 @@ export abstract class ViewManip extends ViewTool {
     if (!vp)
       return;
 
-    if (this.targetCenterValid)
+    if (this.targetCenterValid) {
+      if (this.isDragging)
+        return;
+      if (IModelApp.tentativePoint.isActive) {
+        this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
+        IModelApp.tentativePoint.clear(true); // Clear tentative, there won't be a datapoint to accept...
+      }
       return;
+    }
 
     if (IModelApp.tentativePoint.isActive) {
-      this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), false);
-      this.targetCenterLocked = true; // Consider point locked for this tool instance...
+      this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
       return;
     }
 
     if (TentativeOrAccuSnap.isHot()) {
-      this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), false);
-      this.targetCenterLocked = true; // Consider point locked for this tool instance...
+      this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), true, false);
       return;
     }
 
-    let center = vp.viewCmdTargetCenter;
-    if (center && this.isPointVisible(center)) {
-      this.setTargetCenterWorld(center, true);
+    if (vp.viewCmdTargetCenter && this.isPointVisible(vp.viewCmdTargetCenter)) {
+      this.setTargetCenterWorld(vp.viewCmdTargetCenter, true, true);
       return;
     }
 
-    center = scratchPoint3d1;
     if (!vp.view.allow3dManipulations()) {
-      vp.npcToWorld(NpcCenter, center); center.z = 0.0;
+      vp.npcToWorld(NpcCenter, scratchPoint3d1);
+      scratchPoint3d1.z = 0.0;
     } else {
-      vp.determineDefaultRotatePoint(center);
+      vp.npcToWorld(NpcCenter, scratchPoint3d1);
+      const visiblePoint = vp.determineNearestVisibleGeometryPoint(scratchPoint3d1, 20.0);
+      if (undefined !== visiblePoint)
+        scratchPoint3d1.setFrom(visiblePoint);
+      else
+        vp.determineDefaultRotatePoint(scratchPoint3d1);
     }
 
-    this.setTargetCenterWorld(center, false);
-  }
-
-  public updateWorldUpVector(initialSetup: boolean) {
-    if (!initialSetup)
-      return;
-
-    this.worldUpVector.x = 0.0;
-    this.worldUpVector.y = 0.0;
-    this.worldUpVector.z = 1.0;
+    this.setTargetCenterWorld(scratchPoint3d1, false, false);
   }
 
   public processFirstPoint(ev: BeButtonEvent) {
@@ -546,7 +538,13 @@ export abstract class ViewManip extends ViewTool {
     // we currently have no built-in support for dynamics, therefore nothing to update.
   }
 
-  public setTargetCenterWorld(pt: Point3d, lockTarget: boolean) {
+  /**
+   * Set the target point for viewing operations.
+   * @param pt the new target point in world coordinates
+   * @param lockTarget consider the target point locked for this tool instance
+   * @param saveTarget save this target point for use between tool instances
+   */
+  public setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean) {
     this.targetCenterWorld.setFrom(pt);
     this.targetCenterValid = true;
     this.targetCenterLocked = lockTarget;
@@ -557,11 +555,8 @@ export abstract class ViewManip extends ViewTool {
     if (!this.viewport.view.allow3dManipulations())
       this.targetCenterWorld.z = 0.0;
 
-    this.viewport.viewCmdTargetCenter = (lockTarget ? pt : undefined);
+    this.viewport.viewCmdTargetCenter = (saveTarget ? pt : undefined);
   }
-
-  public invalidateTargetCenter() { this.targetCenterValid = this.targetCenterLocked = false; }
-  public isTargetCenterLocked(): boolean { return this.targetCenterLocked; }
 
   /** Determine whether the supplied point is visible in this Viewport. */
   public isPointVisible(testPt: Point3d): boolean {
@@ -585,8 +580,6 @@ export abstract class ViewManip extends ViewTool {
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum(scratchFrustum);
 
-    // ###TODO: Currently computeViewRange() simply returns the viewed extents, in *world* coords.
-    // This will change to be the range of a particular geometric model once Keith adds range as a property of GeometricModelState
     if (this._useViewAlignedVolume)
       viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     else
@@ -616,8 +609,13 @@ export abstract class ViewManip extends ViewTool {
     if (result !== ViewStatus.Success)
       return result;
 
-    this.targetCenterValid = false;
     vp.synchWithView(false);
+
+    if (!this.targetCenterLocked) {
+      this.targetCenterValid = false;
+      this.updateTargetCenter(); // Update default rotate point for when the camera needed to be turned on...
+    }
+
     return ViewStatus.Success;
   }
 
@@ -680,7 +678,7 @@ export abstract class ViewManip extends ViewTool {
     return theta;
   }
 
-  protected synchViewBallInfo(initialSetup: boolean): void {
+  protected synchViewBallInfo(): void {
     if (!this.viewport)
       return;
     const frustum = this.viewport.getFrustum(CoordSystem.View, false, scratchFrustum);
@@ -691,8 +689,6 @@ export abstract class ViewManip extends ViewTool {
       frustum.points[Npc._000].distance(frustum.points[Npc._001]));
 
     this.ballRadius = (((screenRange.x < screenRange.y) ? screenRange.x : screenRange.y) * ViewToolSettings.viewBallRadius);
-    this.updateTargetCenter();
-    this.updateWorldUpVector(initialSetup);
   }
 
   public changeViewport(vp: Viewport | undefined): void {
@@ -709,14 +705,14 @@ export abstract class ViewManip extends ViewTool {
     if (undefined === (this.viewport = vp))
       return;
 
-    this.targetCenterValid = false;
-
     // allocate and initialize handles array
     this.viewHandles.viewport = vp;
+    this.targetCenterValid = false;
+    this.updateTargetCenter();
 
     if (this.handleMask & ViewHandleType.Rotate) {
       // Setup initial view ball size and location...
-      this.synchViewBallInfo(true);
+      this.synchViewBallInfo();
       this.viewHandles.add(new ViewRotate(this));
     }
 
@@ -827,7 +823,7 @@ class ViewTargetCenter extends ViewingToolHandle {
     if (ev.viewport !== this.viewTool.viewport)
       return false;
 
-    this.viewTool.setTargetCenterWorld(ev.point, !inDynamics);
+    this.viewTool.setTargetCenterWorld(ev.point, !inDynamics, !inDynamics);
     ev.viewport!.invalidateDecorations();
 
     if (!inDynamics)
@@ -862,13 +858,13 @@ class ViewPan extends ViewingToolHandle {
 
   public firstPoint(ev: BeButtonEvent) {
     const vp = ev.viewport!;
-    this.anchorPt.setFrom(ev.point);
+    this.anchorPt.setFrom(ev.rawPoint);
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (CoordSource.User === ev.coordsFrom && vp.isCameraOn()) {
-      const depthIntersection = undefined; // TODO: NEEDS_WORK vp.pickDepthBuffer(ev.viewPoint);
-      if (depthIntersection) {
-        this.anchorPt.setFrom(depthIntersection);
+      const visiblePoint = vp.determineNearestVisibleGeometryPoint(this.anchorPt, 20.0);
+      if (undefined !== visiblePoint) {
+        this.anchorPt.setFrom(visiblePoint);
       } else {
         const firstPtNpc = vp.worldToNpc(this.anchorPt);
         firstPtNpc.z = vp.getFocusPlaneNpc();
@@ -933,10 +929,10 @@ class ViewRotate extends ViewingToolHandle {
     const tool = this.viewTool;
     const vp = ev.viewport!;
 
-    if (!tool.isTargetCenterLocked() && vp.view.allow3dManipulations()) {
+    if (!tool.targetCenterLocked && vp.view.allow3dManipulations()) {
       const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
       if (undefined !== visiblePoint)
-        tool.setTargetCenterWorld(visiblePoint, false);
+        tool.setTargetCenterWorld(visiblePoint, false, false);
     }
 
     const pickPt = ev.rawPoint.clone();
@@ -1005,7 +1001,7 @@ class ViewRotate extends ViewingToolHandle {
       const yDelta = (currPt.y - firstPt.y);
 
       // Movement in screen x == rotation about drawing Z (preserve up) or rotation about screen  Y...
-      const xAxis = ViewToolSettings.preserveWorldUp ? this.viewTool.worldUpVector.clone() : viewport.rotMatrix.getRow(1);
+      const xAxis = ViewToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.rotMatrix.getRow(1);
 
       // Movement in screen y == rotation about screen X...
       const yAxis = viewport.rotMatrix.getRow(0);
@@ -1198,7 +1194,6 @@ abstract class ViewNavigate extends ViewingToolHandle {
   }
 
   private tryOrientationEvent(_forward: Vector3d, _ev: BeButtonEvent): { eventsEnabled: boolean, result: OrientationResult } {
-    // ###TODO: support orientation events?
     return { eventsEnabled: false, result: OrientationResult.NoEvent };
   }
 
@@ -1777,7 +1772,6 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   private allowZoom: boolean = true;
   private rotatePrevented: boolean = false;
   private doing2dRotation: boolean = false;
-  private rotateInitialized: boolean = false;
   private ballVector0 = new Vector3d();
   private lastPtView = new Point3d();
   private startPtWorld = new Point3d();
@@ -1916,7 +1910,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const xDelta = currPt.x - this.startPtView.x;
     const yDelta = currPt.y - this.startPtView.y;
 
-    const xAxis = ViewToolSettings.preserveWorldUp ? this.worldUpVector : vp.rotMatrix.getRow(1);
+    const xAxis = ViewToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
     const yAxis = vp.rotMatrix.getRow(0);
     const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
     const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
@@ -1941,8 +1935,8 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     this.doing2dRotation = this.rotatePrevented = false;
     this.startPtWorld.setFrom(ev.point);
     this.startPtView.setFrom(ev.viewPoint);
-    this.synchViewBallInfo(this.rotateInitialized);
-    this.rotateInitialized = true;
+    this.updateTargetCenter();
+    this.synchViewBallInfo();
     this.viewPtToSpherePt(this.startPtView, true, this.ballVector0);
 
     if (vp.isCameraOn()) {
@@ -1953,11 +1947,11 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(this.startPtView);
     this.startTime = Date.now();
-    const pickPt = undefined; // TODO: NEEDS_WORK vp.pickDepthBuffer(ev.viewPoint);
-    if (!pickPt)
+    const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
+    if (!visiblePoint)
       return;
 
-    this.startPtWorld.setFrom(pickPt);
+    this.startPtWorld.setFrom(visiblePoint);
     vp.worldToView(this.startPtWorld, this.startPtView);
     this.lastPtView.setFrom(this.startPtView);
   }
@@ -1977,7 +1971,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
-    let zoomCenter = (vp.view.allow3dManipulations() ? vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0) : undefined); // ### TODO - Test if this is useful when using gesture to zoom...
+    let zoomCenter = (vp.view.allow3dManipulations() ? vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0) : undefined);
     if (undefined === zoomCenter)
       zoomCenter = ev.point;
 
@@ -2025,11 +2019,9 @@ export class ViewUndoTool extends ViewTool {
   constructor(vp: Viewport) { super(); this.viewport = vp; }
 
   public onPostInstall() {
-    super.onPostInstall();
     this.viewport.doUndo(ViewToolSettings.animationTime);
+    this.exitTool();
   }
-
-  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
 }
 
 export class ViewRedoTool extends ViewTool {
@@ -2039,44 +2031,32 @@ export class ViewRedoTool extends ViewTool {
   constructor(vp: Viewport) { super(); this.viewport = vp; }
 
   public onPostInstall() {
-    super.onPostInstall();
     this.viewport.doRedo(ViewToolSettings.animationTime);
+    this.exitTool();
   }
-
-  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
 }
 
 export class ViewToggleCameraTool extends ViewTool {
   public static toolId = "View.ToggleCamera";
-  private isCameraOn: boolean;
   private viewport: Viewport;
 
-  constructor(viewport: Viewport) { super(); this.viewport = viewport; this.isCameraOn = viewport.isCameraOn(); }
+  constructor(viewport: Viewport) { super(); this.viewport = viewport; }
 
-  public onPostInstall() {
-    // If we are in a 3d view, check if the camera is on or off, and then toggle it
-    if (this.viewport) {
-      if (this.viewport.view.is3d()) {
-        if (this.isCameraOn) {
-          (this.viewport.view as ViewState3d).turnCameraOff();
-          // ### TODO: Make sure still works with caching undo
-          this.viewport.synchWithView(false);
-          this.isCameraOn = false;
-        } else {
-          this.viewport.turnCameraOn();
-          // ## TODO: Make sure still works with caching undo
-          this.viewport.synchWithView(false);
-          this.isCameraOn = true;
-        }
-      }
-    }
+  public onInstall(): boolean { return (undefined !== this.viewport && this.viewport.view.is3d() && this.viewport.view.allow3dManipulations()); }
+
+  public onPostInstall(): void {
+    if (this.viewport.isCameraOn())
+      (this.viewport.view as ViewState3d).turnCameraOff();
+    else
+      this.viewport.turnCameraOn();
+
+    this.viewport.synchWithView(true);
+    this.exitTool();
   }
-
-  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
 }
 
-// ###TODO: This tool is redundant and is currently only used for debug purposes in SVT. This should eventually be deleted, as
-// users of imodeljs-core have the ability to set these flags from their app without the use of a tool.
+// Tool currently only used for debugging purposes.
+// Users of imodeljs-core have the ability to set these flags from their app directly and do not need this ViewTool.
 export class ViewChangeRenderModeTool extends ViewTool {
   public static toolId = "View.ChangeRenderMode";
   private viewport: Viewport;

@@ -31,6 +31,51 @@ export class IdleTool extends InteractiveTool {
   public static toolId = "Idle";
   public static hidden = true;
 
+  private async performTentative(ev: BeButtonEvent): Promise<void> {
+    const tp = IModelApp.tentativePoint;
+    await tp.process(ev);
+
+    if (tp.isSnapped) {
+      IModelApp.toolAdmin.adjustSnapPoint();
+    } else {
+      if (IModelApp.accuDraw.isActive) {
+        const point = tp.point;
+        const vp = ev.viewport!;
+        if (vp.isSnapAdjustmentRequired()) {
+          IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
+          const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
+          const snap = new SnapDetail(hit);
+          tp.setCurrSnap(snap);
+          IModelApp.toolAdmin.adjustSnapPoint();
+          tp.point.setFrom(tp.point);
+          tp.setCurrSnap(undefined);
+        } else {
+          IModelApp.accuDraw.adjustPoint(point, vp, false);
+          const savePoint = point.clone();
+          IModelApp.toolAdmin.adjustPointToGrid(point, vp);
+          if (!point.isExactEqual(savePoint))
+            IModelApp.accuDraw.adjustPoint(point, vp, false);
+          tp.point.setFrom(point);
+        }
+      } else {
+        IModelApp.toolAdmin.adjustPoint(tp.point, ev.viewport!);
+      }
+      IModelApp.accuDraw.onTentative();
+    }
+
+    const currTool = IModelApp.toolAdmin.activeViewTool;
+    if (currTool && currTool instanceof ViewManip) {
+      if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
+        currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
+
+      if (currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
+        currTool.updateTargetCenter(); // Change target center to tentative location...
+    }
+
+    // NOTE: Need to synch tool dynamics because of updateDynamics call in _ExitViewTool before point was adjusted.
+    IModelApp.toolAdmin.updateDynamics();
+  }
+
   public onMiddleButtonDown(ev: BeButtonEvent): boolean {
     const vp = ev.viewport;
     if (!vp)
@@ -67,48 +112,7 @@ export class IdleTool extends InteractiveTool {
     if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
       return false;
 
-    const currTool = IModelApp.toolAdmin.activeViewTool;
-    if (currTool && currTool instanceof ViewManip) {
-      if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
-        currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
-
-      if (currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
-        currTool.invalidateTargetCenter();
-    }
-
-    const tp = IModelApp.tentativePoint;
-    tp.process(ev);
-
-    if (tp.isSnapped) {
-      IModelApp.toolAdmin.adjustSnapPoint();
-    } else {
-      if (IModelApp.accuDraw.isActive) {
-        const point = tp.point;
-        const vp = ev.viewport!;
-        if (vp.isSnapAdjustmentRequired()) {
-          IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-          const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
-          const snap = new SnapDetail(hit);
-          tp.setCurrSnap(snap);
-          IModelApp.toolAdmin.adjustSnapPoint();
-          tp.point.setFrom(tp.point);
-          tp.setCurrSnap(undefined);
-        } else {
-          IModelApp.accuDraw.adjustPoint(point, vp, false);
-          const savePoint = point.clone();
-          IModelApp.toolAdmin.adjustPointToGrid(point, vp);
-          if (!point.isExactEqual(savePoint))
-            IModelApp.accuDraw.adjustPoint(point, vp, false);
-          tp.point.setFrom(point);
-        }
-      } else {
-        IModelApp.toolAdmin.adjustPoint(tp.point, ev.viewport!);
-      }
-      IModelApp.accuDraw.onTentative();
-    }
-
-    // NOTE: Need to synch tool dynamics because of updateDynamics call in _ExitViewTool before point was adjusted.
-    IModelApp.toolAdmin.updateDynamics();
+    this.performTentative(ev);
     return true;
   }
 

@@ -240,8 +240,8 @@ export class AccuSnap {
 
         timeout = 3;
       } else {
-        // if uorPt is nullptr, that means that we want to display the tooltip immediately.
-        timeout = 0;
+        // if uorPt is nullptr, that means that we want to display the tooltip almost immediately.
+        timeout = 1;
       }
 
       theHit = tpHit;
