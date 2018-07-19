@@ -13,7 +13,7 @@
   "repository": {},
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bemetalsmith": "^2.5.27",
+    "@bentley/bemetalsmith": "^2.7.13",
     "fs-extra": "^6.0.1"
   }
 }
