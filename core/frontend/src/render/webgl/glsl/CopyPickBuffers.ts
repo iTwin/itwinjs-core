@@ -7,7 +7,7 @@ import { TextureUnit } from "../RenderFlags";
 import { VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { CopyPickBufferGeometry } from "../CachedGeometry";
-import { TextureHandle } from "../Texture";
+import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeBaseColor = "return vec4(1.0);";
@@ -24,19 +24,19 @@ export function createCopyPickBuffersProgram(context: WebGLRenderingContext): Sh
 
   frag.addUniform("u_pickElementId0", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_pickElementId0", (uniform, params) => {
-      TextureHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).elemIdLow, TextureUnit.Zero);
+      Texture2DHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).elemIdLow, TextureUnit.Zero);
     });
   }, VariablePrecision.High);
 
   frag.addUniform("u_pickElementId1", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_pickElementId1", (uniform, params) => {
-      TextureHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).elemIdHigh, TextureUnit.One);
+      Texture2DHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).elemIdHigh, TextureUnit.One);
     });
   }, VariablePrecision.High);
 
   frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_pickDepthAndOrder", (uniform, params) => {
-      TextureHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).depthAndOrder, TextureUnit.Two);
+      Texture2DHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).depthAndOrder, TextureUnit.Two);
     });
   }, VariablePrecision.High);
 

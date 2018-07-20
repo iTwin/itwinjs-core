@@ -7,7 +7,7 @@ import { TextureUnit } from "../RenderFlags";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
-import { TextureHandle } from "../Texture";
+import { Texture2DHandle } from "../Texture";
 import { GLSLFragment } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
@@ -24,7 +24,7 @@ export function createCopyColorProgram(context: WebGLRenderingContext, copyAlpha
   frag.addUniform("u_color", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_color", (uniform, params) => {
       const geom = params.geometry as SingleTexturedViewportQuadGeometry;
-      TextureHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
+      Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
     });
   });
 
