@@ -354,7 +354,6 @@ class WheelEventProcessor {
       target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
     }
 
-    // ### TODO Figure out why this is working poorly...
     let status: ViewStatus;
     if (vp.view.is3d() && vp.isCameraOn()) {
       let lastEventWasValid: boolean = false;
@@ -370,7 +369,7 @@ class WheelEventProcessor {
           vp.worldToNpc(newTarget, newTarget);
           targetNpc.z = newTarget.z;
         } else {
-          vp.determineDefaultRotatePoint(newTarget);
+          vp.view.getTargetPoint(newTarget);
           vp.worldToNpc(newTarget, newTarget);
           targetNpc.z = newTarget.z;
         }

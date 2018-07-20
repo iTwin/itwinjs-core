@@ -634,32 +634,6 @@ export class Viewport {
     return result;
   }
 
-  private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
-  private static readonly scratchDefaultRotatePointHigh = new Point3d(.5, .5, .5);
-  public determineDefaultRotatePoint(out?: Point3d): Point3d {
-    if (this.isCameraOn())
-      return this.view.getTargetPoint(out);
-
-    const scratch = Viewport.scratchDefaultRotatePointLow;
-    scratch.x = scratch.y = scratch.z = 0.5;
-    return this.npcToWorld(scratch, out);
-  }
-
-  public getFocusPlaneNpc(): number {
-    const cameraTarget = this.view.getTargetPoint();
-    let npcZ = this.worldToNpc(cameraTarget, cameraTarget).z;
-    if (npcZ < 0.0 || npcZ > 1.0) {
-      Viewport.scratchDefaultRotatePointHigh.z = 1.0;
-      Viewport.scratchDefaultRotatePointLow.z = 0.0;
-      const npcLow = this.npcToWorld(Viewport.scratchDefaultRotatePointLow);
-      const npcHigh = this.npcToWorld(Viewport.scratchDefaultRotatePointHigh);
-      const center = npcLow.interpolate(0.5, npcHigh);
-      npcZ = this.worldToNpc(center, center).z;
-    }
-
-    return npcZ;
-  }
-
   /** Turn the camera on if it is currently off. If the camera is already on, adjust it to use the supplied lens angle.
    * @param lensAngle The lens angle for the camera. If undefined, use view.camera.lens.
    * @note This method will fail if the ViewState is not 3d.
@@ -749,6 +723,7 @@ export class Viewport {
     r.setColumn(2, zUp);
     RotMatrix.createRigidFromRotMatrix(r, AxisOrder.ZXY, r);
     r.transpose(this.rotMatrix);
+    this.view.setRotation(this.rotMatrix); // Don't let viewState and viewport rotation be different.
   }
 
   private readonly _viewRange: ViewRect = new ViewRect();
@@ -853,7 +828,7 @@ export class Viewport {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = view.computeRootToNpc(origin, delta);
+    const newRootToNpc = view.computeWorldToNpc(this.rotMatrix, origin, delta);
     if (newRootToNpc.map === undefined) // invalid frustum
       return ViewStatus.InvalidViewport;
 
@@ -1018,7 +993,7 @@ export class Viewport {
     // of the root-based maps.)
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
-      const ueRootToNpc = this.view.computeRootToNpc(this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
+      const ueRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
       if (undefined === ueRootToNpc.map)
         return box; // invalid frustum
 

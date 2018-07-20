@@ -413,8 +413,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @hidden */
-  public computeRootToNpc(inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
-    const viewRot = this.getRotation();
+  public computeWorldToNpc(viewRot?: RotMatrix, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
+    if (viewRot === undefined) viewRot = this.getRotation();
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
@@ -487,7 +487,7 @@ export abstract class ViewState extends ElementState {
    * @returns The 8-point Frustum with the corners of this ViewState, or undefined if the parameters are invalid.
    */
   public calculateFrustum(result?: Frustum): Frustum | undefined {
-    const val = this.computeRootToNpc();
+    const val = this.computeWorldToNpc();
     if (undefined === val.map)
       return undefined;
 

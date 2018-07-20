@@ -478,18 +478,13 @@ export abstract class ViewManip extends ViewTool {
     }
 
     if (!vp.view.allow3dManipulations()) {
-      vp.npcToWorld(NpcCenter, scratchPoint3d1);
-      scratchPoint3d1.z = 0.0;
-    } else {
-      vp.npcToWorld(NpcCenter, scratchPoint3d1);
-      const visiblePoint = vp.determineNearestVisibleGeometryPoint(scratchPoint3d1, 20.0);
-      if (undefined !== visiblePoint)
-        scratchPoint3d1.setFrom(visiblePoint);
-      else
-        vp.determineDefaultRotatePoint(scratchPoint3d1);
+      const defaultPoint = vp.npcToWorld(NpcCenter); defaultPoint.z = 0.0;
+      this.setTargetCenterWorld(defaultPoint, false, false);
+      return;
     }
 
-    this.setTargetCenterWorld(scratchPoint3d1, false, false);
+    const visiblePoint = vp.determineNearestVisibleGeometryPoint(vp.npcToWorld(NpcCenter), 20.0);
+    this.setTargetCenterWorld(undefined !== visiblePoint ? visiblePoint : vp.view.getTargetPoint(), false, false);
   }
 
   public processFirstPoint(ev: BeButtonEvent) {
@@ -532,6 +527,20 @@ export abstract class ViewManip extends ViewTool {
     const viewY = view.getXVector();
     const zVec = Vector3d.unitZ();
     return (Math.abs(zVec.dotProduct(viewY)) > 0.99 && Math.abs(zVec.dotProduct(viewX)) < 0.01);
+  }
+
+  public static getFocusPlaneNpc(vp: Viewport): number {
+    const pt = vp.view.getTargetPoint();
+    if (pt.z < 0.0 || pt.z > 1.0) {
+      pt.set(0.5, 0.5, 0.0);
+      const pt2 = new Point3d(0.5, 0.5, 1.0);
+      vp.npcToWorld(pt, pt);
+      vp.npcToWorld(pt2, pt2);
+      pt.interpolate(0.5, pt2, pt);
+      vp.worldToNpc(pt, pt);
+    }
+
+    return pt.z;
   }
 
   public doUpdate(_abortOnButton: boolean) {
@@ -867,7 +876,7 @@ class ViewPan extends ViewingToolHandle {
         this.anchorPt.setFrom(visiblePoint);
       } else {
         const firstPtNpc = vp.worldToNpc(this.anchorPt);
-        firstPtNpc.z = vp.getFocusPlaneNpc();
+        firstPtNpc.z = ViewManip.getFocusPlaneNpc(vp);
         this.anchorPt = vp.npcToWorld(firstPtNpc, this.anchorPt);
       }
     }
@@ -1112,7 +1121,7 @@ class NavigateMotion {
     points[2] = new Point3d(0, 1, 0);
     if (this.viewport.isCameraOn()) {
       this.viewport.viewToNpcArray(points);
-      points[0].z = points[1].z = points[2].z = this.viewport.getFocusPlaneNpc(); // use the focal plane for z coordinates
+      points[0].z = points[1].z = points[2].z = ViewManip.getFocusPlaneNpc(this.viewport); // use the focal plane for z coordinates
       this.viewport.npcToViewArray(points);
     }
     this.viewport.viewToWorldArray(points);
@@ -1669,7 +1678,7 @@ export class WindowAreaTool extends ViewTool {
 
       let npcZValues = vp.determineVisibleDepthRange(windowRange);
       if (!npcZValues)
-        npcZValues = new DepthRangeNpc(0, vp.getFocusPlaneNpc());  // Just use the focus plane
+        npcZValues = new DepthRangeNpc(0, ViewManip.getFocusPlaneNpc(vp));  // Just use the focus plane
 
       const lensAngle = cameraView.getLensAngle();
 
