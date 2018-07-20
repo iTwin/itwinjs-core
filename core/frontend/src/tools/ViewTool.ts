@@ -1,4 +1,5 @@
 /*---------------------------------------------------------------------------------------------
+/*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -428,7 +429,7 @@ export abstract class ViewManip extends ViewTool {
       vp.synchWithView(true);
 
       if (restorePrevious)
-        vp.doUndo(BeDuration.fromSeconds(0));
+        vp.doUndo(ViewToolSettings.animationTime);
 
       vp.invalidateDecorations();
     }

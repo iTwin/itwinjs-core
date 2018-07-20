@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Don't call animateFrustumChange from applyViewState if animationTime is undefined.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

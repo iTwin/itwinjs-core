@@ -1223,7 +1223,8 @@ export class Viewport {
     const startFrust = this.getFrustum();
     this._view = val.clone<ViewState>();
     this.synchWithView(false);
-    this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
+    if (animationTime)
+      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
   }
 
   private static roundGrid(num: number, units: number): number {
