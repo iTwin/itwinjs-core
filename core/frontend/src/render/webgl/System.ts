@@ -59,6 +59,8 @@ export const enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
+const forceNoDrawBuffers = true;
+
 /** Describes the rendering capabilities of the host system. */
 export class Capabilities {
   private _maxRenderType: RenderType = RenderType.TextureUnsignedByte;
@@ -114,7 +116,7 @@ export class Capabilities {
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
       for (const ext of extensions) {
-        if (ext === "WEBGL_draw_buffers" || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
+        if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
           ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
           ext === "EXT_shader_texture_lod") {
           const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
@@ -140,7 +142,7 @@ export class Capabilities {
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
-    return this.hasRequiredFeatures && this.hasRequiredDrawTargets && this.hasRequiredTextureUnits;
+    return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
   }
 
   public static create(gl: WebGLRenderingContext): Capabilities | undefined {
@@ -170,12 +172,7 @@ export class Capabilities {
 
   /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
   private get hasRequiredFeatures(): boolean {
-    return this.supportsDrawBuffers && this.supports32BitElementIndex;
-  }
-
-  /** Determines if the required number of draw targets are supported (could change). */
-  private get hasRequiredDrawTargets(): boolean {
-    return this.maxColorAttachments > 3 && this.maxDrawBuffers > 3;
+    return this.supports32BitElementIndex;
   }
 
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
