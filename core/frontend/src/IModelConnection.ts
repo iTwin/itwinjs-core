@@ -99,11 +99,11 @@ export class IModelConnection extends IModel {
   }
 
   private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
-    // Try opening the iModel repeatedly accommodating any pending responses from the backend
-    // After the first attempt wait for 500 ms.On subsequent attempts, double the wait time the
-    // timeout period has reached
-    let connectionRetryTime: number = 500; // milliseconds
-    connectionRetryTime = Math.min(connectionRetryTime, IModelConnection.connectionTimeout);
+    /* Try opening the iModel repeatedly accommodating any pending responses from the backend.
+     * Waits for an increasing amount of time (but within a range) before checking on the pending request again.
+     */
+    const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
+    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
     let openForReadOperation: RpcOperation | undefined;
     let openForWriteOperation: RpcOperation | undefined;
@@ -111,16 +111,16 @@ export class IModelConnection extends IModel {
       openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
       if (!openForReadOperation)
         throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
-      openForReadOperation.policy.retryInterval = () => connectionRetryTime;
+      openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
     } else {
       openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
       if (!openForWriteOperation)
         throw new IModelError(BentleyStatus.ERROR, "IModelWriteRpcInterface.openForWrite() is not available");
-      openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
+      openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;
     }
 
     Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
-    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
 
     const startTime = Date.now();
 
@@ -132,14 +132,17 @@ export class IModelConnection extends IModel {
 
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
-      if (Date.now() - startTime > IModelConnection.connectionTimeout) {
+      const connectionTimeElapsed = Date.now() - startTime;
+      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
         Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      connectionRetryTime = connectionRetryTime * 2;
-      request.retryInterval = connectionRetryTime;
-      Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
+      if (request.retryInterval !== connectionRetryInterval) {
+        request.retryInterval = connectionRetryInterval;
+        Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+      }
     });
 
     let openResponse: IModel;

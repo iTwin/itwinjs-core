@@ -58,8 +58,9 @@ TestRpcImpl3.register();
 TestbedConfig.initializeRpcBackend();
 
 Logger.initializeToConsole();
-Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
+Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to Trace to capture
+Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to Trace to capture
+Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
 
 if (TestbedConfig.cloudRpc) {
   const app = express();
