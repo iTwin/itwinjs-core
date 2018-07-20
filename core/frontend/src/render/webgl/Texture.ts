@@ -14,7 +14,7 @@ import { debugPrint } from "./debugPrint";
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
 /** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
-function loadTextureImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array, element?: CanvasOrImage): void {
+function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array, element?: CanvasOrImage): void {
   const tex = handle.getHandle()!;
   const gl = System.instance.context;
 
@@ -48,10 +48,38 @@ function loadTextureImageData(handle: TextureHandle, params: Texture2DCreatePara
   gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
-function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array): void { loadTextureImageData(handle, params, bytes); }
+function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array): void { loadTexture2DImageData(handle, params, bytes); }
+
+/** Associate cube texture data with a WebGLTexture from an image. */
+function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: CanvasOrImage[]): void {
+  const tex = handle.getHandle()!;
+  const gl = System.instance.context;
+
+  // Use tightly packed data
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+
+  // Bind the texture object; make sure we do not interfere with other active textures
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(GL.Texture.Target.CubeMap, tex);
+
+  const cubeTargets: number[] = [GL.Texture.Target.CubeMapPositiveX, GL.Texture.Target.CubeMapNegativeX, GL.Texture.Target.CubeMapPositiveY, GL.Texture.Target.CubeMapNegativeY, GL.Texture.Target.CubeMapPositiveZ, GL.Texture.Target.CubeMapNegativeZ];
+
+  for (let i = 0; i < 6; i++) {
+    gl.texImage2D(cubeTargets[i], 0, params.format, params.format, params.dataType, images[i]);
+  }
+
+  gl.texParameteri(GL.Texture.Target.CubeMap, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(GL.Texture.Target.CubeMap, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(GL.Texture.Target.CubeMap, gl.TEXTURE_WRAP_S, params.wrapMode);
+  gl.texParameteri(GL.Texture.Target.CubeMap, gl.TEXTURE_WRAP_T, params.wrapMode);
+  // gl.texParameteri(GL.Texture.Target.CubeMap, gl.TEXTURE_WRAP_R, params.wrapMode); // Unavailable in GLES2
+
+  gl.bindTexture(GL.Texture.Target.CubeMap, null);
+}
 
 type TextureFlag = true | undefined;
-type LoadImageData = (handle: TextureHandle, params: Texture2DCreateParams) => void;
+type Load2DImageData = (handle: TextureHandle, params: Texture2DCreateParams) => void;
+type LoadCubeImageData = (handle: TextureHandle, params: TextureCubeCreateParams) => void;
 
 interface TextureImageProperties {
   wrapMode: GL.Texture.WrapMode;
@@ -85,7 +113,7 @@ class Texture2DCreateParams {
     public format: GL.Texture.Format,
     public dataType: GL.Texture.DataType,
     public wrapMode: GL.Texture.WrapMode,
-    public loadImageData: LoadImageData,
+    public loadImageData: Load2DImageData,
     public useMipMaps?: TextureFlag,
     public interpolate?: TextureFlag,
     public dataBytes?: Uint8Array) { }
@@ -143,7 +171,7 @@ class Texture2DCreateParams {
     }
 
     return new Texture2DCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-      (tex: TextureHandle, params: Texture2DCreateParams) => loadTextureImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate);
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate);
   }
 
   private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
@@ -160,6 +188,32 @@ class Texture2DCreateParams {
 
   public static readonly placeholderParams = new Texture2DCreateParams(1, 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte, GL.Texture.WrapMode.ClampToEdge,
     (_tex: TextureHandle, _params: Texture2DCreateParams) => undefined);
+}
+
+class TextureCubeCreateParams {
+  private constructor(
+    public dim: number,
+    public format: GL.Texture.Format,
+    public dataType: GL.Texture.DataType,
+    public wrapMode: GL.Texture.WrapMode,
+    public loadImageData: LoadCubeImageData) { }
+
+  public static createForCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement): TextureCubeCreateParams | undefined {
+    const targetDim = posX.naturalWidth;
+
+    if (posX.naturalHeight !== targetDim) // Cube texture dimensions must match (width must equal height)
+      return undefined;
+
+    const images: HTMLImageElement[] = [posX, negX, posY, negY, posZ, negZ];
+
+    for (let i = 1; i < images.length; i++) { // Dimensions of all six sides must match each other
+      if (images[i].naturalWidth !== targetDim || images[i].naturalHeight !== targetDim)
+        return undefined;
+    }
+
+    return new TextureCubeCreateParams(targetDim, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte, GL.Texture.WrapMode.ClampToEdge,
+      (tex: TextureHandle, params: TextureCubeCreateParams) => loadTextureCubeImageData(tex, params, images));
+  }
 }
 
 /** Wraps a WebGLTextureHandle */
@@ -180,9 +234,6 @@ export abstract class TextureHandle implements IDisposable {
 
   /** Bind this texture to a uniform sampler. */
   public abstract bindSampler(_uniform: UniformHandle, _unit: TextureUnit): void;
-
-  /** Update the texture contents. */
-  public abstract update(_updater: Texture2DDataUpdater): boolean;
 
   public get isDisposed(): boolean { return this._glTexture === undefined; }
 
@@ -211,6 +262,11 @@ export abstract class TextureHandle implements IDisposable {
   /** Create a 2D texture from an HTMLImageElement. */
   public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
     return Texture2DHandle.createForImage(image, hasAlpha, type);
+  }
+
+  /** Create a cube map texture from six HTMLImageElement objects. */
+  public static createForCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement) {
+    return TextureCubeHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
   }
 
   // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.
@@ -330,7 +386,67 @@ export class Texture2DHandle extends TextureHandle {
   }
 }
 
-// export class TextureCubeHandle extends TextureHandle { }
+export class TextureCubeHandle extends TextureHandle {
+  private _dim: number; // Cubemap texture height and width must match.  This must be the same for each of the six faces.
+  private _format: GL.Texture.Format; // Format must be the same for each of the six faces.
+  private _dataType: GL.Texture.DataType; // Type must be the same for each of the six faces.
+
+  public get width(): number { return this._dim; }
+  public get height(): number { return this._dim; }
+  public get format(): GL.Texture.Format { return this._format; }
+  public get dataType(): GL.Texture.DataType { return this._dataType; }
+  public get dataBytes(): Uint8Array | undefined { return undefined; }
+
+  /** Bind specified cubemap texture handle to specified texture unit. */
+  public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
+    assert(!(glTex instanceof TextureHandle));
+    const gl: WebGLRenderingContext = System.instance.context;
+    gl.activeTexture(texUnit);
+    gl.bindTexture(GL.Texture.Target.CubeMap, glTex !== undefined ? glTex : null);
+    if (this.wantDebugIds)
+      debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
+  }
+
+  /** Bind the specified texture to a uniform sampler2D */
+  public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
+    assert(!(tex instanceof TextureHandle));
+    this.bindTexture(unit, tex);
+    uniform.setUniform1i(unit - TextureUnit.Zero);
+  }
+
+  /** Bind texture handle (if available) associated with an instantiation of this class to specified texture unit. */
+  public bind(texUnit: TextureUnit): boolean {
+    if (undefined === this._glTexture)
+      return false;
+    TextureCubeHandle.bindTexture(texUnit, this._glTexture);
+    return true;
+  }
+
+  /** Bind this texture to a uniform sampler2D */
+  public bindSampler(uniform: UniformHandle, unit: TextureUnit): void {
+    if (undefined !== this._glTexture)
+      TextureCubeHandle.bindSampler(uniform, this._glTexture, unit);
+  }
+
+  private static create(params: TextureCubeCreateParams): TextureHandle | undefined {
+    const glTex = System.instance.context.createTexture();
+    return null !== glTex ? new TextureCubeHandle(glTex, params) : undefined;
+  }
+
+  /** Create a cube map texture from six HTMLImageElement objects. */
+  public static createForCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement) {
+    const params = TextureCubeCreateParams.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
+    return params !== undefined ? this.create(params) : undefined;
+  }
+
+  private constructor(glTexture: WebGLTexture, params: TextureCubeCreateParams) {
+    super(glTexture);
+    this._dim = params.dim;
+    this._format = params.format;
+    this._dataType = params.dataType;
+    params.loadImageData(this, params);
+  }
+}
 
 export class Texture2DDataUpdater {
   public data: Uint8Array;

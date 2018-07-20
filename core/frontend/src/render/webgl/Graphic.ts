@@ -10,7 +10,7 @@ import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, DecorationList, RenderClipVolume } from "../System";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { TextureHandle, Texture2DDataUpdater } from "./Texture";
+import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
 import { LUTDimensions, LUTParams, LUTDimension } from "./FeatureDimensions";
 import { Target } from "./Target";
 import { FloatRgba } from "./FloatRGBA";
@@ -137,7 +137,7 @@ class OvrNonUniform {
     else
       this.buildLookupTable(updater, map, ovrs, hilites, flashedElemId);
 
-    lut.update(updater);
+    (lut as Texture2DHandle).update(updater);
   }
 
   private buildLookupTable(data: Texture2DDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
