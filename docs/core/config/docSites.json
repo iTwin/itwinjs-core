@@ -55,6 +55,8 @@
       "i18n": "imodeljs-i18n",
       "geometry": "geometry-core",
       "bentley": "bentleyjs-core"
-    }
+    },
+    "editDocsBaseURL": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECTech/_git/imodeljs-core?path=%2Fdocs%2F",
+    "editSrcBaseURL": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECTech/_git/imodeljs-core?path=%2Fcore%2F"
   }
 }
