@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult, Id64, PerfLogger, ChangeSetStatus } from "@bentley/bentleyjs-core";
+import { OpenMode, DbResult, Id64, PerfLogger, ChangeSetStatus, using } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary } from "../../ChangeSummaryManager";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelDb, OpenParams, AccessMode } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, DisableNativeAssertions } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsFs } from "../../IModelJsFs";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
@@ -384,7 +384,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it.skip("Extract ChangeSummaries with invalid input", async () => {
+  it("Extract ChangeSummaries with invalid input", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -392,7 +392,9 @@ describe("ChangeSummary", () => {
     let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Exclusive));
     try {
       assert.exists(iModel);
-      await ChangeSummaryManager.extractChangeSummaries(iModel);
+      using(new DisableNativeAssertions(), async () => {
+        await ChangeSummaryManager.extractChangeSummaries(iModel);
+      });
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, ChangeSetStatus.CannotMergeIntoReadonly);
@@ -404,7 +406,9 @@ describe("ChangeSummary", () => {
     iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Shared));
     try {
       assert.exists(iModel);
-      await ChangeSummaryManager.extractChangeSummaries(iModel);
+      using(new DisableNativeAssertions(), async () => {
+        await ChangeSummaryManager.extractChangeSummaries(iModel);
+      });
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
@@ -417,7 +421,9 @@ describe("ChangeSummary", () => {
     try {
       assert.exists(iModel);
       await iModel.close(accessToken);
-      await ChangeSummaryManager.extractChangeSummaries(iModel);
+      using(new DisableNativeAssertions(), async () => {
+        await ChangeSummaryManager.extractChangeSummaries(iModel);
+      });
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
@@ -429,7 +435,9 @@ describe("ChangeSummary", () => {
     assert.exists(iModel.briefcase);
     assert.isTrue(iModel.briefcase!.isStandalone);
     try {
-      await ChangeSummaryManager.extractChangeSummaries(iModel);
+      using(new DisableNativeAssertions(), async () => {
+        await ChangeSummaryManager.extractChangeSummaries(iModel);
+      });
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
