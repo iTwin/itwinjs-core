@@ -7,11 +7,11 @@ import * as path from "path";
 
 import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 
-import { AccessToken, WsgError } from "../../";
+import { AccessToken, WsgError, IModelClient } from "../../";
 import {
   IModelHubClient, IModelRepository, SeedFile, IModelHubError,
   IModelQuery, IModelHubRequestError,
-} from "../../imodelhub";
+} from "../../";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -134,7 +134,7 @@ describe("iModelHub iModelHandler", () => {
   let iModelId: string;
   const imodelName = "imodeljs-clients iModels test";
   const createIModelName = "imodeljs-client iModels Create test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
     projectId = await utils.getProjectId();

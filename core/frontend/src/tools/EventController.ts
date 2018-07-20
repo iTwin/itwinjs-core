@@ -228,7 +228,7 @@ export class EventController {
     this.recordKeyboardModifiers(ev);
 
     // catch exceptions caused by aborting previous snap attempts
-    IModelApp.toolAdmin.onMouseMotion(this.vp, this.getPosition(ev), InputSource.Mouse).catch();
+    IModelApp.toolAdmin.onMouseMotion(this.vp, this.getPosition(ev), InputSource.Mouse).catch((_error) => { });
   }
 
   private handleMouseLeave(ev: MouseEvent) {

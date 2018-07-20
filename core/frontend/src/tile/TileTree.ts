@@ -14,6 +14,7 @@ import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
+import { PntsTileIO } from "./PntsTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
@@ -72,7 +73,7 @@ export class Tile implements IDisposable {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
-    this.yAxisUp = props.yAxisUp;
+    this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
 
     // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
     this.loadGraphics(props.geometry);
@@ -87,41 +88,66 @@ export class Tile implements IDisposable {
     this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
-  // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
   public dispose() {
     this._graphic = dispose(this._graphic);
     if (this._children)
       for (const child of this._children)
         dispose(child);
+
     this._children = undefined;
+    this.loadStatus = Tile.LoadStatus.Abandoned;
   }
 
   private loadGraphics(blob?: Uint8Array): void {
-    this.loadStatus = Tile.LoadStatus.Ready;
-    if (undefined === blob)
+    if (undefined === blob) {
+      this.setIsReady();
       return;
+    }
+
+    this.loadStatus = Tile.LoadStatus.Loading;
 
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
     const format = streamBuffer.nextUint32;
+    const isCanceled = () => !this.isLoading;
     let reader: GltfTileIO.Reader | undefined;
     streamBuffer.rewind(4);
-    if (format === TileIO.Format.B3dm) {
-      reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
-    } else {
-      reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem);
+    switch (format) {
+      case TileIO.Format.B3dm:
+        reader = B3dmTileIO.Reader.create(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp, isCanceled);
+        break;
+
+      case TileIO.Format.IModel:
+        reader = IModelTileIO.Reader.create(streamBuffer, this.root.model, IModelApp.renderSystem, isCanceled);
+        break;
+
+      case TileIO.Format.Pnts:
+        {
+          this._graphic = PntsTileIO.readPointCloud(streamBuffer, this.root.model, this.range, IModelApp.renderSystem, this.yAxisUp);
+          this.setIsReady();
+          return;
+        }
     }
 
-    if (undefined !== reader) {
-      const result = reader.read();
-      if (undefined !== result) {
-        this._graphic = result.renderGraphic;
-      }
+    if (undefined === reader) {
+      this.setNotFound();
+      return;
     }
+
+    const read = reader.read();
+    read.catch((_err) => this.setNotFound());
+    read.then((result) => {
+      // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
+      if (this.isLoading) {
+        this._graphic = result.renderGraphic;
+        this.setIsReady();
+      }
+    });
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
   public get isAbandoned(): boolean { return Tile.LoadStatus.Abandoned === this.loadStatus; }
   public get isNotLoaded(): boolean { return Tile.LoadStatus.NotLoaded === this.loadStatus; }
+  public get isLoading(): boolean { return Tile.LoadStatus.Loading === this.loadStatus; }
   public get isNotFound(): boolean { return Tile.LoadStatus.NotFound === this.loadStatus; }
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
 
@@ -319,7 +345,7 @@ export class Tile implements IDisposable {
   private loadChildren(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
       this._childrenLoadStatus = TileTree.LoadStatus.Loading;
-      this.root.loader.getTileProps(this._childIds).then((props: TileProps[]) => {
+      this.root.loader!.getTileProps(this._childIds).then((props: TileProps[]) => {
         this._children = [];
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
@@ -327,7 +353,7 @@ export class Tile implements IDisposable {
           const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
           for (const prop of props) {
             // ###TODO if child is empty don't bother adding it to list...
-            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader.getMaxDepth());
+            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader!.getMaxDepth());
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
               parentRange.extendRange(child.contentRange);
@@ -410,7 +436,8 @@ export namespace Tile {
       if (this.graphics.isEmpty)
         return;
 
-      const branch = this.context.createBranch(this.graphics, this.location, this.clip);
+      // const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
+      const branch = this.context.createBranch(this.graphics, this.location, undefined);
       this.context.outputGraphic(branch);
     }
 
@@ -425,7 +452,7 @@ export namespace Tile {
       public readonly range: ElementAlignedBox3d,
       public readonly maximumSize: number,
       public readonly childIds: string[],
-      public readonly yAxisUp: boolean,
+      public readonly yAxisUp?: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
       public readonly zoomFactor?: number,
@@ -449,13 +476,13 @@ export namespace Tile {
 export class TileTree implements IDisposable {
   public readonly model: GeometricModelState;
   public readonly location: Transform;
-  public readonly rootTile: Tile;
-  public readonly expirationTime: BeDuration;
-  public readonly clipVector?: ClipVector;
   public readonly id: Id64;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
-  public readonly loader: TileLoader;
+  public expirationTime: BeDuration;
+  public clipVector?: ClipVector;
+  protected _rootTile: Tile;
+  protected _loader?: TileLoader;
 
   public constructor(props: TileTree.Params) {
     this.model = props.model;
@@ -465,25 +492,28 @@ export class TileTree implements IDisposable {
     this.clipVector = props.clipVector;
     this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
-    this.loader = props.loader;
+    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this));
+    this._loader = props.loader;
   }
 
+  public get rootTile(): Tile { return this._rootTile; }
+  public get loader(): TileLoader | undefined { return this._loader; }
+
   public dispose() {
-    dispose(this.rootTile);
+    dispose(this._rootTile);
   }
 
   public get is3d(): boolean { return this.model.is3d; }
   public get is2d(): boolean { return this.model.is2d; }
   public get modelId(): Id64 { return this.model.id; }
   public get iModel(): IModelConnection { return this.model.iModel; }
-  public get range(): ElementAlignedBox3d { return this.rootTile.range; }
+  public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new ElementAlignedBox3d(); }
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
     const selected: Tile[] = [];
-    if (undefined !== this.rootTile)
-      this.rootTile.selectTiles(selected, args);
+    if (undefined !== this._rootTile)
+      this._rootTile.selectTiles(selected, args);
 
     return selected;
   }
@@ -529,7 +559,7 @@ export namespace TileTree {
       public readonly id: Id64,
       public readonly rootTile: TileProps,
       public readonly model: GeometricModelState,
-      public readonly loader: TileLoader,
+      public readonly loader: TileLoader | undefined,
       public readonly location: Transform,
       public readonly maxTilesToSkip?: number,
       public readonly clipVector?: ClipVector,

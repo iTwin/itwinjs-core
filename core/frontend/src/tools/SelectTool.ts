@@ -45,35 +45,6 @@ export const enum SelectionProcessing {
   ReplaceSelectionWithElement,
 }
 
-/*
-export class TestEditManipulatorTool extends EditManipulator.Tool {
-  protected init(): void { super.init(); this.beginDynamics(); }
-  protected accept(_ev: BeButtonEvent): boolean { return true; }
-  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { console.log("Dynamics"); }
-}
-
-export class TestEditManipulatorProvider extends EditManipulator.Provider {
-  protected createControls(): boolean {
-    return 1 === this.iModel.selectionSet.size;
-  }
-  protected selectControls(_ev: BeButtonEvent): boolean {
-    const autoHit = IModelApp.accuSnap.currHit;
-    return (undefined !== autoHit && this.iModel.selectionSet.has(autoHit.sourceId));
-  }
-  protected modifyControls(_ev: BeButtonEvent): boolean {
-    const manipTool = new TestEditManipulatorTool(this);
-    return manipTool.run();
-  }
-  protected drawControls(_context: DecorateContext): void {
-    console.log("Decorate");
-  }
-  public onManipulatorEvent(eventType: EditManipulator.EventType): void {
-    super.onManipulatorEvent(eventType);
-    console.log("Event " + eventType);
-  }
-}
-*/
-
 /** Tool for picking a set of elements of interest, selected by the user. */
 export class SelectionTool extends PrimitiveTool {
   public static hidden = false;
@@ -86,7 +57,7 @@ export class SelectionTool extends PrimitiveTool {
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
 
   // protected getManipulator(): EditManipulator.Provider | undefined { return new TestEditManipulatorProvider(this.iModel); } // NEEDSWORK: Testing...
-  protected getManipulator(): EditManipulator.Provider | undefined { return undefined; } // Override to create sub-class of EditManipulatorProvider...
+  protected getManipulator(): EditManipulator.Provider | undefined { return undefined; } // Override to create sub-class of EditManipulator.Provider...
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; } // NEEDSWORK: Setting...
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace; } // NEEDSWORK: Settings...

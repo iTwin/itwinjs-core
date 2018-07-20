@@ -94,7 +94,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     super();
     this._options = options ? options : StrokeOptions.createForFacets();
     this.polyface = IndexedPolyface.create(this._options.needNormals,
-      this._options._needParams, this._options.needColors);
+      this._options.needParams, this._options.needColors);
     this.reversed = false;
   }
 
@@ -251,7 +251,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let idx3;
 
     // Add params if needed
-    if (this._options._needParams) {
+    if (this._options.needParams) {
       if (params && params.length >= 4) { // Params were given
         idx0 = this.polyface.addParam(params[0]);
         idx1 = this.polyface.addParam(params[1]);
@@ -271,7 +271,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
     // Add normals if needed
-    if (this._options._needParams) {
+    if (this._options.needParams) {
       if (normals && normals.length >= 4) { // Normals were given
         const normal0 = normals[0].normalize();
         const normal1 = normals[1].normalize();
@@ -367,7 +367,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let idx2: number;
 
     // Add params if needed
-    if (this._options._needParams) {
+    if (this._options.needParams) {
       if (params && params.length >= 3) { // Params were given
         idx0 = this.polyface.addParam(params[0]);
         idx1 = this.polyface.addParam(params[1]);
@@ -385,7 +385,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
     // Add normals if needed
-    if (this._options._needParams) {
+    if (this._options.needParams) {
       if (normals && normals.length >= 3) { // Normals were given
         const normal0 = normals[0].normalize();
         const normal1 = normals[1].normalize();
@@ -746,8 +746,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
             index = this.findOrAddPointXYZ(node.x, node.y, node.z);
             this.polyface.addPointIndex(index);
             if (needParams) {
-              index = this.findOrAddParamXY (node.x, node.y);
-              this.polyface.addParamIndex (index);
+              index = this.findOrAddParamXY(node.x, node.y);
+              this.polyface.addParamIndex(index);
             }
             node = node.faceSuccessor;
           } while (node !== seed);
@@ -799,7 +799,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       for (let u = 0; u <= numU; u++) {
         const uFrac = u * du;
         const vFrac = v * dv;
-        if (this._options._needParams) {
+        if (this._options.needParams) {
           const plane = surface.UVFractionToPointAndTangents(uFrac, vFrac);
           this.polyface.addNormal(plane.vectorU.crossProduct(plane.vectorV));
           index1.push(this.findOrAddPoint(plane.origin.clone()));
@@ -807,7 +807,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           surface.UVFractionToPoint(uFrac, vFrac, xyz);
           index1.push(this.findOrAddPoint(xyz));
         }
-        if (this._options._needParams) {
+        if (this._options.needParams) {
           this.polyface.addParam(new Point2d(uFrac, vFrac));
         }
       }
@@ -819,11 +819,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           this.addIndexedQuadPointIndexes(
             index0.at(u), index0.at(u + 1),
             index1.at(u), index1.at(u + 1));
-          if (this._options._needParams)
+          if (this._options.needParams)
             this.addIndexedQuadNormalIndexes(
               index0.at(u), index0.at(u + 1),
               index1.at(u), index1.at(u + 1));
-          if (this._options._needParams)
+          if (this._options.needParams)
             this.addIndexedQuadParamIndexes(
               index0.at(u), index0.at(u + 1),
               index1.at(u), index1.at(u + 1));

@@ -296,7 +296,7 @@ export abstract class Target extends RenderTarget {
     this._stack.pushBranch(branch);
     const clip = this._stack.top.clipVolume;
     if (undefined !== clip) {
-      clip.push(exec);
+      (clip as any).push(exec);
     }
   }
   public pushState(state: BranchState) {
@@ -306,7 +306,7 @@ export abstract class Target extends RenderTarget {
   public popBranch(): void {
     const clip = this._stack.top.clipVolume;
     if (undefined !== clip) {
-      clip.pop(this);
+      (clip as any).pop(this);
     }
 
     this._stack.pop();
@@ -448,7 +448,8 @@ export abstract class Target extends RenderTarget {
           hidEdgeOvrs!.color.setFrom(ColorDef.white);
           visEdgeOvrs.ovrColor = hidEdgeOvrs!.ovrColor = true;
         }
-      } // fall-through intentional...
+      }
+      /* falls through */
       case RenderMode.HiddenLine: {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
         vf.setShowVisibleEdges(true);

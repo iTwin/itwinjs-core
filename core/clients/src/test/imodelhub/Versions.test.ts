@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { AccessToken } from "../../";
+import { AccessToken, IModelClient } from "../../";
 import {
-  IModelHubClient, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
+  Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
   ThumbnailQuery, ThumbnailSize,
-} from "../../imodelhub";
+} from "../../";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -43,9 +43,14 @@ describe("iModelHub VersionHandler", () => {
   let iModelId: string;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
+
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
@@ -77,6 +82,13 @@ describe("iModelHub VersionHandler", () => {
           await utils.delay(6000);
         }
       }
+    }
+  });
+
+  after(() => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 

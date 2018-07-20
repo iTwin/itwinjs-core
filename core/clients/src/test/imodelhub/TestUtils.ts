@@ -9,14 +9,14 @@ import { Guid } from "@bentley/bentleyjs-core";
 
 import {
   ECJsonTypeMap, AccessToken, UserProfile, ConnectClient, Project,
-  ProgressInfo, UrlDescriptor, DeploymentEnv,
+  ProgressInfo, UrlDescriptor, DeploymentEnv, IModelClient,
 } from "../../";
 import {
   IModelHubClient, Code, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery,
-} from "../../imodelhub/";
-import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
+} from "../../";
+import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
@@ -31,7 +31,44 @@ export class MockAccessToken extends AccessToken {
   public toTokenString() { return ""; }
 }
 
+export type RequestBehaviorOptionsList =
+  "DoNotScheduleRenderThumbnailJob" |
+  "DisableGlobalEvents" |
+  "DisableNotifications";
+
+export class RequestBehaviorOptions {
+  private _currentOptions: RequestBehaviorOptionsList[] = this.getDefaultOptions();
+
+  private getDefaultOptions(): RequestBehaviorOptionsList[] {
+    return ["DoNotScheduleRenderThumbnailJob", "DisableGlobalEvents", "DisableNotifications"];
+  }
+
+  public resetDefaultBehaviorOptions(): void {
+    this._currentOptions = this.getDefaultOptions();
+  }
+
+  public enableBehaviorOption(option: RequestBehaviorOptionsList) {
+    if (!this._currentOptions.find((el) => el === option)) {
+      this._currentOptions.push(option);
+    }
+  }
+  public disableBehaviorOption(option: RequestBehaviorOptionsList) {
+    const foundIdx: number = this._currentOptions.findIndex((el) => el === option);
+    if (-1 < foundIdx) {
+      this._currentOptions.splice(foundIdx, 1);
+    }
+  }
+
+  public toCustomRequestOptions(): { [index: string]: string } {
+    return { BehaviourOptions: this._currentOptions.join(",") };
+  }
+}
+
 const imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+const requestBehaviorOptions = new RequestBehaviorOptions();
+if (!TestConfig.enableMocks) {
+  imodelHubClient.CustomRequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
+}
 
 export class IModelHubUrlMock {
   private static readonly urlDescriptor: UrlDescriptor = {
@@ -46,15 +83,19 @@ export class IModelHubUrlMock {
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(IModelHubBaseHandler.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, env, this.urlDescriptor[env]);
   }
 }
 
 export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
 
-export function getDefaultClient() {
+export function getDefaultClient(): IModelClient {
   IModelHubUrlMock.mockGetUrl(TestConfig.deploymentEnv);
   return imodelHubClient;
+}
+
+export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
+  return requestBehaviorOptions;
 }
 
 export const assetsPath = __dirname + "/../../../lib/test/assets/";
@@ -100,7 +141,7 @@ export async function login(user?: UserCredentials): Promise<AccessToken> {
     return new MockAccessToken();
 
   const authToken = await TestConfig.login(user);
-  const client = getDefaultClient();
+  const client = getDefaultClient() as IModelHubClient;
 
   return await client.getAccessToken(authToken);
 }
@@ -539,7 +580,7 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createNewIModel(client: IModelHubClient, accessToken: AccessToken, name: string, projectId: string) {
+export async function createNewIModel(client: IModelClient, accessToken: AccessToken, name: string, projectId: string) {
   if (TestConfig.enableMocks)
     return;
 

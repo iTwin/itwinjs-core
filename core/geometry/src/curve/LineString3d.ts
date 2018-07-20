@@ -14,7 +14,7 @@ import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive, GeometryQuery, CurveLocationDetail, CurveIntervalRole, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { AxisOrder } from "../Geometry";
-import { ClipperMethods } from "../numerics/ClipPlanes";
+import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/
 
 /* Starting wtih baseIndex and moving index by stepDirection:
@@ -555,7 +555,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param announce (optional) function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    * @returns true if any "in" segments are announced.
    */
-  public announceClipIntervals(clipper: ClipperMethods, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  public announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const n = this._points.length;
     if (n < 2) return false;
     let globalFractionA = 0.0;
@@ -639,11 +639,11 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
  * * This is useful in facet construction.
  */
 export class AnnotatedLineString3d {
-public curveParam?: GrowableFloat64Array;
-/**
- * uv parameters, stored as uvw with the w possibly used for distinguishing among multiple "faces".
- */
-public uvwParam?: GrowableXYZArray;
-public vecturU?: GrowableXYZArray;
-public vectorV?: GrowableXYZArray;
+  public curveParam?: GrowableFloat64Array;
+  /**
+   * uv parameters, stored as uvw with the w possibly used for distinguishing among multiple "faces".
+   */
+  public uvwParam?: GrowableXYZArray;
+  public vecturU?: GrowableXYZArray;
+  public vectorV?: GrowableXYZArray;
 }

@@ -256,7 +256,7 @@ export abstract class WsgClient extends Client {
   }
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
-  protected async deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T): Promise<void> {
+  protected async deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
     const url: string = await this.getUrl() + relativeUrlPath;
     const untypedInstance: any = instance ? ECJsonTypeMap.toJson<T>("wsg", instance) : undefined;
     const options: RequestOptions = {
@@ -266,6 +266,9 @@ export abstract class WsgClient extends Client {
         instance: untypedInstance,
       },
     };
+    if (requestOptions) {
+      options.body.requestOptions = requestOptions;
+    }
     await this.setupOptionDefaults(options);
     return request(url, options).then(() => Promise.resolve());
   }

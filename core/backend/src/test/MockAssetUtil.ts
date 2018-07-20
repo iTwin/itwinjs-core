@@ -130,7 +130,7 @@ export class MockAssetUtil {
     MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
     MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
 
-    (BriefcaseManager as any)._hubClient = iModelHubClientMock.object;
+    (BriefcaseManager as any)._defaultHubClient = iModelHubClientMock.object;
 
     // Get test projectId from the mocked connection client
     const project: Project = await connectClientMock.object.getProject(accessToken as any, {
@@ -163,7 +163,7 @@ export class MockAssetUtil {
   }
 
   public static tearDownOfflineFixture() {
-    (BriefcaseManager as any)._hubClient = undefined;
+    (BriefcaseManager as any)._imodelClient = undefined;
   }
 
   /** Setup functions for the ConnectClient mock */

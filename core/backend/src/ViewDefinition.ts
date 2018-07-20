@@ -285,8 +285,12 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
  */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
-  public view?: Id64;
-  public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
+  public view: Id64;
+  public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.view = new Id64(props.view);
+    // ###NOTE: scale, displayPriority, and clipping vectors are stored in jsonProperties...
+  }
 }
 
 /**

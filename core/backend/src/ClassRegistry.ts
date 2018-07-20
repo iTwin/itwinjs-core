@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { Entity, EntityMetaData } from "./Entity";
+import { EntityProps, IModelError, IModelStatus, EntityMetaData } from "@bentley/imodeljs-common";
+import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 

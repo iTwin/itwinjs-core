@@ -156,7 +156,7 @@ export class RobotWorldEngine {
     if (Platform.isNodeJs())
       config.appAssetsDir = path.join(__dirname, "assets");
     else
-      config.appAssetsDir = KnownLocations.platformAssetsDir;
+      config.appAssetsDir = KnownLocations.packageAssetsDir;
     IModelHost.startup(config);
 
     this.readFeatureGates();

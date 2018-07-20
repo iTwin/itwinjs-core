@@ -5,8 +5,8 @@ node_modules
 .nyc_output
 /core/**/lib
 /example-code/**/lib
-/simpleviewtest/**/lib
-/testbed/**/lib
+/test-apps/**/lib
+/bank-demo/**/lib
 /core/geometry/src/test/output
 /core/backend/src/test/output
 /generated-docs

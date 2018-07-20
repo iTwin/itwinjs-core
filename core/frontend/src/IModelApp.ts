@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { DeploymentEnv, IModelHubClient } from "@bentley/imodeljs-clients";
+import { DeploymentEnv, IModelHubClient, IModelClient } from "@bentley/imodeljs-clients";
 import { ViewManager } from "./ViewManager";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { AccuDraw } from "./AccuDraw";
@@ -16,7 +16,7 @@ import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-commo
 import { NotificationManager } from "./NotificationManager";
 import { System } from "./render/webgl/System";
 import { RenderSystem } from "./render/System";
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose, RepositoryStatus } from "@bentley/bentleyjs-core";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -49,13 +49,22 @@ export class IModelApp {
 
   public static readonly features = new FeatureGates();
   public static readonly tools = new ToolRegistry();
-  protected static _iModelHubClient?: IModelHubClient;
+  protected static _imodelClient?: IModelClient;
   public static get initialized() { return IModelApp._initialized; }
-  public static get iModelHubClient(): IModelHubClient {
-    if (!this._iModelHubClient || this._iModelHubClient.deploymentEnv !== this.hubDeploymentEnv)
-      this._iModelHubClient = new IModelHubClient(this.hubDeploymentEnv);
-    return this._iModelHubClient;
+
+  /** IModel Server Client to be used for all frontend operations */
+  public static get iModelClient(): IModelClient {
+    if (!this._imodelClient)
+      this._imodelClient = new IModelHubClient(this.hubDeploymentEnv);
+    else if (this._imodelClient.deploymentEnv !== this.hubDeploymentEnv)
+      throw new IModelError(RepositoryStatus.ServerUnavailable);
+    return this._imodelClient;
   }
+
+  public static set iModelClient(client: IModelClient) {
+    this._imodelClient = client;
+  }
+
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid(); }
 
   /**
@@ -71,11 +80,14 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    */
-  public static startup() {
+  public static startup(imodelClient?: IModelClient) {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     IModelApp._initialized = true;
+
+    if (imodelClient !== undefined)
+      this._imodelClient = imodelClient;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
@@ -109,9 +121,8 @@ export class IModelApp {
 
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
-    this._renderSystem = dispose(IModelApp._renderSystem);
-    IModelApp._renderSystem = undefined;
     IModelApp.toolAdmin.onShutDown();
+    IModelApp._renderSystem = dispose(IModelApp._renderSystem);
     IModelApp._initialized = false;
   }
 

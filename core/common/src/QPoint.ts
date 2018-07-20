@@ -15,7 +15,7 @@ import { assert, Iterable } from "@bentley/bentleyjs-core";
  * Therefore min quantizes to 0, max to 0xffff, (min+max)/2 to 0x7fff, and so on.
  * These routines are chiefly used internally by classes like QPoint2d and QPoint3d.
  */
-namespace Quantization {
+export namespace Quantization {
   const rangeScale = 0xffff;
 
   export function computeScale(extent: number): number { return 0.0 === extent ? extent : rangeScale / extent; }
@@ -210,6 +210,8 @@ export class QParams3d {
     result.copyFrom(this);
     return result;
   }
+  /** Initialize from origin and scale */
+  public setFromOriginAndScale(origin: Point3d, scale: Point3d) { this.setFrom(origin.x, origin.y, origin.z, scale.x, scale.y, scale.z); }
 
   /** Initialize these parameters to support quantization of values within the specified range. */
   public setFromRange(range: Range3d) {
@@ -225,6 +227,13 @@ export class QParams3d {
   public static fromRange(range: Range3d, out?: QParams3d) {
     const params = undefined !== out ? out : new QParams3d();
     params.setFromRange(range);
+    return params;
+  }
+
+  /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
+  public static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d) {
+    const params = undefined !== out ? out : new QParams3d();
+    params.setFromOriginAndScale(origin, scale);
     return params;
   }
 
@@ -291,8 +300,8 @@ export class QPoint3d {
    * @param y Must be an integer in the range [0, 0xffff]
    * @param z Must be an integer in the range [0, 0xffff]
    */
-  public static fromScalars(x: number, y: number, z: number) {
-    const pt = new QPoint3d();
+  public static fromScalars(x: number, y: number, z: number, out?: QPoint3d) {
+    const pt = undefined === out ? new QPoint3d() : out;
     pt.setFromScalars(x, y, z);
     return pt;
   }

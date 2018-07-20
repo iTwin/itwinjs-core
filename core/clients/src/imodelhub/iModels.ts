@@ -2,14 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubBaseHandler } from "./BaseHandler";
 import { IModelHubRequestError, IModelHubError } from "./Errors";
 import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { FileHandler } from "./FileHandler";
+import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
+import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -113,7 +113,7 @@ class SeedFileQuery extends InstanceIdQuery {
  * Handler for all methods related to @see SeedFile instances.
  */
 class SeedFileHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelBaseHandler;
   private _fileHandler?: FileHandler;
 
   /**
@@ -121,7 +121,7 @@ class SeedFileHandler {
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
-  constructor(handler: IModelHubBaseHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }
@@ -206,16 +206,16 @@ export class IModelQuery extends InstanceIdQuery {
  * Handler for all methods related to @see IModel instances.
  */
 export class IModelHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelBaseHandler;
   private _fileHandler?: FileHandler;
   private _seedFileHandler: SeedFileHandler;
 
   /**
-   * Constructor for IModelHandler. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
-  constructor(handler: IModelHubBaseHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
     this._seedFileHandler = new SeedFileHandler(this._handler, this._fileHandler);
@@ -227,7 +227,7 @@ export class IModelHandler {
    * @param imodelId Id of the iModel.
    */
   private getRelativeUrl(projectId: string, imodelId?: string) {
-    return `/Repositories/Project--${projectId}/ProjectScope/iModel/${imodelId || ""}`;
+    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/iModel/${imodelId || ""}`;
   }
 
   /**
@@ -257,7 +257,15 @@ export class IModelHandler {
   public async delete(token: AccessToken, projectId: string, imodelId: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting iModel with id ${imodelId} from project ${projectId}`);
 
-    await this._handler.delete(token, this.getRelativeUrl(projectId, imodelId));
+    if (this._handler.getCustomRequestOptions().isSet()) {
+      // In order to add custom request options, request with body is needed.
+      const iModelRepository = new IModelRepository();
+      iModelRepository.wsgId = imodelId;
+      iModelRepository.changeState = "deleted";
+      await this._handler.deleteInstance(token, this.getRelativeUrl(projectId, imodelId), iModelRepository);
+    } else {
+      await this._handler.delete(token, this.getRelativeUrl(projectId, imodelId));
+    }
 
     Logger.logTrace(loggingCategory, `Deleted iModel with id ${imodelId} from project ${projectId}`);
   }

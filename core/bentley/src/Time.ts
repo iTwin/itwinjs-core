@@ -32,6 +32,14 @@ export class BeDuration {
   public minus(other: BeDuration): BeDuration { return new BeDuration(this._milliseconds - other._milliseconds); }
   /** Add a BeDuration to this BeDuration, returning a new BeDuration */
   public plus(other: BeDuration): BeDuration { return new BeDuration(this._milliseconds + other._milliseconds); }
+
+  /** Utility function to just wait for the specified time
+   * @param ms Duration in milliseconds to wait
+   * @return Promise that resolves after the specified wait period
+   */
+  public static async wait(ms: number): Promise<void> {
+    return new Promise<void>((resolve: any) => setTimeout(resolve, ms));
+  }
 }
 
 /** A specific point in time relative to the current time.

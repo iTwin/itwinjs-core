@@ -8,7 +8,7 @@ import { DefaultRequestOptionsProvider } from "../Client";
 import { ECJsonTypeMap, WsgInstance } from "../ECJsonTypeMap";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../Token";
-import { IModelHubBaseHandler } from "./BaseHandler";
+import { IModelBaseHandler } from "./BaseHandler";
 
 export abstract class BaseEventSAS extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BaseAddress")
@@ -36,7 +36,7 @@ export abstract class IModelHubBaseEvent {
 }
 
 export abstract class EventBaseHandler {
-  protected _handler: IModelHubBaseHandler;
+  protected _handler: IModelBaseHandler;
   /** Gets service bus parser depending on the environment. */
   protected setServiceBusOptions(options: RequestOptions) {
     const parse: (str: string) => any = (message: string) => {

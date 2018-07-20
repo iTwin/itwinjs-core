@@ -1,11 +1,12 @@
 import { expect, assert } from "chai";
-import { Id64, DbOpcode } from "@bentley/bentleyjs-core";
+import { Id64, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { Code, IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, BriefcaseManager } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { TestIModelInfo, MockAccessToken } from "../MockAssetUtil";
-import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
+import { TestIModelInfo, MockAccessToken, MockAssetUtil } from "../MockAssetUtil";
+import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
+import * as TypeMoq from "typemoq";
 
 export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
   // Create a new physical model.
@@ -30,6 +31,8 @@ export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken:
 }
 
 describe("IModelWriteTest", () => {
+  const index = process.argv.indexOf("--offline");
+  const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;
   const testIModels: TestIModelInfo[] = [
     new TestIModelInfo("ReadOnlyTest"),
@@ -37,11 +40,19 @@ describe("IModelWriteTest", () => {
     new TestIModelInfo("NoVersionsTest"),
   ];
 
+  const assetDir = "./src/test/assets/_mocks_";
   let cacheDir: string = "";
   let accessToken: AccessToken = new MockAccessToken();
+  const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
+  const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
 
   before(async () => {
-    [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
+    if (offline) {
+      MockAssetUtil.setupMockAssets(assetDir);
+      testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
+    } else {
+      [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
+    }
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
@@ -175,7 +186,7 @@ describe("IModelWriteTest", () => {
 
   });
 
-  it("should build concurrency control request", async () => {
+  it.skip("should build concurrency control request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
 
     const el: Element = iModel.elements.getRootSubject();
@@ -195,9 +206,9 @@ describe("IModelWriteTest", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels: IModelRepository[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
@@ -209,7 +220,7 @@ describe("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
+    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -232,7 +243,7 @@ describe("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
+    const codes = await BriefcaseManager.imodelClient.Codes().get(adminAccessToken, rwIModelId!);
     timer.end();
     expect(codes.length > initialCodes.length);
   });
@@ -242,9 +253,9 @@ describe("IModelWriteTest", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesConflictTest";
-    const iModels: IModelRepository[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
@@ -256,17 +267,17 @@ describe("IModelWriteTest", () => {
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await BriefcaseManager.hubClient.Briefcases().create(adminAccessToken, rwIModelId!);
+    const otherBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(adminAccessToken, rwIModelId!);
     const hubCode = new HubCode();
     hubCode.value = code.value;
     hubCode.codeSpecId = code.spec.toString();
     hubCode.codeScope = code.scope;
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
-    await BriefcaseManager.hubClient.Codes().update(adminAccessToken, rwIModelId!, [hubCode]);
+    await BriefcaseManager.imodelClient.Codes().update(adminAccessToken, rwIModelId!, [hubCode]);
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
+    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -288,7 +299,7 @@ describe("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.hubClient.Codes().get(accessToken, rwIModelId!);
+    const codes = await BriefcaseManager.imodelClient.Codes().get(accessToken, rwIModelId!);
     timer.end();
     expect(codes.length === initialCodes.length);
     expect(codes[0].state === CodeState.Reserved);
@@ -300,9 +311,9 @@ describe("IModelWriteTest", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
-    const iModels: IModelRepository[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
@@ -385,7 +396,6 @@ describe("IModelWriteTest", () => {
     rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
 
     // Commit the local changes to a local transaction in the briefcase.
-    // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
 
     rwIModel.elements.getElement(elid1); // throws if elid1 is not found
@@ -444,4 +454,103 @@ describe("IModelWriteTest", () => {
     await iModel.close(accessToken);
   });
 
+  it("Run plain SQL against pull-only connection", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly());
+    iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+      stmt.bindValue(1, "Dummy 1");
+      stmt.bindValue(2, 100);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+      stmt.bindValues(["Dummy 2", 200]);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+      stmt.bindValue(":p1", "Dummy 3");
+      stmt.bindValue(":p2", 300);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+      stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+
+    iModel.saveChanges();
+
+    iModel.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
+      for (let i: number = 1; i <= 4; i++) {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        assert.equal(stmt.getColumnCount(), 3);
+        const val0: SqliteValue = stmt.getValue(0);
+        assert.equal(val0.columnName, "Id");
+        assert.equal(val0.type, SqliteValueType.Integer);
+        assert.isFalse(val0.isNull());
+        assert.equal(val0.getInteger(), i);
+
+        const val1: SqliteValue = stmt.getValue(1);
+        assert.equal(val1.columnName, "Name");
+        assert.equal(val1.type, SqliteValueType.String);
+        assert.isFalse(val1.isNull());
+        assert.equal(val1.getString(), `Dummy ${i}`);
+
+        const val2: SqliteValue = stmt.getValue(2);
+        assert.equal(val2.columnName, "Code");
+        assert.equal(val2.type, SqliteValueType.Integer);
+        assert.isFalse(val2.isNull());
+        assert.equal(val2.getInteger(), i * 100);
+
+        const row: any = stmt.getRow();
+        assert.equal(row.id, i);
+        assert.equal(row.name, `Dummy ${i}`);
+        assert.equal(row.code, i * 100);
+      }
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
+    await iModel.close(accessToken);
+  });
+
+  it("Run plain SQL against readonly connection", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion());
+
+    iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
+      let rowCount: number = 0;
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rowCount++;
+        assert.equal(stmt.getColumnCount(), 2);
+        const nameVal: SqliteValue = stmt.getValue(0);
+        assert.equal(nameVal.columnName, "Name");
+        assert.equal(nameVal.type, SqliteValueType.String);
+        assert.isFalse(nameVal.isNull());
+        const name: string = nameVal.getString();
+
+        const versionVal: SqliteValue = stmt.getValue(1);
+        assert.equal(versionVal.columnName, "StrData");
+        assert.equal(versionVal.type, SqliteValueType.String);
+        assert.isFalse(versionVal.isNull());
+        const profileVersion: any = JSON.parse(versionVal.getString());
+
+        assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");
+        if (name === "SchemaVersion") {
+          assert.equal(profileVersion.major, 4);
+          assert.equal(profileVersion.minor, 0);
+          assert.equal(profileVersion.sub1, 0);
+          assert.isAtLeast(profileVersion.sub2, 1);
+        } else if (name === "InitialSchemaVersion") {
+          assert.equal(profileVersion.major, 4);
+          assert.equal(profileVersion.minor, 0);
+          assert.equal(profileVersion.sub1, 0);
+          assert.isAtLeast(profileVersion.sub2, 1);
+        }
+      }
+      assert.equal(rowCount, 2);
+    });
+    await iModel.close(accessToken);
+  });
 });

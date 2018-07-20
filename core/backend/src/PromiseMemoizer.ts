@@ -7,18 +7,9 @@ export class QueryablePromise<T> {
   public result?: T;
   public error?: any;
 
-  public isPending(): boolean {
-    return !this.isFulfilled() && !this.isRejected();
-  }
-
-  public isFulfilled(): boolean {
-    return !!this.result;
-  }
-
-  public isRejected(): boolean {
-    return !!this.error;
-  }
-
+  public isPending(): boolean { return !this.isFulfilled() && !this.isRejected(); }
+  public isFulfilled(): boolean { return !!this.result; }
+  public isRejected(): boolean { return !!this.error; }
   public constructor(private readonly promise: Promise<T>) {
     this.promise
       .then((res: T) => this.result = res)

@@ -85,6 +85,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     this.high.z = RangeBase.EXTREME_NEGATIVE;
   }
 
+  public freeze() { Object.freeze(this); Object.freeze(this.low); Object.freeze(this.high); }
   public static toFloat64Array(val: LowAndHighXYZ): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.low.z, val.high.x, val.high.y, val.high.z); }
   public toFloat64Array(): Float64Array { return Range3d.toFloat64Array(this); }
   /**
@@ -262,11 +263,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   /** Create a range around an array of points. */
   public static createArray(points: Point3d[], result?: Range3d): Range3d {
     result = result ? result : new Range3d();
+    result.setNull();
     let point;
     for (point of points)
       result.extendPoint(point);
     return result;
   }
+
   /** extend a range around an array of points (optionally transformed) */
   public extendArray(points: Point3d[] | GrowableXYZArray, transform?: Transform) {
     if (Array.isArray(points))
@@ -284,6 +287,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         for (let i = 0; i < points.length; i++)
           this.extendXYZ(points.getPoint3dAt(i).x, points.getPoint3dAt(i).y, points.getPoint3dAt(i).z);
   }
+
   /** extend a range around an array of points (optionally transformed) */
   public extendInverseTransformedArray(points: Point3d[] | GrowableXYZArray, transform: Transform) {
     if (Array.isArray(points))
@@ -946,6 +950,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     }
   }
 
+  public freeze() { Object.freeze(this.low); Object.freeze(this.high); }
   public toJSON(): Range2dProps { return this.isNull() ? [] : [this.low.toJSON(), this.high.toJSON()]; }
 
   public static fromJSON(json?: Range2dProps): Range2d {

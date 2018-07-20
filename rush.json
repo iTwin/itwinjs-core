@@ -68,12 +68,12 @@
     },
     {
       "packageName": "simpleviewtest",
-      "projectFolder": "simpleviewtest",
+      "projectFolder": "test-apps/simpleviewtest",
       "shouldPublish": false
     },
     {
       "packageName": "testbed",
-      "projectFolder": "testbed",
+      "projectFolder": "test-apps/testbed",
       "shouldPublish": false
     }
   ]

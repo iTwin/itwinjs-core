@@ -5,7 +5,7 @@
 
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  RotMatrix, Transform, Map4d, Point4d, Constant,
+  RotMatrix, Transform, Map4d, Point4d, Constant, XYAndZ,
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
@@ -13,7 +13,7 @@ import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
+import { HitDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
@@ -23,6 +23,11 @@ import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./
 import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
+
+// tslint:disable:no-console
+
+/** A function which customizes the appearance of Features within a Viewport. */
+export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
 
 /** Viewport synchronization flags */
 export class SyncFlags {
@@ -364,8 +369,12 @@ export class Viewport {
   private currentBaseline?: ViewState;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
   public static nearScale24 = 0.0003;
+  /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
+  public static undoDelay = BeDuration.fromSeconds(.5);
   private _evController?: EventController;
   private _view!: ViewState;
+  private _addFeatureOverrides?: AddFeatureOverrides;
+
   /** @hidden */
   public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
@@ -443,6 +452,19 @@ export class Viewport {
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
+
+  /**
+   * Sets a function which can customize the appearance of features within a viewport.
+   * If defined, this function will be invoked whenever the overrides are determined to need refreshing.
+   * The overrides can be explicitly marked as needing a refresh by calling ViewState.setFeatureOverridesDirty().
+   */
+  public set addFeatureOverrides(addFeatureOverrides: AddFeatureOverrides | undefined) {
+    if (addFeatureOverrides !== this._addFeatureOverrides) {
+      this._addFeatureOverrides = addFeatureOverrides;
+      this.view.setFeatureOverridesDirty(true);
+    }
+  }
+
   /** True if this is a 3d view with the camera turned on. */
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   /** @hidden */
@@ -491,7 +513,7 @@ export class Viewport {
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents(this) as Range3d;
+    let extents = view.getViewedExtents() as Range3d;
     if (extents.isNull())
       return;
 
@@ -793,7 +815,7 @@ export class Viewport {
         // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
         this.alignWithRootZ(); // make sure we're in a z Up view
 
-        const extents = view.getViewedExtents(this);
+        const extents = view.getViewedExtents();
         if (extents.isNull()) {
           extents.low.z = -Viewport.get2dFrustumDepth();
           extents.high.z = Viewport.get2dFrustumDepth();
@@ -931,25 +953,35 @@ export class Viewport {
 
   /**
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
-   * If so, save a *clone* of the previous state in the view undo stack to permit View Undo.
+   * If so, save a *copy* of the **previous** state in the view undo stack for future View Undo.
    */
   public saveViewUndo(): void {
     if (!this._view)
       return;
 
-    // the first time we're called we need to establish the "baseline"
-    if (!this.currentBaseline) { this.currentBaseline = this.view.clone<ViewState>(); return; }
+    // the first time we're called we need to establish the baseline
+    if (!this.currentBaseline)
+      this.currentBaseline = this.view.clone<ViewState>();
 
-    if (this.view.equalState(this.currentBaseline)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+    if (this.view.equalState(this.currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
       return; // nothing changed, we're done
 
-    if (this.backStack.length >= this.maxUndoSteps) // don't save more than max
-      this.backStack.shift(); // remove the oldest entry
+    const backStack = this.backStack;
+    if (backStack.length >= this.maxUndoSteps) // don't save more than max
+      backStack.shift(); // remove the oldest entry
 
-    this.backStack.push(this.currentBaseline); // save previous state
-    this.forwardStack.length = 0; // not possible to do redo now
+    /** Sometimes we get requests to save undo entries from rapid viewing operations (e.g. mouse wheel rolls). To avoid lots of
+     * little useless intermediate view undo steps that mean nothing, if we get a call to this within a minimum time (1/2 second by default)
+     * we don't add a new entry to the view undo buffer.
+     */
+    const now = BeTimePoint.now();
+    if (backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
+      this.currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
+      this.backStack.push(this.currentBaseline); // save previous state
+      this.forwardStack.length = 0; // not possible to do redo after this
+    }
 
-    this.currentBaseline = this.view.clone<ViewState>(); // now update our baseline to match the current state
+    this.currentBaseline = this.view.clone<ViewState>();
   }
 
   /** Call [[setupFromView]] on this Viewport and save previous state in view undo stack */
@@ -1009,31 +1041,31 @@ export class Viewport {
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToNpc(pt: Point3d, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public npcToWorld(pt: Point3d, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToView(input: Point3d, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
    * @param input the point to convert
    * @param out optional location for result. If undefined, a new Point4d is created.
    */
-  public worldToView4d(input: Point3d, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
+  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public viewToWorld(input: Point3d, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
   /**
    * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
    * @param input the point to convert
@@ -1239,7 +1271,7 @@ export class Viewport {
   /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
-    const viewRange = this.view.computeFitRange(this);
+    const viewRange = this.view.computeFitRange();
 
     return viewRange;
   }
@@ -1416,66 +1448,67 @@ export class Viewport {
 
   /** Show the surface normal for geometry under the cursor when snapping. */
   private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    // NEEDS_WORK: Need to decide the fate of this...when/if to show it, etc.
-    const vp = context.viewport!;
-    if (!vp.view.is3d())
-      return; // Not valuable in 2d...
+    if (!context.viewport.view.is3d())
+      return; // Not valuable feedback in 2d...
 
-    if (!(hit instanceof SnapDetail))
-      return; // Don't display unless snapped...
+    if (!hit.isSnapDetail() || !hit.normal || hit.isPointAdjusted())
+      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
-    if (!hit.normal)
-      return; // AccuSnap will flash edge/segment geometry...
-
-    if (SnapMode.Nearest !== hit.snapMode && hit.isHot)
-      return; // Only display if snap is nearest or NOT hot...surface normal is for hit location, not snap location...
-
-    const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
+    const graphic = context.createWorldOverlay();
+    const color = ColorDef.from(255 - context.viewport.hilite.color.colors.r, 255 - context.viewport.hilite.color.colors.g, 255 - context.viewport.hilite.color.colors.b); // Invert hilite color for good contrast...
     const colorFill = color.clone();
-    const pt = hit.getPoint();
-    const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
-    const normal = hit.normal;
-    const rMatrix = RotMatrix.createRigidHeadsUp(normal);
+
     color.setTransparency(100);
     colorFill.setTransparency(200);
-
-    const ellipse = Arc3d.createScaledXYColumns(pt, rMatrix, radius, radius, AngleSweep.create360())!;
-    const graphic = context.createWorldOverlay();
     graphic.setSymbology(color, colorFill, 1);
+
+    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
+    const rMatrix = RotMatrix.createRigidHeadsUp(hit.normal);
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+
     graphic.addArc(ellipse, true, true);
     graphic.addArc(ellipse, false, false);
 
     const length = (0.6 * radius);
+    const normal = Vector3d.create();
+
     ellipse.vector0.normalize(normal);
-    const pt1 = pt.plusScaled(normal, length);
-    const pt2 = pt.plusScaled(normal, -length);
+    const pt1 = hit.snapPoint.plusScaled(normal, length);
+    const pt2 = hit.snapPoint.plusScaled(normal, -length);
     graphic.addLineString([pt1, pt2]);
+
     ellipse.vector90.normalize(normal);
-    pt.plusScaled(normal, length, pt1);
-    pt.plusScaled(normal, -length, pt2);
-    graphic.addLineString([pt1, pt2]);
-    context.addWorldOverlay(graphic.finish()!);
+    const pt3 = hit.snapPoint.plusScaled(normal, length);
+    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    graphic.addLineString([pt3, pt4]);
+
+    context.addWorldOverlay(graphic.finish());
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
   private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const radius = (aperture / 2.0) + .5;
-    const center = context.viewport!.worldToView(pt);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
     const graphic = context.createViewOverlay();
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
+
+    const radius = (aperture / 2.0) + .5;
+    const center = context.viewport.worldToView(pt);
+    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
+    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
+
     white.setTransparency(165);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
+
     black.setTransparency(100);
     graphic.setSymbology(black, black, 1);
     graphic.addArc2d(ellipse2, false, false, 0.0);
+
     white.setTransparency(20);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, false, false, 0.0);
-    context.addViewOverlay(graphic.finish()!);
+
+    context.addViewOverlay(graphic.finish());
   }
 
   /** @hidden */
@@ -1526,7 +1559,7 @@ export class Viewport {
     this.animate();
 
     // Allow ViewState instance to change any state which might affect logic below...
-    view.onRenderFrame();
+    view.onRenderFrame(this);
 
     let isRedrawNeeded = sync.isRedrawPending || this._doContinuousRendering;
     sync.invalidateRedrawPending();
@@ -1552,7 +1585,11 @@ export class Viewport {
     }
 
     if (view.areFeatureOverridesDirty) {
-      target.overrideFeatureSymbology(new FeatureSymbology.Overrides(view));
+      const ovrs = new FeatureSymbology.Overrides(view);
+      if (undefined !== this._addFeatureOverrides)
+        this._addFeatureOverrides(ovrs, this);
+
+      target.overrideFeatureSymbology(ovrs);
       view.setFeatureOverridesDirty(false);
       isRedrawNeeded = true;
     }

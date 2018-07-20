@@ -5,13 +5,12 @@
 
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, ClipVector, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { HitDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch } from "./render/System";
+import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ViewState3d } from "./ViewState";
 
@@ -52,7 +51,7 @@ export class RenderContext extends ViewContext {
   public createGraphic(tf: Transform, type: GraphicType): GraphicBuilder {
     return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
   }
-  public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVector): RenderGraphic {
+  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic {
     return this.target.renderSystem.createBranch(branch, location, clip);
   }
 }
@@ -62,13 +61,6 @@ export class DecorateContext extends RenderContext {
   constructor(vp: Viewport, decorations: Decorations = new Decorations()) {
     super(vp);
     this.decorations = decorations;
-  }
-  //  public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.sourceId, 0.25); } // NEEDSWORK
-  public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.sourceId, 0.25); } // NEEDSWORK
-  public drawHit(hit: HitDetail): void {
-    //    const sheetVp = hit.sheetViewport;
-    //    return (sheetVp && hit.viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
-    return this.drawNormalHit(hit);
   }
 
   /** wrapped nRepetitions and min in object to preserve changes */
@@ -106,7 +98,7 @@ export class DecorateContext extends RenderContext {
 
     // Limit non-view aligned grid to project extents in spatial views...
     if (limitRange) {
-      range = vp.view.iModel.projectExtents as Range3d;
+      range = vp.view.iModel.projectExtents.clone();
       if (range.isNull())
         return [];
     }
@@ -194,13 +186,12 @@ export class DecorateContext extends RenderContext {
 
     const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
     const xCorn = org.plus(xVector);
-    const pts = [org, xCorn, org.plus(yVector), xCorn.plus(yVector)];
 
     let ovr: FeatureSymbology.Appearance | undefined;
     if (transparency > 0)
       ovr = FeatureSymbology.Appearance.fromJSON({ alpha: 255 - transparency });
 
-    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, pts)!, ovr);
+    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, [org, xCorn, org.plus(yVector), xCorn.plus(yVector)])!, ovr);
   }
 
   /** @private */
@@ -461,6 +452,9 @@ export class DecorateContext extends RenderContext {
       graphic.addLineString(linePoints);
     }
   }
+
+  /** Display skyBox (cube) graphic which encompasses entire scene and rotates with camera.  See RenderSystem.createSkyBox(). */
+  public setSkyBox(graphic: RenderGraphic) { this.decorations.skyBox = graphic; }
 
   /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */
   public setViewBackground(graphic: RenderGraphic) { this.decorations.viewBackground = graphic; }

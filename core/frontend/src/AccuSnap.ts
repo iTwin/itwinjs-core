@@ -3,21 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
+import { Point3d, Point2d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager } from "./ElementLocateManager";
-import { SpriteLocation, Sprite } from "./Sprites";
+import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-
-// tslint:disable:variable-name
-
-const s_unfocused: any = {};
-const s_focused: any = {};
-const s_notSnappable: any = {};
-const s_appFiltered: any = {};
 
 /** @hidden */
 export class AccuSnapToolState {
@@ -113,13 +107,31 @@ export class AccuSnap {
   }
   private doSnapping(): boolean { return this.isSnapEnabled() && this.userWantsSnaps() && !this.isSnapSuspended(); }
   private isSnapSuspended(): boolean { return (0 !== this.suppressed || 0 !== this.toolState.suspended); }
+
+  /**
+   * Get the SnapMode that was used to generate the SnapDetail. Since getActiveSnapModes can return multiple SnapMode values, candidateSnapMode holds
+   * the SnapMode that was chosen.
+   */
   public getSnapMode(): SnapMode { return this.candidateSnapMode; }
 
-  private isActivePointSnap(snapModeToFind: SnapMode): boolean {
-    const snaps = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.AccuSnap);
-    for (const snap of snaps) { if (snap === snapModeToFind) return true; }
-    return false;
+  /** Get the current snap divisor to use to use for SnapMode.NearestKeypoint.
+   * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a snap divisor ui component.
+   */
+  public getKeypointDivisor() { return 2; }
+
+  /** Get the current active SnapModes. SnapMode position determines priority, with the first entry being the highest. The SnapDetail will be returned for the first SnapMode that produces a hot snap.
+   * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a SnapMode ui component.
+   */
+  public getActiveSnapModes(): SnapMode[] {
+    const snaps: SnapMode[] = [];
+    snaps.push(SnapMode.NearestKeypoint);
+    return snaps;
   }
+
+  /** Can be used by a subclass of AccuSnap to implement a SnapMode override that applies only to the next point.
+   * This method will be called whenever a new tool is installed and on a button event.
+   */
+  public synchSnapMode(): void { }
 
   /**
    * Check to see whether its appropriate to generate an AccuSnap point, given the current user
@@ -127,8 +139,13 @@ export class AccuSnap {
    */
   public isActive(): boolean {
     // Unless we're snapping in intersect mode (to find extended intersections), skip if tentative point active...
-    if (IModelApp.tentativePoint.isActive)
-      return this.isActivePointSnap(SnapMode.Intersection) && this.doSnapping();
+    if (IModelApp.tentativePoint.isActive) {
+      if (!this.doSnapping())
+        return false;
+      const snaps = this.getActiveSnapModes();
+      for (const snap of snaps) { if (snap === SnapMode.Intersection) return true; }
+      return false;
+    }
 
     return this.doSnapping() || this.doLocateTesting();
   }
@@ -212,9 +229,6 @@ export class AccuSnap {
     if (!hit || !this.hitShouldBeHilited(hit))
       return;
     this.setNeedsFlashView(hit.viewport!);
-    const snap = AccuSnap.toSnapDetail(hit);
-    if (snap && snap.isHot())
-      IModelApp.locateManager.onFlashHit(snap);
   }
 
   public erase(): void {
@@ -241,7 +255,7 @@ export class AccuSnap {
     const tpHit = IModelApp.tentativePoint.getCurrSnap();
 
     // if we don't have either an AccuSnap or a tentative point hit, quit.
-    if (!accuSnapHit && !tpHit && !this.errorIcon.isActive())
+    if (!accuSnapHit && !tpHit && !this.errorIcon.isActive)
       return;
 
     let timeout = this.settings.popupDelay;
@@ -279,7 +293,7 @@ export class AccuSnap {
     this.infoPt.setFrom(viewPt);
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
-    if (!this.errorIcon.isActive() && theHit) {
+    if (!this.errorIcon.isActive && theHit) {
       this.showElemInfo(viewPt, vp, theHit);
       return;
     }
@@ -324,8 +338,8 @@ export class AccuSnap {
       return;
 
     const crossPt = snap.snapPoint;
-    const crossSprite = snap.isHot() ? s_focused : s_unfocused;
     const viewport = snap.viewport!;
+    const crossSprite = IconSprites.getSprite(snap.isHot() ? "SnapCross" : "SnapUnfocused", viewport);
 
     if (!snap.isHot() && !this.wantShowHint())
       return;
@@ -338,7 +352,7 @@ export class AccuSnap {
 
     const snapSprite = snap.sprite;
     if (snapSprite)
-      this.icon.activate(snapSprite, viewport, crossPt, 0);
+      this.icon.activate(snapSprite, viewport, AccuSnap.adjustIconLocation(viewport, crossPt, snapSprite.size), 0);
   }
 
   private static adjustIconLocation(vp: Viewport, input: Point3d, iconSize: XAndY): Point3d {
@@ -352,11 +366,12 @@ export class AccuSnap {
   private showSnapError(status: SnapStatus, ev: BeButtonEvent) {
     this.errorIcon.deactivate();
 
+    const vp = ev.viewport!;
     let errorSprite: Sprite | undefined;
     switch (status) {
       case SnapStatus.FilteredByUser:
       case SnapStatus.FilteredByApp:
-        errorSprite = s_appFiltered;
+        errorSprite = IconSprites.getSprite("SnapAppFiltered", vp);
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -364,12 +379,12 @@ export class AccuSnap {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = s_notSnappable;
+        errorSprite = IconSprites.getSprite("SnapNotSnappable", vp);
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
 
       case SnapStatus.ModelNotSnappable:
-        errorSprite = s_notSnappable;
+        errorSprite = IconSprites.getSprite("SnapNotSnappable", vp);
         this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }
@@ -377,7 +392,6 @@ export class AccuSnap {
     if (!errorSprite)
       return;
 
-    const vp = ev.viewport!;
     const spriteSize = errorSprite.size;
     const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
 
@@ -482,16 +496,23 @@ export class AccuSnap {
         id: thisHit.sourceId,
         closePoint: thisHit.hitPoint,
         worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
+        viewFlags: thisHit.viewport.viewFlags,
         snapMode,
-        snapDivisor: IModelApp.locateManager.getKeypointDivisor(),
         snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
-      });
+        snapDivisor: this.getKeypointDivisor(),
+      }); // ### TODO offSubCategories...
 
     if (out) out.snapStatus = result.status;
     if (result.status !== SnapStatus.Success)
       return undefined;
 
-    return new SnapDetail(thisHit, snapMode, result.heat!, result.snapPoint!, result.geomType!);
+    const snap = new SnapDetail(thisHit, snapMode, result.heat!, result.snapPoint!);
+    snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined !== result.localToWorld ? Transform.fromJSON(result.localToWorld) : undefined, result.geomType);
+    if (undefined !== result.normal)
+      snap.normal = Vector3d.fromJSON(result.normal);
+
+    IModelApp.accuDraw.onSnap(snap); // AccuDraw can adjust nearest snap to intersection of circle (polar distance lock) or line (axis lock) with snapped to curve...
+    return snap;
   }
 
   private async getAccuSnapDetail(hitList: HitList<HitDetail>, out: LocateResponse): Promise<SnapDetail | undefined> {
@@ -514,7 +535,7 @@ export class AccuSnap {
       if (this.doLocateTesting())
         filtered = IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out);
 
-      const thisDist = thisSnap.distXY;
+      const thisDist = thisSnap.hitPoint.distance(thisSnap.snapPoint);
       if (!filtered && !(bestSnap && (thisDist >= bestDist))) {
         bestHit = thisHit;
         bestSnap = thisSnap;
@@ -722,18 +743,19 @@ export class AccuSnap {
     other by sneaking up from right or left. Otherwise, the first one in the list is chosen.
 */
   private async getPreferredSnap(ev: BeButtonEvent, out: LocateResponse): Promise<SnapDetail | undefined> {
-    //    IModelApp.locateManager.setChosenSnapMode(SnapType.Points, SnapMode.Invalid);
-    //    IModelApp.locateManager.setChosenSnapMode(SnapType.Constraints, SnapMode.Invalid);
-
     // Get the list of point snap modes to consider
     let snapModes: SnapMode[];
 
-    //  Special case: If tentative point is active, then we can only do intersections.
+    // Special case: If tentative point is active, then we can only do intersections.
     if (IModelApp.tentativePoint.isActive) {
       snapModes = [];
       snapModes.push(SnapMode.Intersection);
     } else {
-      snapModes = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.AccuSnap);
+      // The user's finger is likely to create unwanted AccuSnaps, so don't snap unless source is a mouse.
+      if (IModelApp.toolAdmin.isCurrentInputSourceMouse())
+        snapModes = this.getActiveSnapModes();
+      else
+        snapModes = [];
     }
 
     // Consider each point snap mode and find the preferred one.
@@ -749,13 +771,16 @@ export class AccuSnap {
         return undefined;
 
       if ((SnapStatus.Success === out.snapStatus) && snap) {
-        if (snap.isHot() && (SnapMode.Center === this.candidateSnapMode || SnapHeat.NotInRange === snap.heat)) {
+        if (snap.isHot() && (SnapMode.Center === this.candidateSnapMode || SnapHeat.InRange === snap.heat)) {
           preferred = snap;
           break;
-        } else if (snap.distXY < preferredDistance) {
-          // Snap is not hot, but it is the closest we've seen so far => prefer it and keep searching for a closer one or a hot one.
-          preferred = snap;
-          preferredDistance = snap.distXY;
+        } else {
+          const dist = snap.hitPoint.distance(snap.snapPoint);
+          if (dist < preferredDistance) {
+            // Snap is not hot, but it is the closest we've seen so far => prefer it and keep searching for a closer one or a hot one.
+            preferred = snap;
+            preferredDistance = dist;
+          }
         }
       }
     }
@@ -765,39 +790,33 @@ export class AccuSnap {
       return undefined;
     }
 
-    // Report which of the multiple active modes we used
-    IModelApp.locateManager.setChosenSnapMode(preferred.snapMode);
     return preferred;
   }
 
-  /** Cancel any pending motion processing requests outstanding. */
-  public async cancelMotion(ev: BeButtonEvent): Promise<void> { return ev.viewport!.iModel.cancelSnap(); }
-
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
+
+    await ev.viewport!.iModel.cancelSnap(); // if there is an outstanding snap, cancel it.
+
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
-    const wasHot = this.isHot();
 
     this.clearInfoBalloon(ev);
 
     let hit: HitDetail | undefined;
     if (this.isActive()) {
-      if (this.doSnapping()) {
+      if (this.doSnapping())
         hit = await this.getPreferredSnap(ev, out);
-      } else if (this.doLocateTesting()) {
+      else if (this.doLocateTesting())
         hit = this.findLocatableHit(ev, true, out);
-      }
     }
 
     // set the current hit and display the sprite (based on snap's KeypointType)
-    if (hit || this.currHit) {
+    if (hit || this.currHit)
       this.setCurrHit(hit);
-    }
 
     // indicate errors
     this.showSnapError(out.snapStatus, ev);
-    IModelApp.locateManager.onAccuSnapMotion(hit, wasHot, ev);
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { }
@@ -824,13 +843,8 @@ export class AccuSnap {
   public decorate(context: DecorateContext): void {
     this.flashElements(context);
 
-    if (this.cross.isActive()) {
+    if (this.cross.isActive) {
       this.cross.decorate(context);
-
-      // we have to adjust the world pt for the icon every time we draw it because the view may have changed size since we snapped
-      const iconSize = this.icon.sprite!.size;
-      const viewport = context.viewport!;
-      this.icon.location.setFrom(AccuSnap.adjustIconLocation(viewport, this.cross.location, iconSize));
       this.icon.decorate(context);
     }
 

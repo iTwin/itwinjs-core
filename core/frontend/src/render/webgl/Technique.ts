@@ -21,6 +21,7 @@ import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
+import { createPointCloudBuilder } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
@@ -28,6 +29,7 @@ import { addFrustum } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
+import { createSkyBoxProgram } from "./glsl/SkyBox";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -101,7 +103,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
     flags.isTranslucent = true;
-    addTranslucency(builder.frag);
+    addTranslucency(builder);
     this.addShader(builder, flags, gl);
   }
 
@@ -199,8 +201,8 @@ class PolylineTechnique extends VariedTechnique {
         const builderTrans = createPolylineBuilder(clip);
         addMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
-          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
-          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
           this.addTranslucentShader(builderTrans, flags, gl);
         } else {
           this.addTranslucentShader(builderTrans, flags, gl);
@@ -253,8 +255,8 @@ class EdgeTechnique extends VariedTechnique {
         const builderTrans = createEdgeBuilder(isSilhouette, clip);
         addMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
-          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
-          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
           this.addTranslucentShader(builderTrans, flags, gl);
         } else {
           this.addTranslucentShader(builderTrans, flags, gl);
@@ -333,24 +335,32 @@ class PointStringTechnique extends VariedTechnique {
   }
 }
 
-// ###TODO: PointCloud shaders...
 class PointCloudTechnique extends VariedTechnique {
+  private static readonly kOpaque = 0;
+  private static readonly kClip = PointCloudTechnique.kOpaque + 1;
+
   public constructor(gl: WebGLRenderingContext) {
     super(2);
 
-    const builder = new ProgramBuilder(false);
-    builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
-    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
-    builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
-
-    const prog = builder.buildProgram(gl);
-    const flags = new TechniqueFlags();
-    this.addProgram(flags, prog);
-    flags.isTranslucent = true;
-    this.addProgram(flags, prog);
+    const flags = scratchTechniqueFlags;
+    for (const clip of clips) {
+      flags.reset(FeatureMode.None, clip);
+      const builder = createPointCloudBuilder(clip);
+      builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+      this.addShader(builder, flags, gl);
+    }
   }
 
-  protected computeShaderIndex(flags: TechniqueFlags): number { return flags.isTranslucent ? 0 : 1; }
+  public computeShaderIndex(flags: TechniqueFlags): number {
+
+    let index = PointCloudTechnique.kOpaque;
+    if (flags.hasClipVolume) {
+      index += PointCloudTechnique.kClip;
+    }
+
+    return index;
+  }
+
 }
 
 // A collection of rendering techniques accessed by ID.
@@ -461,6 +471,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
+    this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;

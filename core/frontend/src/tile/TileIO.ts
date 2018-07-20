@@ -17,6 +17,7 @@ export namespace TileIO {
     InvalidBatchTable,
     InvalidScene,
     InvalidFeatureTable,
+    Canceled,
   }
 
   /** Type codes for various tile formats. Often these are embedded as 'magic numbers' in a binary stream to indicate the format. */
@@ -25,6 +26,7 @@ export namespace TileIO {
     B3dm = 0x6d643362, // "b3dm"
     Gltf = 0x46546c67, // "glTF"
     IModel = 0x546e6764, // "dgnT"
+    Pnts = 0x73746e70,  // "pnts"
   }
 
   /** Given a magic number, return whether it identifies a known tile format. */
@@ -34,6 +36,7 @@ export namespace TileIO {
       case Format.B3dm:
       case Format.Gltf:
       case Format.IModel:
+      case Format.Pnts:
         return true;
       default:
         return false;

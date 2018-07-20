@@ -5,12 +5,12 @@ import * as chai from "chai";
 
 import { Guid } from "@bentley/bentleyjs-core";
 
-import { AccessToken } from "../../";
+import { AccessToken, IModelClient } from "../../";
 import {
-  IModelHubClient, IModelRepository, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
+  IModelRepository, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent,
-} from "../../imodelhub";
+} from "../../";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -94,9 +94,17 @@ describe("iModelHub GlobalEventHandler", () => {
   let globalEventSas: GlobalEventSAS;
   let projectId: string;
   const imodelName = "imodeljs-clients GlobalEvents test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
+
     projectId = await utils.getProjectId();
     serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
     accessToken = await utils.login();
@@ -104,7 +112,15 @@ describe("iModelHub GlobalEventHandler", () => {
   });
 
   after(async () => {
+    if (!TestConfig.enableMocks)
+      return;
+
     await utils.deleteIModelByName(accessToken, projectId, imodelName);
+
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
   });
 
   afterEach(() => {

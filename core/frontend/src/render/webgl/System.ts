@@ -3,13 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageSource, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert, Dictionary, IDisposable, dispose } from "@bentley/bentleyjs-core";
@@ -24,8 +25,12 @@ import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
+import { PointCloudGraphic } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
+import { SkyBoxQuadsGeometry } from "./CachedGeometry";
+import { SkyBoxPrimitive } from "./Primitive";
+import { ClipVolumePlanes, ClipMaskVolume } from "./ClipVolume";
 
 export const enum ContextState {
   Uninitialized,
@@ -182,66 +187,68 @@ export class Capabilities {
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
 export class IdMap implements IDisposable {
   /** Mapping of materials by their key values. */
-  public readonly materialMap: Map<string, RenderMaterial>;
+  public readonly materials: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
-  public readonly textureMap: Map<string, RenderTexture>;
+  public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
-  public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
+  public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
   /** Array of textures without key values (unnamed). */
   public readonly keylessTextures: RenderTexture[] = [];
+  /** Mapping of ClipVectors to corresponding clipping volumes. */
+  public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
 
   public constructor() {
-    this.materialMap = new Map<string, RenderMaterial>();
-    this.textureMap = new Map<string, RenderTexture>();
-    this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+    this.materials = new Map<string, RenderMaterial>();
+    this.textures = new Map<string, RenderTexture>();
+    this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+    this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
   }
 
   public dispose() {
-    const textureArr = Array.from(this.textureMap.values());
-    const gradientArr = this.gradientMap.extractArrays().values;
+    const textureArr = Array.from(this.textures.values());
+    const gradientArr = this.gradients.extractArrays().values;
+    const clipVolumeArr = Array.from(this.clipVolumes.values());
     for (const texture of textureArr)
       dispose(texture);
     for (const gradient of gradientArr)
       dispose(gradient);
     for (const texture of this.keylessTextures)
       dispose(texture);
-    this.textureMap.clear();
-    this.gradientMap.clear();
+    for (const clipVolume of clipVolumeArr)
+      dispose(clipVolume);
+    this.textures.clear();
+    this.gradients.clear();
+    this.clipVolumes.clear();
     this.keylessTextures.length = 0;
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
   public addMaterial(material: RenderMaterial) {
     if (material.key)
-      this.materialMap.set(material.key, material);
+      this.materials.set(material.key, material);
   }
 
   /** Add a texture to this IdMap, given that it has a valid key. */
   public addTexture(texture: RenderTexture) {
     if (texture.key)
-      this.textureMap.set(texture.key, texture);
+      this.textures.set(texture.key, texture);
     else
       this.keylessTextures.push(texture);
   }
 
   /** Add a texture to this IdMap using gradient symbology. */
   public addGradient(gradientSymb: Gradient.Symb, texture: RenderTexture) {
-    this.gradientMap.set(gradientSymb, texture);
+    this.gradients.set(gradientSymb, texture);
   }
 
   /** Find a cached material using its key. If not found, returns undefined. */
   public findMaterial(key: string): RenderMaterial | undefined {
-    return this.materialMap.get(key);
-  }
-
-  /** Find a cached texture using its key. If not found, returns undefined. */
-  public findTexture(key: string): RenderTexture | undefined {
-    return this.textureMap.get(key);
+    return this.materials.get(key);
   }
 
   /** Find a cached gradient using the gradient symbology. If not found, returns undefined. */
   public findGradient(symb: Gradient.Symb): RenderTexture | undefined {
-    return this.gradientMap.get(symb);
+    return this.gradients.get(symb);
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
@@ -249,85 +256,81 @@ export class IdMap implements IDisposable {
     if (!params.key)
       return new Material(params);
 
-    let material = this.materialMap.get(params.key);
+    let material = this.materials.get(params.key);
     if (!material) {
       material = new Material(params);
-      this.materialMap.set(params.key, material);
+      this.materials.set(params.key, material);
     }
     return material;
   }
 
+  private createTexture(params: RenderTexture.Params, handle?: TextureHandle): Texture | undefined {
+    if (undefined === handle)
+      return undefined;
+
+    const texture = new Texture(params, handle);
+    this.addTexture(texture);
+    return texture;
+  }
+
   /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
   private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const textureHandle = TextureHandle.createForImageBuffer(img);
-    if (textureHandle === undefined)
-      return undefined;
-    const texture = new Texture(params, textureHandle);
-    if (params.key)
-      this.textureMap.set(params.key, texture);
-    else
-      this.keylessTextures.push(texture);
-    return texture;
+    return this.createTexture(params, TextureHandle.createForImageBuffer(img, params.type));
   }
 
-  /** Attempt to create and return a new texture from an ImageSource. This will cache the texture if its key is valid. */
-  private createTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key && this.textureMap.get(params.key) !== undefined)
-      return undefined;
-
-    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc);
-    if (textureHandle === undefined)
-      return undefined;
-    const texture = new Texture(params, textureHandle);
-    if (params.key)
-      this.textureMap.set(params.key, texture);
-    else
-      this.keylessTextures.push(texture);
-    return texture;
+  private createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
   }
 
-  /** Find or attempt to create a new texture using an ImageSource. If a new texture was created, it will be cached provided its key is valid. */
-  public getTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key) {
-      const existingTexture = this.textureMap.get(params.key);
-      if (existingTexture)
-        return existingTexture;
-    }
-
-    // const image = this.extractImage(imgSrc);
-    return this.createTextureFromImageSource(imgSrc, width, height, params);
-  }
+  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    if (params.key) {
-      const existingTexture = this.textureMap.get(params.key);
-      if (existingTexture)
-        return existingTexture;
-    }
+    const tex = this.findTexture(params.key);
+    return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
+  }
 
-    return this.createTextureFromImageBuffer(img, params);
+  public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
+    const tex = this.findTexture(params.key);
+    return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
   }
 
   /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
   public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
-    const existingGrad = this.gradientMap.get(grad);
+    const existingGrad = this.gradients.get(grad);
     if (existingGrad)
       return existingGrad;
 
     const image: ImageBuffer = grad.getImage(0x100, 0x100);
 
-    const textureHandle = TextureHandle.createForImageBuffer(image);
+    const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
     if (!textureHandle)
       return undefined;
+
     const texture = new Texture(Texture.Params.defaults, textureHandle);
     this.addGradient(grad, texture);
     return texture;
   }
+
+  /** Find or cache a new clipping volume using the given clip vector. */
+  public getClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
+    const existingClipVolume = this.clipVolumes.get(clipVector);
+    if (existingClipVolume)
+      return existingClipVolume;
+
+    let clipVolume: RenderClipVolume | undefined = ClipVolumePlanes.create(clipVector);
+    if (!clipVolume)
+      clipVolume = ClipMaskVolume.create(clipVector);
+    if (!clipVolume)
+      return undefined;
+
+    this.clipVolumes.set(clipVector, clipVolume);
+    return clipVolume;
+  }
 }
 
 export class System extends RenderSystem {
-  private readonly _currentRenderState = new RenderState();
+  public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
   public readonly techniques: Techniques;
@@ -402,13 +405,22 @@ export class System extends RenderSystem {
       return PolylinePrimitive.create(args);
   }
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
+  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudGraphic.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
+  public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
+    if (params.isTexturedCube) {
+      const cachedGeom = SkyBoxQuadsGeometry.create(params);
+      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+    }
+    // ###TODO: Gradient approach
+    return undefined;
+  }
 
   public applyRenderState(newState: RenderState) {
-    newState.apply(this._currentRenderState);
-    this._currentRenderState.copyFrom(newState);
+    newState.apply(this.currentRenderState);
+    this.currentRenderState.copyFrom(newState);
   }
 
   public createDepthBuffer(width: number, height: number): DepthBuffer | undefined {
@@ -425,11 +437,6 @@ export class System extends RenderSystem {
         return undefined;
       }
     }
-  }
-
-  /** Find an imodel rendering map using an IModelConnection. Returns undefined if not found. */
-  public findIModelMap(imodel: IModelConnection): IdMap | undefined {
-    return this.resourceCache.get(imodel);
   }
 
   /** Returns the corresponding IdMap for an IModelConnection. Creates a new one if it doesn't exist. */
@@ -451,20 +458,14 @@ export class System extends RenderSystem {
     this.resourceCache.delete(imodel);
   }
 
-  /**
-   * Creates a material and adds it to the corresponding IdMap for that iModel. If the material already exists in the map, simply return it.
-   * If no render map exists for the imodel, returns undefined.
-   */
+  /** Attempt to create a material for the given iModel using a set of material parameters. */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
-    }
+    const idMap = this.getIdMap(imodel);
     const material = idMap.getMaterial(params);
     return material;
   }
 
-  /** Given a key and an iModel, returns the corresponding material for that key in the iModel's IdMap. Returns undefined if none found. */
+  /** Using its key, search for an existing material of an open iModel. */
   public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
@@ -472,42 +473,41 @@ export class System extends RenderSystem {
     return idMap.findMaterial(key);
   }
 
-  /** Creates a texture using an ImageBuffer and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
+  /** Attempt to create a texture for the given iModel using an ImageBuffer. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
-    }
-    const texture = idMap.getTexture(image, params);
-    return texture;
+    return this.getIdMap(imodel).getTexture(image, params);
   }
 
-  /** Creates a texture using an ImageSource and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
-  public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
+  /** Attempt to create a texture for the given iModel using an HTML image element. */
+  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
+    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
+    if (undefined === imodel) {
+      const textureHandle = TextureHandle.createForImage(image, hasAlpha, params.type);
+      return undefined !== textureHandle ? new Texture(params, textureHandle) : undefined;
     }
-    const texture = idMap.getTextureFromImageSource(source, width, height, params);
-    return texture;
+
+    return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
   }
 
-  /** Creates a texture using gradient symbology and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
+  /** Attempt to create a texture using gradient symbology. */
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
-    let idMap = this.resourceCache.get(imodel);
-    if (!idMap) {
-      idMap = this.createIModelMap(imodel);
-    }
+    const idMap = this.getIdMap(imodel);
     const texture = idMap.getGradient(symb);
     return texture;
   }
 
-  /** Given a key and an iModel, returns the corresponding texture for that key in the iModel's IdMap. Returns undefined if none found. */
+  /** Using its key, search for an existing texture of an open iModel. */
   public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
       return undefined;
     return idMap.findTexture(key);
+  }
+
+  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
+  public getClipVolume(clipVector: ClipVector, imodel: IModelConnection): RenderClipVolume | undefined {
+    const idMap = this.getIdMap(imodel);
+    return idMap.getClipVolume(clipVector);
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
@@ -520,6 +520,11 @@ export class System extends RenderSystem {
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
+  }
+
+  private getIdMap(imodel: IModelConnection): IdMap {
+    const map = this.resourceCache.get(imodel);
+    return undefined !== map ? map : this.createIModelMap(imodel);
   }
 }
 

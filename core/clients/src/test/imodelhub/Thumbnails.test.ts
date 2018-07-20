@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { IModelHubClient, ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../imodelhub";
-import { AccessToken } from "../../";
+import { ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../";
+import { AccessToken, IModelClient } from "../../";
 
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -46,9 +46,14 @@ describe("iModelHub ThumbnailHandler", () => {
   let iModelId: string;
   let versions: Version[];
   const imodelName = "imodeljs-clients Thumbnails test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+    }
+
     accessToken = await utils.login();
     projectId = await utils.getProjectId();
     await utils.createIModel(accessToken, imodelName, projectId);
@@ -82,6 +87,13 @@ describe("iModelHub ThumbnailHandler", () => {
           break;
         await utils.delay(6000);
       }
+    }
+  });
+
+  after(() => {
+    if (!TestConfig.enableMocks) {
+      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
+      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 

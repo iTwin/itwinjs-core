@@ -16,7 +16,7 @@ export class IModelToken {
   public constructor(
     /** Key used for identifying the iModel on the backend */
     public readonly key?: string,
-    /** Context (Project or Asset) in which the iModel exists - must be defined if the iModel exists in the Hub */
+    /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
     public readonly contextId?: string,
     /** Guid of the iModel - must be defined if the iModel exists in the Hub */
     public readonly iModelId?: string,
@@ -36,16 +36,19 @@ export interface EcefLocationProps {
 
 /** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
 export class EcefLocation implements EcefLocationProps {
-  /** The origin of the ECEF transform */
+  /** The origin of the ECEF transform. */
   public readonly origin: Point3d;
   /** The orientation of the ECEF transform */
   public readonly orientation: YawPitchRollAngles;
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
   public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toRotMatrix()); }
 
+  /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
     this.origin = Point3d.fromJSON(props.origin);
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation);
+    this.origin.freeze(); // may not be modified
+    this.orientation.freeze(); // may not be modified
   }
 }
 
@@ -57,7 +60,7 @@ export interface RootSubjectProps {
   description?: string;
 }
 
-/** Properties that are global to an iModel. */
+/** Properties that are about an iModel. */
 export interface IModelProps {
   /** The name and description of the root subject of this iModel */
   rootSubject: RootSubjectProps;
@@ -69,7 +72,7 @@ export interface IModelProps {
   ecefLocation?: EcefLocationProps;
 }
 
-/** The properties that can be supplied when creating a new iModel. */
+/** The properties that can be supplied when creating a *new* iModel. */
 export interface CreateIModelProps extends IModelProps {
   /** The GUID of new iModel. If not present, a GUID will be generated. */
   guid?: GuidProps;
@@ -98,10 +101,23 @@ export abstract class IModel implements IModelProps {
   public name!: string;
   /** The name and description of the root subject of this iModel */
   public rootSubject!: RootSubjectProps;
-  /** The volume, in spatial coordinates, inside which the entire project is contained. */
-  public projectExtents!: AxisAlignedBox3d;
+
+  private _projectExtents!: AxisAlignedBox3d;
+  /**
+   * The volume, in spatial coordinates, inside which the entire project is contained.
+   * @note The object returned from this method is frozen. You *must* make a copy before you do anything that might attempt to modify it.
+   */
+  public get projectExtents() { return this._projectExtents; }
+  public set projectExtents(extents: AxisAlignedBox3d) {
+    this._projectExtents = extents.clone();
+    this._projectExtents.ensureMinLengths(1.0);  // don't allow any axis of the project extents to be less than 1 meter.
+    this._projectExtents.freeze();
+  }
+
+  private _globalOrigin!: Point3d;
   /** An offset to be applied to all spatial coordinates. */
-  public globalOrigin!: Point3d;
+  public get globalOrigin(): Point3d { return this._globalOrigin; }
+
   private _ecefLocation?: EcefLocation;
   private _ecefTrans?: Transform;
 
@@ -109,15 +125,18 @@ export abstract class IModel implements IModelProps {
   public get ecefLocation(): EcefLocation | undefined { return this._ecefLocation; }
 
   /** Set the [EcefLocation]($docs/learning/glossary#ecefLocation) for this iModel. */
-  public setEcefLocation(ecef: EcefLocationProps) { this._ecefLocation = new EcefLocation(ecef); this._ecefTrans = undefined; }
+  public setEcefLocation(ecef: EcefLocationProps) {
+    this._ecefLocation = new EcefLocation(ecef);
+    this._ecefTrans = undefined;
+  }
 
   /** @hidden */
-  public toJSON(): any {
+  public toJSON(): IModelProps {
     const out: any = {};
     out.name = this.name;
     out.rootSubject = this.rootSubject;
-    out.projectExtents = this.projectExtents;
-    out.globalOrigin = this.globalOrigin;
+    out.projectExtents = this.projectExtents.toJSON();
+    out.globalOrigin = this.globalOrigin.toJSON();
     out.ecefLocation = this.ecefLocation;
     out.iModelToken = this.iModelToken;
     return out;
@@ -137,7 +156,8 @@ export abstract class IModel implements IModelProps {
     this.name = name;
     this.rootSubject = props.rootSubject;
     this.projectExtents = AxisAlignedBox3d.fromJSON(props.projectExtents);
-    this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
+    this._globalOrigin = Point3d.fromJSON(props.globalOrigin);
+    this._globalOrigin.freeze(); // cannot be modified
     if (props.ecefLocation)
       this.setEcefLocation(props.ecefLocation);
   }
@@ -155,8 +175,10 @@ export abstract class IModel implements IModelProps {
     if (undefined === this._ecefLocation)
       throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (this._ecefTrans === undefined)
+    if (this._ecefTrans === undefined) {
       this._ecefTrans = this._ecefLocation.getTransform();
+      this._ecefTrans.freeze();
+    }
 
     return this._ecefTrans;
   }

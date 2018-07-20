@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "TFS#917985: Tweaked the internal mechanism when opening a new IModelConnection for better performance. Added more logging to enable the router/provisioner team to potential diagnose performance issues. ",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

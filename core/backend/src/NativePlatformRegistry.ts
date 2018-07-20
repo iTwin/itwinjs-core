@@ -8,6 +8,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
 // tslint:disable-next-line:no-var-requires
 const semver = require("semver");
+import * as path from "path";
+import { IModelJsFs } from "./IModelJsFs";
 
 let realrequire: any;
 try {
@@ -46,8 +48,13 @@ export class NativePlatformRegistry {
     // tslint:disable-next-line:no-var-requires
     const backendRequiresVersion = require("../package.json").dependencies["@bentley/imodeljs-native-platform-api"];
     if (!semver.satisfies(platformVer, backendRequiresVersion)) {
-      NativePlatformRegistry._platform = undefined;
-      throw new IModelError(IModelStatus.BadRequest, "Native platform version is (" + platformVer + "). imodeljs-backend requires version (" + backendRequiresVersion + ")");
+      const devSemaphoreFile = path.join(__dirname, "DevBuild.txt");
+      if (IModelJsFs.existsSync(devSemaphoreFile)) {
+        console.log("Bypassing version checks since this is a development build of the addon"); // tslint:disable-line:no-console
+      } else {
+        NativePlatformRegistry._platform = undefined;
+        throw new IModelError(IModelStatus.BadRequest, "Native platform version is (" + platformVer + "). imodeljs-backend requires version (" + backendRequiresVersion + ")");
+      }
     }
   }
 

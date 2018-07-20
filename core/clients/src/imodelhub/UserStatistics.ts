@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap } from "./../ECJsonTypeMap";
-import { IModelHubBaseHandler } from "./BaseHandler";
 import { UserInfo } from "./Users";
 import { InstanceIdQuery, IModelHubRequestError } from "./index";
 import { AccessToken } from "..";
+import { IModelBaseHandler } from "./BaseHandler";
 import { Logger } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -96,12 +96,12 @@ export class UserStatisticsQuery extends InstanceIdQuery {
 }
 
 export class UserStatisticsHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelBaseHandler;
   /**
-   * Constructor for UserStatistics. Should use @see IModelHubClient instead of directly constructing this.
+   * Constructor for UserStatistics. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelHubBaseHandler) {
+  constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 

@@ -17,21 +17,25 @@ import {
   RenderMaterial,
   ImageBuffer,
   RenderTexture,
-  ImageSource,
   FeatureTable,
   Gradient,
   ElementAlignedBox3d,
   QParams3d,
   QPoint3dList,
+  ImageSource,
+  ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
+import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { ImageUtil } from "../ImageUtil";
+import { IModelApp } from "../IModelApp";
 
 /**
- * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
+ * A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  */
 export class RenderPlan {
   public readonly is3d: boolean;
@@ -71,6 +75,11 @@ export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
 
+/** Interface adopted by a type which can apply a clipping volume to a Target. */
+export abstract class RenderClipVolume implements IDisposable {
+  public abstract dispose(): void;
+}
+
 export type GraphicList = RenderGraphic[];
 
 /** A graphic used for decorations, optionally with symbology overrides. */
@@ -105,10 +114,11 @@ export class DecorationList implements IDisposable {
 }
 
 /**
- * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
+ * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the RenderTarget,
  * in addition to the Scene.
  */
 export class Decorations implements IDisposable {
+  private _skyBox?: RenderGraphic;
   private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
   private _world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
@@ -116,6 +126,11 @@ export class Decorations implements IDisposable {
   private _viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 
   // Getters & Setters - dispose of members before resetting
+  public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
+  public set skyBox(skyBox: RenderGraphic | undefined) {
+    dispose(this._skyBox);
+    this._skyBox = skyBox;
+  }
   public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
   public set viewBackground(viewBackground: RenderGraphic | undefined) {
     dispose(this._viewBackground);  // no effect if already disposed
@@ -145,6 +160,7 @@ export class Decorations implements IDisposable {
   }
 
   public dispose() {
+    this._skyBox = dispose(this._skyBox);
     this._viewBackground = dispose(this._viewBackground);
     this._world = dispose(this._world);
     this._worldOverlay = dispose(this._worldOverlay);
@@ -208,17 +224,22 @@ export namespace Pixel {
   }
 
   /**
-   * Bit-mask by which callers of DgnViewport::ReadPixels() specify which aspects are of interest.
+   * Bit-mask by which callers of [[Viewport.readPixels]] specify which aspects are of interest.
+   *
    * Aspects not specified will be omitted from the returned data.
    */
   export const enum Selector {
     None = 0,
-    ElementId = 1 << 0, // Select element IDs
-    Distance = 1 << 1, // Select distances from near plane
-    Geometry = 1 << 2, // Select geometry type and planarity
-
-    GeometryAndDistance = Geometry | Distance, // Select geometry type/planarity and distance from near plane
-    All = GeometryAndDistance | ElementId, // Select all aspects
+    /** Select element Ids */
+    ElementId = 1 << 0,
+    /** Select distances from near plane */
+    Distance = 1 << 1,
+    /** Select geometry type and planarity */
+    Geometry = 1 << 2,
+    /** Select geometry type/planarity and distance from near plane */
+    GeometryAndDistance = Geometry | Distance,
+    /** Select all aspects */
+    All = GeometryAndDistance | ElementId,
   }
 
   /** A rectangular array of pixels as read from a RenderTarget's frame buffer. */
@@ -231,12 +252,18 @@ export namespace Pixel {
 /**
  * A RenderTarget holds the current scene, the current set of dynamic RenderGraphics, and the current decorators.
  * When frames are composed, all of those RenderGraphics are rendered, as appropriate.
- * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
- * Every DgnViewport holds a reference to a RenderTarget.
+ *
+ * A RenderTarget holds a reference to a RenderSystem.
+ *
+ * Every Viewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
+  public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
+  public static get displayPriorityFactor(): number { return this.frustumDepth2d / (this.maxDisplayPriority + 1); }
+
+  public static depthFromDisplayPriority(priority: number): number { return this.displayPriorityFactor * priority; }
 
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
@@ -264,9 +291,41 @@ export abstract class RenderTarget implements IDisposable {
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
 }
 
+export class SkyBoxCreateParams {
+  private _isGradient: boolean;
+
+  public readonly front?: RenderTexture;
+  public readonly back?: RenderTexture;
+  public readonly top?: RenderTexture;
+  public readonly bottom?: RenderTexture;
+  public readonly left?: RenderTexture;
+  public readonly right?: RenderTexture;
+
+  public get isTexturedCube() { return !this._isGradient; }
+  public get isGradient() { return this._isGradient; }
+
+  private constructor(isGradient: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture) {
+    this._isGradient = isGradient;
+    this.front = front;
+    this.back = back;
+    this.top = top;
+    this.bottom = bottom;
+    this.left = left;
+    this.right = right;
+  }
+
+  public static createForTexturedCube(front: RenderTexture, back: RenderTexture, top: RenderTexture, bottom: RenderTexture, left: RenderTexture, right: RenderTexture) {
+    return new SkyBoxCreateParams(false, front, back, top, bottom, left, right);
+  }
+
+  public static createForGradient() {
+    // ###TODO
+    return new SkyBoxCreateParams(true);
+  }
+}
+
 /**
- * A RenderSystem is the renderer-specific factory for creating Render::Graphics, Render::Textures, and Render::Materials.
- * @note The methods of this class may be called from any thread.
+ * A RenderSystem is the renderer-specific factory for creating RenderGraphics, RenderTexture, and RenderMaterials.
  */
 export abstract class RenderSystem implements IDisposable {
   protected _nowPainting?: RenderTarget;
@@ -290,14 +349,11 @@ export abstract class RenderSystem implements IDisposable {
   /** Find a previously-created Material by key. Returns null if no such material exists. */
   public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
-  /** Create a Material from parameters */
+  /** Create a RenderMaterial from parameters */
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a GraphicBuilder from parameters */
   public abstract createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
-
-  // /** Create a Sprite from parameters */
-  // public abstract createSprite(sprite: ISprite, location: Point3d, transparency: number, imodel: IModel): Graphic;
 
   // /** Create a Viewlet from parameters */
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
@@ -309,7 +365,10 @@ export abstract class RenderSystem implements IDisposable {
   public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
 
   // /** Create a point cloud primitive */
-  // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
+  public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+
+  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
+  public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
 
   /** Create a tile primitive */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
@@ -335,16 +394,19 @@ export abstract class RenderSystem implements IDisposable {
     return this.createTriMesh(rasterTile);
   }
 
-  /** Create a Graphic consisting of a list of Graphics */
+  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBoxCreateParams. */
+  public createSkyBox(_params: SkyBoxCreateParams): RenderGraphic | undefined { return undefined; }
+
+  /** Create a RenderGraphic consisting of a list of Graphics */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
-  /** Create a Graphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic;
+  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
+  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
 
-  /** Create a Graphic consisting of batched Features. */
+  /** Create a RenderGraphic consisting of batched Features. */
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
@@ -356,20 +418,16 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new Texture from an ImageBuffer. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
+  /** Create a new Texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
+  public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+
   /** Create a new Texture from an ImageSource. */
-  public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    return ImageUtil.extractImage(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
+  }
 
-  // /** Create a Texture from a graphic. */
-  // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;
-
-  // /** Create a Light from Light::Parameters */
+  // /** Create a Light from Light.Parameters */
   // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;
-
-  /**
-   * Perform some small unit of work (or do nothing) during an idle frame.
-   * An idle frame is classified one tick of the render loop during which no viewports are open and the render queue is empty.
-   */
-  public idle(): void { }
 
   public onInitialized(): void { }
 }

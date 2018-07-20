@@ -5,10 +5,9 @@
 
 import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
-import { Clip } from "./ClipVolume";
+import { RenderGraphic, GraphicBranch, DecorationList, RenderClipVolume } from "../System";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, TextureDataUpdater } from "./Texture";
@@ -80,12 +79,13 @@ class OvrUniform {
 
     if (app.overridesRgb && app.rgb) {
       this.flags |= OvrFlags.Rgb;
-      this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.g, 1.0)); // ###TODO: alpha 1.0 or 0.0?
+      this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.b, 1.0)); // NB: Alpha ignored unless OvrFlags.Alpha set...
     }
 
     if (app.overridesAlpha && app.alpha) {
+      const alpha = (255.0 - app.alpha) / 255.0; // ###TODO: app.alpha appears to actually be transparency - fix property name!
       this.flags |= OvrFlags.Alpha;
-      this.rgba = FloatRgba.fromColorDef(ColorDef.from(this.rgba.red, this.rgba.green, this.rgba.blue, app.alpha));
+      this.rgba = new FloatRgba(this.rgba.red, this.rgba.green, this.rgba.blue, alpha); // NB: rgb ignored unless OvrFlags.Rgb set...
     }
 
     if (app.overridesWeight && app.weight) {
@@ -498,13 +498,13 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public readonly localToWorldTransform: Transform;
-  public readonly clips?: Clip.Volume;
+  public readonly clips?: RenderClipVolume;
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: RenderClipVolume, viewFlags?: ViewFlags) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
-    this.clips = Clip.getClipVolume(clips);
+    this.clips = clips;
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
   }

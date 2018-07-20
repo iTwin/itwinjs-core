@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
@@ -10,10 +10,10 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState } from "./EntityState";
+import { ElementState, EntityState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -25,7 +25,10 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, SheetModelState, GeometricModel2dState } from "./ModelState";
+import { GeometricModelState, GeometricModel2dState, SheetModelState } from "./ModelState";
+import { RenderGraphic } from "./render/System";
+import { Sheet } from "./Sheet";
+import { TileTree, Tile } from "./tile/TileTree";
 
 export const enum GridOrientationType {
   View = 0,
@@ -48,7 +51,7 @@ export const enum StandardViewId {
   RightIso = 7,
 }
 
-/** @private */
+/** @hidden */
 // tslint:disable-next-line:variable-name
 export const StandardView = {
   Top: RotMatrix.identity,
@@ -115,10 +118,10 @@ export class ViewSubCategories {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
 
-  /** Get the IDs of all subcategories belonging to the category with the specified ID, or undefined if no such information is present. */
+  /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
-  /** Get the base appearance of the subcategory with the specified ID, or undefined if no such information is present. */
+  /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
   public getSubCategoryAppearance(subCategoryId: string): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId); }
 
   /** Asynchronously populates this cache with information about subcategories belonging to the specified set of categories. */
@@ -177,6 +180,8 @@ export abstract class ViewState extends ElementState {
   private _auxCoordSystem?: AuxCoordSystemState;
   public description?: string;
   public isPrivate?: boolean;
+  /** Time this ViewState was saved in view undo. */
+  public undoTime?: BeTimePoint;
   public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
 
@@ -298,9 +303,7 @@ export abstract class ViewState extends ElementState {
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
-    return this.displayStyle.getSubCategoryOverride(id);
-  }
+  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
 
   /** Returns the appearance of the subcategory with the specified ID within this view, possibly as overridden by the display style. */
   public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
@@ -345,11 +348,11 @@ export abstract class ViewState extends ElementState {
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
-  public abstract getViewedExtents(_vp: Viewport): AxisAlignedBox3d;
-  public computeFitRange(_vp: Viewport): Range3d { return this.getViewedExtents(_vp); } // ###TODO
+  public abstract getViewedExtents(): AxisAlignedBox3d;
+  public abstract computeFitRange(): Range3d;
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
-  public abstract onRenderFrame(): void;
+  public abstract onRenderFrame(_viewport: Viewport): void;
 
   public abstract decorate(context: DecorateContext): void;
 
@@ -379,9 +382,7 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  public createScene(context: SceneContext): void {
-    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));
-  }
+  public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -934,7 +935,7 @@ export abstract class ViewState3d extends ViewState {
   public forceMinFrontDist = 0.0;
   /** @hidden */
   public static get className() { return "ViewDefinition3d"; }
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
@@ -951,7 +952,7 @@ export abstract class ViewState3d extends ViewState {
     val.cameraOn = this.cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
-    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation);
+    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation)!.toJSON();
     assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
@@ -1331,11 +1332,12 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    const useOldSkyBox = true;
+    const useOldSkyBox: boolean = true;
     if (useOldSkyBox)
       this.drawSkyBox(context);
     else
-      this.drawRealSkyBox(context); // ###TODO - WIP!
+      this.drawRealSkyBox(context);
+
     this.drawGroundPlane(context);
   }
 
@@ -1361,23 +1363,6 @@ export abstract class ViewState3d extends ViewState {
     const altitude = Math.atan2(zValue, radius);
 
     return Point2d.create(0.5 - altitude / (Math.PI * 2), 0.25 - azimuth);
-  }
-
-  private drawSkyBoxMesh(builder: GraphicBuilder, _viewport: Viewport) {
-    // ###TODO - Calculate meshes for each side of the skyBox.  Currently only calculates one side (front).
-
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.needParams = true;
-    strokeOptions.needNormals = true;
-    strokeOptions.shouldTriangulate = false;
-    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-
-    const points = [Point3d.create(-100, -100, 0), Point3d.create(100, -100, 0), Point3d.create(100, 100, 0), Point3d.create(-100, 100, 0)];
-    const params = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
-    polyfaceBuilder.addQuadFacet(points, params, undefined);
-
-    const polyface = polyfaceBuilder.claimPolyface(false);
-    builder.addPolyface(polyface, true);
   }
 
   /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
@@ -1441,30 +1426,19 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** @hidden */
-  protected drawRealSkyBox(context: DecorateContext) {
+  protected drawRealSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
     if (!style3d.getEnvironment().sky.display)
       return;
 
     const vp = context.viewport;
-    style3d.loadSkyBoxTextures(vp.target.renderSystem);
+    style3d.loadSkyBoxParams(vp.target.renderSystem);
 
-    if (style3d.skyBoxTextures.length > 0) {
-      // Create graphics for the skybox textures
-      const skyBoxGraphic = context.createViewBackground();
-      const params = new GraphicParams();
-
-      const matParams = new RenderMaterial.Params();
-      matParams.textureMapping = new TextureMapping(style3d.skyBoxTextures[0], new TextureMapping.Params());
-      params.material = vp.target.renderSystem.createMaterial(matParams, this.iModel);
-
-      skyBoxGraphic.activateGraphicParams(params);
-
-      // create a mesh for a cube that represents the skybox
-      this.drawSkyBoxMesh(skyBoxGraphic, vp);
-      context.setViewBackground(skyBoxGraphic.finish());
+    if (undefined !== style3d.skyBoxParams) {
+      const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(style3d.skyBoxParams);
+      context.setSkyBox(skyBoxGraphic!);
     } else {
-      // Skybox material failed to load. Resort to drawing some kind of fake version.
+      // ###TODO: Skybox textures failed to load. Resort to drawing 'fake' version
     }
   }
 
@@ -1514,25 +1488,27 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
-  public getGroundExtents(vp: Viewport, ignoreDisplayStyleFlag: boolean = false): AxisAlignedBox3d {
+  public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (!ignoreDisplayStyleFlag && !displayStyle.getEnvironment().ground.display)
+    if (undefined !== vp && !displayStyle.getEnvironment().ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
 
-    const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
-    const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+    if (undefined !== vp) {
+      const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+      const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
 
-    // first determine whether the ground plane is displayed in the view
-    const worldFrust = vp.getFrustum();
-    for (const point of worldFrust.points) {
-      viewRay.origin = point;   // We never modify the reference
-      const xyzPoint = Point3d.create();
-      const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
-      if (param === undefined)
-        return extents;   // View does not show ground plane
+      // first determine whether the ground plane is displayed in the view
+      const worldFrust = vp.getFrustum();
+      for (const point of worldFrust.points) {
+        viewRay.origin = point;   // We never modify the reference
+        const xyzPoint = Point3d.create();
+        const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+        if (param === undefined)
+          return extents;   // View does not show ground plane
+      }
     }
 
     extents.setFrom(this.iModel.projectExtents);
@@ -1614,7 +1590,6 @@ export abstract class ViewState3d extends ViewState {
  */
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
-  private _viewedExtents?: AxisAlignedBox3d;
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
@@ -1638,24 +1613,28 @@ export class SpatialViewState extends ViewState3d {
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
 
-  public computeFitRange(vp: Viewport): AxisAlignedBox3d {
+  public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined) {   // can we assume that a loaded model
+      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined) {   // can we assume that a loaded model
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
-    return range.isNull() ? this.getViewedExtents(vp) : range;
+
+    if (range.isNull())
+      range.setFrom(this.getViewedExtents());
+
+    range.ensureMinLengths(1.0);
+
+    return range;
   }
 
-  public getViewedExtents(vp: Viewport): AxisAlignedBox3d {
-    if (undefined === this._viewedExtents) {
-      this._viewedExtents = this.getGroundExtents(vp, true);
-      this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
-    }
-
-    return this._viewedExtents;
+  public getViewedExtents(): AxisAlignedBox3d {
+    const extents = AxisAlignedBox3d.fromJSON(this.iModel.projectExtents);
+    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
+    extents.extendRange(this.getGroundExtents());
+    return extents;
   }
 
   public toJSON(): SpatialViewDefinitionProps {
@@ -1665,18 +1644,9 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
-
-  public clearViewedModels() {
-    this.modelSelector.models.clear();
-  }
-
-  public addViewedModel(id: Id64Props) {
-    this.modelSelector.addModels(id);
-  }
-
-  public removeViewedModel(id: Id64Props) {
-    this.modelSelector.dropModels(id);
-  }
+  public clearViewedModels() { this.modelSelector.models.clear(); }
+  public addViewedModel(id: Id64Props) { this.modelSelector.addModels(id); }
+  public removeViewedModel(id: Id64Props) { this.modelSelector.dropModels(id); }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
@@ -1721,11 +1691,18 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  /** Return the model for this 2d view. */
   public getViewedModel(): GeometricModel2dState | undefined {
     const model = this.iModel.models.getLoaded(this.baseModelId.value);
     if (model && !(model instanceof GeometricModel2dState))
       return undefined;
     return model;
+  }
+
+  /** Create the scene for this view from a set of pre-initialized DrawArgs. */
+  public createSceneFromDrawArgs(args: Tile.DrawArgs) {
+    // ###TODO: Check for a context RenderPlan wait time in the draw arguments given
+    args.root.draw(args);
   }
 
   /**
@@ -1750,10 +1727,8 @@ export class ViewState2d extends ViewState {
     return super.equalState(other);
   }
 
-  private static readonly _scratchViewedExtents = new AxisAlignedBox3d();
-  public getViewedExtents(_vp: Viewport) {
-    // ###TODO: Would prefer not to have to (asynchronously and possibly needlessly) load the tile tree solely to obtain the model range...
-    // Seems like GeometricModelState ought to be able to report its range independent of a TileTree or ViewState.
+  public computeFitRange(): Range3d { return this.getViewedExtents(); }
+  public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
       const model = this.iModel.models.getLoaded(this.baseModelId.value);
       if (undefined !== model && model.isGeometricModel) {
@@ -1765,10 +1740,10 @@ export class ViewState2d extends ViewState {
       }
     }
 
-    return undefined !== this._viewedExtents ? this._viewedExtents : ViewState2d._scratchViewedExtents;
+    return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
   }
 
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
     await super.load();
     return this.iModel.models.load(this.baseModelId);
@@ -1798,28 +1773,130 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
-  public readonly size: Point2d;
+  private _size: Point2d = Point2d.create();
+  private _attachments = new Sheet.Attachments();
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
+  }
 
-    // sheetProps is necessary for a Sheet View, and contains a height and width for the size of the sheet itself
-    // if it does not appear as given by a sheetProps object, we expect it to be included on the props object (from cloning)
-    if (sheetProps)
-      this.size = Point2d.create(sheetProps.width, sheetProps.height);
-    else
-      this.size = Point2d.create(props.sheetProps.width, props.sheetProps.height);
+  /** If the view has been loaded, returns a valid sheet size in the form (width, height). */
+  public get sheetSize(): Point2d | undefined { return this._size; }
+  /** If the view has been loaded, returns valid extents of the sheet. */
+  public get sheetExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(Point3d.create(), Point3d.create(this._size.x, this._size.y, 0)); }
+  /** If the view has been loaded, returns the attachments of this sheet. */
+  public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
+
+  /**
+   * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
+   * request for the modeled element.
+   */
+  private async getSheetSize(model: SheetModelState) {
+    const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
+    assert(sheetElement !== undefined, "Sheet modeled element is undefined");
+    this._size.set(sheetElement.width, sheetElement.height);
+  }
+
+  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
+  public async load(): Promise<void> {
+    await super.load();
+
+    // Set the size of the sheet
+    const model = this.getViewedModel();
+    if (model === undefined)
+      return;
+    this.getSheetSize(model);
+
+    // Query the attachment ids
+    this._attachments.clear();
+    const queryResult = (await this.iModel.executeQuery("SELECT ECInstanceId FROM BisCore.ViewAttachment WHERE Model.Id=" + model.id));
+    const attachmentIds: string[] = [];
+    for (const row of queryResult)
+      attachmentIds.push(row.id);
+
+    // Query the attachments using the id list, and grab all of their corresponding view ids
+    const attachments = await this.iModel.elements.getProps(attachmentIds) as ViewAttachmentProps[];
+    const attachmentViewIds: Id64Props[] = [];
+    for (const attachment of attachments)
+      attachmentViewIds.push((attachment.view as any).id);
+
+    // Load each view state corresponding to each attachment in the attachments array
+    // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
+    const attachmentViews: ViewState[] = [];
+    for (const viewId of attachmentViewIds)
+      attachmentViews.push(await this.iModel.views.load(viewId));
+
+    // Create the attachment objects and store them on this SheetViewState
+    for (let i = 0; i < attachments.length; i++) {
+      if (attachmentViews[i].is3d())
+        continue; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+      else
+        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
+    }
+  }
+
+  /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
+  public onRenderFrame(_viewport: Viewport) {
+    if (!this._attachments.allLoaded)
+      _viewport.sync.invalidateScene();
+  }
+
+  /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
+  public createScene(context: SceneContext) {
+    super.createScene(context);
+
+    if (!this._attachments.allLoaded) {
+      // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
+      let i = 0;
+      while (i < this._attachments.length) {
+        const attachStatus = this._attachments.load(i);
+
+        // If load fails, attachment gets dropped from the list
+        if (attachStatus !== TileTree.LoadStatus.NotFound && attachStatus !== TileTree.LoadStatus.NotLoaded)
+          i++;
+      }
+    }
+
+    // DEBUG ONLY
+    /*
+    for (const attachment of this._attachments.list)
+      attachment.drawDebugBorder();
+    */
+
+    // Draw all attachments that have a status of loaded
+    for (const attachment of this._attachments.list)
+      if (attachment.getLoadStatus() === TileTree.LoadStatus.Loaded) {
+        assert(attachment.tree !== undefined);
+        attachment.tree!.drawScene(context);
+      }
+  }
+
+  /** Create a sheet border decoration graphic. */
+  private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
+    const border = Sheet.Border.create(width, height, viewContext);
+    const builder: GraphicBuilder = viewContext.createViewBackground();
+    border.addToBuilder(builder);
+    return builder.finish();
   }
 
   public decorate(context: DecorateContext): void {
-    const border = SheetModelState.createBorder(this.size.x, this.size.y, context);
-    context.setViewBackground(border);
+    if (this._size !== undefined) {
+      const border = this.createBorder(this._size.x, this._size.y, context);
+      context.setViewBackground(border);
+    }
   }
 
   /** Serialize this SheetViewState into a JSON object. */
   public toJSON(): any {
     const json = super.toJSON();
-    json.sheetProps = { width: this.size.x, height: this.size.y };
     return json;
+  }
+
+  // override - copy references to view attachments and sheet size
+  public clone<T extends EntityState>(): T {
+    const viewStateClone = super.clone();
+    (viewStateClone as any)._size = this._size;
+    (viewStateClone as any)._attachments = this._attachments;
+    return viewStateClone as T;
   }
 }

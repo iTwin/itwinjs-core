@@ -3,10 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64Set, assert } from "@bentley/bentleyjs-core";
+import { Logger, Id64Set, assert, BeDuration } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken, IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps } from "@bentley/imodeljs-common";
-import { EntityMetaData } from "../Entity";
+import {
+  EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken,
+  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps,
+} from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 
@@ -29,6 +31,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     // If the frontend wants a readOnly connection, we assume, for now, that they cannot change versions - i.e., cannot pull changes
     const qp = memoizeOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
+    await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
+
     if (qp.isPending()) {
       Logger.logTrace(loggingCategory, "Issuing pending status in IModelReadRpcImpl.openForRead", () => (iModelToken));
       throw new RpcPendingResponse();
@@ -37,7 +41,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     if (qp.isFulfilled()) {
-      Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
+      Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => ({ ...iModelToken, pathname: qp.result!.briefcase.pathname }));
       return qp.result!;
     }
 
@@ -111,7 +115,21 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return formatArray;
   }
 
-  public async loadMetaDataForClassHierarchy(iModelToken: IModelToken, startClassName: string): Promise<any[]> {
+  public async getClassHierarchy(iModelToken: IModelToken, classFullName: string): Promise<string[]> {
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const classArray: string[] = [];
+    while (true) {
+      const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
+      classArray.push(classFullName);
+      if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)
+        break;
+
+      classFullName = classMetaData.baseClasses[0];
+    }
+    return classArray;
+  }
+
+  public async loadMetaDataForClassHierarchy(iModelToken: IModelToken, startClassName: string): Promise<EntityMetaDataProps[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     let classFullName: string = startClassName;
     const classArray: any[] = [];
@@ -147,4 +165,5 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
   public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> { return IModelDb.find(iModelToken).requestSnap(connectionId, props); }
   public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> { return IModelDb.find(iModelToken).cancelSnap(connectionId); }
+  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<string> { return IModelDb.loadNativeAsset(assetName); }
 }

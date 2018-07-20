@@ -5,12 +5,11 @@ import * as chai from "chai";
 
 import { TestConfig } from "../TestConfig";
 
-import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { TestUsers } from "../TestConfig";
-import { UserInfoQuery, UserInfo, UserProfile, IModelHubRequestError } from "../..";
+import { UserInfoQuery, UserInfo, UserProfile, IModelHubRequestError, IModelClient } from "../..";
 import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 function mockGetUserInfo(iModelId: string, userInfo: UserInfo[], query?: string) {
@@ -47,7 +46,7 @@ describe("iModelHubClient UserInfoHandler", () => {
   let iModelId: string;
 
   const imodelName = "imodeljs-clients UserInfo test";
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
     accessToken = await utils.login();

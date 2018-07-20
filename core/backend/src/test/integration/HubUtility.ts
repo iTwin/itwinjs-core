@@ -63,7 +63,7 @@ export class HubUtility {
   }
 
   private static async queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
-    const iModels = await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
+    const iModels = await BriefcaseManager.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
     if (iModels.length === 0)
       return undefined;
     if (iModels.length > 1)
@@ -72,7 +72,7 @@ export class HubUtility {
   }
 
   private static async queryIModelById(accessToken: AccessToken, projectId: string, iModelId: string): Promise<IModelRepository | undefined> {
-    const iModels = await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId));
+    const iModels = await BriefcaseManager.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
       return undefined;
     return iModels[0];
@@ -110,11 +110,11 @@ export class HubUtility {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId, query);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, query);
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
-    await BriefcaseManager.hubClient.ChangeSets().download(changeSets, changeSetsPath);
+    await BriefcaseManager.imodelClient.ChangeSets().download(changeSets, changeSetsPath);
     return changeSets;
   }
 
@@ -135,7 +135,7 @@ export class HubUtility {
 
     // Download the seed file
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
-    await BriefcaseManager.hubClient.IModels().download(accessToken, iModelId, seedPathname);
+    await BriefcaseManager.imodelClient.IModels().download(accessToken, iModelId, seedPathname);
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
@@ -165,7 +165,7 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    await BriefcaseManager.hubClient.IModels().delete(accessToken, projectId, iModelId);
+    await BriefcaseManager.imodelClient.IModels().delete(accessToken, projectId, iModelId);
   }
 
   public static getSeedPathname(iModelDir: string) {
@@ -185,11 +185,11 @@ export class HubUtility {
     const iModelName = path.basename(pathname, ".bim");
     let iModel: IModelRepository | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel) {
-      await BriefcaseManager.hubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(accessToken, projectId, iModel.wsgId);
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.IModels().create(accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
     return iModel.wsgId;
   }
 
@@ -201,7 +201,7 @@ export class HubUtility {
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(accessToken, projectId, seedPathname);
 
-    const briefcase: HubBriefcase = await BriefcaseManager.hubClient.Briefcases().create(accessToken, iModelId);
+    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(accessToken, iModelId);
     if (!briefcase) {
       return Promise.reject(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
@@ -227,7 +227,7 @@ export class HubUtility {
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await BriefcaseManager.hubClient.ChangeSets().create(accessToken, iModelId, changeSet, changeSetPathname);
+      await BriefcaseManager.imodelClient.ChangeSets().create(accessToken, iModelId, changeSet, changeSetPathname);
     }
 
     return iModelId;
@@ -240,13 +240,13 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    const briefcases: HubBriefcase[] = await BriefcaseManager.hubClient.Briefcases().get(accessToken, iModelId);
+    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(BriefcaseManager.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
+        promises.push(BriefcaseManager.imodelClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }

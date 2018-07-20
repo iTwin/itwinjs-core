@@ -8,7 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps,
+  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -18,14 +18,16 @@ import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { CodeSpecs } from "./CodeSpecs";
-import { Entity, EntityMetaData } from "./Entity";
+import { Entity } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
-import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
+import { ViewDefinition } from "./ViewDefinition";
 import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { KnownLocations } from "./Platform";
+import { IModelJsFs } from "./IModelJsFs";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -531,7 +533,7 @@ export class IModelDb extends IModel {
    * ```
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this.projectExtents.setFrom(newExtents);
+    this.projectExtents = newExtents;
     this.updateIModelProps();
   }
 
@@ -548,9 +550,7 @@ export class IModelDb extends IModel {
    * [[include:IModelDb.updateIModelProps]]
    * ```
    */
-  public updateIModelProps() {
-    this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
-  }
+  public updateIModelProps() { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
   /**
    * Commit pending changes to this iModel.
@@ -572,9 +572,7 @@ export class IModelDb extends IModel {
     this.concurrencyControl.onSavedChanges();
   }
 
-  /**
-   * Abandon pending changes in this iModel
-   */
+  /** Abandon pending changes in this iModel */
   public abandonChanges() {
     this.concurrencyControl.abandonRequest();
     this.nativeDb.abandonChanges();
@@ -587,7 +585,9 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    this.concurrencyControl.onMergeChanges();
     await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase, version);
+    this.concurrencyControl.onMergedChanges();
     this.token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
@@ -641,15 +641,34 @@ export class IModelDb extends IModel {
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelId is a briefcase,
+   * this method must first obtain the schema lock from the IModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
+   * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public importSchema(schemaFileName: string) {
-    if (!this.briefcase) throw this.newNotOpenError();
-    const stat = this.nativeDb.importSchema(schemaFileName);
-    if (DbResult.BE_SQLITE_OK !== stat)
+  public async importSchema(schemaFileName: string): Promise<void> {
+    if (!this.briefcase)
+      throw this.newNotOpenError();
+
+    if (!this.briefcase.isStandalone) {
+      await this.concurrencyControl.lockSchema(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+    }
+    const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
+    if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
+    }
+    if (!this.briefcase.isStandalone) {
+      try {
+        // The schema import logic and/or imported Domains may have created new elements and models.
+        // Make sure we have the supporting locks and codes.
+        await this.concurrencyControl.request(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      } catch (err) {
+        this.abandonChanges();
+        throw err;
+      }
+    }
   }
 
   /** Find an already open IModelDb. Used by the remoting logic.
@@ -693,7 +712,7 @@ export class IModelDb extends IModel {
     return new Id64(result);
   }
 
-  /** @hidden @deprecated */
+  /** @hidden */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this.newNotOpenError();
@@ -751,6 +770,28 @@ export class IModelDb extends IModel {
     return metadata;
   }
 
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   * @param iModel  The IModel that contains the schema
+   * @param classFullName The full class name to load the metadata, if necessary
+   * @param wantSuper If true, superclass properties will also be processed
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   */
+  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+    const meta = iModel.getMetaData(classFullName); // will load if necessary
+    for (const propName in meta.properties) {
+      if (propName) {
+        const propMeta = meta.properties[propName];
+        if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
+          func(propName, propMeta);
+      }
+    }
+
+    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
+  }
+
   /*** @hidden */
   private loadMetaData(classFullName: string) {
     if (!this.briefcase)
@@ -789,17 +830,17 @@ export class IModelDb extends IModel {
     return (error === undefined);
   }
 
-  /** query a "file property" from this iModel, as a string.
+  /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
   public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
 
-  /** query a "file property" from this iModel, as a blob.
+  /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
   public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
 
-  /** save a "file property" to this iModel
+  /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
@@ -812,7 +853,7 @@ export class IModelDb extends IModel {
    */
   public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
 
-  /** query for the next available major id for a "file property" from this iModel.
+  /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
@@ -837,12 +878,22 @@ export class IModelDb extends IModel {
     });
   }
 
+  /** Cancel a previously requested snap. */
   public cancelSnap(connectionId: string): void {
     const request = this._snaps.get(connectionId);
     if (undefined !== request) {
       request.cancelSnap();
       this._snaps.delete(connectionId);
     }
+  }
+
+  /** Load a file from the *Assets* directory of imodeljs-native
+   * @param assetName The asset file name with path relative to the *Assets* directory.
+   */
+  public static loadNativeAsset(assetName: string): string {
+    const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
+    const fileData = IModelJsFs.readFileSync(fileName) as Buffer;
+    return fileData.toString("base64");
   }
 
   /** Execute a test from native code
@@ -1104,7 +1155,6 @@ export namespace IModelDb {
         aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
 
         const entity = this._iModel.constructEntity(aspectProps);
-        assert(entity instanceof ElementAspect);
         const aspect = entity as ElementAspect;
         aspects.push(aspect);
       }
@@ -1161,11 +1211,8 @@ export namespace IModelDb {
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId);
       viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
-      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined) {
+      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
-      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId); // For SheetViewDefinition, include sheetProps
-      }
       return viewStateData;
     }
   }

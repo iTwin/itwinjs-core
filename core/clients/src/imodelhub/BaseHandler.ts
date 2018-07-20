@@ -9,7 +9,8 @@ import { IModelHubError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import * as https from "https";
-import { Config } from "..";
+import { Config, FileHandler } from "..";
+import { CustomRequestOptions } from "./CustomRequestOptions";
 
 /**
  * Provides default options for iModel Hub requests.
@@ -26,10 +27,13 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 /**
  * This class acts as the WsgClient for other iModel Hub Handlers.
  */
-export class IModelHubBaseHandler extends WsgClient {
+export class IModelBaseHandler extends WsgClient {
+  protected url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
-  private _agent: https.Agent;
+  protected _agent: https.Agent;
+  protected _fileHandler: FileHandler | undefined;
+  private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
 
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
@@ -39,14 +43,19 @@ export class IModelHubBaseHandler extends WsgClient {
   };
 
   /**
-   * Creates an instance of IModelHubBaseHandler.
+   * Creates an instance of IModelBaseHandler.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv = "PROD", keepAliveDuration = 30000) {
+  public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
+    this._fileHandler = fileHandler;
     if (!Config.isBrowser())
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
+
+  public formatProjectIdForUrl(projectId: string) { return projectId; }
+
+  public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
   /**
    * Augments request options with defaults returned by the DefaultIModelHubRequestOptionsProvider.
@@ -66,7 +75,7 @@ export class IModelHubBaseHandler extends WsgClient {
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
-    return IModelHubBaseHandler.searchKey;
+    return IModelBaseHandler.searchKey;
   }
 
   /**
@@ -74,7 +83,7 @@ export class IModelHubBaseHandler extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelHubBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
+    return IModelBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -121,10 +130,17 @@ export class IModelHubBaseHandler extends WsgClient {
    * @param token Delegation token
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Instance to be deleted.
+   * @param requestOptions WSG options for the request.
    * @returns Promise resolves after successfully deleting instance.
    */
-  public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T): Promise<void> {
-    return super.deleteInstance<T>(token, relativeUrlPath, instance);
+  public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
+    if (this._customRequestOptions.isSet()) {
+      if (!requestOptions) {
+        requestOptions = {};
+      }
+      requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
+    }
+    return super.deleteInstance<T>(token, relativeUrlPath, instance, requestOptions);
   }
 
   /**
@@ -137,6 +153,12 @@ export class IModelHubBaseHandler extends WsgClient {
    * @returns The posted instance that's returned back from the server.
    */
   public postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+    if (this._customRequestOptions.isSet()) {
+      if (!requestOptions) {
+        requestOptions = {};
+      }
+      requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
+    }
     return super.postInstance<T>(typedConstructor, token, relativeUrlPath, instance, requestOptions);
   }
 
@@ -175,5 +197,12 @@ export class IModelHubBaseHandler extends WsgClient {
    */
   public postQuery<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
     return super.postQuery(typedConstructor, token, relativeUrlPath, queryOptions);
+  }
+
+  /**
+   * Used by clients to set custom request parameters for all future requests made by this handler.
+   */
+  public getCustomRequestOptions(): CustomRequestOptions {
+    return this._customRequestOptions;
   }
 }

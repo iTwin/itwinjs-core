@@ -41,25 +41,30 @@ export namespace B3dmTileIO {
 
   /** Deserializes an B3DM tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
 
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
-      return undefined !== props ? new Reader(props, model, system, range) : undefined;
+      return undefined !== props ? new Reader(props, model, system, range, isCanceled) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, private range: ElementAlignedBox3d) {
-      super(props, model, system);
+    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, private range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, model, system, isCanceled);
     }
-    public read(): GltfTileIO.ReaderResult {
+    public async read(): Promise<GltfTileIO.ReaderResult> {
       const isLeaf = true;    // TBD...
 
+      // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       const featureTable: FeatureTable = new FeatureTable(1);
       const feature = new Feature();
       featureTable.insert(feature);
 
-      return this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range);
+      await this.loadTextures();
+      if (this.isCanceled)
+        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
+
+      return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
       const feature = new Feature();
@@ -75,7 +80,7 @@ export namespace B3dmTileIO {
       let textureMapping: TextureMapping | undefined;
       if (undefined !== materialJson &&
         undefined !== materialJson.values.tex) {
-        textureMapping = this.readTexture(materialJson.values.tex);
+        textureMapping = this.findTextureMapping(materialJson.values.tex);
       }
       const grey: ColorDef = new ColorDef(0x77777777);
       return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, true, textureMapping);

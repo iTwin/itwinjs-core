@@ -234,7 +234,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -274,7 +274,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     const startChangeSetId: string = changeSets[0].id!;
     const endChangeSetId: string = changeSets[1].id!;
@@ -321,7 +321,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
@@ -384,7 +384,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it.skip("Extract ChangeSummaries with invalid input", async () => {
+  it("Extract ChangeSummaries with invalid input", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -395,7 +395,9 @@ describe("ChangeSummary", () => {
       await ChangeSummaryManager.extractChangeSummaries(iModel);
     } catch (e) {
       assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+      assert.equal(e.errorNumber, ChangeSetStatus.CannotMergeIntoReadonly);
+    } finally {
+      await iModel.close(accessToken);
     }
 
     // extract on fixedVersion(shared access) iModel should fail
@@ -406,6 +408,8 @@ describe("ChangeSummary", () => {
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+    } finally {
+      await iModel.close(accessToken);
     }
 
     // extract on closed iModel should fail

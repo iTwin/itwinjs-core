@@ -2,15 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
-import { HitSource, HitDetail, HitList, SnapDetail, SnapMode, HitPriority } from "./HitDetail";
+import { HitSource, HitDetail, HitList, HitPriority } from "./HitDetail";
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { Viewport, ViewRect } from "./Viewport";
-import { BeButtonEvent } from "./tools/Tool";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
-
-// tslint:disable:variable-name
 
 /** The possible actions for which a locate filter can be called. */
 export const enum LocateAction {
@@ -218,12 +215,7 @@ export class ElementLocateManager {
   public static getFailureMessageKey(key: string) { return "LocateFailure." + key; }
   public onInitialized() { }
   public getApertureInches() { return 0.11; }
-  public getKeypointDivisor() { return 2; }
-  public synchSnapMode() { }
-  public onFlashHit(_detail: SnapDetail) { }
-  public onAccuSnapMotion(_detail: HitDetail | undefined, _wasHot: boolean, _ev: BeButtonEvent) { }
   public getElementPicker() { return this.picker; }
-  public setChosenSnapMode(_snapMode: SnapMode) { }
 
   public clear(): void { this.setCurrHit(undefined); }
   public setHitList(list?: HitList<HitDetail>) { this.hitList = list; }
@@ -248,19 +240,6 @@ export class ElementLocateManager {
       this.hitList.resetCurrentHit();
 
     return preLocated;
-  }
-
-  public getPreferredPointSnapModes(source: HitSource): SnapMode[] {
-    const snaps: SnapMode[] = [];
-
-    // The user's finger is likely to create unwanted AccuSnaps
-    if (HitSource.AccuSnap === source && !IModelApp.toolAdmin.isCurrentInputSourceMouse())
-      return snaps;
-
-    // We need a snap mode UI!!! Removed center and intersection they were just obnoxious. -BB 06/2015
-    snaps.push(SnapMode.NearestKeypoint);
-    snaps.push(SnapMode.Nearest);
-    return snaps;
   }
 
   public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): boolean {
