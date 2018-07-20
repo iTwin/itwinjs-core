@@ -59,6 +59,8 @@ export const enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
+const forceNoDrawBuffers = false;
+
 /** Describes the rendering capabilities of the host system. */
 export class Capabilities {
   private _maxRenderType: RenderType = RenderType.TextureUnsignedByte;
@@ -95,6 +97,9 @@ export class Capabilities {
   public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
 
+  public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
+  public get supportsPickShaders(): boolean { return this.maxColorAttachments >= 4; }
+
   /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
   public queryExtensionObject<T>(ext: string): T | undefined {
     const extObj: any = this._extensionMap[ext];
@@ -114,7 +119,7 @@ export class Capabilities {
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
       for (const ext of extensions) {
-        if (ext === "WEBGL_draw_buffers" || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
+        if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
           ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
           ext === "EXT_shader_texture_lod") {
           const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
@@ -140,7 +145,7 @@ export class Capabilities {
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
-    return this.hasRequiredFeatures && this.hasRequiredDrawTargets && this.hasRequiredTextureUnits;
+    return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
   }
 
   public static create(gl: WebGLRenderingContext): Capabilities | undefined {
@@ -170,12 +175,7 @@ export class Capabilities {
 
   /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
   private get hasRequiredFeatures(): boolean {
-    return this.supportsDrawBuffers && this.supports32BitElementIndex;
-  }
-
-  /** Determines if the required number of draw targets are supported (could change). */
-  private get hasRequiredDrawTargets(): boolean {
-    return this.maxColorAttachments > 3 && this.maxDrawBuffers > 3;
+    return this.supports32BitElementIndex;
   }
 
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
@@ -333,17 +333,20 @@ export class System extends RenderSystem {
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
-  public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
-  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
-  private _lineCodeTexture: TextureHandle | undefined;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
+
+  // The following are initialized immediately after the System is constructed.
+  private _lineCodeTexture?: TextureHandle;
+  private _techniques?: Techniques;
 
   public static identityTransform = Transform.createIdentity();
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public get lineCodeTexture() { return this._lineCodeTexture; }
+  public get techniques() { return this._techniques!; }
 
   public setDrawBuffers(attachments: GLenum[]): void {
     // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
@@ -364,17 +367,11 @@ export class System extends RenderSystem {
       }
     }
 
-    const techniques = Techniques.create(context);
-    if (undefined === techniques) {
-      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering techniques");
-    }
-
     const capabilities = Capabilities.create(context);
-    if (undefined === capabilities) {
+    if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
-    }
 
-    return new System(canvas, context, techniques, capabilities);
+    return new System(canvas, context, capabilities);
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
@@ -391,6 +388,7 @@ export class System extends RenderSystem {
   }
 
   public onInitialized(): void {
+    this._techniques = Techniques.create(this.context);
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
   }
@@ -510,10 +508,9 @@ export class System extends RenderSystem {
     return idMap.getClipVolume(clipVector);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
     super(canvas);
     this.context = context;
-    this.techniques = techniques;
     this.capabilities = capabilities;
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this.resourceCache = new Map<IModelConnection, IdMap>();
