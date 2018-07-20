@@ -59,7 +59,7 @@ export const enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-const forceNoDrawBuffers = true;
+const forceNoDrawBuffers = false;
 
 /** Describes the rendering capabilities of the host system. */
 export class Capabilities {
