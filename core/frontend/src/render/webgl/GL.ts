@@ -160,7 +160,7 @@ export namespace GL {
       CubeMapPositiveX = WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, // right side
       CubeMapNegativeX = WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, // left side
       CubeMapPositiveY = WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y, // top side
-      CubeMapNegativeY = WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y, // botom side
+      CubeMapNegativeY = WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y, // bottom side
       CubeMapPositiveZ = WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z, // back side
       CubeMapNegativeZ = WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z, // front side
     }
