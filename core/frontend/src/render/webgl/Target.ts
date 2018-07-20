@@ -241,11 +241,11 @@ export abstract class Target extends RenderTarget {
       const vf = new ViewFlags();
       vf.setRenderMode(RenderMode.SmoothShade);
       vf.setShowClipVolume(false);
-      if (this.is2d) {
-        vf.setShowSourceLights(false);
-        vf.setShowCameraLights(false);
-        vf.setShowSolarLight(false);
-      }
+
+      const showLights = !this.is2d;
+      vf.setShowSourceLights(showLights);
+      vf.setShowCameraLights(showLights);
+      vf.setShowSolarLight(showLights);
 
       this._worldDecorations = new WorldDecorations(vf);
     }
