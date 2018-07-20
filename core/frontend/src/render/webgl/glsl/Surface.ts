@@ -347,7 +347,7 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
-  if (FeatureMode.None === feat) {
+  if (FeatureMode.None === feat || !System.instance.capabilities.supportsPickShaders) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
     builder.frag.addExtension("GL_EXT_draw_buffers");

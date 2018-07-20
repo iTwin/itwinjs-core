@@ -7,6 +7,7 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { FloatRgba } from "../FloatRGBA";
+import { System } from "../System";
 
 const computeBaseColor = "return u_bgColor;";
 
@@ -27,9 +28,15 @@ export function createClearPickAndColorProgram(context: WebGLRenderingContext): 
     });
   });
 
-  frag.addDrawBuffersExtension();
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
-  frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+
+  if (!System.instance.capabilities.supportsPickShaders) {
+    // ###TODO: Just gl.clear() the color attachment...
+    frag.set(FragmentShaderComponent.AssignFragData, "FragColor0 = baseColor;");
+  } else {
+    frag.addDrawBuffersExtension();
+    frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+  }
 
   return builder.buildProgram(context);
 }

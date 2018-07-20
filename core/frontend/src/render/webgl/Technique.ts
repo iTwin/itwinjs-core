@@ -30,6 +30,7 @@ import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
+import { System } from "./System";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -109,7 +110,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected addElementId(builder: ProgramBuilder, feat: FeatureMode) {
     const frag = builder.frag;
-    if (FeatureMode.None === feat)
+    if (FeatureMode.None === feat || !System.instance.capabilities.supportsPickShaders)
       frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
     else {
       const vert = builder.vert;

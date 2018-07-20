@@ -7,6 +7,7 @@ import { ProgramBuilder, FragmentShaderComponent, VariableType } from "../Shader
 import { GLSLFragment } from "./Fragment";
 import { addModelViewMatrix } from "./Vertex";
 import { addFrustum } from "./Common";
+import { System } from "../System";
 
 const computeEyeSpaceZ = "v_eyeSpaceZ = (u_mv * rawPosition).z;";
 
@@ -37,6 +38,11 @@ const assignFragData = `
 `;
 
 export function addTranslucency(prog: ProgramBuilder): void {
+  if (!System.instance.capabilities.supportsMRTTransparency) {
+    // ###TODO: Implement fall-back to two-pass rendering
+    return;
+  }
+
   // ###TODO: Surface shaders may already have a v_eyeSpace containing xyz - optimize to use that instead of recomputing for z only.
   prog.addInlineComputedVarying("v_eyeSpaceZ", VariableType.Float, computeEyeSpaceZ);
   addFrustum(prog);

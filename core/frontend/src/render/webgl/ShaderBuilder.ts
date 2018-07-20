@@ -6,6 +6,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
+import { System } from "./System";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
@@ -547,7 +548,10 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
 
-  public addDrawBuffersExtension(): void { this.addExtension("GL_EXT_draw_buffers"); }
+  public addDrawBuffersExtension(): void {
+    assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
+    this.addExtension("GL_EXT_draw_buffers");
+  }
 
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
