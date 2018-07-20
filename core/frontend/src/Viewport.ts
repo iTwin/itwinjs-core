@@ -24,6 +24,7 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
+import { ViewToolSettings } from "./frontend";
 
 // tslint:disable:no-console
 
@@ -1211,10 +1212,8 @@ export class Viewport {
 
   /** @hidden */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
-    if (!animationTime || 0.0 >= animationTime.milliseconds) {
-      this.setupViewFromFrustum(end);
-      return;
-    }
+    if (!animationTime || 0.0 >= animationTime.milliseconds)
+      animationTime = ViewToolSettings.animationTime;
 
     this.setAnimator(new Animator(animationTime, this, start, end));
   }

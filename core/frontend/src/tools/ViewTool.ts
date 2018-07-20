@@ -258,7 +258,6 @@ export abstract class ViewManip extends ViewTool {
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
   public alwaysLeaveLastView = false;
-  public ballRadius = 0;          // screen coords
   public readonly lastPtScreen = new Point3d();
   public readonly targetCenterWorld = new Point3d();
   public isDragging = false;
@@ -597,7 +596,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
     if (doUpdate)
-      viewport.animateFrustumChange(before, viewport.getFrustum(), ViewToolSettings.animationTime);
+      viewport.animateFrustumChange(before, viewport.getFrustum());
 
     viewport.synchWithView(true);
   }
@@ -646,60 +645,6 @@ export abstract class ViewManip extends ViewTool {
     return true;
   }
 
-  public viewPtToSpherePt(viewPt: Point3d, invertY: boolean, result?: Vector3d): Vector3d | undefined {
-    const vp = this.viewport!;
-    const ballRadius = this.ballRadius;
-    const targetCenterView = vp.worldToView(this.targetCenterWorld, scratchPoint3d1);
-
-    const ballMouse = scratchPoint3d2;
-    ballMouse.x = (viewPt.x - targetCenterView.x) / ballRadius;
-    ballMouse.y = (viewPt.y - targetCenterView.y) / ballRadius;
-
-    const mag = (ballMouse.x * ballMouse.x) + (ballMouse.y * ballMouse.y);
-    if (mag > 1.0 || !vp.view.allow3dManipulations()) {
-      // we're outside of the circle
-      if (mag <= 0.0)
-        return undefined;
-
-      const scale = 1.0 / Math.sqrt(mag);
-      ballMouse.x *= scale;
-      ballMouse.y *= scale;
-      ballMouse.z = 0.0;
-    } else {
-      ballMouse.z = vp.view.allow3dManipulations() ? Math.sqrt(1.0 - mag) : 0.0;
-    }
-
-    if (invertY)
-      ballMouse.y = -ballMouse.y;
-
-    result = result ? result : new Vector3d();
-    result.setFrom(ballMouse);
-    return result;
-  }
-
-  public ballPointsToMatrix(matrix: RotMatrix | undefined, axisVector: Vector3d | undefined, ballVector0: Vector3d, ballVector1: Vector3d): Angle {
-    const normal = ballVector1.crossProduct(ballVector0);
-    const theta = ballVector1.angleTo(ballVector0);
-    if (matrix)
-      RotMatrix.createRotationAroundVector(normal, theta, matrix);
-    if (axisVector)
-      axisVector.setFrom(normal);
-    return theta;
-  }
-
-  protected synchViewBallInfo(): void {
-    if (!this.viewport)
-      return;
-    const frustum = this.viewport.getFrustum(CoordSystem.View, false, scratchFrustum);
-    const screenRange = scratchPoint3d1;
-    screenRange.set(
-      frustum.points[Npc._000].distance(frustum.points[Npc._100]),
-      frustum.points[Npc._000].distance(frustum.points[Npc._010]),
-      frustum.points[Npc._000].distance(frustum.points[Npc._001]));
-
-    this.ballRadius = (((screenRange.x < screenRange.y) ? screenRange.x : screenRange.y) * ViewToolSettings.viewBallRadius);
-  }
-
   public changeViewport(vp: Viewport | undefined): void {
     // If viewport isn't really changing do nothing...
     if (vp === this.viewport)
@@ -720,8 +665,6 @@ export abstract class ViewManip extends ViewTool {
     this.updateTargetCenter();
 
     if (this.handleMask & ViewHandleType.Rotate) {
-      // Setup initial view ball size and location...
-      this.synchViewBallInfo();
       this.viewHandles.add(new ViewRotate(this));
     }
 
@@ -918,7 +861,6 @@ class ViewPan extends ViewingToolHandle {
 class ViewRotate extends ViewingToolHandle {
   private lastPtNpc = new Point3d();
   private firstPtNpc = new Point3d();
-  private ballVector0 = new Vector3d();
   private frustum = new Frustum();
   private activeFrustum = new Frustum();
   public get handleType() { return ViewHandleType.Rotate; }
@@ -946,9 +888,6 @@ class ViewRotate extends ViewingToolHandle {
 
     const pickPt = ev.rawPoint.clone();
     const pickPtOrig = pickPt.clone();
-
-    const viewPt = vp.worldToView(pickPt);
-    tool.viewPtToSpherePt(viewPt, true, this.ballVector0);
 
     vp.worldToNpc(pickPtOrig, this.firstPtNpc);
     this.lastPtNpc.setFrom(this.firstPtNpc);
@@ -979,25 +918,19 @@ class ViewRotate extends ViewingToolHandle {
       return false;
 
     const currPt = viewport.npcToView(ptNpc, scratchPoint3d2);
-    if (frustumChange) {
+    if (frustumChange)
       this.firstPtNpc.setFrom(ptNpc);
-      tool.viewPtToSpherePt(currPt, true, this.ballVector0);
-    }
 
     let radians: Angle;
     let worldAxis: Vector3d;
     const worldPt = tool.targetCenterWorld;
     if (!viewport.view.allow3dManipulations()) {
-      const currBallPt = this.viewTool.viewPtToSpherePt(currPt, true)!;
-
-      const axisVector = new Vector3d();
-      radians = tool.ballPointsToMatrix(undefined, axisVector, this.ballVector0, currBallPt);
-
-      const viewMatrix = viewport.rotMatrix;
-      const xVec = viewMatrix.getRow(0);
-      const yVec = viewMatrix.getRow(1);
-      const zVec = viewMatrix.getRow(2);
-      worldAxis = Vector3d.add3Scaled(xVec, axisVector.x, yVec, axisVector.y, zVec, axisVector.z);
+      const centerPt = viewport.worldToView(worldPt);
+      const firstPt = viewport.npcToView(this.firstPtNpc);
+      const vector0 = Vector2d.createStartEnd(centerPt, firstPt);
+      const vector1 = Vector2d.createStartEnd(centerPt, currPt);
+      radians = vector0.angleTo(vector1);
+      worldAxis = Vector3d.unitZ();
     } else {
       const viewRect = viewport.viewRect;
       const xExtent = viewRect.width;
@@ -1024,7 +957,6 @@ class ViewRotate extends ViewingToolHandle {
     }
 
     this.rotateViewWorld(worldPt, worldAxis, radians);
-    // viewport.moveViewToSurfaceIfRequired();
     viewport.getWorldFrustum(this.activeFrustum);
 
     return true;
@@ -1367,7 +1299,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
     const endFrust = vp.getWorldFrustum();
     if (!startFrust.equals(endFrust))
-      vp.animateFrustumChange(startFrust, endFrust, ViewToolSettings.animationTime);
+      vp.animateFrustumChange(startFrust, endFrust);
 
     this.getCenterPoint(this.anchorPtView);
 
@@ -1718,8 +1650,7 @@ export class WindowAreaTool extends ViewTool {
     }
 
     vp.synchWithView(true);
-
-    vp.animateFrustumChange(startFrust, vp.getFrustum(), ViewToolSettings.animationTime);
+    vp.animateFrustumChange(startFrust, vp.getFrustum());
   }
 
   public onSingleFingerMove(ev: BeGestureEvent): boolean { IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev); return true; }
@@ -1781,7 +1712,6 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
   private allowZoom: boolean = true;
   private rotatePrevented: boolean = false;
   private doing2dRotation: boolean = false;
-  private ballVector0 = new Vector3d();
   private lastPtView = new Point3d();
   private startPtWorld = new Point3d();
   private startPtView = new Point3d();
@@ -1945,8 +1875,6 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     this.startPtWorld.setFrom(ev.point);
     this.startPtView.setFrom(ev.viewPoint);
     this.updateTargetCenter();
-    this.synchViewBallInfo();
-    this.viewPtToSpherePt(this.startPtView, true, this.ballVector0);
 
     if (vp.isCameraOn()) {
       const targetCenterView = vp.worldToView(this.targetCenterWorld);
