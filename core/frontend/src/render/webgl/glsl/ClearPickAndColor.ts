@@ -32,7 +32,7 @@ export function createClearPickAndColorProgram(context: WebGLRenderingContext): 
 
   if (!System.instance.capabilities.supportsPickShaders) {
     // ###TODO: Just gl.clear() the color attachment...
-    frag.set(FragmentShaderComponent.AssignFragData, "FragColor0 = baseColor;");
+    frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
   } else {
     frag.addDrawBuffersExtension();
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);

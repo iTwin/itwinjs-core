@@ -27,7 +27,7 @@ export function createCopyPickBuffersProgram(context: WebGLRenderingContext): Sh
 
   if (System.instance.capabilities.maxColorAttachments < 3) {
     // ###TODO: workaround...
-    frag.set(FragmentShaderComponent.AssignFragData, "FragColor0 = vec4(0.0);");
+    frag.set(FragmentShaderComponent.AssignFragData, "FragColor = vec4(0.0);");
   } else {
     frag.addUniform("u_pickElementId0", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_pickElementId0", (uniform, params) => {

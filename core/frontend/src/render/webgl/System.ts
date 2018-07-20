@@ -333,17 +333,20 @@ export class System extends RenderSystem {
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
-  public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
-  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
-  private _lineCodeTexture: TextureHandle | undefined;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
+
+  // The following are initialized immediately after the System is constructed.
+  private _lineCodeTexture?: TextureHandle;
+  private _techniques?: Techniques;
 
   public static identityTransform = Transform.createIdentity();
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public get lineCodeTexture() { return this._lineCodeTexture; }
+  public get techniques() { return this._techniques!; }
 
   public setDrawBuffers(attachments: GLenum[]): void {
     // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
@@ -364,17 +367,11 @@ export class System extends RenderSystem {
       }
     }
 
-    const techniques = Techniques.create(context);
-    if (undefined === techniques) {
-      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering techniques");
-    }
-
     const capabilities = Capabilities.create(context);
-    if (undefined === capabilities) {
+    if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
-    }
 
-    return new System(canvas, context, techniques, capabilities);
+    return new System(canvas, context, capabilities);
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
@@ -391,6 +388,7 @@ export class System extends RenderSystem {
   }
 
   public onInitialized(): void {
+    this._techniques = Techniques.create(this.context);
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
   }
@@ -510,10 +508,9 @@ export class System extends RenderSystem {
     return idMap.getClipVolume(clipVector);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
     super(canvas);
     this.context = context;
-    this.techniques = techniques;
     this.capabilities = capabilities;
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this.resourceCache = new Map<IModelConnection, IdMap>();

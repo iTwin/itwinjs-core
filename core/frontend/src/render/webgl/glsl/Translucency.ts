@@ -38,8 +38,11 @@ const assignFragData = `
 `;
 
 export function addTranslucency(prog: ProgramBuilder): void {
+  const frag = prog.frag;
+
   if (!System.instance.capabilities.supportsMRTTransparency) {
     // ###TODO: Implement fall-back to two-pass rendering
+    frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
     return;
   }
 
@@ -48,7 +51,6 @@ export function addTranslucency(prog: ProgramBuilder): void {
   addFrustum(prog);
   addModelViewMatrix(prog.vert);
 
-  const frag = prog.frag;
   frag.addDrawBuffersExtension();
   frag.addFunction(GLSLFragment.computeLinearDepth);
   frag.addFunction(computeAlphaWeight);

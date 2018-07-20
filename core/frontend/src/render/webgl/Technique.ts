@@ -369,9 +369,10 @@ export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
-  public static create(gl: WebGLRenderingContext) {
+  public static create(gl: WebGLRenderingContext): Techniques {
     const techs = new Techniques();
-    return techs.initializeBuiltIns(gl) ? techs : undefined;
+    techs.initializeBuiltIns(gl);
+    return techs;
   }
 
   public getTechnique(id: TechniqueId): Technique {
@@ -456,7 +457,7 @@ export class Techniques implements IDisposable {
 
   private constructor() { }
 
-  private initializeBuiltIns(gl: WebGLRenderingContext): boolean {
+  private initializeBuiltIns(gl: WebGLRenderingContext): void {
     this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
     this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
@@ -475,6 +476,5 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
-    return true;
   }
 }

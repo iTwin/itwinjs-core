@@ -14,7 +14,7 @@ const assignFragData = `
   FragColor1 = vec4(1.0, 0.0, 0.0, 1.0);
 `;
 
-const assignFragColor = `FragColor0 = vec4(0.0, 0.0, 0.0, 1.0);`;
+const assignFragColor = `FragColor = vec4(0.0, 0.0, 0.0, 1.0);`;
 
 export function createClearTranslucentProgram(context: WebGLRenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
