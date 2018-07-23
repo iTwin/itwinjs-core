@@ -18,6 +18,22 @@ const getClipPlaneFloat = `
   }
 `;
 
+const unpackFloat = `
+  float unpackFloat(vec4 v) {
+    const float bias = 38.0;
+    v *= 255.0;
+    float temp = v.w / 2.0;
+    float exponent = floor(temp);
+    float sign = (temp - exponent) * 2.0;
+    exponent = exponent - bias;
+    sign = -(sign * 2.0 - 1.0);
+    float unpacked = sign * v.x * (1.0 / 256.0); // shift right 8
+    unpacked += sign * v.y * (1.0 / 65536.0); // shift right 16
+    unpacked += sign * v.z * (1.0 / 16777216.0); // shift right 24
+    return unpacked * pow(10.0, exponent);
+  }
+`;
+
 const unpackClipPlane = `
   vec4 getClipPlane(int index) {
     // ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
@@ -95,7 +111,16 @@ const applyClipMask = `
     discard;
 `;
 
-export function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
+export function addClipping(prog: ProgramBuilder, type: "planes" | "mask", maxClipPlanes?: number) {
+  if (type === "mask") {
+    addClippingMask(prog);
+  } else {
+    assert(maxClipPlanes !== undefined, "Must provide max number of clip planes if adding a ClipPlanesVolume clipping");
+    addClippingPlanes(prog, maxClipPlanes!);
+  }
+}
+
+function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   assert(maxClipPlanes > 0);
   const frag = prog.frag;
   const vert = prog.vert;
@@ -103,7 +128,7 @@ export function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   prog.addVarying("v_clipCamPos", VariableType.Vec4);
   prog.addUniform("u_numClips", VariableType.Int, (program) => {
     program.addGraphicUniform("u_numClips", (uniform, params) => {
-      const numClips = params.target.hasClipVolume ? params.target.clips.length : 0;
+      const numClips = params.target.hasClipVolume ? params.target.clips.count : 0;
       assert(numClips > 0);
       uniform.setUniform1i(numClips);
     });
@@ -122,49 +147,25 @@ export function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   frag.maxClippingPlanes = maxClipPlanes;
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
-      const texture = params.target.clips.clips.
+      const texture = params.target.clips.texture;
+      assert(texture !== undefined);
+      if (texture !== undefined)
+        texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
   });
+  frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
 }
 
-export function addClippingMask() {
-
-}
-
-export function addClipping(builder: ProgramBuilder): void {
-  const frag = builder.frag;
-  const vert = builder.vert;
-
-  builder.addVarying("v_clipDist[6]", VariableType.Float);
-  builder.addUniform("u_numClips", VariableType.Int, (prog) => {
-    prog.addGraphicUniform("u_numClips", (uniform, params) => {
-      const numClips = params.target.hasClipVolume ? params.target.clips.length : 0;
-      uniform.setUniform1i(numClips);
+function addClippingMask(prog: ProgramBuilder) {
+  prog.frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
+    program.addGraphicUniform("s_clipSampler", (uniform, params) => {
+      const texture = params.target.clipMask;
+      assert(texture !== undefined);
+      if (texture !== undefined)
+        texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
   });
 
-  addModelViewMatrix(vert);
-  vert.set(VertexShaderComponent.CalcClipDist, calcClipDist);
-  vert.addUniform("u_clipPlane[6]", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_clipPlane[0]", (uniform, params) => {
-      if (params.target.hasClipVolume)
-        uniform.setUniform4fv(params.target.clips.clips); // ###TODO confirm this is equivalent to glUniform4fv(6, ...)
-    });
-  });
-
-  frag.addUniform("u_clipMask", VariableType.Int, (prog) => {
-    prog.addGraphicUniform("u_clipMask", (uniform, params) => {
-      uniform.setUniform1i(params.target.hasClipMask ? 1 : 0);
-    });
-  });
-  frag.addUniform("s_clipMask", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("s_clipMask", (uniform, params) => {
-      const mask = params.target.clipMask;
-      if (undefined !== mask)
-        mask.bindSampler(uniform, TextureUnit.ClipMask);
-    });
-  });
-
-  addWindowToTexCoords(frag);
-  frag.set(FragmentShaderComponent.ApplyClipping, applyClipping);
+  addWindowToTexCoords(prog.frag);
+  prog.frag.set(FragmentShaderComponent.ApplyClipping, applyClipMask);
 }

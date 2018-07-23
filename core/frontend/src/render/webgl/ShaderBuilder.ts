@@ -7,6 +7,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
 import { System } from "./System";
+import { addClipping } from "./glsl/Clipping";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
@@ -265,9 +266,9 @@ export class SourceBuilder {
  * plus a set of code snippets which can be concatenated together to form the shader source.
  */
 export class ShaderBuilder extends ShaderVariables {
-  private readonly _components: string[] = new Array<string>();
-  private readonly _functions: string[] = new Array<string>();
-  private readonly _extensions: string[] = new Array<string>();
+  public readonly _components: string[] = new Array<string>();
+  public readonly _functions: string[] = new Array<string>();
+  public readonly _extensions: string[] = new Array<string>();
   public headerComment: string = "";
 
   protected constructor(maxComponents: number) {
@@ -415,6 +416,9 @@ export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
   private _initializers: string[] = new Array<string>();
 
+  public get computedVarying(): string[] { return this._computedVarying; }
+  public get initializers(): string[] { return this._initializers; }
+
   private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
 
   public constructor(positionFromLUT: boolean) {
@@ -540,6 +544,8 @@ export const enum FragmentShaderComponent {
 
 /** Assembles the source code for a fragment shader from a set of modular components. */
 export class FragmentShaderBuilder extends ShaderBuilder {
+  public maxClippingPlanes: number = 0;
+
   public constructor() {
     super(FragmentShaderComponent.COUNT);
   }
@@ -651,6 +657,43 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   private buildPrelude(isLit: boolean): SourceBuilder { return this.buildPreludeCommon(true, isLit); }
 }
 
+/** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports. */
+export class ClippingShaders {
+  public builder: ProgramBuilder;
+  public shaders: ShaderProgram[] = [];
+  public maskShader?: ShaderProgram;
+
+  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext) {
+    this.builder = prog.clone();
+    addClipping(this.builder, "planes", 6);
+
+    const maskBuilder = prog.clone();
+    addClipping(maskBuilder, "mask");
+    this.maskShader = maskBuilder.buildProgram(context);
+    assert(this.maskShader !== undefined);
+  }
+
+  private static roundUpToNearesMultipleOf(value: number, factor: number): number {
+    const maxPlanes = Math.ceil(value / factor) * factor;
+    assert(maxPlanes > 0);
+    assert(maxPlanes <= value);
+    return maxPlanes;
+  }
+
+  private static roundNumPlanes(minPlanes: number): number {
+    // We want to avoid making the shader do too much extra work, but we also want to avoid creating separate clipping shaders for
+    // every unique # of planes
+    if (minPlanes <= 2)
+      return minPlanes;   // 1 or 2 planes fairly common (ex - section cut)
+    else if (minPlanes <= 6)
+      return 6;           // cuboid volume
+    else if (minPlanes <= 120)
+      return this.roundUpToNearesMultipleOf(minPlanes, 20);
+    else
+      return this.roundUpToNearesMultipleOf(minPlanes, 50);
+  }
+}
+
 export const enum ShaderType {
   Fragment = 1 << 0,
   Vertex = 1 << 1,
@@ -721,4 +764,33 @@ export class ProgramBuilder {
   public setDebugDescription(description: string): void {
     this.vert.headerComment = this.frag.headerComment = ("//! " + description);
   }
-}
+
+  /** Returns a deep copy of this program builder. */
+  public clone(): ProgramBuilder {
+    const clone = new ProgramBuilder(false);
+
+    // Copy from vertex builder
+    clone.vert.headerComment = this.vert.headerComment;
+    for (const computation of this.vert.computedVarying)
+      clone.vert.computedVarying.push(computation);
+    for (const initializer of this.vert.initializers)
+      clone.vert.initializers.push(initializer);
+    for (const component of this.vert._components)
+      clone.vert._components.push(component);
+    for (const func of this.vert._functions)
+      clone.vert._functions.push(func);
+    for (const extension of this.vert._extensions)
+      clone.vert._extensions.push(extension);
+
+    // Copy from fragment builder
+    clone.frag.headerComment = this.frag.headerComment;
+    clone.frag.maxClippingPlanes = this.frag.maxClippingPlanes;
+    for (const component of this.frag._components)
+      clone.frag._components.push(component);
+    for (const func of this.frag._functions)
+      clone.frag._functions.push(func);
+    for (const extension of this.frag._extensions)
+      clone.frag._extensions.push(extension);
+
+    return clone;
+  }

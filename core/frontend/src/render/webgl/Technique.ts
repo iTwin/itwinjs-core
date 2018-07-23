@@ -64,12 +64,13 @@ const scratchTechniqueFlags = new TechniqueFlags();
 
 // A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
 export abstract class VariedTechnique implements Technique {
-  private readonly _programs: ShaderProgram[] = [];
+  private readonly _basicPrograms: ShaderProgram[] = [];
+  private readonly _clippingPrograms: ClippingShaders[] = [];
 
-  public getShader(flags: TechniqueFlags): ShaderProgram { return this._programs[this.getShaderIndex(flags)]; }
+  public getShader(flags: TechniqueFlags): ShaderProgram { return this._basicPrograms[this.getShaderIndex(flags)]; }
   public compileShaders(): boolean {
     let allCompiled = true;
-    for (const program of this._programs) {
+    for (const program of this._basicPrograms) {
       if (!program.compile()) allCompiled = false;
     }
 
@@ -77,13 +78,13 @@ export abstract class VariedTechnique implements Technique {
   }
 
   public dispose(): void {
-    for (const program of this._programs)
+    for (const program of this._basicPrograms)
       dispose(program);
-    this._programs.length = 0;
+    this._basicPrograms.length = 0;
   }
 
   protected constructor(numPrograms: number) {
-    this._programs.length = numPrograms;
+    this._basicPrograms.length = numPrograms;
   }
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
@@ -96,8 +97,8 @@ export abstract class VariedTechnique implements Technique {
   }
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
     const index = this.getShaderIndex(flags);
-    assert(undefined === this._programs[index], "program already exists");
-    this._programs[index] = program;
+    assert(undefined === this._basicPrograms[index], "program already exists");
+    this._basicPrograms[index] = program;
   }
 
   protected addHiliteShader(clip: WithClipVolume, gl: WebGLRenderingContext, create: (clip: WithClipVolume) => ProgramBuilder): void {
@@ -134,7 +135,7 @@ export abstract class VariedTechnique implements Technique {
   private getShaderIndex(flags: TechniqueFlags) {
     assert(!flags.isHilite || (!flags.isTranslucent && flags.hasFeatures), "invalid technique flags");
     const index = this.computeShaderIndex(flags);
-    assert(index < this._programs.length, "shader index out of bounds");
+    assert(index < this._basicPrograms.length, "shader index out of bounds");
     return index;
   }
 }
