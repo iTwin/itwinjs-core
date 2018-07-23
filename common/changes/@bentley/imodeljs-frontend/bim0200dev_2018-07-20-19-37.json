@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove remnants of rotation sphere in ViewRotate. Change animateFrustumChange to not default to no animation.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}
