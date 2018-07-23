@@ -9,7 +9,7 @@ import { DecorateContext } from "./frontend";
 import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 
-export const enum SnapMode { // NEEDSWORK: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
+export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,
   NearestKeypoint = 1 << 1,
   MidPoint = 1 << 2,
@@ -93,7 +93,7 @@ export class HitDetail {
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
 
   /** Get the *hit point* for this HitDetail. If this is a HitDetail, it returns the approximate point on the element that cause the hit.
-   * If this is a SnapDetail, and if the snap is *hot*, retuns the *exact* point on the Element for the snap mode.
+   * If this is a SnapDetail, and if the snap is *hot*, returns the *exact* point on the Element for the snap mode.
    */
   public getPoint(): Point3d { return this.hitPoint; }
 
@@ -112,14 +112,14 @@ export class HitDetail {
 
   /**
    * Get the tooltip string for this HitDetail.
-   * Calls the backend method [Element.getLocateMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
+   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<string> {
-    const msg: string[] = await this.viewport.iModel.getLocateMessage(this.sourceId); // wait for the locate message(s) from the backend
+    const msg: string[] = await this.viewport.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
     // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
     // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
     let out = "";
-    msg.forEach((line) => out += line.replace(/\%\{(.+?)\}/g, (_match, tag) => IModelApp.i18n.translate(tag)) + "<br>");
+    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
     return out;
   }
 }
