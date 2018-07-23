@@ -22,5 +22,9 @@ module.exports = {
       }
     ]
   },
-  stats: "errors-only"
+  stats: "errors-only",
+  externals: {
+    electron: "require('electron')",
+    fs: "require('fs')"
+  }
 };

@@ -119,7 +119,8 @@ export class Clips {
 export class PerformanceMetrics {
   public frameTimes: BeTimePoint[] = [];
   public curFrameTimeIndex = 0;
-  public gatherFrameTimings = true;
+  public gatherGlFinish = false;
+  public gatherCurPerformanceMetrics = false;
   public curSpfTimeIndex = 0;
   public spfTimes: number[] = [];
   public spfSum: number = 0;
@@ -129,6 +130,11 @@ export class PerformanceMetrics {
   public loadTileSum: number = 0;
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
+
+  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false) {
+    this.gatherGlFinish = gatherGlFinish;
+    this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
+  }
 }
 
 export abstract class Target extends RenderTarget {
@@ -151,8 +157,8 @@ export abstract class Target extends RenderTarget {
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
-  private _performanceMetrics = new PerformanceMetrics();
   protected _dcAssigned: boolean = false;
+  public performanceMetrics?: PerformanceMetrics;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
@@ -309,23 +315,23 @@ export abstract class Target extends RenderTarget {
     this._batches.splice(index, 1);
   }
 
-  public setFrameTime(sceneTime = 0.0) {
-    if (this._performanceMetrics.gatherFrameTimings) {
-      if (sceneTime > 0.0) {
-        this._performanceMetrics.frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
-        this._performanceMetrics.frameTimes[1] = BeTimePoint.now();
-        this._performanceMetrics.curFrameTimeIndex = 2;
-      } else if (this._performanceMetrics.curFrameTimeIndex < 12)
-        this._performanceMetrics.frameTimes[this._performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
+  public setFrameTime(sceneTime?: number) {
+    if (this.performanceMetrics) {
+      if (sceneTime !== undefined) {
+        this.performanceMetrics.frameTimes[1] = BeTimePoint.now();
+        this.performanceMetrics.frameTimes[0] = this.performanceMetrics.frameTimes[1].minus(BeDuration.fromMilliseconds(sceneTime));
+        this.performanceMetrics.curFrameTimeIndex = 2;
+      } else if (this.performanceMetrics.curFrameTimeIndex < 12)
+        this.performanceMetrics.frameTimes[this.performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
     }
   }
   public get frameTimings(): number[] {
+    if (this.performanceMetrics === undefined) return [];
     const timings: number[] = [];
     for (let i = 0; i < 11; ++i)
-      timings[i] = (this._performanceMetrics.frameTimes[i + 1].milliseconds - this._performanceMetrics.frameTimes[i].milliseconds);
+      timings[i] = (this.performanceMetrics.frameTimes[i + 1].milliseconds - this.performanceMetrics.frameTimes[i].milliseconds);
     return timings;
   }
-  public get performanceMetrics(): PerformanceMetrics { return this._performanceMetrics; }
 
   // ---- Implementation of RenderTarget interface ---- //
 
@@ -621,32 +627,34 @@ export abstract class Target extends RenderTarget {
     this.drawPass(RenderPass.ViewOverlay);
     this._stack.pop();
 
-    this._endPaint();
     this.setFrameTime();
+    this._endPaint();
 
-    if (sceneMilSecElapsed !== undefined) {
-      const perfMet = this._performanceMetrics;
-      const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
-      if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
-      perfMet.spfSum += fpsTimerElapsed;
-      perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
+    if (this.performanceMetrics) {
+      if (this.performanceMetrics.gatherCurPerformanceMetrics) {
+        const perfMet = this.performanceMetrics;
+        const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
+        if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
+        perfMet.spfSum += fpsTimerElapsed;
+        perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
 
-      const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
-      if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
-      perfMet.renderSpfSum += renderTimeElapsed;
-      perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
+        const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
+        if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
+        perfMet.renderSpfSum += renderTimeElapsed;
+        perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
 
-      if (sceneMilSecElapsed !== undefined) {
-        if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
-        perfMet.loadTileSum += sceneMilSecElapsed;
-        perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
-        if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+        if (sceneMilSecElapsed !== undefined) {
+          if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
+          perfMet.loadTileSum += sceneMilSecElapsed;
+          perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
+          if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+        }
+        perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
       }
-      perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
-    }
-    if (this._performanceMetrics.gatherFrameTimings) {
-      gl.finish();
-      this.setFrameTime();
+      if (this.performanceMetrics.gatherGlFinish) {
+        gl.finish();
+        this.setFrameTime();
+      }
     }
   }
 
