@@ -204,7 +204,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this.compositor = new SceneCompositor(this);  // compositor is created but not yet initialized... we are still undisposed
+    this.compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
   }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }

@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { ProgramBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { GLSLFragment } from "./Fragment";
+import { GLSLFragment, addRenderTargetIndex } from "./Fragment";
 import { addModelViewMatrix } from "./Vertex";
 import { addFrustum } from "./Common";
 import { System } from "../System";
@@ -24,7 +24,7 @@ float computeAlphaWeight(float a, bool flatAlpha) {
 }
 `;
 
-const assignFragData = `
+const computeOutputs = `
   bool flatAlpha = isShaderBitSet(kShaderBit_OITScaleOutput);
   vec3 Ci = baseColor.rgb;
   float ai = min(0.99, baseColor.a); // OIT algorithm does not nicely handle a=1
@@ -33,26 +33,35 @@ const assignFragData = `
   // If we are scaling output into the 0 to 1 range, we use the maximum output of the alpha weight function.
   float outputScale = flatAlpha ? 1.0 / 3001.040604 : 1.0;
 
-  FragColor0 = vec4(Ci * wzi * outputScale, ai);
-  FragColor1 = vec4(ai * wzi * outputScale);
+  vec4 output0 = vec4(Ci * wzi * outputScale, ai);
+  vec4 output1 = vec4(ai * wzi * outputScale);
+`;
+
+const assignFragData = computeOutputs + `
+  FragColor0 = output0;
+  FragColor1 = output1;
+`;
+
+const assignFragColor = computeOutputs + `
+  FragColor = (0 == u_renderTargetIndex) ? output0 : output1;
 `;
 
 export function addTranslucency(prog: ProgramBuilder): void {
   const frag = prog.frag;
-
-  if (!System.instance.capabilities.supportsMRTTransparency) {
-    // ###TODO: Implement fall-back to two-pass rendering
-    frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
-    return;
-  }
 
   // ###TODO: Surface shaders may already have a v_eyeSpace containing xyz - optimize to use that instead of recomputing for z only.
   prog.addInlineComputedVarying("v_eyeSpaceZ", VariableType.Float, computeEyeSpaceZ);
   addFrustum(prog);
   addModelViewMatrix(prog.vert);
 
-  frag.addDrawBuffersExtension();
   frag.addFunction(GLSLFragment.computeLinearDepth);
   frag.addFunction(computeAlphaWeight);
-  frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+
+  if (System.instance.capabilities.supportsMRTTransparency) {
+    frag.addDrawBuffersExtension();
+    frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+  } else {
+    addRenderTargetIndex(frag);
+    frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+  }
 }

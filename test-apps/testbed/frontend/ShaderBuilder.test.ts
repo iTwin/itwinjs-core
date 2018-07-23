@@ -45,13 +45,13 @@ describe("Variable declaration tests", () => {
     vars.addUniform("x", VariableType.Float, fakeBinding, VariablePrecision.High);
     vars.addAttribute("y", VariableType.Vec4, fakeBinding);
     vars.addVarying("z", VariableType.Int);
-    vars.addGlobal("w", VariableType.UInt, "123", true);
+    vars.addGlobal("w", VariableType.Int, "123", true);
 
     const parts = [
       "uniform highp float x;",
       "attribute vec4 y;",
       "varying int z;",
-      "const uint w = 123;\n",
+      "const int w = 123;\n",
     ];
 
     const expectedDecls = parts.join("\n");

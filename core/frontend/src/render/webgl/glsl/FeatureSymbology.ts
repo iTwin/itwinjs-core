@@ -173,17 +173,17 @@ const checkVertexDiscard = `
 `;
 
 function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions): boolean {
-  if (!System.instance.capabilities.supportsPickShaders) {
-    // ###TODO: Should still be able to override symbology, hilite, flash, etc...
-    return false;
-  }
-
   if (FeatureMode.None === mode)
     return false;
 
   const vert = builder.vert;
-  addFeatureIndex(vert);
-  if (FeatureSymbologyOptions.None === (opts & FeatureSymbologyOptions.HasOverrides))
+  const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
+  if (haveOverrides || System.instance.capabilities.supportsPickShaders) {
+    // Pick shaders use feature index to look up element ID - otherwise it's not needed unless we need to look up overrides.
+    addFeatureIndex(vert);
+  }
+
+  if (!haveOverrides)
     return true;
 
   const wantWeight = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Weight);
@@ -319,13 +319,6 @@ const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
 `;
 
 export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false): void {
-  if (!System.instance.capabilities.supportsPickShaders) {
-    // ###TODO: Should still be able to hilite...
-    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(0.0);");
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
-    return;
-  }
-
   let opts = FeatureSymbologyOptions.HasOverrides;
   if (wantWeight)
     opts |= FeatureSymbologyOptions.Weight; // hiliter never needs line code or color...
