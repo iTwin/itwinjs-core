@@ -1513,7 +1513,7 @@ export class Viewport {
     if (!sync.isValidScene) {
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
-      // ###TODO: request missing tiles
+      context.requests.requestMissing();
       target.changeScene(context.graphics);
 
       isRedrawNeeded = true;
