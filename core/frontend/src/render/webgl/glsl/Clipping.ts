@@ -9,6 +9,7 @@ import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { System } from "../System";
+import { ClipDef, ClipVolumeType } from "../TechniqueFlags";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {
@@ -111,13 +112,11 @@ const applyClipMask = `
     discard;
 `;
 
-export function addClipping(prog: ProgramBuilder, type: "planes" | "mask", maxClipPlanes?: number) {
-  if (type === "mask") {
+export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
+  if (clipDef.type === ClipVolumeType.Mask)
     addClippingMask(prog);
-  } else {
-    assert(maxClipPlanes !== undefined, "Must provide max number of clip planes if adding a ClipPlanesVolume clipping");
-    addClippingPlanes(prog, maxClipPlanes!);
-  }
+  else if (clipDef.type === ClipVolumeType.Planes)
+    addClippingPlanes(prog, clipDef.numberOfPlanes);
 }
 
 function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {

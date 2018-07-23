@@ -8,6 +8,7 @@ import { ShaderProgram } from "./ShaderProgram";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
 import { System } from "./System";
 import { addClipping } from "./glsl/Clipping";
+import { ClipDef, ClipVolumeType } from "./TechniqueFlags";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
@@ -665,10 +666,10 @@ export class ClippingShaders {
 
   public constructor(prog: ProgramBuilder, context: WebGLRenderingContext) {
     this.builder = prog.clone();
-    addClipping(this.builder, "planes", 6);
+    addClipping(this.builder, new ClipDef(ClipVolumeType.Planes, 6));
 
     const maskBuilder = prog.clone();
-    addClipping(maskBuilder, "mask");
+    addClipping(maskBuilder, new ClipDef(ClipVolumeType.Mask));
     this.maskShader = maskBuilder.buildProgram(context);
     assert(this.maskShader !== undefined);
   }
@@ -691,6 +692,26 @@ export class ClippingShaders {
       return this.roundUpToNearesMultipleOf(minPlanes, 20);
     else
       return this.roundUpToNearesMultipleOf(minPlanes, 50);
+  }
+
+  public getProgram(clipDef: ClipDef): ShaderProgram | undefined {
+    if (clipDef.type === ClipVolumeType.Mask) {
+      return this.maskShader;
+    } else if (clipDef.type === ClipVolumeType.Planes) {
+      assert(clipDef.numberOfPlanes > 0);
+      const numClips = ClippingShaders.roundNumPlanes(clipDef.numberOfPlanes);
+      for (const shader of this.shaders)
+        if (shader.maxClippingPlanes === numClips)
+          return shader;
+
+      this.builder.frag.maxClippingPlanes = numClips;
+      const newProgram = this.builder.buildProgram(System.instance.context);
+      this.shaders.push(newProgram);
+      return newProgram;
+    } else {
+      assert(false);
+      return undefined;
+    }
   }
 }
 
@@ -755,7 +776,7 @@ export class ProgramBuilder {
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
-    const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment);
+    const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;

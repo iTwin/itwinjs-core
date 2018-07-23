@@ -27,6 +27,7 @@ import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
+import { ClipDef, ClipVolumeType } from "./TechniqueFlags";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -235,6 +236,14 @@ export abstract class Target extends RenderTarget {
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
+  public get clipDef(): ClipDef {
+    if (this.hasClipVolume)
+      return new ClipDef(ClipVolumeType.Planes, this.clips.count);
+    else if (this.hasClipMask)
+      return new ClipDef(ClipVolumeType.Mask);
+    else
+      return new ClipDef();
+  }
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
   public get clipMask(): TextureHandle | undefined { return this._clipMask; }

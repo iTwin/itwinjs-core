@@ -12,13 +12,12 @@ import {
   VertexShaderComponent,
   ShaderBuilder,
 } from "../ShaderBuilder";
-import { FeatureMode, WithClipVolume } from "../TechniqueFlags";
+import { FeatureMode, ClipDef } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
-import { addClipping } from "./Clipping";
 import { FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
@@ -94,14 +93,11 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(clip: WithClipVolume): ProgramBuilder {
+function createCommon(): ProgramBuilder {
   const builder = new ProgramBuilder(true);
   const vert = builder.vert;
 
   // ###TODO Animation.AddCommon(vert);
-
-  if (WithClipVolume.Yes === clip)
-    addClipping(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -111,8 +107,8 @@ function createCommon(clip: WithClipVolume): ProgramBuilder {
   return builder;
 }
 
-export function createSurfaceHiliter(clip: WithClipVolume): ProgramBuilder {
-  const builder = createCommon(clip);
+export function createSurfaceHiliter(): ProgramBuilder {
+  const builder = createCommon();
   addHiliter(builder);
   return builder;
 }
@@ -273,8 +269,8 @@ function addTransparencyThreshold(frag: FragmentShaderBuilder) {
   frag.set(FragmentShaderComponent.DiscardByAlpha, isBelowTransparencyThreshold);
 }
 
-export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): ProgramBuilder {
-  const builder = createCommon(clip);
+export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
+  const builder = createCommon();
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
