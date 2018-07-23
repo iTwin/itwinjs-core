@@ -1222,26 +1222,19 @@ export class Viewport {
   }
 
   /** @hidden */
-  public removeAnimator() {
-    if (this.animator) {
+  public removeAnimator() { this.setAnimator(undefined); }
+  private setAnimator(animator: Animator | undefined) {
+    if (this.animator)
       this.animator.interrupt(); // will be destroyed
-      this.animator = undefined;
-    }
-  }
-
-  private setAnimator(animator: Animator) {
-    this.removeAnimator();
     this.animator = animator;
   }
 
   /** @hidden */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
-    if (!animationTime || 0.0 >= animationTime.milliseconds) {
+    if (!animationTime || 0.0 >= animationTime.milliseconds)
       this.setupViewFromFrustum(end);
-      return;
-    }
-
-    this.setAnimator(new Animator(animationTime, this, start, end));
+    else
+      this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
   /** @hidden */
@@ -1607,13 +1600,13 @@ export class Viewport {
   }
 
   /**
-   * Find a point on geometry within radius of supplied pick point.
-   * @param pickPoint Center point in world coordinates
-   * @param radius radius of the circular area to include in pixels
-   * @param out Optional Point3d pre-allocated to hold the result
-   * @returns the coordinates of the geometry point within the circular area nearest to the supplied pick point
+   * Find a point on geometry visible in this Viewport within a radius of supplied pick point.
+   * @param pickPoint Point to search about, in world coordinates
+   * @param radius Radius, in pixels, of the circular area to search.
+   * @param out Optional Point3d to hold the result. If undefined, a new Point3d is returned.
+   * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
-  public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
+  public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
     if (0 === picker.doPick(this, pickPoint, radius, new LocateOptions()))
       return undefined;

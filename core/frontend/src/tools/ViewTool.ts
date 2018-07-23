@@ -482,7 +482,7 @@ export abstract class ViewManip extends ViewTool {
       scratchPoint3d1.z = 0.0;
     } else {
       vp.npcToWorld(NpcCenter, scratchPoint3d1);
-      const visiblePoint = vp.determineNearestVisibleGeometryPoint(scratchPoint3d1, 20.0);
+      const visiblePoint = vp.pickNearestVisibleGeometry(scratchPoint3d1, 20.0);
       if (undefined !== visiblePoint)
         scratchPoint3d1.setFrom(visiblePoint);
       else
@@ -776,13 +776,10 @@ class ViewTargetCenter extends ViewingToolHandle {
 
     lineHorzPts[0].x = x - size;
     lineHorzPts[0].y = y;
-
     lineHorzPts[1].x = x + size;
     lineHorzPts[1].y = y;
-
     lineVertPts[0].x = x;
     lineVertPts[0].y = y - size;
-
     lineVertPts[1].x = x;
     lineVertPts[1].y = y + size;
 
@@ -862,7 +859,7 @@ class ViewPan extends ViewingToolHandle {
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (CoordSource.User === ev.coordsFrom && vp.isCameraOn()) {
-      const visiblePoint = vp.determineNearestVisibleGeometryPoint(this.anchorPt, 20.0);
+      const visiblePoint = vp.pickNearestVisibleGeometry(this.anchorPt, 20.0);
       if (undefined !== visiblePoint) {
         this.anchorPt.setFrom(visiblePoint);
       } else {
@@ -930,7 +927,7 @@ class ViewRotate extends ViewingToolHandle {
     const vp = ev.viewport!;
 
     if (!tool.targetCenterLocked && vp.view.allow3dManipulations()) {
-      const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
+      const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0);
       if (undefined !== visiblePoint)
         tool.setTargetCenterWorld(visiblePoint, false, false);
     }
@@ -1768,6 +1765,7 @@ export class ViewGestureTool extends ViewManip {
   }
 }
 
+/** @hidden */
 export class RotatePanZoomGestureTool extends ViewGestureTool {
   private allowZoom: boolean = true;
   private rotatePrevented: boolean = false;
@@ -1947,7 +1945,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(this.startPtView);
     this.startTime = Date.now();
-    const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
+    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0);
     if (!visiblePoint)
       return;
 
@@ -1971,7 +1969,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
-    let zoomCenter = (vp.view.allow3dManipulations() ? vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0) : undefined);
+    let zoomCenter = (vp.view.allow3dManipulations() ? vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0) : undefined);
     if (undefined === zoomCenter)
       zoomCenter = ev.point;
 
@@ -2060,7 +2058,7 @@ export class ViewToggleCameraTool extends ViewTool {
 export class ViewChangeRenderModeTool extends ViewTool {
   public static toolId = "View.ChangeRenderMode";
   private viewport: Viewport;
-  // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundplane, etc.)
+  // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundPlane, etc.)
   private renderOptions: Map<string, boolean>;
   // REFERENCE to app's menu for changing render modes
   private renderMenu: HTMLElement;

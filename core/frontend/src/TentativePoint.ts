@@ -295,9 +295,9 @@ export class TentativePoint {
     // use existing AccuSnap hit list if one exists...
     if (!currHit) {
       // search for elements around the current raw point (search should not be affected by locks!)
-      const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+      const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
       const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
-      const picker = IModelApp.locateManager.getElementPicker();
+      const picker = IModelApp.locateManager.picker;
       picker.empty();
       options.hitSource = HitSource.TentativeSnap;
 
@@ -326,14 +326,9 @@ export class TentativePoint {
     return this.getNextSnap();
   }
 
-  private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean {
-    const aperture = pixelDistance + 1.5;
-    return pt1.distance(pt2) < aperture;
-  }
-
+  private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean { return pt1.distance(pt2) < (pixelDistance + 1.5); }
   public async process(ev: BeButtonEvent): Promise<void> {
-    // remove the TP cross if it is already on the screen
-    this.removeTentative();
+    this.removeTentative();    // remove the TP cross if it is already on the screen
 
     const lastPtView = this.viewPt;
 
@@ -344,7 +339,7 @@ export class TentativePoint {
     this.qualifierMask = ev.keyModifiers;
 
     let snap: SnapDetail | undefined;
-    const snapAgain = (this.isSnapped() && TentativePoint.arePointsCloseEnough(lastPtView, this.viewPt, this.viewport!.pixelsFromInches(IModelApp.locateManager.getApertureInches())));
+    const snapAgain = (this.isSnapped() && TentativePoint.arePointsCloseEnough(lastPtView, this.viewPt, this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches)));
 
     snap = snapAgain ? this.getNextSnap() : await this.getSnaps();
 

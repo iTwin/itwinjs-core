@@ -12,6 +12,7 @@ import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
+import { BusyError } from "./tools/EventController";
 
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap {
@@ -53,7 +54,7 @@ export class AccuSnap {
   public onInitialized() { }
   private doLocateTesting() { return this.isLocateEnabled(); }
   private getSearchDistance() { return this.doLocateTesting() ? 1.0 : this.settings.searchDistance; }
-  private getHotDistanceInches() { return IModelApp.locateManager.getApertureInches() * this.settings.hotDistanceFactor; }
+  private getHotDistanceInches() { return IModelApp.locateManager.apertureInches * this.settings.hotDistanceFactor; }
   public isLocateEnabled() { return this.toolState.locate; }
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
   private needsFlash(view: Viewport): boolean { return (this.needFlash.has(view)); }
@@ -205,7 +206,8 @@ export class AccuSnap {
 
   public showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): void {
     if (IModelApp.viewManager.doesHostHaveFocus())
-      IModelApp.toolAdmin.getToolTip(hit).then((msg) => this.showLocateMessage(viewPt, vp, msg));
+      IModelApp.toolAdmin.getToolTip(hit).then((msg) => this.showLocateMessage(viewPt, vp, msg))
+        .catch((err) => { BusyError.check(err); });
   }
 
   private showLocateMessage(viewPt: XAndY, vp: Viewport, msg: string) {
@@ -232,10 +234,10 @@ export class AccuSnap {
     if (tpHit) {
       // when the tentative button is first pressed, we pass nullptr for uorPt so that we show the tooltip immediately
       if (uorPt) {
-        const aperture = (this.settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+        const aperture = (this.settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
 
         // see if he came back somewhere near the currently snapped element
-        if (!IModelApp.locateManager.getElementPicker().testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
+        if (!IModelApp.locateManager.picker.testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
           return;
 
         timeout = 3;
@@ -519,13 +521,13 @@ export class AccuSnap {
 
     const testPoint = this.isLocateEnabled() ? ev.point : ev.rawPoint;
     const vp = ev.viewport!;
-    const picker = IModelApp.locateManager.getElementPicker();
+    const picker = IModelApp.locateManager.picker;
     const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
 
     // NOTE: Since TestHit will use the same HitSource as the input hit we only need to sets this for DoPick...
     options.hitSource = this.isSnapEnabled() ? HitSource.AccuSnap : HitSource.MotionLocate;
 
-    let aperture = (vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+    let aperture = (vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
     this.initializeForCheckMotion();
     aperture *= this.getSearchDistance();
 
@@ -754,8 +756,6 @@ export class AccuSnap {
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
 
-    await ev.viewport!.iModel.cancelSnap(); // if there is an outstanding snap, cancel it.
-
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
@@ -842,7 +842,7 @@ export class AccuSnap {
     if (this.getCurrSnapDetail()) {
       const ev = new BeButtonEvent();
       IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-      this.onMotion(ev);
+      this.onMotion(ev).catch((e) => BusyError.check(e));
     }
   }
 }
