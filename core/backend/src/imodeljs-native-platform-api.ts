@@ -1023,3 +1023,12 @@ export declare class SnapRequest {
   public doSnap(db: NativeDgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
   public cancelSnap(): void;
 }
+
+/**
+ * Helper class for iModelJs tests to disable native assertions
+ * @hidden
+ */
+export declare class DisableNativeAssertions implements IDisposable {
+  constructor();
+  public dispose(): void;
+}
