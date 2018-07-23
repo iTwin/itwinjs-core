@@ -19,7 +19,7 @@ import {
   RpcOperation,
   IModelToken,
 } from "@bentley/imodeljs-common/lib/common";
-import { Transform, Point3d, XAndY } from "@bentley/geometry-core";
+import { Point3d, XAndY, Transform } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -311,21 +311,22 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === theViewport)
     return;
 
-  const startFrustum = theViewport.getFrustum();
-  const newFrustum = startFrustum.clone();
-  const rotatePoint = theViewport.determineDefaultRotatePoint();
-  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
-  const viewTransform = Transform.createFixedPointAndMatrix(rotatePoint, theViewport.rotMatrix);
-  newFrustum.multiply(viewTransform);
-
-  let rotateTransform: Transform | undefined = Transform.createFixedPointAndMatrix(rotatePoint, rMatrix);
-  rotateTransform = rotateTransform.inverse();
-  if (!rotateTransform)
+  if (StandardViewId.Top !== rotationId && !theViewport.view.allow3dManipulations())
     return;
 
+  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
+  const inverse = rMatrix.inverse();
+  if (undefined === inverse)
+    return;
+
+  const targetMatrix = inverse.multiplyMatrixMatrix(theViewport.rotMatrix);
+  const rotateTransform = Transform.createFixedPointAndMatrix(theViewport.view.getTargetPoint(), targetMatrix);
+  const startFrustum = theViewport.getFrustum();
+  const newFrustum = startFrustum.clone();
   newFrustum.multiply(rotateTransform);
 
   theViewport.animateFrustumChange(startFrustum, newFrustum);
+  theViewport.view.setupFromFrustum(newFrustum);
   theViewport.synchWithView(true);
   showStatus(label, "view");
 }
