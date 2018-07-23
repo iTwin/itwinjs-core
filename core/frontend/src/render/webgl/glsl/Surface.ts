@@ -29,6 +29,14 @@ import { assert } from "@bentley/bentleyjs-core";
 import { Material } from "../Material";
 import { System } from "../System";
 
+const sampleSurfaceTexture = `
+  vec4 sampleSurfaceTexture() {
+    // Textures do NOT contain premultiplied alpha. Multiply in shader.
+    vec4 texColor = TEXTURE(s_texture, v_texCoord);
+    return applyPreMultipliedAlpha(texColor);
+  }
+`;
+
 const applyMaterialOverrides = `
   bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
   bool useTextureWeight = isTextured && u_textureWeight < 1.0;
@@ -45,12 +53,8 @@ const applyMaterialOverrides = `
   }
 
   if (useTextureWeight) {
-    vec4 texColor = TEXTURE(s_texture, v_texCoord);
+    vec4 texColor = sampleSurfaceTexture();
     baseColor = mix(baseColor, texColor, u_textureWeight);
-
-    // Textures do NOT contain premultiplied alpha. Multiply here.
-    // ###TODO: This won't produce correct results if u_textureWeight < 1.0 and baseColor.a < 1.0 - handle.
-    return applyPreMultipliedAlpha(baseColor);
   }
 
   return baseColor;
@@ -59,7 +63,6 @@ const applyMaterialOverrides = `
 export function addMaterial(frag: FragmentShaderBuilder): void {
   // ###TODO: We could pack rgb, alpha, and override flags into two floats.
   frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
   frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyMaterialOverrides);
 
@@ -228,10 +231,10 @@ const computeBaseColor = `
       if (u_reverseWhiteOnWhite > 0.5 && delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
         surfCol.rgb = vec3(0.0);
 
-      vec4 texCol = TEXTURE(s_texture, v_texCoord);
+      vec4 texCol = sampleSurfaceTexture();
       return vec4(surfCol.rgb * texCol.rgb, texCol.a);
     } else {
-      return TEXTURE(s_texture, v_texCoord);
+      return sampleSurfaceTexture();
     }
   } else {
     return getSurfaceColor(); // if textured, compute surface/material color first then mix with texture in applyMaterialOverrides...
@@ -309,6 +312,9 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
       }
     });
   });
+
+  builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
+  builder.frag.addFunction(sampleSurfaceTexture);
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
@@ -341,7 +347,7 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
-  if (FeatureMode.None === feat) {
+  if (FeatureMode.None === feat || !System.instance.capabilities.supportsPickShaders) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
     builder.frag.addExtension("GL_EXT_draw_buffers");

@@ -10,7 +10,7 @@ import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, DecorationList, RenderClipVolume } from "../System";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { TextureHandle, TextureDataUpdater } from "./Texture";
+import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
 import { LUTDimensions, LUTParams, LUTDimension } from "./FeatureDimensions";
 import { Target } from "./Target";
 import { FloatRgba } from "./FloatRGBA";
@@ -123,24 +123,24 @@ class OvrNonUniform {
     this.lutParams = new LUTParams(width, height);
 
     const data = new Uint8Array(width * height * 4);
-    const creator = new TextureDataUpdater(data);
+    const creator = new Texture2DDataUpdater(data);
     this.buildLookupTable(creator, map, ovrs, hilite, flashedElemId);
 
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
   public update(map: FeatureTable, lut: TextureHandle, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
-    const updater = new TextureDataUpdater(lut.dataBytes!);
+    const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs)
       this.updateFlashedAndHilited(updater, map, hilites, flashedElemId);
     else
       this.buildLookupTable(updater, map, ovrs, hilites, flashedElemId);
 
-    lut.update(updater);
+    (lut as Texture2DHandle).update(updater);
   }
 
-  private buildLookupTable(data: TextureDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
     this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
 
     let nHidden = 0;
@@ -222,7 +222,7 @@ class OvrNonUniform {
     this.anyOverridden = (nOverridden > 0);
   }
 
-  private updateFlashedAndHilited(data: TextureDataUpdater, map: FeatureTable, hilites: Set<string>, flashedElemId: Id64) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: FeatureTable, hilites: Set<string>, flashedElemId: Id64) {
     this.anyOverridden = false;
     this.anyHilited = false;
 
