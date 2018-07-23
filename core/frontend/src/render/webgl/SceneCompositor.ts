@@ -319,21 +319,45 @@ class PixelBuffer implements Pixel.Buffer {
   }
 }
 
-export class SceneCompositor implements IDisposable {
-  private _target: Target;
-  private _width: number = -1;
-  private _height: number = -1;
-  private _textures = new Textures();
-  private _depth?: DepthBuffer;
-  private _fbos = new FrameBuffers();
-  private _geometry = new Geometry();
-  private _readPickDataFromPingPong: boolean = true;
-  private _opaqueRenderState = new RenderState();
-  private _translucentRenderState = new RenderState();
-  private _noDepthMaskRenderState = new RenderState();
-  private _currentRenderTargetIndex: number = 0; // for multi-pass rendering...
+// This exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
+export abstract class SceneCompositor implements IDisposable {
+  public abstract get currentRenderTargetIndex(): number;
+  public abstract dispose(): void;
+  public abstract draw(_commands: RenderCommands): void;
+  public abstract drawForReadPixels(_commands: RenderCommands): void;
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
+  public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
+  public abstract readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined;
 
-  public constructor(target: Target) {
+  public abstract get elementId0(): TextureHandle;
+  public abstract get elementId1(): TextureHandle;
+  public abstract get depthAndOrder(): TextureHandle;
+
+  protected constructor() { }
+
+  public static create(target: Target): SceneCompositor {
+    return System.instance.capabilities.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
+  }
+}
+
+abstract class Compositor extends SceneCompositor {
+  protected _target: Target;
+  protected _width: number = -1;
+  protected _height: number = -1;
+  protected _textures = new Textures();
+  protected _depth?: DepthBuffer;
+  protected _fbos = new FrameBuffers();
+  protected _geometry = new Geometry();
+  protected _readPickDataFromPingPong: boolean = true;
+  protected _opaqueRenderState = new RenderState();
+  protected _translucentRenderState = new RenderState();
+  protected _noDepthMaskRenderState = new RenderState();
+
+  public abstract get currentRenderTargetIndex(): number;
+
+  protected constructor(target: Target) {
+    super();
+
     this._target = target;
 
     this._opaqueRenderState.flags.depthTest = true;
@@ -458,7 +482,6 @@ export class SceneCompositor implements IDisposable {
   public get elementId0(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
-  public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
 
   public dispose() {
     this._depth = dispose(this._depth);
@@ -620,4 +643,25 @@ export class SceneCompositor implements IDisposable {
 
   private get samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
   private getSamplerTexture(index: number) { return this.samplerFbo.getColor(index); }
+}
+
+class MRTCompositor extends Compositor {
+  public constructor(target: Target) {
+    super(target);
+  }
+
+  public get currentRenderTargetIndex(): number {
+    assert(false, "MRT is supported");
+    return 0;
+  }
+}
+
+class MPCompositor extends Compositor {
+  private _currentRenderTargetIndex: number = 0;
+
+  public constructor(target: Target) {
+    super(target);
+  }
+
+  public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
 }
