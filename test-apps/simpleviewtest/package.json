@@ -19,6 +19,7 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
+    "mobile": "webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
     "start": "npm run start:electron",
     "start:electron": "electron ./lib/backend/ElectronMain.js",
     "start:web": "node ./lib/backend/WebMain.js",

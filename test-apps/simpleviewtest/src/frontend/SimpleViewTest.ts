@@ -28,6 +28,7 @@ import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
+import { MobileRpcManager } from "../common/MobileRpcManager";
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -710,6 +711,9 @@ async function main() {
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  } else if (MobileRpcManager.isMobile) {
+    Object.assign(configuration, { standalone: true, iModelName: "assets/sample_documents/04_Plant.i.ibim" });
+    rpcConfiguration = MobileRpcManager.initializeMobile([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     Config.devCorsProxyServer = "https://localhost:3001";
