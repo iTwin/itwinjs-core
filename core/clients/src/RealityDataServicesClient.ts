@@ -286,7 +286,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns string url for blob data
    */
   public async getBlobStringUrl(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const url = await this.getBlobUrl(token, projectId, tilesId, name);
+    const url = undefined === this.blobUrl ? await this.getBlobUrl(token, projectId, tilesId, name) : this.blobUrl;
     const host = url.origin + url.pathname;
     const query = url.search;
     return `${host}/${this.updateModelName(name)}${query}`;
