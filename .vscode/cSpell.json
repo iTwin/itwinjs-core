@@ -6,6 +6,7 @@
     "language": "en",
     // words - list of words to be always considered correct
     "words": [
+        "abortable",
         "Accu",
         "accudraw",
         "addon",
@@ -61,6 +62,7 @@
         "Kubernetes",
         "languagedetector",
         "lifecycle",
+        "linestring",
         "Linestyle",
         "lstyle",
         "Millis",

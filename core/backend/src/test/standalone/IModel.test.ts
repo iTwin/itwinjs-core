@@ -150,7 +150,7 @@ describe("iModel", () => {
     const phys = imodel1.elements.getElement(new Id64("0x38"));
     assert.isTrue(phys instanceof GeometricElement3d);
 
-    const locateMsg = phys.getLocateMessage();
+    const locateMsg = phys.getToolTipMessage();
     assert.isDefined(locateMsg);
 
     const a2 = imodel2.elements.getElement(new Id64("0x1d"));
