@@ -8,7 +8,7 @@ import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem } from "./rendering";
-import { SkyBoxCreateParams } from "./render/System";
+import { SkyBoxCreateParams, SkyboxSphereType } from "./render/System";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -250,7 +250,15 @@ export class DisplayStyle3dState extends DisplayStyleState {
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
   public loadSkyBoxParams(system: RenderSystem): boolean {
     if (this.skyBoxParams !== undefined)
-      return true;  // skybox textures have already been loaded
+      return true;  // skybox params have already been loaded
+
+    const skybox = this.getEnvironment().sky;
+    // ###TODO: Need something in Skybox to tell us whether to use gradient, spherical texture, or cube texture.
+    const useGradient = true;
+    if (useGradient) {
+      this.loadGradientSkyBoxParams(skybox);
+      return true;
+    }
 
     if (this._useSkyBoxImages)
       return this.loadImageSkyBoxParams(system);
@@ -326,7 +334,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
         image.onerror = reject;
         image.src = url;
         (image as any).faceIndex = i;
-        });
+      });
 
       promises.push(promise);
     }
@@ -344,6 +352,13 @@ export class DisplayStyle3dState extends DisplayStyleState {
     });
 
     return true;
+  }
+
+  public loadGradientSkyBoxParams(sky: SkyBox) {
+    if (sky.twoColor)
+      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient2Color, sky.zenithColor, sky.nadirColor);
+    else
+      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient4Color, sky.zenithColor, sky.nadirColor, sky.skyColor, sky.groundColor, sky.skyExponent, sky.groundExponent);
   }
 
   /** Attempts to create a texture and material for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */

@@ -31,6 +31,7 @@ import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { System } from "./System";
+import { createSkySphereProgram } from "./glsl/SkySphere";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -467,13 +468,14 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
+    this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
+    this._list[TechniqueId.SkySphere] = new SingularTechnique(createSkySphereProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
-    this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
   }
