@@ -318,13 +318,11 @@ export class IdMap implements IDisposable {
     if (existingClipVolume)
       return existingClipVolume;
 
-    let clipVolume: RenderClipVolume | undefined = ClipPlanesVolume.create(clipVector);
-    if (!clipVolume)
-      clipVolume = ClipMaskVolume.create(clipVector);
-    if (!clipVolume)
-      return undefined;
-
-    this.clipVolumes.set(clipVector, clipVolume);
+    let clipVolume: RenderClipVolume | undefined = ClipMaskVolume.create(clipVector);
+    if (clipVolume === undefined)
+      clipVolume = ClipPlanesVolume.create(clipVector);
+    if (clipVolume !== undefined)
+      this.clipVolumes.set(clipVector, clipVolume);
     return clipVolume;
   }
 }

@@ -160,7 +160,7 @@ export class ShaderVariable {
  * If the same variable is used in both the fragment and vertex shader (e.g., a varying variable), it should be defined in both ShaderBuilders' ShaderVariables object.
  */
 export class ShaderVariables {
-  private readonly _list: ShaderVariable[] = new Array<ShaderVariable>();
+  public readonly _list: ShaderVariable[] = new Array<ShaderVariable>();
 
   /** Find an existing variable with the specified name */
   public find(name: string): ShaderVariable | undefined { return this._list.find((v: ShaderVariable) => v.name === name); }
@@ -792,26 +792,30 @@ export class ProgramBuilder {
 
     // Copy from vertex builder
     clone.vert.headerComment = this.vert.headerComment;
-    for (const computation of this.vert.computedVarying)
-      clone.vert.computedVarying.push(computation);
-    for (const initializer of this.vert.initializers)
-      clone.vert.initializers.push(initializer);
-    for (const component of this.vert._components)
-      clone.vert._components.push(component);
-    for (const func of this.vert._functions)
-      clone.vert._functions.push(func);
-    for (const extension of this.vert._extensions)
-      clone.vert._extensions.push(extension);
+    for (let i = 0; i < this.vert.computedVarying.length; i++)
+      clone.vert.computedVarying[i] = this.vert.computedVarying[i];
+    for (let i = 0; i < this.vert.initializers.length; i++)
+      clone.vert.initializers[i] = this.vert.initializers[i];
+    for (let i = 0; i < this.vert._components.length; i++)
+      clone.vert._components[i] = this.vert._components[i];
+    for (let i = 0; i < this.vert._functions.length; i++)
+      clone.vert._functions[i] = this.vert._functions[i];
+    for (let i = 0; i < this.vert._extensions.length; i++)
+      clone.vert._extensions[i] = this.vert._extensions[i];
+    for (let i = 0; i < this.vert._list.length; i++)
+      clone.vert._list[i] = this.vert._list[i];
 
     // Copy from fragment builder
     clone.frag.headerComment = this.frag.headerComment;
     clone.frag.maxClippingPlanes = this.frag.maxClippingPlanes;
-    for (const component of this.frag._components)
-      clone.frag._components.push(component);
-    for (const func of this.frag._functions)
-      clone.frag._functions.push(func);
-    for (const extension of this.frag._extensions)
-      clone.frag._extensions.push(extension);
+    for (let i = 0; i < this.frag._components.length; i++)
+      clone.frag._components[i] = this.frag._components[i];
+    for (let i = 0; i < this.frag._functions.length; i++)
+      clone.frag._functions[i] = this.frag._functions[i];
+    for (let i = 0; i < this.frag._extensions.length; i++)
+      clone.frag._extensions[i] = this.frag._extensions[i];
+    for (let i = 0; i < this.frag._list.length; i++)
+      clone.frag._list[i] = this.frag._list[i];
 
     return clone;
   }

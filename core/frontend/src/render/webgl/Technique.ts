@@ -79,6 +79,13 @@ export abstract class VariedTechnique implements Technique {
     for (const program of this._basicPrograms)
       dispose(program);
     this._basicPrograms.length = 0;
+    for (const clipShaderObj of this._clippingPrograms) {
+      dispose(clipShaderObj.maskShader);
+      for (const clipShader of clipShaderObj.shaders)
+        dispose(clipShader);
+      clipShaderObj.shaders.length = 0;
+      clipShaderObj.maskShader = undefined;
+    }
   }
 
   protected constructor(numPrograms: number) {
@@ -171,7 +178,7 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly kClip = SurfaceTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
-    super((numFeatureVariants(2) + numHiliteVariants) * 2);
+    super((numFeatureVariants(2) + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
     this.addHiliteShader(gl, createSurfaceHiliter);
@@ -216,7 +223,7 @@ class PolylineTechnique extends VariedTechnique {
   private static readonly kClip = PolylineTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
-    super((numFeatureVariants(2) + numHiliteVariants) * 2);
+    super((numFeatureVariants(2) + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
     this.addHiliteShader(gl, createPolylineHiliter);
@@ -272,7 +279,7 @@ class EdgeTechnique extends VariedTechnique {
   private readonly _isSilhouette: boolean;
 
   public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
-    super(numFeatureVariants(2) * 2);
+    super(numFeatureVariants(2));
     this._isSilhouette = isSilhouette;
 
     const flags = scratchTechniqueFlags;
@@ -318,7 +325,7 @@ class PointStringTechnique extends VariedTechnique {
   private static readonly kClip = PointStringTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
-    super((numFeatureVariants(2) + numHiliteVariants) * 2);
+    super((numFeatureVariants(2) + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
     this.addHiliteShader(gl, createPointStringHiliter);
@@ -371,7 +378,7 @@ class PointCloudTechnique extends VariedTechnique {
   private static readonly kClip = PointCloudTechnique.kOpaque + 1;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(2);
+    super(1);
 
     const flags = scratchTechniqueFlags;
     flags.reset(FeatureMode.None);

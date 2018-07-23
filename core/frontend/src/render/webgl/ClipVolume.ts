@@ -36,7 +36,7 @@ class PackedTraits {
   }
 }
 
-/** A 3D clip volume defined as a set of planes. */
+/** A 3D clip volume defined as a texture derived from a set of planes. */
 export class ClipPlanesVolume extends RenderClipVolume {
   private _texture?: TextureHandle;
 
@@ -44,6 +44,8 @@ export class ClipPlanesVolume extends RenderClipVolume {
     super();
     this._texture = texture;
   }
+
+  public get texture(): TextureHandle | undefined { return this._texture; }
 
   /** Create a new ClipPlanesVolume from a ClipVector. */
   public static create(clipVec: ClipVector): ClipPlanesVolume | undefined {
@@ -98,7 +100,7 @@ export class ClipPlanesVolume extends RenderClipVolume {
     }
 
     const internalFormat = traits.internalFormat;
-    return Texture2DHandle.createForData(numPixelsPerPlane, totalNumPlanes, Uint8Array.from(bytes), false, GL.Texture.WrapMode.ClampToEdge, internalFormat);
+    return Texture2DHandle.createForData(numPixelsPerPlane, totalNumPlanes, Uint8Array.from(bytes), true, GL.Texture.WrapMode.ClampToEdge, internalFormat);
   }
 
   public dispose() {
@@ -115,7 +117,7 @@ export class ClipPlanesVolume extends RenderClipVolume {
   }
 }
 
-/** A 2D clip volume defined as a mask. */
+/** A 2D clip volume defined as a texture derived from a masked set of planes. */
 export class ClipMaskVolume implements RenderClipVolume {
   public readonly geometry: ClipMaskGeometry;
   public readonly frustum: Frustum;

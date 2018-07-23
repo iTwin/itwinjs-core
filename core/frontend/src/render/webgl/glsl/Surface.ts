@@ -12,7 +12,7 @@ import {
   VertexShaderComponent,
   ShaderBuilder,
 } from "../ShaderBuilder";
-import { FeatureMode, ClipDef } from "../TechniqueFlags";
+import { FeatureMode } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { GLSLDecode } from "./Decode";
