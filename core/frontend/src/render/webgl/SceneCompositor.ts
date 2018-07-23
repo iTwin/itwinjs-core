@@ -331,6 +331,7 @@ export class SceneCompositor implements IDisposable {
   private _opaqueRenderState = new RenderState();
   private _translucentRenderState = new RenderState();
   private _noDepthMaskRenderState = new RenderState();
+  private _currentRenderTargetIndex: number = 0; // for multi-pass rendering...
 
   public constructor(target: Target) {
     this._target = target;
@@ -457,6 +458,7 @@ export class SceneCompositor implements IDisposable {
   public get elementId0(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
+  public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
 
   public dispose() {
     this._depth = dispose(this._depth);

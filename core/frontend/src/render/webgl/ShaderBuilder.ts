@@ -12,7 +12,6 @@ import { System } from "./System";
 export const enum VariableType {
   Boolean, // bool
   Int, // int
-  UInt, // uint
   Float, // float
   Vec2, // vec2
   Vec3, // vec3
@@ -50,7 +49,6 @@ namespace Convert {
     switch (type) {
       case VariableType.Boolean: return "bool";
       case VariableType.Int: return "int";
-      case VariableType.UInt: return "uint";
       case VariableType.Float: return "float";
       case VariableType.Vec2: return "vec2";
       case VariableType.Vec3: return "vec3";
