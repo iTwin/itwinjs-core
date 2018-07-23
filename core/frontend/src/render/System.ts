@@ -291,8 +291,14 @@ export abstract class RenderTarget implements IDisposable {
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
 }
 
+export enum SkyboxSphereType {
+  Gradient2Color,
+  Gradient4Color,
+  Texture,
+}
+
 export class SkyBoxCreateParams {
-  private _isGradient: boolean;
+  private _isSphere: boolean;
 
   public readonly front?: RenderTexture;
   public readonly back?: RenderTexture;
@@ -300,27 +306,57 @@ export class SkyBoxCreateParams {
   public readonly bottom?: RenderTexture;
   public readonly left?: RenderTexture;
   public readonly right?: RenderTexture;
+  public readonly sphereType?: SkyboxSphereType;
+  public readonly zenithColor?: ColorDef;
+  public readonly skyColor?: ColorDef;
+  public readonly groundColor?: ColorDef;
+  public readonly nadirColor?: ColorDef;
+  public readonly skyExponent?: number;
+  public readonly groundExponent?: number;
 
-  public get isTexturedCube() { return !this._isGradient; }
-  public get isGradient() { return this._isGradient; }
+  public get isTexturedCube() { return !this._isSphere; }
+  public get isSphere() { return this._isSphere; }
 
-  private constructor(isGradient: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture) {
-    this._isGradient = isGradient;
+  private constructor(_isSphere: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture,
+    sphereType?: SkyboxSphereType, zenithColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, nadirColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+    this._isSphere = _isSphere;
     this.front = front;
     this.back = back;
     this.top = top;
     this.bottom = bottom;
     this.left = left;
     this.right = right;
+    this.sphereType = sphereType;
+    this.zenithColor = zenithColor;
+    this.skyColor = skyColor;
+    this.groundColor = groundColor;
+    this.nadirColor = nadirColor;
+    this.skyExponent = skyExponent;
+    this.groundExponent = groundExponent;
   }
 
   public static createForTexturedCube(front: RenderTexture, back: RenderTexture, top: RenderTexture, bottom: RenderTexture, left: RenderTexture, right: RenderTexture) {
     return new SkyBoxCreateParams(false, front, back, top, bottom, left, right);
   }
 
-  public static createForGradient() {
-    // ###TODO
-    return new SkyBoxCreateParams(true);
+  public static createForGradientSphere(sphereType: SkyboxSphereType, zenithColor: ColorDef, nadirColor: ColorDef,
+    skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+    // Check arguments.
+    assert(SkyboxSphereType.Texture !== sphereType);
+    if (SkyboxSphereType.Gradient4Color !== sphereType) {
+      assert(undefined !== skyColor);
+      assert(undefined !== groundColor);
+      assert(undefined !== skyExponent);
+      assert(undefined !== groundExponent);
+    }
+    return new SkyBoxCreateParams(true, undefined, undefined, undefined, undefined, undefined, undefined,
+      sphereType, zenithColor, skyColor, groundColor, nadirColor, skyExponent, groundExponent);
+  }
+
+  public static createForTexturedSphere(texture: RenderTexture) {
+    // ###TODO: may be other attributes here like a z offset
+    return new SkyBoxCreateParams(true, texture, undefined, undefined, undefined, undefined, undefined,
+      SkyboxSphereType.Texture, undefined, undefined, undefined, undefined, undefined, undefined);
   }
 }
 

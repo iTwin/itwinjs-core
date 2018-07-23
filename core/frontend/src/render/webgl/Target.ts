@@ -184,6 +184,7 @@ export abstract class Target extends RenderTarget {
   public readonly monoColor = ColorDef.white.clone();
   public readonly hiliteSettings = new Hilite.Settings();
   public readonly planFrustum = new Frustum();
+  private _planFraction: number = 0;
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
@@ -350,6 +351,7 @@ export abstract class Target extends RenderTarget {
   public get cameraFrustumNearScaleLimit() {
     return 0; // ###TODO
   }
+  public get planFraction() { return this._planFraction; }
 
   public changeDecorations(decs: Decorations): void {
     this._decorations = dispose(this._decorations);
@@ -488,6 +490,8 @@ export abstract class Target extends RenderTarget {
     const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, scratch.viewX);
     const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, scratch.viewY);
     const viewZ = viewX.crossProduct(viewY, scratch.viewZ).normalize()!;
+
+    this._planFraction = plan.fraction;
 
     if (!plan.is3d) {
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
@@ -954,7 +958,7 @@ function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3
   return result;
 }
 
-function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
+export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
   const result = undefined !== out ? out : new Point3d();
   result.x = p.x + v.x * scale;
   result.y = p.y + v.y * scale;

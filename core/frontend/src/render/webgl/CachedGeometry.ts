@@ -19,7 +19,7 @@ import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
-import { SkyBoxCreateParams } from "../System";
+import { SkyBoxCreateParams, SkyboxSphereType } from "../System";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable {
@@ -287,6 +287,7 @@ export class SkyBoxGeometryParams implements IDisposable {
 
   public dispose() {
     dispose(this.positions);
+    dispose(this.uvs);
     dispose(this.sides);
   }
 }
@@ -435,6 +436,80 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
     for (const texture of this._textures) {
       assert(!(texture instanceof TextureHandle));
     }
+  }
+}
+
+// Geometry used for rendering default gradient-style or single texture spherical skybox.
+export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
+  public worldPos: Float32Array; // LeftBottom, RightBottom, RightTop, LeftTop worl pos of frustum at mid depth.
+  public readonly typeAndExponents: Float32Array; // [0] -1.0 for 2-color gradient, 1.0 for 4-color gradient, 0.0 for texture; [1] sky exponent (4-color only) [2] ground exponent (4-color only)
+  public readonly zenithColor: Float32Array;
+  public readonly skyColor: Float32Array;
+  public readonly groundColor: Float32Array;
+  public readonly nadirColor: Float32Array;
+  protected readonly _worldPosBuff: BufferHandle;
+
+  protected constructor(params: IndexedGeometryParams, skyboxCreateParams: SkyBoxCreateParams, techniqueId: TechniqueId) {
+    super(params, techniqueId);
+    assert(skyboxCreateParams.isSphere);
+    assert(SkyboxSphereType.Texture !== skyboxCreateParams.sphereType);
+    assert(undefined !== skyboxCreateParams.zenithColor);
+    assert(undefined !== skyboxCreateParams.nadirColor);
+    if (SkyboxSphereType.Gradient4Color === skyboxCreateParams.sphereType) {
+      assert(undefined !== skyboxCreateParams.skyColor);
+      assert(undefined !== skyboxCreateParams.groundColor);
+      assert(undefined !== skyboxCreateParams.skyExponent);
+      assert(undefined !== skyboxCreateParams.groundExponent);
+    }
+    this.worldPos = new Float32Array(4 * 3);
+    this._worldPosBuff = new BufferHandle();
+    this.typeAndExponents = new Float32Array(3);
+    this.zenithColor = new Float32Array(3);
+    this.skyColor = new Float32Array(3);
+    this.groundColor = new Float32Array(3);
+    this.nadirColor = new Float32Array(3);
+    if (SkyboxSphereType.Gradient2Color === skyboxCreateParams.sphereType!) {
+      this.typeAndExponents[0] = -1.0;
+      this.typeAndExponents[1] = 4.0;
+      this.typeAndExponents[2] = 4.0;
+      this.skyColor[0] = 0.0;
+      this.skyColor[1] = 0.0;
+      this.skyColor[2] = 0.0;
+      this.groundColor[0] = 0.0;
+      this.groundColor[1] = 0.0;
+      this.groundColor[2] = 0.0;
+    } else {
+      this.typeAndExponents[0] = 1.0;
+      this.typeAndExponents[1] = skyboxCreateParams.skyExponent!;
+      this.typeAndExponents[2] = skyboxCreateParams.groundExponent!;
+      this.skyColor[0] = skyboxCreateParams.skyColor!.colors.r / 255.0;
+      this.skyColor[1] = skyboxCreateParams.skyColor!.colors.g / 255.0;
+      this.skyColor[2] = skyboxCreateParams.skyColor!.colors.b / 255.0;
+      this.groundColor[0] = skyboxCreateParams.groundColor!.colors.r / 255.0;
+      this.groundColor[1] = skyboxCreateParams.groundColor!.colors.g / 255.0;
+      this.groundColor[2] = skyboxCreateParams.groundColor!.colors.b / 255.0;
+    }
+    this.zenithColor[0] = skyboxCreateParams.zenithColor!.colors.r / 255.0;
+    this.zenithColor[1] = skyboxCreateParams.zenithColor!.colors.g / 255.0;
+    this.zenithColor[2] = skyboxCreateParams.zenithColor!.colors.b / 255.0;
+    this.nadirColor[0] = skyboxCreateParams.nadirColor!.colors.r / 255.0;
+    this.nadirColor[1] = skyboxCreateParams.nadirColor!.colors.g / 255.0;
+    this.nadirColor[2] = skyboxCreateParams.nadirColor!.colors.b / 255.0;
+  }
+
+  public static createGeometry(skyboxCreateParams: SkyBoxCreateParams) {
+    const params = ViewportQuad.getInstance().createParams();
+    return undefined !== params ? new SkySphereViewportQuadGeometry(params, skyboxCreateParams, TechniqueId.SkySphere) : undefined;
+  }
+
+  public get worldPosBuff() { return this._worldPosBuff; }
+
+  public bind() {
+    this._worldPosBuff.bindData(GL.Buffer.Target.ArrayBuffer, this.worldPos, GL.Buffer.Usage.StreamDraw);
+  }
+
+  public dispose() {
+    dispose(this._worldPosBuff);
   }
 }
 

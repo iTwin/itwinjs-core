@@ -28,7 +28,7 @@ import { MeshGraphic } from "./Mesh";
 import { PointCloudGraphic } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
-import { SkyBoxQuadsGeometry } from "./CachedGeometry";
+import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive } from "./Primitive";
 import { ClipVolumePlanes, ClipMaskVolume } from "./ClipVolume";
 
@@ -411,9 +411,10 @@ export class System extends RenderSystem {
     if (params.isTexturedCube) {
       const cachedGeom = SkyBoxQuadsGeometry.create(params);
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+    } else {
+      const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
+      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     }
-    // ###TODO: Gradient approach
-    return undefined;
   }
 
   public applyRenderState(newState: RenderState) {
