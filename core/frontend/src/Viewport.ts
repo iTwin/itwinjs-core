@@ -371,6 +371,7 @@ export class Viewport {
   private _evController?: EventController;
   private _view!: ViewState;
   private _addFeatureOverrides?: AddFeatureOverrides;
+  private _wantTileBoundingBoxes: boolean = false;
 
   /** @hidden */
   public readonly target: RenderTarget;
@@ -407,6 +408,15 @@ export class Viewport {
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
+  /** @hidden */
+  public get wantTileBoundingBoxes(): boolean { return this._wantTileBoundingBoxes; }
+  /** @hidden */
+  public set wantTileBoundingBoxes(want: boolean) {
+    if (want !== this.wantTileBoundingBoxes) {
+      this._wantTileBoundingBoxes = want;
+      this.invalidateScene();
+    }
+  }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */

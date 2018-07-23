@@ -4,11 +4,12 @@
 /** @module Tile */
 
 import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable } from "@bentley/bentleyjs-core";
-import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
+import { GraphicType } from "../render/GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
@@ -68,6 +69,7 @@ export class Tile implements IDisposable {
   private _children?: Tile[];
   private _contentRange?: ElementAlignedBox3d;
   private _graphic?: RenderGraphic;
+  private _rangeGraphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
 
@@ -104,6 +106,8 @@ export class Tile implements IDisposable {
   // Note: Does not empty of tiles in children array... only disposes of the WebGL resources they hold
   public dispose() {
     this._graphic = dispose(this._graphic);
+    this._rangeGraphic = dispose(this._rangeGraphic);
+
     if (this._children)
       for (const child of this._children)
         dispose(child);
@@ -149,6 +153,16 @@ export class Tile implements IDisposable {
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
+
+  private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
+    if (undefined === this._rangeGraphic) {
+      const builder = context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      builder.setSymbology(ColorDef.green, ColorDef.green, 1);
+      builder.addRangeBox(this.contentRange);
+      this._rangeGraphic = builder.finish();
+    }
+    return this._rangeGraphic;
+  }
 
   /** Returns the range of this tile's contents in world coordinates. */
   public computeWorldContentRange(): ElementAlignedBox3d {
@@ -275,8 +289,14 @@ export class Tile implements IDisposable {
   }
 
   public drawGraphics(args: Tile.DrawArgs): void {
-    if (undefined !== this.graphics)
+    if (undefined !== this.graphics) {
       args.graphics.add(this.graphics);
+      if (args.context.viewport.wantTileBoundingBoxes) {
+        const rangeGraphics = this.getRangeGraphic(args.context);
+        if (undefined !== rangeGraphics)
+          args.graphics.add(rangeGraphics);
+      }
+    }
   }
 
   private unloadChildren(olderThan: BeTimePoint): void {

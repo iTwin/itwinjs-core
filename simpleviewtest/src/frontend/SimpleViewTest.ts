@@ -409,6 +409,7 @@ async function openView(state: SimpleViewState) {
     theViewport = new Viewport(htmlCanvas, state.viewState!);
     await _changeView(state.viewState!);
     theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
+    theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
     IModelApp.viewManager.addViewport(theViewport);
   }
 }
@@ -614,6 +615,10 @@ function wireIconsToFunctions() {
       clearInterval(curFPSIntervalId);
     }
   });
+
+  const boundingBoxes = document.getElementById("boundingBoxes")! as HTMLInputElement;
+  boundingBoxes.addEventListener("click", () => theViewport!.wantTileBoundingBoxes = boundingBoxes.checked);
+
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
