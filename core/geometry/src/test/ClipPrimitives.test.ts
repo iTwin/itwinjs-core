@@ -5,7 +5,9 @@
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../clipping/ClipPrimitive";
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "../clipping/ClipPlane";
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
@@ -33,7 +35,7 @@ function isFiniteRange(range: Range3d): boolean {
  * function return true, otherwise, returns false immediately.
  */
 function applyFunctionToPlanes(clipPrimitive: ClipPrimitive, isMask: boolean, func: ((plane: ClipPlane) => boolean)): boolean {
-  let set: ClipPlaneSet | undefined;
+  let set: UnionOfConvexClipPlaneSets | undefined;
   if (isMask)
     set = clipPrimitive.fetchMaskPlanesRef();
   else
@@ -66,7 +68,7 @@ function convexSetsAreEqual(convexSet0: ConvexClipPlaneSet, convexSet1: ConvexCl
   return true;
 }
 
-function clipPlaneSetsAreEqual(set0: ClipPlaneSet, set1: ClipPlaneSet): boolean {
+function clipPlaneSetsAreEqual(set0: UnionOfConvexClipPlaneSets, set1: UnionOfConvexClipPlaneSets): boolean {
   if (set0.convexSets.length !== set1.convexSets.length)
     return false;
 

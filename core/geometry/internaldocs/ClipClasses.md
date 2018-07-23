@@ -1,12 +1,12 @@
 # Planar clipping
 
-ClipPlane, ConvexClipPlaneSet, and ClipPlaneSet form a clear sequence of complexity:
+ClipPlane, ConvexClipPlaneSet, and UnionOfConvexClipPlaneSets form a clear sequence of complexity:
 
 | Class | Content | semantics |
 |---------------|-------------------|--------------|
 | ClipPlane | Single clip plane | Splits the universe into two halfspaces at planar boundary |
 | ConvexClipPlaneSet | Array of clip planes | convex region which is the _intersection_ of the half spaces |
-| ClipPlaneSet | Array of ConvexClipPlaneSet | _union_ of the convex regions |
+| UnionOfConvexClipPlaneSets | Array of ConvexClipPlaneSet | _union_ of the convex regions |
 
 
 # ClipPlane
@@ -35,9 +35,9 @@ ClipPlane, ConvexClipPlaneSet, and ClipPlaneSet form a clear sequence of complex
 
 
 
-# ClipPlaneSet remarks
+# UnionOfConvexClipPlaneSets remarks
 
-* The ConvexClipPlaneSet members of a ClipPlaneSet are assumed non-overlapping
+* The ConvexClipPlaneSet members of a UnionOfConvexClipPlaneSets are assumed non-overlapping
   * Test for "point inside" can terminate at first "inside" of a ConvexClipPlaneSet member
   * When clipping a polygon, if a fragment is found to be inside a ConvexClipPlaneSet member the fragment may be accepted "as is" -- no need to consider also being in other ConvexClipPlaneSet members.
 * A non-convex polygon must be represented by a collection of convex pieces (e.g. triangles).

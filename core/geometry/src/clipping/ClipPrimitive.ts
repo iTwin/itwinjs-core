@@ -4,7 +4,8 @@
 
 /** @module CartesianGeometry */
 
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "./ClipPlane";
+import { ClipPlane } from "./ClipPlane";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { ClipPlaneContainment } from "./ClipUtils";
 import { Point3d, Vector2d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
@@ -13,6 +14,7 @@ import { Geometry } from "../Geometry";
 import { PolygonOps } from "../PointHelpers";
 import { Matrix4d } from "../numerics/Geometry4d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 
 /**
  * Bit mask type for easily keeping track of defined vs undefined values and which parts of a clipping shape
@@ -48,7 +50,7 @@ class PolyEdge {
  * will typically be fed to an additive function that will append new ClipPlanes to the cache based on these parameters.
  */
 export class PlaneSetParamsCache {
-  public clipPlaneSet: ClipPlaneSet;
+  public clipPlaneSet: UnionOfConvexClipPlaneSets;
   public zLow: number;
   public zHigh: number;
   public isMask: boolean;
@@ -58,7 +60,7 @@ export class PlaneSetParamsCache {
   public focalLength: number;
 
   public constructor(zLow: number, zHigh: number, localOrigin?: Point3d, isMask: boolean = false, isInvisible: boolean = false, focalLength: number = 0.0) {
-    this.clipPlaneSet = ClipPlaneSet.createEmpty();
+    this.clipPlaneSet = UnionOfConvexClipPlaneSets.createEmpty();
     this.zLow = zLow;
     this.zHigh = zHigh;
     this.isMask = isMask;
@@ -76,15 +78,15 @@ export class PlaneSetParamsCache {
  * * an "invisible" flag
  */
 export abstract class ClipPrimitive {
-  protected _clipPlanes?: ClipPlaneSet;
-  protected _maskPlanes?: ClipPlaneSet;
+  protected _clipPlanes?: UnionOfConvexClipPlaneSets;
+  protected _maskPlanes?: UnionOfConvexClipPlaneSets;
   protected _invisible: boolean;
 
-  public abstract fetchClipPlanesRef(): ClipPlaneSet | undefined;
-  public abstract fetchMaskPlanesRef(): ClipPlaneSet | undefined;
+  public abstract fetchClipPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
+  public abstract fetchMaskPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
   public abstract get invisible(): boolean;
 
-  protected constructor(planeSet?: ClipPlaneSet | undefined, isInvisible: boolean = false) {
+  protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible: boolean = false) {
     this._clipPlanes = planeSet;
     this._invisible = isInvisible;
   }
@@ -323,11 +325,11 @@ export class ClipShape extends ClipPrimitive {
    * If the clip plane set is already stored, return it. Otherwise, parse the clip planes out of the shape
    * defined by the set of polygon points.
    */
-  public fetchClipPlanesRef(): ClipPlaneSet {
+  public fetchClipPlanesRef(): UnionOfConvexClipPlaneSets {
     if (this._clipPlanes !== undefined)
       return this._clipPlanes;
 
-    this._clipPlanes = ClipPlaneSet.createEmpty();
+    this._clipPlanes = UnionOfConvexClipPlaneSets.createEmpty();
     this.parseClipPlanes(this._clipPlanes);
 
     if (this._transformValid)
@@ -339,14 +341,14 @@ export class ClipShape extends ClipPrimitive {
    * If the masking clip plane set is already stored, return it. Otherwise, parse the mask clip planes out of the shape
    * defined by the set of polygon points.
    */
-  public fetchMaskPlanesRef(): ClipPlaneSet | undefined {
+  public fetchMaskPlanesRef(): UnionOfConvexClipPlaneSets | undefined {
     if (!this._isMask)
       return undefined;
 
     if (this._maskPlanes !== undefined)
       return this._maskPlanes;
 
-    this._maskPlanes = ClipPlaneSet.createEmpty();
+    this._maskPlanes = UnionOfConvexClipPlaneSets.createEmpty();
     this.parseClipPlanes(this._maskPlanes);
 
     if (this._transformValid)
@@ -536,7 +538,7 @@ export class ClipShape extends ClipPrimitive {
   }
 
   /** Given the current polygon data, parses clip planes that together form an object, storing the result in the set given, either clipplanes or maskplanes. */
-  private parseClipPlanes(set: ClipPlaneSet) {
+  private parseClipPlanes(set: UnionOfConvexClipPlaneSets) {
     const points = this._polygon;
     if (points.length === 3 && !this._isMask && points[0].isExactEqual(points[points.length - 1])) {
       this.parseLinearPlanes(set, this._polygon[0], this._polygon[1]);
@@ -553,7 +555,7 @@ export class ClipShape extends ClipPrimitive {
     }
   }
 
-  private parseLinearPlanes(set: ClipPlaneSet, start: Point3d, end: Point3d, cameraFocalLength?: number): boolean {
+  private parseLinearPlanes(set: UnionOfConvexClipPlaneSets, start: Point3d, end: Point3d, cameraFocalLength?: number): boolean {
     // Handles the degenerate case of 2 distinct points (used by select by line).
     const normal = start.vectorTo(end);
 
@@ -592,7 +594,7 @@ export class ClipShape extends ClipPrimitive {
     return true;
   }
 
-  private parseConvexPolygonPlanes(set: ClipPlaneSet, direction: number, cameraFocalLength?: number): boolean {
+  private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, direction: number, cameraFocalLength?: number): boolean {
     const samePointTolerance = 1.0e-8;    // This could possibly be replaced with more widely used constants
     const edges: PolyEdge[] = [];
     const reverse = (direction < 0) !== this._isMask;
@@ -726,7 +728,7 @@ export class ClipShape extends ClipPrimitive {
     if (this._isMask)
       return false;
 
-    this._clipPlanes = ClipPlaneSet.createEmpty();
+    this._clipPlanes = UnionOfConvexClipPlaneSets.createEmpty();
     this._maskPlanes = undefined;
     this.parseClipPlanes(this._clipPlanes);
     this._clipPlanes.multiplyPlanesByMatrix(matrix);

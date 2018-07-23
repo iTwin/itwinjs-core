@@ -7,6 +7,9 @@
 import { } from "../PointVector";
 import { Range1d } from "../Range";
 import { GrowableFloat64Array } from "../GrowableArray";
+/**
+ * A Range1d array is a set of intervals, such as occur when a line is clipped to a (nonconvex) polygon
+ */
 export class Range1dArray {
   /** Internal step: Caller supplies rangeA = interval from left operand of set difference {A - B}
    *  ib = lowest possible index of overlapping interval of {B}
