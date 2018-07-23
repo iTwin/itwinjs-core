@@ -339,7 +339,6 @@ export class ShaderBuilder extends ShaderVariables {
       if (ext === "GL_EXT_draw_buffers") {
         assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
         needMultiDrawBuffers = true;
-        break;
       }
 
       src.addline("#extension " + ext + " : enable");
@@ -719,5 +718,9 @@ export class ProgramBuilder {
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;
+  }
+
+  public setDebugDescription(description: string): void {
+    this.vert.headerComment = this.frag.headerComment = ("//! " + description);
   }
 }
