@@ -23,14 +23,12 @@ import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
-import { GLSLFragment } from "./glsl/Fragment";
-import { GLSLDecode } from "./glsl/Decode";
+import { GLSLFragment, addPickBufferOutputs } from "./glsl/Fragment";
 import { addFrustum } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
-import { System } from "./System";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 
 // Defines a rendering technique implemented using one or more shader programs.
@@ -114,7 +112,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected addElementId(builder: ProgramBuilder, feat: FeatureMode) {
     const frag = builder.frag;
-    if (FeatureMode.None === feat || !System.instance.capabilities.supportsPickShaders)
+    if (FeatureMode.None === feat)
       frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
     else {
       const vert = builder.vert;
@@ -124,10 +122,7 @@ export abstract class VariedTechnique implements Technique {
       addModelViewMatrix(vert);
       addRenderOrder(frag);
       addElementId(builder);
-      frag.addDrawBuffersExtension();
-      frag.addFunction(GLSLDecode.encodeDepthRgb);
-      frag.addFunction(GLSLFragment.computeLinearDepth);
-      frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
+      addPickBufferOutputs(frag);
     }
   }
 

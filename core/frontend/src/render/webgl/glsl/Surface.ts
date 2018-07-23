@@ -13,7 +13,7 @@ import {
   ShaderBuilder,
 } from "../ShaderBuilder";
 import { FeatureMode, WithClipVolume } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal } from "./Fragment";
+import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
@@ -347,14 +347,11 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
-  if (FeatureMode.None === feat || !System.instance.capabilities.supportsPickShaders) {
+  if (FeatureMode.None === feat) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
-    builder.frag.addExtension("GL_EXT_draw_buffers");
     builder.frag.addFunction(GLSLDecode.depthRgb);
-    builder.frag.addFunction(GLSLDecode.encodeDepthRgb);
-    builder.frag.addFunction(GLSLFragment.computeLinearDepth);
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
+    addPickBufferOutputs(builder.frag);
   }
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

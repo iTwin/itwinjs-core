@@ -6,7 +6,7 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry } from "./CachedGeometry";
+import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType } from "./System";
@@ -748,6 +748,24 @@ class MPFrameBuffers extends  FrameBuffers {
   }
 }
 
+class MPGeometry extends Geometry {
+  public copyColor?: SingleTexturedViewportQuadGeometry;
+
+  public init(textures: Textures): boolean {
+    if (!super.init(textures))
+      return false;
+
+    assert(undefined === this.copyColor);
+    this.copyColor = SingleTexturedViewportQuadGeometry.createGeometry(textures.idLow!.getHandle()!, TechniqueId.CopyColor);
+    return undefined !== this.copyColor;
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this.copyColor = dispose(this.copyColor);
+  }
+}
+
 // Compositor used when multiple render targets are not supported (WEBGL_draw_buffers not available or fewer than 4 color attachments supported).
 // This falls back to multi-pass rendering in place of MRT rendering, which has obvious performance implications.
 // The chief use case is iOS.
@@ -755,7 +773,7 @@ class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
 
   public constructor(target: Target) {
-    super(target, new MPFrameBuffers(), new Geometry());
+    super(target, new MPFrameBuffers(), new MPGeometry());
   }
 
   private get fbos(): MPFrameBuffers { return this._fbos as MPFrameBuffers; }
@@ -770,7 +788,9 @@ class MPCompositor extends Compositor {
   protected clearOpaque(needComposite: boolean): void {
     const bg = FloatRgba.fromColorDef(this._target.bgColor);
     this.clearFbo(needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
-    // ###TODO: clear the pick buffers...
+    this.clearFbo(this.fbos.depthAndOrder!, 0, 0, 0, 0, true);
+    this.clearFbo(this.fbos.idLow!, 0, 0, 0, 0, true);
+    this.clearFbo(this.fbos.idHigh!, 0, 0, 0, 0, true);
   }
 
   protected renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean): void {

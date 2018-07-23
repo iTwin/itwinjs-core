@@ -99,7 +99,7 @@ export class Capabilities {
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
-  public get supportsPickShaders(): boolean { return this.maxColorAttachments >= 4; }
+  public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 4; }
 
   /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
   public queryExtensionObject<T>(ext: string): T | undefined {
