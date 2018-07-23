@@ -168,7 +168,6 @@ interface SVTConfiguration {
   viewName?: string;
 }
 
-
 describe("PerformanceTests - 1", () => {
   // let imodel: IModelConnection;
   // let spatialView: SpatialViewState;
@@ -236,11 +235,11 @@ describe("PerformanceTests - 1", () => {
     await openView(activeViewState);
     console.log("This is from frontend/main"); // tslint:disable-line
 
-    let plan = new UpdatePlan();
+    const plan = new UpdatePlan();
     theViewport!.sync.setRedrawPending;
     await theViewport!.renderFrame(plan);
     const target = (theViewport!.target as Target);
-    let frameTimes = target.frameTimings;
+    const frameTimes = target.frameTimings;
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
 
@@ -277,7 +276,6 @@ describe("PerformanceTests - 1", () => {
     theViewport!.sync.setRedrawPending;
     await theViewport!.renderFrame(plan);
     await printResults((theViewport!.target as Target).frameTimings);
-
 
     console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
     if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
@@ -339,10 +337,10 @@ describe("PerformanceTests - 1", () => {
     await openView(activeViewState);
     console.log("This is from frontend/main"); // tslint:disable-line
 
-    let plan = new UpdatePlan();
+    const plan = new UpdatePlan();
     await theViewport!.renderFrame(plan);
     const target = (theViewport!.target as Target);
-    let frameTimes = target.frameTimings;
+    const frameTimes = target.frameTimings;
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
 
@@ -370,7 +368,6 @@ describe("PerformanceTests - 1", () => {
     await theViewport!.renderFrame(plan);
     await printResults((theViewport!.target as Target).frameTimings);
 
-
     console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
     if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
     await IModelApp.shutdown();
@@ -382,27 +379,6 @@ describe("PerformanceTests - 1", () => {
   });
 
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // /*---------------------------------------------------------------------------------------------
 // |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
