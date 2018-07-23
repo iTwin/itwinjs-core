@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "ShaderBuilder dynamically builds shaders incorporating clipping for various clip plane set lengths alongside normal shader programs",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "nate.rex@bentley.com"
+}
