@@ -49,7 +49,11 @@ class Textures implements IDisposable {
         break;
       }
       case RenderType.TextureHalfFloat: {
-        // ###TODO...
+        const ext = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
+        if (undefined !== ext) {
+          pixelDataType = ext.HALF_FLOAT_OES;
+          break;
+        }
       }
       /* falls through */
       case RenderType.TextureUnsignedByte: {
