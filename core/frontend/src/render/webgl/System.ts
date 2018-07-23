@@ -30,7 +30,7 @@ import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive } from "./Primitive";
-import { ClipVolumePlanes, ClipMaskVolume } from "./ClipVolume";
+import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 
 export const enum ContextState {
   Uninitialized,
@@ -318,7 +318,7 @@ export class IdMap implements IDisposable {
     if (existingClipVolume)
       return existingClipVolume;
 
-    let clipVolume: RenderClipVolume | undefined = ClipVolumePlanes.create(clipVector);
+    let clipVolume: RenderClipVolume | undefined = ClipPlanesVolume.create(clipVector);
     if (!clipVolume)
       clipVolume = ClipMaskVolume.create(clipVector);
     if (!clipVolume)

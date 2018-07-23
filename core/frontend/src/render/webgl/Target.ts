@@ -86,58 +86,33 @@ export class FrustumUniforms {
   }
 }
 
-/** Interface for GPU clipping. Max of 6 planes of clipping; no nesting */
+/** Interface for 3d GPU clipping. */
 export class Clips {
-  private readonly _clips: Float32Array;
-  private _clipCount: number;
-  private _clipActive: number;  // count of SetActiveClip nesting (only outermost used)
+  private _texture?: TextureHandle;
+  private clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
+  private clipCount: number = 0;
 
-  public constructor() {
-    this._clipCount = 0;
-    this._clipActive = 0;
-    const data = [];
-    for (let i = 0; i < 6 * 4; i++) {
-      data[i] = 0.0;
-    }
+  public get texture(): TextureHandle | undefined { return this._texture; }
+  public get count(): number { return this.clipCount; }
+  public get isValid(): boolean { return this.clipCount > 0; }
 
-    this._clips = new Float32Array(data);
+  public set(numPlanes: number, texture: TextureHandle) {
+    this.clipActive++;
+    if (this.clipActive !== 1)
+      return;
+
+    this.clipCount = numPlanes;
+    this._texture = texture;
   }
 
-  public setFrom(planes: ClipPlane[], viewMatrix: Transform): void {
-    this._clipActive++;
-    if (1 === this._clipActive) {
-      const count = planes.length;
-      this._clipCount = count;
-      for (let i = 0; i < count; ++i) {
-        // Transform direction of clip plane
-        const norm: Vector3d = planes[i].inwardNormalRef;
-        const dir: Vector3d = viewMatrix.multiplyVector(norm);
-        dir.normalizeInPlace();
-        this._clips[i * 4] = dir.x;
-        this._clips[i * 4 + 1] = dir.y;
-        this._clips[i * 4 + 2] = dir.z;
-
-        // Transform distance of clip plane
-        const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
-        const xFormPos: Point3d = viewMatrix.multiplyPoint3d(pos);
-        this._clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
-      }
+  public clear() {
+    if (this.clipActive === 1) {
+      this.clipCount = 0;
+      this._texture = undefined;
     }
+    if (this.clipActive > 0)
+      this.clipActive--;
   }
-
-  public clear(): void {
-    if (this._clipActive === 1) {
-      this._clipCount = 0;
-    }
-
-    if (this._clipActive > 0) {
-      this._clipActive--;
-    }
-  }
-
-  public get clips(): Float32Array { return this._clips; }
-  public get length(): number { return this._clipCount; }
-  public get isValid(): boolean { return this.length > 0; }
 }
 
 export class PerformanceMetrics {
@@ -266,7 +241,6 @@ export abstract class Target extends RenderTarget {
   public set clipMask(mask: TextureHandle | undefined) {
     assert(!this.hasClipMask);
     assert(this.is2d);
-    dispose(this._clipMask);
     this._clipMask = mask;
   }
 
@@ -281,7 +255,6 @@ export abstract class Target extends RenderTarget {
     dispose(this.compositor);
     this._dynamics = dispose(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
-    this._clipMask = dispose(this._clipMask);
     this._environmentMap = dispose(this._environmentMap);
     this._diffuseMap = dispose(this._diffuseMap);
 
