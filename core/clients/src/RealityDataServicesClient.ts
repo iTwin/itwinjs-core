@@ -339,6 +339,9 @@ export class RealityDataServicesClient extends WsgClient {
     const realityData: RealityData[] = await this.getRealityData(token, projectId, tilesId);
     let root = realityData[0].rootDocument!;
 
+    // reset the blob url when a root document is requested to ensure the previous blob storage key isn't reused
+    this.blobUrl = undefined;
+
     // if the RootDocument is ClarkSimple/RootTile.json, then only use RootTile.json,
     // so we need to only use the last part of the RootDocument path
     if (root.includes("/"))
