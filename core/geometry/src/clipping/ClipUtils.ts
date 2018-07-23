@@ -5,7 +5,7 @@ import { Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
 import { Arc3d } from "../curve/Arc3d";
-import { ClipPlaneSet } from "./ClipPlane";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 import { CurvePrimitive, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { ClipVector } from "./ClipVector";
 
@@ -112,7 +112,7 @@ export class ClipUtilities {
   }
 
   /** Given an array of points, return whether or not processing is required to clip to a ClipPlaneSet region. */
-  public static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: ClipPlaneSet, tolerance: number): ClipStatus {
+  public static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus {
     if (planeSet.convexSets.length === 0)
       return ClipStatus.TrivialAccept;
 

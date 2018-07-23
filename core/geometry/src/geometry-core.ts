@@ -125,6 +125,8 @@ export * from "./Range";
 export * from "./Constant";
 export * from "./GrowableArray";
 export * from "./clipping/ClipPlane";
+export * from "./clipping/ConvexClipPlaneSet";
+export * from "./clipping/UnionOfConvexClipPlaneSets";
 export * from "./clipping/ClipPrimitive";
 export * from "./clipping/ClipVector";
 export * from "./clipping/ClipUtils";

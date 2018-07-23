@@ -9,7 +9,7 @@ import { Point3d, Vector3d } from "../PointVector";
 import { RotMatrix } from "../Transform";
 import { Transform } from "../Transform";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { ConvexClipPlaneSet } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 /* tslint:disable:no-console */
 
 describe("ConvexClipPlaneSet", () => {

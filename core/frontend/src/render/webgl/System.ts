@@ -28,7 +28,7 @@ import { MeshGraphic } from "./Mesh";
 import { PointCloudGraphic } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
-import { SkyBoxQuadsGeometry } from "./CachedGeometry";
+import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive } from "./Primitive";
 import { ClipVolumePlanes, ClipMaskVolume } from "./ClipVolume";
 
@@ -60,6 +60,7 @@ export const enum DepthType {
 }
 
 const forceNoDrawBuffers = false;
+const forceHalfFloat = false;
 
 /** Describes the rendering capabilities of the host system. */
 export class Capabilities {
@@ -119,7 +120,7 @@ export class Capabilities {
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
       for (const ext of extensions) {
-        if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
+        if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || (!forceHalfFloat && ext === "OES_texture_float") ||
           ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
           ext === "EXT_shader_texture_lod") {
           const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
@@ -134,7 +135,7 @@ export class Capabilities {
     this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
 
     // Determine the maximum color-renderable attachment type.
-    if (this.isTextureRenderable(gl, gl.FLOAT))
+    if (!forceHalfFloat && this.isTextureRenderable(gl, gl.FLOAT))
       this._maxRenderType = RenderType.TextureFloat;
     else {
       const hfExt: OES_texture_half_float | undefined = this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
@@ -411,9 +412,10 @@ export class System extends RenderSystem {
     if (params.isTexturedCube) {
       const cachedGeom = SkyBoxQuadsGeometry.create(params);
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+    } else {
+      const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
+      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     }
-    // ###TODO: Gradient approach
-    return undefined;
   }
 
   public applyRenderState(newState: RenderState) {

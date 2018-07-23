@@ -7,7 +7,7 @@ import { Checker, UsageSums, SaveAndRestoreCheckTransform } from "./Checker";
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Geometry, AngleSweep } from "../Geometry";
-import { AlternatingCCTreeNode } from "../numerics/AlternatingConvexClipTree";
+import { AlternatingCCTreeNode } from "../clipping/AlternatingConvexClipTree";
 import { CurvePrimitive, CurveLocationDetailPair } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";

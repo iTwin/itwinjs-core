@@ -424,6 +424,7 @@ async function openView(state: SimpleViewState) {
     await _changeView(state.viewState!);
     theViewport.addFeatureOverrides = addFeatureOverrides;
     theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
+    theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
     IModelApp.viewManager.addViewport(theViewport);
   }
 }
@@ -642,6 +643,10 @@ function wireIconsToFunctions() {
       clearInterval(curFPSIntervalId);
     }
   });
+
+  const boundingBoxes = document.getElementById("boundingBoxes")! as HTMLInputElement;
+  boundingBoxes.addEventListener("click", () => theViewport!.wantTileBoundingBoxes = boundingBoxes.checked);
+
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
   document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 

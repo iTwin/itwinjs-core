@@ -7,7 +7,8 @@
 import { Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
 import { Angle } from "../Geometry";
-import { ClipPlane, ConvexClipPlaneSet } from "../clipping/ClipPlane";
+import { ClipPlane } from "./ClipPlane";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { PolygonOps } from "../PointHelpers";
 import { CurvePrimitive, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurvePrimitive";
 import { CurveCollection } from "../curve/CurveChain";

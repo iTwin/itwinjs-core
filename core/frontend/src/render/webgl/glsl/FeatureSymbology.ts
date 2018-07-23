@@ -176,7 +176,6 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (FeatureMode.None === mode)
     return false;
 
-
   const vert = builder.vert;
   const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
   if (haveOverrides || System.instance.capabilities.supportsPickShaders) {
