@@ -421,6 +421,8 @@ export abstract class Target extends RenderTarget {
     const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
 
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
+    if (!System.instance.capabilities.supportsMRTTransparency)
+      vf.setShowTransparency(false); // ###TODO: For now until two-pass transparency implemented...
 
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
     switch (vf.renderMode) {

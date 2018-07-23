@@ -337,7 +337,9 @@ export class ShaderBuilder extends ShaderVariables {
     let needMultiDrawBuffers = false;
     for (const ext of this._extensions) {
       if (ext === "GL_EXT_draw_buffers") {
+        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
         needMultiDrawBuffers = true;
+        break;
       }
 
       src.addline("#extension " + ext + " : enable");
