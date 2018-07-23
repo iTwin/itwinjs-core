@@ -2,13 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64, IDisposable } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry,
 } from "../backend";
+import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestIModelInfo } from "./MockAssetUtil";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
@@ -83,6 +84,28 @@ export class TestUsers {
     email: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
   };
+}
+
+/**
+ * Disables native code assertions from firing. This can be used by tests that intentionally
+ * test failing operations. If those failing operations raise assertions in native code, the test
+ * would fail unexpectedly in a debug build. In that case the native code assertions can be disabled with
+ * this class.
+ */
+export class DisableNativeAssertions implements IDisposable {
+  private _native: NativeDisableNativeAssertions | undefined;
+
+  constructor() {
+    this._native = new (NativePlatformRegistry.getNativePlatform()).DisableNativeAssertions();
+  }
+
+  public dispose(): void {
+    if (!this._native)
+      return;
+
+    this._native!.dispose();
+    this._native = undefined;
+  }
 }
 
 export class IModelTestUtils {
