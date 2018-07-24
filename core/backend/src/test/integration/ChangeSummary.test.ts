@@ -384,7 +384,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it.skip("Extract ChangeSummaries with invalid input", async () => {
+  it("Extract ChangeSummaries with invalid input", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
