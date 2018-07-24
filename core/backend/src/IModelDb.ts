@@ -23,7 +23,7 @@ import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
-import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
+import { ViewDefinition } from "./ViewDefinition";
 import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { KnownLocations } from "./Platform";
@@ -1211,11 +1211,8 @@ export namespace IModelDb {
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId) as CategorySelectorProps;
       viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
-      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined) {
+      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId) as ModelSelectorProps;
-      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId); // For SheetViewDefinition, include sheetProps
-      }
       return viewStateData;
     }
   }

@@ -75,6 +75,11 @@ export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
 
+/** Interface adopted by a type which can apply a clipping volume to a Target. */
+export abstract class RenderClipVolume implements IDisposable {
+  public abstract dispose(): void;
+}
+
 export type GraphicList = RenderGraphic[];
 
 /** A graphic used for decorations, optionally with symbology overrides. */
@@ -255,6 +260,10 @@ export namespace Pixel {
 export abstract class RenderTarget implements IDisposable {
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
+  public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
+  public static get displayPriorityFactor(): number { return this.frustumDepth2d / (this.maxDisplayPriority + 1); }
+
+  public static depthFromDisplayPriority(priority: number): number { return this.displayPriorityFactor * priority; }
 
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
@@ -282,8 +291,14 @@ export abstract class RenderTarget implements IDisposable {
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
 }
 
+export enum SkyboxSphereType {
+  Gradient2Color,
+  Gradient4Color,
+  Texture,
+}
+
 export class SkyBoxCreateParams {
-  private _isGradient: boolean;
+  private _isSphere: boolean;
 
   public readonly front?: RenderTexture;
   public readonly back?: RenderTexture;
@@ -291,27 +306,57 @@ export class SkyBoxCreateParams {
   public readonly bottom?: RenderTexture;
   public readonly left?: RenderTexture;
   public readonly right?: RenderTexture;
+  public readonly sphereType?: SkyboxSphereType;
+  public readonly zenithColor?: ColorDef;
+  public readonly skyColor?: ColorDef;
+  public readonly groundColor?: ColorDef;
+  public readonly nadirColor?: ColorDef;
+  public readonly skyExponent?: number;
+  public readonly groundExponent?: number;
 
-  public get isTexturedCube() { return !this._isGradient; }
-  public get isGradient() { return this._isGradient; }
+  public get isTexturedCube() { return !this._isSphere; }
+  public get isSphere() { return this._isSphere; }
 
-  private constructor(isGradient: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture) {
-    this._isGradient = isGradient;
+  private constructor(_isSphere: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture,
+    sphereType?: SkyboxSphereType, zenithColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, nadirColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+    this._isSphere = _isSphere;
     this.front = front;
     this.back = back;
     this.top = top;
     this.bottom = bottom;
     this.left = left;
     this.right = right;
+    this.sphereType = sphereType;
+    this.zenithColor = zenithColor;
+    this.skyColor = skyColor;
+    this.groundColor = groundColor;
+    this.nadirColor = nadirColor;
+    this.skyExponent = skyExponent;
+    this.groundExponent = groundExponent;
   }
 
   public static createForTexturedCube(front: RenderTexture, back: RenderTexture, top: RenderTexture, bottom: RenderTexture, left: RenderTexture, right: RenderTexture) {
     return new SkyBoxCreateParams(false, front, back, top, bottom, left, right);
   }
 
-  public static createForGradient() {
-    // ###TODO
-    return new SkyBoxCreateParams(true);
+  public static createForGradientSphere(sphereType: SkyboxSphereType, zenithColor: ColorDef, nadirColor: ColorDef,
+    skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+    // Check arguments.
+    assert(SkyboxSphereType.Texture !== sphereType);
+    if (SkyboxSphereType.Gradient4Color !== sphereType) {
+      assert(undefined !== skyColor);
+      assert(undefined !== groundColor);
+      assert(undefined !== skyExponent);
+      assert(undefined !== groundExponent);
+    }
+    return new SkyBoxCreateParams(true, undefined, undefined, undefined, undefined, undefined, undefined,
+      sphereType, zenithColor, skyColor, groundColor, nadirColor, skyExponent, groundExponent);
+  }
+
+  public static createForTexturedSphere(texture: RenderTexture) {
+    // ###TODO: may be other attributes here like a z offset
+    return new SkyBoxCreateParams(true, texture, undefined, undefined, undefined, undefined, undefined,
+      SkyboxSphereType.Texture, undefined, undefined, undefined, undefined, undefined, undefined);
   }
 }
 
@@ -358,6 +403,9 @@ export abstract class RenderSystem implements IDisposable {
   // /** Create a point cloud primitive */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
+  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
+  public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
+
   /** Create a tile primitive */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
@@ -389,7 +437,7 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Moved clip plane classes and geometry clipping utilities to its own directory",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "nate.rex@bentley.com"
+}

@@ -5,7 +5,7 @@
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -28,8 +28,9 @@ import { MeshGraphic } from "./Mesh";
 import { PointCloudPrimitive } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
-import { SkyBoxQuadsGeometry } from "./CachedGeometry";
+import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive } from "./Primitive";
+import { ClipVolumePlanes, ClipMaskVolume } from "./ClipVolume";
 
 export const enum ContextState {
   Uninitialized,
@@ -57,6 +58,8 @@ export const enum DepthType {
   // TextureFloat32,               // core to WebGL2
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
+
+const forceNoDrawBuffers = false;
 
 /** Describes the rendering capabilities of the host system. */
 export class Capabilities {
@@ -94,6 +97,9 @@ export class Capabilities {
   public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
 
+  public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
+  public get supportsPickShaders(): boolean { return this.maxColorAttachments >= 4; }
+
   /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
   public queryExtensionObject<T>(ext: string): T | undefined {
     const extObj: any = this._extensionMap[ext];
@@ -113,7 +119,7 @@ export class Capabilities {
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
       for (const ext of extensions) {
-        if (ext === "WEBGL_draw_buffers" || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
+        if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
           ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
           ext === "EXT_shader_texture_lod") {
           const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
@@ -139,7 +145,7 @@ export class Capabilities {
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
-    return this.hasRequiredFeatures && this.hasRequiredDrawTargets && this.hasRequiredTextureUnits;
+    return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
   }
 
   public static create(gl: WebGLRenderingContext): Capabilities | undefined {
@@ -169,12 +175,7 @@ export class Capabilities {
 
   /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
   private get hasRequiredFeatures(): boolean {
-    return this.supportsDrawBuffers && this.supports32BitElementIndex;
-  }
-
-  /** Determines if the required number of draw targets are supported (could change). */
-  private get hasRequiredDrawTargets(): boolean {
-    return this.maxColorAttachments > 3 && this.maxDrawBuffers > 3;
+    return this.supports32BitElementIndex;
   }
 
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
@@ -186,61 +187,68 @@ export class Capabilities {
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
 export class IdMap implements IDisposable {
   /** Mapping of materials by their key values. */
-  public readonly materialMap: Map<string, RenderMaterial>;
+  public readonly materials: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
-  public readonly textureMap: Map<string, RenderTexture>;
+  public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
-  public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
+  public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
   /** Array of textures without key values (unnamed). */
   public readonly keylessTextures: RenderTexture[] = [];
+  /** Mapping of ClipVectors to corresponding clipping volumes. */
+  public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
 
   public constructor() {
-    this.materialMap = new Map<string, RenderMaterial>();
-    this.textureMap = new Map<string, RenderTexture>();
-    this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+    this.materials = new Map<string, RenderMaterial>();
+    this.textures = new Map<string, RenderTexture>();
+    this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+    this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
   }
 
   public dispose() {
-    const textureArr = Array.from(this.textureMap.values());
-    const gradientArr = this.gradientMap.extractArrays().values;
+    const textureArr = Array.from(this.textures.values());
+    const gradientArr = this.gradients.extractArrays().values;
+    const clipVolumeArr = Array.from(this.clipVolumes.values());
     for (const texture of textureArr)
       dispose(texture);
     for (const gradient of gradientArr)
       dispose(gradient);
     for (const texture of this.keylessTextures)
       dispose(texture);
-    this.textureMap.clear();
-    this.gradientMap.clear();
+    for (const clipVolume of clipVolumeArr)
+      dispose(clipVolume);
+    this.textures.clear();
+    this.gradients.clear();
+    this.clipVolumes.clear();
     this.keylessTextures.length = 0;
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
   public addMaterial(material: RenderMaterial) {
     if (material.key)
-      this.materialMap.set(material.key, material);
+      this.materials.set(material.key, material);
   }
 
   /** Add a texture to this IdMap, given that it has a valid key. */
   public addTexture(texture: RenderTexture) {
     if (texture.key)
-      this.textureMap.set(texture.key, texture);
+      this.textures.set(texture.key, texture);
     else
       this.keylessTextures.push(texture);
   }
 
   /** Add a texture to this IdMap using gradient symbology. */
   public addGradient(gradientSymb: Gradient.Symb, texture: RenderTexture) {
-    this.gradientMap.set(gradientSymb, texture);
+    this.gradients.set(gradientSymb, texture);
   }
 
   /** Find a cached material using its key. If not found, returns undefined. */
   public findMaterial(key: string): RenderMaterial | undefined {
-    return this.materialMap.get(key);
+    return this.materials.get(key);
   }
 
   /** Find a cached gradient using the gradient symbology. If not found, returns undefined. */
   public findGradient(symb: Gradient.Symb): RenderTexture | undefined {
-    return this.gradientMap.get(symb);
+    return this.gradients.get(symb);
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
@@ -248,10 +256,10 @@ export class IdMap implements IDisposable {
     if (!params.key)
       return new Material(params);
 
-    let material = this.materialMap.get(params.key);
+    let material = this.materials.get(params.key);
     if (!material) {
       material = new Material(params);
-      this.materialMap.set(params.key, material);
+      this.materials.set(params.key, material);
     }
     return material;
   }
@@ -274,7 +282,7 @@ export class IdMap implements IDisposable {
     return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
   }
 
-  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textureMap.get(key) : undefined; }
+  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
@@ -289,7 +297,7 @@ export class IdMap implements IDisposable {
 
   /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
   public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
-    const existingGrad = this.gradientMap.get(grad);
+    const existingGrad = this.gradients.get(grad);
     if (existingGrad)
       return existingGrad;
 
@@ -303,23 +311,42 @@ export class IdMap implements IDisposable {
     this.addGradient(grad, texture);
     return texture;
   }
+
+  /** Find or cache a new clipping volume using the given clip vector. */
+  public getClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
+    const existingClipVolume = this.clipVolumes.get(clipVector);
+    if (existingClipVolume)
+      return existingClipVolume;
+
+    let clipVolume: RenderClipVolume | undefined = ClipVolumePlanes.create(clipVector);
+    if (!clipVolume)
+      clipVolume = ClipMaskVolume.create(clipVector);
+    if (!clipVolume)
+      return undefined;
+
+    this.clipVolumes.set(clipVector, clipVolume);
+    return clipVolume;
+  }
 }
 
 export class System extends RenderSystem {
-  private readonly _currentRenderState = new RenderState();
+  public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
-  public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
-  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
-  private _lineCodeTexture: TextureHandle | undefined;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
+
+  // The following are initialized immediately after the System is constructed.
+  private _lineCodeTexture?: TextureHandle;
+  private _techniques?: Techniques;
 
   public static identityTransform = Transform.createIdentity();
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public get lineCodeTexture() { return this._lineCodeTexture; }
+  public get techniques() { return this._techniques!; }
 
   public setDrawBuffers(attachments: GLenum[]): void {
     // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
@@ -340,17 +367,11 @@ export class System extends RenderSystem {
       }
     }
 
-    const techniques = Techniques.create(context);
-    if (undefined === techniques) {
-      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering techniques");
-    }
-
     const capabilities = Capabilities.create(context);
-    if (undefined === capabilities) {
+    if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
-    }
 
-    return new System(canvas, context, techniques, capabilities);
+    return new System(canvas, context, capabilities);
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
@@ -367,6 +388,7 @@ export class System extends RenderSystem {
   }
 
   public onInitialized(): void {
+    this._techniques = Techniques.create(this.context);
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
   }
@@ -383,20 +405,21 @@ export class System extends RenderSystem {
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
   public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
     if (params.isTexturedCube) {
       const cachedGeom = SkyBoxQuadsGeometry.create(params);
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+    } else {
+      const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
+      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     }
-    // ###TODO: Gradient approach
-    return undefined;
   }
 
   public applyRenderState(newState: RenderState) {
-    newState.apply(this._currentRenderState);
-    this._currentRenderState.copyFrom(newState);
+    newState.apply(this.currentRenderState);
+    this.currentRenderState.copyFrom(newState);
   }
 
   public createDepthBuffer(width: number, height: number): DepthBuffer | undefined {
@@ -413,11 +436,6 @@ export class System extends RenderSystem {
         return undefined;
       }
     }
-  }
-
-  /** Find a rendering map using an IModelConnection. Returns undefined if not found. */
-  public findIModelMap(imodel: IModelConnection): IdMap | undefined {
-    return this.resourceCache.get(imodel);
   }
 
   /** Returns the corresponding IdMap for an IModelConnection. Creates a new one if it doesn't exist. */
@@ -439,17 +457,14 @@ export class System extends RenderSystem {
     this.resourceCache.delete(imodel);
   }
 
-  /**
-   * Creates a material and adds it to the corresponding IdMap for that iModel. If the material already exists in the map, simply return it.
-   * If no render map exists for the imodel, returns undefined.
-   */
+  /** Attempt to create a material for the given iModel using a set of material parameters. */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.getIdMap(imodel);
     const material = idMap.getMaterial(params);
     return material;
   }
 
-  /** Given a key and an iModel, returns the corresponding material for that key in the iModel's IdMap. Returns undefined if none found. */
+  /** Using its key, search for an existing material of an open iModel. */
   public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
@@ -457,11 +472,12 @@ export class System extends RenderSystem {
     return idMap.findMaterial(key);
   }
 
-  /** Creates a texture using an ImageBuffer and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
+  /** Attempt to create a texture for the given iModel using an ImageBuffer. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTexture(image, params);
   }
 
+  /** Attempt to create a texture for the given iModel using an HTML image element. */
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
     if (undefined === imodel) {
@@ -472,14 +488,14 @@ export class System extends RenderSystem {
     return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
   }
 
-  /** Creates a texture using gradient symbology and adds it to the given iModel's IdMap. Returns the texture if it already exists. */
+  /** Attempt to create a texture using gradient symbology. */
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.getIdMap(imodel);
     const texture = idMap.getGradient(symb);
     return texture;
   }
 
-  /** Given a key and an iModel, returns the corresponding texture for that key in the iModel's IdMap. Returns undefined if none found. */
+  /** Using its key, search for an existing texture of an open iModel. */
   public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
@@ -487,10 +503,15 @@ export class System extends RenderSystem {
     return idMap.findTexture(key);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
+  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
+  public getClipVolume(clipVector: ClipVector, imodel: IModelConnection): RenderClipVolume | undefined {
+    const idMap = this.getIdMap(imodel);
+    return idMap.getClipVolume(clipVector);
+  }
+
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
     super(canvas);
     this.context = context;
-    this.techniques = techniques;
     this.capabilities = capabilities;
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this.resourceCache = new Map<IModelConnection, IdMap>();

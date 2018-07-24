@@ -33,6 +33,18 @@ export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
   frag.set(FragmentShaderComponent.ReverseWhiteOnWhite, reverseWhiteOnWhite);
 }
 
+// For techniques which by default use MRT, on devices which don't support MRT we fall back to
+// multi-pass rendering. The same shader is used each pass, with a uniform supplied indicating
+// which value to output to gl_FragColor. It's specified as an index - the same one that would be
+// used to index into gl_FragData[] in MRT context.
+export function addRenderTargetIndex(frag: FragmentShaderBuilder) {
+  frag.addUniform("u_renderTargetIndex", VariableType.Int, (prog) => {
+    prog.addProgramUniform("u_renderTargetIndex", (uniform, params) => {
+      uniform.setUniform1i(params.target.compositor.currentRenderTargetIndex);
+    });
+  });
+}
+
 /* ###TODO: IBL
 export function addNormalMatrixF(frag: FragmentShaderBuilder) {
   frag.addUniform("u_nmx", VariableType.Mat3, (prog) => {

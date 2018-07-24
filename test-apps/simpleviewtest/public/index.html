@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <title>Simple View Test App</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      position: relative;
+    }
+
+    #root {
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <script type="text/javascript" src="main.bundle.js"></script>
+</head>
+
+<body>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <div id="root">
+    <!-- Browser file selector only used when we are running in browser and were given a base path for all standalone files -->
+    <input type="file" id="browserFileSelector" />
+    <div class=topdiv>
+      <div class="simpleicon" id="selectIModel">
+        <i class="bim-icon-briefcases"></i>
+      </div>
+      <select id="viewList"></select>
+      <select id="colorList" name="colorList" style="display: none;"><!-- for testing symbology overrides -->
+        <option value="deepPink">Deep pink</option>
+        <option value="darkBrown">Dark brown</option>
+        <option value="lightSeagreen">Light seagreen</option>
+        <option value="peachPuff">Peach puff</option>
+      </select>
+      <div class="simpleicon" id="startToggleModel">
+        <i class="bim-icon-model"></i>
+        <div class="toolMenu" id="toggleModelMenu">
+        </div>
+      </div>
+      <div class="simpleicon" id="startCategorySelection">
+        <i class="bim-icon-categories"></i>
+        <div class="scrollingToolMenu" id="categorySelectionMenu">
+        </div>
+      </div>
+      <img class="simpleicon" src="toggle-camera.svg" id="startToggleCamera" />
+      <img class="simpleicon" src="fit-to-view.svg" id="startFit" />
+      <img class="simpleicon" src="window-area.svg" id="startWindowArea" />
+      <img class="simpleicon" src="zoom.svg" id="startSelect" />
+      <div class="simpleicon" id="startMeasurePoints">
+        <div id="snapModeToggle">
+          <i class="rd-icon-measure-distance"></i>
+        </div>
+        <div class="toolMenu" id="changeSnapModeMenu">
+          <select id="snapModeList">
+            <option>Keypoint</option>
+            <option>Nearest</option>
+            <option>Center</option>
+            <option>Origin</option>
+            <option>Intersection</option>
+          </select>
+        </div>
+      </div>
+      <img class="simpleicon" src="walk.svg" id="startWalk" />
+      <img class="simpleicon" src="rotate-left.svg" id="startRotateView" />
+      <div class="simpleicon" id="switchStandardRotation">
+        <i class="bim-icon-gyroscope"></i>
+        <div class="toolMenu" id="standardRotationMenu">
+          <div class="simpleicon" id="top">
+            <i class="bim-icon-viewtop"></i>
+          </div>
+          <div class="simpleicon" id="bottom">
+            <i class="bim-icon-viewbottom"></i>
+          </div>
+          <div class="simpleicon" id="left">
+            <i class="bim-icon-viewleft"></i>
+          </div>
+          <div class="simpleicon" id="right">
+            <i class="bim-icon-viewright"></i>
+          </div>
+          <div class="simpleicon" id="front">
+            <i class="bim-icon-viewfront"></i>
+          </div>
+          <div class="simpleicon" id="back">
+            <i class="bim-icon-viewback"></i>
+          </div>
+          <div class="simpleicon" id="iso">
+            <i class="bim-icon-viewisoleft"></i>
+          </div>
+          <div class="simpleicon" id="rightIso">
+            <i class="bim-icon-viewisoright"></i>
+          </div>
+        </div>
+      </div>
+      <div class="simpleicon" id="changeRenderMode">
+        <div id="renderModeToggle">
+          <i class="bim-icon-settings"></i>
+        </div>
+        <div class="toolMenu" id="changeRenderModeMenu">
+          <label for="renderModeList">Mode:</label>
+          <select id="renderModeList" name="renderModeList">
+            <option>Smooth Shade</option>
+            <option>Solid Fill</option>
+            <option>Hidden Line</option>
+            <option>Wireframe</option>
+          </select>
+          <br>
+          <input id="skybox" type="checkbox"> Skybox
+          <br>
+          <input id="groundplane" type="checkbox"> Ground Plane
+          <br>
+          <input id="ACSTriad" type="checkbox"> ACS Triad
+          <br>
+          <input id="fill" type="checkbox"> Fill
+          <br>
+          <input id="grid" type="checkbox"> Grid
+          <br>
+          <input id="textures" type="checkbox"> Textures
+          <br>
+          <input id="visibleEdges" type="checkbox"> Visible Edges
+          <br>
+          <input id="hiddenEdges" type="checkbox"> Hidden Edges
+          <br>
+          <input id="materials" type="checkbox"> Materials
+          <br>
+          <input id="lights" type="checkbox"> Lights
+          <br>
+          <input id="monochrome" type="checkbox"> Monochrome
+          <br>
+          <input id="constructions" type="checkbox"> Constructions
+          <br>
+          <input id="transparency" type="checkbox"> Transparency
+          <br>
+          <input id="weights" type="checkbox"> Line Weight
+          <br>
+          <input id="styles" type="checkbox"> Line Styles
+          <br>
+          <input id="continuousRendering" type="checkbox"> Cont. Rendering
+          <br>
+          <input id="boundingBoxes" type="checkbox"> Bounding Boxes
+          <br>
+        </div>
+      </div>
+      <div class="simpleicon" id="doUndo">
+        <i class="bim-icon-undo"></i>
+      </div>
+      <div class="simpleicon" id="doRedo">
+        <i class="bim-icon-redo"></i>
+      </div>
+      <span class="fsp-info" id="showfps" style="display: none;">Avg. FPS (ms): ---- Render Time (ms): ----
+        <br />Scene Time (ms): ----</span>
+      <span class="statusspan" id="showstatus" style="display:inline;"></span>
+      <span class="statusspan" id="showerror" style="display:inline;"></span>
+    </div>
+    <div id="spinner" class="bim-spinner-container">
+      <div class="bim-spinner"></div>
+    </div>
+    <div id="tooltip-location"></div>
+    <canvas class="imodelview" id="imodelview"></canvas>
+  </div>
+</body>
+
+</html>

@@ -1,13 +1,13 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.98.0-4",
+  "version": "0.98.0-5",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
   "repository": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.98.0-4",
+    "@bentley/bentleyjs-tools": "0.98.0-5",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^2.2.47",
     "chai": "^4.1.2",

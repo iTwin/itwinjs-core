@@ -120,7 +120,7 @@ class WebMercatorTileLoader extends TileLoader {
   constructor(private imageryProvider: ImageryProvider, private ecefToDb: Transform, private model: GeometricModelState) {
     super();
   }
-  public tileRequresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
+  public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: WebMercatorTileProps[] = [];
     for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.ecefToDb)); }

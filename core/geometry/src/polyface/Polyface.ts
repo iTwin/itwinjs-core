@@ -587,8 +587,8 @@ export class IndexedPolyface extends Polyface {
    * * will only copy param, normal, color, and face data if we are already tracking them AND/OR the source contains them
    */
   public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
-    const copyParams = allDefined (this.data.param, source.data.param, source.data.paramIndex);
-    const copyNormals = allDefined (this.data.normal, source.data.normal, source.data.normalIndex);
+    const copyParams = allDefined(this.data.param, source.data.param, source.data.paramIndex);
+    const copyNormals = allDefined(this.data.normal, source.data.normal, source.data.normalIndex);
     // Add point data
     const sourceToDestPointIndex = new GrowableFloat64Array();
     sourceToDestPointIndex.ensureCapacity(source.data.pointCount);
@@ -911,15 +911,15 @@ export class IndexedPolyface extends Polyface {
  * * The caller can request the position in the addressed facets as a "readIndex."
  * * The readIndex value (as a number) is not promised to be sequential. (I.e. it might be a simple facet count or might be
  */
-export abstract class PolyfaceVisitor extends PolyfaceData {
-  public abstract moveToReadIndex(index: number): boolean;
-  public abstract currentReadIndex(): number;
-  public abstract moveToNextFacet(): boolean;
-  public abstract reset(): void;
-  public abstract clientPointIndex(i: number): number;
-  public abstract clientParamIndex(i: number): number;
-  public abstract clientNormalIndex(i: number): number;
-  public abstract clientColorIndex(i: number): number;
+export interface PolyfaceVisitor extends PolyfaceData {
+  moveToReadIndex(index: number): boolean;
+  currentReadIndex(): number;
+  moveToNextFacet(): boolean;
+  reset(): void;
+  clientPointIndex(i: number): number;
+  clientParamIndex(i: number): number;
+  clientNormalIndex(i: number): number;
+  clientColorIndex(i: number): number;
 }
 
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {

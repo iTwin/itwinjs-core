@@ -30,6 +30,8 @@ import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
+import { System } from "./System";
+import { createSkySphereProgram } from "./glsl/SkySphere";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -85,8 +87,11 @@ export abstract class VariedTechnique implements Technique {
   }
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
+  protected abstract get debugDescription(): string;
 
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
+    const descr = this.debugDescription + ": " + flags.buildDescription();
+    builder.setDebugDescription(descr);
     this.addProgram(flags, builder.buildProgram(gl));
   }
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
@@ -103,13 +108,13 @@ export abstract class VariedTechnique implements Technique {
 
   protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
     flags.isTranslucent = true;
-    addTranslucency(builder.frag);
+    addTranslucency(builder);
     this.addShader(builder, flags, gl);
   }
 
   protected addElementId(builder: ProgramBuilder, feat: FeatureMode, alwaysUniform: boolean = false) {
     const frag = builder.frag;
-    if (FeatureMode.None === feat)
+    if (FeatureMode.None === feat || !System.instance.capabilities.supportsPickShaders)
       frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
     else {
       const vert = builder.vert;
@@ -119,7 +124,7 @@ export abstract class VariedTechnique implements Technique {
       addModelViewMatrix(vert);
       addRenderOrder(frag);
       addElementId(builder, alwaysUniform);
-      frag.addExtension("GL_EXT_draw_buffers");
+      frag.addDrawBuffersExtension();
       frag.addFunction(GLSLDecode.encodeDepthRgb);
       frag.addFunction(GLSLFragment.computeLinearDepth);
       frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
@@ -158,6 +163,8 @@ class SurfaceTechnique extends VariedTechnique {
       }
     }
   }
+
+  protected get debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
@@ -215,6 +222,8 @@ class PolylineTechnique extends VariedTechnique {
     }
   }
 
+  protected get debugDescription() { return "Polyline"; }
+
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
@@ -240,9 +249,11 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
   private static readonly kClip = numFeatureVariants(EdgeTechnique.kFeature);
+  private readonly _isSilhouette: boolean;
 
   public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
     super(numFeatureVariants(2) * 2);
+    this._isSilhouette = isSilhouette;
 
     const flags = scratchTechniqueFlags;
     for (const clip of clips) {
@@ -268,6 +279,8 @@ class EdgeTechnique extends VariedTechnique {
       }
     }
   }
+
+  protected get debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = flags.isTranslucent ? EdgeTechnique.kTranslucent : EdgeTechnique.kOpaque;
@@ -315,6 +328,8 @@ class PointStringTechnique extends VariedTechnique {
     }
   }
 
+  protected get debugDescription() { return "PointString"; }
+
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
@@ -358,6 +373,8 @@ class PointCloudTechnique extends VariedTechnique {
     }
   }
 
+  protected get debugDescription() { return "PointCloud"; }
+
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index: number;
     if (flags.isHilite)
@@ -378,9 +395,10 @@ export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
-  public static create(gl: WebGLRenderingContext) {
+  public static create(gl: WebGLRenderingContext): Techniques {
     const techs = new Techniques();
-    return techs.initializeBuiltIns(gl) ? techs : undefined;
+    techs.initializeBuiltIns(gl);
+    return techs;
   }
 
   public getTechnique(id: TechniqueId): Technique {
@@ -465,7 +483,7 @@ export class Techniques implements IDisposable {
 
   private constructor() { }
 
-  private initializeBuiltIns(gl: WebGLRenderingContext): boolean {
+  private initializeBuiltIns(gl: WebGLRenderingContext): void {
     this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
     this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
@@ -475,15 +493,15 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
+    this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
+    this._list[TechniqueId.SkySphere] = new SingularTechnique(createSkySphereProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
-    this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
-    return true;
   }
 }

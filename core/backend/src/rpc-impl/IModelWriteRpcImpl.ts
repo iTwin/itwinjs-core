@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
-import { Logger, assert } from "@bentley/bentleyjs-core";
+import { Logger, assert, BeDuration } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { AxisAlignedBox3d, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelToken, IModelVersion, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
@@ -25,6 +25,8 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
     // If the frontend wants a readOnly connection, we assume, for now, that they cannot change versions - i.e., cannot pull changes
     const qp = memoizeOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+
+    await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
 
     if (qp.isPending()) {
       Logger.logTrace(loggingCategory, "Issuing pending status in IModelWriteRpcImpl.openForWrite", () => (iModelToken));

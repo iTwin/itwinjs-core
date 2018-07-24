@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
+import { Id64, Guid, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -358,11 +358,17 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
 
 /** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]]. */
 export class Sheet extends Document implements SheetProps {
+  public height: number;
+  public width: number;
   public scale?: number;
-  public height?: number;
-  public width?: number;
   public sheetTemplate?: Id64;
-  constructor(props: SheetProps, iModel: IModelDb) { super(props, iModel); }
+  constructor(props: SheetProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.height = JsonUtils.asDouble(props.height);
+    this.width = JsonUtils.asDouble(props.width);
+    this.scale = props.scale;
+    this.sheetTemplate = props.sheetTemplate ? new Id64(props.sheetTemplate) : undefined;
+  }
 }
 
 /**

@@ -6,12 +6,12 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
+import { System } from "./System";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
   Boolean, // bool
   Int, // int
-  UInt, // uint
   Float, // float
   Vec2, // vec2
   Vec3, // vec3
@@ -49,7 +49,6 @@ namespace Convert {
     switch (type) {
       case VariableType.Boolean: return "bool";
       case VariableType.Int: return "int";
-      case VariableType.UInt: return "uint";
       case VariableType.Float: return "float";
       case VariableType.Vec2: return "vec2";
       case VariableType.Vec3: return "vec3";
@@ -336,6 +335,7 @@ export class ShaderBuilder extends ShaderVariables {
     let needMultiDrawBuffers = false;
     for (const ext of this._extensions) {
       if (ext === "GL_EXT_draw_buffers") {
+        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
         needMultiDrawBuffers = true;
       }
 
@@ -547,7 +547,10 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
 
-  public addDrawBuffersExtension(): void { this.addExtension("GL_EXT_draw_buffers"); }
+  public addDrawBuffersExtension(): void {
+    assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
+    this.addExtension("GL_EXT_draw_buffers");
+  }
 
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
@@ -713,5 +716,9 @@ export class ProgramBuilder {
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;
+  }
+
+  public setDebugDescription(description: string): void {
+    this.vert.headerComment = this.frag.headerComment = ("//! " + description);
   }
 }

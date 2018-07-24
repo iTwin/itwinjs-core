@@ -1,0 +1,57 @@
+{
+  "name": "simpleviewtest",
+  "description": "Simple View Testing interactive application.",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "version": "0.0.0",
+  "engines": {
+    "node": "8.9.1"
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:ourpublic && npm run webpack:frontend",
+    "clean": "rimraf lib package-deps.json",
+    "copy:frontendpublic": "cpx \"../core/frontend/src/public/**/*\" ./lib/backend/public",
+    "copy:ourpublic": "cpx \"public/**/*\" ./lib/backend/public",
+    "docs": "",
+    "lint": "tslint --project . 1>&2",
+    "webpack:frontend": "webpack --config webpack.config.js 1>&2",
+    "start": "npm run start:electron",
+    "start:electron": "electron ./lib/backend/ElectronMain.js",
+    "start:web": "node ./lib/backend/WebMain.js",
+    "start:dev-cors-proxy-server": "node ./node_modules/@bentley/dev-cors-proxy-server/server.js"
+  },
+  "repository": {},
+  "dependencies": {
+    "@bentley/bentleyjs-core": "0.98.0-5",
+    "@bentley/geometry-core": "0.98.0-5",
+    "@bentley/imodeljs-clients": "0.98.0-5",
+    "@bentley/imodeljs-common": "0.98.0-5",
+    "@bentley/imodeljs-frontend": "0.98.0-5",
+    "@bentley/imodeljs-backend": "0.98.0-5",
+    "electron-devtools-installer": "^2.2.4",
+    "tooltip.js": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.6.10",
+    "@types/express": "^4.11.1",
+    "@bentley/bentleyjs-tools": "0.98.0-5",
+    "@bentley/dev-cors-proxy-server": "0.0.6",
+    "cpx": "^1.5.0",
+    "child_process": "^1.0.2",
+    "electron": "2.0.1",
+    "electron-builder": "^20.13.3",
+    "express": "^4.16.3",
+    "node-glob": "^1.2.0",
+    "null-loader": "^0.1.1",
+    "rimraf": "^2.6.2",
+    "source-map-loader": "^0.2.3",
+    "tslint": "^5.10.0",
+    "typescript": "~2.7.2",
+    "webpack": "^3.10.0"
+  },
+  "homepage": "http://localhost:3000/"
+}

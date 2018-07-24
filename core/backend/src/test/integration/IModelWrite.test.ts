@@ -4,8 +4,9 @@ import { Code, IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imo
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { TestIModelInfo, MockAccessToken } from "../MockAssetUtil";
-import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
+import { TestIModelInfo, MockAccessToken, MockAssetUtil } from "../MockAssetUtil";
+import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
+import * as TypeMoq from "typemoq";
 
 export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
   // Create a new physical model.
@@ -30,6 +31,8 @@ export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken:
 }
 
 describe("IModelWriteTest", () => {
+  const index = process.argv.indexOf("--offline");
+  const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;
   const testIModels: TestIModelInfo[] = [
     new TestIModelInfo("ReadOnlyTest"),
@@ -37,11 +40,19 @@ describe("IModelWriteTest", () => {
     new TestIModelInfo("NoVersionsTest"),
   ];
 
+  const assetDir = "./src/test/assets/_mocks_";
   let cacheDir: string = "";
   let accessToken: AccessToken = new MockAccessToken();
+  const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
+  const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
 
   before(async () => {
-    [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
+    if (offline) {
+      MockAssetUtil.setupMockAssets(assetDir);
+      testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
+    } else {
+      [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
+    }
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {

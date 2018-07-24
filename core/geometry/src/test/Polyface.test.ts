@@ -417,8 +417,8 @@ describe("Polyface.Faces", () => {
     ];
 
     const options = new StrokeOptions();
-    options._needParams = true;
-    options._needParams = true;
+    options.needParams = true;
+    options.needParams = true;
     options.shouldTriangulate = false;
     options.maxEdgeLength = 4;
 
@@ -469,8 +469,8 @@ describe("Polyface.Faces", () => {
 
   it.skip("Solid primitive param verification with native", () => {
     const options = new StrokeOptions();
-    options._needParams = true;
-    options._needParams = true;
+    options.needParams = true;
+    options.needParams = true;
     const builder = PolyfaceBuilder.create(options);
     builder.toggleReversedFacetFlag();
     const torusPipes = Sample.createTorusPipes();
@@ -525,8 +525,8 @@ it("facets from sweep contour", () => {
     const sweepContour = SweepContour.createForLinearSweep(loop);
 
     const options = new StrokeOptions();
-    options._needParams = false;
-    options._needParams = false;
+    options.needParams = false;
+    options.needParams = false;
     const builder = PolyfaceBuilder.create(options);
 
     sweepContour!.emitFacets(builder, false);
@@ -563,8 +563,8 @@ it("facets for ACS", () => {
       const sweepContour = SweepContour.createForLinearSweep(loop);
 
       const options = new StrokeOptions();
-      options._needParams = false;
-      options._needParams = needParams;
+      options.needParams = false;
+      options.needParams = needParams;
       const builder = PolyfaceBuilder.create(options);
 
       sweepContour!.emitFacets(builder, false);
@@ -596,8 +596,8 @@ it("facets from sweep contour with holes", () => {
   const sweepContour = SweepContour.createForLinearSweep(region);
 
   const options = new StrokeOptions();
-  options._needParams = false;
-  options._needParams = false;
+  options.needParams = false;
+  options.needParams = false;
   const builder = PolyfaceBuilder.create(options);
 
   sweepContour!.emitFacets(builder, false);

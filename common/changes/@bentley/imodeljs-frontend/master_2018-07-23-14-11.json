@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added optional display of tile bounding volumes for debugging purposes.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
