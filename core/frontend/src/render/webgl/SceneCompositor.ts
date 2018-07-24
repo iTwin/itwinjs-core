@@ -6,7 +6,7 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry } from "./CachedGeometry";
+import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType } from "./System";
@@ -17,7 +17,9 @@ import { GL } from "./GL";
 import { RenderCommands, DrawParams } from "./DrawCommand";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { FloatRgba } from "./FloatRGBA";
 
+// Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements IDisposable {
   public accumulation?: TextureHandle;
   public revealage?: TextureHandle;
@@ -47,7 +49,11 @@ class Textures implements IDisposable {
         break;
       }
       case RenderType.TextureHalfFloat: {
-        // ###TODO...
+        const ext = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
+        if (undefined !== ext) {
+          pixelDataType = ext.HALF_FLOAT_OES;
+          break;
+        }
       }
       /* falls through */
       case RenderType.TextureUnsignedByte: {
@@ -77,6 +83,7 @@ class Textures implements IDisposable {
   }
 }
 
+// Maintains the framebuffers used by a SceneCompositor. The color attachments are supplied by a Textures object.
 class FrameBuffers implements IDisposable {
   public opaqueColor?: FrameBuffer;
   public opaqueAndCompositeColor?: FrameBuffer;
@@ -107,6 +114,7 @@ class FrameBuffers implements IDisposable {
   }
 }
 
+// Maintains the geometry used to execute screenspace operations for a SceneCompositor.
 class Geometry implements IDisposable {
   public composite?: CompositeGeometry;
 
@@ -121,6 +129,7 @@ class Geometry implements IDisposable {
   }
 }
 
+// Represents a view of data read from a region of the frame buffer.
 class PixelBuffer implements Pixel.Buffer {
   private readonly _rect: ViewRect;
   private readonly _selector: Pixel.Selector;
@@ -274,7 +283,8 @@ class PixelBuffer implements Pixel.Buffer {
   }
 }
 
-// This exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
+// Orchestrates rendering of the scene on behalf of a Target.
+// This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
 export abstract class SceneCompositor implements IDisposable {
   public abstract get currentRenderTargetIndex(): number;
   public abstract dispose(): void;
@@ -291,11 +301,11 @@ export abstract class SceneCompositor implements IDisposable {
   protected constructor() { }
 
   public static create(target: Target): SceneCompositor {
-    // ###TODO return System.instance.capabilities.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
-    return new MRTCompositor(target);
+    return System.instance.capabilities.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
   }
 }
 
+// The actual base class. Specializations are provided based on whether or not multipl render targets are supported.
 abstract class Compositor extends SceneCompositor {
   protected _target: Target;
   protected _width: number = -1;
@@ -620,6 +630,7 @@ class MRTGeometry extends Geometry {
   }
 }
 
+// SceneCompositor used when multiple render targets are supported (WEBGL_draw_buffers exists and supports at least 4 color attachments).
 class MRTCompositor extends Compositor {
   public constructor(target: Target) {
     super(target, new MRTFrameBuffers(), new MRTGeometry());
@@ -707,12 +718,163 @@ class MRTCompositor extends Compositor {
   private getSamplerTexture(index: number) { return this.samplerFbo.getColor(index); }
 }
 
-// class MPCompositor extends Compositor {
-//   private _currentRenderTargetIndex: number = 0;
-//
-//   public constructor(target: Target) {
-//     super(target);
-//   }
-//
-//   public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
-// }
+class MPFrameBuffers extends  FrameBuffers {
+  public accumulation?: FrameBuffer;
+  public revealage?: FrameBuffer;
+  public idLow?: FrameBuffer;
+  public idHigh?: FrameBuffer;
+
+  public init(textures: Textures, depth: DepthBuffer): boolean {
+    if (!super.init(textures, depth))
+      return false;
+
+    assert(undefined === this.accumulation);
+
+    this.accumulation = FrameBuffer.create([textures.accumulation!], depth);
+    this.revealage = FrameBuffer.create([textures.revealage!], depth);
+    this.idLow = FrameBuffer.create([textures.idLow!]);
+    this.idHigh = FrameBuffer.create([textures.idHigh!]);
+
+    return undefined !== this.accumulation && undefined !== this.revealage && undefined !== this.idLow && undefined !== this.idHigh;
+  }
+
+  public dispose(): void {
+    super.dispose();
+
+    this.accumulation = dispose(this.accumulation);
+    this.revealage = dispose(this.revealage);
+    this.idLow = dispose(this.idLow);
+    this.idHigh = dispose(this.idHigh);
+  }
+}
+
+class MPGeometry extends Geometry {
+  public copyColor?: SingleTexturedViewportQuadGeometry;
+
+  public init(textures: Textures): boolean {
+    if (!super.init(textures))
+      return false;
+
+    assert(undefined === this.copyColor);
+    this.copyColor = SingleTexturedViewportQuadGeometry.createGeometry(textures.idLow!.getHandle()!, TechniqueId.CopyColor);
+    return undefined !== this.copyColor;
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this.copyColor = dispose(this.copyColor);
+  }
+}
+
+// Compositor used when multiple render targets are not supported (WEBGL_draw_buffers not available or fewer than 4 color attachments supported).
+// This falls back to multi-pass rendering in place of MRT rendering, which has obvious performance implications.
+// The chief use case is iOS.
+class MPCompositor extends Compositor {
+  private _currentRenderTargetIndex: number = 0;
+
+  public constructor(target: Target) {
+    super(target, new MPFrameBuffers(), new MPGeometry());
+  }
+
+  private get fbos(): MPFrameBuffers { return this._fbos as MPFrameBuffers; }
+  private get geometry(): MPGeometry { return this._geometry as MPGeometry; }
+
+  public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
+  public get elementId0(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.idLow!; }
+  public get elementId1(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.hilite! : this._textures.idHigh!; }
+  public get depthAndOrder(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.revealage! : this._textures.depthAndOrder!; }
+
+  protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!; }
+
+  protected clearOpaque(needComposite: boolean): void {
+    const bg = FloatRgba.fromColorDef(this._target.bgColor);
+    this.clearFbo(needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
+    this.clearFbo(this.fbos.depthAndOrder!, 0, 0, 0, 0, true);
+    this.clearFbo(this.fbos.idLow!, 0, 0, 0, 0, true);
+    this.clearFbo(this.fbos.idHigh!, 0, 0, 0, 0, true);
+  }
+
+  protected renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean): void {
+    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
+    this._readPickDataFromPingPong = true;
+    const colorFbo = needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!;
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
+    if (renderForReadPixels)
+      this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
+
+    this._readPickDataFromPingPong = false;
+
+    // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
+    if (!renderForReadPixels) {
+      System.instance.frameBufferStack.execute(colorFbo, true, () => {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      });
+    }
+  }
+
+  // ###TODO: For readPixels(), could skip rendering color...also could skip rendering depth and/or element ID depending upon selector...
+  private drawOpaquePass(colorFbo: FrameBuffer, commands: RenderCommands, pass: RenderPass, pingPong: boolean): void {
+    const stack = System.instance.frameBufferStack;
+    stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
+    this._currentRenderTargetIndex++;
+    stack.execute(this.fbos.idLow!, true, () => this.drawPass(commands, pass, false));
+    this._currentRenderTargetIndex++;
+    stack.execute(this.fbos.idHigh!, true, () => this.drawPass(commands, pass, false));
+    this._currentRenderTargetIndex++;
+    stack.execute(this.fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
+    this._currentRenderTargetIndex = 0;
+  }
+
+  protected clearTranslucent() {
+    this.clearFbo(this.fbos.accumulation!, 0, 0, 0, 1, false);
+    this.clearFbo(this.fbos.revealage!, 1, 0, 0, 1, false);
+  }
+
+  protected renderTranslucent(commands: RenderCommands) {
+    System.instance.frameBufferStack.execute(this.fbos.accumulation!, true, () => {
+      this.drawPass(commands, RenderPass.Translucent);
+    });
+
+    this._currentRenderTargetIndex = 1;
+    System.instance.frameBufferStack.execute(this.fbos.revealage!, true, () => {
+      this.drawPass(commands, RenderPass.Translucent);
+    });
+
+    this._currentRenderTargetIndex = 0;
+  }
+
+  protected pingPong() {
+    System.instance.applyRenderState(this._noDepthMaskRenderState);
+
+    this.copyFbo(this._textures.idLow!, this.fbos.accumulation!);
+    this.copyFbo(this._textures.idHigh!, this.fbos.revealage!);
+    this.copyFbo(this._textures.depthAndOrder!, this.fbos.hilite!);
+  }
+
+  private copyFbo(src: TextureHandle, dst: FrameBuffer): void {
+    const geom = this.geometry.copyColor!;
+    geom.texture = src.getHandle()!;
+    System.instance.frameBufferStack.execute(dst, true, () => {
+      const params = new DrawParams(this._target, geom);
+      this._target.techniques.draw(params);
+    });
+  }
+
+  private clearFbo(fbo: FrameBuffer, red: number, green: number, blue: number, alpha: number, andDepth: boolean): void {
+    const system = System.instance;
+    const gl = system.context;
+    system.frameBufferStack.execute(fbo, true, () => {
+      system.applyRenderState(andDepth ? RenderState.defaults : this._noDepthMaskRenderState);
+      gl.clearColor(red, green, blue, alpha);
+      let bit = GL.BufferBit.Color;
+      if (andDepth) {
+        gl.clearDepth(1.0);
+        bit |= GL.BufferBit.Depth;
+      }
+
+      gl.clear(bit);
+    });
+  }
+}

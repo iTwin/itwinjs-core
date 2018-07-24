@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support rendering on iOS.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

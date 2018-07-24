@@ -425,8 +425,8 @@ export namespace Tile {
       if (this.graphics.isEmpty)
         return;
 
-      // const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
-      const branch = this.context.createBranch(this.graphics, this.location, undefined);
+      const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
+      const branch = this.context.createBranch(this.graphics, this.location, clipVolume);
       this.context.outputGraphic(branch);
     }
 

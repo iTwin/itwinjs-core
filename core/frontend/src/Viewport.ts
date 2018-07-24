@@ -1525,7 +1525,7 @@ export class Viewport {
 
     timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame(this._doContinuousRendering ? timer.elapsed.milliseconds : undefined);
+      target.drawFrame(timer.elapsed.milliseconds);
 
     return true;
   }

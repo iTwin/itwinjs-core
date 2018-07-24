@@ -5,6 +5,9 @@
 
 import { FragmentShaderBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { GLSLDecode } from "./Decode";
+import { System } from "../System";
+
 /* ###TODO: IBL
 import { Matrix3 } from "../Matrix";
 */
@@ -70,19 +73,48 @@ const reverseWhiteOnWhite = `
   return baseColor;
 `;
 
+const computePickBufferOutputs = `
+  float linearDepth = computeLinearDepth(v_eyeSpace.z);
+  vec4 output0 = baseColor;
+  vec4 output1 = v_element_id0;
+  vec4 output2 = v_element_id1;
+  vec4 output3 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
+`;
+
+const assignPickBufferOutputsMRT = computePickBufferOutputs + `
+  FragColor0 = output0;
+  FragColor1 = output1;
+  FragColor2 = output2;
+  FragColor3 = output3;
+`;
+
+const assignPickBufferOutputsMP = computePickBufferOutputs + `
+  if (0 == u_renderTargetIndex)
+    FragColor = output0;
+  else if (1 == u_renderTargetIndex)
+    FragColor = output1;
+  else if (2 == u_renderTargetIndex)
+    FragColor = output2;
+  else
+    FragColor = output3;
+`;
+
+export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
+  frag.addFunction(GLSLDecode.encodeDepthRgb);
+  frag.addFunction(GLSLFragment.computeLinearDepth);
+  if (System.instance.capabilities.supportsMRTPickShaders) {
+    frag.addDrawBuffersExtension();
+    frag.set(FragmentShaderComponent.AssignFragData, assignPickBufferOutputsMRT);
+  } else {
+    addRenderTargetIndex(frag);
+    frag.set(FragmentShaderComponent.AssignFragData, assignPickBufferOutputsMP);
+  }
+}
+
 export namespace GLSLFragment {
   export const assignFragColor = "FragColor = baseColor;";
 
   export const assignFragColorNoAlpha = "FragColor = vec4(baseColor.rgb, 1.0);";
-
-  export const assignFragData = `
-  FragColor0 = baseColor;
-  FragColor1 = v_element_id0;
-  FragColor2 = v_element_id1;
-
-  float linearDepth = computeLinearDepth(v_eyeSpace.z);
-  FragColor3 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
-`;
 
   export const revertPreMultipliedAlpha = `
 vec4 revertPreMultipliedAlpha(vec4 rgba) {
