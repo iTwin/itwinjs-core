@@ -19,19 +19,61 @@ import { RenderState } from "./RenderState";
 import { DrawParams } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 
-/** Internal class for creating a ClipPlanesVolume texture when the system does not support texture floats. */
-class PackedTraits {
-  public numPixelsPerPlane: number = 4;
-  public internalFormat: GL.Texture.Format = GL.Texture.Format.Rgba;
-  public dataType: GL.Texture.DataType = GL.Texture.DataType.UnsignedByte;
+/** Internal class for creating a ClipPlanesVolume texture when the system supports floating point textures. */
+class FloatTraits {
+  public readonly numPixelsPerPlane: number = 1;
+  public readonly internalFormat: GL.Texture.Format = GL.Texture.Format.Rgba;
+  public readonly dataType: GL.Texture.DataType = GL.Texture.DataType.Float;
 
-  /** Set float values in the given array to ClipPlane members variables. Returns the index of the next normal.x value to be set. */
-  public appendPlane(pixels: Float32Array, index: number, normal: Vector3d, distance: number): number {
-    pixels[index] = normal.x;
-    pixels[index + 1] = normal.y;
-    pixels[index + 2] = normal.z;
-    pixels[index + 3] = distance;
-    return index + 4;
+  /** Append a plane to a UInt8Array by directly assigning floats to the array. Returns the index of where to append the next plane in the UInt8Array. */
+  public appendPlane(bytes: Uint8Array, index: number, normal: Vector3d, distance: number): number {
+    const floats = new Float32Array(bytes);
+    index /= 4;
+    floats[index] = normal.x;
+    floats[index + 1] = normal.y;
+    floats[index + 2] = normal.z;
+    floats[index + 3] = distance;
+    return index + 4 * 4;
+  }
+}
+
+/** Internal class for creating a ClipPlanesVolume texture when the system does not support floating point textures. */
+class PackedTraits {
+  public readonly numPixelsPerPlane: number = 4;
+  public readonly internalFormat: GL.Texture.Format = GL.Texture.Format.Rgba;
+  public readonly dataType: GL.Texture.DataType = GL.Texture.DataType.UnsignedByte;
+
+  // ###TODO: Is this already done for us when we stick a float into a Uint8Array buffer view?..
+  private convertFloatToUInt32(value: number): number {
+    if (value === 0)
+      return 0;
+
+    const sign = value < 0 ? 1 : 0;
+    value = Math.abs(value);
+    const exponent = Math.floor(Math.log10(value)) + 1;
+    value = value / Math.pow(10, exponent);
+
+    const array = new Uint8Array(4);
+    let temp = value * 256;
+    array[0] = Math.floor(temp);
+    temp = (temp - array[0]) * 256;
+    array[1] = Math.floor(temp);
+    temp = (temp - array[1]) * 256;
+    array[2] = Math.floor(temp);
+    array[3] = (exponent + 38) * 2 + sign;
+
+    return new Uint32Array(array)[0];
+  }
+
+  /** Append a plane to a UInt8Array by packing plane float values down into 1 byte unsigned values. Returns the index of where to append the next plane in the UInt8Array. */
+  public appendPlane(bytes: Uint8Array, index: number, normal: Vector3d, distance: number): number {
+    const pixels = new Uint32Array(bytes);
+    index /= 4;
+    pixels[index] = this.convertFloatToUInt32(normal.x);
+    pixels[index + 1] = this.convertFloatToUInt32(normal.y);
+    pixels[index + 2] = this.convertFloatToUInt32(normal.z);
+    pixels[index + 3] = this.convertFloatToUInt32(distance);
+    return index + 4 * 4;
   }
 }
 
@@ -71,19 +113,22 @@ export class ClipPlanesVolume extends RenderClipVolume {
 
   /** Create a texture for a new ClipPlanesVolume. */
   private static createTexture(planeSet: UnionOfConvexClipPlaneSets, numPlanes: number, numConvexSets: number): TextureHandle | undefined {
-    // ###TODO: Support creating textures with float values?..
-    return this.createTextureUsingPackedTraits(planeSet, numPlanes, numConvexSets, new PackedTraits());
+    // ### TODO: Offer ability to create texture with different data type
+    // if (System.instance.capabilities.supportsTextureFloat)
+    //  return this.createTextureUsingTraits(planeSet, numPlanes, numConvexSets, new FloatTraits());
+    // else
+    return this.createTextureUsingTraits(planeSet, numPlanes, numConvexSets, new PackedTraits());
   }
 
   /** Create a texture for a new ClipPlanesVolume using unsigned byte values. */
-  private static createTextureUsingPackedTraits(planeSet: UnionOfConvexClipPlaneSets, numPlanes: number, numConvexSets: number, traits: PackedTraits): TextureHandle | undefined {
+  private static createTextureUsingTraits(planeSet: UnionOfConvexClipPlaneSets, numPlanes: number, numConvexSets: number, traits: PackedTraits | FloatTraits): TextureHandle | undefined {
     // We will insert a sigil plane with a zero normal vector to indicate the beginning of another set of clip planes.
     const totalNumPlanes = numPlanes + (numConvexSets - 1);
 
     // Texture height == number of clipping planes
     const numPixelsPerPlane = traits.numPixelsPerPlane;
 
-    const bytes = new Float32Array(totalNumPlanes * 4);
+    const bytes = new Uint8Array(totalNumPlanes * 4 * 4);
     let currentIdx = 0;
     let numSetsProcessed = 0;
     for (const convexSet of planeSet.convexSets) {
@@ -97,9 +142,7 @@ export class ClipPlanesVolume extends RenderClipVolume {
       if (numSetsProcessed < numConvexSets)
         currentIdx = traits.appendPlane(bytes, currentIdx, Vector3d.createZero(), 0);
     }
-
-    const internalFormat = traits.internalFormat;
-    return Texture2DHandle.createForData(numPixelsPerPlane, totalNumPlanes, Uint8Array.from(bytes), true, GL.Texture.WrapMode.ClampToEdge, internalFormat);
+    return Texture2DHandle.createForData(numPixelsPerPlane, totalNumPlanes, bytes, true, GL.Texture.WrapMode.ClampToEdge, traits.internalFormat);
   }
 
   public dispose() {

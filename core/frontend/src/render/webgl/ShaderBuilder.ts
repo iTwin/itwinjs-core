@@ -320,12 +320,15 @@ export class ShaderBuilder extends ShaderVariables {
     }
   }
 
-  protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false): SourceBuilder {
+  protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false, maxClippingPlanes: number = 0): SourceBuilder {
     const src = new SourceBuilder();
 
     src.addline("#version 100");
     src.addline("#define TEXTURE texture2D");
     src.addline("#define TEXTURE_CUBE textureCube");
+
+    if (maxClippingPlanes > 0)
+      src.addline("#define MAX_CLIPPING_PLANES " + maxClippingPlanes);
 
     // Header comment
     src.newline();
@@ -656,7 +659,10 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     return prelude.source;
   }
 
-  private buildPrelude(isLit: boolean): SourceBuilder { return this.buildPreludeCommon(true, isLit); }
+  private buildPrelude(isLit: boolean): SourceBuilder {
+    assert(this.maxClippingPlanes === 0 || this.get(FragmentShaderComponent.ApplyClipping) !== undefined);
+    return this.buildPreludeCommon(true, isLit, this.maxClippingPlanes);
+  }
 }
 
 /** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports. */
