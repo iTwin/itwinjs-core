@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/imodeljs-common",
+  "entries": [
+    {
+      "version": "0.101.0",
+      "tag": "@bentley/imodeljs-common_v0.101.0",
+      "date": "Mon, 23 Jul 2018 22:00:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved EntityMetaData from backend to common"
+          }
+        ]
+      }
+    }
+  ]
+}

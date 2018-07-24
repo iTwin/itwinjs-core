@@ -116,8 +116,20 @@ export class PerformanceReportWriter {
 
         ws.getRow(resultsRow).getCell(4).value = "Min Time";
 
+        for (let i = 0; i < PerformanceReportWriter.dataArray.length; i++) // tslint:disable-line
+          console.log("-" + PerformanceReportWriter.dataArray[i]); // tslint:disable-line
+
+        const minTotal = Math.min(...PerformanceReportWriter.dataArray.map((row: number[]) => row[13]));
+        let minRow = 0;
+        for (let i = 0; i < PerformanceReportWriter.dataArray.length; i++) {
+          console.log(PerformanceReportWriter.dataArray[i]); // tslint:disable-line
+
+          if (PerformanceReportWriter.dataArray[i][13] === minTotal) {
+            minRow = i;
+          }
+        }
         for (let i = 5; i <= 18; i++)
-          ws.getRow(resultsRow).getCell(i).value = Math.min(...PerformanceReportWriter.dataArray.map((row: number[]) => row[i - 5]));
+          ws.getRow(resultsRow).getCell(i).value = PerformanceReportWriter.dataArray[minRow][i - 5];
       }
     });
   }

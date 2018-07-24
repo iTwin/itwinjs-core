@@ -5,12 +5,10 @@
 
 import { addHiliter } from "./FeatureSymbology";
 import { addModelViewProjectionMatrix, GLSLVertex } from "./Vertex";
-import { addClipping } from "./Clipping";
 import { addShaderFlags } from "./Common";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { ProgramBuilder, VertexShaderComponent, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
-import { WithClipVolume } from "../TechniqueFlags";
 
 const computePosition = `
   float lineWeight = ComputeLineWeight();
@@ -33,7 +31,7 @@ const roundCorners = `
 
 const computeRoundCorners = "  v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;";
 
-function createBase(clip: WithClipVolume): ProgramBuilder {
+function createBase(): ProgramBuilder {
   const builder = new ProgramBuilder(true);
   // addShaderFlags(builder); // Commented out in the c++ code
   const vert = builder.vert;
@@ -49,19 +47,17 @@ function createBase(clip: WithClipVolume): ProgramBuilder {
   builder.addInlineComputedVarying("v_roundCorners", VariableType.Float, computeRoundCorners);
   builder.frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundCorners);
 
-  if (WithClipVolume.Yes === clip)
-    addClipping(builder);
   return builder;
 }
 
-export function createPointStringHiliter(clip: WithClipVolume): ProgramBuilder {
-  const builder = createBase(clip);
+export function createPointStringHiliter(): ProgramBuilder {
+  const builder = createBase();
   addHiliter(builder, true);
   return builder;
 }
 
-export function createPointStringBuilder(clip: WithClipVolume): ProgramBuilder {
-  const builder = createBase(clip);
+export function createPointStringBuilder(): ProgramBuilder {
+  const builder = createBase();
   addShaderFlags(builder);
   addColor(builder);
   addWhiteOnWhiteReversal(builder.frag);
