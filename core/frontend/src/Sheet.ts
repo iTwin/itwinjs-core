@@ -3,23 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
+import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform } from "@bentley/geometry-core";
+import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps } from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps } from "@bentley/imodeljs-common/lib/common";
-import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
-import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
 import { TileTree, Tile, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState } from "./ModelState";
-import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { RenderTarget } from "./render/System";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Contains functionality specific to sheet views. */
 export namespace Sheet {

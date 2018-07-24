@@ -3,16 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d } from "@bentley/geometry-core";
+import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
 import { RenderClipVolume } from "../System";
-import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common/lib/common";
 import { ClipMaskGeometry } from "./CachedGeometry";
 import { ViewRect } from "../../Viewport";
 import { FrameBuffer } from "./FrameBuffer";
-import { dispose } from "@bentley/bentleyjs-core/lib/Disposable";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { TextureHandle, Texture2DHandle } from "./Texture";
 import { GL } from "./GL";
 import { System } from "./System";

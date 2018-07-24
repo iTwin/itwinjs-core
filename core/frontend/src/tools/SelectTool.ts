@@ -12,7 +12,7 @@ import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifie
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
-import { Id64Arg, Id64 } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { ViewRect } from "../Viewport";
 import { Pixel } from "../rendering";
 import { EditManipulator } from "./EditManipulator";
