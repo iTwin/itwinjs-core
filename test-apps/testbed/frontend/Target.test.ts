@@ -34,7 +34,7 @@ describe("FrustumUniforms", () => {
   });
 });
 
-describe.skip("Clips", () => {
+describe("Clips", () => {
   before(() => {
     WebGLTestContext.startup();
   });
@@ -42,6 +42,9 @@ describe.skip("Clips", () => {
     WebGLTestContext.shutdown();
   });
   it("should create, store, and retrieve Clips", () => {
+    if (!WebGLTestContext.isInitialized)
+      return;
+
     const points: Point3d[] = [];
     points[0] = Point3d.create(1.0, 1.0, 0.0);
     points[1] = Point3d.create(2.0, 1.0, 0.0);
@@ -64,13 +67,11 @@ describe.skip("Clips", () => {
       clips.set(clipVolume!.texture!.height, clipVolume!.texture!);
 
       // Test texture data of ClipPlanesVolume
-      /*
       const clipVolumeTextureBytes: Float32Array = new Float32Array(clips.texture!.dataBytes!);
-      const expectedValues1: number[] = [0, 1, 0, 1, -1, 0, 0, -2, 0, -1, 0, -2, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, -1, -2];
+      const expectedValues1: Uint8Array = new Uint8Array([0, 1, 0, 1, -1, 0, 0, -2, 0, -1, 0, -2, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, -1, -2]);
       for (let i = 0; i < 24; ++i) {
         assert.isTrue(clipVolumeTextureBytes[i] === expectedValues1[i], "clipVal[" + i + "] should be " + expectedValues1[i] + " but was " + clipVolumeTextureBytes[i]);
       }
-      */
 
       // Try another clip.
       /*
