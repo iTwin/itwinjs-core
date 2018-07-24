@@ -29,6 +29,51 @@ function mockGetGlobalEvent(subscriptionId: string, eventBody: object, eventType
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, {}, headers, responseCode, delay);
 }
 
+function mockPeekLockGlobalEvent(subscriptionId: string, eventBody: object, eventType?: string, timeout?: number, responseCode: number = 201, delay?: number) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const headerLocationQuery = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
+  const reponseHeaderLocation = utils.defaultUrl + utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", headerLocationQuery);
+
+  const headers = eventType ? {
+    "content-type": eventType!,
+    "location": reponseHeaderLocation,
+  } : {};
+  let query = subscriptionId + "/messages/head";
+  if (timeout)
+    query += `?timeout=${timeout}`;
+  const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, eventBody, 1, undefined, headers, responseCode, delay);
+}
+
+function mockUnlockEvent(subscriptionId: string, responseCode: number = 200) {
+  if (!TestConfig.enableMocks)
+    return;
+  const query = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
+  const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
+
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Put, requestPath, undefined, 1, undefined, undefined, responseCode);
+}
+
+function mockDeleteLockedEvent(subscriptionId: string, responseCode: number = 200) {
+  if (!TestConfig.enableMocks)
+    return;
+  const query = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
+  const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
+
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, undefined, 1, undefined, undefined, responseCode);
+}
+
+function mockRenewLockEvent(subscriptionId: string, responseCode: number = 200) {
+  if (!TestConfig.enableMocks)
+    return;
+  const query = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
+  const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
+
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, undefined, 1, undefined, undefined, responseCode);
+}
+
 function mockCreateGlobalEventsSubscription(subscriptionId: string, eventTypes: GlobalEventType[]) {
   if (!TestConfig.enableMocks)
     return;
@@ -191,6 +236,31 @@ describe("iModelHub GlobalEventHandler", () => {
     }
     deleteListener();
     chai.expect(timeoutCounter).to.be.lessThan(100);
+  });
+
+  it("should receive Global Event with Peek-lock", async function (this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
+    mockPeekLockGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
+    const lockedEvent = await imodelHubClient.GlobalEvents().peekLockEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+
+    mockUnlockEvent(globalEventSubscription.wsgId);
+    const unlocked = await imodelHubClient.GlobalEvents().unlockEvent(globalEventSas.sasToken!, lockedEvent!.lockUrl);
+    chai.expect(unlocked);
+
+    mockPeekLockGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
+    const lockedEvent2 = await imodelHubClient.GlobalEvents().peekLockEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+    chai.expect(lockedEvent!.event).to.be.deep.equal(lockedEvent2!.event);
+
+    mockRenewLockEvent(globalEventSubscription.wsgId);
+    const lockRenewed = await imodelHubClient.GlobalEvents().renewLockForEvent(globalEventSas.sasToken!, lockedEvent!.lockUrl);
+    chai.expect(lockRenewed);
+
+    mockDeleteLockedEvent(globalEventSubscription.wsgId);
+    const deleted = await imodelHubClient.GlobalEvents().deleteLockedEvent(globalEventSas.sasToken!, lockedEvent2!.lockUrl);
+    chai.expect(deleted);
   });
 
   it("should receive Global Event SoftiModelDeleteEvent", async function (this: Mocha.ITestCallbackContext) {

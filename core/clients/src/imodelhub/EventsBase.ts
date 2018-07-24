@@ -35,6 +35,11 @@ export abstract class IModelHubBaseEvent {
   }
 }
 
+export class IModelHubLockedEvent {
+  public event: IModelHubBaseEvent;
+  public lockUrl: string;
+}
+
 export abstract class EventBaseHandler {
   protected _handler: IModelBaseHandler;
   /** Gets service bus parser depending on the environment. */
@@ -53,7 +58,7 @@ export abstract class EventBaseHandler {
         res.on("data", (chunk: any) => { res.text += chunk; });
         res.on("end", () => {
           try {
-            if (res.statusCode === 200) {
+            if (res.statusCode === 200 || res.statusCode === 201) {
               cb(null, parse(res.text));
             } else if (res.statusCode === 204) {
               cb(null, "");
@@ -69,14 +74,15 @@ export abstract class EventBaseHandler {
   }
 
   /**
-   * Gets event from Service Bus Topic.
+   * Gets base request options for event operations.
+   * @param method Method for request.
    * @param sasToken Service Bus SAS Token.
    * @param requestTimeout Timeout for the request.
    * @return Event if it exists.
    */
-  protected getEventRequestOptions(sasToken: string, requestTimeout?: number): RequestOptions {
+  private getEventOperationRequestOptions(method: string, sasToken: string, requestTimeout?: number): RequestOptions {
     const options: RequestOptions = {
-      method: "DELETE",
+      method,
       headers: { authorization: sasToken },
       agent: this._handler.getAgent(),
     };
@@ -87,7 +93,69 @@ export abstract class EventBaseHandler {
 
     new DefaultRequestOptionsProvider().assignOptions(options);
 
+    return options;
+  }
+
+  /**
+   * Gets event request options, destructive get.
+   * @param sasToken Service Bus SAS Token.
+   * @param requestTimeout Timeout for the request.
+   * @return Event if it exists.
+   */
+  protected getEventRequestOptions(sasToken: string, requestTimeout?: number): RequestOptions {
+    const options = this.getEventOperationRequestOptions("DELETE", sasToken, requestTimeout);
+
     this.setServiceBusOptions(options);
+
+    return options;
+  }
+
+  /**
+   * Gets event request options, non destructive get.
+   * @param sasToken Service Bus SAS Token.
+   * @param requestTimeout Timeout for the request.
+   * @return Event if it exists.
+   */
+  protected getPeekLockEventRequestOptions(sasToken: string, requestTimeout?: number): RequestOptions {
+    const options = this.getEventOperationRequestOptions("POST", sasToken, requestTimeout);
+
+    this.setServiceBusOptions(options);
+
+    return options;
+  }
+
+  /**
+   * Gets event request options, unlock event while lock active.
+   * @param sasToken Service Bus SAS Token.
+   * @param requestTimeout Timeout for the request.
+   * @return Event if it exists.
+   */
+  protected getUnlockEventRequestOptions(sasToken: string): RequestOptions {
+    const options = this.getEventOperationRequestOptions("PUT", sasToken);
+
+    return options;
+  }
+
+  /**
+   * Gets event request options, delete event while lock active.
+   * @param sasToken Service Bus SAS Token.
+   * @param requestTimeout Timeout for the request.
+   * @return Event if it exists.
+   */
+  protected getDeleteLockedEventRequestOptions(sasToken: string): RequestOptions {
+    const options = this.getEventOperationRequestOptions("DELETE", sasToken);
+
+    return options;
+  }
+
+  /**
+   * Gets event request options, renew lock for event.
+   * @param sasToken Service Bus SAS Token.
+   * @param requestTimeout Timeout for the request.
+   * @return Event if it exists.
+   */
+  protected getRenewLockForEventRequestOptions(sasToken: string): RequestOptions {
+    const options = this.getEventOperationRequestOptions("POST", sasToken);
 
     return options;
   }
