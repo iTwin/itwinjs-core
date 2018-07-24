@@ -283,6 +283,10 @@ export class IdMap implements IDisposable {
     return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
   }
 
+  private createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params) {
+    return this.createTexture(params, TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ));
+  }
+
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
@@ -294,6 +298,10 @@ export class IdMap implements IDisposable {
   public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
     const tex = this.findTexture(params.key);
     return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
+  }
+
+  public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
 
   /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
@@ -485,6 +493,11 @@ export class System extends RenderSystem {
     }
 
     return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
+  }
+
+  /** Attempt to create a texture from a cube of HTML images. */
+  public createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
 
   /** Attempt to create a texture using gradient symbology. */
