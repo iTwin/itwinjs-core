@@ -31,21 +31,9 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
 
   /** Id of the ruleset used by this data provider */
   public get rulesetId(): string { return this._rulesetId; }
+
   /** [[IModelConnection]] used by this data provider */
   public get connection(): IModelConnection { return this._connection; }
-  public set connection(value: IModelConnection) {
-    if (this._connection === value)
-      return;
-    this._connection = value;
-    this.clearCaches();
-  }
-
-  private clearCaches(): void {
-    this.getRootNodesCount.cache.clear();
-    this.getRootNodes.cache.clear();
-    this.getChildNodesCount.cache.clear();
-    this.getChildNodes.cache.clear();
-  }
 
   /** Called to get extended options for node requests */
   private createRequestOptions(): HierarchyRequestOptions<IModelConnection> {

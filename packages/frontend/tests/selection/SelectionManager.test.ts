@@ -38,6 +38,27 @@ describe("SelectionManager", () => {
     expect(selectionManager.getSelection(imodelMock.object).isEmpty).to.be.true;
   });
 
+  describe("getSelectionLevels", () => {
+
+    it("returns empty list when there're no selection levels", () => {
+      expect(selectionManager.getSelectionLevels(imodelMock.object)).to.be.empty;
+    });
+
+    it("returns available selection levels", () => {
+      selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()], 0);
+      selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()], 3);
+      expect(selectionManager.getSelectionLevels(imodelMock.object)).to.deep.eq([0, 3]);
+    });
+
+    it("doesn't include empty selection levels", () => {
+      selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()], 0);
+      selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()], 1);
+      selectionManager.addToSelection("", imodelMock.object, [], 2);
+      expect(selectionManager.getSelectionLevels(imodelMock.object)).to.deep.eq([0, 1]);
+    });
+
+  });
+
   describe("addToSelection", () => {
 
     it("adds selection on an empty selection", () => {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { KeySet, Subtract } from "@bentley/ecpresentation-common";
-import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
+import { ECPresentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/ecpresentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
@@ -54,6 +54,7 @@ export default function withUnifiedSelection<P extends PropertyGridProps>(Proper
       this._selectionHandler = this.props.selectionHandler
         ? this.props.selectionHandler : new SelectionHandler(ECPresentation.selection, name, imodel, rulesetId);
       this._selectionHandler!.onSelect = this.onSelectionChanged;
+      this.setDataProviderSelection();
     }
 
     public componentWillUnmount() {
@@ -68,10 +69,16 @@ export default function withUnifiedSelection<P extends PropertyGridProps>(Proper
       }
     }
 
-    // tslint:disable-next-line:naming-convention
-    private onSelectionChanged = (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
-      for (let i = evt.level; i >= 0; i--) {
-        const selection = selectionProvider.getSelection(this.props.dataProvider.connection, i);
+    private setDataProviderSelection(selectionLevel?: number): void {
+      if (undefined === selectionLevel) {
+        const availableLevels = this._selectionHandler!.getSelectionLevels();
+        if (0 === availableLevels.length)
+          return;
+        selectionLevel = availableLevels[availableLevels.length - 1];
+      }
+
+      for (let i = selectionLevel; i >= 0; i--) {
+        const selection = this._selectionHandler!.getSelection(i);
         const hasSelection = !selection.isEmpty;
         if (hasSelection) {
           this.props.dataProvider.keys = selection;
@@ -79,6 +86,11 @@ export default function withUnifiedSelection<P extends PropertyGridProps>(Proper
         }
       }
       this.props.dataProvider.keys = new KeySet();
+    }
+
+    // tslint:disable-next-line:naming-convention
+    private onSelectionChanged = (evt: SelectionChangeEventArgs): void => {
+      this.setDataProviderSelection(evt.level);
     }
 
     public render() {

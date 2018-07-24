@@ -27,11 +27,13 @@ describe("Table withUnifiedSelection", () => {
 
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType<ECPresentationTableDataProvider>();
+  const dataProviderMock = moq.Mock.ofType(ECPresentationTableDataProvider);
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   beforeEach(() => {
     testRulesetId = faker.random.word();
     selectionHandlerMock.reset();
+    selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
+    selectionHandlerMock.setup((x) => x.getSelection(moq.It.isAnyNumber())).returns(() => new KeySet());
     setupDataProvider();
   });
 
@@ -47,6 +49,7 @@ describe("Table withUnifiedSelection", () => {
     if (!rows)
       rows = [];
     providerMock.reset();
+    providerMock.setup((x) => x.keys).returns(() => new KeySet());
     providerMock.setup((x) => x.getColumns()).returns(async () => columns!);
     providerMock.setup((x) => x.connection).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
@@ -89,6 +92,8 @@ describe("Table withUnifiedSelection", () => {
   it("creates default implementation for selection handler when not provided through props", () => {
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
+    selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
+    selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
     ECPresentation.selection = selectionManagerMock.object;
 
     const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
@@ -108,8 +113,10 @@ describe("Table withUnifiedSelection", () => {
   });
 
   it("renders correctly", () => {
+    const dpMock = moq.Mock.ofType<ECPresentationTableDataProvider>();
+    setupDataProvider(dpMock);
     expect(shallow(<ECPresentationTable
-      dataProvider={dataProviderMock.object}
+      dataProvider={dpMock.object}
       selectionHandler={selectionHandlerMock.object}
       pageAmount={faker.random.number()}
     />)).to.matchSnapshot();
@@ -161,6 +168,63 @@ describe("Table withUnifiedSelection", () => {
 
   describe("selection handling", () => {
 
+    it("sets data provider keys to selection when mounts and highest selection level is lower than boundary", () => {
+      const keysOverall = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
+      selectionHandlerMock.reset();
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [1]);
+      selectionHandlerMock.setup((x) => x.getSelection(1)).returns(() => keysOverall);
+      selectionHandlerMock.setup((x) => x.getSelection(2)).returns(() => new KeySet());
+      shallow(<ECPresentationTable
+        dataProvider={dataProviderMock.object}
+        selectionHandler={selectionHandlerMock.object}
+        selectionLevel={3}
+      />);
+      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+    });
+
+    it("sets data provider keys to selection when mounts and highest selection level is equal to boundary", () => {
+      const keysOverall = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
+      selectionHandlerMock.reset();
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [1, 3]);
+      selectionHandlerMock.setup((x) => x.getSelection(1)).returns(() => keysOverall);
+      selectionHandlerMock.setup((x) => x.getSelection(2)).returns(() => new KeySet());
+      selectionHandlerMock.setup((x) => x.getSelection(3)).returns(() => new KeySet([createRandomECInstanceKey()]));
+      shallow(<ECPresentationTable
+        dataProvider={dataProviderMock.object}
+        selectionHandler={selectionHandlerMock.object}
+        selectionLevel={3}
+      />);
+      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+    });
+
+    it("sets data provider keys to selection when mounts and data provider already has keys", () => {
+      const keysOld = new KeySet([createRandomECInstanceKey()]);
+      dataProviderMock.reset();
+      dataProviderMock.setup((x) => x.keys).returns(() => keysOld);
+      const keysNew = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
+      selectionHandlerMock.reset();
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [0]);
+      selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => keysNew);
+      shallow(<ECPresentationTable
+        dataProvider={dataProviderMock.object}
+        selectionHandler={selectionHandlerMock.object}
+      />);
+      dataProviderMock.verify((x) => x.keys = keysNew, moq.Times.once());
+    });
+
+    it("does nothing when mounts and data provider already has keys and there are no available selection levels", () => {
+      const keysOld = new KeySet([createRandomECInstanceKey()]);
+      dataProviderMock.reset();
+      dataProviderMock.setup((x) => x.keys).returns(() => keysOld);
+      selectionHandlerMock.reset();
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
+      shallow(<ECPresentationTable
+        dataProvider={dataProviderMock.object}
+        selectionHandler={selectionHandlerMock.object}
+      />);
+      dataProviderMock.verify((x) => x.keys = moq.It.isAnyObject(KeySet), moq.Times.never());
+    });
+
     describe("checking if row should be selected", () => {
 
       it("calls props callback and returns its result", () => {
@@ -201,6 +265,8 @@ describe("Table withUnifiedSelection", () => {
       it("returns true when row key is in selection at the right level", () => {
         const row = createRandomRowItem();
         const selectionLevel = faker.random.number();
+        selectionHandlerMock.reset();
+        selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
         selectionHandlerMock.setup((x) => x.getSelection(selectionLevel)).returns(() => new KeySet([row.key]));
 
         const component = shallow(<ECPresentationTable
@@ -350,12 +416,16 @@ describe("Table withUnifiedSelection", () => {
           timestamp: new Date(),
           keys: new KeySet(),
         };
+        selectionHandlerMock.reset();
+        selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [selectionLevel]);
         const selectionProviderMock = moq.Mock.ofType<ISelectionProvider>();
         while (selectionLevel > 0) {
           selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, selectionLevel)).returns(() => new KeySet());
+          selectionHandlerMock.setup((x) => x.getSelection(selectionLevel)).returns(() => new KeySet());
           selectionLevel--;
         }
         selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => new KeySet(overallSelection));
+        selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => new KeySet(overallSelection));
         selectionHandlerMock.target.onSelect!(args, selectionProviderMock.object);
       };
 

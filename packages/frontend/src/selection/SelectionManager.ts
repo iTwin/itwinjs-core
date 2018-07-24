@@ -41,6 +41,11 @@ export default class SelectionManager implements ISelectionProvider {
     return selectionContainer;
   }
 
+  /** Get the selection levels currently stored in this manager for the specified imodel */
+  public getSelectionLevels(imodel: IModelConnection): number[] {
+    return this.getContainer(imodel).getSelectionLevels();
+  }
+
   /** Get the selection currently stored in this manager */
   public getSelection(imodel: IModelConnection, level: number = 0): Readonly<KeySet> {
     return this.getContainer(imodel).getSelection(level);
@@ -166,6 +171,15 @@ class SelectionContainer {
       this._selectedItemsSetMap.set(level, selectedItemsSet);
     }
     return selectedItemsSet;
+  }
+
+  public getSelectionLevels(): number[] {
+    const levels = new Array<number>();
+    for (const entry of this._selectedItemsSetMap.entries()) {
+      if (!entry[1].isEmpty)
+        levels.push(entry[0]);
+    }
+    return levels.sort();
   }
 
   public clear(level: number) {

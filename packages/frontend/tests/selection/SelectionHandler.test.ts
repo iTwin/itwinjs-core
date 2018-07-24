@@ -37,6 +37,18 @@ describe("SelectionHandler", () => {
 
   });
 
+  describe("getSelectionLevels", () => {
+
+    it("gets selection levels from manager", () => {
+      const levels = [123, 456];
+      selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => levels).verifiable();
+      const selection = selectionHandler.getSelectionLevels();
+      expect(selection).to.eq(levels);
+      selectionManagerMock.verifyAll();
+    });
+
+  });
+
   describe("getSelection", () => {
 
     it("gets selection from manager", () => {

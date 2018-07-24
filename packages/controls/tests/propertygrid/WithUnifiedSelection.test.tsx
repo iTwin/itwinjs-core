@@ -31,6 +31,8 @@ describe("PropertyGrid withUnifiedSelection", () => {
   beforeEach(() => {
     testRulesetId = faker.random.word();
     selectionHandlerMock.reset();
+    selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
+    selectionHandlerMock.setup((x) => x.getSelection(moq.It.isAnyNumber())).returns(() => new KeySet());
     setupDataProvider();
   });
 
@@ -77,6 +79,8 @@ describe("PropertyGrid withUnifiedSelection", () => {
   it("creates default implementation for selection handler when not provided through props", () => {
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
+    selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
+    selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
     ECPresentation.selection = selectionManagerMock.object;
 
     const component = shallow(<ECPresentationPropertyGrid
@@ -147,12 +151,26 @@ describe("PropertyGrid withUnifiedSelection", () => {
 
   describe("selection handling", () => {
 
+    it("sets data provider keys to overall selection when mounts", () => {
+      const keysOverall = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
+      selectionHandlerMock.reset();
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [1, 2]);
+      selectionHandlerMock.setup((x) => x.getSelection(2)).returns(() => new KeySet());
+      selectionHandlerMock.setup((x) => x.getSelection(1)).returns(() => keysOverall);
+      shallow(<ECPresentationPropertyGrid
+        orientation={Orientation.Vertical}
+        dataProvider={dataProviderMock.object}
+        selectionHandler={selectionHandlerMock.object}
+      />);
+      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+    });
+
     it("sets data provider keys to overall selection on selection changes", () => {
       const keysOverall = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
       const keysAdded = new KeySet([createRandomECInstanceKey()]);
-      const selectionProviderMock = moq.Mock.ofType<ISelectionProvider>();
-      selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0))
-        .returns(() => keysOverall);
+      selectionHandlerMock.reset();
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
+      selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => keysOverall);
       shallow(<ECPresentationPropertyGrid
         orientation={Orientation.Vertical}
         dataProvider={dataProviderMock.object}
@@ -165,7 +183,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
         level: 0,
         keys: keysAdded,
         timestamp: new Date(),
-      }, selectionProviderMock.object);
+      }, moq.Mock.ofType<ISelectionProvider>().object);
       dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
     });
 

@@ -81,7 +81,8 @@
       "args": [
         "--noTimeouts",
         "--testsDir",
-        "./tests"
+        "./tests",
+        "--react"
       ],
       "runtimeArgs": [
         "--inspect",

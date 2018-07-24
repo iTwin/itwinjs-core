@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { KeySet, InstanceKey, Subtract } from "@bentley/ecpresentation-common";
-import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
+import { ECPresentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/ecpresentation-frontend";
 import { Table as BaseTable, TableProps, RowItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
@@ -53,7 +53,7 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
     /** Returns the display name of this component */
     public static get displayName() { return `WithUnifiedSelection(${getDisplayName(TableComponent)})`; }
 
-    /** Get selection handler used by this property grid */
+    /** Get selection handler used by this table */
     public get selectionHandler(): SelectionHandler | undefined { return this._selectionHandler; }
 
     public get imodel() { return this.props.dataProvider.connection; }
@@ -70,6 +70,7 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
       this._selectionHandler = this.props.selectionHandler
         ? this.props.selectionHandler : new SelectionHandler(ECPresentation.selection, name, imodel, rulesetId);
       this._selectionHandler!.onSelect = this.onSelectionChanged;
+      this.displaySelection();
     }
 
     public componentWillUnmount() {
@@ -85,9 +86,9 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
       }
     }
 
-    private loadDataForSelection(evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider) {
-      for (let level = evt.level; level >= 0; level--) {
-        const selection = selectionProvider.getSelection(this.props.dataProvider.connection, level);
+    private loadDataForSelection(selectionLevel: number) {
+      for (let level = selectionLevel; level >= 0; level--) {
+        const selection = this._selectionHandler!.getSelection(level);
         if (!selection.isEmpty) {
           this.props.dataProvider.keys = selection;
           return;
@@ -101,18 +102,42 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
         this._base.current.updateSelectedRows();
     }
 
-    // tslint:disable-next-line:naming-convention
-    private onSelectionChanged = (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
-      if (evt.level < this._boundarySelectionLevel || evt.level === 0) {
+    private displaySelection(selectionLevel?: number) {
+      if (undefined === selectionLevel) {
+        let availableLevels = this._selectionHandler!.getSelectionLevels();
+        if (this.props.dataProvider.keys.isEmpty) {
+          // if the data provider has no set keys, we have to find the right selection
+          // level and set it's selection to data provider. we take the first highest
+          // available selection level that's smaller than boundary or equal to 0
+          availableLevels = availableLevels.reverse();
+          for (const level of availableLevels) {
+            if (level < this._boundarySelectionLevel || level === 0) {
+              selectionLevel = level;
+              break;
+            }
+          }
+        } else {
+          selectionLevel = (availableLevels.length > 0) ? availableLevels[availableLevels.length - 1] : undefined;
+        }
+      }
+      if (undefined === selectionLevel)
+        return;
+
+      if (selectionLevel < this._boundarySelectionLevel || selectionLevel === 0) {
         // we get here when table should react to selection change by reloading the data
         // based on the new selection
-        this.loadDataForSelection(evt, selectionProvider);
-      } else if (evt.level === this._boundarySelectionLevel) {
+        this.loadDataForSelection(selectionLevel);
+      } else if (selectionLevel === this._boundarySelectionLevel) {
         // we get here when table should react to selection change by
         // highlighting selected instances
-        const selection = selectionProvider.getSelection(this.props.dataProvider.connection, evt.level);
+        const selection = this._selectionHandler!.getSelection(selectionLevel);
         this.highlightSelectedRows(selection);
       }
+    }
+
+    // tslint:disable-next-line:naming-convention
+    private onSelectionChanged = (evt: SelectionChangeEventArgs): void => {
+      this.displaySelection(evt.level);
     }
 
     private getRowKey(row: RowItem): InstanceKey {

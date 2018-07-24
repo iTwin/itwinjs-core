@@ -70,8 +70,13 @@ export default class SelectionHandler implements IDisposable {
     return true;
   }
 
+  /** Get selection levels for the imodel managed by this handler */
+  public getSelectionLevels(): number[] {
+    return this._manager.getSelectionLevels(this.imodel);
+  }
+
   /**
-   * Get selection for the imodel manager by this handler.
+   * Get selection for the imodel managed by this handler.
    * @param level Level of the selection to get. Defaults to 0.
    */
   public getSelection(level?: number): Readonly<KeySet> {

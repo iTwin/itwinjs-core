@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "Add API to get available selection levels",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}
