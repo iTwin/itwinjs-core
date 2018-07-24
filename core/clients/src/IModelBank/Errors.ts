@@ -77,7 +77,7 @@ export class IModelBankError extends WsgError {
    * @returns Parsed error.
    */
   public static parse(response: any, log = true): ResponseError {
-    const wsgError = super.parse(response, false);
+    const wsgError = WsgError.parse(response, false);
     if (wsgError instanceof WsgError && wsgError.name && wsgError.name.startsWith(IModelBankError._idPrefix)) {
       const errorId = IModelBankError.getErrorId(wsgError.name);
       const error = new IModelBankError(errorId);

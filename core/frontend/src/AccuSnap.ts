@@ -13,33 +13,6 @@ import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 
-/** @hidden */
-export class AccuSnapToolState {
-  public enabled = false;
-  public locate = false;
-  public suspended = 0;
-  public setFrom(other: AccuSnapToolState): void {
-    this.enabled = other.enabled;
-    this.locate = other.locate;
-    this.suspended = other.suspended;
-  }
-  public clone(): AccuSnapToolState { const val = new AccuSnapToolState(); val.setFrom(this); return val; }
-}
-
-class AccuSnapSettings {
-  public hotDistanceFactor = 1.2;
-  public stickyFactor = 1.0;
-  public searchDistance = 2.0;
-  public showIcon = true;
-  public showHint = true;
-  public coordUpdate = false;
-  public hiliteColdHits = true;
-  public popupInfo = true;
-  public popupMode = false;
-  public enableFlag = true;
-  public popupDelay = 5; // delay before info balloon pops up - in 10th of a second
-}
-
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap {
   /** Currently active hit */
@@ -66,25 +39,18 @@ export class AccuSnap {
   private suppressed = 0;
   /** Number of times "noMotion" has been called since last motion */
   private noMotionCount = 0;
-  /** Anchor point for infoWindow. window is cleared when cursor moves away from this point. */
-  private readonly infoPt = new Point3d();
+  /** Anchor point for tooltip window is cleared when cursor moves away from this point. */
+  private readonly toolTipPt = new Point3d();
   /** Location of cursor when we last checked for motion */
   private readonly lastCursorPos = new Point2d();
   /** Accumulated distance (squared) the mouse has moved since we started checking for motion */
   private totalMotionSq = 0;
   /** How much mouse movement constitutes a "move" (squared) */
   private motionToleranceSq = 0;
-  public readonly toolState = new AccuSnapToolState();
-  private readonly defaultSettings = new AccuSnapSettings();
-  private settings = this.defaultSettings;
+  public readonly toolState = new AccuSnap.ToolState();
+  protected settings = new AccuSnap.Settings();
 
   public onInitialized() { }
-  private wantShowIcon() { return this.settings.showIcon; }
-  private wantShowHint() { return this.settings.showHint; }
-  private wantInfoBalloon() { return this.settings.popupInfo; }
-  private wantAutoInfoBalloon() { return this.settings.popupInfo && !this.settings.popupMode; }
-  private wantHiliteColdHits() { return this.settings.hiliteColdHits; }
-  private getStickyFactor() { return this.settings.stickyFactor; }
   private doLocateTesting() { return this.isLocateEnabled(); }
   private getSearchDistance() { return this.doLocateTesting() ? 1.0 : this.settings.searchDistance; }
   private getHotDistanceInches() { return IModelApp.locateManager.getApertureInches() * this.settings.hotDistanceFactor; }
@@ -101,6 +67,7 @@ export class AccuSnap {
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   public isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot(); }
 
+  /** @hidden */
   public destroy(): void {
     this.currHit = undefined;
     this.aSnapHits = undefined;
@@ -165,7 +132,7 @@ export class AccuSnap {
 
     this.lastCursorPos.setFrom(curPos); //  Remember the new pos
 
-    //  See if distance moved since we started checking is over the "move" threshold
+    // See if distance moved since we started checking is over the "move" threshold
     const dsq = dx * dx + dy * dy;
     this.totalMotionSq += dsq;
     return this.totalMotionSq > this.motionToleranceSq;
@@ -176,9 +143,9 @@ export class AccuSnap {
   public setCurrHit(newHit?: HitDetail): void {
     const newSnap = AccuSnap.toSnapDetail(newHit);
     const currSnap = this.getCurrSnapDetail();
-    const sameElem = (newHit && newHit.isSameHit(this.currHit));
+    const sameElem = (!!newHit && newHit.isSameHit(this.currHit));
     const sameHit = (sameElem && !newSnap);
-    const sameSnap = (sameElem && newSnap && currSnap);
+    const sameSnap = (sameElem && !!newSnap && !!currSnap);
     const samePt = (sameHit || (sameSnap && newSnap!.snapPoint.isAlmostEqual(currSnap!.snapPoint)));
     const sameHot = (sameHit || (sameSnap && (this.isHot() === newSnap!.isHot())));
     const sameBaseSnapMode = (!newSnap || !currSnap || newSnap.snapMode === currSnap.snapMode);
@@ -232,23 +199,23 @@ export class AccuSnap {
   }
 
   public erase(): void {
-    this.clearInfoBalloon(undefined); // make sure there's no info balloon up.
+    this.clearToolTip(undefined); // make sure there's no tooltip up.
     this.clearSprites(); // remove all sprites from the screen
   }
 
-  public showElemInfo(viewPt: Point3d, vp: Viewport, hit: HitDetail): void {
+  public showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): void {
     if (IModelApp.viewManager.doesHostHaveFocus())
-      this.showLocateMessage(viewPt, vp, IModelApp.toolAdmin.getInfoString(hit, "\n"));
+      IModelApp.toolAdmin.getToolTip(hit).then((msg) => this.showLocateMessage(viewPt, vp, msg));
   }
 
-  private showLocateMessage(viewPt: Point3d, vp: Viewport, msg: string) {
+  private showLocateMessage(viewPt: XAndY, vp: Viewport, msg: string) {
     if (IModelApp.viewManager.doesHostHaveFocus())
-      IModelApp.viewManager.showInfoWindow(viewPt, vp, msg);
+      IModelApp.notifications.showToolTip(vp.canvas, msg, viewPt);
   }
 
-  public displayInfoBalloon(viewPt: Point3d, vp: Viewport, uorPt?: Point3d): void {
-    // if the info balloon is already displayed, or if he doesn't want it, quit.
-    if (IModelApp.viewManager.isInfoWindowUp() || !this.wantInfoBalloon())
+  public displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d): void {
+    // if the tooltip is already displayed, or if user doesn't want it, quit.
+    if (IModelApp.notifications.isToolTipOpen() || !this.settings.toolTip)
       return;
 
     const accuSnapHit = this.currHit;
@@ -258,14 +225,14 @@ export class AccuSnap {
     if (!accuSnapHit && !tpHit && !this.errorIcon.isActive)
       return;
 
-    let timeout = this.settings.popupDelay;
+    let timeout = this.settings.toolTipDelay;
     let theHit: HitDetail | undefined;
 
     // determine which type of hit and how long to wait, and the detail level
     if (tpHit) {
-      // when the tentative button is first pressed, we pass nullptr for uorPt so that we show the info window immediately
+      // when the tentative button is first pressed, we pass nullptr for uorPt so that we show the tooltip immediately
       if (uorPt) {
-        const aperture = (this.getStickyFactor() * vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+        const aperture = (this.settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
 
         // see if he came back somewhere near the currently snapped element
         if (!IModelApp.locateManager.getElementPicker().testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
@@ -273,13 +240,13 @@ export class AccuSnap {
 
         timeout = 3;
       } else {
-        // if uorPt is nullptr, that means that we want to display the infoWindow immediately.
-        timeout = 0;
+        // if uorPt is nullptr, that means that we want to display the tooltip almost immediately.
+        timeout = 1;
       }
 
       theHit = tpHit;
     } else {
-      if (!this.wantAutoInfoBalloon())
+      if (!this.settings.toolTip)
         return;
 
       theHit = accuSnapHit;
@@ -290,7 +257,7 @@ export class AccuSnap {
       return;
     }
 
-    this.infoPt.setFrom(viewPt);
+    this.toolTipPt.setFrom(viewPt);
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
     if (!this.errorIcon.isActive && theHit) {
@@ -319,19 +286,18 @@ export class AccuSnap {
     this.showLocateMessage(viewPt, vp, this.explanation);
   }
 
-  public clearInfoBalloon(ev?: BeButtonEvent): void {
+  public clearToolTip(ev?: BeButtonEvent): void {
     this.noMotionCount = 0;
-
-    if (!IModelApp.viewManager.isInfoWindowUp())
+    if (!IModelApp.notifications.isToolTipOpen())
       return;
 
-    if (ev && (5 > ev.viewPoint.distanceXY(this.infoPt)))
+    if (ev && (5 > ev.viewPoint.distanceXY(this.toolTipPt)))
       return;
 
-    IModelApp.viewManager.clearInfoWindow();
+    IModelApp.notifications.clearToolTip();
   }
 
-  /** For a given snap path, display the sprites to indicate its position on the screen and what snap mode it represents. */
+  /** Display the sprites for the current snap to indicate its position on the screen and what snap mode it represents. */
   private showSnapSprite(): void {
     const snap = this.getCurrSnapDetail();
     if (!snap)
@@ -341,14 +307,7 @@ export class AccuSnap {
     const viewport = snap.viewport!;
     const crossSprite = IconSprites.getSprite(snap.isHot() ? "SnapCross" : "SnapUnfocused", viewport);
 
-    if (!snap.isHot() && !this.wantShowHint())
-      return;
-
     this.cross.activate(crossSprite, viewport, crossPt, 0);
-
-    // user can say to skip display of the icon
-    if (!this.wantShowIcon())
-      return;
 
     const snapSprite = snap.sprite;
     if (snapSprite)
@@ -395,8 +354,7 @@ export class AccuSnap {
     const spriteSize = errorSprite.size;
     const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
 
-    if (this.wantShowIcon())
-      this.errorIcon.activate(errorSprite, vp, pt, 0);
+    this.errorIcon.activate(errorSprite, vp, pt, 0);
   }
 
   private clearSprites() {
@@ -411,7 +369,7 @@ export class AccuSnap {
       return false;
 
     const snap = AccuSnap.toSnapDetail(hit);
-    return !snap || snap.isHot() || this.wantHiliteColdHits();
+    return !snap || snap.isHot() || this.settings.hiliteColdHits;
   }
 
   private unFlashViews() {
@@ -641,7 +599,7 @@ export class AccuSnap {
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
-    this.clearInfoBalloon(undefined);
+    this.clearToolTip(undefined);
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
@@ -801,7 +759,7 @@ export class AccuSnap {
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
-    this.clearInfoBalloon(ev);
+    this.clearToolTip(ev);
 
     let hit: HitDetail | undefined;
     if (this.isActive()) {
@@ -820,11 +778,10 @@ export class AccuSnap {
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { }
+
   public onNoMotion(ev: BeButtonEvent): void {
     this.noMotionCount++;
-    // if (1 === this.noMotionCount)
-    //   this.flashInOtherViews();
-    this.displayInfoBalloon(ev.viewPoint, ev.viewport!, ev.rawPoint);
+    this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
   }
 
   private flashElements(context: DecorateContext): void {
@@ -917,5 +874,29 @@ export class TentativeOrAccuSnap {
   public static getCurrentView(): Viewport | undefined {
     const snap = IModelApp.accuSnap.getCurrSnapDetail();
     return snap ? snap.viewport : IModelApp.tentativePoint.viewport;
+  }
+}
+
+export namespace AccuSnap {
+  export class ToolState {
+    public enabled = false;
+    public locate = false;
+    public suspended = 0;
+    public setFrom(other: ToolState): void {
+      this.enabled = other.enabled;
+      this.locate = other.locate;
+      this.suspended = other.suspended;
+    }
+    public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+  }
+
+  export class Settings {
+    public hotDistanceFactor = 1.2;
+    public stickyFactor = 1.0;
+    public searchDistance = 2.0;
+    public hiliteColdHits = true;
+    public enableFlag = true;
+    public toolTip = true;
+    public toolTipDelay = 5; // delay before tooltip pops up - in 10th of a second
   }
 }

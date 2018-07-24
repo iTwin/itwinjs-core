@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d, RenderTexture } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
@@ -38,6 +38,8 @@ export abstract class CachedGeometry implements IDisposable {
   public abstract get renderOrder(): RenderOrder;
   // Returns true if this is a lit surface
   public get isLitSurface(): boolean { return false; }
+  // Returns true if this is an unlit surface with baked-in lighting (e.g. 3mx, scalable mesh reality models)
+  public get hasBakedLighting(): boolean { return false; }
 
   /** Returns the origin of this geometry's quantization parameters. */
   public abstract get qOrigin(): Float32Array;
@@ -72,10 +74,10 @@ export abstract class CachedGeometry implements IDisposable {
     return !params.isOverlayPass && this._wantWoWReversal(params.target);
   }
   public getLineCode(params: ShaderProgramParams): number {
-    return params.target.currentViewFlags.showStyles() ? this._getLineCode(params) : LineCode.solid;
+    return params.target.currentViewFlags.styles ? this._getLineCode(params) : LineCode.solid;
   }
   public getLineWeight(params: ShaderProgramParams): number {
-    if (!params.target.currentViewFlags.showWeights()) {
+    if (!params.target.currentViewFlags.weights) {
       return 1.0;
     }
 
@@ -85,6 +87,18 @@ export abstract class CachedGeometry implements IDisposable {
     weight = Math.min(weight, 31.0);
     assert(Math.floor(weight) === weight);
     return weight;
+  }
+  // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
+  public wantMixHiliteColorForFlash(vf: ViewFlags): boolean {
+    // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
+    if (this.hasBakedLighting)
+      return true;
+    else if (!this.isLitSurface)
+      return false;
+    else if (RenderMode.SmoothShade !== vf.renderMode)
+      return false;
+    else
+      return vf.sourceLights || vf.cameraLights || vf.solarLight;
   }
 }
 

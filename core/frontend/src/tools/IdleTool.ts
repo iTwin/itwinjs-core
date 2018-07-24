@@ -31,53 +31,9 @@ export class IdleTool extends InteractiveTool {
   public static toolId = "Idle";
   public static hidden = true;
 
-  public onMiddleButtonDown(ev: BeButtonEvent): boolean {
-    const vp = ev.viewport;
-    if (!vp)
-      return true;
-    const cur = IModelApp.toolAdmin.currentInputState;
-    if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
-      return false;
-
-    let viewTool: ViewTool | undefined;
-    if (ev.isDoubleClick) {
-      viewTool = new FitViewTool(vp, true);
-    } else if (ev.isControlKey) {
-      viewTool = IModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
-    } else if (ev.isShiftKey) {
-      viewTool = IModelApp.tools.create("View.Rotate", vp, true, false, true) as ViewTool | undefined;
-    } else if (false) {
-      /* ###TODO: Other view tools if needed... */
-    } else {
-      const currTool = IModelApp.toolAdmin.activeViewTool;
-      if (currTool && currTool instanceof ViewManip) {
-        if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
-          currTool.forcedHandle = ViewHandleType.ViewPan;
-
-        return true;
-      }
-
-      viewTool = IModelApp.tools.create("View.Pan", vp, true, false, true) as ViewTool | undefined;
-    }
-
-    return !!viewTool && viewTool.run();
-  }
-
-  public onMiddleButtonUp(ev: BeButtonEvent): boolean {
-    if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
-      return false;
-
-    const currTool = IModelApp.toolAdmin.activeViewTool;
-    if (currTool && currTool instanceof ViewManip) {
-      if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
-        currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
-
-      if (currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
-        currTool.invalidateTargetCenter();
-    }
-
+  private async performTentative(ev: BeButtonEvent): Promise<void> {
     const tp = IModelApp.tentativePoint;
-    tp.process(ev);
+    await tp.process(ev);
 
     if (tp.isSnapped) {
       IModelApp.toolAdmin.adjustSnapPoint();
@@ -107,8 +63,56 @@ export class IdleTool extends InteractiveTool {
       IModelApp.accuDraw.onTentative();
     }
 
+    const currTool = IModelApp.toolAdmin.activeViewTool;
+    if (currTool && currTool instanceof ViewManip) {
+      if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
+        currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
+
+      if (currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
+        currTool.updateTargetCenter(); // Change target center to tentative location...
+    }
+
     // NOTE: Need to synch tool dynamics because of updateDynamics call in _ExitViewTool before point was adjusted.
     IModelApp.toolAdmin.updateDynamics();
+  }
+
+  public onMiddleButtonDown(ev: BeButtonEvent): boolean {
+    const vp = ev.viewport;
+    if (!vp)
+      return true;
+    const cur = IModelApp.toolAdmin.currentInputState;
+    if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
+      return false;
+
+    let viewTool: ViewTool | undefined;
+    if (ev.isDoubleClick) {
+      viewTool = new FitViewTool(vp, true);
+    } else if (ev.isControlKey) {
+      viewTool = IModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
+    } else if (ev.isShiftKey) {
+      viewTool = IModelApp.tools.create("View.Rotate", vp, true, false, true) as ViewTool | undefined;
+    } else {
+      const currTool = IModelApp.toolAdmin.activeViewTool;
+      if (currTool && currTool instanceof ViewManip) {
+        // A current tool is active. If it's not already changing the view, tell it to choose the pan handle if it has one (leave it active regardless)...
+        if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
+          currTool.forcedHandle = ViewHandleType.ViewPan;
+        // Since we won't get a data button, we need to explicitly clear the tentative...
+        IModelApp.tentativePoint.clear(true);
+        return true;
+      }
+
+      viewTool = IModelApp.tools.create("View.Pan", vp, true, false, true) as ViewTool | undefined;
+    }
+
+    return !!viewTool && viewTool.run();
+  }
+
+  public onMiddleButtonUp(ev: BeButtonEvent): boolean {
+    if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
+      return false;
+
+    this.performTentative(ev);
     return true;
   }
 

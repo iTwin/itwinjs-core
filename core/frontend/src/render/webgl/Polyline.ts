@@ -253,11 +253,11 @@ export class PolylineGeometry extends LUTGeometry {
 
   private _computeEdgePass(target: Target, colorInfo: ColorInfo): RenderPass {
     const vf = target.currentViewFlags;
-    if (RenderMode.SmoothShade === vf.renderMode && !vf.showVisibleEdges())
+    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges)
       return RenderPass.None;
 
     // Only want to return Translucent for edges if rendering in Wireframe mode TODO: what about overrides?
-    const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.showTransparency() && colorInfo.hasTranslucency;
+    const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.transparency && colorInfo.hasTranslucency;
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
 
@@ -266,11 +266,11 @@ export class PolylineGeometry extends LUTGeometry {
     if (this.isEdge) {
       let pass = this._computeEdgePass(target, this.lut.colorInfo);
       // Only display the outline in wireframe if Fill is off...
-      if (RenderPass.None !== pass && this.polyline.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.showFill())
+      if (RenderPass.None !== pass && this.polyline.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill)
         pass = RenderPass.None;
       return pass;
     }
-    const isTranslucent: boolean = vf.showTransparency() && this.lut.colorInfo.hasTranslucency;
+    const isTranslucent: boolean = vf.transparency && this.lut.colorInfo.hasTranslucency;
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
 

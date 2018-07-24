@@ -337,10 +337,12 @@ export class RealityDataServicesClient extends WsgClient {
    */
   public async getRootDocumentJson(token: AccessToken, projectId: string, tilesId: string): Promise<any> {
     const realityData: RealityData[] = await this.getRealityData(token, projectId, tilesId);
-    const root = realityData[0].rootDocument!;
+    let root = realityData[0].rootDocument!;
 
-    // if the model is split by a forward slash, then we need to preserve the root so we can prefix it to the blob path used when requesting the tile content
-    this.blobRoot = root.includes("/") ? root.split("/")[0] : undefined;
+    // if the RootDocument is ClarkSimple/RootTile.json, then only use RootTile.json,
+    // so we need to only use the last part of the RootDocument path
+    if (root.includes("/"))
+      root = root.split("/")[root.split("/").length - 1];
 
     return (await this.getModelData(token, projectId, tilesId, root));
   }
@@ -358,9 +360,6 @@ export class RealityDataServicesClient extends WsgClient {
       const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
       const tilesId = urlParts.find((val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val));
       const modelName = url.split(tilesId + "/")[1];
-
-      // if the model is split by a forward slash, then we need to preserve the root so we can prefix it to the blob path used when requesting the tile content
-      this.blobRoot = modelName.includes("/") ? modelName.split("/")[0] : undefined;
 
       return tileRequest(token, projectId, tilesId!, modelName);
     } catch (ex) {

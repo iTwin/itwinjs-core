@@ -10,6 +10,12 @@
     "ProjectExtents": "Project Extents",
     "ModifyProjectExtents": "Modify Project Extents"
   },
+  "Viewing": {
+    "InvalidWindow": "Invalid window",
+    "MinWindow": "Minimum window",
+    "MaxWindow": "Maximum window",
+    "MaxZoom": "Maximum Zoom"
+  },
   "ElementUndo": {
     "NothingToUndo": "No actions to undo",
     "NothingToRedo": "Nothing has been undone",
@@ -35,5 +41,11 @@
     "ModelNotAllowed": "Element is in a model that is not allowed by this tool",
     "NotSnappable": "Element is not snappable",
     "RejectedByElement": "Element does not allow this operation"
+  },
+  "Element": {
+    "Id": "Id",
+    "Model": "Model",
+    "Category": "Category",
+    "Type": "Class"
   }
 }

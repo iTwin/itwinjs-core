@@ -21,8 +21,8 @@ import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
-import { createPointCloudBuilder } from "./glsl/PointCloud";
-import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
+import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeUniformElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment, addPickBufferOutputs } from "./glsl/Fragment";
 import { addFrustum } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
@@ -125,18 +125,18 @@ export abstract class VariedTechnique implements Technique {
     this.addShader(builder, flags, gl);
   }
 
-  protected addElementId(builder: ProgramBuilder, feat: FeatureMode) {
+  protected addElementId(builder: ProgramBuilder, feat: FeatureMode, alwaysUniform: boolean = false) {
     const frag = builder.frag;
     if (FeatureMode.None === feat)
       frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
     else {
       const vert = builder.vert;
-      vert.set(VertexShaderComponent.AddComputeElementId, computeElementId);
+      vert.set(VertexShaderComponent.AddComputeElementId, alwaysUniform ? computeUniformElementId : computeElementId);
       addFrustum(builder);
       builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
       addModelViewMatrix(vert);
       addRenderOrder(frag);
-      addElementId(builder);
+      addElementId(builder, alwaysUniform);
       addPickBufferOutputs(frag);
     }
   }
@@ -369,31 +369,34 @@ class PointStringTechnique extends VariedTechnique {
 }
 
 class PointCloudTechnique extends VariedTechnique {
-  private static readonly kOpaque = 0;
-  private static readonly kClip = PointCloudTechnique.kOpaque + 1;
+  private static readonly kHilite = numFeatureVariants(1);
 
   public constructor(gl: WebGLRenderingContext) {
-    super(1);
+    super(numFeatureVariants(1) + numHiliteVariants);
 
     const flags = scratchTechniqueFlags;
-    flags.reset(FeatureMode.None);
-    const builder = createPointCloudBuilder();
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
-    this.addShader(builder, flags, gl);
+    this.addHiliteShader(gl, createPointCloudHiliter);
+    for (const feature of featureModes) {
+      flags.reset(feature);
+      const builder = createPointCloudBuilder();
+      const opts = FeatureMode.Overrides === feature ? FeatureSymbologyOptions.PointCloud : FeatureSymbologyOptions.None;
+      addFeatureSymbology(builder, feature, opts, true);
+      this.addElementId(builder, feature, true);
+      this.addShader(builder, flags, gl);
+    }
   }
 
   protected get debugDescription() { return "PointCloud"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-
-    let index = PointCloudTechnique.kOpaque;
-    if (flags.hasClip) {
-      index += PointCloudTechnique.kClip;
-    }
+    let index: number;
+    if (flags.isHilite)
+      index = PointCloudTechnique.kHilite;
+    else
+      index = flags.featureMode;
 
     return index;
   }
-
 }
 
 // A collection of rendering techniques accessed by ID.

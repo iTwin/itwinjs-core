@@ -5,7 +5,7 @@
 
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -93,14 +93,22 @@ export class DecorateContext extends RenderContext {
   }
 
   public static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[] {
+    const plane = Plane3dByOriginAndUnitNormal.create(planePoint, planeNormal);
+    if (undefined === plane)
+      return [];
+
+    const frust = vp.getFrustum();
     const limitRange = useProjectExtents && vp.view.isSpatialView();
-    let range: Range3d = new Range3d();
 
     // Limit non-view aligned grid to project extents in spatial views...
     if (limitRange) {
-      range = vp.view.iModel.projectExtents.clone();
+      const range = vp.view.iModel.projectExtents.clone();
       if (range.isNull())
         return [];
+      range.intersect(frust.toRange(), range);
+      if (range.isNull())
+        return [];
+      frust.initFromRange(range);
     }
 
     const index = new Array<[number, number]>(
@@ -119,15 +127,6 @@ export class DecorateContext extends RenderContext {
       [Npc._101, Npc._111],
       [Npc._111, Npc._011],
       [Npc._011, Npc._001]);
-
-    const frust = vp.getFrustum();
-
-    limitRange ? range.intersect(frust.toRange(), range) : frust.toRange(range);
-    frust.initFromRange(range); // equivalent to: range.Get8Corners(frust.m_pts);
-
-    const plane = Plane3dByOriginAndUnitNormal.create(planePoint, planeNormal);
-    if (undefined === plane)
-      return [];
 
     const intersections: CurveLocationDetail[] = [];
     for (let i = 0, n = index.length; i < n; ++i) {

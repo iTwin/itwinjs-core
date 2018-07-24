@@ -222,13 +222,13 @@ export abstract class Target extends RenderTarget {
 
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
       const vf = new ViewFlags();
-      vf.setRenderMode(RenderMode.SmoothShade);
-      vf.setShowClipVolume(false);
+      vf.renderMode = RenderMode.SmoothShade;
+      vf.clipVolume = false;
 
       const showLights = !this.is2d;
-      vf.setShowSourceLights(showLights);
-      vf.setShowCameraLights(showLights);
-      vf.setShowSolarLight(showLights);
+      vf.sourceLights = showLights;
+      vf.cameraLights = showLights;
+      vf.solarLight = showLights;
 
       this._worldDecorations = new WorldDecorations(vf);
     }
@@ -239,7 +239,7 @@ export abstract class Target extends RenderTarget {
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
-  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
   public get clipDef(): ClipDef {
@@ -416,15 +416,15 @@ export abstract class Target extends RenderTarget {
     switch (vf.renderMode) {
       case RenderMode.Wireframe: {
         // Edge overrides never apply in wireframe mode
-        vf.setShowVisibleEdges(false);
-        vf.setShowHiddenEdges(false);
+        vf.visibleEdges = false;
+        vf.hiddenEdges = false;
         forceEdgesOpaque = false;
         break;
       }
       case RenderMode.SmoothShade: {
         // Hidden edges require visible edges
-        if (!vf.showVisibleEdges()) {
-          vf.setShowHiddenEdges(false);
+        if (!vf.visibleEdges) {
+          vf.hiddenEdges = false;
         }
 
         break;
@@ -442,7 +442,7 @@ export abstract class Target extends RenderTarget {
       /* falls through */
       case RenderMode.HiddenLine: {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
-        vf.setShowVisibleEdges(true);
+        vf.visibleEdges = true;
 
         assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
         if (undefined !== plan.hline) {
@@ -574,10 +574,10 @@ export abstract class Target extends RenderTarget {
     let enabled = false;
     if (RenderPass.HiddenEdge === pass) {
       ovrs = this._hiddenEdgeOverrides;
-      enabled = this.currentViewFlags.showHiddenEdges();
+      enabled = this.currentViewFlags.hiddenEdges;
     } else {
       ovrs = this._visibleEdgeOverrides;
-      enabled = this.currentViewFlags.showVisibleEdges();
+      enabled = this.currentViewFlags.visibleEdges;
     }
 
     return enabled ? ovrs : undefined;
@@ -706,17 +706,17 @@ export abstract class Target extends RenderTarget {
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     // Temporarily turn off textures and lighting. We don't need them and it will speed things up not to use them.
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.setShowTransparency(false);
-    vf.setShowTextures(false);
-    vf.setShowSourceLights(false);
-    vf.setShowCameraLights(false);
-    vf.setShowSolarLight(false);
-    vf.setShowShadows(false);
-    vf.setIgnoreGeometryMap(true);
-    vf.setShowAcsTriad(false);
-    vf.setShowGrid(false);
-    vf.setMonochrome(false);
-    vf.setShowMaterials(false);
+    vf.transparency = false;
+    vf.textures = false;
+    vf.sourceLights = false;
+    vf.cameraLights = false;
+    vf.solarLight = false;
+    vf.shadows = false;
+    vf.noGeometryMap = true;
+    vf.acsTriad = false;
+    vf.grid = false;
+    vf.monochrome = false;
+    vf.materials = false;
 
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);

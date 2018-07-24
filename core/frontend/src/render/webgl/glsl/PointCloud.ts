@@ -5,6 +5,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { addModelViewProjectionMatrix } from "./Vertex";
+import { addHiliter } from "./FeatureSymbology";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { PointCloudGeometry } from "../PointCloud";
 import { GL } from "../GL";
@@ -13,13 +14,17 @@ const computePosition = "gl_PointSize = 1.0; return u_mvp * rawPos;";
 const computeColor = "return vec4(a_color, 1.0);";
 const computeBaseColor = "return v_color;";
 
-export function createPointCloudBuilder(): ProgramBuilder {
-
+function createBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(false);
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeColor);
   addModelViewProjectionMatrix(vert);
+
+  return builder;
+}
+
+export function createPointCloudBuilder(): ProgramBuilder {
+  const builder = createBuilder();
 
   builder.vert.addAttribute("a_color", VariableType.Vec3, (shaderProg) => {
     shaderProg.addAttribute("a_color", (attr, params) => {
@@ -33,5 +38,11 @@ export function createPointCloudBuilder(): ProgramBuilder {
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeNonUniformColor", computeColor);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
+  return builder;
+}
+
+export function createPointCloudHiliter(): ProgramBuilder {
+  const builder = createBuilder();
+  addHiliter(builder, false, true);
   return builder;
 }

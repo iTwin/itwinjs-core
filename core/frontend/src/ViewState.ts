@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, SheetProps, ViewAttachmentProps,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState, EntityState } from "./EntityState";
@@ -25,7 +25,8 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, GeometricModel2dState, SheetModelState } from "./ModelState";
+import { GeometricModelState, GeometricModel2dState } from "./ModelState";
+import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";
 import { Sheet } from "./Sheet";
 import { TileTree, Tile } from "./tile/TileTree";
@@ -196,7 +197,9 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** get the ViewFlags from the displayStyle of this ViewState. */
+  public static createFromStateData(_viewStateData: ViewStateData, _cat: CategorySelectorState, _iModel: IModelConnection): ViewState | undefined { return undefined; }
+
+  /** Get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
 
   /** Set the ViewFlags and mark them as dirty if they have changed. */
@@ -207,27 +210,17 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** determine whether this ViewState exactly matches another */
+  /** Determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
-  /** determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
+  /** Determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
   public equalState(other: ViewState): boolean {
-    if (this.isPrivate !== other.isPrivate)
-      return false;
-
-    if (!this.categorySelector.id.equals(other.categorySelector.id))
-      return false;
-
-    if (!this.displayStyle.id.equals(other.displayStyle.id))
-      return false;
-
-    if (!this.categorySelector.equalState(other.categorySelector))
-      return false;
-
-    if (!this.displayStyle.equalState(other.displayStyle))
-      return false;
-
-    return JSON.stringify(this.getDetails()) === (JSON.stringify(other.getDetails()));
+    return (this.isPrivate === other.isPrivate &&
+      this.categorySelector.id.equals(other.categorySelector.id) &&
+      this.displayStyle.id.equals(other.displayStyle.id) &&
+      this.categorySelector.equalState(other.categorySelector) &&
+      this.displayStyle.equalState(other.displayStyle) &&
+      JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails()));
   }
 
   public toJSON(): ViewDefinitionProps {
@@ -422,13 +415,15 @@ export abstract class ViewState extends ElementState {
     context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 
-  private computeRootToNpc(): Map4d | undefined {
-    const viewRot = this.getRotation();
-    const delta = this.getExtents();
-    const inOrigin = this.getOrigin();
+  /** @hidden */
+  public computeWorldToNpc(viewRot?: RotMatrix, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
+    if (viewRot === undefined) viewRot = this.getRotation();
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
+
+    if (delta === undefined) delta = this.getExtents();
+    if (inOrigin === undefined) inOrigin = this.getOrigin();
 
     let frustFraction = 1.0;
     let xExtent: Vector3d;
@@ -458,7 +453,7 @@ export abstract class ViewState extends ElementState {
         zDelta = zFront - eyeToOrigin.z;
       }
 
-      // z out back of eye ====> origin z coordinates are negative.  (Back plane more negative than front plane)
+      // z out back of eye ===> origin z coordinates are negative.  (Back plane more negative than front plane)
       const backFraction = -zBack / focusDistance;    // Perspective fraction at back clip plane.
       const frontFraction = -zFront / focusDistance;  // Perspective fraction at front clip plane.
       frustFraction = frontFraction / backFraction;
@@ -468,11 +463,8 @@ export abstract class ViewState extends ElementState {
       yExtent = yVector.scale(delta.y * backFraction);   // yExtent at back == delta.y * backFraction.
 
       // Calculate the zExtent in the View coordinate system.
-      zExtent = new Vector3d(
-        eyeToOrigin.x * (frontFraction - backFraction), // eyeToOrigin.x * frontFraction - eyeToOrigin.x * backFraction
-        eyeToOrigin.y * (frontFraction - backFraction), // eyeToOrigin.y * frontFraction - eyeToOrigin.y * backFraction
-        zDelta);
-      viewRot.multiplyVectorInPlace(zExtent);   // rotate back to root coordinates.
+      zExtent = new Vector3d(eyeToOrigin.x * (frontFraction - backFraction), eyeToOrigin.y * (frontFraction - backFraction), zDelta);
+      viewRot.multiplyTransposeVectorInPlace(zExtent);   // rotate back to root coordinates.
 
       origin = new Point3d(
         eyeToOrigin.x * backFraction,   // Calculate origin in eye coordinates
@@ -489,7 +481,7 @@ export abstract class ViewState extends ElementState {
     }
 
     // calculate the root-to-npc mapping (using expanded frustum)
-    return Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction);
+    return { map: Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction), frustFraction };
   }
 
   /**
@@ -498,12 +490,12 @@ export abstract class ViewState extends ElementState {
    * @returns The 8-point Frustum with the corners of this ViewState, or undefined if the parameters are invalid.
    */
   public calculateFrustum(result?: Frustum): Frustum | undefined {
-    const rootToNpc = this.computeRootToNpc();
-    if (undefined === rootToNpc)
+    const val = this.computeWorldToNpc();
+    if (undefined === val.map)
       return undefined;
 
     const box = result ? result.initNpc() : new Frustum();
-    rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
+    val.map.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
     return box;
   }
 
@@ -563,10 +555,10 @@ export abstract class ViewState extends ElementState {
     return ViewStatus.Success;
   }
 
-  /** get the largest and smallest values allowed for the extents for this ViewState
+  /** Get the largest and smallest values allowed for the extents for this ViewState
    * @returns an object with members {min, max}
    */
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: 2.0 * Constant.diameterOfEarth }; }
+  public abstract getExtentLimits(): { min: number, max: number };
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
@@ -596,6 +588,19 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
   }
 
+  public showFrustumErrorMessage(status: ViewStatus): void {
+    let key: string;
+    switch (status) {
+      case ViewStatus.InvalidWindow: key = "InvalidWindow"; break;
+      case ViewStatus.MaxWindow: key = "MaxWindow"; break;
+      case ViewStatus.MinWindow: key = "MinWindow"; break;
+      case ViewStatus.MaxZoom: key = "MaxZoom"; break;
+      default:
+        return;
+    }
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + key)));
+  }
+
   public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
@@ -617,14 +622,13 @@ export abstract class ViewState extends ElementState {
     delta.y = limitWindowSize(delta.y, false);
     delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2D views
 
-    if (messageNeeded && error !== ViewStatus.Success) {
-      //      Viewport::OutputFrustumErrorMessage(error);
-    }
+    if (messageNeeded && error !== ViewStatus.Success)
+      this.showFrustumErrorMessage(error);
 
     return error;
   }
 
-  /** Peek to see if a detail is defined. May return undefined. */
+  /** Peek to see if a view detail is defined. May return undefined. */
   public peekDetail(name: string): any { return this.getDetails()[name]; }
 
   /** Get the current value of a view detail. If not present, return empty object. */
@@ -1591,6 +1595,14 @@ export abstract class ViewState3d extends ViewState {
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
 
+  public static createFromStateData(viewStateData: ViewStateData, categorySelectorState: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, iModel);
+    const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps!, iModel);
+
+    // use "new this" so subclasses are correct.
+    return new this(viewStateData.viewDefinitionProps as SpatialViewDefinitionProps, iModel, categorySelectorState, displayStyleState, modelSelectorState);
+  }
+
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
     this.modelSelector = modelSelector;
@@ -1612,12 +1624,13 @@ export class SpatialViewState extends ViewState3d {
 
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
 
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined) {   // can we assume that a loaded model
+      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
@@ -1665,7 +1678,7 @@ export class OrthographicViewState extends SpatialViewState {
 }
 
 /** Defines the state of a view of a single 2d model. */
-export class ViewState2d extends ViewState {
+export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
@@ -1705,26 +1718,12 @@ export class ViewState2d extends ViewState {
     args.root.draw(args);
   }
 
-  /**
-   * This should be overridden by more specific leaf classes of ViewState2d
-   * @hidden
-   */
-  public decorate(_context: DecorateContext): void { }
-
   public equalState(other: ViewState2d): boolean {
-    if (!this.baseModelId.equals(other.baseModelId))
-      return false;
-
-    if (!this.origin.isAlmostEqual(other.origin))
-      return false;
-
-    if (!this.delta.isAlmostEqual(other.delta))
-      return false;
-
-    if (!this.angle.isAlmostEqualNoPeriodShift(other.angle))
-      return false;
-
-    return super.equalState(other);
+    return this.baseModelId.equals(other.baseModelId) &&
+      this.origin.isAlmostEqual(other.origin) &&
+      this.delta.isAlmostEqual(other.delta) &&
+      this.angle.isAlmostEqualNoPeriodShift(other.angle) &&
+      super.equalState(other);
   }
 
   public computeFitRange(): Range3d { return this.getViewedExtents(); }
@@ -1745,7 +1744,7 @@ export class ViewState2d extends ViewState {
 
   public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
-    await super.load();
+    super.load();
     return this.iModel.models.load(this.baseModelId);
   }
 
@@ -1767,30 +1766,33 @@ export class ViewState2d extends ViewState {
 
 /** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
+  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
+    // use "new this" so subclasses are correct
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState);
+  }
+
   public static get className() { return "DrawingViewDefinition"; }
+  public getExtentLimits() { return { min: Constant.oneCentimeter, max: this.iModel.projectExtents.xLength() * 2 }; }
+  public decorate(_context: DecorateContext): void { }
 }
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  public static get className() { return "SheetViewDefinition"; }
-  private _sheetSize: Point2d = Point2d.create();   // ### TODO: Make public & readonly when we get sheet properties in constructor
-  private _attachments = new Sheet.Attachments();
-
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
-    super(props, iModel, categories, displayStyle);
+  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
+    // use "new this" so subclasses are correct
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!);
   }
 
-  /** If the view has been loaded, returns a valid sheet size in the form (width, height). */
-  public get sheetSize(): Point2d | undefined { return this._sheetSize; }
+  public static get className() { return "SheetViewDefinition"; }
+  public readonly sheetSize: Point2d;
+  private _attachments = new Sheet.Attachments();
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  /**
-   * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
-   * request for the modeled element.
-   */
-  private async getSheetSize(model: SheetModelState) {
-    const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
-    assert(sheetElement !== undefined, "Sheet modeled element is undefined");
-    this._sheetSize.set(sheetElement.width, sheetElement.height);
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps) {
+    super(props, iModel, categories, displayStyle);
+    this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
   }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
@@ -1801,7 +1803,6 @@ export class SheetViewState extends ViewState2d {
     const model = this.getViewedModel();
     if (model === undefined)
       return;
-    this.getSheetSize(model);
 
     // Query the attachment ids
     this._attachments.clear();
@@ -1876,17 +1877,17 @@ export class SheetViewState extends ViewState2d {
   }
 
   public decorate(context: DecorateContext): void {
-    if (this._sheetSize !== undefined) {
-      const border = this.createBorder(this._sheetSize.x, this._sheetSize.y, context);
+    if (this.sheetSize !== undefined) {
+      const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
       context.setViewBackground(border);
     }
   }
 
   // override - copy references to view attachments and sheet size
   public clone<T extends EntityState>(): T {
-    const viewStateClone = super.clone() as any;  // linter complains SheetViewState is not castable to type T
-    viewStateClone._size = this._sheetSize;
+    const viewStateClone = super.clone() as SheetViewState;
+    viewStateClone.sheetSize.setFrom(this.sheetSize);
     viewStateClone._attachments = this._attachments;
-    return viewStateClone as T;
+    return viewStateClone as any;
   }
 }

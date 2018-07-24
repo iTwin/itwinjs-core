@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { FeaturesInfo } from "./FeaturesInfo";
 import { RenderCommands } from "./DrawCommand";
 import { Primitive } from "./Primitive";
 import { CachedGeometry } from "./CachedGeometry";
@@ -14,13 +15,13 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { dispose } from "@bentley/bentleyjs-core";
 
-export class PointCloudGraphic extends Primitive {
+export class PointCloudPrimitive extends Primitive {
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
   public dispose(): void {
   }
   public static create(args: PointCloudArgs) {
-    return new PointCloudGraphic(args);
+    return new PointCloudPrimitive(args);
   }
 
   private constructor(args: PointCloudArgs) {
@@ -31,6 +32,7 @@ export class PointCloudGeometry extends CachedGeometry {
   private vertices: QBufferHandle3d;
   private vertexCount: number;
   private colorHandle: BufferHandle | undefined = undefined;
+  public features: FeaturesInfo | undefined;
 
   public dispose() { dispose(this.vertices); }
 
@@ -38,6 +40,7 @@ export class PointCloudGeometry extends CachedGeometry {
     super();
     this.vertices = QBufferHandle3d.create(pointCloud.pointParams, pointCloud.points) as QBufferHandle3d;
     this.vertexCount = pointCloud.points.length / 3;
+    this.features = FeaturesInfo.create(pointCloud.features);
     if (undefined !== pointCloud.colors)
       this.colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
   }
@@ -50,17 +53,12 @@ export class PointCloudGeometry extends CachedGeometry {
   public get qOrigin(): Float32Array { return this.vertices.origin; }
   public get qScale(): Float32Array { return this.vertices.scale; }
   public get colors(): BufferHandle | undefined { return this.colorHandle; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this.features; }
+  public get hasBakedLighting() { return true; }
+
   public bindVertexArray(attr: AttributeHandle): void { attr.enableArray(this.vertices, 3, GL.DataType.UnsignedShort, false, 0, 0); }
   public draw(): void {
     const gl = System.instance.context;
     gl.drawArrays(GL.PrimitiveType.Points, 0, this.vertexCount);
-  }
-}
-
-export class PointCloudPrimitive extends Primitive {
-
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
-  protected constructor(cachedGeom: PointCloudGeometry, _pointCloud: PointCloudGraphic) {
-    super(cachedGeom);
   }
 }

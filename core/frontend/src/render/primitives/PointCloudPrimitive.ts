@@ -3,12 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Range3d } from "@bentley/geometry-core";
-import { QParams3d } from "@bentley/imodeljs-common";
+import { QParams3d, FeatureIndex } from "@bentley/imodeljs-common";
+import { Mesh } from "./mesh/MeshPrimitives";
 
 export class PointCloudArgs {
   public points: Uint16Array;
   public pointParams: QParams3d;
   public colors: Uint8Array;
-  public constructor(points: Uint16Array = new Uint16Array(), pointParams = QParams3d.fromRange(Range3d.createNull()), colors = new Uint8Array()) { this.points = points; this.pointParams = pointParams, this.colors = colors; }
+  public features: FeatureIndex = new FeatureIndex();
+
+  public constructor(points: Uint16Array, pointParams: QParams3d, colors: Uint8Array, features: Mesh.Features) {
+    this.points = points;
+    this.colors = colors;
+    this.pointParams = pointParams;
+    features.toFeatureIndex(this.features);
+  }
 }

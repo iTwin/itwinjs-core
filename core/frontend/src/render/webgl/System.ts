@@ -25,7 +25,7 @@ import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
-import { PointCloudGraphic } from "./PointCloud";
+import { PointCloudPrimitive } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
@@ -402,7 +402,7 @@ export class System extends RenderSystem {
       return PolylinePrimitive.create(args);
   }
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
-  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudGraphic.create(args); }
+  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }

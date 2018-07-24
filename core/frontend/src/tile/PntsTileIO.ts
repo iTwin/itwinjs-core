@@ -3,12 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { TileIO } from "./TileIO";
-import { ElementAlignedBox3d, QParams3d, Quantization } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../render/System";
 import { GeometricModelState } from "../ModelState";
 import { StringUtils } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Point3d } from "@bentley/geometry-core/lib/PointVector";
 import { Transform, RotMatrix, Angle, Vector3d } from "@bentley/geometry-core";
 
@@ -31,7 +32,7 @@ export namespace PntsTileIO {
       this.batchTableBinaryLength = stream.nextUint32;
     }
   }
-  export function readPointCloud(stream: TileIO.StreamBuffer, model: GeometricModelState, _range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
+  export function readPointCloud(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
     const header: Header = new Header(stream);
 
     if (!header.isValid)
@@ -65,15 +66,22 @@ export namespace PntsTileIO {
       colors.fill(0xff, 0, colors.length);    // TBD... Default color?
     }
 
-    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors), model.iModel);
+    // ###TODO? Do we expect a batch table? not currently handled...
+    const featureTable = new FeatureTable(1, model.id);
+    const features = new Mesh.Features(featureTable);
+    features.add(new Feature(model.id), 1);
+
+    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features), model.iModel);
+    renderGraphic = system.createBatch(renderGraphic!, featureTable, range);
 
     if (yAxisUp) {
       const branch = new GraphicBranch();
-      branch.add(renderGraphic as RenderGraphic);
+      branch.add(renderGraphic!);
       const transform = Transform.createOriginAndMatrix(undefined, RotMatrix.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as RotMatrix);
 
       renderGraphic = system.createBranch(branch, transform);
     }
+
     return renderGraphic;
   }
 }

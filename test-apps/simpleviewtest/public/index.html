@@ -21,6 +21,7 @@
     }
   </style>
   <link rel="stylesheet" type="text/css" href="index.css">
+  <script type="text/javascript" src="main.bundle.js"></script>
 </head>
 
 <body>
@@ -155,27 +156,17 @@
       <div class="simpleicon" id="doRedo">
         <i class="bim-icon-redo"></i>
       </div>
-      <img class="simpleicon" src="sync.svg" id="doSync" />
       <span class="fsp-info" id="showfps" style="display: none;">Avg. FPS (ms): ---- Render Time (ms): ----
         <br />Scene Time (ms): ----</span>
       <span class="statusspan" id="showstatus" style="display:inline;"></span>
+      <span class="statusspan" id="showerror" style="display:inline;"></span>
     </div>
     <div id="spinner" class="bim-spinner-container">
       <div class="bim-spinner"></div>
     </div>
+    <div id="tooltip-location"></div>
     <canvas class="imodelview" id="imodelview"></canvas>
   </div>
-  <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  <script type="text/javascript" src="main.bundle.js"></script>
 </body>
 
 </html>
