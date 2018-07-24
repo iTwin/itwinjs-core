@@ -162,7 +162,7 @@ exports.config = {
   reporters: ["spec", "junit"],
   reporterOptions: {
     junit: {
-      outputDir: path.join(paths.appLib, "e2e"),
+      outputDir: path.join(paths.appTestResults, "e2e"),
       outputFileFormat: {
         single: () => "junit_results.xml"
       }

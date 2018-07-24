@@ -95,7 +95,8 @@ module.exports = {
   appBuiltMainJs: path.resolve(baseConfig.appLib, "main.js"),
   appFrontendStats: path.resolve(baseConfig.appLib, "frontend.stats.json"),
   appBackendStats: path.resolve(baseConfig.appLib, "backend.stats.json"),
-
+  appTestResults: baseConfig.appLib, // We may move this in a future release...
+  
   // src/
   appSrcBackendWeb: path.resolve(baseConfig.appSrcBackend, "web"),
   appSrcBackendElectron: path.resolve(baseConfig.appSrcBackend, "electron"),

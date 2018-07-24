@@ -58,7 +58,7 @@ exports.handler = (argv) => {
   // Some additional options are required for CI builds
   let reporterOptions = [ "--inline-diffs",  "--colors" ];
   if (CONTINUOUS_INTEGRATION) { 
-    const reportDir = (argv.subdirectory) ? path.join(paths.appLib, argv.subdirectory) : paths.appLib;
+    const reportDir = (argv.subdirectory) ? path.join(paths.appTestResults, argv.subdirectory) : paths.appTestResults;
     const appJUnitTestResults = path.resolve(reportDir, "junit_results.xml");
 
     reporterOptions = [
