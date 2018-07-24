@@ -369,25 +369,20 @@ class PointStringTechnique extends VariedTechnique {
 }
 
 class PointCloudTechnique extends VariedTechnique {
-  private static readonly kOpaque = 0;
-  private static readonly kFeature = 1;
-  private static readonly kHilite = numFeatureVariants(PointCloudTechnique.kFeature);
-  private static readonly kClip = PointCloudTechnique.kHilite + 1;
+  private static readonly kHilite = numFeatureVariants(1);
 
   public constructor(gl: WebGLRenderingContext) {
-    super((numFeatureVariants(1) + numHiliteVariants) * 2);
+    super(numFeatureVariants(1) + numHiliteVariants);
 
     const flags = scratchTechniqueFlags;
-    for (const clip of clips) {
-      this.addHiliteShader(clip, gl, createPointCloudHiliter);
-      for (const feature of featureModes) {
-        flags.reset(feature, clip);
-        const builder = createPointCloudBuilder(clip);
-        const opts = FeatureMode.Overrides === feature ? FeatureSymbologyOptions.PointCloud : FeatureSymbologyOptions.None;
-        addFeatureSymbology(builder, feature, opts, true);
-        this.addElementId(builder, feature, true);
-        this.addShader(builder, flags, gl);
-      }
+    this.addHiliteShader(gl, createPointCloudHiliter);
+    for (const feature of featureModes) {
+      flags.reset(feature);
+      const builder = createPointCloudBuilder();
+      const opts = FeatureMode.Overrides === feature ? FeatureSymbologyOptions.PointCloud : FeatureSymbologyOptions.None;
+      addFeatureSymbology(builder, feature, opts, true);
+      this.addElementId(builder, feature, true);
+      this.addShader(builder, flags, gl);
     }
   }
 
@@ -398,14 +393,10 @@ class PointCloudTechnique extends VariedTechnique {
     if (flags.isHilite)
       index = PointCloudTechnique.kHilite;
     else
-      index = PointCloudTechnique.kOpaque + PointCloudTechnique.kFeature * flags.featureMode;
-
-    if (flags.hasClip) {
-      index += PointCloudTechnique.kClip;
+      index = flags.featureMode;
 
     return index;
   }
-
 }
 
 // A collection of rendering techniques accessed by ID.
