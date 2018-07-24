@@ -152,13 +152,11 @@ export abstract class VariedTechnique implements Technique {
     const index = this.getShaderIndex(flags);
     let program: ShaderProgram | undefined;
 
-    /*
     if (flags.hasClip) {
       const entry = this._clippingPrograms[index];
       assert(undefined !== entry);
       program = entry.getProgram(flags.clip);
     }
-    */
 
     if (program === undefined)
       program = this._basicPrograms[index];

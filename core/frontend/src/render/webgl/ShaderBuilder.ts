@@ -8,7 +8,8 @@ import { ShaderProgram } from "./ShaderProgram";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
 import { System } from "./System";
 import { addClipping } from "./glsl/Clipping";
-import { ClipDef, ClipVolumeType } from "./TechniqueFlags";
+import { ClipDef } from "./TechniqueFlags";
+import { ClippingType } from "../System";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
@@ -673,10 +674,10 @@ export class ClippingShaders {
 
   public constructor(prog: ProgramBuilder, context: WebGLRenderingContext) {
     this.builder = prog.clone();
-    addClipping(this.builder, new ClipDef(ClipVolumeType.Planes, 6));
+    addClipping(this.builder, ClipDef.forPlanes(6));
 
     const maskBuilder = prog.clone();
-    addClipping(maskBuilder, new ClipDef(ClipVolumeType.Mask));
+    addClipping(maskBuilder, ClipDef.forMask());
     this.maskShader = maskBuilder.buildProgram(context);
     assert(this.maskShader !== undefined);
   }
@@ -702,9 +703,9 @@ export class ClippingShaders {
   }
 
   public getProgram(clipDef: ClipDef): ShaderProgram | undefined {
-    if (clipDef.type === ClipVolumeType.Mask) {
+    if (clipDef.type === ClippingType.Mask) {
       return this.maskShader;
-    } else if (clipDef.type === ClipVolumeType.Planes) {
+    } else if (clipDef.type === ClippingType.Planes) {
       assert(clipDef.numberOfPlanes > 0);
       const numClips = ClippingShaders.roundNumPlanes(clipDef.numberOfPlanes);
       for (const shader of this.shaders)

@@ -8,7 +8,8 @@ import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, Inde
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
-import { RenderClipVolume } from "../System";
+import { RenderClipVolume, ClippingType } from "../System";
+import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common/lib/common";
 import { ClipMaskGeometry } from "./CachedGeometry";
 import { ViewRect } from "../../Viewport";
 import { FrameBuffer } from "./FrameBuffer";
@@ -86,6 +87,7 @@ export class ClipPlanesVolume extends RenderClipVolume {
     this._texture = texture;
   }
 
+  public get type(): ClippingType { return ClippingType.Planes; }
   public get texture(): TextureHandle | undefined { return this._texture; }
 
   /** Create a new ClipPlanesVolume from a ClipVector. */
@@ -149,11 +151,18 @@ export class ClipPlanesVolume extends RenderClipVolume {
     this._texture = dispose(this._texture);
   }
 
-  public push(shader: ShaderProgramExecutor) {
+  /** Push this ClipPlanesVolume clipping onto a target. */
+  public pushToTarget(target: Target) {
     if (this._texture !== undefined)
-      shader.target.clips.set(this._texture.height, this._texture);
+      target.clips.set(this._texture.height, this._texture);
   }
 
+  /** Push this ClipPlanesVolume clipping onto the target of a shader program executor. */
+  public pushToShaderExecutor(shader: ShaderProgramExecutor) {
+    this.pushToTarget(shader.target);
+  }
+
+  /** Pop this ClipPlanesVolume clipping from a target. */
   public pop(target: Target) {
     target.clips.clear();
   }
@@ -173,6 +182,8 @@ export class ClipMaskVolume implements RenderClipVolume {
     this.rect = new ViewRect(0, 0, 0, 0);
   }
 
+  public get type(): ClippingType { return ClippingType.Mask; }
+
   /** Create a new ClipMaskVolume from a clip vector. */
   public static create(clipVec: ClipVector): ClipMaskVolume | undefined {
     const range = clipVec.boundingRange;
@@ -186,12 +197,14 @@ export class ClipMaskVolume implements RenderClipVolume {
       Point3d.create(range.low.x, range.high.y, 0),
     ];
 
+    // Clip the polygon into smaller polygons inside the clipping region
     const clippedPolygonInsides = ClipUtilities.clipPolygonToClipVector(pts, clipVec);
     const indices: number[] = [];
     const vertices = QPoint3dList.createFrom([], QParams3d.fromRange(range));
     let indexOffset = 0;
 
     for (const clippedPolygon of clippedPolygonInsides) {
+      // Triangulate the polygon and convert the result to a polyface
       const triangulatedPolygonGraph = Triangulator.earcutFromPoints(clippedPolygon);
       Triangulator.cleanupTriangulation(triangulatedPolygonGraph);
       const polyfaceBuilder = PolyfaceBuilder.create();
@@ -200,7 +213,6 @@ export class ClipMaskVolume implements RenderClipVolume {
 
       const nPoints = polyface.pointCount;
       const pPoints = polyface.data.point;
-      const pIndices = polyface.data.pointIndex;
       assert(nPoints !== 0);
 
       for (let i = 0; i < nPoints; i++)
@@ -209,10 +221,10 @@ export class ClipMaskVolume implements RenderClipVolume {
       const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
       while (visitor.moveToNextFacet())
         for (let i = 0; i < 3; i++)
-          pIndices.push(indexOffset + visitor.clientPointIndex(i));
+          indices.push(indexOffset + visitor.clientPointIndex(i));
 
-      assert(pIndices.length > 0);
-      indexOffset += pIndices.length;
+      assert(indices.length > 0);
+      indexOffset += indices.length;
     }
 
     if (indices.length === 0 || vertices.length === 0)
@@ -229,13 +241,17 @@ export class ClipMaskVolume implements RenderClipVolume {
     this._fbo = dispose(this._fbo);
   }
 
-  /** Push this clip mask texture onto the target of a program executor. */
-  public push(shader: ShaderProgramExecutor) {
-    if (this._texture !== undefined)
-      shader.target.clipMask = this._texture;
+  /** Push this ClipMaskVolume clipping onto a target. */
+  public pushToTarget(_target: Target) { assert(false); }
+
+  /** Push this ClipMaskVolume clipping onto the target of a program executor. */
+  public pushToShaderExecutor(shader: ShaderProgramExecutor) {
+    const texture = this.getTexture(shader);
+    if (texture !== undefined)
+      shader.target.clipMask = texture;
   }
 
-  /** Clear a target's clip mask, provided that this ClipMaskVolume's texture is not undefined. */
+  /** Pop this ClipMaskVolume clipping from a target. */
   public pop(target: Target) {
     if (target.is2d && this._texture !== undefined)
       target.clipMask = undefined;
