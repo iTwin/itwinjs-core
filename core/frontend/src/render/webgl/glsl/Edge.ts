@@ -10,10 +10,8 @@ import {
   VertexShaderComponent,
 } from "../ShaderBuilder";
 import { addModelViewMatrix, addProjectionMatrix, GLSLVertex } from "./Vertex";
-import { WithClipVolume } from "../TechniqueFlags";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
-import { addClipping } from "./Clipping";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
@@ -107,7 +105,7 @@ const computePosition = `
 
 const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
-function createBase(isSilhouette: boolean, clip: WithClipVolume): ProgramBuilder {
+function createBase(isSilhouette: boolean): ProgramBuilder {
   const builder = new ProgramBuilder(true);
   const vert = builder.vert;
 
@@ -161,14 +159,11 @@ function createBase(isSilhouette: boolean, clip: WithClipVolume): ProgramBuilder
     });
   }
 
-  if (WithClipVolume.Yes === clip)
-    addClipping(builder);
-
   return builder;
 }
 
-export function createEdgeBuilder(isSilhouette: boolean, clip: WithClipVolume): ProgramBuilder {
-  const builder = createBase(isSilhouette, clip);
+export function createEdgeBuilder(isSilhouette: boolean): ProgramBuilder {
+  const builder = createBase(isSilhouette);
   addShaderFlags(builder);
   addColor(builder);
   addWhiteOnWhiteReversal(builder.frag);

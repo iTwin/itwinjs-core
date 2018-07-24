@@ -1773,7 +1773,7 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
-  private _size: Point2d = Point2d.create();
+  private _sheetSize: Point2d = Point2d.create();   // ### TODO: Make public & readonly when we get sheet properties in constructor
   private _attachments = new Sheet.Attachments();
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
@@ -1781,11 +1781,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** If the view has been loaded, returns a valid sheet size in the form (width, height). */
-  public get sheetSize(): Point2d | undefined { return this._size; }
-  /** If the view has been loaded, returns valid extents of the sheet. */
-  public get sheetExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(Point3d.create(), Point3d.create(this._size.x, this._size.y, 0)); }
-  /** If the view has been loaded, returns the attachments of this sheet. */
-  public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
+  public get sheetSize(): Point2d | undefined { return this._sheetSize; }
 
   /**
    * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
@@ -1794,7 +1790,7 @@ export class SheetViewState extends ViewState2d {
   private async getSheetSize(model: SheetModelState) {
     const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
     assert(sheetElement !== undefined, "Sheet modeled element is undefined");
-    this._size.set(sheetElement.width, sheetElement.height);
+    this._sheetSize.set(sheetElement.width, sheetElement.height);
   }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
@@ -1880,23 +1876,17 @@ export class SheetViewState extends ViewState2d {
   }
 
   public decorate(context: DecorateContext): void {
-    if (this._size !== undefined) {
-      const border = this.createBorder(this._size.x, this._size.y, context);
+    if (this._sheetSize !== undefined) {
+      const border = this.createBorder(this._sheetSize.x, this._sheetSize.y, context);
       context.setViewBackground(border);
     }
   }
 
-  /** Serialize this SheetViewState into a JSON object. */
-  public toJSON(): any {
-    const json = super.toJSON();
-    return json;
-  }
-
   // override - copy references to view attachments and sheet size
   public clone<T extends EntityState>(): T {
-    const viewStateClone = super.clone();
-    (viewStateClone as any)._size = this._size;
-    (viewStateClone as any)._attachments = this._attachments;
+    const viewStateClone = super.clone() as any;  // linter complains SheetViewState is not castable to type T
+    viewStateClone._size = this._sheetSize;
+    viewStateClone._attachments = this._attachments;
     return viewStateClone as T;
   }
 }

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend/lib/frontend";
-import { Target, FeatureSymbology } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, FeatureSymbology, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
   ElectronRpcManager,
@@ -574,7 +574,7 @@ function doSyncIModel(_event: any) {
 
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
-  if (document.getElementById("showfps")) document.getElementById("showfps")!.innerHTML =
+  if (document.getElementById("showfps") && perfMet) document.getElementById("showfps")!.innerHTML =
     "Avg. FPS (ms): " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
     + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
     + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2);
@@ -632,8 +632,10 @@ function wireIconsToFunctions() {
   addRenderModeHandler("transparency");
   document.getElementById("continuousRendering")!.addEventListener("click", () => {
     const checked: boolean = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
-    if (theViewport)
-      theViewport!.continuousRendering = checked;
+    if (theViewport) {
+      theViewport.continuousRendering = checked;
+      (theViewport!.target as Target).performanceMetrics = checked ? new PerformanceMetrics(false, true) : undefined;
+    }
     if (checked) {
       curFPSIntervalId = setInterval(setFpsInfo, 500);
       document.getElementById("showfps")!.style.display = "inline";
