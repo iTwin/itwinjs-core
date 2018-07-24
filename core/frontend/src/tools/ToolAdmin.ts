@@ -498,7 +498,7 @@ export class ToolAdmin {
     return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top });
   }
 
-  private callMouseHandler(event: ToolEvent, isDown: boolean): Promise<void> {
+  private callMouseHandler(event: ToolEvent, isDown: boolean): Promise<any> {
     const ev = event.ev as MouseEvent;
     const vp = event.vp;
     const pos = this.getMousePosition(event);
