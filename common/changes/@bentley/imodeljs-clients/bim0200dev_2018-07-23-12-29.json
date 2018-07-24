@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Split tile loading into property and tile loading so that",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "ray.bentley@bentley.com"
+}

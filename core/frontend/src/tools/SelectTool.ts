@@ -245,15 +245,13 @@ export class SelectionTool extends PrimitiveTool {
 
   public onModelStartDrag(ev: BeButtonEvent): boolean {
     if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return false;
-    this.selectByPointsStart(ev);
-    return false;
+      return true;
+    return this.selectByPointsStart(ev);
   }
 
   public onModelEndDrag(ev: BeButtonEvent): boolean {
-    // NOTE: If manipulator installed an input collector, it would get the end drag event directly...
-    this.selectByPointsEnd(ev);
-    return false;
+    // NOTE: If manipulator installed an `input collector, it would get the end drag event directly...
+    return this.selectByPointsEnd(ev);
   }
 
   public onDataButtonUp(ev: BeButtonEvent): boolean {

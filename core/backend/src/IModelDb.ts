@@ -873,7 +873,7 @@ export class IModelDb extends IModel {
         if (ret.error !== undefined)
           reject(new Error(ret.error.message));
         else
-          return resolve(ret.result);
+          resolve(ret.result);
       });
     });
   }

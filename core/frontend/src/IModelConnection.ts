@@ -18,6 +18,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { ModelState } from "./ModelState";
 import { IModelApp } from "./IModelApp";
 import { EntityState } from "./EntityState";
+import { OneAtATimePromise } from "./tools/EventController";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -341,39 +342,19 @@ export class IModelConnection extends IModel {
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
-  private _snapPending = false;
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
-    if (this._snapPending)
-      throw Error("busy");
+  private _snap = new OneAtATimePromise<SnapResponseProps>("snap", (args: any[]) => IModelReadRpcInterface.getClient().requestSnap(args[0], args[1], args[2]));
+  /** Request a snap from the backend.
+   * @note Snap requests are *replaceable*. That is, subsequent snap requests replace previous pending snap requests with a BusyError exception.
+   * Therefore, callers *must* catch [[BusyError]] exceptions.
+   */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return this._snap.addRequest(this.iModelToken, this.connectionId, props); }
 
-    this._snapPending = true; // save flag indicating we're in the process of generating a snap
-    const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
-    await response; // after snap completes, turn off flag
-    this._snapPending = false;
-    return response; // return fulfilled promise
-  }
-  public _cancelPending = false;
-  public async cancelSnap(): Promise<void> {
-    if (this._cancelPending)
-      throw Error("busy");
-
-    this._cancelPending = true; // save flag indicating we're in the process of generating a snap
-    if (this._snapPending) { // if we're waiting for a snap, cancel it.
-      await IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
-      this._snapPending = false;
-    }
-    this._cancelPending = false;
-  }
-
-  private _locateMsgPending = false;
-  public async getLocateMessage(id: string): Promise<string[]> {
-    if (this._locateMsgPending)
-      throw Error("busy");
-    this._locateMsgPending = true;
-    const val = await IModelReadRpcInterface.getClient().getLocateMessage(this.iModelToken, id);
-    this._locateMsgPending = false;
-    return val;
-  }
+  private _tooltip = new OneAtATimePromise<string[]>("tooltip", (args: any[]) => IModelReadRpcInterface.getClient().getToolTipMessage(args[0], args[1]));
+  /** Request a tooltip from the backend.
+   * @note ToolTip requests are *replaceable*. That is, subsequent requests replace previous pending requests with a BusyError exception.
+   * Therefore, callers *must* catch [[BusyError]] exceptions.
+   */
+  public async getToolTipMessage(id: string): Promise<string[]> { return this._tooltip.addRequest(this.iModelToken, id); }
 }
 
 export namespace IModelConnection {
@@ -591,7 +572,6 @@ export namespace IModelConnection {
   }
 
   /** @hidden */
-  // NB: Very WIP.
   export class Tiles {
     private _iModel: IModelConnection;
     constructor(iModel: IModelConnection) { this._iModel = iModel; }

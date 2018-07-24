@@ -183,6 +183,7 @@ class RealityModelTileClient {
   private baseUrl: string = "";
   private static token?: AccessToken;
   private static client = new RealityDataServicesClient("QA"); // ###TODO the deployementEnv needs to be customizeable
+  private static onCloseListener?: () => void;
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   constructor(url: string) {
@@ -220,6 +221,12 @@ class RealityModelTileClient {
       const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
       RealityModelTileClient.token = await RealityModelTileClient.client.getAccessToken(authToken);
     }
+    if (undefined === RealityModelTileClient.onCloseListener)
+      RealityModelTileClient.onCloseListener = IModelConnection.onClose.addListener(RealityModelTileClient.removeToken);
+  }
+
+  public static removeToken() {
+    RealityModelTileClient.token = undefined;
   }
 
   // this is only used for accessing locally served reality tiles.
