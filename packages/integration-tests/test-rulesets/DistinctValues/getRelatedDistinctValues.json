@@ -1,9 +1,9 @@
 {
   "ruleSetId": "getRelatedDistinctValues",
   "rules": [{
-    "type": "PresentationRuleTypes.ContentRule",
+    "type": "Content",
     "specifications": [{
-      "type": "PresentationRuleSpecificationTypes.ContentRelatedInstancesSpecification",
+      "type": "ContentRelatedInstances",
       "relatedClassNames": "BisCore:SubCategory, LinkPartition, DefinitionPartition, PhysicalPartition"
     }]
   }]

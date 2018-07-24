@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
 import { OpenMode, Id64, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, SelectionInfo, InstanceKey, PresentationRuleSet } from "@bentley/ecpresentation-common";
+import { KeySet, InstanceKey, PresentationRuleSet } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 
 before(() => {
@@ -29,14 +29,13 @@ describe("DistinctValues", async () => {
     await imodel.closeStandalone();
   });
 
-  it.skip("gets distinct content values", async () => {
-    const ruleset: PresentationRuleSet = require("../test-rulesets/DistinctValues/getRelatedDistinctValues");
+  it("gets distinct content values", async () => {
+    const ruleset: PresentationRuleSet = require("../../test-rulesets/DistinctValues/getRelatedDistinctValues");
     await using(await ECPresentation.presentation.rulesets().add(ruleset), async () => {
       const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };
       const key2: InstanceKey = { id: new Id64("0x17"), className: "BisCore:SpatialCategory" };
-      const selection: SelectionInfo = { providerName: "Some provider", level: 0 };
       const keys = new KeySet([key1, key2]);
-      const descriptor = await ECPresentation.presentation.getContentDescriptor({ imodel, rulesetId: ruleset.ruleSetId }, "Grid", keys, selection);
+      const descriptor = await ECPresentation.presentation.getContentDescriptor({ imodel, rulesetId: ruleset.ruleSetId }, "Grid", keys, undefined);
       expect(descriptor).to.not.be.undefined;
       const distinctValues = await ECPresentation.presentation.getDistinctValues({ imodel, rulesetId: ruleset.ruleSetId }, descriptor!, keys,
         "SubCategory_DefinitionPartition_LinkPartition_PhysicalPartition_Model");
