@@ -20,14 +20,11 @@ function createBuilder(): ProgramBuilder {
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
 
-  if (WithClipVolume.Yes === clip)
-    addClipping(builder);
-
   return builder;
 }
 
-export function createPointCloudBuilder(clip: WithClipVolume): ProgramBuilder {
-  const builder = createBuilder(clip);
+export function createPointCloudBuilder(): ProgramBuilder {
+  const builder = createBuilder();
 
   builder.vert.addAttribute("a_color", VariableType.Vec3, (shaderProg) => {
     shaderProg.addAttribute("a_color", (attr, params) => {
@@ -44,8 +41,8 @@ export function createPointCloudBuilder(clip: WithClipVolume): ProgramBuilder {
   return builder;
 }
 
-export function createPointCloudHiliter(clip: WithClipVolume): ProgramBuilder {
-  const builder = createBuilder(clip);
+export function createPointCloudHiliter(): ProgramBuilder {
+  const builder = createBuilder();
   addHiliter(builder, false, true);
   return builder;
 }
