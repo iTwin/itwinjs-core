@@ -10,6 +10,7 @@ import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
 import { System } from "../System";
 import { ClipDef, ClipVolumeType } from "../TechniqueFlags";
+import { addViewMatrix } from "./Common";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {
@@ -135,6 +136,8 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
 
   addModelViewMatrix(vert);
   vert.set(VertexShaderComponent.CalcClipDist, calcClipCamPos);
+  addViewMatrix(frag);
+
   if (System.instance.capabilities.supportsTextureFloat) {
     frag.addFunction(getClipPlaneFloat);
   } else {

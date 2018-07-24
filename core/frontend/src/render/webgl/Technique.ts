@@ -152,11 +152,13 @@ export abstract class VariedTechnique implements Technique {
     const index = this.getShaderIndex(flags);
     let program: ShaderProgram | undefined;
 
+    /*
     if (flags.hasClip) {
       const entry = this._clippingPrograms[index];
       assert(undefined !== entry);
       program = entry.getProgram(flags.clip);
     }
+    */
 
     if (program === undefined)
       program = this._basicPrograms[index];
@@ -170,7 +172,7 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
   private static readonly kHilite = numFeatureVariants(SurfaceTechnique.kFeature);
-  private static readonly kClip = SurfaceTechnique.kHilite + 1;
+  // private static readonly kClip = SurfaceTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -193,19 +195,11 @@ class SurfaceTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
-      let hIndex = SurfaceTechnique.kHilite;
-      if (flags.hasClip) {
-        hIndex += SurfaceTechnique.kClip;
-      }
-      return hIndex;
+      return SurfaceTechnique.kHilite;
     }
 
     let index = flags.isTranslucent ? SurfaceTechnique.kTranslucent : SurfaceTechnique.kOpaque;
     index += SurfaceTechnique.kFeature * flags.featureMode;
-    if (flags.hasClip) {
-      index += SurfaceTechnique.kClip;
-    }
-
     return index;
   }
 }
@@ -215,7 +209,7 @@ class PolylineTechnique extends VariedTechnique {
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
   private static readonly kHilite = numFeatureVariants(PolylineTechnique.kFeature);
-  private static readonly kClip = PolylineTechnique.kHilite + 1;
+  // private static readonly kClip = PolylineTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -249,19 +243,11 @@ class PolylineTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
-      let hIndex = PolylineTechnique.kHilite;
-      if (flags.hasClip) {
-        hIndex += PolylineTechnique.kClip;
-      }
-      return hIndex;
+      return PolylineTechnique.kHilite;
     }
 
     let index = flags.isTranslucent ? PolylineTechnique.kTranslucent : PolylineTechnique.kOpaque;
     index += PolylineTechnique.kFeature * flags.featureMode;
-    if (flags.hasClip) {
-      index += PolylineTechnique.kClip;
-    }
-
     return index;
   }
 }
@@ -270,7 +256,7 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
-  private static readonly kClip = numFeatureVariants(EdgeTechnique.kFeature);
+  // private static readonly kClip = numFeatureVariants(EdgeTechnique.kFeature);
   private readonly _isSilhouette: boolean;
 
   public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
@@ -305,9 +291,6 @@ class EdgeTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = flags.isTranslucent ? EdgeTechnique.kTranslucent : EdgeTechnique.kOpaque;
     index += EdgeTechnique.kFeature * flags.featureMode;
-    if (flags.hasClip) {
-      index += EdgeTechnique.kClip;
-    }
     return index;
   }
 }
@@ -317,7 +300,7 @@ class PointStringTechnique extends VariedTechnique {
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
   private static readonly kHilite = numFeatureVariants(PointStringTechnique.kFeature);
-  private static readonly kClip = PointStringTechnique.kHilite + 1;
+  // private static readonly kClip = PointStringTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -351,19 +334,11 @@ class PointStringTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
-      let hIndex = PointStringTechnique.kHilite;
-      if (flags.hasClip) {
-        hIndex += PointStringTechnique.kClip;
-      }
-      return hIndex;
+      return PointStringTechnique.kHilite;
     }
 
     let index = flags.isTranslucent ? PointStringTechnique.kTranslucent : PointStringTechnique.kOpaque;
     index += PointStringTechnique.kFeature * flags.featureMode;
-    if (flags.hasClip) {
-      index += PointStringTechnique.kClip;
-    }
-
     return index;
   }
 }
