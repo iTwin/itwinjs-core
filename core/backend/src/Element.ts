@@ -86,8 +86,29 @@ export abstract class Element extends Entity implements ElementProps {
   /** Remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
-  public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
-  public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
+  /** Get a JSON property of this element, by namespace */
+  public getJsonProperty(nameSpace: string): any { return this.jsonProperties[nameSpace]; }
+  public setJsonProperty(nameSpace: string, value: any) { this.jsonProperties[nameSpace] = value; }
+
+  /** Get a display label for this Element. By default returns userLabel if present, otherwise code value. */
+  public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.getValue(); }
+
+  /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
+   * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
+   */
+  public getLocateMessage(): string[] {
+    const msg: string[] = [];
+
+    const display = this.getDisplayLabel();
+    msg.push(display ? display : "<b>%{iModelJs:Element.Id}:</b> " + this.id.value + ", <b>%{iModelJs:Element.Type}:</b> " + this.className);
+
+    if (this.category)
+      msg.push("<b>%{iModelJs:Element.Category}:</b> " + this.iModel.elements.getElement(this.category).getDisplayLabel());
+
+    msg.push("<b>%{iModelJs:Element.Model}:</b> " + this.iModel.elements.getElement(this.model).getDisplayLabel());
+    return msg;
+  }
+
   /**
    * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.

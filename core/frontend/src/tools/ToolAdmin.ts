@@ -10,12 +10,12 @@ import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
   BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool, InputCollector,
 } from "./Tool";
-import { ViewTool, ViewManip } from "./ViewTool";
+import { ViewTool } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { TentativeOrAccuSnap, AccuSnapToolState } from "../AccuSnap";
+import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { NpcCenter } from "@bentley/imodeljs-common";
@@ -38,7 +38,7 @@ export class ToolState {
 
 export class SuspendedToolState {
   private readonly toolState: ToolState;
-  private readonly accuSnapState: AccuSnapToolState;
+  private readonly accuSnapState: AccuSnap.ToolState;
   private readonly viewCursor?: BeCursor;
   private inDynamics: boolean;
   private shuttingDown = false;
@@ -82,7 +82,6 @@ export class CurrentInputState {
   public button: BeButtonState[] = [new BeButtonState(), new BeButtonState(), new BeButtonState()];
   public lastButton: BeButton = BeButton.Data;
   public inputSource: InputSource = InputSource.Unknown;
-  public inputOffset: Point2d = new Point2d();
   public wantIgnoreTest: boolean = false;
   public numberTouches: number = 0;
   public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
@@ -218,8 +217,8 @@ export class CurrentInputState {
 
   public fromPoint(vp: Viewport, pt: XAndY, source: InputSource) {
     this.viewport = vp;
-    this._viewPoint.x = pt.x + this.inputOffset.x;
-    this._viewPoint.y = pt.y + this.inputOffset.y;
+    this._viewPoint.x = pt.x;
+    this._viewPoint.y = pt.y;
     this._viewPoint.z = vp.npcToView(NpcCenter).z;
     vp.viewToWorld(this._viewPoint, this._rawPoint);
     this._uorPoint = this._rawPoint.clone();
@@ -343,46 +342,50 @@ class WheelEventProcessor {
     if (ev.wheelDelta > 0)
       zoomRatio = 1 / zoomRatio;
 
+    let isSnapOrPrecision = false;
     const target = Point3d.create();
-    const isSnap = ev.getTargetPoint(target);
-    let targetRoot = target.clone();
-    let status: ViewStatus;
+    if (IModelApp.tentativePoint.isActive) {
+      // Always use Tentative location, adjusted point, not cross...
+      isSnapOrPrecision = true;
+      target.setFrom(IModelApp.tentativePoint.getPoint());
+    } else {
+      // Never use AccuSnap location as initial zoom clears snap causing zoom center to "jump"...
+      isSnapOrPrecision = CoordSource.Precision === ev.coordsFrom;
+      target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
+    }
 
+    let status: ViewStatus;
     if (vp.view.is3d() && vp.isCameraOn()) {
       let lastEventWasValid: boolean = false;
-      if (!isSnap) {
-        vp.worldToNpc(targetRoot, targetRoot);
-
-        let defaultTarget: Point3d;
-
+      if (!isSnapOrPrecision) {
+        const targetNpc = vp.worldToNpc(target);
+        const newTarget = new Point3d();
         const lastEvent = IModelApp.toolAdmin.lastWheelEvent;
-        const path = ViewManip.getTargetHitDetail(vp, target);
-        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < .00001) {
-          defaultTarget = vp.worldToNpc(lastEvent.point);
-          targetRoot.z = defaultTarget.z;
+        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < 10) {
+          vp.worldToNpc(lastEvent.point, newTarget);
+          targetNpc.z = newTarget.z;
           lastEventWasValid = true;
-        } else if (path !== undefined) {
-          defaultTarget = path.hitPoint.clone();
-          targetRoot = vp.worldToNpc(defaultTarget);
+        } else if (undefined !== vp.determineNearestVisibleGeometryPoint(target, 20.0, newTarget)) {
+          vp.worldToNpc(newTarget, newTarget);
+          targetNpc.z = newTarget.z;
         } else {
-          defaultTarget = vp.determineDefaultRotatePoint();
-          vp.worldToNpc(defaultTarget, defaultTarget);
-          targetRoot.z = defaultTarget.z;
+          vp.view.getTargetPoint(newTarget);
+          vp.worldToNpc(newTarget, newTarget);
+          targetNpc.z = newTarget.z;
         }
-
-        vp.npcToWorld(targetRoot, targetRoot);
+        vp.npcToWorld(targetNpc, target);
       }
 
       const cameraView = vp.view as ViewState3d;
-      const transform = Transform.createFixedPointAndMatrix(targetRoot, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
+      const transform = Transform.createFixedPointAndMatrix(target, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldCameraPos = cameraView.getEyePoint();
       const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
       const offset = Vector3d.createStartEnd(oldCameraPos, newCameraPos);
 
-      if (!isSnap && offset.magnitude() < .01) {
-        offset.scaleToLength(1 / 3);
+      if (!isSnapOrPrecision && offset.magnitude() < .01) {
+        offset.scaleToLength(1 / 3, offset);
         lastEventWasValid = false;
-        targetRoot.addInPlace(offset);
+        target.addInPlace(offset);
       }
 
       const viewTarget = cameraView.getTargetPoint().clone();
@@ -391,14 +394,14 @@ class WheelEventProcessor {
 
       if (!lastEventWasValid) {
         const thisEvent = ev.clone();
-        thisEvent.point.setFrom(targetRoot);
+        thisEvent.point.setFrom(target);
         IModelApp.toolAdmin.lastWheelEvent = thisEvent;
       }
 
       status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
       vp.synchWithView(false);
     } else {
-      const targetNpc = vp.worldToNpc(targetRoot);
+      const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1));
       const viewCenter = Point3d.create(.5, .5, .5);
 
@@ -478,15 +481,11 @@ export class ToolAdmin {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }
 
-  public getInfoString(hit: HitDetail, delimiter: string): string {
-    let tool = this.activeTool;
-    if (!tool)
-      tool = this.idleTool;
-
-    return tool.getInfoString(hit, delimiter);
+  /** Ask the active tool to provide a tooltip message for the supplied HitDetail. */
+  public async getToolTip(hit: HitDetail): Promise<string> {
+    const tool = this.activeTool ? this.activeTool : this.idleTool;
+    return tool.getToolTip(hit);
   }
-
-  // public onToolStateIdChanged(_tool: InteractiveTool, _toolStateId?: string): boolean { return false; }
 
   /**
    * Event that is raised whenever the active tool changes. This includes both primitive and viewing tools.
@@ -499,7 +498,7 @@ export class ToolAdmin {
   public onAccuSnapDisabled() { }
   public onAccuSnapSyncUI() { }
 
-  /** called when a viewport is closed */
+  /** Called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
     //  Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
     IModelApp.accuSnap.clear();
@@ -794,7 +793,7 @@ export class ToolAdmin {
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, inputSource, true);
     current.onButtonDown(BeButton.Data);
-    current.toEvent(ev, false);
+    current.toEvent(ev, true);
     current.updateDownPoint(ev);
     this.sendDataPoint(ev);
   }

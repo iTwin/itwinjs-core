@@ -325,6 +325,7 @@ export class ShaderBuilder extends ShaderVariables {
 
     src.addline("#version 100");
     src.addline("#define TEXTURE texture2D");
+    src.addline("#define TEXTURE_CUBE textureCube");
 
     // Header comment
     src.newline();

@@ -7,7 +7,7 @@ import { Logger, Id64Set, assert, BeDuration } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken,
-  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps,
+  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData,
 } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
@@ -154,7 +154,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return codeSpecs;
   }
 
-  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<any> { return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId); }
+  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<ViewStateData> { return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId); }
   public async readFontJson(iModelToken: IModelToken): Promise<any> { return IModelDb.find(iModelToken).readFontJson(); }
   public async isChangeCacheAttached(iModelToken: IModelToken): Promise<boolean> { return ChangeSummaryManager.isChangeCacheAttached(IModelDb.find(iModelToken)); }
   public async attachChangeCache(iModelToken: IModelToken): Promise<void> { ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken)); }
@@ -166,4 +166,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> { return IModelDb.find(iModelToken).requestSnap(connectionId, props); }
   public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> { return IModelDb.find(iModelToken).cancelSnap(connectionId); }
   public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<string> { return IModelDb.loadNativeAsset(assetName); }
+  public async getLocateMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
+    const el = IModelDb.find(iModelToken).elements.getElement(id);
+    return (el === undefined) ? [] : el.getLocateMessage();
+  }
 }

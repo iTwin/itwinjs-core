@@ -6,14 +6,22 @@
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
-import { ElementProps, DefinitionElementProps } from "./ElementProps";
+import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 
-/** properties that define a ModelSelector */
+/** Returned from [IModelDb.Views.getViewStateData]($backend) */
+export interface ViewStateData {
+  viewDefinitionProps: ViewDefinitionProps;
+  categorySelectorProps: CategorySelectorProps;
+  displayStyleProps: ElementProps;
+  modelSelectorProps?: ModelSelectorProps;
+  sheetProps?: SheetProps;
+}
+/** Properties that define a ModelSelector */
 export interface ModelSelectorProps extends ElementProps {
   models: string[];
 }
 
-/** properties that define a CategorySelector */
+/** Properties that define a CategorySelector */
 export interface CategorySelectorProps extends ElementProps {
   categories: string[];
 }

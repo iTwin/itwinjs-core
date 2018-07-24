@@ -300,12 +300,7 @@ export enum SkyboxSphereType {
 export class SkyBoxCreateParams {
   private _isSphere: boolean;
 
-  public readonly front?: RenderTexture;
-  public readonly back?: RenderTexture;
-  public readonly top?: RenderTexture;
-  public readonly bottom?: RenderTexture;
-  public readonly left?: RenderTexture;
-  public readonly right?: RenderTexture;
+  public readonly texture?: RenderTexture;
   public readonly sphereType?: SkyboxSphereType;
   public readonly zenithColor?: ColorDef;
   public readonly skyColor?: ColorDef;
@@ -317,15 +312,9 @@ export class SkyBoxCreateParams {
   public get isTexturedCube() { return !this._isSphere; }
   public get isSphere() { return this._isSphere; }
 
-  private constructor(_isSphere: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture,
-    sphereType?: SkyboxSphereType, zenithColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, nadirColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+  private constructor(_isSphere: boolean, texture?: RenderTexture, sphereType?: SkyboxSphereType, zenithColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, nadirColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
     this._isSphere = _isSphere;
-    this.front = front;
-    this.back = back;
-    this.top = top;
-    this.bottom = bottom;
-    this.left = left;
-    this.right = right;
+    this.texture = texture;
     this.sphereType = sphereType;
     this.zenithColor = zenithColor;
     this.skyColor = skyColor;
@@ -335,8 +324,8 @@ export class SkyBoxCreateParams {
     this.groundExponent = groundExponent;
   }
 
-  public static createForTexturedCube(front: RenderTexture, back: RenderTexture, top: RenderTexture, bottom: RenderTexture, left: RenderTexture, right: RenderTexture) {
-    return new SkyBoxCreateParams(false, front, back, top, bottom, left, right);
+  public static createForTexturedCube(cube: RenderTexture) {
+    return new SkyBoxCreateParams(false, cube);
   }
 
   public static createForGradientSphere(sphereType: SkyboxSphereType, zenithColor: ColorDef, nadirColor: ColorDef,
@@ -349,14 +338,12 @@ export class SkyBoxCreateParams {
       assert(undefined !== skyExponent);
       assert(undefined !== groundExponent);
     }
-    return new SkyBoxCreateParams(true, undefined, undefined, undefined, undefined, undefined, undefined,
-      sphereType, zenithColor, skyColor, groundColor, nadirColor, skyExponent, groundExponent);
+    return new SkyBoxCreateParams(true, undefined, sphereType, zenithColor, skyColor, groundColor, nadirColor, skyExponent, groundExponent);
   }
 
   public static createForTexturedSphere(texture: RenderTexture) {
     // ###TODO: may be other attributes here like a z offset
-    return new SkyBoxCreateParams(true, texture, undefined, undefined, undefined, undefined, undefined,
-      SkyboxSphereType.Texture, undefined, undefined, undefined, undefined, undefined, undefined);
+    return new SkyBoxCreateParams(true, texture, SkyboxSphereType.Texture, undefined, undefined, undefined, undefined, undefined, undefined);
   }
 }
 
@@ -461,6 +448,9 @@ export abstract class RenderSystem implements IDisposable {
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     return ImageUtil.extractImage(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
   }
+
+  /** Create a new Texture from a cube of HTML images. Typically the images were extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
+  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   // /** Create a Light from Light.Parameters */
   // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;

@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
+
 import { HitSource, HitDetail, HitList, HitPriority } from "./HitDetail";
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { Viewport, ViewRect } from "./Viewport";
@@ -46,19 +47,17 @@ export const enum SnapStatus {
 }
 
 export class LocateOptions {
-  public disableIModelFilter = false;
   public allowDecorations = false;
   public maxHits = 20;
   public hitSource = HitSource.DataPoint;
   public clone(): LocateOptions {
     const other = new LocateOptions();
-    other.disableIModelFilter = this.disableIModelFilter;
     other.allowDecorations = this.allowDecorations;
     other.maxHits = this.maxHits;
     other.hitSource = this.hitSource;
     return other;
   }
-  public init() { this.disableIModelFilter = false, this.allowDecorations = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
+  public init() { this.allowDecorations = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
 export class LocateResponse {

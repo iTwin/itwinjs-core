@@ -1,6 +1,31 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 23 Jul 2018 22:00:01 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Jul 2018 15:52:31 GMT and should not be manually modified.
+
+## 0.103.0
+Tue, 24 Jul 2018 15:52:31 GMT
+
+### Updates
+
+- Fix import issues in published packages
+
+## 0.102.0
+Tue, 24 Jul 2018 14:13:01 GMT
+
+### Updates
+
+- added ToolTip to AccuSnap
+- Rotate view tool target handle add. Fixed data button not accounting for snap location.
+- Fix getGridPlaneViewIntersections.
+- Make reality models locate-able
+- computeRootToNpc should not be changing frustFraction
+- remove get/setShow methods on ViewFlags. They were redundant.
+- Support tentative with RotateView tool.
+- alignWithRootZ needs to set corrected rotation on view state.
+- Remove remnants of rotation sphere in ViewRotate. Change animateFrustumChange to not default to no animation.
+- Don't call animateFrustumChange from applyViewState if animationTime is undefined.
+- Updating performance metrics
+- Support rendering on iOS.
 
 ## 0.101.0
 Mon, 23 Jul 2018 22:00:01 GMT

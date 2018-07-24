@@ -22,9 +22,6 @@ export const enum OutputMessagePriority {
   Warning = 11,
   Info = 12,
   Debug = 13,
-  OldStyle = 14,
-  TempRight = 15,
-  TempLeft = 16,
   Fatal = 17,
 }
 
@@ -192,8 +189,8 @@ export class NotificationManager {
   /** Show a ToolTip window.
    * @param _htmlElement The HTMLElement that that anchors the toolTip.
    * @param _message The message to display inside the ToolTip
-   * @param _location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, determined by _options.
+   * @param _location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
    * @param _options Options that supply additional information about how the ToolTip should function.
    */
-  public showToolTip(_htmlElement: HTMLElement, _message: string, _pt?: XAndY, _options?: ToolTipOptions): void { }
+  public showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
 }

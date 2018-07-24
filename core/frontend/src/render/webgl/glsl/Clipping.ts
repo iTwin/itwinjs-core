@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { ProgramBuilder, VariableType, VertexShaderComponent, FragmentShaderComponent } from "../ShaderBuilder";
 import { addModelViewMatrix } from "./Vertex";
 import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { System } from "../System";
 import { ClipDef, ClipVolumeType } from "../TechniqueFlags";
 

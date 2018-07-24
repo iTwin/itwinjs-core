@@ -27,18 +27,19 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.101.0",
-    "@bentley/geometry-core": "0.101.0",
-    "@bentley/imodeljs-clients": "0.101.0",
-    "@bentley/imodeljs-common": "0.101.0",
-    "@bentley/imodeljs-frontend": "0.101.0",
-    "@bentley/imodeljs-backend": "0.101.0",
-    "electron-devtools-installer": "^2.2.4"
+    "@bentley/bentleyjs-core": "0.103.0",
+    "@bentley/geometry-core": "0.103.0",
+    "@bentley/imodeljs-clients": "0.103.0",
+    "@bentley/imodeljs-common": "0.103.0",
+    "@bentley/imodeljs-frontend": "0.103.0",
+    "@bentley/imodeljs-backend": "0.103.0",
+    "electron-devtools-installer": "^2.2.4",
+    "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",
     "@types/express": "^4.11.1",
-    "@bentley/bentleyjs-tools": "0.101.0",
+    "@bentley/bentleyjs-tools": "0.103.0",
     "@bentley/dev-cors-proxy-server": "0.0.6",
     "cpx": "^1.5.0",
     "child_process": "^1.0.2",

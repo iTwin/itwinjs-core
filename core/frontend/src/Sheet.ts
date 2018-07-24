@@ -3,23 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Point2d, Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Gradient, GraphicParams } from "@bentley/imodeljs-common/lib/Render";
+import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform } from "@bentley/geometry-core";
+import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps } from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
-import { Angle } from "@bentley/geometry-core/lib/Geometry";
-import { ColorDef, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
-import { Range2d } from "@bentley/geometry-core/lib/Range";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
-import { ClipVector, Transform, RotMatrix } from "@bentley/geometry-core/lib/geometry-core";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { JsonUtils } from "@bentley/bentleyjs-core/lib/JsonUtils";
-import { TileTree, Tile } from "./tile/TileTree";
+import { TileTree, Tile, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState } from "./ModelState";
-import { BeDuration } from "@bentley/bentleyjs-core/lib/Time";
 import { RenderTarget } from "./render/System";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 /** Contains functionality specific to sheet views. */
 export namespace Sheet {
@@ -106,6 +99,30 @@ export namespace Sheet {
     }
   }
 
+  export class Tile2dLoader extends TileLoader {
+    public async getTileProps(_ids: string[]): Promise<TileProps[]> {
+      assert(false);
+      return Promise.resolve([]);
+    }
+
+    public async loadTileContents(_missingtiles: MissingNodes): Promise<void> {
+      assert(false);
+      return Promise.resolve();
+    }
+
+    public getMaxDepth(): number {
+      return 1;
+    }
+
+    public tileRequiresLoading(_params: Tile.Params): boolean {
+      return false;
+    }
+
+    public loadGraphics(_tile: Tile, _geometry: any): void {
+      assert(false);
+    }
+  }
+
   /** An extension of Tile specific to rendering 2d attachments. */
   export class Tile2d extends Tile {
     public constructor(root: Tree2d, range: ElementAlignedBox2d) {
@@ -115,7 +132,7 @@ export namespace Sheet {
         new ElementAlignedBox3d(),
         512,  // does not matter... have no children
         [],
-      ));
+      ), new Tile2dLoader());
       this.range.low.set(0, 0, -RenderTarget.frustumDepth2d);
       this.range.high.set(range.high.x, range.high.y, RenderTarget.frustumDepth2d);
     }
@@ -158,7 +175,7 @@ export namespace Sheet {
           childIds: [],
         },
         model,
-        undefined,
+        new Tile2dLoader(),
         Transform.createIdentity(),
         undefined,
         undefined,    // ClipVector build in child class constructors

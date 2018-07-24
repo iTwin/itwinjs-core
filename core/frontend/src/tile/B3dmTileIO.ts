@@ -56,8 +56,9 @@ export namespace B3dmTileIO {
       const isLeaf = true;    // TBD...
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
-      const featureTable: FeatureTable = new FeatureTable(1);
-      const feature = new Feature();
+      // NB: For reality models with no batch table, we want the model ID in the feature table
+      const featureTable: FeatureTable = new FeatureTable(1, this.model.id);
+      const feature = new Feature(this.model.id);
       featureTable.insert(feature);
 
       await this.loadTextures();
@@ -67,7 +68,7 @@ export namespace B3dmTileIO {
       return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
-      const feature = new Feature();
+      const feature = new Feature(this.model.id);
 
       features.add(feature, 1);
       return true;
@@ -90,5 +91,7 @@ export namespace B3dmTileIO {
       const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
       return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
     }
+
+    protected get hasBakedLighting(): boolean { return true; } // ###TODO? currently always desired (3mx, 3sm) - may change in future.
   }
 }

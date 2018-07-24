@@ -2,10 +2,12 @@ import { expect, assert } from "chai";
 import { Id64, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { Code, IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
+import { IModelJsFs } from "../../IModelJsFs";
 import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { TestIModelInfo, MockAccessToken, MockAssetUtil } from "../MockAssetUtil";
 import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
+
 import * as TypeMoq from "typemoq";
 
 export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
@@ -456,64 +458,74 @@ describe("IModelWriteTest", () => {
 
   it("Run plain SQL against pull-only connection", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly());
-    iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-    });
+    try {
+      iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
-      stmt.bindValue(1, "Dummy 1");
-      stmt.bindValue(2, 100);
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-    });
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+        stmt.bindValue(1, "Dummy 1");
+        stmt.bindValue(2, 100);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
-      stmt.bindValues(["Dummy 2", 200]);
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-    });
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
+        stmt.bindValues(["Dummy 2", 200]);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
-      stmt.bindValue(":p1", "Dummy 3");
-      stmt.bindValue(":p2", 300);
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-    });
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+        stmt.bindValue(":p1", "Dummy 3");
+        stmt.bindValue(":p2", 300);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-    iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
-      stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-    });
+      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
+        stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-    iModel.saveChanges();
+      iModel.saveChanges();
 
-    iModel.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
-      for (let i: number = 1; i <= 4; i++) {
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-        assert.equal(stmt.getColumnCount(), 3);
-        const val0: SqliteValue = stmt.getValue(0);
-        assert.equal(val0.columnName, "Id");
-        assert.equal(val0.type, SqliteValueType.Integer);
-        assert.isFalse(val0.isNull());
-        assert.equal(val0.getInteger(), i);
+      iModel.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
+        for (let i: number = 1; i <= 4; i++) {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          assert.equal(stmt.getColumnCount(), 3);
+          const val0: SqliteValue = stmt.getValue(0);
+          assert.equal(val0.columnName, "Id");
+          assert.equal(val0.type, SqliteValueType.Integer);
+          assert.isFalse(val0.isNull());
+          assert.equal(val0.getInteger(), i);
 
-        const val1: SqliteValue = stmt.getValue(1);
-        assert.equal(val1.columnName, "Name");
-        assert.equal(val1.type, SqliteValueType.String);
-        assert.isFalse(val1.isNull());
-        assert.equal(val1.getString(), `Dummy ${i}`);
+          const val1: SqliteValue = stmt.getValue(1);
+          assert.equal(val1.columnName, "Name");
+          assert.equal(val1.type, SqliteValueType.String);
+          assert.isFalse(val1.isNull());
+          assert.equal(val1.getString(), `Dummy ${i}`);
 
-        const val2: SqliteValue = stmt.getValue(2);
-        assert.equal(val2.columnName, "Code");
-        assert.equal(val2.type, SqliteValueType.Integer);
-        assert.isFalse(val2.isNull());
-        assert.equal(val2.getInteger(), i * 100);
+          const val2: SqliteValue = stmt.getValue(2);
+          assert.equal(val2.columnName, "Code");
+          assert.equal(val2.type, SqliteValueType.Integer);
+          assert.isFalse(val2.isNull());
+          assert.equal(val2.getInteger(), i * 100);
 
-        const row: any = stmt.getRow();
-        assert.equal(row.id, i);
-        assert.equal(row.name, `Dummy ${i}`);
-        assert.equal(row.code, i * 100);
-      }
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-    });
-    await iModel.close(accessToken);
+          const row: any = stmt.getRow();
+          assert.equal(row.id, i);
+          assert.equal(row.name, `Dummy ${i}`);
+          assert.equal(row.code, i * 100);
+        }
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+    } finally {
+      // delete the briefcase as the test modified it locally.
+      let briefcasePath: string | undefined;
+      if (!!iModel.briefcase)
+        briefcasePath = iModel.briefcase.pathname;
+
+      await iModel.close(accessToken, KeepBriefcase.No);
+      if (!!briefcasePath && IModelJsFs.existsSync(briefcasePath))
+        IModelJsFs.unlinkSync(briefcasePath);
+    }
   });
 
   it("Run plain SQL against readonly connection", async () => {
