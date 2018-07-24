@@ -722,12 +722,11 @@ async function main() {
   } else {
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     Config.devCorsProxyServer = "https://localhost:3001";
+    // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
+    // RPC without any imodel and fails...
+    for (const definition of rpcConfiguration.interfaces())
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
   }
-
-  // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
-  // RPC without any imodel and fails...
-  for (const definition of rpcConfiguration.interfaces())
-    RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
   const spinner = document.getElementById("spinner") as HTMLDivElement;
   spinner.style.display = "block";

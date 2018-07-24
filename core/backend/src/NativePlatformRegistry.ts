@@ -39,7 +39,10 @@ export class NativePlatformRegistry {
     if (!NativePlatformRegistry._platform)
       return;
 
-    NativePlatformRegistry.checkNativePlatformVersion();
+    if (!Platform.isMobile) {
+      NativePlatformRegistry.checkNativePlatformVersion();
+    }
+
     NativePlatformRegistry._platform.logger = Logger;
   }
 

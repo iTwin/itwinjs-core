@@ -23,8 +23,6 @@ module.exports = {
   },
   stats: "errors-only",
   externals: {
-    "@bentley/imodeljs-electronaddon": "throw new Error('should never happen')",
-    "@bentley/imodeljs-nodeaddon": "throw new Error('should never happen')",
     "electron": "throw new Error('should never happen')",
     "IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
