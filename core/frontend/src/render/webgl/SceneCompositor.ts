@@ -6,7 +6,7 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry } from "./CachedGeometry";
+import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType } from "./System";
@@ -732,8 +732,8 @@ class MPFrameBuffers extends  FrameBuffers {
 
     this.accumulation = FrameBuffer.create([textures.accumulation!], depth);
     this.revealage = FrameBuffer.create([textures.revealage!], depth);
-    this.idLow = FrameBuffer.create([textures.idLow!], depth);
-    this.idHigh = FrameBuffer.create([textures.idHigh!], depth);
+    this.idLow = FrameBuffer.create([textures.idLow!]);
+    this.idHigh = FrameBuffer.create([textures.idHigh!]);
 
     return undefined !== this.accumulation && undefined !== this.revealage && undefined !== this.idLow && undefined !== this.idHigh;
   }
@@ -748,6 +748,24 @@ class MPFrameBuffers extends  FrameBuffers {
   }
 }
 
+class MPGeometry extends Geometry {
+  public copyColor?: SingleTexturedViewportQuadGeometry;
+
+  public init(textures: Textures): boolean {
+    if (!super.init(textures))
+      return false;
+
+    assert(undefined === this.copyColor);
+    this.copyColor = SingleTexturedViewportQuadGeometry.createGeometry(textures.idLow!.getHandle()!, TechniqueId.CopyColor);
+    return undefined !== this.copyColor;
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this.copyColor = dispose(this.copyColor);
+  }
+}
+
 // Compositor used when multiple render targets are not supported (WEBGL_draw_buffers not available or fewer than 4 color attachments supported).
 // This falls back to multi-pass rendering in place of MRT rendering, which has obvious performance implications.
 // The chief use case is iOS.
@@ -755,10 +773,11 @@ class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
 
   public constructor(target: Target) {
-    super(target, new MPFrameBuffers(), new Geometry());
+    super(target, new MPFrameBuffers(), new MPGeometry());
   }
 
   private get fbos(): MPFrameBuffers { return this._fbos as MPFrameBuffers; }
+  private get geometry(): MPGeometry { return this._geometry as MPGeometry; }
 
   public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
   public get elementId0(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.idLow!; }
@@ -770,32 +789,42 @@ class MPCompositor extends Compositor {
   protected clearOpaque(needComposite: boolean): void {
     const bg = FloatRgba.fromColorDef(this._target.bgColor);
     this.clearFbo(needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
-    // ###TODO: clear the pick buffers...
+    this.clearFbo(this.fbos.depthAndOrder!, 0, 0, 0, 0, true);
+    this.clearFbo(this.fbos.idLow!, 0, 0, 0, 0, true);
+    this.clearFbo(this.fbos.idHigh!, 0, 0, 0, 0, true);
   }
 
   protected renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean): void {
-    // ###TODO: pick buffer stuff...
-
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
-    let fbStack = System.instance.frameBufferStack;
-    fbStack.execute(needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!, true, () => {
-      this.drawPass(commands, RenderPass.OpaqueLinear);
-      this.drawPass(commands, RenderPass.OpaquePlanar, true);
-      if (renderForReadPixels)
-        this.drawPass(commands, RenderPass.OpaqueGeneral, true);
-    });
+    const colorFbo = needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!;
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
+    if (renderForReadPixels)
+      this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
 
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels) {
-      fbStack = System.instance.frameBufferStack;
-      fbStack.execute(needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!, true, () => {
+      System.instance.frameBufferStack.execute(colorFbo, true, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
     }
+  }
+
+  // ###TODO: For readPixels(), could skip rendering color...also could skip rendering depth and/or element ID depending upon selector...
+  private drawOpaquePass(colorFbo: FrameBuffer, commands: RenderCommands, pass: RenderPass, pingPong: boolean): void {
+    const stack = System.instance.frameBufferStack;
+    stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
+    this._currentRenderTargetIndex++;
+    stack.execute(this.fbos.idLow!, true, () => this.drawPass(commands, pass, false));
+    this._currentRenderTargetIndex++;
+    stack.execute(this.fbos.idHigh!, true, () => this.drawPass(commands, pass, false));
+    this._currentRenderTargetIndex++;
+    stack.execute(this.fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
+    this._currentRenderTargetIndex = 0;
   }
 
   protected clearTranslucent() {
@@ -817,7 +846,20 @@ class MPCompositor extends Compositor {
   }
 
   protected pingPong() {
-    // ###TODO
+    System.instance.applyRenderState(this._noDepthMaskRenderState);
+
+    this.copyFbo(this._textures.idLow!, this.fbos.accumulation!);
+    this.copyFbo(this._textures.idHigh!, this.fbos.revealage!);
+    this.copyFbo(this._textures.depthAndOrder!, this.fbos.hilite!);
+  }
+
+  private copyFbo(src: TextureHandle, dst: FrameBuffer): void {
+    const geom = this.geometry.copyColor!;
+    geom.texture = src.getHandle()!;
+    System.instance.frameBufferStack.execute(dst, true, () => {
+      const params = new DrawParams(this._target, geom);
+      this._target.techniques.draw(params);
+    });
   }
 
   private clearFbo(fbo: FrameBuffer, red: number, green: number, blue: number, alpha: number, andDepth: boolean): void {

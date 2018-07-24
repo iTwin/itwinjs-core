@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, ClipVector, Matrix4d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
@@ -27,6 +27,7 @@ import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
+import { ClipDef, ClipVolumeType } from "./TechniqueFlags";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -86,64 +87,40 @@ export class FrustumUniforms {
   }
 }
 
-/** Interface for GPU clipping. Max of 6 planes of clipping; no nesting */
+/** Interface for 3d GPU clipping. */
 export class Clips {
-  private readonly _clips: Float32Array;
-  private _clipCount: number;
-  private _clipActive: number;  // count of SetActiveClip nesting (only outermost used)
+  private _texture?: TextureHandle;
+  private clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
+  private clipCount: number = 0;
 
-  public constructor() {
-    this._clipCount = 0;
-    this._clipActive = 0;
-    const data = [];
-    for (let i = 0; i < 6 * 4; i++) {
-      data[i] = 0.0;
-    }
+  public get texture(): TextureHandle | undefined { return this._texture; }
+  public get count(): number { return this.clipCount; }
+  public get isValid(): boolean { return this.clipCount > 0; }
 
-    this._clips = new Float32Array(data);
+  public set(numPlanes: number, texture: TextureHandle) {
+    this.clipActive++;
+    if (this.clipActive !== 1)
+      return;
+
+    this.clipCount = numPlanes;
+    this._texture = texture;
   }
 
-  public setFrom(planes: ClipPlane[], viewMatrix: Transform): void {
-    this._clipActive++;
-    if (1 === this._clipActive) {
-      const count = planes.length;
-      this._clipCount = count;
-      for (let i = 0; i < count; ++i) {
-        // Transform direction of clip plane
-        const norm: Vector3d = planes[i].inwardNormalRef;
-        const dir: Vector3d = viewMatrix.multiplyVector(norm);
-        dir.normalizeInPlace();
-        this._clips[i * 4] = dir.x;
-        this._clips[i * 4 + 1] = dir.y;
-        this._clips[i * 4 + 2] = dir.z;
-
-        // Transform distance of clip plane
-        const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
-        const xFormPos: Point3d = viewMatrix.multiplyPoint3d(pos);
-        this._clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
-      }
+  public clear() {
+    if (this.clipActive === 1) {
+      this.clipCount = 0;
+      this._texture = undefined;
     }
+    if (this.clipActive > 0)
+      this.clipActive--;
   }
-
-  public clear(): void {
-    if (this._clipActive === 1) {
-      this._clipCount = 0;
-    }
-
-    if (this._clipActive > 0) {
-      this._clipActive--;
-    }
-  }
-
-  public get clips(): Float32Array { return this._clips; }
-  public get length(): number { return this._clipCount; }
-  public get isValid(): boolean { return this.length > 0; }
 }
 
 export class PerformanceMetrics {
   public frameTimes: BeTimePoint[] = [];
   public curFrameTimeIndex = 0;
-  public gatherFrameTimings = true;
+  public gatherGlFinish = false;
+  public gatherCurPerformanceMetrics = false;
   public curSpfTimeIndex = 0;
   public spfTimes: number[] = [];
   public spfSum: number = 0;
@@ -153,6 +130,11 @@ export class PerformanceMetrics {
   public loadTileSum: number = 0;
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
+
+  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false) {
+    this.gatherGlFinish = gatherGlFinish;
+    this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
+  }
 }
 
 export abstract class Target extends RenderTarget {
@@ -175,8 +157,8 @@ export abstract class Target extends RenderTarget {
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
-  private _performanceMetrics = new PerformanceMetrics();
   protected _dcAssigned: boolean = false;
+  public performanceMetrics?: PerformanceMetrics;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
@@ -260,13 +242,20 @@ export abstract class Target extends RenderTarget {
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
+  public get clipDef(): ClipDef {
+    if (this.hasClipVolume)
+      return new ClipDef(ClipVolumeType.Planes, this.clips.count);
+    else if (this.hasClipMask)
+      return new ClipDef(ClipVolumeType.Mask);
+    else
+      return new ClipDef();
+  }
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
   public get clipMask(): TextureHandle | undefined { return this._clipMask; }
   public set clipMask(mask: TextureHandle | undefined) {
     assert(!this.hasClipMask);
     assert(this.is2d);
-    dispose(this._clipMask);
     this._clipMask = mask;
   }
 
@@ -281,7 +270,6 @@ export abstract class Target extends RenderTarget {
     dispose(this.compositor);
     this._dynamics = dispose(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
-    this._clipMask = dispose(this._clipMask);
     this._environmentMap = dispose(this._environmentMap);
     this._diffuseMap = dispose(this._diffuseMap);
 
@@ -327,23 +315,23 @@ export abstract class Target extends RenderTarget {
     this._batches.splice(index, 1);
   }
 
-  public setFrameTime(sceneTime = 0.0) {
-    if (this._performanceMetrics.gatherFrameTimings) {
-      if (sceneTime > 0.0) {
-        this._performanceMetrics.frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
-        this._performanceMetrics.frameTimes[1] = BeTimePoint.now();
-        this._performanceMetrics.curFrameTimeIndex = 2;
-      } else if (this._performanceMetrics.curFrameTimeIndex < 12)
-        this._performanceMetrics.frameTimes[this._performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
+  public setFrameTime(sceneTime?: number) {
+    if (this.performanceMetrics) {
+      if (sceneTime !== undefined) {
+        this.performanceMetrics.frameTimes[1] = BeTimePoint.now();
+        this.performanceMetrics.frameTimes[0] = this.performanceMetrics.frameTimes[1].minus(BeDuration.fromMilliseconds(sceneTime));
+        this.performanceMetrics.curFrameTimeIndex = 2;
+      } else if (this.performanceMetrics.curFrameTimeIndex < 12)
+        this.performanceMetrics.frameTimes[this.performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
     }
   }
   public get frameTimings(): number[] {
+    if (this.performanceMetrics === undefined) return [];
     const timings: number[] = [];
     for (let i = 0; i < 11; ++i)
-      timings[i] = (this._performanceMetrics.frameTimes[i + 1].milliseconds - this._performanceMetrics.frameTimes[i].milliseconds);
+      timings[i] = (this.performanceMetrics.frameTimes[i + 1].milliseconds - this.performanceMetrics.frameTimes[i].milliseconds);
     return timings;
   }
-  public get performanceMetrics(): PerformanceMetrics { return this._performanceMetrics; }
 
   // ---- Implementation of RenderTarget interface ---- //
 
@@ -639,32 +627,34 @@ export abstract class Target extends RenderTarget {
     this.drawPass(RenderPass.ViewOverlay);
     this._stack.pop();
 
-    this._endPaint();
     this.setFrameTime();
+    this._endPaint();
 
-    if (sceneMilSecElapsed !== undefined) {
-      const perfMet = this._performanceMetrics;
-      const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
-      if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
-      perfMet.spfSum += fpsTimerElapsed;
-      perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
+    if (this.performanceMetrics) {
+      if (this.performanceMetrics.gatherCurPerformanceMetrics) {
+        const perfMet = this.performanceMetrics;
+        const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
+        if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
+        perfMet.spfSum += fpsTimerElapsed;
+        perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
 
-      const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
-      if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
-      perfMet.renderSpfSum += renderTimeElapsed;
-      perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
+        const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
+        if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
+        perfMet.renderSpfSum += renderTimeElapsed;
+        perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
 
-      if (sceneMilSecElapsed !== undefined) {
-        if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
-        perfMet.loadTileSum += sceneMilSecElapsed;
-        perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
-        if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+        if (sceneMilSecElapsed !== undefined) {
+          if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
+          perfMet.loadTileSum += sceneMilSecElapsed;
+          perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
+          if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+        }
+        perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
       }
-      perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
-    }
-    if (this._performanceMetrics.gatherFrameTimings) {
-      gl.finish();
-      this.setFrameTime();
+      if (this.performanceMetrics.gatherGlFinish) {
+        gl.finish();
+        this.setFrameTime();
+      }
     }
   }
 

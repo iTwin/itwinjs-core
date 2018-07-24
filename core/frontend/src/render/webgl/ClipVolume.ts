@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ClipVector, ClipPlane, Transform, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
+import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d } from "@bentley/geometry-core";
 import { ShaderProgramExecutor } from "./ShaderProgram";
-import { Target, Clips } from "./Target";
+import { Target } from "./Target";
 import { RenderClipVolume } from "../System";
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common/lib/common";
 import { ClipMaskGeometry } from "./CachedGeometry";
@@ -13,55 +13,111 @@ import { ViewRect } from "../../Viewport";
 import { FrameBuffer } from "./FrameBuffer";
 import { dispose } from "@bentley/bentleyjs-core/lib/Disposable";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { TextureHandle } from "./Texture";
+import { TextureHandle, Texture2DHandle } from "./Texture";
 import { GL } from "./GL";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { DrawParams } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 
-/** A 3D clip volume defined by up to 6 planes. */
-export class ClipVolumePlanes extends RenderClipVolume {
-  private readonly _planes: ClipPlane[];
+/** Internal class for creating a ClipPlanesVolume texture when the system does not support texture floats. */
+class PackedTraits {
+  public numPixelsPerPlane: number = 4;
+  public internalFormat: GL.Texture.Format = GL.Texture.Format.Rgba;
+  public dataType: GL.Texture.DataType = GL.Texture.DataType.UnsignedByte;
 
-  public static create(clipVec: ClipVector): ClipVolumePlanes | undefined {
-    if (1 !== clipVec.clips.length) {
-      return undefined;
-    }
-
-    const clipPrim = clipVec.clips[0];
-    const clipPlanesRef = clipPrim.fetchClipPlanesRef();
-    const convexClipPlaneSets = clipPlanesRef.convexSets;
-    if (undefined === convexClipPlaneSets || 1 !== convexClipPlaneSets.length) {
-      return undefined;
-    }
-
-    const planes = convexClipPlaneSets[0].planes;
-    const clipCount = planes.length;
-    if (0 === clipCount || clipCount > 6) {
-      return undefined;
-    }
-
-    const result: ClipPlane[] = [];
-    for (const plane of planes) {
-      result.push(plane.clone());
-    }
-
-    return new ClipVolumePlanes(result);
+  /** Set float values in the given array to ClipPlane members variables. Returns the index of the next normal.x value to be set. */
+  public appendPlane(pixels: Float32Array, index: number, normal: Vector3d, distance: number): number {
+    pixels[index] = normal.x;
+    pixels[index + 1] = normal.y;
+    pixels[index + 2] = normal.z;
+    pixels[index + 3] = distance;
+    return index + 4;
   }
-
-  public get length() { return undefined !== this._planes ? this._planes.length : 0; }
-  public get isEmpty() { return 0 === this.length; }
-
-  public dispose() { }
-  public push(exec: ShaderProgramExecutor) { this.apply(exec.target.clips, exec.target.viewMatrix); }
-  public pop(target: Target) { target.clips.clear(); }
-  public apply(clips: Clips, viewMatrix: Transform) { clips.setFrom(this._planes, viewMatrix); }
-
-  private constructor(planes: ClipPlane[]) { super(); this._planes = planes; }
 }
 
-/** A 2D clip volume defined by any number of planes. */
+/** A 3D clip volume defined as a texture derived from a set of planes. */
+export class ClipPlanesVolume extends RenderClipVolume {
+  private _texture?: TextureHandle;
+
+  private constructor(texture?: TextureHandle) {
+    super();
+    this._texture = texture;
+  }
+
+  public get texture(): TextureHandle | undefined { return this._texture; }
+
+  /** Create a new ClipPlanesVolume from a ClipVector. */
+  public static create(clipVec: ClipVector): ClipPlanesVolume | undefined {
+    if (1 !== clipVec.clips.length)
+      return undefined;
+
+    const clipPrim = clipVec.clips[0];
+    const clipPlaneSet = clipPrim.fetchClipPlanesRef();
+    let numPlanes = 0;
+    let numSets = 0;
+    for (const set of clipPlaneSet.convexSets) {
+      const setLength = set.planes.length;
+      if (setLength !== 0) {
+        numSets++;
+        numPlanes += setLength;
+      }
+    }
+    if (numPlanes === 0)
+      return undefined;
+
+    const texture = this.createTexture(clipPlaneSet, numPlanes, numSets);
+    return new ClipPlanesVolume(texture);
+  }
+
+  /** Create a texture for a new ClipPlanesVolume. */
+  private static createTexture(planeSet: UnionOfConvexClipPlaneSets, numPlanes: number, numConvexSets: number): TextureHandle | undefined {
+    // ###TODO: Support creating textures with float values?..
+    return this.createTextureUsingPackedTraits(planeSet, numPlanes, numConvexSets, new PackedTraits());
+  }
+
+  /** Create a texture for a new ClipPlanesVolume using unsigned byte values. */
+  private static createTextureUsingPackedTraits(planeSet: UnionOfConvexClipPlaneSets, numPlanes: number, numConvexSets: number, traits: PackedTraits): TextureHandle | undefined {
+    // We will insert a sigil plane with a zero normal vector to indicate the beginning of another set of clip planes.
+    const totalNumPlanes = numPlanes + (numConvexSets - 1);
+
+    // Texture height == number of clipping planes
+    const numPixelsPerPlane = traits.numPixelsPerPlane;
+
+    const bytes = new Float32Array(totalNumPlanes * 4);
+    let currentIdx = 0;
+    let numSetsProcessed = 0;
+    for (const convexSet of planeSet.convexSets) {
+      if (convexSet.planes.length === 0)
+        continue;
+
+      for (const plane of convexSet.planes)
+        currentIdx = traits.appendPlane(bytes, currentIdx, plane.inwardNormalRef, plane.distance);
+
+      numSetsProcessed++;
+      if (numSetsProcessed < numConvexSets)
+        currentIdx = traits.appendPlane(bytes, currentIdx, Vector3d.createZero(), 0);
+    }
+
+    const internalFormat = traits.internalFormat;
+    return Texture2DHandle.createForData(numPixelsPerPlane, totalNumPlanes, Uint8Array.from(bytes), true, GL.Texture.WrapMode.ClampToEdge, internalFormat);
+  }
+
+  public dispose() {
+    this._texture = dispose(this._texture);
+  }
+
+  public push(shader: ShaderProgramExecutor) {
+    if (this._texture !== undefined)
+      shader.target.clips.set(this._texture.height, this._texture);
+  }
+
+  public pop(target: Target) {
+    target.clips.clear();
+  }
+}
+
+/** A 2D clip volume defined as a texture derived from a masked set of planes. */
 export class ClipMaskVolume implements RenderClipVolume {
   public readonly geometry: ClipMaskGeometry;
   public readonly frustum: Frustum;
@@ -75,7 +131,7 @@ export class ClipMaskVolume implements RenderClipVolume {
     this.rect = new ViewRect(0, 0, 0, 0);
   }
 
-  /** Create a new ClipVolume from a clip vector. */
+  /** Create a new ClipMaskVolume from a clip vector. */
   public static create(clipVec: ClipVector): ClipMaskVolume | undefined {
     const range = clipVec.boundingRange;
     if (range.isNull())

@@ -177,12 +177,9 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
     return false;
 
   const vert = builder.vert;
-  const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
-  if (haveOverrides || System.instance.capabilities.supportsPickShaders) {
-    // Pick shaders use feature index to look up element ID - otherwise it's not needed unless we need to look up overrides.
-    addFeatureIndex(vert);
-  }
+  addFeatureIndex(vert);
 
+  const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
   if (!haveOverrides)
     return true;
 
