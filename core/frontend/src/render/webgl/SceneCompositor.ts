@@ -732,8 +732,8 @@ class MPFrameBuffers extends  FrameBuffers {
 
     this.accumulation = FrameBuffer.create([textures.accumulation!], depth);
     this.revealage = FrameBuffer.create([textures.revealage!], depth);
-    this.idLow = FrameBuffer.create([textures.idLow!], depth);
-    this.idHigh = FrameBuffer.create([textures.idHigh!], depth);
+    this.idLow = FrameBuffer.create([textures.idLow!]);
+    this.idHigh = FrameBuffer.create([textures.idHigh!]);
 
     return undefined !== this.accumulation && undefined !== this.revealage && undefined !== this.idLow && undefined !== this.idHigh;
   }
