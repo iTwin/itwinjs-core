@@ -9,7 +9,6 @@ import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
 import { RenderClipVolume, ClippingType } from "../System";
-import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common/lib/common";
 import { ClipMaskGeometry } from "./CachedGeometry";
 import { ViewRect } from "../../Viewport";
 import { FrameBuffer } from "./FrameBuffer";

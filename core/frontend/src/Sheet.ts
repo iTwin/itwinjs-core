@@ -101,12 +101,10 @@ export namespace Sheet {
 
   export class Tile2dLoader extends TileLoader {
     public async getTileProps(_ids: string[]): Promise<TileProps[]> {
-      assert(false);
       return Promise.resolve([]);
     }
 
     public async loadTileContents(_missingtiles: MissingNodes): Promise<void> {
-      assert(false);
       return Promise.resolve();
     }
 
