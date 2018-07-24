@@ -451,7 +451,9 @@ export class ToolAdmin {
   public acsContextLock = false;
   private static _wantEventLoop = false;
 
+  /** @hidden */
   public onInitialized() { this._idleTool = IModelApp.tools.create("Idle") as IdleTool; }
+  /** @hidden */
   public startEventLoop(): void {
     if (!ToolAdmin._wantEventLoop) {
       ToolAdmin._wantEventLoop = true;
@@ -459,6 +461,7 @@ export class ToolAdmin {
     }
   }
 
+  /** @hidden */
   public onShutDown() {
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._wantEventLoop = false;
@@ -477,6 +480,7 @@ export class ToolAdmin {
     return true;
   }
 
+  /** @hidden */
   public addEvent(ev: Event, vp: Viewport): void {
     const event = { ev, vp };
     if (!this.tryReplace(event))
@@ -712,11 +716,11 @@ export class ToolAdmin {
 
   public onMouseMotionEvent(ev: BeButtonEvent): boolean { return !this.filterButtonEvent(ev); }
 
-  public async onMouseMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<void> {
+  public async onMouseMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<EventHandled> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
     if (this.filterViewport(vp))
-      return;
+      return EventHandled.No;
 
     const rawEvent = new BeButtonEvent();
     current.fromPoint(vp, pt2d, inputSource);
@@ -724,7 +728,7 @@ export class ToolAdmin {
 
     if (!this.onMouseMotionEvent(rawEvent)) {
       this.setIncompatibleViewportCursor(false);
-      return;
+      return EventHandled.No;
     }
 
     await IModelApp.accuSnap.onMotion(rawEvent); // wait for AccuSnap before calling FromButton
@@ -743,19 +747,20 @@ export class ToolAdmin {
       if (current.isStartDrag(ev.button)) {
         current.onStartDrag(ev.button);
         current.changeButtonToDownPoint(ev);
-        if (!tool.onModelStartDrag(ev))
-          this.idleTool.onModelStartDrag(ev);
-        return;
+        if (EventHandled.Yes !== await tool.onModelStartDrag(ev))
+          return this.idleTool.onModelStartDrag(ev);
+        return EventHandled.No;
       }
 
       tool.onModelMotion(ev);
       this.updateDynamics(ev);
     } else {
-      this.idleTool.onModelStartDrag(ev);
+      await this.idleTool.onModelStartDrag(ev);
     }
 
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
+    return EventHandled.Yes;
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
@@ -843,7 +848,7 @@ export class ToolAdmin {
       snap.adjustedPoint.setFrom(point);
   }
 
-  public sendDataPoint(ev: BeButtonEvent): void {
+  public async sendDataPoint(ev: BeButtonEvent) {
     const tool = this.activeTool;
     const current = this.currentInputState;
     if (!ev.isDown) {
@@ -860,7 +865,7 @@ export class ToolAdmin {
     IModelApp.accuDraw.onPreDataButton(ev);
 
     if (tool)
-      tool.onDataButtonDown(ev);
+      await tool.onDataButtonDown(ev);
 
     IModelApp.tentativePoint.onButtonEvent();
     IModelApp.accuDraw.onPostDataButton(ev);
@@ -895,7 +900,7 @@ export class ToolAdmin {
     return (!tool ? true : tool.isValidLocation(ev, true));
   }
 
-  public async onDataButtonDown(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<void> {
+  public async onDataButtonDown(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
     vp.removeAnimator();
     if (this.filterViewport(vp))
       return;
@@ -906,10 +911,10 @@ export class ToolAdmin {
     current.onButtonDown(BeButton.Data);
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
-    this.sendDataPoint(ev);
+    return this.sendDataPoint(ev);
   }
 
-  public async onDataButtonUp(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<void> {
+  public async onDataButtonUp(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
     if (this.filterViewport(vp))
       return;
 
@@ -929,18 +934,18 @@ export class ToolAdmin {
       return; // tool didn't receive the DOWN event...
 
     if (wasDragging) {
-      if (undefined === tool || !tool.onModelEndDrag(ev))
-        this.idleTool.onModelEndDrag(ev);
+      if (undefined === tool || EventHandled.Yes !== await tool.onModelEndDrag(ev))
+        return this.idleTool.onModelEndDrag(ev);
       return;
     }
 
     current.changeButtonToDownPoint(ev);
-    this.sendDataPoint(ev);
+    return this.sendDataPoint(ev);
   }
 
-  public async onMiddleButtonDown(vp: Viewport, pt2d: XAndY): Promise<EventHandled> {
+  public async onMiddleButtonDown(vp: Viewport, pt2d: XAndY): Promise<any> {
     if (this.filterViewport(vp))
-      return EventHandled.No;
+      return;
 
     vp.removeAnimator();
     const ev = new BeButtonEvent();
@@ -951,20 +956,18 @@ export class ToolAdmin {
     current.updateDownPoint(ev);
 
     if (!this.onButtonEvent(ev))
-      return EventHandled.No;
+      return;
 
     const tool = this.activeTool;
     current.buttonDownTool = tool;
 
     if (!tool || EventHandled.No === await tool.onMiddleButtonDown(ev))
       return this.idleTool.onMiddleButtonDown(ev);
-
-    return EventHandled.No;
   }
 
-  public async onMiddleButtonUp(vp: Viewport, pt2d: XAndY): Promise<EventHandled> {
+  public async onMiddleButtonUp(vp: Viewport, pt2d: XAndY): Promise<any> {
     if (this.filterViewport(vp))
-      return EventHandled.No;
+      return;
 
     const current = this.currentInputState;
     const wasDragging = current.isDragging(BeButton.Middle);
@@ -975,7 +978,7 @@ export class ToolAdmin {
     current.toEvent(ev, true);
 
     if (!this.onButtonEvent(ev))
-      return EventHandled.No;
+      return;
 
     const tool = this.activeTool;
     if (tool !== current.buttonDownTool)
@@ -984,13 +987,11 @@ export class ToolAdmin {
     if (wasDragging) {
       if (undefined === tool || EventHandled.No === await tool.onModelEndDrag(ev))
         return this.idleTool.onModelEndDrag(ev);
-      return EventHandled.No;
+      return;
     }
     current.changeButtonToDownPoint(ev);
     if (!tool || EventHandled.No === await tool.onMiddleButtonUp(ev))
       return this.idleTool.onMiddleButtonUp(ev);
-
-    return EventHandled.No;
   }
 
   public async onResetButtonDown(vp: Viewport, pt2d: XAndY): Promise<any> {
@@ -1014,7 +1015,7 @@ export class ToolAdmin {
       return tool.onResetButtonDown(ev);
   }
 
-  public async onResetButtonUp(vp: Viewport, pt2d: XAndY): Promise<void> {
+  public async onResetButtonUp(vp: Viewport, pt2d: XAndY): Promise<any> {
     if (this.filterViewport(vp))
       return;
 
@@ -1034,14 +1035,15 @@ export class ToolAdmin {
       return;
 
     if (wasDragging) {
-      if (undefined === tool || !tool.onModelEndDrag(ev))
-        this.idleTool.onModelEndDrag(ev);
+      if (undefined === tool || EventHandled.Yes !== await tool.onModelEndDrag(ev))
+        return this.idleTool.onModelEndDrag(ev);
       return;
     }
 
     current.changeButtonToDownPoint(ev);
     if (tool)
-      tool.onResetButtonUp(ev);
+      await tool.onResetButtonUp(ev);
+
     IModelApp.tentativePoint.onButtonEvent();
   }
 
