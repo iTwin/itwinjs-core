@@ -180,6 +180,9 @@ export class ViewHandleArray {
   }
 
   public drawHandles(context: DecorateContext): void {
+    if (0 === this.count)
+      return;
+
     // all handle objects must draw themselves
     for (let i = 0; i < this.count; i++) {
       if (i !== this.hitHandleIndex) {
@@ -1853,8 +1856,24 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
     const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
-    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
-    const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
+
+    // ### TODO Follow rotateViewWorld logic
+    //    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
+    //    const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
+
+    //    if (!vp.setupViewFromFrustum(frustum))
+    //      return true;
+
+    const result = worldRMatrix.getAxisAndAngleOfRotation();
+    const radians = Angle.createRadians(-result.angle.radians);
+    const worldAxis = result.axis;
+
+    const rotationMatrix = RotMatrix.createRotationAroundVector(worldAxis, radians);
+    if (!rotationMatrix)
+      return true;
+    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, rotationMatrix);
+    const frustum = this.frustum.clone();
+    frustum.multiply(worldTransform);
 
     if (!vp.setupViewFromFrustum(frustum))
       return true;

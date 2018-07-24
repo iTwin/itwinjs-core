@@ -510,6 +510,7 @@ export class ToolAdmin {
     current.toEvent(ev, false);
     if (gestureInfo.isFromMouse)
       ev.actualInputSource = InputSource.Mouse;
+    ev.gestureInfo = gestureInfo.clone();
   }
 
   public onWheel(vp: Viewport, wheelDelta: number, pt2d: XAndY): void {
@@ -632,12 +633,15 @@ export class ToolAdmin {
       if (current.isStartDrag(ev.button)) {
         current.onStartDrag(ev.button);
         current.changeButtonToDownPoint(ev);
-        tool.onModelStartDrag(ev);
+        if (!tool.onModelStartDrag(ev))
+          this.idleTool.onModelStartDrag(ev);
         return;
       }
 
       tool.onModelMotion(ev);
       this.updateDynamics(ev);
+    } else {
+      this.idleTool.onModelStartDrag(ev);
     }
 
     if (this.isLocateCircleOn)
@@ -815,9 +819,8 @@ export class ToolAdmin {
       return; // tool didn't receive the DOWN event...
 
     if (wasDragging) {
-      if (tool)
-        tool.onModelEndDrag(ev);
-
+      if (undefined === tool || !tool.onModelEndDrag(ev))
+        this.idleTool.onModelEndDrag(ev);
       return;
     }
 
@@ -843,14 +846,8 @@ export class ToolAdmin {
     const tool = this.activeTool;
     current.buttonDownTool = tool;
 
-    if (!tool || !tool.onMiddleButtonDown(ev)) {
-      if (this.idleTool.onMiddleButtonDown(ev)) {
-        // The active tool might have changed since the idle tool installs viewing tools.
-        const activeTool = this.activeTool;
-        if (activeTool !== tool)
-          current.buttonDownTool = activeTool;
-      }
-    }
+    if (!tool || !tool.onMiddleButtonDown(ev))
+      this.idleTool.onMiddleButtonDown(ev);
   }
 
   public onMiddleButtonUp(vp: Viewport, pt2d: XAndY): void {
@@ -873,9 +870,8 @@ export class ToolAdmin {
       return;
 
     if (wasDragging) {
-      if (tool)
-        tool.onModelEndDrag(ev);
-
+      if (undefined === tool || !tool.onModelEndDrag(ev))
+        this.idleTool.onModelEndDrag(ev);
       return;
     }
     current.changeButtonToDownPoint(ev);
@@ -925,9 +921,8 @@ export class ToolAdmin {
       return;
 
     if (wasDragging) {
-      if (tool)
-        tool.onModelEndDrag(ev);
-
+      if (undefined === tool || !tool.onModelEndDrag(ev))
+        this.idleTool.onModelEndDrag(ev);
       return;
     }
 
