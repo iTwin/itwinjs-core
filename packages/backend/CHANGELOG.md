@@ -1,6 +1,26 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Fri, 22 Jun 2018 10:25:30 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Jul 2018 13:20:35 GMT and should not be manually modified.
+
+## 0.5.0
+Tue, 24 Jul 2018 13:20:35 GMT
+
+### Minor changes
+
+- Added api for getting distinct values.
+- Added api for getting node paths and filtered node paths.
+- Moved ruleset management functions from ECPresentationManager to RulesetManager which is accessible from ECPresentationManager through `rulesets` property
+- Change the format of request options.
+- Change the meaning of `ECPresentationManager.activeLocale`. Now it means the default locale if request options doesn't specify one.
+- Rename ECPresentationManager to SingleClientECPresentationManager
+
+### Patches
+
+- Extract native platform into a separate module
+- Create MultiClientECPresentationManager
+- Change ECPresentation API to use MultiClientECPresentationManager
+- Dispose client presentation managers after they're unused for more than 1 hour
+- Updated dependencies.
 
 ## 0.4.1
 Fri, 22 Jun 2018 10:25:30 GMT

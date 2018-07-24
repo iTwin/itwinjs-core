@@ -1,6 +1,23 @@
 # Change Log - @bentley/ecpresentation-frontend
 
-This log was last generated on Fri, 22 Jun 2018 10:25:30 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Jul 2018 13:20:35 GMT and should not be manually modified.
+
+## 0.5.0
+Tue, 24 Jul 2018 13:20:35 GMT
+
+### Minor changes
+
+- Added api for getting distinct values.
+- Added api for getting node paths and filtered node paths.
+- Change the format of request options.
+- Change the meaning of `ECPresentationManager.activeLocale`. Now it means the default locale if request options doesn't specify one.
+- Moved ruleset management functions from ECPresentationManager to RulesetManager which is accessible from ECPresentationManager through `rulesets()` method
+
+### Patches
+
+- Add API to get available selection levels
+- ECPresentationManager now has a `client id` which is used to identify the frontend
+- Updated dependencies.
 
 ## 0.4.1
 Fri, 22 Jun 2018 10:25:30 GMT

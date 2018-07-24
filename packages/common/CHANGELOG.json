@@ -2,6 +2,44 @@
   "name": "@bentley/ecpresentation-common",
   "entries": [
     {
+      "version": "0.5.0",
+      "tag": "@bentley/ecpresentation-common_v0.5.0",
+      "date": "Tue, 24 Jul 2018 13:20:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Move Omit & Subtract definitions from `controls` to `common`"
+          },
+          {
+            "comment": "Create an interface for IRulesetManager and a concept of RegisteredRuleSet"
+          },
+          {
+            "comment": "Fixed KeySet serialization."
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Added api for getting distinct values."
+          },
+          {
+            "comment": "Added api for getting node paths and filtered node paths."
+          },
+          {
+            "comment": "Remove ruleset management functions from ECPresentationManager"
+          },
+          {
+            "comment": "Change the format of request options."
+          },
+          {
+            "comment": "Active locale is now a property of request options rather than presentation manager / RPC interface."
+          },
+          {
+            "comment": "Rename UserSettingsManager interface to IUserSettingsManager"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.1",
       "tag": "@bentley/ecpresentation-common_v0.4.1",
       "date": "Fri, 22 Jun 2018 10:25:30 GMT",

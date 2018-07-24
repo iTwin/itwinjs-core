@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-common",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Common pieces for ecpresentation packages.",
   "keywords": [
     "Bentley",

@@ -2,6 +2,43 @@
   "name": "@bentley/ecpresentation-controls",
   "entries": [
     {
+      "version": "0.5.0",
+      "tag": "@bentley/ecpresentation-controls_v0.5.0",
+      "date": "Tue, 24 Jul 2018 13:20:35 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Move Omit & Subtract definitions from `controls` to `common`"
+          },
+          {
+            "comment": "React to changed request options format."
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Display current selection content when unified selection component mounts"
+          },
+          {
+            "comment": "Added HOC with filtering support."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.4.1` to `^0.5.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.0",
       "tag": "@bentley/ecpresentation-controls_v0.4.0",
       "date": "Fri, 22 Jun 2018 10:25:30 GMT",

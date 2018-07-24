@@ -2,6 +2,58 @@
   "name": "@bentley/ecpresentation-backend",
   "entries": [
     {
+      "version": "0.5.0",
+      "tag": "@bentley/ecpresentation-backend_v0.5.0",
+      "date": "Tue, 24 Jul 2018 13:20:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Extract native platform into a separate module"
+          },
+          {
+            "comment": "Create MultiClientECPresentationManager"
+          },
+          {
+            "comment": "Change ECPresentation API to use MultiClientECPresentationManager"
+          },
+          {
+            "comment": "Dispose client presentation managers after they're unused for more than 1 hour"
+          },
+          {
+            "comment": "Updated dependencies."
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Added api for getting distinct values."
+          },
+          {
+            "comment": "Added api for getting node paths and filtered node paths."
+          },
+          {
+            "comment": "Moved ruleset management functions from ECPresentationManager to RulesetManager which is accessible from ECPresentationManager through `rulesets` property"
+          },
+          {
+            "comment": "Change the format of request options."
+          },
+          {
+            "comment": "Change the meaning of `ECPresentationManager.activeLocale`. Now it means the default locale if request options doesn't specify one."
+          },
+          {
+            "comment": "Rename ECPresentationManager to SingleClientECPresentationManager"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.1",
       "tag": "@bentley/ecpresentation-backend_v0.4.1",
       "date": "Fri, 22 Jun 2018 10:25:30 GMT",

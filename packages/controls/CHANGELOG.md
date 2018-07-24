@@ -1,6 +1,19 @@
 # Change Log - @bentley/ecpresentation-controls
 
-This log was last generated on Fri, 22 Jun 2018 10:25:30 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Jul 2018 13:20:35 GMT and should not be manually modified.
+
+## 0.5.0
+Tue, 24 Jul 2018 13:20:35 GMT
+
+### Minor changes
+
+- Move Omit & Subtract definitions from `controls` to `common`
+- React to changed request options format.
+
+### Patches
+
+- Display current selection content when unified selection component mounts
+- Added HOC with filtering support.
 
 ## 0.4.0
 Fri, 22 Jun 2018 10:25:30 GMT

@@ -1,6 +1,24 @@
 # Change Log - @bentley/ecpresentation-common
 
-This log was last generated on Fri, 22 Jun 2018 10:25:30 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Jul 2018 13:20:35 GMT and should not be manually modified.
+
+## 0.5.0
+Tue, 24 Jul 2018 13:20:35 GMT
+
+### Minor changes
+
+- Added api for getting distinct values.
+- Added api for getting node paths and filtered node paths.
+- Remove ruleset management functions from ECPresentationManager
+- Change the format of request options.
+- Active locale is now a property of request options rather than presentation manager / RPC interface.
+- Rename UserSettingsManager interface to IUserSettingsManager
+
+### Patches
+
+- Move Omit & Subtract definitions from `controls` to `common`
+- Create an interface for IRulesetManager and a concept of RegisteredRuleSet
+- Fixed KeySet serialization.
 
 ## 0.4.1
 Fri, 22 Jun 2018 10:25:30 GMT
