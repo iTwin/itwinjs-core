@@ -410,6 +410,11 @@ export class Tool {
   public run(..._arg: any[]): boolean { return true; }
 }
 
+export enum EventHandled {
+  No = 0,
+  Yes = 1,
+}
+
 /**
  * A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
@@ -457,29 +462,30 @@ export abstract class InteractiveTool extends Tool {
    * @return false by default. Sub-classes may ascribe special meaning to this status.
    * @note To support right-press menus, a tool should put its reset event processing in onResetButtonUp instead of onResetButtonDown.
    */
-  public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }
+  public async onResetButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the reset button is released.
    * @return false by default. Sub-classes may ascribe special meaning to this status.
    */
-  public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the data button is pressed.
    * @return false by default. Sub-classes may ascribe special meaning to this status.
    */
-  public onDataButtonDown(_ev: BeButtonEvent): boolean { return false; }
+  public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the data button is released.
    * @return false by default. Sub-classes may ascribe special meaning to this status.
    */
-  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
+  public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the middle mouse button is pressed.
    * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; }
+  public async onMiddleButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+
   /** Invoked when the middle mouse button is released.
    * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public onMiddleButtonUp(_ev: BeButtonEvent): boolean { return false; }
+  public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the cursor is moving */
   public onModelMotion(_ev: BeButtonEvent): void { }
@@ -491,16 +497,16 @@ export abstract class InteractiveTool extends Tool {
   /** Invoked when the cursor begins moving while a button is depressed.
    * @return false by default. Sub-classes may ascribe special meaning to this status.
    */
-  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }
+  public async onModelStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the button is released after onModelStartDrag.
    * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
    */
-  public onModelEndDrag(ev: BeButtonEvent): boolean { if (BeButton.Data !== ev.button) return false; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
+  public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
 
   /** Invoked when the mouse wheel moves.
    * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
+  public async onMouseWheel(_ev: BeWheelEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
    * @param _wentDown up or down key event
@@ -576,7 +582,7 @@ export abstract class InputCollector extends InteractiveTool {
   }
 
   public exitTool(): void { IModelApp.toolAdmin.exitInputCollector(); }
-  public onResetButtonUp(_ev: BeButtonEvent): boolean { this.exitTool(); return true; }
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
 }
 
 /**

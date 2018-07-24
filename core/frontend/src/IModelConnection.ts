@@ -345,7 +345,7 @@ export class IModelConnection extends IModel {
    */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return this._snap.addRequest(this.iModelToken, this.connectionId, props); }
 
-  private _tooltip = new OneAtATimePromise<string[]>("tooltip", (args: any[]) => IModelReadRpcInterface.getClient().getToolTipMessage(args[0], args[1]));
+  private _tooltip = new OneAtATimePromise<string[]>("tooltip", (args: any[]) => IModelReadRpcInterface.getClient().getToolTipMessage(args[0], args[1]), false);
   /** Request a tooltip from the backend.
    * @note ToolTip requests are *replaceable*. That is, subsequent requests replace previous pending requests with a BusyError exception.
    * Therefore, callers *must* catch [[BusyError]] exceptions.

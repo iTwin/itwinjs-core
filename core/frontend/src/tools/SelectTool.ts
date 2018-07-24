@@ -8,7 +8,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKey } from "./Tool";
+import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKey, EventHandled } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -243,25 +243,25 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  public onModelStartDrag(ev: BeButtonEvent): boolean {
+  public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return false;
+      return EventHandled.No;
     this.selectByPointsStart(ev);
-    return false;
+    return EventHandled.No;
   }
 
-  public onModelEndDrag(ev: BeButtonEvent): boolean {
+  public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     // NOTE: If manipulator installed an input collector, it would get the end drag event directly...
     this.selectByPointsEnd(ev);
-    return false;
+    return EventHandled.No;
   }
 
-  public onDataButtonUp(ev: BeButtonEvent): boolean {
+  public async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.viewport)
-      return false;
+      return EventHandled.No;
 
     if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return false;
+      return EventHandled.No;
 
     if (SelectionMethod.Pick !== this.getSelectionMethod()) {
       if (!this.selectByPointsEnd(ev)) { // If line/box selection active, end it...otherwise start it...
@@ -269,7 +269,7 @@ export class SelectionTool extends PrimitiveTool {
           this.iModel.selectionSet.emptyAll();
         this.selectByPointsStart(ev);
       }
-      return false;
+      return EventHandled.No;
     }
 
     // NOTE: Non-element hits are only handled by a manipulator that specificially requested them, can be ignored here...
@@ -288,23 +288,23 @@ export class SelectionTool extends PrimitiveTool {
           this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
           break;
       }
-      return false;
+      return EventHandled.No;
     }
 
     if (!ev.isControlKey && 0 !== this.iModel.selectionSet.size && this.wantSelectionClearOnMiss(ev))
       this.iModel.selectionSet.emptyAll();
 
-    return false;
+    return EventHandled.No;
   }
 
-  public onResetButtonUp(ev: BeButtonEvent): boolean {
+  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.isSelectByPoints) {
       this.initSelectTool();
-      return false;
+      return EventHandled.No;
     }
 
     if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return false;
+      return EventHandled.No;
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : IModelApp.locateManager.currHit;
@@ -323,12 +323,12 @@ export class SelectionTool extends PrimitiveTool {
         // add element(s) located via reset button
         if (undefined !== nextHit)
           this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
-        return false;
+        return EventHandled.No;
       }
     }
 
     IModelApp.accuSnap.resetButton();
-    return false;
+    return EventHandled.No;
   }
 
   public onSingleTap(ev: BeGestureEvent): boolean {

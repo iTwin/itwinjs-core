@@ -293,7 +293,7 @@ export class TentativePoint {
     const currHit = IModelApp.accuSnap.getHitAndList(this);
 
     // use existing AccuSnap hit list if one exists...
-    if (!currHit) {
+    if (currHit === undefined) {
       // search for elements around the current raw point (search should not be affected by locks!)
       const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
       const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
@@ -309,9 +309,8 @@ export class TentativePoint {
 
     // Construct each active point snap mode
     const snaps = IModelApp.accuSnap.getActiveSnapModes();
-    for (const snap of snaps) {
+    for (const snap of snaps)
       await this.testHitsForSnapMode(snap);
-    }
 
     this.optimizeHitList();
 

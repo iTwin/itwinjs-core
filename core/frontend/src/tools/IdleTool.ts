@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
+import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool, EventHandled } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { HitDetail, HitSource, SnapDetail, HitPriority } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -35,7 +35,7 @@ export class IdleTool extends InteractiveTool {
     const tp = IModelApp.tentativePoint;
     await tp.process(ev);
 
-    if (tp.isSnapped) {
+    if (tp.isSnapped()) {
       IModelApp.toolAdmin.adjustSnapPoint();
     } else {
       if (IModelApp.accuDraw.isActive) {
@@ -76,13 +76,13 @@ export class IdleTool extends InteractiveTool {
     IModelApp.toolAdmin.updateDynamics();
   }
 
-  public onMiddleButtonDown(ev: BeButtonEvent): boolean {
+  public async onMiddleButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const vp = ev.viewport;
     if (!vp)
-      return true;
+      return EventHandled.Yes;
     const cur = IModelApp.toolAdmin.currentInputState;
     if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
-      return false;
+      return EventHandled.No;
 
     let viewTool: ViewTool | undefined;
     if (ev.isDoubleClick) {
@@ -99,24 +99,24 @@ export class IdleTool extends InteractiveTool {
           currTool.forcedHandle = ViewHandleType.ViewPan;
         // Since we won't get a data button, we need to explicitly clear the tentative...
         IModelApp.tentativePoint.clear(true);
-        return true;
+        return EventHandled.Yes;
       }
 
       viewTool = IModelApp.tools.create("View.Pan", vp, true, false, true) as ViewTool | undefined;
     }
 
-    return !!viewTool && viewTool.run();
+    return (viewTool !== undefined && viewTool.run()) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public onMiddleButtonUp(ev: BeButtonEvent): boolean {
+  public async onMiddleButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
-      return false;
+      return EventHandled.No;
 
-    this.performTentative(ev);
-    return true;
+    await this.performTentative(ev);
+    return EventHandled.Yes;
   }
 
-  public onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
+  public async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.run(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
   public onSingleTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }

@@ -8,11 +8,11 @@ import { ViewStatus, ViewState3d } from "../ViewState";
 import { Viewport } from "../Viewport";
 import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
-  BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool, InputCollector,
+  BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool, InputCollector, EventHandled,
 } from "./Tool";
 import { ViewTool } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
-import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
@@ -28,6 +28,8 @@ export const enum CoordinateLockOverrides {
   Grid = (1 << 2),     // also overrides unit lock
   All = 0xffff,
 }
+
+const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.None;
@@ -126,7 +128,6 @@ export class CurrentInputState {
     const result = this.hasEventInputStopped(this.motionTime, 3 * 16);
     if (result.stopped)
       this.motionTime = result.eventTimer;
-
     return result.stopped;
   }
 
@@ -416,9 +417,13 @@ class WheelEventProcessor {
   }
 }
 
+interface ToolEvent {
+  ev: Event;
+  vp: Viewport;
+}
+
 /** Controls the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
 export class ToolAdmin {
-  private readonly _toolEvents = new BeEventList();
   public currentInputState = new CurrentInputState();
   public readonly toolState = new ToolState();
   private suspendedByViewTool?: SuspendedToolState;
@@ -444,29 +449,132 @@ export class ToolAdmin {
   public acsPlaneSnapLock = false;
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
-  private _wantEventLoop = false;
+  private static _wantEventLoop = false;
 
-  public onInitialized() {
-    this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
-  }
+  public onInitialized() { this._idleTool = IModelApp.tools.create("Idle") as IdleTool; }
   public startEventLoop(): void {
-    if (!this._wantEventLoop) {
-      this._wantEventLoop = true;
-      requestAnimationFrame(() => this.animationFrame());
+    if (!ToolAdmin._wantEventLoop) {
+      ToolAdmin._wantEventLoop = true;
+      requestAnimationFrame(ToolAdmin.animationFrame);
     }
   }
+
   public onShutDown() {
     IconSprites.emptyAll(); // clear cache of icon sprites
-    this._wantEventLoop = false;
+    ToolAdmin._wantEventLoop = false;
     this._idleTool = undefined;
   }
 
-  private animationFrame(): void {
-    if (this._wantEventLoop) {
-      this.onTimerEvent();
-      IModelApp.viewManager.renderLoop();
-      requestAnimationFrame(() => this.animationFrame());
+  private readonly toolEvents: ToolEvent[] = [];
+  private tryReplace(event: ToolEvent): boolean {
+    if (this.toolEvents.length < 1)
+      return false;
+    const last = this.toolEvents[this.toolEvents.length - 1];
+    if (last.ev.type !== "mousemove" || event.ev.type !== "mousemove") // only mousemove can replace previous
+      return false;
+    last.ev = event.ev;
+    last.vp = event.vp;
+    return true;
+  }
+
+  public addEvent(ev: Event, vp: Viewport): void {
+    const event = { ev, vp };
+    if (!this.tryReplace(event))
+      this.toolEvents.push(event);
+  }
+
+  private recordKeyboardModifiers(ev: MouseEvent): void {
+    const state = this.currentInputState;
+    state.clearKeyQualifiers();
+    if (ev.shiftKey)
+      state.setKeyQualifier(BeModifierKey.Shift, true);
+    if (ev.ctrlKey)
+      state.setKeyQualifier(BeModifierKey.Control, true);
+  }
+
+  private getMousePosition(event: ToolEvent): Point2d {
+    const ev = event.ev as MouseEvent;
+    const rect = event.vp.getClientRect();
+    return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top });
+  }
+
+  private callMouseHandler(event: ToolEvent, isDown: boolean): Promise<void> {
+    const ev = event.ev as MouseEvent;
+    const vp = event.vp;
+    const pos = this.getMousePosition(event);
+
+    this.recordKeyboardModifiers(ev);
+    switch (ev.button) {
+      case MouseButton.Middle: return isDown ? this.onMiddleButtonDown(vp, pos) : this.onMiddleButtonUp(vp, pos);
+      case MouseButton.Right: return isDown ? this.onResetButtonDown(vp, pos) : this.onResetButtonUp(vp, pos);
     }
+    return isDown ? this.onDataButtonDown(vp, pos, InputSource.Mouse) : this.onDataButtonUp(vp, pos, InputSource.Mouse);
+  }
+
+  private async callWheel(event: ToolEvent): Promise<EventHandled> {
+    const ev = event.ev as WheelEvent;
+    const vp = event.vp;
+    this.recordKeyboardModifiers(ev);
+
+    if (ev.deltaY === 0)
+      return EventHandled.No;
+
+    let delta: number;
+    switch (ev.deltaMode) {
+      case ev.DOM_DELTA_PIXEL:
+        delta = -ev.deltaY;
+        break;
+      case ev.DOM_DELTA_LINE:
+        delta = -ev.deltaY * 40;
+        break;
+      default:
+        delta = -ev.deltaY * 120;
+        break;
+    }
+
+    return this.onWheel(vp, delta, this.getMousePosition(event));
+  }
+
+  private async callEventHandler(event: ToolEvent): Promise<any> {
+    const vp = event.vp;
+    switch (event.ev.type) {
+      case "mousedown": return this.callMouseHandler(event, true);
+      case "mouseup": return this.callMouseHandler(event, false);
+      case "mousemove": return this.onMouseMotion(vp, this.getMousePosition(event), InputSource.Mouse);
+      case "mouseenter": return this.onMouseEnter(vp);
+      case "mouseleave": return this.onMouseLeave(vp);
+      case "wheel": return this.callWheel(event);
+      // case "touchstart":
+      // case "touchend":
+      // case "touchmove":
+      // case "touchcancel":
+    }
+    return;
+  }
+
+  private _processingEvent = false;
+  private processToolEvent() {
+    if (this._processingEvent)
+      return;
+    const ev = this.toolEvents.shift();
+    if (undefined === ev)
+      return;
+
+    this._processingEvent = true;
+    this.callEventHandler(ev).then(() => this._processingEvent = false);
+  }
+
+  private processEvents() {
+    this.processToolEvent(); // only process the top event on the queue
+    this.onTimerEvent();
+  }
+
+  private static animationFrame(): void {
+    if (!ToolAdmin._wantEventLoop)
+      return;
+    IModelApp.toolAdmin.processEvents();
+    IModelApp.viewManager.renderLoop();
+    requestAnimationFrame(ToolAdmin.animationFrame);
   }
 
   public get idleTool(): IdleTool { return this._idleTool!; }
@@ -480,6 +588,7 @@ export class ToolAdmin {
   public get activeTool(): InteractiveTool | undefined {
     return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
   }
+
   /** The current tool. May be viewing tool, input collector, primitive tool, or idle tool - in that priority order. */
   public get currentTool(): InteractiveTool { return this.activeTool ? this.activeTool : this.idleTool; }
 
@@ -490,7 +599,7 @@ export class ToolAdmin {
    * Event that is raised whenever the active tool changes. This includes both primitive and viewing tools.
    * @param newTool The newly activated tool
    */
-  public get activeToolChanged(): BeEvent<(newTool: Tool) => void> { return this._toolEvents.get("activeTool"); }
+  public readonly activeToolChanged = new BeEvent<(tool: Tool) => void>();
 
   public getCursorView(): Viewport | undefined { return this.currentInputState.viewport; }
   public onAccuSnapEnabled() { }
@@ -499,7 +608,7 @@ export class ToolAdmin {
 
   /** Called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
-    //  Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
+    // Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
   }
@@ -512,9 +621,9 @@ export class ToolAdmin {
       ev.actualInputSource = InputSource.Mouse;
   }
 
-  public onWheel(vp: Viewport, wheelDelta: number, pt2d: XAndY): void {
+  public async onWheel(vp: Viewport, wheelDelta: number, pt2d: XAndY): Promise<EventHandled> {
     if (this.cursorView === undefined)
-      return;
+      return EventHandled.No;
 
     vp.removeAnimator();
 
@@ -522,17 +631,18 @@ export class ToolAdmin {
     const wheelEvent = new BeWheelEvent();
     wheelEvent.wheelDelta = wheelDelta;
     this.currentInputState.toEvent(wheelEvent, true);
-    this.onWheelEvent(wheelEvent);
+    return this.onWheelEvent(wheelEvent);
   }
 
-  public onWheelEvent(wheelEvent: BeWheelEvent): void {
+  public async onWheelEvent(wheelEvent: BeWheelEvent): Promise<EventHandled> {
     const activeTool = this.activeTool;
-    if (undefined === activeTool || !activeTool.onMouseWheel(wheelEvent))
-      this.idleTool.onMouseWheel(wheelEvent);
+    if (undefined === activeTool || EventHandled.Yes !== await activeTool.onMouseWheel(wheelEvent))
+      return this.idleTool.onMouseWheel(wheelEvent);
+    return EventHandled.Yes;
   }
 
-  public onMouseEnter(vp: Viewport): void { this.cursorView = vp; }
-  public onMouseLeave(vp: Viewport): void {
+  public async onMouseEnter(vp: Viewport) { this.cursorView = vp; }
+  public async onMouseLeave(vp: Viewport) {
     IModelApp.notifications.clearToolTip();
     this.cursorView = undefined;
     vp.invalidateDecorations();
@@ -781,7 +891,7 @@ export class ToolAdmin {
     return (!tool ? true : tool.isValidLocation(ev, true));
   }
 
-  public onDataButtonDown(vp: Viewport, pt2d: XAndY, inputSource: InputSource): void {
+  public async onDataButtonDown(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<void> {
     vp.removeAnimator();
     if (this.filterViewport(vp))
       return;
@@ -795,7 +905,7 @@ export class ToolAdmin {
     this.sendDataPoint(ev);
   }
 
-  public onDataButtonUp(vp: Viewport, pt2d: XAndY, inputSource: InputSource): void {
+  public async onDataButtonUp(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<void> {
     if (this.filterViewport(vp))
       return;
 
@@ -825,7 +935,7 @@ export class ToolAdmin {
     this.sendDataPoint(ev);
   }
 
-  public onMiddleButtonDown(vp: Viewport, pt2d: XAndY): void {
+  public async onMiddleButtonDown(vp: Viewport, pt2d: XAndY): Promise<void> {
     if (this.filterViewport(vp))
       return;
 
@@ -843,8 +953,8 @@ export class ToolAdmin {
     const tool = this.activeTool;
     current.buttonDownTool = tool;
 
-    if (!tool || !tool.onMiddleButtonDown(ev)) {
-      if (this.idleTool.onMiddleButtonDown(ev)) {
+    if (!tool || EventHandled.No === await tool.onMiddleButtonDown(ev)) {
+      if (EventHandled.Yes === await this.idleTool.onMiddleButtonDown(ev)) {
         // The active tool might have changed since the idle tool installs viewing tools.
         const activeTool = this.activeTool;
         if (activeTool !== tool)
@@ -853,7 +963,7 @@ export class ToolAdmin {
     }
   }
 
-  public onMiddleButtonUp(vp: Viewport, pt2d: XAndY): void {
+  public async onMiddleButtonUp(vp: Viewport, pt2d: XAndY): Promise<void> {
     if (this.filterViewport(vp))
       return;
 
@@ -879,12 +989,12 @@ export class ToolAdmin {
       return;
     }
     current.changeButtonToDownPoint(ev);
-    if (!tool || !tool.onMiddleButtonUp(ev)) {
-      this.idleTool.onMiddleButtonUp(ev);
+    if (!tool || EventHandled.No === await tool.onMiddleButtonUp(ev)) {
+      await this.idleTool.onMiddleButtonUp(ev);
     }
   }
 
-  public onResetButtonDown(vp: Viewport, pt2d: XAndY): void {
+  public async onResetButtonDown(vp: Viewport, pt2d: XAndY): Promise<void> {
     if (this.filterViewport(vp))
       return;
 
@@ -905,7 +1015,7 @@ export class ToolAdmin {
       tool.onResetButtonDown(ev);
   }
 
-  public onResetButtonUp(vp: Viewport, pt2d: XAndY): void {
+  public async onResetButtonUp(vp: Viewport, pt2d: XAndY): Promise<void> {
     if (this.filterViewport(vp))
       return;
 
@@ -1306,11 +1416,11 @@ export class ToolAdmin {
   }
 
   /** Performs default handling of mouse wheel event (zoom in/out) */
-  public processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): boolean {
+  public async processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled> {
     WheelEventProcessor.process(ev, doUpdate);
     this.updateDynamics(ev);
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    return true;
+    return EventHandled.Yes;
   }
 
   public onSelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {

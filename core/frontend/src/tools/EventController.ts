@@ -4,15 +4,9 @@
 /** @module Tools */
 
 import { Viewport } from "../Viewport";
-import { GestureId, GestureInfo, BeModifierKey, InputSource } from "./Tool";
+import { GestureId, GestureInfo } from "./Tool";
 import { Point2d } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
-
-const enum MouseButton {
-  LEFT = 0,
-  MIDDLE = 1,
-  RIGHT = 2,
-}
 
 // tslint:disable:no-console
 
@@ -53,8 +47,10 @@ export class BusyError extends Error {
   public static check(err: Error) {
     if (err instanceof BusyError || err.message === "abort") {
       // console.log("Busy error: " + err.message);
-    } else
+    } else {
+      console.log("re-throwing from BusyError");
       throw err; // unrecognized exception
+    }
   }
 }
 
@@ -97,11 +93,12 @@ class PromiseWithAbort<T> {
 export class OneAtATimePromise<T> {
   private _active?: PromiseWithAbort<T>;
   private _pending?: PromiseWithAbort<T>;
+
   /** Ctor for OneAtATimePromise.
    * @param msg A message to be passed to the constructor of [[BusyError]] when pending requests are aborted.
    * @param run The method that performs an action that creates the Promise.
    */
-  constructor(private msg: string, private run: (...args: any[]) => Promise<T>) { }
+  constructor(private msg: string, private run: (...args: any[]) => Promise<T>, private _allowPending = true) { }
 
   /** Add a new request to this OneAtATimePromise. The request will only run when no other outstanding requests are active.
    * @note Callers of this method *must* handle BusyError exceptions.
@@ -113,7 +110,8 @@ export class OneAtATimePromise<T> {
     if (this._active !== undefined) { // is there an active request?
       if (this._pending) // yes. If there is also a pending request, this one replaces it and previous one is aborted
         this._pending.abort(); // rejects previous call to this method, throwing BusyError.
-      this._pending = entry;
+      if (this._allowPending)
+        this._pending = entry;
     } else {
       this._active = entry; // this is the first request, start it.
       entry.start();
@@ -224,16 +222,16 @@ export class EventController {
     this.initializeTouches();
   }
 
-  public destroy() { this.unregisterListeners(); }
-
-  private unregisterListeners() {
-    for (const removeFunc of this.removals) { removeFunc(); }
+  public destroy() {
+    this.removals.forEach((remove) => remove());
     this.removals.length = 0;
   }
 
-  private registerListener(domType: string, element: HTMLElement, callback: EventListener) {
-    const that = this;
-    const listener = (e: Event) => { callback.call(that, e); };
+  private registerListener(domType: string, element: HTMLElement) {
+    const listener = (ev: Event) => {
+      ev.preventDefault();
+      IModelApp.toolAdmin.addEvent(ev, this.vp);
+    };
     element.addEventListener(domType, listener, false);
     this.removals.push(() => { element.removeEventListener(domType, listener, false); });
   }
@@ -243,104 +241,19 @@ export class EventController {
     if (!element)
       return;
 
-    this.registerListener("mousedown", element, this.handleMouseDown as EventListener);
-    this.registerListener("mouseup", element, this.handleMouseUp as EventListener);
-    this.registerListener("mousemove", element, this.handleMouseMove as EventListener);
-    this.registerListener("mouseenter", element, this.handleMouseEnter as EventListener);
-    this.registerListener("mouseleave", element, this.handleMouseLeave as EventListener);
-    this.registerListener("wheel", element, this.handleMouseWheel as EventListener);
-    this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
-    this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
-    this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
-    this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
+    this.registerListener("mousedown", element);
+    this.registerListener("mouseup", element);
+    this.registerListener("mousemove", element);
+    this.registerListener("mouseenter", element);
+    this.registerListener("mouseleave", element);
+    this.registerListener("wheel", element);
+    // this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
+    // this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
+    // this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
+    // this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
 
     element.oncontextmenu = () => false;
     element.onselectstart = () => false;
-  }
-
-  private recordShiftKey() { IModelApp.toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
-  private recordControlKey() { IModelApp.toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Control, true); }
-  private clearKeyboardModifiers() { IModelApp.toolAdmin.currentInputState.clearKeyQualifiers(); }
-
-  private handleMiddleDown(pos: Point2d) { IModelApp.toolAdmin.onMiddleButtonDown(this.vp, pos); }
-  private handleMiddleUp(pos: Point2d) { IModelApp.toolAdmin.onMiddleButtonUp(this.vp, pos); }
-  private handleLeftDown(pos: Point2d) { IModelApp.toolAdmin.onDataButtonDown(this.vp, pos, InputSource.Mouse); }
-  private handleLeftUp(pos: Point2d) { IModelApp.toolAdmin.onDataButtonUp(this.vp, pos, InputSource.Mouse); }
-  private handleRightDown(pos: Point2d) { IModelApp.toolAdmin.onResetButtonDown(this.vp, pos); }
-  private handleRightUp(pos: Point2d) { IModelApp.toolAdmin.onResetButtonUp(this.vp, pos); }
-
-  private getMouseButtonHandler(button: MouseButton, isDown: boolean) {
-    switch (button) {
-      case MouseButton.MIDDLE: return isDown ? this.handleMiddleDown : this.handleMiddleUp;
-      case MouseButton.RIGHT: return isDown ? this.handleRightDown : this.handleRightUp;
-    }
-    return isDown ? this.handleLeftDown : this.handleLeftUp;
-  }
-
-  private recordKeyboardModifiers(ev: MouseEvent): void {
-    this.clearKeyboardModifiers();
-    if (ev.shiftKey)
-      this.recordShiftKey();
-
-    if (ev.ctrlKey)
-      this.recordControlKey();
-  }
-
-  private getPosition(ev: Touch | MouseEvent, result?: Point2d): Point2d {
-    const rect = this.vp.getClientRect();
-    return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top }, result);
-  }
-
-  private handleMouseUpDown(ev: MouseEvent, isDown: boolean): void {
-    this.recordKeyboardModifiers(ev);
-    ev.preventDefault();
-    try {
-      this.getMouseButtonHandler(ev.button, isDown).call(this, this.getPosition(ev));
-    } catch (err) {
-      BusyError.check(err);
-    }
-  }
-
-  private handleMouseDown(ev: MouseEvent) { this.handleMouseUpDown(ev, true); }
-  private handleMouseUp(ev: MouseEvent) { this.handleMouseUpDown(ev, false); }
-  private handleMouseMove(ev: MouseEvent) {
-    ev.preventDefault();
-    this.recordKeyboardModifiers(ev);
-
-    // catch exceptions caused by aborting previous snap attempts
-    IModelApp.toolAdmin.onMouseMotion(this.vp, this.getPosition(ev), InputSource.Mouse).catch((err) => {
-      BusyError.check(err);
-    });
-  }
-
-  private handleMouseEnter(ev: MouseEvent) { IModelApp.toolAdmin.onMouseEnter(this.vp); ev.preventDefault(); }
-  private handleMouseLeave(ev: MouseEvent) { IModelApp.toolAdmin.onMouseLeave(this.vp); ev.preventDefault(); }
-
-  private handleMouseWheel(ev: WheelEvent) {
-    this.recordKeyboardModifiers(ev);
-
-    if (ev.deltaY === 0)
-      return;
-
-    let delta: number;
-    switch (ev.deltaMode) {
-      case ev.DOM_DELTA_PIXEL:
-        delta = -ev.deltaY;
-        break;
-      case ev.DOM_DELTA_LINE:
-        delta = -ev.deltaY * 40;
-        break;
-      default:
-        delta = -ev.deltaY * 120;
-        break;
-    }
-
-    try {
-      IModelApp.toolAdmin.onWheel(this.vp, delta, IModelApp.toolAdmin.currentInputState.lastMotion);
-    } catch (err) {
-      BusyError.check(err);
-    }
-    ev.preventDefault();
   }
 
   private initializeTouches(): void {
@@ -441,7 +354,7 @@ export class EventController {
     this.sendGestureEvent(info);
   }
 
-  private touchCanceled(): void { this.setTouchState(TouchState.Invalid); }
+  public touchCanceled(): void { this.setTouchState(TouchState.Invalid); }
   private onTouchEvent(): void { this.lastTouchEventTime = Date.now(); }
 
   private getTouchPoint(id: number): TouchPoint | undefined {
@@ -465,7 +378,7 @@ export class EventController {
     return false;
   }
 
-  private touchDown(x: number, y: number, id: number, numberFingers: number, interpretingDataButtonAsTouch: boolean) {
+  public touchDown(x: number, y: number, id: number, numberFingers: number, interpretingDataButtonAsTouch: boolean) {
     this.onTouchEvent();
 
     if (numberFingers <= this.touchPoints.length) {
@@ -518,7 +431,7 @@ export class EventController {
     }
   }
 
-  private touchUp(id: number): void {
+  public touchUp(id: number): void {
     this.onTouchEvent();
     const interpretingDataButtonAsTouch = this.interpretingDataButtonAsTouch;
 
@@ -609,7 +522,7 @@ export class EventController {
     this.removeTouchPoint(id);
   }
 
-  private touchMove(x: number, y: number, id: number): void {
+  public touchMove(x: number, y: number, id: number): void {
     this.onTouchEvent();
 
     const p = this.getTouchPoint(id);
@@ -792,22 +705,22 @@ export class EventController {
     return this.handleSingleFingerMove(points) || this.handleMultiFingerMove(points);
   }
 
-  private processTouches(ev: TouchEvent, func: (id: number, num: number, x: number, y: number) => void) {
-    const touches = ev.changedTouches;
-    const numFingers = touches.length;
+  public processTouches(ev: TouchEvent, _func: (id: number, num: number, x: number, y: number) => void) {
+    // const touches = ev.changedTouches;
+    // const numFingers = touches.length;
 
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < touches.length; ++i) {
-      const touch = touches[i];
-      const pos = this.getPosition(touch);
-      func(touch.identifier, numFingers, pos.x, pos.y);
-    }
+    // // tslint:disable-next-line:prefer-for-of
+    // for (let i = 0; i < touches.length; ++i) {
+    //   const touch = touches[i];
+    //   const pos = this.getPosition(touch);
+    //   func(touch.identifier, numFingers, pos.x, pos.y);
+    // }
 
     ev.preventDefault();
   }
 
-  private handleTouchStart(ev: TouchEvent) { this.processTouches(ev, (id: number, num: number, x: number, y: number) => this.touchDown(x, y, id, num, false)); }
-  private handleTouchEnd(ev: TouchEvent) { this.processTouches(ev, (id: number, _num: number, _x: number, _y: number) => this.touchUp(id)); }
-  private handleTouchMove(ev: TouchEvent) { this.processTouches(ev, (id: number, _num: number, x: number, y: number) => this.touchMove(x, y, id)); }
-  private handleTouchCancel(_ev: TouchEvent) { this.touchCanceled(); }
+  // private handleTouchStart(ev: TouchEvent) { this.processTouches(ev, (id: number, num: number, x: number, y: number) => this.touchDown(x, y, id, num, false)); }
+  // private handleTouchEnd(ev: TouchEvent) { this.processTouches(ev, (id: number, _num: number, _x: number, _y: number) => this.touchUp(id)); }
+  // private handleTouchMove(ev: TouchEvent) { this.processTouches(ev, (id: number, _num: number, x: number, y: number) => this.touchMove(x, y, id)); }
+  // private handleTouchCancel(_ev: TouchEvent) { this.touchCanceled(); }
 }
