@@ -28,14 +28,18 @@ export class MobileRpcManager {
 
       protected send(): void {
         this.protocol.map.set(this.id, this);
-        this.protocol.socket.send(JSON.stringify(this.protocol.serialize(this)));
+        const serialized = JSON.stringify(this.protocol.serialize(this));
+        if (this.protocol.socket.readyState === 1)
+          this.protocol.socket.send(serialized);
+        else
+          this.protocol.pending.push(serialized);
       }
     }
 
     class MobileProtocol extends RpcProtocol {
       public socket: WebSocket = (undefined as any);
       public map: Map<string, MobileRequest> = new Map();
-
+      public pending: string[] = [];
       public readonly requestType = MobileRequest;
 
       constructor(configuration: MobileRpcConfiguration) {
@@ -50,6 +54,13 @@ export class MobileRpcManager {
             this.map.delete(response.id);
             request.fulfillment = response.fulfillment;
             this.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, request);
+          });
+
+          this.socket.addEventListener("open", (_event) => {
+            for (const pending of this.pending) {
+              this.socket.send(pending);
+            }
+            this.pending = [];
           });
         } else {
           mobilegateway = bentley.imodeljs.servicesTier.require("@bentley/imodeljs-mobilegateway");
