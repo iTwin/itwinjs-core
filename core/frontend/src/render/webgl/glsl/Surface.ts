@@ -318,10 +318,10 @@ export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
-        texture.texture.bindSampler(uniform, TextureUnit.Zero);
+        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
         // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.Zero);
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       }
     });
   });

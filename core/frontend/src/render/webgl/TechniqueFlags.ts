@@ -5,12 +5,7 @@
 
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
-
-export const enum ClipVolumeType {
-  None,
-  Mask,
-  Planes,
-}
+import { ClippingType } from "../System";
 
 /** Specifies how a TechniqueFlags handles feature table/overrides. */
 export const enum FeatureMode {
@@ -21,10 +16,12 @@ export const enum FeatureMode {
 
 /** Meta data for what type of clip volume is being stored (mask or planes). */
 export class ClipDef {
-  public type: ClipVolumeType;
+  public type: ClippingType;
   public numberOfPlanes: number;
 
-  public constructor(type: ClipVolumeType = ClipVolumeType.None, numberOfPlanes: number = 0) { this.type = type; this.numberOfPlanes = numberOfPlanes; }
+  public constructor(type: ClippingType = ClippingType.None, numberOfPlanes: number = 0) { this.type = type; this.numberOfPlanes = numberOfPlanes; }
+  public static forMask() { return new ClipDef(ClippingType.Mask); }
+  public static forPlanes(numPlanes: number) { return new ClipDef(ClippingType.Planes, numPlanes); }
 }
 
 /** Flags used to control which shader program is used by a rendering Technique. */
@@ -41,7 +38,7 @@ export class TechniqueFlags {
     this.clip = new ClipDef();
   }
 
-  public get hasClip(): boolean { return this.clip.type !== ClipVolumeType.None; }
+  public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
 
   public init(target: Target, pass: RenderPass): void {
     if (RenderPass.Hilite === pass) {
@@ -65,7 +62,7 @@ export class TechniqueFlags {
     this._isHilite = false;
     this.featureMode = mode;
     this.isTranslucent = isTranslucent;
-    this.clip.type = ClipVolumeType.None;
+    this.clip.type = ClippingType.None;
     this.clip.numberOfPlanes = 0;
   }
 

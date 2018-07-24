@@ -412,7 +412,7 @@ export class System extends RenderSystem {
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
   public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
     if (params.isTexturedCube) {

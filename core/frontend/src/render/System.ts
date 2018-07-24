@@ -47,7 +47,7 @@ export class RenderPlan {
   public readonly hiliteSettings: Hilite.Settings;
   public readonly aaLines: AntiAliasPref;
   public readonly aaText: AntiAliasPref;
-  public readonly activeVolume?: ClipVector;
+  public readonly activeVolume?: RenderClipVolume;
   public readonly hline?: HiddenLine.Params;
   public readonly lights?: SceneLights;
 
@@ -64,9 +64,11 @@ export class RenderPlan {
     this.hiliteSettings = vp.hilite;
     this.aaLines = vp.wantAntiAliasLines;
     this.aaText = vp.wantAntiAliasText;
-    this.activeVolume = view.getViewClip();
     this.hline = style.is3d() ? style.getHiddenLineParams() : undefined;
     this.lights = undefined; // view.is3d() ? view.getLights() : undefined
+
+    const clipVec = view.getViewClip();
+    this.activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
   }
 }
 
@@ -75,8 +77,18 @@ export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
 
+/** A type of clip volume being used for clipping. */
+export const enum ClippingType {
+  None,
+  Mask,
+  Planes,
+}
+
 /** Interface adopted by a type which can apply a clipping volume to a Target. */
 export abstract class RenderClipVolume implements IDisposable {
+  /** Returns the type of this clipping volume. */
+  public abstract get type(): ClippingType;
+
   public abstract dispose(): void;
 }
 

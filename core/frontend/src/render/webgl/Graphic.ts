@@ -7,7 +7,7 @@ import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, DecorationList, RenderClipVolume } from "../System";
+import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
@@ -17,6 +17,7 @@ import { FloatRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
+import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 
 class OvrUniform {
   public floatFlags: number = 0;
@@ -498,9 +499,9 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public readonly localToWorldTransform: Transform;
-  public readonly clips?: RenderClipVolume;
+  public readonly clips?: ClipPlanesVolume | ClipMaskVolume;
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: RenderClipVolume, viewFlags?: ViewFlags) {
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;

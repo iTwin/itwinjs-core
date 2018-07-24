@@ -117,6 +117,7 @@ export interface SheetProps extends ElementProps {
   height?: number;
   scale?: number;
   sheetTemplate?: Id64Props;
+  attachments?: Id64Props[];
 }
 
 /** Properties of a [DefinitionElement]($backend) */

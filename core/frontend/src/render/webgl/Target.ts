@@ -5,7 +5,7 @@
 
 import { Transform, Vector3d, Point3d, ClipVector, Matrix4d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
+import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -27,7 +27,8 @@ import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
-import { ClipDef, ClipVolumeType } from "./TechniqueFlags";
+import { ClipDef } from "./TechniqueFlags";
+import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -153,13 +154,14 @@ export abstract class Target extends RenderTarget {
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   public readonly compositor: SceneCompositor;
+  private _activeClipVolume?: ClipPlanesVolume | ClipMaskVolume;
   private _clipMask?: TextureHandle;
+  public readonly clips = new Clips();
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
   protected _dcAssigned: boolean = false;
   public performanceMetrics?: PerformanceMetrics;
-  public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
   public readonly bgColor = ColorDef.red.clone();
@@ -244,9 +246,9 @@ export abstract class Target extends RenderTarget {
 
   public get clipDef(): ClipDef {
     if (this.hasClipVolume)
-      return new ClipDef(ClipVolumeType.Planes, this.clips.count);
+      return new ClipDef(ClippingType.Planes, this.clips.count);
     else if (this.hasClipMask)
-      return new ClipDef(ClipVolumeType.Mask);
+      return new ClipDef(ClippingType.Mask);
     else
       return new ClipDef();
   }
@@ -254,7 +256,7 @@ export abstract class Target extends RenderTarget {
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
   public get clipMask(): TextureHandle | undefined { return this._clipMask; }
   public set clipMask(mask: TextureHandle | undefined) {
-    assert(!this.hasClipMask);
+    assert((mask === undefined) === this.hasClipMask);
     assert(this.is2d);
     this._clipMask = mask;
   }
@@ -285,7 +287,7 @@ export abstract class Target extends RenderTarget {
     this._stack.pushBranch(branch);
     const clip = this._stack.top.clipVolume;
     if (undefined !== clip) {
-      (clip as any).push(exec);
+      clip.pushToShaderExecutor(exec);
     }
   }
   public pushState(state: BranchState) {
@@ -295,14 +297,21 @@ export abstract class Target extends RenderTarget {
   public popBranch(): void {
     const clip = this._stack.top.clipVolume;
     if (undefined !== clip) {
-      (clip as any).pop(this);
+      clip.pop(this);
     }
 
     this._stack.pop();
   }
 
-  public pushActiveVolume(): void { } // ###TODO
-  public popActiveVolume(): void { } // ###TODO
+  public pushActiveVolume(): void {
+    if (this._activeClipVolume !== undefined)
+      this._activeClipVolume.pushToTarget(this);
+  }
+
+  public popActiveVolume(): void {
+    if (this._activeClipVolume !== undefined)
+      this._activeClipVolume.pop(this);
+  }
 
   public addBatch(batch: Batch) {
     assert(this._batches.indexOf(batch) < 0);
@@ -404,7 +413,14 @@ export abstract class Target extends RenderTarget {
     this.hiliteSettings.copyFrom(plan.hiliteSettings);
     this._transparencyThreshold = 0.0;
 
-    // ##TODO active volume...
+    let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
+    if (plan.activeVolume !== undefined)
+      if (plan.activeVolume.type === ClippingType.Planes)
+        clipVolume = plan.activeVolume as ClipPlanesVolume;
+      else if (plan.activeVolume.type === ClippingType.Mask)
+        clipVolume = plan.activeVolume as ClipMaskVolume;
+
+    this._activeClipVolume = clipVolume;
 
     const scratch = Target._scratch;
     const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
