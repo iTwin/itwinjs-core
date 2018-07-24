@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:ourpublic && npm run webpack:frontend",
     "clean": "rimraf lib package-deps.json",
-    "copy:frontendpublic": "cpx \"../core/frontend/src/public/**/*\" ./lib/backend/public",
+    "copy:frontendpublic": "cpx \"../../core/frontend/src/public/**/*\" ./lib/backend/public",
     "copy:ourpublic": "cpx \"public/**/*\" ./lib/backend/public",
     "docs": "",
     "lint": "tslint --project . 1>&2",
