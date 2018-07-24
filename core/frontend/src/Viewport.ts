@@ -371,6 +371,7 @@ export class Viewport {
   private _evController?: EventController;
   private _view!: ViewState;
   private _addFeatureOverrides?: AddFeatureOverrides;
+  private _wantTileBoundingBoxes: boolean = false;
 
   /** @hidden */
   public readonly target: RenderTarget;
@@ -407,6 +408,15 @@ export class Viewport {
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
+  /** @hidden */
+  public get wantTileBoundingBoxes(): boolean { return this._wantTileBoundingBoxes; }
+  /** @hidden */
+  public set wantTileBoundingBoxes(want: boolean) {
+    if (want !== this.wantTileBoundingBoxes) {
+      this._wantTileBoundingBoxes = want;
+      this.invalidateScene();
+    }
+  }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
@@ -1442,7 +1452,7 @@ export class Viewport {
     this.animate();
 
     // Allow ViewState instance to change any state which might affect logic below...
-    view.onRenderFrame();
+    view.onRenderFrame(this);
 
     let isRedrawNeeded = sync.isRedrawPending || this._doContinuousRendering;
     sync.invalidateRedrawPending();
@@ -1510,7 +1520,7 @@ export class Viewport {
 
     timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame(this._doContinuousRendering ? timer.elapsed.milliseconds : undefined);
+      target.drawFrame(timer.elapsed.milliseconds);
 
     return true;
   }

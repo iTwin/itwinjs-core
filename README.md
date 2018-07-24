@@ -37,10 +37,12 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Controls the version number and package dependencies for **@bentley/imodeljs-frontend**
 * `core/i18n/package.json`
   * Controls the version number and package dependencies for **@bentley/imodeljs-i18n**
-* `simpleviewtest/package.json`
+* `example-code`
+  * Example code snippets are extracted from these packages
+* `test-apps/simpleviewtest/package.json`
   * Private, not published
   * Test application for graphics visualization
-* `testbed/package.json`
+* `test-apps/testbed/package.json`
   * Private, not published
   * Test application for frontend/backend interaction
 
@@ -93,6 +95,8 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 9. In order to keep the Git history clean, amend the prior commit using the **Commit Staged (Amend)** menu item in Visual Studio Code or use the command line: `git commit --amend --no-edit`
 10. Push changes
 
+
+If using the command line, steps 5 through 9 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.
 > Note: The CI build will break if changes are pushed without running `rush change`. The fix will be to run `rush change` (as above) and push those changes as a separate commit.
 
 Here is a sample [changelog](https://github.com/Microsoft/web-build-tools/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.

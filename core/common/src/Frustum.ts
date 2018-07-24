@@ -131,8 +131,8 @@ export class Frustum {
   public initFromRange(range: LowAndHighXYZ | LowAndHighXY): void {
     const getZ = (arg: any): number => arg.z !== undefined ? arg.z : 0;
     const pts = this.points;
-    pts[0].x = pts[2].x = pts[4].x = pts[6].x = range.low.x;
-    pts[1].x = pts[3].x = pts[5].x = pts[7].x = range.high.x;
+    pts[0].x = pts[3].x = pts[4].x = pts[7].x = range.low.x;
+    pts[1].x = pts[2].x = pts[5].x = pts[6].x = range.high.x;
     pts[0].y = pts[1].y = pts[4].y = pts[5].y = range.low.y;
     pts[2].y = pts[3].y = pts[6].y = pts[7].y = range.high.y;
     pts[0].z = pts[1].z = pts[2].z = pts[3].z = getZ(range.low);

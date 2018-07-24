@@ -16,8 +16,10 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
 import { CurvePrimitive, GeometryQuery, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { ClipPlaneContainment } from "../numerics/ClipPrimitives";
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet, ClipperMethods, ClipUtilities } from "../numerics/ClipPlanes";
+import { ClipPlaneContainment, Clipper, ClipUtilities } from "../clipping/ClipUtils";
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { Sample } from "../serialization/GeometrySamples";
 
 import { GeometryCoreTestIO } from "./IModelJson.test";
@@ -270,7 +272,7 @@ describe("ClipPlaneSet", () => {
       convexSet0.addPlaneToConvexSet(clipZ1);
     }
 
-    const set = ClipPlaneSet.createConvexSets([convexSet0]);
+    const set = UnionOfConvexClipPlaneSets.createConvexSets([convexSet0]);
     const json0 = convexSet0.toJSON();
     const convexSet1 = ConvexClipPlaneSet.fromJSON(json0);
     const convexSet2 = convexSet1.clone();
@@ -278,7 +280,7 @@ describe("ClipPlaneSet", () => {
     ck.testTrue(convexSet2 !== undefined && convexSet0.isAlmostEqual(convexSet2), "ConvexClipPlaneSet clone");
 
     const json1 = set.toJSON();
-    const set1 = ClipPlaneSet.fromJSON(json1);
+    const set1 = UnionOfConvexClipPlaneSets.fromJSON(json1);
     const set2 = set1.clone();
     ck.testTrue(set1 !== undefined && set.isAlmostEqual(set1), "ClipPlaneSet json R/T");
     ck.testTrue(set2 !== undefined && set.isAlmostEqual(set2), "ClipPlaneSet clone");
@@ -406,7 +408,7 @@ describe("ClipPlaneSet", () => {
       convexSet.addPlaneToConvexSet(clipZ0);
       convexSet.addPlaneToConvexSet(clipZ1);
     }
-    const set = ClipPlaneSet.createConvexSets([convexSet]);
+    const set = UnionOfConvexClipPlaneSets.createConvexSets([convexSet]);
 
     let origin0 = Point3d.create(0, 0, 2);
     const origin1 = Point3d.create(0.5, 0.5, 0.5);
@@ -436,7 +438,7 @@ describe("ClipPlaneSet", () => {
     const ck = new Checker();
     const convexSet = ConvexClipPlaneSet.createXYBox(0, 0, 1, 1);
     const convexSet2 = ConvexClipPlaneSet.createXYBox(2, 0, 3, 1);
-    const set = ClipPlaneSet.createConvexSets([convexSet]);
+    const set = UnionOfConvexClipPlaneSets.createConvexSets([convexSet]);
 
     const intervals: Segment1d[] = [];
 
@@ -485,7 +487,7 @@ describe("ClipPlaneSet", () => {
       convexSet1.addPlaneToConvexSet(clipZ0);
       convexSet1.addPlaneToConvexSet(clipZ1);
     }
-    const set = ClipPlaneSet.createConvexSets([convexSet1]);
+    const set = UnionOfConvexClipPlaneSets.createConvexSets([convexSet1]);
 
     // Simple check of a variety of point collections in R^3 space
     // 1.) One Region
@@ -519,7 +521,7 @@ describe("ClipPlaneSet", () => {
 });
 
 function clipMovingCurve(
-  clipper: ClipperMethods,
+  clipper: Clipper,
   curve: CurvePrimitive,
   traceCurve: CurvePrimitive,
   numTrace: number,
@@ -559,7 +561,7 @@ describe("CurveClips", () => {
     const outputShiftY = 10.0;
 
     let xCount = 0;
-    let clipper: ClipperMethods;
+    let clipper: Clipper;
     let clipLine: Point3d[];
     clipLine = Sample.createRectangle(-2, -1, 2, 1, 0, true);
     clipper = ConvexClipPlaneSet.createXYPolyLineInsideLeft(clipLine);
@@ -659,7 +661,7 @@ describe("CurveClips", () => {
     ck.testFalse(convexB.isPointInside(rangeB.diagonalFractionToPoint(-0.5)));
     ck.testTrue(convexB.isPointInside(rangeB.diagonalFractionToPoint(1.5)));
 
-    const disjoint = ClipPlaneSet.createConvexSets([convexA, convexB]);
+    const disjoint = UnionOfConvexClipPlaneSets.createConvexSets([convexA, convexB]);
     ck.testTrue(disjoint.isPointInside(rangeA.diagonalFractionToPoint(0.5)));
     ck.testTrue(disjoint.isPointInside(rangeA.diagonalFractionToPoint(-0.5)));
     ck.testTrue(disjoint.isPointInside(rangeA.diagonalFractionToPoint(0.5)));

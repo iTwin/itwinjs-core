@@ -4,8 +4,10 @@
 
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../numerics/ClipPrimitives";
-import { ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "../numerics/ClipPlanes";
+import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../clipping/ClipPrimitive";
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
@@ -33,7 +35,7 @@ function isFiniteRange(range: Range3d): boolean {
  * function return true, otherwise, returns false immediately.
  */
 function applyFunctionToPlanes(clipPrimitive: ClipPrimitive, isMask: boolean, func: ((plane: ClipPlane) => boolean)): boolean {
-  let set: ClipPlaneSet | undefined;
+  let set: UnionOfConvexClipPlaneSets | undefined;
   if (isMask)
     set = clipPrimitive.fetchMaskPlanesRef();
   else
@@ -66,10 +68,7 @@ function convexSetsAreEqual(convexSet0: ConvexClipPlaneSet, convexSet1: ConvexCl
   return true;
 }
 
-/**
- * EXPENSIVE -- Returns true if two ClipPlaneSets are equal.
- */
-function clipPlaneSetsAreEqual(set0: ClipPlaneSet, set1: ClipPlaneSet): boolean {
+function clipPlaneSetsAreEqual(set0: UnionOfConvexClipPlaneSets, set1: UnionOfConvexClipPlaneSets): boolean {
   if (set0.convexSets.length !== set1.convexSets.length)
     return false;
 
@@ -87,10 +86,6 @@ function clipPlaneSetsAreEqual(set0: ClipPlaneSet, set1: ClipPlaneSet): boolean 
   return true;
 }
 
-/**
- * EXPENSIVE -- Returns true if two ClipShapes are equivalent within tolerance.
- * (function is exported in order for ClipVector tests to make use)
- */
 export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean {
   if (!clipPlaneSetsAreEqual(clip0.fetchClipPlanesRef(), clip1.fetchClipPlanesRef()))
     return false;
@@ -122,13 +117,13 @@ export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean 
   return true;
 }
 
-describe ("ClipPrimitive", () => {
+describe("ClipPrimitive", () => {
   const ck = new Checker();
   const min2D = Point3d.create(-54, 18);  // Bottom left point of the octogon formed from octogonalPoints
   const max2D = Point3d.create(-42, 42);  // Top right point of the octogon formed from octogonalPoints
   let octogonalPoints: Point3d[];         // Points array representing an octogon in quadrant II
 
-  before (() => {
+  before(() => {
     octogonalPoints = [
       min2D,
       Point3d.create(max2D.x, min2D.y),
@@ -141,7 +136,7 @@ describe ("ClipPrimitive", () => {
     ];
   });
 
-  it ("GetRange", () => {
+  it("GetRange", () => {
     const clipPrimitive = ClipShape.createEmpty();
     const clipPrimitiveRange = Range3d.createNull();
     const convexSet = ConvexClipPlaneSet.createEmpty();
@@ -195,7 +190,7 @@ describe ("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("Transformations", () => {
+  it("Transformations", () => {
     const originalPoint = Point3d.create(5.7865, 1.24123, 0.000009);
     const testPoint = originalPoint.clone();
     // Created with identity transform - should create no changes
@@ -211,7 +206,7 @@ describe ("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("Plane edge additions using PlaneSetParamsCache", () => {
+  it("Plane edge additions using PlaneSetParamsCache", () => {
     const clipCache = new PlaneSetParamsCache(-5, 5);
     const values = [-87, -30, 0, 15.45, 1067];
     const sideLength = 10;
@@ -227,7 +222,7 @@ describe ("ClipPrimitive", () => {
       convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(yPlane.inwardNormalRef.negate(), Point3d.create(values[idx] + sideLength, values[idx] - sideLength, 0)));
       idx++;
     }
-    const expectedRange = Range3d.createXYZXYZ(values[0], values[0] - sideLength, clipCache.zLow, values[values.length - 1]  + sideLength, values[values.length - 1], clipCache.zHigh);
+    const expectedRange = Range3d.createXYZXYZ(values[0], values[0] - sideLength, clipCache.zLow, values[values.length - 1] + sideLength, values[values.length - 1], clipCache.zHigh);
     const range = clipCache.clipPlaneSet.getRangeOfAlignedPlanes();
     ck.testTrue(isFiniteRange(range!), "After closing unbounded planes in AddPlaneSetParams, expect range to form");
     ck.testRange3d(range!, expectedRange, "After closing unbounded planes in AddPlaneSetParams, expected range to match with the array extremities");
@@ -245,7 +240,7 @@ describe ("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("Plane set additions using PlaneSetParamsCache", () => {
+  it("Plane set additions using PlaneSetParamsCache", () => {
     const minZ = -10;
     const maxZ = 10;
     const clipCache = new PlaneSetParamsCache(minZ, maxZ);
@@ -283,7 +278,7 @@ describe ("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("ClipShape creation (linear) and point classification", () => {
+  it("ClipShape creation (linear) and point classification", () => {
     // Create a ClipShape from a linear set of 3 points
     const clipShape = ClipShape.createShape([Point3d.create(-5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(-5, 0, 0)],
       -3, 3, undefined, false, false)!;
@@ -298,7 +293,7 @@ describe ("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("ClipShape creation (polygonal) and point proximity", () => {
+  it("ClipShape creation (polygonal) and point proximity", () => {
     const minZ = -5;
     const maxZ = 5;
     // Test point location
@@ -325,10 +320,11 @@ describe ("ClipPrimitive", () => {
     ck.testTrue(jsonValue.shape.zhigh !== undefined && jsonValue.shape.zhigh === clipPrimitive1!.zHigh, "ZHigh prop is set in toJSON");
 
     const clipPrimitive1Copy = ClipShape.fromJSON(jsonValue);
-    ck.testTrue(clipShapesAreEqual(clipPrimitive1!, clipPrimitive1Copy), "to and from JSON yields same ClipPrimitive");
+    ck.testTrue(clipPrimitive1Copy !== undefined);
+    ck.testTrue(clipShapesAreEqual(clipPrimitive1!, clipPrimitive1Copy!), "to and from JSON yields same ClipPrimitive");
 
     // Test clone method
-    const clipPrimitive2 = clipPrimitive1Copy.clone();
+    const clipPrimitive2 = clipPrimitive1Copy!.clone();
     ck.testTrue(clipShapesAreEqual(clipPrimitive2, clipPrimitive1!), "clone method produces a copy of ClipShape");
 
     ck.checkpoint();

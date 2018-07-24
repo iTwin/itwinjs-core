@@ -200,43 +200,43 @@ export class ThreeAxes {
  * Accudraw is an aide for entering coordinate data.
  */
 export class AccuDraw {
-  public currentState = CurrentState.NotEnabled;     // Compass state
-  private currentMode = CompassMode.Rectangular;      // Compass mode
-  public rotationMode = RotationMode.View;     // Compass rotation
-  public currentView?: Viewport;      // will be nullptr if view not yet defined
-  public readonly published = new AccudrawData();        // Staging area for hints
-  public readonly origin = new Point3d();    // origin point...not on compass plane when z != 0.0
-  public readonly axes = new ThreeAxes();    // X, Y and Z vectors (3d rotation matrix)
-  public readonly delta = Vector3d.unitZ();         // dialog items (x, y & z)
-  private distance = 0;         // current distance
-  private angle = 0;            // current angle
-  public locked = LockedStates.NONE_LOCKED;           // axis/distance locked bit mask
-  public indexed = LockedStates.NONE_LOCKED;          // axis/distance indexed bit mask
-  private readonly distanceRoundOff = new RoundOff();       // distance round off enabled and unit
-  private readonly angleRoundOff = new RoundOff();       // angle round off enabled and unit
-  public readonly flags = new Flags();            // current state flags
-  private readonly fieldLocked: boolean[] = [];   // locked state of fields
-  private readonly keyinStatus: KeyinStatus[] = [];   // state of input field
-  public readonly savedState = new SavedState();       // Restore point for shortcuts/tools...
-  private readonly savedCoords = new SavedCoords();      // History of previous angles/distances...
-  public readonly baseAxes = new ThreeAxes();     // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
-  public readonly lastAxes = new ThreeAxes();      // Last result from UpdateRotation, replaces cM.rMatrix...
-  private lastDistance = 0;     // previous saved distance or distance indexing tick
-  private tolerance = 0;        // computed view based indexing tolerance
-  private percentChanged = 0;   // Compass animation state
-  private threshold = 0;        // Threshold for automatic x/y field focus change.
-  public readonly planePt = new Point3d();          // same as origin unless non-zero locked z value
-  private readonly rawDelta = new Point2d();         // used by rect fix point
-  private readonly rawPoint = new Point3d();         // raw uor point passed to fix point
-  private readonly rawPointOnPlane = new Point3d();  // adjusted rawPoint by applying hard/soft construction plane
-  public readonly point = new Point3d();            // current cursor point
-  public readonly vector = Vector3d.unitZ();           // current/last good locked direction
-  private xIsNegative = false;      // Last delta.x was negative
-  private yIsNegative = false;      // Last delta.y was negative
-  private xIsExplicit = false;      // Sign of delta.x established from user input input, don't allow +/- side flip.
-  private yIsExplicit = false;      // Sign of delta.y established from user input input, don't allow +/- side flip.
-  public dontMoveFocus = false;    // Disable automatic focus change when user is entering input.
-  public newFocus = ItemField.X_Item;         // Item to move focus to (X_Item or Y_Item) for automatic focus change.
+  public currentState = CurrentState.NotEnabled; // Compass state
+  private currentMode = CompassMode.Rectangular; // Compass mode
+  public rotationMode = RotationMode.View; // Compass rotation
+  public currentView?: Viewport; // will be nullptr if view not yet defined
+  public readonly published = new AccudrawData(); // Staging area for hints
+  public readonly origin = new Point3d(); // origin point...not on compass plane when z != 0.0
+  public readonly axes = new ThreeAxes(); // X, Y and Z vectors (3d rotation matrix)
+  public readonly delta = Vector3d.unitZ(); // dialog items (x, y & z)
+  private distance = 0; // current distance
+  private angle = 0; // current angle
+  public locked = LockedStates.NONE_LOCKED; // axis/distance locked bit mask
+  public indexed = LockedStates.NONE_LOCKED; // axis/distance indexed bit mask
+  private readonly distanceRoundOff = new RoundOff(); // distance round off enabled and unit
+  private readonly angleRoundOff = new RoundOff(); // angle round off enabled and unit
+  public readonly flags = new Flags(); // current state flags
+  private readonly fieldLocked: boolean[] = []; // locked state of fields
+  private readonly keyinStatus: KeyinStatus[] = []; // state of input field
+  public readonly savedState = new SavedState(); // Restore point for shortcuts/tools...
+  private readonly savedCoords = new SavedCoords(); // History of previous angles/distances...
+  public readonly baseAxes = new ThreeAxes(); // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
+  public readonly lastAxes = new ThreeAxes(); // Last result from UpdateRotation, replaces cM.rMatrix...
+  private lastDistance = 0; // previous saved distance or distance indexing tick
+  private tolerance = 0; // computed view based indexing tolerance
+  private percentChanged = 0; // Compass animation state
+  private threshold = 0; // Threshold for automatic x/y field focus change.
+  public readonly planePt = new Point3d(); // same as origin unless non-zero locked z value
+  private readonly rawDelta = new Point2d(); // used by rect fix point
+  private readonly rawPoint = new Point3d(); // raw uor point passed to fix point
+  private readonly rawPointOnPlane = new Point3d(); // adjusted rawPoint by applying hard/soft construction plane
+  public readonly point = new Point3d(); // current cursor point
+  public readonly vector = Vector3d.unitZ(); // current/last good locked direction
+  private xIsNegative = false; // Last delta.x was negative
+  private yIsNegative = false; // Last delta.y was negative
+  private xIsExplicit = false; // Sign of delta.x established from user input input, don't allow +/- side flip.
+  private yIsExplicit = false; // Sign of delta.y established from user input input, don't allow +/- side flip.
+  public dontMoveFocus = false; // Disable automatic focus change when user is entering input.
+  public newFocus = ItemField.X_Item; // Item to move focus to (X_Item or Y_Item) for automatic focus change.
   private readonly rMatrix = new RotMatrix();
 
   // Compass Display Preferences...
@@ -740,7 +740,7 @@ export class AccuDraw {
     this.flags.redrawCompass = true;
 
     // If animate frame preference is set...
-    if (!animate || !this.animateCompassChanges || !vp)
+    if (!animate || !this.animateCompassChanges() || !vp)
       return;
 
     // AccuDrawAnimatorPtr animator = AccuDrawAnimator:: Create();
@@ -1181,7 +1181,7 @@ export class AccuDraw {
       case ItemField.X_Item:
       case ItemField.Y_Item:
         this.locked |= (ItemField.X_Item === index) ? LockedStates.X_BM : LockedStates.Y_BM;
-        /* falls through */
+      /* falls through */
 
       case ItemField.Z_Item:
         this.setFieldLock(index, true);
@@ -1556,7 +1556,7 @@ export class AccuDraw {
   }
 
   public onPrimitiveToolInstall(): boolean {
-    if (!this.isEnabled)
+    if (!this.isEnabled())
       return false;
 
     this.onEventCommon();
@@ -1571,7 +1571,7 @@ export class AccuDraw {
   }
 
   public onViewToolInstall(): boolean {
-    if (!this.isEnabled)
+    if (!this.isEnabled())
       return false;
 
     this.onEventCommon();
@@ -1587,7 +1587,7 @@ export class AccuDraw {
   }
 
   public onViewToolExit(): boolean {
-    if (!this.isEnabled)
+    if (!this.isEnabled())
       return false;
 
     this.onEventCommon();
@@ -1843,7 +1843,7 @@ export class AccuDraw {
     this.flags.redrawCompass = false;
 
     // Check that AccuDraw is enabled...
-    if (!this.isActive || !this.enableDisplay)
+    if (!this.isActive() || !this.enableDisplay)
       return;
 
     const vp = context.viewport!;
@@ -2783,7 +2783,7 @@ export class AccuDraw {
 
   public onSnap(snap: SnapDetail): boolean {
     // If accudraw is locked, adjust near snap point to be the nearest point on this element, CONSTRAINED by the accudraw lock.
-    if (!this.isActive || !this.locked)
+    if (!this.isActive() || !this.locked)
       return false;
 
     if (SnapMode.Nearest !== snap.snapMode)

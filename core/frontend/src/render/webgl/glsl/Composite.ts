@@ -8,7 +8,7 @@ import { TextureUnit, CompositeFlags } from "../RenderFlags";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { CompositeGeometry } from "../CachedGeometry";
-import { TextureHandle } from "../Texture";
+import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { addHiliteSettings } from "./FeatureSymbology";
@@ -85,7 +85,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
   frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   frag.addUniform("u_opaque", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_opaque", (uniform, params) => {
-      TextureHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).opaque, TextureUnit.Zero);
+      Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).opaque, TextureUnit.Zero);
     });
   });
 
@@ -98,7 +98,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
 
     frag.addUniform("u_hilite", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_hilite", (uniform, params) => {
-        TextureHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).hilite, TextureUnit.Three);
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).hilite, TextureUnit.Three);
       });
     });
 
@@ -111,13 +111,13 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
   if (wantTranslucent) {
     frag.addUniform("u_accumulation", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_accumulation", (uniform, params) => {
-        TextureHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).accum, TextureUnit.One);
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).accum, TextureUnit.One);
       });
     });
 
     frag.addUniform("u_revealage", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_revealage", (uniform, params) => {
-        TextureHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).reveal, TextureUnit.Two);
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).reveal, TextureUnit.Two);
       });
     });
 

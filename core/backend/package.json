@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.98.0-4",
+  "version": "0.102.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -9,7 +9,7 @@
     "node": ">=8.9.0 <9.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:assets",
+    "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib package-deps.json ../../generated-docs/backend",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/backend/json/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
@@ -17,7 +17,7 @@
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
     "cover:integration": "nyc mocha --timeout 60000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
     "lint": "tslint --project . 1>&2",
-    "pretest": "npm run copy:test-assets && cpx ./src/test/logging.config.json ./lib/test",
+    "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\" --grep #integration --invert",
     "test:integration": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
     "perftest": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999",
@@ -34,21 +34,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.98.0-4",
-    "@bentley/geometry-core": "0.98.0-4",
-    "@bentley/imodeljs-clients": "0.98.0-4",
-    "@bentley/imodeljs-common": "0.98.0-4"
+    "@bentley/bentleyjs-core": "0.102.0",
+    "@bentley/geometry-core": "0.102.0",
+    "@bentley/imodeljs-clients": "0.102.0",
+    "@bentley/imodeljs-common": "0.102.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.98.0-4",
-    "@bentley/bentleyjs-tools": "0.98.0-4",
-    "@bentley/geometry-core": "0.98.0-4",
-    "@bentley/imodeljs-clients": "0.98.0-4",
-    "@bentley/imodeljs-common": "0.98.0-4",
+    "@bentley/bentleyjs-core": "0.102.0",
+    "@bentley/bentleyjs-tools": "0.102.0",
+    "@bentley/geometry-core": "0.102.0",
+    "@bentley/imodeljs-clients": "0.102.0",
+    "@bentley/imodeljs-common": "0.102.0",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
@@ -71,7 +71,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~24.0.0",
+    "@bentley/imodeljs-native-platform-api": "~25.0.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

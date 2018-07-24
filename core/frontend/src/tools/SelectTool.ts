@@ -245,15 +245,13 @@ export class SelectionTool extends PrimitiveTool {
 
   public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return EventHandled.No;
-    this.selectByPointsStart(ev);
-    return EventHandled.No;
+      return EventHandled.Yes;
+    return this.selectByPointsStart(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
   public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    // NOTE: If manipulator installed an input collector, it would get the end drag event directly...
-    this.selectByPointsEnd(ev);
-    return EventHandled.No;
+    // NOTE: If manipulator installed an `input collector, it would get the end drag event directly...
+    return this.selectByPointsEnd(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
   public async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {

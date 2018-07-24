@@ -194,7 +194,9 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
 
   const vert = builder.vert;
   addFeatureIndex(vert, alwaysUniform);
-  if (FeatureSymbologyOptions.None === (opts & FeatureSymbologyOptions.HasOverrides))
+
+  const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
+  if (!haveOverrides)
     return true;
 
   const wantWeight = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Weight);

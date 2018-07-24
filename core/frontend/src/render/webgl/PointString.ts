@@ -44,6 +44,8 @@ export class PointStringGeometry extends LUTGeometry {
     this.pointString = info;
   }
 
+  protected _wantWoWReversal(_target: Target): boolean { return true; }
+
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
   public get featuresInfo(): FeaturesInfo | undefined { return this.pointString.features; }
@@ -63,6 +65,7 @@ export class PointStringGeometry extends LUTGeometry {
   public static create(args: PolylineArgs): PointStringGeometry | undefined {
     if (0 === args.polylines.length)
       return undefined;
+
     let vertIndices = args.polylines[0].vertIndices;
     if (1 < args.polylines.length) {
       // ###TODO: This shouldn't happen, and similar assertion in C++ is not triggered...
@@ -74,6 +77,7 @@ export class PointStringGeometry extends LUTGeometry {
         }
       }
     }
+
     const vertexIndices = VertexLUT.convertIndicesToTriplets(vertIndices);
     const indices = BufferHandle.createArrayBuffer(vertexIndices);
     if (undefined !== indices) {

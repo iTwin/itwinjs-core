@@ -156,17 +156,17 @@
       "type": "node",
       "request": "launch",
       "name": "_Testbed (backend)",
-      "cwd": "${workspaceFolder}/testbed/",
-      "runtimeExecutable": "${workspaceFolder}\\testbed\\node_modules\\.bin\\electron",
+      "cwd": "${workspaceFolder}/test-apps/testbed/",
+      "runtimeExecutable": "${workspaceFolder}\\test-apps\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
-        "${workspaceFolder}/testbed/floss/electron/index.js",
+        "${workspaceFolder}/test-apps/testbed/floss/electron/index.js",
         "{\"debug\":true, \"noDevTools\":true, \"path\":\"bootstrap.js\", \"grep\":\"\", \"fgrep\":\"\"}",
         "--remote-debugging-port=9223"
       ],
       "protocol": "inspector",
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/testbed/lib/{backend,common}/**/*.js",
+        "${workspaceRoot}/test-apps/testbed/lib/{backend,common}/**/*.js",
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ]
     },
@@ -182,10 +182,10 @@
       "type": "node",
       "request": "launch",
       "name": "SimpleViewTest Electron (backend)",
-      "cwd": "${workspaceFolder}/simpleviewtest/",
-      "runtimeExecutable": "${workspaceFolder}\\simpleviewtest\\node_modules\\.bin\\electron",
+      "cwd": "${workspaceFolder}/test-apps/simpleviewtest/",
+      "runtimeExecutable": "${workspaceFolder}\\test-apps\\simpleviewtest\\node_modules\\.bin\\electron",
       "runtimeArgs": [
-        "${workspaceFolder}/simpleviewtest/lib/backend/ElectronMain.js",
+        "${workspaceFolder}/test-apps/simpleviewtest/lib/backend/ElectronMain.js",
         "--remote-debugging-port=9223"
       ],
       "protocol": "inspector",
@@ -199,8 +199,8 @@
       "type": "node",
       "request": "launch",
       "name": "SimpleViewTest Browser (backend)",
-      "cwd": "${workspaceRoot}/simpleviewtest",
-      "program": "${workspaceRoot}/simpleviewtest/lib/backend/public/WebMain.js",
+      "cwd": "${workspaceRoot}/test-apps/simpleviewtest",
+      "program": "${workspaceRoot}/test-apps/simpleviewtest/lib/backend/public/WebMain.js",
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [

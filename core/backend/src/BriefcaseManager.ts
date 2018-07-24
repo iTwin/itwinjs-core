@@ -8,7 +8,7 @@ import {
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelClient, IModelRepository, IModelAccessContext, IModelBankAccessContext, IModelBankClient,
 } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
@@ -452,9 +452,11 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
+    const perfLogger = new PerfLogger("BriefcaseManager.initCache");
     for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {
       await BriefcaseManager.initCacheForIModel(accessToken, iModelId);
     }
+    perfLogger.dispose();
 
     BriefcaseManager.isCacheInitialized = true;
   }
@@ -490,8 +492,8 @@ export class BriefcaseManager {
 
     assert(!!BriefcaseManager.imodelClient);
 
+    let perfLogger = new PerfLogger("IModelDb.open, evaluating change set");
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.imodelClient);
-
     let changeSetIndex: number;
     if (changeSetId === "") {
       changeSetIndex = 0; // First version
@@ -499,14 +501,18 @@ export class BriefcaseManager {
       const changeSet: ChangeSet = await BriefcaseManager.getChangeSetFromId(accessToken, iModelId, changeSetId);
       changeSetIndex = changeSet ? +changeSet.index! : 0;
     }
+    perfLogger.dispose();
 
+    perfLogger = new PerfLogger("IModelDb.open, find cached briefcase");
     let briefcase = BriefcaseManager.findCachedBriefcaseToOpen(accessToken, iModelId, changeSetIndex, openParams);
     if (briefcase && briefcase.isOpen) {
       Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} without changes`);
       assert(briefcase.changeSetIndex === changeSetIndex);
       return briefcase;
     }
+    perfLogger.dispose();
 
+    perfLogger = new PerfLogger("IModelDb.open, preparing briefcase");
     let isNewBriefcase: boolean = false;
     const tempOpenParams = new OpenParams(OpenMode.ReadWrite, openParams.accessMode, openParams.syncMode); // Merge needs the Db to be opened ReadWrite
     if (briefcase) {
@@ -534,7 +540,7 @@ export class BriefcaseManager {
       try {
         await BriefcaseManager.applyChangeSets(accessToken, briefcase, IModelVersion.asOfChangeSet(changeSetId), changeSetApplyOption);
       } catch (error) {
-        Logger.logWarning(loggingCategory, `Error merging changes to briefcase  ${briefcase.iModelId}:${briefcase.briefcaseId}. Deleting it so that it can be re-fetched again.`);
+        Logger.logWarning(loggingCategory, `Error applying changes to briefcase  ${briefcase.iModelId}:${briefcase.briefcaseId}. Deleting it so that it can be re-fetched again.`);
         await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
         return Promise.reject(error);
       }
@@ -543,6 +549,8 @@ export class BriefcaseManager {
     // Reopen the briefcase if the briefcase hasn't been opened with the required OpenMode
     if (briefcase.openParams!.openMode !== openParams.openMode)
       BriefcaseManager.reopenBriefcase(briefcase, openParams);
+
+    perfLogger.dispose();
 
     // Add briefcase to cache if necessary
     if (isNewBriefcase) {
@@ -752,10 +760,13 @@ export class BriefcaseManager {
   private static async downloadSeedFile(accessToken: AccessToken, imodelId: string, seedPathname: string): Promise<void> {
     if (IModelJsFs.existsSync(seedPathname))
       return;
-    return BriefcaseManager.imodelClient.IModels().download(accessToken, imodelId, seedPathname)
+
+    const perfLogger = new PerfLogger("BriefcaseManager.downloadSeedFile");
+    await BriefcaseManager.imodelClient.IModels().download(accessToken, imodelId, seedPathname)
       .catch(() => {
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
       });
+    perfLogger.dispose();
   }
 
   /** Deletes a briefcase from the local disk (if it exists) */
@@ -836,10 +847,12 @@ export class BriefcaseManager {
 
     // download
     if (changeSetsToDownload.length > 0) {
+      const perfLogger = new PerfLogger("BriefcaseManager.downloadChangeSets");
       await BriefcaseManager.imodelClient.ChangeSets().download(changeSetsToDownload, changeSetsPath)
         .catch(() => {
           return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
         });
+      perfLogger.dispose();
     }
   }
 
@@ -1237,7 +1250,7 @@ export class BriefcaseManager {
         return (value as number);
       }
       // If the key is a number, it is an array member.
-      if (!Number.isNaN(Number.parseInt(key))) {
+      if (!Number.isNaN(Number.parseInt(key, 10))) {
         const code = new Code();
         Object.assign(code, value);
         code.briefcaseId = briefcase.briefcaseId;

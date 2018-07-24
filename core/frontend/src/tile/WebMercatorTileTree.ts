@@ -120,7 +120,7 @@ class WebMercatorTileLoader extends TileLoader {
   constructor(private imageryProvider: ImageryProvider, private ecefToDb: Transform, private model: GeometricModelState) {
     super();
   }
-  public tileRequresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
+  public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: WebMercatorTileProps[] = [];
     for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.ecefToDb)); }
@@ -140,13 +140,16 @@ class WebMercatorTileLoader extends TileLoader {
         const quadId = new QuadId(missingTile.id);
         const corners = quadId.getEcefCorners();
         const imageSource = await this.imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
-        const textureLoad = this.loadTextureImage(imageSource as ImageSource, this.model, IModelApp.renderSystem);
-        this.ecefToDb.multiplyPoint3dArrayInPlace(corners as Point3d[]);
-        textureLoad.catch((_err) => missingTile.setNotFound());
-        textureLoad.then((result) => {
-          // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
-          missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
-        });
+        if (undefined === imageSource) {
+          missingTile.setNotFound();
+        } else {
+          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this.model, IModelApp.renderSystem);
+          this.ecefToDb.multiplyPoint3dArrayInPlace(corners as Point3d[]);
+          textureLoad.catch((_err) => missingTile.setNotFound());
+          textureLoad.then((result) => {
+            missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
+          });
+        }
       }
     }));
   }
