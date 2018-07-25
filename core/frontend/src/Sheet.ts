@@ -4,100 +4,102 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform } from "@bentley/geometry-core";
-import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps, ViewFlag, RenderTexture } from "@bentley/imodeljs-common";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Polyface, Range3d } from "@bentley/geometry-core";
+import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps, RenderTexture } from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
 import { TileTree, Tile, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
-import { RenderTarget, GraphicList } from "./render/System";
+import { RenderTarget, GraphicList, RenderGraphic } from "./render/System";
 import { OffScreenViewport, CoordSystem } from "./Viewport";
 
-/** Contains functionality specific to sheet views. */
-export namespace Sheet {
-  /** Describes the geometry and styling of a sheet border decoration. */
-  export class Border {
-    private rect: Point2d[];
-    private shadow: Point2d[];
-    private gradient: Gradient.Symb;
+/** Describes the geometry and styling of a sheet border decoration. */
+export class SheetBorder {
+  private rect: Point2d[];
+  private shadow: Point2d[];
+  private gradient: Gradient.Symb;
 
-    private constructor(rect: Point2d[], shadow: Point2d[], gradient: Gradient.Symb) {
-      this.rect = rect;
-      this.shadow = shadow;
-      this.gradient = gradient;
-    }
-
-    /** Create a new sheet border. If a context is supplied, points are transformed to view coordinates. */
-    public static create(width: number, height: number, context?: ViewContext) {
-      // Rect
-      const rect: Point3d[] = [
-        Point3d.create(0, height),
-        Point3d.create(0, 0),
-        Point3d.create(width, 0),
-        Point3d.create(width, height),
-        Point3d.create(0, height)];
-      if (context) {
-        context.viewport.worldToViewArray(rect);
-      }
-
-      // Shadow
-      const shadowWidth = .01 * Math.sqrt(width * width + height * height);
-      const shadow: Point3d[] = [
-        Point3d.create(shadowWidth, 0),
-        Point3d.create(shadowWidth, -shadowWidth),
-        Point3d.create(width + shadowWidth, -shadowWidth),
-        Point3d.create(width + shadowWidth, height - shadowWidth),
-        Point3d.create(width, height - shadowWidth),
-        Point3d.create(width, 0),
-        Point3d.create(shadowWidth, 0),
-      ];
-      if (context) {
-        context.viewport.worldToViewArray(shadow);
-      }
-
-      // Gradient
-      const gradient = new Gradient.Symb();
-      gradient.mode = Gradient.Mode.Linear;
-      gradient.angle = Angle.createDegrees(-45);
-      gradient.keys = [{ value: 0, color: ColorDef.from(25, 25, 25) }, { value: 0.5, color: ColorDef.from(150, 150, 150) }];
-
-      // Copy over points
-      // ### TODO: Allow for conversion of 2d points array to view coordinates from world coordinates to avoid these copies?..
-      const rect2d: Point2d[] = [];
-      for (const point of rect)
-        rect2d.push(Point2d.createFrom(point));
-      const shadow2d: Point2d[] = [];
-      for (const point of shadow)
-        shadow2d.push(Point2d.createFrom(point));
-
-      return new Border(rect2d, shadow2d, gradient);
-    }
-
-    public getRange(): Range2d {
-      const range = Range2d.createArray(this.rect);
-      const shadowRange = Range2d.createArray(this.shadow);
-      range.extendRange(shadowRange);
-      return range;
-    }
-
-    /** Add this border to the given GraphicBuilder. */
-    public addToBuilder(builder: GraphicBuilder) {
-      const lineColor = ColorDef.black;
-      const fillColor = ColorDef.black;
-
-      const params = new GraphicParams();
-      params.setFillColor(fillColor);
-      params.gradient = this.gradient;
-
-      builder.activateGraphicParams(params);
-      builder.addShape2d(this.shadow, RenderTarget.frustumDepth2d);
-
-      builder.setSymbology(lineColor, fillColor, 2);
-      builder.addLineString2d(this.rect, 0);
-    }
+  private constructor(rect: Point2d[], shadow: Point2d[], gradient: Gradient.Symb) {
+    this.rect = rect;
+    this.shadow = shadow;
+    this.gradient = gradient;
   }
+
+  /** Create a new sheet border. If a context is supplied, points are transformed to view coordinates. */
+  public static create(width: number, height: number, context?: ViewContext) {
+    // Rect
+    const rect: Point3d[] = [
+      Point3d.create(0, height),
+      Point3d.create(0, 0),
+      Point3d.create(width, 0),
+      Point3d.create(width, height),
+      Point3d.create(0, height)];
+    if (context) {
+      context.viewport.worldToViewArray(rect);
+    }
+
+    // Shadow
+    const shadowWidth = .01 * Math.sqrt(width * width + height * height);
+    const shadow: Point3d[] = [
+      Point3d.create(shadowWidth, 0),
+      Point3d.create(shadowWidth, -shadowWidth),
+      Point3d.create(width + shadowWidth, -shadowWidth),
+      Point3d.create(width + shadowWidth, height - shadowWidth),
+      Point3d.create(width, height - shadowWidth),
+      Point3d.create(width, 0),
+      Point3d.create(shadowWidth, 0),
+    ];
+    if (context) {
+      context.viewport.worldToViewArray(shadow);
+    }
+
+    // Gradient
+    const gradient = new Gradient.Symb();
+    gradient.mode = Gradient.Mode.Linear;
+    gradient.angle = Angle.createDegrees(-45);
+    gradient.keys = [{ value: 0, color: ColorDef.from(25, 25, 25) }, { value: 0.5, color: ColorDef.from(150, 150, 150) }];
+
+    // Copy over points
+    // ### TODO: Allow for conversion of 2d points array to view coordinates from world coordinates to avoid these copies?..
+    const rect2d: Point2d[] = [];
+    for (const point of rect)
+      rect2d.push(Point2d.createFrom(point));
+    const shadow2d: Point2d[] = [];
+    for (const point of shadow)
+      shadow2d.push(Point2d.createFrom(point));
+
+    return new SheetBorder(rect2d, shadow2d, gradient);
+  }
+
+  public getRange(): Range2d {
+    const range = Range2d.createArray(this.rect);
+    const shadowRange = Range2d.createArray(this.shadow);
+    range.extendRange(shadowRange);
+    return range;
+  }
+
+  /** Add this border to the given GraphicBuilder. */
+  public addToBuilder(builder: GraphicBuilder) {
+    const lineColor = ColorDef.black;
+    const fillColor = ColorDef.black;
+
+    const params = new GraphicParams();
+    params.setFillColor(fillColor);
+    params.gradient = this.gradient;
+
+    builder.activateGraphicParams(params);
+    builder.addShape2d(this.shadow, RenderTarget.frustumDepth2d);
+
+    builder.setSymbology(lineColor, fillColor, 2);
+    builder.addLineString2d(this.rect, 0);
+  }
+}
+}
+
+/** Contains functionality specific to view attachments. */
+export namespace Attachments {
 
   class AttachmentViewport extends OffScreenViewport {
     private _texture?: RenderTexture;
@@ -114,6 +116,17 @@ export namespace Sheet {
       super(view);
     }
   }
+
+  /** Describes the location of a tile within the range of a quad subdivided in four parts. */
+  const enum Tile3dPlacement {
+    UpperLeft,
+    UpperRight,
+    LowerLeft,
+    LowerRight,
+    Root,   // root placement is for root tile of a tree: a single placement representing entire image (not subdivided)
+  }
+
+  const QUERY_SHEET_TILE_PIXELS: number = 512;
 
   /** @hidden - Internal null tile loader used to satisfy parameter requirements when instantiating subclasses of Tile. */
   class NullTileLoader extends TileLoader {
@@ -140,12 +153,10 @@ export namespace Sheet {
       super(new Tile.Params(
         root,
         "",
-        new ElementAlignedBox3d(),
+        new ElementAlignedBox3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
         512,  // does not matter... have no children
         [],
       ), new NullTileLoader());
-      this.range.low.set(0, 0, -RenderTarget.frustumDepth2d);
-      this.range.high.set(range.high.x, range.high.y, RenderTarget.frustumDepth2d);
     }
 
     // override
@@ -166,6 +177,65 @@ export namespace Sheet {
 
       myRoot.view.createSceneFromDrawArgs(drawArgs);
     }
+  }
+
+  /** An extension of Tile specific to rendering 3d attachments. */
+  export class Tile3d extends Tile {
+    public readonly maxPixelSize: number;
+    private _tilePolys: Polyface[] = [];
+    private _graphics: RenderGraphic[] = [];
+    private _placement: Tile3dPlacement;
+
+    public constructor(root: Tree3d, placement: Tile3dPlacement) {
+      super(new Tile.Params(
+        root,
+        "",
+        new ElementAlignedBox3d(),
+        512,
+        [],
+      ), new NullTileLoader());
+
+      this._placement = placement;
+      const tree = this.getTree() as Tree3d;
+
+      const dim = QUERY_SHEET_TILE_PIXELS;
+      this.maxPixelSize = .5 * Math.sqrt(2 * dim * dim);
+
+      let fullRange: Range3d;
+      if (this.parent !== undefined)
+        fullRange = this.parent.range.clone();
+      else
+        fullRange = tree.getRootRange();
+
+      const mid = fullRange.low.interpolate(0.5, fullRange.high);
+      switch (this._placement) {
+        case Tile3dPlacement.UpperLeft:
+          this.range.extend(mid);
+          this.range.extend(Point3d.create(fullRange.low.x, fullRange.high.y, 0));
+          break;
+        case Tile3dPlacement.UpperRight:
+          this.range.extend(mid);
+          this.range.extend(fullRange.high);
+          break;
+        case Tile3dPlacement.LowerLeft:
+          this.range.extend(fullRange.low);
+          this.range.extend(mid);
+          break;
+        case Tile3dPlacement.LowerRight:
+          this.range.extend(Point3d.create(fullRange.high.x, fullRange.low.y, 0));
+          this.range.extend(mid);
+          break;
+        case Tile3dPlacement.Root:
+        default:
+          this.range.extendRange(fullRange);
+          break;
+      }
+      this.range.low.z = 0;
+      this.range.high.z = 1;
+    }
+
+    // override
+    public get hasGraphics(): boolean { return this.isReady; }
   }
 
   /** An extension of TileTree specific to rendering attachments. */
@@ -293,7 +363,7 @@ export namespace Sheet {
         scale = Point2d.create(1, aspect);
 
       // now expand the frustum in one direction so that the view is square (so we can use square tiles)
-      const dim = this.querySheetTilePixels();
+      const dim = QUERY_SHEET_TILE_PIXELS;
       this._viewport.target.viewRect.init(0, 0, dim, dim);
       this._viewport.setupFromView();
 
@@ -329,7 +399,7 @@ export namespace Sheet {
       if (fromParent !== undefined)
         this.graphicsClip = attachment.getOrCreateClip(fromParent);
 
-      this._rootTile = new Tile3d(this, attachment.placement.bbox);
+      this._rootTile = new Tile3d(this, Tile3dPlacement.Root);
       this._rootTile.createPolys(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)
     }
 
@@ -337,6 +407,24 @@ export namespace Sheet {
       const view = attachment.view as ViewState3d;
       const viewport = new AttachmentViewport(view);
       return new Tree3d(sheetView, attachment, sceneContext, viewport, view);
+    }
+
+    /** Get the range for the root tile of this tile tree. */
+    public getRootRange(result?: Range3d): Range3d {
+      const tileSize = 1;
+      const east = 0;
+      const west = east + tileSize;
+      const north = 0;
+      const south = north + tileSize;
+
+      const corners: Point3d[] = [
+        Point3d.create(east, north, this.biasDistance),
+        Point3d.create(west, north, this.biasDistance),
+        Point3d.create(east, south, this.biasDistance),
+        Point3d.create(west, south, this.biasDistance),
+      ];
+
+      return Range3d.createArray(corners, result);
     }
   }
 
@@ -508,7 +596,7 @@ export namespace Sheet {
   }
 
   /** A list of view attachments for a sheet. */
-  export class Attachments {
+  export class AttachmentList {
     public readonly list: Attachment[] = [];
     private _allLoaded: boolean = true;
 

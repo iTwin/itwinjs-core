@@ -28,7 +28,7 @@ import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/
 import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";
-import { Sheet } from "./Sheet";
+import { Attachments, SheetBorder } from "./Sheet";
 import { TileTree, Tile } from "./tile/TileTree";
 
 export const enum GridOrientationType {
@@ -1788,7 +1788,7 @@ export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
   public readonly sheetSize: Point2d;
   private _attachmentIds: Id64Array;
-  private _attachments = new Sheet.Attachments();
+  private _attachments = new Attachments.AttachmentList();
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
@@ -1833,7 +1833,7 @@ export class SheetViewState extends ViewState2d {
       if (attachmentViews[i].is3d())
         continue; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
       else
-        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
+        this._attachments.add(new Attachments.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
     }
   }
 
@@ -1874,7 +1874,7 @@ export class SheetViewState extends ViewState2d {
 
   /** Create a sheet border decoration graphic. */
   private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = Sheet.Border.create(width, height, viewContext);
+    const border = SheetBorder.create(width, height, viewContext);
     const builder: GraphicBuilder = viewContext.createViewBackground();
     border.addToBuilder(builder);
     return builder.finish();
