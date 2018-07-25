@@ -430,8 +430,8 @@ export class Viewport {
    * @param canvas The HTMLCanvasElement for the new Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
-  constructor(public canvas: HTMLCanvasElement, viewState: ViewState) {
-    this.target = IModelApp.renderSystem.createTarget(canvas);
+  constructor(public canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
+    this.target = target ? target : IModelApp.renderSystem.createTarget(canvas);
     this.changeView(viewState);
     this.setCursor();
     this.saveViewUndo();
@@ -1606,5 +1606,11 @@ export class Viewport {
     const result = undefined !== out ? out : new Point3d();
     result.setFrom(picker.getHit(0)!.getPoint());
     return result;
+  }
+}
+
+export class OffScreenViewport extends Viewport {
+  public constructor(viewState: ViewState) {
+    super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect()));
   }
 }

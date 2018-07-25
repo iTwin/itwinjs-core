@@ -5,14 +5,15 @@
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform } from "@bentley/geometry-core";
-import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps, ViewFlag } from "@bentley/imodeljs-common";
+import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps, ViewFlag, RenderTexture } from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
+import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
 import { TileTree, Tile, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { GeometricModel2dState } from "./ModelState";
-import { RenderTarget } from "./render/System";
+import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
+import { RenderTarget, GraphicList } from "./render/System";
+import { OffScreenViewport, CoordSystem } from "./Viewport";
 
 /** Contains functionality specific to sheet views. */
 export namespace Sheet {
@@ -98,13 +99,39 @@ export namespace Sheet {
     }
   }
 
-  export class Tile2dLoader extends TileLoader {
-    public async getTileProps(_ids: string[]): Promise<TileProps[]> { return Promise.resolve([]); }
-    public async loadTileContents(_missingtiles: MissingNodes): Promise<void> { return Promise.resolve(); }
-    public get maxDepth(): number { return 1; }
-    public tileRequiresLoading(_params: Tile.Params): boolean { return false; }
-    public loadGraphics(_tile: Tile, _geometry: any): void { assert(false); }
-    public get viewFlagOverrides() { return new ViewFlag.Overrides(); } // ###TODO use view flags from attached view...
+  class AttachmentViewport extends OffScreenViewport {
+    private _texture?: RenderTexture;
+    private _textureSize: number = 0;
+    private _sceneDepth: number = 0xffffffff;
+    private _scene?: GraphicList;
+    private _rendering: boolean = false;
+    public toParent: Transform = Transform.createIdentity();  // attachment NPC to sheet world
+    private _biasDistance = 0;  // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
+    private terrain?: GraphicList;
+    private clips?: ClipVector;
+
+    public constructor(view: ViewState) {
+      super(view);
+    }
+  }
+
+  /** @hidden - Internal null tile loader used to satisfy parameter requirements when instantiating subclasses of Tile. */
+  class NullTileLoader extends TileLoader {
+    public async getTileProps(_ids: string[]): Promise<TileProps[]> {
+      return Promise.resolve([]);
+    }
+    public async loadTileContents(_missingtiles: MissingNodes): Promise<void> {
+      return Promise.resolve();
+    }
+    public getMaxDepth(): number {
+      return 1;
+    }
+    public tileRequiresLoading(_params: Tile.Params): boolean {
+      return false;
+    }
+    public loadGraphics(_tile: Tile, _geometry: any): void {
+      assert(false);
+    }
   }
 
   /** An extension of Tile specific to rendering 2d attachments. */
@@ -116,7 +143,7 @@ export namespace Sheet {
         new ElementAlignedBox3d(),
         512,  // does not matter... have no children
         [],
-      ), new Tile2dLoader());
+      ), new NullTileLoader());
       this.range.low.set(0, 0, -RenderTarget.frustumDepth2d);
       this.range.high.set(range.high.x, range.high.y, RenderTarget.frustumDepth2d);
     }
@@ -143,9 +170,9 @@ export namespace Sheet {
 
   /** An extension of TileTree specific to rendering attachments. */
   export abstract class Tree extends TileTree {
-    public readonly biasDistance: number = 0;
+    public graphicsClip: ClipVector = ClipVector.createEmpty();
 
-    public constructor(model: GeometricModel2dState) {
+    public constructor(model: GeometricModelState) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
         new Id64(),
@@ -159,7 +186,7 @@ export namespace Sheet {
           childIds: [],
         },
         model,
-        new Tile2dLoader(),
+        new NullTileLoader(),
         Transform.createIdentity(),
         undefined,
         undefined,    // ClipVector build in child class constructors
@@ -172,7 +199,6 @@ export namespace Sheet {
     public readonly view: ViewState2d;
     public readonly viewRoot: TileTree;
     public readonly drawingToAttachment: Transform;
-    public readonly graphicsClip: ClipVector;
     public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
     private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
@@ -246,7 +272,73 @@ export namespace Sheet {
   }
 
   /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
-  export class Tree3d /* extends Tree */ { }
+  export class Tree3d extends Tree {
+    public readonly biasDistance: number;
+    private _viewport: AttachmentViewport;
+    private _sheetView: SheetViewState;
+
+    private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
+      super(new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel));   // Pass along a null Model3dState
+
+      this._viewport = viewport;
+      this._sheetView = sheetView;
+
+      let scale: Point2d;
+
+      // We use square tiles.. if the view's aspect ratio isn't square, expand the short side in tile NPC space. We'll clip out the extra area below.
+      const aspect = view.getAspectRatio();
+      if (aspect < 1)
+        scale = Point2d.create(1 / aspect, 1);
+      else
+        scale = Point2d.create(1, aspect);
+
+      // now expand the frustum in one direction so that the view is square (so we can use square tiles)
+      const dim = this.querySheetTilePixels();
+      this._viewport.target.viewRect.init(0, 0, dim, dim);
+      this._viewport.setupFromView();
+
+      const frust = this._viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), RotMatrix.createScale(scale.x, scale.y, 1)));
+      this._viewport.npcToWorldArray(frust.points);
+      this._viewport.setupViewFromFrustum(frust);
+
+      const style = view.displayStyle;
+
+      // Override the background color. This is to match v8, but there should probably be an option in the "Details" about whether to do this or not.
+      const bgColor = sheetView.displayStyle.backgroundColor.clone();
+      // Set fully-transparent so that we discard background pixels (probably no point to the above line any more...)
+      bgColor.setAlpha(0x00);
+      style.backgroundColor.setFrom(bgColor);
+
+      // turn off skybox and groundplane
+      if (view.isSpatialView()) {
+        const spatial = view as SpatialViewState;
+        const env = spatial.getDisplayStyle3d().getEnvironment();
+        env.ground.display = false;
+        env.sky.display = false;
+        spatial.getDisplayStyle3d().setEnvironment(env);
+      }
+
+      const range = attachment.placement.calculateRange();
+      const biasDistance = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
+      this.biasDistance = biasDistance;
+
+      range.getNpcToWorldRangeTransform(this._viewport.toParent);
+      this._viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1);
+
+      const fromParent = this._viewport.toParent.inverse();
+      if (fromParent !== undefined)
+        this.graphicsClip = attachment.getOrCreateClip(fromParent);
+
+      this._rootTile = new Tile3d(this, attachment.placement.bbox);
+      this._rootTile.createPolys(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)
+    }
+
+    public static create(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext): Tree3d {
+      const view = attachment.view as ViewState3d;
+      const viewport = new AttachmentViewport(view);
+      return new Tree3d(sheetView, attachment, sceneContext, viewport, view);
+    }
+  }
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies its view and its position on the sheet. */
   export abstract class Attachment {
@@ -293,6 +385,10 @@ export namespace Sheet {
       this.placement = placement!;
     }
 
+    /** Returns true if this attachment is a 2d view attachment. */
+    public abstract get is2d(): boolean;
+    /** Returns true if this attachment is a 3d view attachment. */
+    public abstract get is3d(): boolean;
     /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
     public get tree(): Tree | undefined { return this._tree; }
     /** @hidden - Sets the reference to the tile tree corresponding to this attachment view's model. */
@@ -317,8 +413,8 @@ export namespace Sheet {
     /** Returns the load status of this attachment view's tile tree. */
     public abstract getLoadStatus(_depth?: number): TileTree.LoadStatus;
 
-    /** Load the tile tree member for this attachment. Returns true if successful. */
-    public abstract load(): void;
+    /** Load the tile tree for this attachment, updating the attachment's load status. */
+    public abstract load(sheetView: SheetViewState, sceneContext: SceneContext): void;
 
     /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clip.clear(); }
@@ -378,7 +474,10 @@ export namespace Sheet {
 
     public getLoadStatus(): TileTree.LoadStatus { return this._loadStatus; }
 
-    public load() {
+    public get is2d(): boolean { return true; }
+    public get is3d(): boolean { return false; }
+
+    public load(_sheetView: SheetViewState, _sceneContext: SceneContext) {
       if (this._loadStatus === TileTree.LoadStatus.Loaded)
         return;
       this._loadStatus = Tree2d.create(this);
@@ -387,36 +486,24 @@ export namespace Sheet {
 
   /** A 3d sheet view attachment. */
   export class Attachment3d extends Attachment {
-    // private sheetView: SheetViewState;
     private states: TileTree.LoadStatus[];  // per level of the tree
 
-    public constructor(props: ViewAttachmentProps/*, sheetView: SheetViewState*/, view: ViewState3d) {
+    public constructor(props: ViewAttachmentProps, view: ViewState3d) {
       super(props, view);
-      // this.sheetView = sheetView;
       this.states = [];
     }
-
-    /** Returns true if every level of the tree has a load status of 'Loaded'. */
-    /*
-    private get allDepthsLoaded(): boolean {
-      for (const state of this.states)
-        if (state !== TileTree.LoadStatus.Loaded)
-          return false;
-      return true;
-    }
-    */
 
     /** Returns the load status of the tile tree up to the depth level provided. */
     public getLoadStatus(depth: number): TileTree.LoadStatus {
       return depth < this.states.length ? this.states[depth] : TileTree.LoadStatus.NotLoaded;
     }
 
-    public load() {
-      /*
-      if (this.allDepthsLoaded)
-        return;
-      Tree3d.create(this.sheetView, this);
-      */
+    public get is2d(): boolean { return false; }
+    public get is3d(): boolean { return false; }
+
+    public load(sheetView: SheetViewState, sceneContext: SceneContext) {
+      if (this._tree === undefined)
+        this._tree = Tree3d.create(sheetView, this, sceneContext);
     }
   }
 
@@ -471,14 +558,14 @@ export namespace Sheet {
     }
 
     /** Load the tile tree for the attachment at the given index. Returns the load status of that attachment. */
-    public load(idx: number): TileTree.LoadStatus {
+    public load(idx: number, sheetView: SheetViewState, sceneContext: SceneContext): TileTree.LoadStatus {
       assert(idx < this.length);
 
       const attachment = this.list[idx];
       if (attachment.tree !== undefined)
         return TileTree.LoadStatus.Loaded;
 
-      attachment.load();
+      attachment.load(sheetView, sceneContext);
       if (attachment.getLoadStatus() === TileTree.LoadStatus.NotFound || attachment.getLoadStatus() === TileTree.LoadStatus.NotLoaded)
         this.list.splice(idx, 1);
 
