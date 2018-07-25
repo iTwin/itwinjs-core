@@ -861,7 +861,7 @@ describe("iModel", () => {
     assert.equal(g1.memberPriority, 1, "g1.memberPriority");
     assert.deepEqual(g2.id, r2.id);
     assert.equal(g2.classFullName, ElementGroupsMembers.classFullName);
-    assert.equal(g1.memberPriority, undefined, "g1.memberPriority");
+    assert.equal(g2.memberPriority, undefined, "g2.memberPriority");
 
     // Look up by source and target
     const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
