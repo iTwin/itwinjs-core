@@ -488,11 +488,11 @@ export abstract class InteractiveTool extends Tool {
   public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the cursor is moving */
-  public onModelMotion(_ev: BeButtonEvent): void { }
+  public async onModelMotion(_ev: BeButtonEvent): Promise<void> { }
   /** Invoked when the cursor is not moving */
-  public onModelNoMotion(_ev: BeButtonEvent): void { }
+  public async onModelNoMotion(_ev: BeButtonEvent): Promise<void> { }
   /** Invoked when the cursor was previously moving, and has stopped moving. */
-  public onModelMotionStopped(_ev: BeButtonEvent): void { }
+  public async onModelMotionStopped(_ev: BeButtonEvent): Promise<void> { }
 
   /** Invoked when the cursor begins moving while a button is depressed.
    * @return false by default. Sub-classes may ascribe special meaning to this status.
@@ -513,7 +513,7 @@ export abstract class InteractiveTool extends Tool {
    * @param _key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
    * @return true to refresh view decorations or update dynamics.
    */
-  public onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): boolean { return false; }
+  public async onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): Promise<EventHandled> { return EventHandled.No; }
 
   /** Called when keys are pressed or released.
    * @param wentDown up or down key event
@@ -523,7 +523,7 @@ export abstract class InteractiveTool extends Tool {
    * @return true to prevent further processing of this event
    * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
    */
-  public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
+  public async onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): Promise<EventHandled> { return EventHandled.No; }
 
   public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
   public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
@@ -538,21 +538,17 @@ export abstract class InteractiveTool extends Tool {
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
 
-  /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
-  /** Invoked when the dimensions of the tool's viewport change */
-  public onViewportResized(): void { }
-
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
    * @param hit The HitDetail whose info is needed.
    * @param _delimiter Use this string to break lines of the description.
-   * @return the string to describe the hit.
+   * @return A Promise for the string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    * The default implementation shows hit description
    */
   public async getToolTip(_hit: HitDetail): Promise<string> { return _hit.getToolTip(); }
 
-  /**   * Fill the supplied button event from the current cursor location.   */
+  /** Fill the supplied button event from the current cursor location.   */
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
 
   /** Call to find out if dynamics are currently active. */

@@ -18,7 +18,6 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { ModelState } from "./ModelState";
 import { IModelApp } from "./IModelApp";
 import { EntityState } from "./EntityState";
-import { OneAtATimePromise } from "./tools/EventController";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -342,19 +341,11 @@ export class IModelConnection extends IModel {
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
-  private _snap = new OneAtATimePromise<SnapResponseProps>("snap", (args: any[]) => IModelReadRpcInterface.getClient().requestSnap(args[0], args[1], args[2]));
-  /** Request a snap from the backend.
-   * @note Snap requests are *replaceable*. That is, subsequent snap requests replace previous pending snap requests with a BusyError exception.
-   * Therefore, callers *must* catch [[BusyError]] exceptions.
-   */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return this._snap.addRequest(this.iModelToken, this.connectionId, props); }
+  /** Request a snap from the backend. */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
 
-  private _tooltip = new OneAtATimePromise<string[]>("tooltip", (args: any[]) => IModelReadRpcInterface.getClient().getToolTipMessage(args[0], args[1]), false);
-  /** Request a tooltip from the backend.
-   * @note ToolTip requests are *replaceable*. That is, subsequent requests replace previous pending requests with a BusyError exception.
-   * Therefore, callers *must* catch [[BusyError]] exceptions.
-   */
-  public async getToolTipMessage(id: string): Promise<string[]> { return this._tooltip.addRequest(this.iModelToken, id); }
+  /** Request a tooltip from the backend.  */
+  public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
 }
 
 export namespace IModelConnection {

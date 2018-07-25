@@ -379,7 +379,7 @@ export abstract class ViewManip extends ViewTool {
     return 0 === this.nPts ? EventHandled.Yes : this.onDataButtonDown(ev);
   }
 
-  public onModelMotion(ev: BeButtonEvent): void {
+  public async onModelMotion(ev: BeButtonEvent) {
     this.stoppedOverHandle = false;
     if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
       this.viewHandles.focusHitHandle();
@@ -390,7 +390,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.motion(ev);
   }
 
-  public onModelMotionStopped(ev: BeButtonEvent): void {
+  public async onModelMotionStopped(ev: BeButtonEvent) {
     if (ev.viewport !== this.viewport)
       return;
 
@@ -405,7 +405,7 @@ export abstract class ViewManip extends ViewTool {
     }
   }
 
-  public onModelNoMotion(ev: BeButtonEvent): void {
+  public async onModelNoMotion(ev: BeButtonEvent) {
     if (0 === this.nPts || !ev.viewport)
       return;
 
@@ -1468,7 +1468,7 @@ export class WindowAreaTool extends ViewTool {
     this.secondPtWorld.setZero();
   }
 
-  public onModelMotion(ev: BeButtonEvent): void { this.doManipulation(ev, true); }
+  public async onModelMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
   public updateDynamics(ev: BeButtonEvent): void { this.doManipulation(ev, true); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
