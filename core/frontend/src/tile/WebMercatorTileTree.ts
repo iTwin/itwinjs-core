@@ -5,7 +5,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
-import { Id64Props, Id64 } from "@bentley/bentleyjs-core";
+import { Id64Props, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Vector3d, Angle } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, MissingNodes } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
@@ -110,16 +110,15 @@ class WebMercatorTileProps implements TileProps {
 class WebMercatorTileLoader extends TileLoader {
   private providerInitialized: boolean = false;
   public mercatorToDb: Transform;
-  constructor(private imageryProvider: ImageryProvider, private modelState: GeometricModelState) {
+  constructor(private imageryProvider: ImageryProvider, private modelState: GeometricModelState, groundBias: number) {
     super();
     const ecefLocation = modelState.iModel.ecefLocation as EcefLocation;
     const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
 
     const projectExtents = modelState.iModel.projectExtents;
     const projectCenter = projectExtents.getCenter();
-    const height = 0.0;   // TBD... From attachment.
-    const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, height);
-    const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, height);
+    const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
+    const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
 
     const mercatorOrigin = ecefToMercator(dbToEcef.multiplyPoint3d(projectCenter));
     const mercatorX = ecefToMercator(dbToEcef.multiplyPoint3d(projectEast));
@@ -128,7 +127,7 @@ class WebMercatorTileLoader extends TileLoader {
     const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
     const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
 
-    const dbToMercator = Transform.createOriginAndMatrixColumns(mercatorOrigin, deltaX, deltaY, Vector3d.create(0.0, 0.0, 1.0)).multiplyTransformTransform(Transform.createTranslationXYZ(-projectCenter.x, -projectCenter.y, -height));
+    const dbToMercator = Transform.createOriginAndMatrixColumns(mercatorOrigin, deltaX, deltaY, Vector3d.create(0.0, 0.0, 1.0)).multiplyTransformTransform(Transform.createTranslationXYZ(-projectCenter.x, -projectCenter.y, -groundBias));
     this.mercatorToDb = dbToMercator.inverse() as Transform;
   }
   public tileRequresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
@@ -488,7 +487,7 @@ export class WebMercatorModelState extends SpatialModelState {
     if (provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this);
+    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this, JsonUtils.asDouble(webMercatorProperties.groundBias, 0.0));
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
