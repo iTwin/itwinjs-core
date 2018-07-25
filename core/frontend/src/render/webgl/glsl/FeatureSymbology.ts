@@ -250,6 +250,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
         assert(undefined !== ovr);
         if (ovr!.isNonUniform)
           ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
+        else
+          System.instance.lineCodeTexture!.bindSampler(uniform, TextureUnit.FeatureSymbology); // Bind *something* to suppress 'no texture assigned to texture unit x' warnings
       });
     });
     vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
