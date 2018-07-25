@@ -10,7 +10,7 @@ import {
   BeModifierKeys, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
   BeCursor, BeWheelEvent, InputSource, InteractiveTool, InputCollector, EventHandled,
 } from "./Tool";
-import { ViewTool } from "./ViewTool";
+import { ViewTool, ViewToolSettings } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -338,15 +338,17 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
   private static _wantEventLoop = false;
-
   private static keyEventHandler(ev: KeyboardEvent) { IModelApp.toolAdmin.addEvent(ev); }
+
   /** @hidden */
   public onInitialized() {
     this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
-    document.addEventListener("keydown", ToolAdmin.keyEventHandler, true);
-    document.addEventListener("keyup", ToolAdmin.keyEventHandler, true);
-
+    if (typeof document !== "undefined") {
+      document.addEventListener("keydown", ToolAdmin.keyEventHandler, true);
+      document.addEventListener("keyup", ToolAdmin.keyEventHandler, true);
+    }
   }
+
   /** @hidden */
   public startEventLoop(): void {
     if (!ToolAdmin._wantEventLoop) {
@@ -360,8 +362,10 @@ export class ToolAdmin {
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._wantEventLoop = false;
     this._idleTool = undefined;
-    document.removeEventListener("keydown", ToolAdmin.keyEventHandler, true);
-    document.removeEventListener("keyup", ToolAdmin.keyEventHandler, true);
+    if (typeof document !== "undefined") {
+      document.removeEventListener("keydown", ToolAdmin.keyEventHandler, true);
+      document.removeEventListener("keyup", ToolAdmin.keyEventHandler, true);
+    }
   }
 
   /** A first-in-first-out queue of ToolEvents. */
@@ -438,14 +442,19 @@ export class ToolAdmin {
     return this.onWheel(vp, delta, this.getMousePosition(event));
   }
 
-  private async callEventHandler(event: ToolEvent): Promise<any> {
-    const vp = event.vp;
+  /** Process the next event in the event queue, if any. */
+  private async processNextEvent(): Promise<any> {
+    const event = this.toolEvents.shift(); // pull first event from the queue
+    if (undefined === event)
+      return; // nothing in queue
+
+    const vp = event.vp!;
     switch (event.ev.type) {
       case "mousedown": return this.callMouseHandler(event, true);
       case "mouseup": return this.callMouseHandler(event, false);
-      case "mousemove": return this.onMouseMotion(vp!, this.getMousePosition(event), InputSource.Mouse);
-      case "mouseenter": return this.onMouseEnter(vp!);
-      case "mouseleave": return this.onMouseLeave(vp!);
+      case "mousemove": return this.onMouseMotion(vp, this.getMousePosition(event), InputSource.Mouse);
+      case "mouseenter": return this.onMouseEnter(vp);
+      case "mouseleave": return this.onMouseLeave(vp);
       case "wheel": return this.callWheel(event);
       case "keydown": return this.onKeyTransition(true, event);
       case "keyup": return this.onKeyTransition(false, event);
@@ -454,36 +463,26 @@ export class ToolAdmin {
       // case "touchmove":
       // case "touchcancel":
     }
-    return;
-  }
-
-  private async processToolEvent(): Promise<any> {
-    const ev = this.toolEvents.shift();
-    if (undefined === ev)
-      return;
-    return this.callEventHandler(ev);
   }
 
   private _processingEvent = false;
   /**
-   * Process a single event, but don't start work on new event unless the previous one has finished.
-   * Also invokes timer events.
+   * Process a single event, plus timer events. Don't start work on new events if the previous one has not finished.
    */
-  private async processEvent() {
+  private async processEvent(): Promise<void> {
     if (this._processingEvent)
       return; // we're still working on the previous event.
 
-    this._processingEvent = true; // we can't allow any further event processing until the current event completes.
     try {
-      await this.onTimerEvent(); // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
-      await this.processToolEvent();
+      this._processingEvent = true; // we can't allow any further event processing until the current event completes.
+      await this.onTimerEvent();     // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
+      await this.processNextEvent();
     } catch (error) {
-      // tslint:disable-next-line:no-console
-      console.log("error in event " + error.message);
-      throw error;
+      console.log("error in event processing ", error);
+      throw error; // enable this in debug only.
+    } finally {
+      this._processingEvent = false; // this event is now finished. Allow processing next time through.
     }
-
-    this._processingEvent = false; // this event is now finished. Allow further event processing.
   }
 
   /** The main event processing loop for Tools (and rendering). */
@@ -807,7 +806,7 @@ export class ToolAdmin {
       return true;
 
     const tool = this.activeTool;
-    return (!tool ? true : tool.isValidLocation(ev, true));
+    return (tool === undefined ? true : tool.isValidLocation(ev, true));
   }
 
   public async onDataButtonDown(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
@@ -1031,7 +1030,7 @@ export class ToolAdmin {
   public onDoubleTap(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onDoubleTap"); }
   public onLongPress(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onLongPress"); }
 
-  private async onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent) {
+  private async onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<void> {
     if (wentDown === this.modifierKeyWentDown && modifier === this.modifierKey)
       return;
 
@@ -1056,6 +1055,7 @@ export class ToolAdmin {
     return BeModifierKeys.None;
   }
 
+  /** Event for every key down and up transition. */
   private async onKeyTransition(wentDown: boolean, event: ToolEvent): Promise<any> {
     const activeTool = this.activeTool;
     if (!activeTool)
@@ -1101,6 +1101,7 @@ export class ToolAdmin {
     }
   }
 
+  /** @hidden */
   public startInputCollector(_newTool: InputCollector): void {
     if (undefined !== this.inputCollector) {
       this.setInputCollector(undefined);
@@ -1149,6 +1150,7 @@ export class ToolAdmin {
     this.updateDynamics();
   }
 
+  /** @hidden */
   public startViewTool() {
     IModelApp.accuDraw.onViewToolInstall();
 
@@ -1188,6 +1190,7 @@ export class ToolAdmin {
     this.primitiveTool = newTool;
   }
 
+  /** @hidden */
   public startPrimitiveTool(newTool: PrimitiveTool) {
     this.exitViewTool();
 
@@ -1212,12 +1215,10 @@ export class ToolAdmin {
   }
 
   /**
-   * Starts the default tool, if any. Generally invoked automatically when other tools exit, so
-   * shouldn't be called directly.
+   * Starts the default tool, if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
+   * @hidden
    */
-  public startDefaultTool() {
-    IModelApp.tools.run(this.defaultTool);
-  }
+  public startDefaultTool() { IModelApp.tools.run(this.defaultTool); }
 
   public setCursor(cursor: BeCursor | undefined): void {
     if (undefined === this.saveCursor)
@@ -1363,8 +1364,11 @@ export class ToolAdmin {
   }
 }
 
-/** Default processor to handle wheel events. */
-class WheelEventProcessor {
+/**
+ * Default processor to handle wheel events.
+ * @hidden
+ */
+export class WheelEventProcessor {
   public static async process(ev: BeWheelEvent, doUpdate: boolean) {
     const vp = ev.viewport;
     if (!vp)
@@ -1385,7 +1389,7 @@ class WheelEventProcessor {
     if (!vp)
       return ViewStatus.InvalidViewport;
 
-    let zoomRatio = WheelSettings.zoomRatio;
+    let zoomRatio = ViewToolSettings.wheelZoomRatio;
     if (zoomRatio < 1)
       zoomRatio = 1;
     if (ev.wheelDelta > 0)
@@ -1394,7 +1398,7 @@ class WheelEventProcessor {
     let isSnapOrPrecision = false;
     const target = Point3d.create();
     if (IModelApp.tentativePoint.isActive) {
-      // Always use Tentative location, adjusted point, not cross...
+      // Always use Tentative location, adjusted point, not cross
       isSnapOrPrecision = true;
       target.setFrom(IModelApp.tentativePoint.getPoint());
     } else {
@@ -1464,10 +1468,3 @@ class WheelEventProcessor {
     return status;
   }
 }
-
-// tslint:disable-next-line:variable-name
-export const WheelSettings = {
-  zoomRatio: 1.75,
-  navigateDistPct: 3.0,
-  navigateMouseDistPct: 10.0,
-};
