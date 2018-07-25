@@ -36,7 +36,6 @@
     "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
-    "@types/electron": "^1.6.10",
     "@types/express": "^4.11.1",
     "@bentley/bentleyjs-tools": "0.103.0",
     "@bentley/dev-cors-proxy-server": "0.0.6",
