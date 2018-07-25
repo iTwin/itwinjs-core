@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
@@ -1787,7 +1787,7 @@ export class SheetViewState extends ViewState2d {
 
   public static get className() { return "SheetViewDefinition"; }
   public readonly sheetSize: Point2d;
-  private _attachmentIds: Id64[];
+  private _attachmentIds: Id64Array;
   private _attachments = new Sheet.Attachments();
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
@@ -1801,9 +1801,12 @@ export class SheetViewState extends ViewState2d {
     } else {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
       this._attachmentIds = [];
-      if (sheetProps.attachments !== undefined)
-        for (const idProp of sheetProps.attachments)
-          this._attachmentIds.push(new Id64(idProp));
+      if (sheetProps.attachments !== undefined) {
+        for (const idProp of sheetProps.attachments) {
+          const id = (typeof idProp === "string") ? idProp : idProp.value;
+          this._attachmentIds.push(id);
+        }
+      }
     }
   }
 
