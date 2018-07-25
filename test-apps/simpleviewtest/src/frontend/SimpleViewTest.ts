@@ -411,6 +411,7 @@ function updateRenderModeOptionsMap() {
   updateRenderModeOption("weights", viewflags.weights, renderModeOptions.flags);
   updateRenderModeOption("styles", viewflags.styles, renderModeOptions.flags);
   updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
+  updateRenderModeOption("clipVolume", viewflags.clipVolume, renderModeOptions.flags);
 
   renderModeOptions.mode = viewflags.renderMode;
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
@@ -623,6 +624,7 @@ function wireIconsToFunctions() {
   addRenderModeHandler("lights");
   addRenderModeHandler("monochrome");
   addRenderModeHandler("constructions");
+  addRenderModeHandler("clipVolume");
   addRenderModeHandler("weights");
   addRenderModeHandler("styles");
   addRenderModeHandler("transparency");

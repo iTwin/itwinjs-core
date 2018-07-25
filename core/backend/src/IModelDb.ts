@@ -1215,7 +1215,7 @@ export namespace IModelDb {
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId) as ModelSelectorProps;
       else if (viewDefinitionElement instanceof SheetViewDefinition) {
         viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId) as SheetProps;
-        viewStateData.sheetProps.attachments = Array.from(this._iModel.queryEntityIds({
+        viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
           from: "BisCore.ViewAttachment",
           where: "Model.Id=" + viewDefinitionElement.baseModelId,
         }));
@@ -1225,7 +1225,6 @@ export namespace IModelDb {
   }
 
   /** @hidden */
-  // NB: Very WIP.
   export class Tiles {
     /** @hidden */
     public constructor(private _iModel: IModelDb) { }
