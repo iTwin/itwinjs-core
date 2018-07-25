@@ -144,9 +144,10 @@ export class EventController {
     this.removals.length = 0;
   }
 
-  private registerListener(domType: string, element: HTMLElement) {
+  private registerListener(domType: string, element: HTMLElement, preventDefault: boolean = true) {
     const listener = (ev: Event) => {
-      ev.preventDefault();
+      if (preventDefault)
+        ev.preventDefault();
       IModelApp.toolAdmin.addEvent(ev, this.vp);
     };
     element.addEventListener(domType, listener, false);
@@ -230,7 +231,7 @@ export class EventController {
       case GestureId.SingleFingerMove: return IModelApp.toolAdmin.onSingleFingerMove(vp, info);
       case GestureId.TwoFingerTap: return IModelApp.toolAdmin.onTwoFingerTap(vp, info);
       case GestureId.PressAndTap: return IModelApp.toolAdmin.onPressAndTap(vp, info);
-      case GestureId.SingleTap: return IModelApp.toolAdmin.onSingleTap(vp, info);
+      //      case GestureId.SingleTap: return IModelApp.toolAdmin.onSingleTap(vp, info);
       case GestureId.DoubleTap: return IModelApp.toolAdmin.onDoubleTap(vp, info);
       case GestureId.LongPress: return IModelApp.toolAdmin.onLongPress(vp, info);
     }

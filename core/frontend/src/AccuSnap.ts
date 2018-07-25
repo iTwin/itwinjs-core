@@ -389,17 +389,8 @@ export class AccuSnap {
     pt.setFrom(currSnap.adjustedPoint);
   }
 
-  private onEnabledStateChange(isEnabled: boolean, wasEnabled: boolean) {
-    if (isEnabled === wasEnabled) {
-      IModelApp.toolAdmin.onAccuSnapSyncUI(); // still need to sync AccuSnap global setting even if we are not changing the actual state for the current tool.
-      return;
-    }
-
-    if (isEnabled)
-      IModelApp.toolAdmin.onAccuSnapEnabled();
-    else
-      IModelApp.toolAdmin.onAccuSnapDisabled();
-  }
+  /** Implemented by sub-classes to update ui to show current enabled state. */
+  public onEnabledStateChange(_isEnabled: boolean, _wasEnabled: boolean) { }
 
   public getHitAndList(holder: HitListHolder): HitDetail | undefined {
     const hit = this.currHit;

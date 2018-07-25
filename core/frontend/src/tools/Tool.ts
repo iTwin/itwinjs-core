@@ -330,6 +330,9 @@ export enum EventHandled {
  */
 export abstract class InteractiveTool extends Tool {
 
+  /** Used to avoid sending tools up events for which they did not receive the down event. */
+  public receivedDownEvent = false;
+
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
   public onInstall(): boolean { return true; }
 
@@ -445,6 +448,13 @@ export abstract class InteractiveTool extends Tool {
 
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+
+  /**
+   * Called when active view changes. Tool may choose to restart or exit based on current view type.
+   * @param previous The previously active view.
+   * @param current The new active view.
+   */
+  public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
 
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.

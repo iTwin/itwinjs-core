@@ -99,8 +99,6 @@ export abstract class ViewTool extends InteractiveTool {
 
   public async onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return EventHandled.Yes; }
 
-  public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
-
   /** Do not override. */
   public exitTool(): void { IModelApp.toolAdmin.exitViewTool(); }
 }
