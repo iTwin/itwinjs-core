@@ -10,7 +10,7 @@ import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels, FillFlags, GraphicParams } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
+import { BeButtonEvent, CoordSource } from "./tools/Tool";
 import { SnapMode, SnapDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -760,13 +760,13 @@ export class AccuDraw {
       return;
 
     const ev = new BeButtonEvent();
-    ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
+    ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
   public sendDataPoint(pt: Point3d, vp: Viewport): void {
     const ev = new BeButtonEvent();
-    ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User, BeModifierKey.None);
+    ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
 
     // Send both down and up events...
     IModelApp.toolAdmin.sendDataPoint(ev);

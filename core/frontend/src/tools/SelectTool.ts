@@ -8,7 +8,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKey, EventHandled } from "./Tool";
+import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKeys, EventHandled } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -354,12 +354,10 @@ export class SelectionTool extends PrimitiveTool {
     return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
   }
 
-  public decorate(context: DecorateContext): void {
-    this.selectByPointsDecorate(context);
-  }
+  public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 
-  public async onModifierKeyTransition(_wentDown: boolean, key: BeModifierKey): Promise<boolean> {
-    return key === BeModifierKey.Shift && this.isSelectByPoints;
+  public async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> {
+    return modifier === BeModifierKeys.Shift && this.isSelectByPoints;
   }
 
   public onPostLocate(hit: HitDetail, _out?: LocateResponse): boolean {
@@ -375,9 +373,7 @@ export class SelectionTool extends PrimitiveTool {
     return (SelectionMode.Add === mode ? !isSelected : isSelected);
   }
 
-  public onRestartTool(): void {
-    this.exitTool();
-  }
+  public onRestartTool(): void { this.exitTool(); }
 
   public onCleanup(): void {
     super.onCleanup();

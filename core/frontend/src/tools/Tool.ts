@@ -75,99 +75,8 @@ export const enum CoordSource {
   ElemSnap = 3,
 }
 
-export const enum BeModifierKey {
-  None = 0,
-  Control = 1 << 0,
-  Shift = 1 << 2,
-  Alt = 1 << 3,
-}
-
-export const enum BeVirtualKey {
-  Shift,
-  Control,
-  Alt,
-  Backspace,
-  Tab,
-  Return,
-  Escape,
-  Space,
-  PageUp,
-  PageDown,
-  End,
-  Home,
-  Left,
-  Up,
-  Right,
-  Down,
-  Insert,
-  Delete,
-  Key0,
-  Key1,
-  Key2,
-  Key3,
-  Key4,
-  Key5,
-  Key6,
-  Key7,
-  Key8,
-  Key9,
-  A,
-  B,
-  C,
-  D,
-  E,
-  F,
-  G,
-  H,
-  I,
-  J,
-  K,
-  L,
-  M,
-  N,
-  O,
-  P,
-  Q,
-  R,
-  S,
-  T,
-  U,
-  V,
-  W,
-  X,
-  Y,
-  Z,
-  NumKey0,
-  NumKey1,
-  NumKey2,
-  NumKey3,
-  NumKey4,
-  NumKey5,
-  NumKey6,
-  NumKey7,
-  NumKey8,
-  NumKey9,
-  Multiply,
-  Add,
-  Separator,
-  Subtract,
-  Decimal,
-  Divide,
-  Comma,
-  Period,
-  F1,
-  F2,
-  F3,
-  F4,
-  F5,
-  F6,
-  F7,
-  F8,
-  F9,
-  F10,
-  F11,
-  F12,
-}
+/** Numeric mask for a set of modifier keys. */
+export const enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
 
 export class BeButtonState {
   private readonly _downUorPt: Point3d = new Point3d();
@@ -200,7 +109,7 @@ export class BeButtonEvent {
   private readonly _viewPoint: Point3d = new Point3d();
   public viewport?: Viewport;
   public coordsFrom = CoordSource.User;   // how were the coordinate values in point generated?
-  public keyModifiers = BeModifierKey.None;
+  public keyModifiers = BeModifierKeys.None;
   public isDoubleClick = false;
   public isDown = false;
   public button = BeButton.Data;
@@ -216,7 +125,7 @@ export class BeButtonEvent {
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
   public invalidate() { this.viewport = undefined; }
-  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKey, button = BeButton.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
+  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
     this.viewPoint = viewPt;
@@ -231,9 +140,9 @@ export class BeButtonEvent {
   }
 
   public getDisplayPoint(): Point2d { return new Point2d(this._viewPoint.x, this._viewPoint.y); }
-  public get isControlKey() { return 0 !== (this.keyModifiers & BeModifierKey.Control); }
-  public get isShiftKey() { return 0 !== (this.keyModifiers & BeModifierKey.Shift); }
-  public get isAltKey() { return 0 !== (this.keyModifiers & BeModifierKey.Alt); }
+  public get isControlKey() { return 0 !== (this.keyModifiers & BeModifierKeys.Control); }
+  public get isShiftKey() { return 0 !== (this.keyModifiers & BeModifierKeys.Shift); }
+  public get isAltKey() { return 0 !== (this.keyModifiers & BeModifierKeys.Alt); }
 
   public setFrom(src: BeButtonEvent) {
     this.point = src.point;
@@ -510,20 +419,19 @@ export abstract class InteractiveTool extends Tool {
 
   /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
    * @param _wentDown up or down key event
-   * @param _key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
+   * @param _modifier The modifier key mask
+   * @param _event The event that caused this call
    * @return true to refresh view decorations or update dynamics.
    */
-  public async onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): Promise<boolean> { return false; }
+  public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> { return false; }
 
   /** Called when keys are pressed or released.
-   * @param wentDown up or down key event
-   * @param key One of VirtualKey enum values
-   * @param shiftIsDown the shift key is down
-   * @param ctrlIsDown  the control key is down
-   * @return true to prevent further processing of this event
+   * @param _wentDown up or down key event
+   * @param _keyEvent The KeyboardEvent
+   * @return Yes to prevent further processing of this event
    * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
    */
-  public async onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): Promise<EventHandled> { return EventHandled.No; }
+  public async onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
   public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
   public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }

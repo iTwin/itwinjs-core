@@ -7,8 +7,8 @@ import { Point3d, Point2d, XAndY, Vector3d, Transform, RotMatrix } from "@bentle
 import { ViewStatus, ViewState3d } from "../ViewState";
 import { Viewport } from "../Viewport";
 import {
-  BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
-  BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool, InputCollector, EventHandled,
+  BeModifierKeys, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
+  BeCursor, BeWheelEvent, InputSource, InteractiveTool, InputCollector, EventHandled,
 } from "./Tool";
 import { ViewTool } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
@@ -21,6 +21,8 @@ import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IconSprites } from "../Sprites";
+
+// tslint:disable:no-console
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -78,7 +80,7 @@ export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
   private _uorPoint: Point3d = new Point3d();
   private _viewPoint: Point3d = new Point3d();
-  public qualifiers = BeModifierKey.None;
+  public qualifiers = BeModifierKeys.None;
   public motionTime = 0;
   public viewport?: Viewport;
   public button: BeButtonState[] = [new BeButtonState(), new BeButtonState(), new BeButtonState()];
@@ -102,13 +104,13 @@ export class CurrentInputState {
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
   public get wasMotion() { return 0 !== this.motionTime; }
   public get wasTouchMotion() { return 0 !== this.touchMotionTime; }
-  public get isShiftDown() { return 0 !== (this.qualifiers & BeModifierKey.Shift); }
-  public get isControlDown() { return 0 !== (this.qualifiers & BeModifierKey.Control); }
-  public get isAltDown() { return 0 !== (this.qualifiers & BeModifierKey.Alt); }
+  public get isShiftDown() { return 0 !== (this.qualifiers & BeModifierKeys.Shift); }
+  public get isControlDown() { return 0 !== (this.qualifiers & BeModifierKeys.Control); }
+  public get isAltDown() { return 0 !== (this.qualifiers & BeModifierKeys.Alt); }
   public isDragging(button: BeButton) { return this.button[button].isDragging; }
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
-  public setKeyQualifier(qual: BeModifierKey, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
-  public clearKeyQualifiers() { this.qualifiers = BeModifierKey.None; }
+  public setKeyQualifier(qual: BeModifierKeys, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
+  public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
   public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
   private disableIgnoreTouchMotionTest() { this.wantIgnoreTest = false; }
 
@@ -420,7 +422,7 @@ class WheelEventProcessor {
 /** A tool event combines an HTML Event and a Viewport. */
 interface ToolEvent {
   ev: Event;
-  vp: Viewport;
+  vp?: Viewport;
 }
 
 /** Controls the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
@@ -440,7 +442,7 @@ export class ToolAdmin {
   public defaultTool = "Select";
   public gesturePending = false;
   private modifierKeyWentDown = false;
-  private modifierKey = BeModifierKey.None;
+  private modifierKey = BeModifierKeys.None;
   private touchBridgeMode = false; // Flag indicating that touch events are being converted into mouse events for this tool
   /** Apply operations such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
@@ -452,8 +454,14 @@ export class ToolAdmin {
   public acsContextLock = false;
   private static _wantEventLoop = false;
 
+  private static keyEventHandler(ev: KeyboardEvent) { IModelApp.toolAdmin.addEvent(ev); }
   /** @hidden */
-  public onInitialized() { this._idleTool = IModelApp.tools.create("Idle") as IdleTool; }
+  public onInitialized() {
+    this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
+    document.addEventListener("keydown", ToolAdmin.keyEventHandler, true);
+    document.addEventListener("keyup", ToolAdmin.keyEventHandler, true);
+
+  }
   /** @hidden */
   public startEventLoop(): void {
     if (!ToolAdmin._wantEventLoop) {
@@ -467,6 +475,8 @@ export class ToolAdmin {
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._wantEventLoop = false;
     this._idleTool = undefined;
+    document.removeEventListener("keydown", ToolAdmin.keyEventHandler, true);
+    document.removeEventListener("keyup", ToolAdmin.keyEventHandler, true);
   }
 
   /** A first-in-first-out queue of ToolEvents. */
@@ -485,7 +495,7 @@ export class ToolAdmin {
   /** Called from EventListeners of viewport EventControllers. Events are processed in the order they're received in ToolAdmin.eventLoop
    * @hidden
    */
-  public addEvent(ev: Event, vp: Viewport): void {
+  public addEvent(ev: Event, vp?: Viewport): void {
     const event = { ev, vp };
     if (!this.tryReplace(event)) // see if this event replaces the last event in the queue
       this.toolEvents.push(event); // otherwise put it at the end of the queue.
@@ -495,20 +505,20 @@ export class ToolAdmin {
     const state = this.currentInputState;
     state.clearKeyQualifiers();
     if (ev.shiftKey)
-      state.setKeyQualifier(BeModifierKey.Shift, true);
+      state.setKeyQualifier(BeModifierKeys.Shift, true);
     if (ev.ctrlKey)
-      state.setKeyQualifier(BeModifierKey.Control, true);
+      state.setKeyQualifier(BeModifierKeys.Control, true);
   }
 
   private getMousePosition(event: ToolEvent): Point2d {
     const ev = event.ev as MouseEvent;
-    const rect = event.vp.getClientRect();
+    const rect = event.vp!.getClientRect();
     return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top });
   }
 
   private callMouseHandler(event: ToolEvent, isDown: boolean): Promise<any> {
     const ev = event.ev as MouseEvent;
-    const vp = event.vp;
+    const vp = event.vp!;
     const pos = this.getMousePosition(event);
 
     this.recordKeyboardModifiers(ev);
@@ -521,7 +531,7 @@ export class ToolAdmin {
 
   private async callWheel(event: ToolEvent): Promise<EventHandled> {
     const ev = event.ev as WheelEvent;
-    const vp = event.vp;
+    const vp = event.vp!;
     this.recordKeyboardModifiers(ev);
 
     if (ev.deltaY === 0)
@@ -548,10 +558,12 @@ export class ToolAdmin {
     switch (event.ev.type) {
       case "mousedown": return this.callMouseHandler(event, true);
       case "mouseup": return this.callMouseHandler(event, false);
-      case "mousemove": return this.onMouseMotion(vp, this.getMousePosition(event), InputSource.Mouse);
-      case "mouseenter": return this.onMouseEnter(vp);
-      case "mouseleave": return this.onMouseLeave(vp);
+      case "mousemove": return this.onMouseMotion(vp!, this.getMousePosition(event), InputSource.Mouse);
+      case "mouseenter": return this.onMouseEnter(vp!);
+      case "mouseleave": return this.onMouseLeave(vp!);
       case "wheel": return this.callWheel(event);
+      case "keydown": return this.onKeyTransition(true, event);
+      case "keyup": return this.onKeyTransition(false, event);
       // case "touchstart":
       // case "touchend":
       // case "touchmove":
@@ -644,7 +656,7 @@ export class ToolAdmin {
     ev.gestureInfo = gestureInfo.clone();
   }
 
-  public async onWheel(vp: Viewport, wheelDelta: number, pt2d: XAndY): Promise<any> {
+  private async onWheel(vp: Viewport, wheelDelta: number, pt2d: XAndY): Promise<any> {
     if (this.cursorView === undefined)
       return;
 
@@ -657,14 +669,14 @@ export class ToolAdmin {
     return this.onWheelEvent(wheelEvent);
   }
 
-  public async onWheelEvent(wheelEvent: BeWheelEvent): Promise<any> {
+  private async onWheelEvent(wheelEvent: BeWheelEvent): Promise<any> {
     const activeTool = this.activeTool;
     if (undefined === activeTool || EventHandled.Yes !== await activeTool.onMouseWheel(wheelEvent))
       return this.idleTool.onMouseWheel(wheelEvent);
   }
 
-  public async onMouseEnter(vp: Viewport) { this.cursorView = vp; }
-  public async onMouseLeave(vp: Viewport) {
+  private async onMouseEnter(vp: Viewport) { this.cursorView = vp; }
+  private async onMouseLeave(vp: Viewport) {
     IModelApp.notifications.clearToolTip();
     this.cursorView = undefined;
     vp.invalidateDecorations();
@@ -690,7 +702,7 @@ export class ToolAdmin {
   /**
    * This is invoked on each frame to update current input state and forward model motion events to tools.
    */
-  public async onTimerEvent(): Promise<void> {
+  private async onTimerEvent(): Promise<void> {
     const tool = this.activeTool;
 
     const current = this.currentInputState;
@@ -730,9 +742,9 @@ export class ToolAdmin {
     this.updateDynamics(ev);
   }
 
-  public onMouseMotionEvent(ev: BeButtonEvent): boolean { return !this.filterButtonEvent(ev); }
+  private onMouseMotionEvent(ev: BeButtonEvent): boolean { return !this.filterButtonEvent(ev); }
 
-  public async onMouseMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
+  private async onMouseMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
     if (this.filterViewport(vp))
@@ -1134,14 +1146,14 @@ export class ToolAdmin {
   public onDoubleTap(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onDoubleTap"); }
   public onLongPress(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onLongPress"); }
 
-  public async onModifierKeyTransition(wentDown: boolean, key: BeModifierKey) {
-    if (wentDown === this.modifierKeyWentDown && key === this.modifierKey)
+  private async onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent) {
+    if (wentDown === this.modifierKeyWentDown && modifier === this.modifierKey)
       return;
 
     const activeTool = this.activeTool;
-    const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, key) : false;
+    const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, modifier, event) : false;
 
-    this.modifierKey = key;
+    this.modifierKey = modifier;
     this.modifierKeyWentDown = wentDown;
 
     if (!changed)
@@ -1150,25 +1162,26 @@ export class ToolAdmin {
     this.updateDynamics();
   }
 
-  private static getModifierKeyFromVirtualKey(key: BeVirtualKey): BeModifierKey {
-    switch (key) {
-      case BeVirtualKey.Alt: return BeModifierKey.Alt;
-      case BeVirtualKey.Shift: return BeModifierKey.Shift;
-      case BeVirtualKey.Control: return BeModifierKey.Control;
+  private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
+    switch (event.key) {
+      case "Alt": return BeModifierKeys.Alt;
+      case "Shift": return BeModifierKeys.Shift;
+      case "Control": return BeModifierKeys.Control;
     }
-    return BeModifierKey.None;
+    return BeModifierKeys.None;
   }
 
-  public async onKeyTransition(wentDown: boolean, key: BeVirtualKey): Promise<any> {
+  private async onKeyTransition(wentDown: boolean, event: ToolEvent): Promise<any> {
     const activeTool = this.activeTool;
     if (!activeTool)
       return;
 
-    if (BeVirtualKey.Shift === key || BeVirtualKey.Control === key || BeVirtualKey.Alt === key)
-      return this.onModifierKeyTransition(wentDown, ToolAdmin.getModifierKeyFromVirtualKey(key));
+    const keyEvent = event.ev as KeyboardEvent;
+    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+    if (BeModifierKeys.None !== modifierKey)
+      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
 
-    const current = this.currentInputState;
-    return activeTool.onKeyTransition(wentDown, key, current.isShiftDown, current.isControlDown);
+    return activeTool.onKeyTransition(wentDown, keyEvent);
   }
 
   /** @hidden */
