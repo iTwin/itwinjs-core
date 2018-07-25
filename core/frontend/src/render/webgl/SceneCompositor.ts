@@ -476,10 +476,6 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    // ###TODO: Alter viewport so skyBox maintains aspect ratio of textures.
-    // const dim = this._target.viewRect.width > this._target.viewRect.height ? this._target.viewRect.width : this._target.viewRect.height;
-    // System.instance.context.viewport(0, 0, dim, dim);
-
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
@@ -488,8 +484,6 @@ abstract class Compositor extends SceneCompositor {
       this._target.techniques.execute(this._target, cmds, RenderPass.SkyBox);
       this._target.popBranch();
     });
-
-    // System.instance.context.viewport(0, 0, this._target.viewRect.width, this._target.viewRect.height);
   }
 
   private renderBackground(commands: RenderCommands, needComposite: boolean) {
@@ -718,7 +712,7 @@ class MRTCompositor extends Compositor {
   private getSamplerTexture(index: number) { return this.samplerFbo.getColor(index); }
 }
 
-class MPFrameBuffers extends  FrameBuffers {
+class MPFrameBuffers extends FrameBuffers {
   public accumulation?: FrameBuffer;
   public revealage?: FrameBuffer;
   public idLow?: FrameBuffer;

@@ -29,7 +29,7 @@ import { PointCloudPrimitive } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { SkyBoxPrimitive } from "./Primitive";
+import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 
 export const enum ContextState {
@@ -420,7 +420,7 @@ export class System extends RenderSystem {
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     } else {
       const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
-      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+      return cachedGeom !== undefined ? new SkySpherePrimitive(cachedGeom) : undefined;
     }
   }
 
