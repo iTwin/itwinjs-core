@@ -1782,7 +1782,7 @@ export class SheetViewState extends ViewState2d {
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!);
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
   }
 
   public static get className() { return "SheetViewDefinition"; }
@@ -1791,7 +1791,7 @@ export class SheetViewState extends ViewState2d {
   private _attachments = new Sheet.Attachments();
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof SheetViewState) {
       // we are coming from clone...
@@ -1801,12 +1801,7 @@ export class SheetViewState extends ViewState2d {
     } else {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
       this._attachmentIds = [];
-      if (sheetProps.attachments !== undefined) {
-        for (const idProp of sheetProps.attachments) {
-          const id = (typeof idProp === "string") ? idProp : idProp.value;
-          this._attachmentIds.push(id);
-        }
-      }
+      attachments.forEach((idProp) => this._attachmentIds.push(idProp));
     }
   }
 
@@ -1819,14 +1814,13 @@ export class SheetViewState extends ViewState2d {
     if (model === undefined)
       return;
 
-    // Query the attachment ids
     this._attachments.clear();
 
     // Query the attachments using the id list, and grab all of their corresponding view ids
     const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
-    const attachmentViewIds: Id64Props[] = [];
+    const attachmentViewIds: Id64Array = [];
     for (const attachment of attachments)
-      attachmentViewIds.push((attachment.view as any).id);
+      attachmentViewIds.push(attachment.view.toString());
 
     // Load each view state corresponding to each attachment in the attachments array
     // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
