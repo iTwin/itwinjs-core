@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
+import { AccessToken, ChangeSet, IModelAccessContext } from "@bentley/imodeljs-clients";
+import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
 import { IModelDb, BriefcaseManager, ConcurrencyControl } from "../../backend";
-import { AccessToken, ChangeSet, IModelAccessContext, IModelBankAccessContext } from "../../../../clients";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { OpenParams } from "../../IModelDb";
 

@@ -6,8 +6,10 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelClient, IModelRepository, IModelAccessContext, IModelBankAccessContext, IModelBankClient,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelClient, IModelRepository, IModelAccessContext,
 } from "@bentley/imodeljs-clients";
+import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
+import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";

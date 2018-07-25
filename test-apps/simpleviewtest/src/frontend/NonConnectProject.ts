@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IModelRepository, UserProfile, IModelBankAccessContext } from "@bentley/imodeljs-clients";
+import { AccessToken, IModelRepository, UserProfile } from "@bentley/imodeljs-clients";
+import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
 import { SimpleViewState } from "./SimpleViewState";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import { OpenMode, assert } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
