@@ -581,6 +581,7 @@ export class ToolAdmin {
       await this.onTimerEvent(); // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
       await this.processToolEvent();
     } catch (error) {
+      // tslint:disable-next-line:no-console
       console.log("error in event " + error.message);
       throw error;
     }
@@ -1133,12 +1134,12 @@ export class ToolAdmin {
   public onDoubleTap(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onDoubleTap"); }
   public onLongPress(vp: Viewport, gestureInfo: GestureInfo) { this.processGestureInfo(vp, gestureInfo, "onLongPress"); }
 
-  public onModifierKeyTransition(wentDown: boolean, key: BeModifierKey) {
+  public async onModifierKeyTransition(wentDown: boolean, key: BeModifierKey) {
     if (wentDown === this.modifierKeyWentDown && key === this.modifierKey)
       return;
 
     const activeTool = this.activeTool;
-    const changed = activeTool ? activeTool.onModifierKeyTransition(wentDown, key) : false;
+    const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, key) : false;
 
     this.modifierKey = key;
     this.modifierKeyWentDown = wentDown;
@@ -1158,15 +1159,13 @@ export class ToolAdmin {
     return BeModifierKey.None;
   }
 
-  public onKeyTransition(wentDown: boolean, key: BeVirtualKey): boolean {
+  public async onKeyTransition(wentDown: boolean, key: BeVirtualKey): Promise<any> {
     const activeTool = this.activeTool;
     if (!activeTool)
-      return false;
+      return;
 
-    if (BeVirtualKey.Shift === key || BeVirtualKey.Control === key || BeVirtualKey.Alt === key) {
-      this.onModifierKeyTransition(wentDown, ToolAdmin.getModifierKeyFromVirtualKey(key));
-      return true;
-    }
+    if (BeVirtualKey.Shift === key || BeVirtualKey.Control === key || BeVirtualKey.Alt === key)
+      return this.onModifierKeyTransition(wentDown, ToolAdmin.getModifierKeyFromVirtualKey(key));
 
     const current = this.currentInputState;
     return activeTool.onKeyTransition(wentDown, key, current.isShiftDown, current.isControlDown);
@@ -1253,9 +1252,7 @@ export class ToolAdmin {
   }
 
   public startViewTool() {
-    const { accuDraw, accuSnap, viewManager } = IModelApp;
-
-    accuDraw.onViewToolInstall();
+    IModelApp.accuDraw.onViewToolInstall();
 
     if (undefined !== this.viewTool) {
       this.setViewTool(undefined);
@@ -1266,12 +1263,12 @@ export class ToolAdmin {
       this.suspendedByViewTool = new SuspendedToolState();
     }
 
-    viewManager.invalidateDecorationsAllViews();
+    IModelApp.viewManager.invalidateDecorationsAllViews();
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.All;
     this.toolState.locateCircleOn = false;
 
-    accuSnap.onStartTool();
+    IModelApp.accuSnap.onStartTool();
 
     this.setCursor(BeCursor.CrossHair);
   }

@@ -513,7 +513,7 @@ export abstract class InteractiveTool extends Tool {
    * @param _key One of VirtualKey.Control, VirtualKey.Shift, or VirtualKey.Alt
    * @return true to refresh view decorations or update dynamics.
    */
-  public async onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): Promise<EventHandled> { return EventHandled.No; }
+  public async onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): Promise<boolean> { return false; }
 
   /** Called when keys are pressed or released.
    * @param wentDown up or down key event

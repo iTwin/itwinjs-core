@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "make all tool event methods async",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}
