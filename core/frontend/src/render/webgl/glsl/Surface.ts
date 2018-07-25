@@ -185,10 +185,6 @@ const computeNormal = `
   return normalize(u_nmx * octDecodeNormal(normal));
 `;
 
-const isBelowTransparencyThreshold = `
-  return alpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
-`;
-
 const applyBackgroundColor = `
   if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
     baseColor.rgb = u_bgColor.rgb;
@@ -259,16 +255,6 @@ function addNormal(builder: ProgramBuilder) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
 }
 
-function addTransparencyThreshold(frag: FragmentShaderBuilder) {
-  frag.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_transparencyThreshold", (uniform, params) => {
-      uniform.setUniform1f(params.target.transparencyThreshold);
-    });
-  });
-
-  frag.set(FragmentShaderComponent.DiscardByAlpha, isBelowTransparencyThreshold);
-}
-
 export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
   const builder = createCommon();
   addShaderFlags(builder);
@@ -277,10 +263,6 @@ export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
   addNormal(builder);
-
-  // NB: We need the transparency threshold in translucent *and* opaque passes.
-  // Opaque because we must compute the alpha in order to decide whether to discard or render opaque.
-  addTransparencyThreshold(builder.frag);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
@@ -318,10 +300,10 @@ export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
-        texture.texture.bindSampler(uniform, TextureUnit.Zero);
+        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
         // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.Zero);
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       }
     });
   });
@@ -336,7 +318,7 @@ export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
   });
 
   // Fragment and Vertex
-  addColor(builder);
+  addColor(builder, true);
 
   // Fragment
   builder.frag.addFunction(getSurfaceColor);

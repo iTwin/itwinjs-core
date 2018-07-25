@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
@@ -13,7 +13,7 @@ import {
   QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState, EntityState } from "./EntityState";
+import { ElementState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -1782,17 +1782,27 @@ export class SheetViewState extends ViewState2d {
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!);
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
   }
 
   public static get className() { return "SheetViewDefinition"; }
   public readonly sheetSize: Point2d;
+  private _attachmentIds: Id64Array;
   private _attachments = new Sheet.Attachments();
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
-    this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
+    if (categories instanceof SheetViewState) {
+      // we are coming from clone...
+      this.sheetSize = categories.sheetSize.clone();
+      this._attachmentIds = categories._attachmentIds;
+      this._attachments = categories._attachments;
+    } else {
+      this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
+      this._attachmentIds = [];
+      attachments.forEach((idProp) => this._attachmentIds.push(idProp));
+    }
   }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
@@ -1804,18 +1814,13 @@ export class SheetViewState extends ViewState2d {
     if (model === undefined)
       return;
 
-    // Query the attachment ids
     this._attachments.clear();
-    const queryResult = (await this.iModel.executeQuery("SELECT ECInstanceId FROM BisCore.ViewAttachment WHERE Model.Id=" + model.id));
-    const attachmentIds: string[] = [];
-    for (const row of queryResult)
-      attachmentIds.push(row.id);
 
     // Query the attachments using the id list, and grab all of their corresponding view ids
-    const attachments = await this.iModel.elements.getProps(attachmentIds) as ViewAttachmentProps[];
-    const attachmentViewIds: Id64Props[] = [];
+    const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
+    const attachmentViewIds: Id64Array = [];
     for (const attachment of attachments)
-      attachmentViewIds.push((attachment.view as any).id);
+      attachmentViewIds.push(attachment.view.toString());
 
     // Load each view state corresponding to each attachment in the attachments array
     // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
@@ -1881,13 +1886,5 @@ export class SheetViewState extends ViewState2d {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
       context.setViewBackground(border);
     }
-  }
-
-  // override - copy references to view attachments and sheet size
-  public clone<T extends EntityState>(): T {
-    const viewStateClone = super.clone() as SheetViewState;
-    viewStateClone.sheetSize.setFrom(this.sheetSize);
-    viewStateClone._attachments = this._attachments;
-    return viewStateClone as any;
   }
 }

@@ -3,13 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { ProgramBuilder, VariableType, VertexShaderComponent, FragmentShaderComponent } from "../ShaderBuilder";
 import { addModelViewMatrix } from "./Vertex";
 import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { System } from "../System";
-import { ClipDef, ClipVolumeType } from "../TechniqueFlags";
+import { ClipDef } from "../TechniqueFlags";
+import { addViewMatrix } from "./Common";
+import { ClippingType } from "../../System";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {
@@ -107,15 +109,15 @@ const applyClipPlanes = `
 
 const applyClipMask = `
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec4 texel = TEXTURE(s_clipMask, tc);
+  vec4 texel = TEXTURE(s_clipSampler, tc);
   if (texel.r < 0.5)
     discard;
 `;
 
 export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
-  if (clipDef.type === ClipVolumeType.Mask)
+  if (clipDef.type === ClippingType.Mask)
     addClippingMask(prog);
-  else if (clipDef.type === ClipVolumeType.Planes)
+  else if (clipDef.type === ClippingType.Planes)
     addClippingPlanes(prog, clipDef.numberOfPlanes);
 }
 
@@ -135,6 +137,8 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
 
   addModelViewMatrix(vert);
   vert.set(VertexShaderComponent.CalcClipDist, calcClipCamPos);
+  addViewMatrix(frag);
+
   if (System.instance.capabilities.supportsTextureFloat) {
     frag.addFunction(getClipPlaneFloat);
   } else {

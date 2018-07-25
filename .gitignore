@@ -4,6 +4,7 @@ node_modules
 # build output
 .nyc_output
 /core/**/lib
+/ui/**/lib
 /example-code/**/lib
 /test-apps/**/lib
 /bank-demo/**/lib

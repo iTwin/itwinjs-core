@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "../../../../../bentley/lib/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { GLSLFragment } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { FrustumUniformType, fromSumOf } from "../Target";
-import { Frustum, Npc } from "../../../../../common/lib/common";
-import { Vector3d, Point3d, Constant } from "../../../../../geometry/lib/geometry-core";
+import { Frustum, Npc } from "@bentley/imodeljs-common";
+import { Vector3d, Point3d, Constant } from "@bentley/geometry-core";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { GL } from "../GL";
 
