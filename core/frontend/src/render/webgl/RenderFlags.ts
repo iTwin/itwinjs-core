@@ -45,7 +45,7 @@ export enum TextureUnit {
     Six = WebGLRenderingContext.TEXTURE6,
     Seven = WebGLRenderingContext.TEXTURE7, // Last one available for GLES2
 
-    ClipMask = Zero,
+    ClipVolume = Zero,
     FeatureSymbology = One,
     SurfaceTexture = Two,
     LineCode = Two,

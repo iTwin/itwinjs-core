@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64Set, assert } from "@bentley/bentleyjs-core";
+import { Logger, Id64Set, assert, BeDuration } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken,
@@ -31,6 +31,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     // If the frontend wants a readOnly connection, we assume, for now, that they cannot change versions - i.e., cannot pull changes
     const qp = memoizeOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
+    await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
+
     if (qp.isPending()) {
       Logger.logTrace(loggingCategory, "Issuing pending status in IModelReadRpcImpl.openForRead", () => (iModelToken));
       throw new RpcPendingResponse();
@@ -39,7 +41,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     if (qp.isFulfilled()) {
-      Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
+      Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => ({ ...iModelToken, pathname: qp.result!.briefcase.pathname }));
       return qp.result!;
     }
 
@@ -164,8 +166,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> { return IModelDb.find(iModelToken).requestSnap(connectionId, props); }
   public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> { return IModelDb.find(iModelToken).cancelSnap(connectionId); }
   public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<string> { return IModelDb.loadNativeAsset(assetName); }
-  public async getLocateMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
+  public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
     const el = IModelDb.find(iModelToken).elements.getElement(id);
-    return (el === undefined) ? [] : el.getLocateMessage();
+    return (el === undefined) ? [] : el.getToolTipMessage();
   }
 }

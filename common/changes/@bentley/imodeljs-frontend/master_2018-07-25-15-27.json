@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Maintain image aspect ratio in cubemap skybox.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}

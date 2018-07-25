@@ -4,16 +4,13 @@
 /** @module Tools */
 
 import { Viewport } from "../Viewport";
-import { GestureId, GestureInfo, BeModifierKey, InputSource } from "./Tool";
+import { GestureId, GestureInfo } from "./Tool";
 import { Point2d } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
 
-const enum MouseButton {
-  LEFT = 0,
-  MIDDLE = 1,
-  RIGHT = 2,
-}
+// tslint:disable:no-console
 
+/** @hidden */
 const enum TouchConstants {
   TAP_LIMIT = 800,
   TAP_CONFIRM_SINGLE_LIMIT = 200,
@@ -24,6 +21,7 @@ const enum TouchConstants {
   TICK = 16 / 1000,  // 16ms
 }
 
+/** @hidden */
 const enum TouchState {
   Invalid = 0,
   Initial = 1,
@@ -38,12 +36,14 @@ const enum TouchState {
   InLongPressAwaitingTap = 10,
 }
 
+/** @hidden */
 const enum TapEventType {
   OneFingerSingleTap = 0,
   OneFingerDoubleTap = 1,
   TwoFingerSingleTap = 2,
 }
 
+/** @hidden */
 class TouchPoint extends Point2d {
   public initialX: number;
   public initialY: number;
@@ -140,17 +140,15 @@ export class EventController {
   }
 
   public destroy() {
-    this.unregisterListeners();
-  }
-
-  private unregisterListeners() {
-    for (const removeFunc of this.removals) { removeFunc(); }
+    this.removals.forEach((remove) => remove());
     this.removals.length = 0;
   }
 
-  private registerListener(domType: string, element: HTMLElement, callback: EventListener) {
-    const that = this;
-    const listener = (e: Event) => { callback.call(that, e); };
+  private registerListener(domType: string, element: HTMLElement) {
+    const listener = (ev: Event) => {
+      ev.preventDefault();
+      IModelApp.toolAdmin.addEvent(ev, this.vp);
+    };
     element.addEventListener(domType, listener, false);
     this.removals.push(() => { element.removeEventListener(domType, listener, false); });
   }
@@ -160,99 +158,19 @@ export class EventController {
     if (!element)
       return;
 
-    this.registerListener("mousedown", element, this.handleMouseDown as EventListener);
-    this.registerListener("mouseup", element, this.handleMouseUp as EventListener);
-    this.registerListener("mousemove", element, this.handleMouseMove as EventListener);
-    this.registerListener("mouseleave", element, this.handleMouseLeave as EventListener);
-    this.registerListener("wheel", element, this.handleMouseWheel as EventListener);
-    this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
-    this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
-    this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
-    this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
+    this.registerListener("mousedown", element);
+    this.registerListener("mouseup", element);
+    this.registerListener("mousemove", element);
+    this.registerListener("mouseenter", element);
+    this.registerListener("mouseleave", element);
+    this.registerListener("wheel", element);
+    // this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
+    // this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
+    // this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
+    // this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
 
     element.oncontextmenu = () => false;
     element.onselectstart = () => false;
-  }
-
-  private recordShiftKey() { IModelApp.toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Shift, true); }
-  private recordControlKey() { IModelApp.toolAdmin.currentInputState.setKeyQualifier(BeModifierKey.Control, true); }
-  private clearKeyboardModifiers() { IModelApp.toolAdmin.currentInputState.clearKeyQualifiers(); }
-
-  private handleMiddleDown(pos: Point2d) { IModelApp.toolAdmin.onMiddleButtonDown(this.vp, pos); }
-  private handleMiddleUp(pos: Point2d) { IModelApp.toolAdmin.onMiddleButtonUp(this.vp, pos); }
-  private handleLeftDown(pos: Point2d) { IModelApp.toolAdmin.onDataButtonDown(this.vp, pos, InputSource.Mouse); }
-  private handleLeftUp(pos: Point2d) { IModelApp.toolAdmin.onDataButtonUp(this.vp, pos, InputSource.Mouse); }
-  private handleRightDown(pos: Point2d) { IModelApp.toolAdmin.onResetButtonDown(this.vp, pos); }
-  private handleRightUp(pos: Point2d) { IModelApp.toolAdmin.onResetButtonUp(this.vp, pos); }
-
-  private getMouseButtonHandler(button: MouseButton, isDown: boolean) {
-    switch (button) {
-      case MouseButton.LEFT: return isDown ? this.handleLeftDown : this.handleLeftUp;
-      case MouseButton.MIDDLE: return isDown ? this.handleMiddleDown : this.handleMiddleUp;
-      case MouseButton.RIGHT: return isDown ? this.handleRightDown : this.handleRightUp;
-      default: return undefined;
-    }
-  }
-
-  private recordKeyboardModifiers(ev: MouseEvent): void {
-    this.clearKeyboardModifiers();
-    if (ev.shiftKey)
-      this.recordShiftKey();
-
-    if (ev.ctrlKey)
-      this.recordControlKey();
-  }
-
-  private getPosition(ev: Touch | MouseEvent, result?: Point2d): Point2d {
-    const rect = this.vp.getClientRect();
-    return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top }, result);
-  }
-
-  private handleMouseUpDown(ev: MouseEvent, isDown: boolean): void {
-    const handler = this.getMouseButtonHandler(ev.button, isDown);
-    if (!handler)
-      return;
-
-    this.recordKeyboardModifiers(ev);
-    const pos = this.getPosition(ev);
-
-    handler.call(this, pos);
-    ev.preventDefault();
-  }
-
-  private handleMouseDown(ev: MouseEvent) { this.handleMouseUpDown(ev, true); }
-  private handleMouseUp(ev: MouseEvent) { this.handleMouseUpDown(ev, false); }
-
-  private handleMouseMove(ev: MouseEvent) {
-    ev.preventDefault();
-    this.recordKeyboardModifiers(ev);
-
-    // catch exceptions caused by aborting previous snap attempts
-    IModelApp.toolAdmin.onMouseMotion(this.vp, this.getPosition(ev), InputSource.Mouse).catch((_error) => { });
-  }
-
-  private handleMouseLeave(ev: MouseEvent) {
-    IModelApp.toolAdmin.onMouseLeave(this.vp);
-    ev.preventDefault();
-  }
-
-  private handleMouseWheel(ev: WheelEvent) {
-    this.recordKeyboardModifiers(ev);
-
-    let delta;
-    const deltaMode = ev.deltaMode;
-    if (deltaMode === ev.DOM_DELTA_PIXEL)
-      delta = -ev.deltaY;
-    else if (deltaMode === ev.DOM_DELTA_LINE)
-      delta = -ev.deltaY * 40;
-    else
-      delta = -ev.deltaY * 120;
-
-    if (!delta)
-      return;
-
-    IModelApp.toolAdmin.onWheel(this.vp, delta, IModelApp.toolAdmin.currentInputState.lastMotion);
-    ev.preventDefault();
   }
 
   private initializeTouches(): void {
@@ -346,16 +264,14 @@ export class EventController {
     return info;
   }
 
-  private sendGestureEvent(info: GestureInfo) {
-    this.pushTouch(info);
-  }
+  private sendGestureEvent(info: GestureInfo) { this.pushTouch(info); }
 
   private sendEndGestureEvent(gestureId: GestureId, x: number, y: number, points: TouchPoint[], isFromMouse: boolean) {
     const info = this.initGestureInfo(gestureId, x, y, 0.0, points, true, isFromMouse);
     this.sendGestureEvent(info);
   }
 
-  private touchCanceled(): void { this.setTouchState(TouchState.Invalid); }
+  public touchCanceled(): void { this.setTouchState(TouchState.Invalid); }
   private onTouchEvent(): void { this.lastTouchEventTime = Date.now(); }
 
   private getTouchPoint(id: number): TouchPoint | undefined {
@@ -379,7 +295,7 @@ export class EventController {
     return false;
   }
 
-  private touchDown(x: number, y: number, id: number, numberFingers: number, interpretingDataButtonAsTouch: boolean) {
+  public touchDown(x: number, y: number, id: number, numberFingers: number, interpretingDataButtonAsTouch: boolean) {
     this.onTouchEvent();
 
     if (numberFingers <= this.touchPoints.length) {
@@ -432,7 +348,7 @@ export class EventController {
     }
   }
 
-  private touchUp(id: number): void {
+  public touchUp(id: number): void {
     this.onTouchEvent();
     const interpretingDataButtonAsTouch = this.interpretingDataButtonAsTouch;
 
@@ -523,7 +439,7 @@ export class EventController {
     this.removeTouchPoint(id);
   }
 
-  private touchMove(x: number, y: number, id: number): void {
+  public touchMove(x: number, y: number, id: number): void {
     this.onTouchEvent();
 
     const p = this.getTouchPoint(id);
@@ -618,9 +534,7 @@ export class EventController {
     this.sendGestureEvent(info);
   }
 
-  private handlePressAndTap(): void {
-    this.sendPressAndTapEvent(this.touchPoints, this.interpretingDataButtonAsTouch);
-  }
+  private handlePressAndTap(): void { this.sendPressAndTapEvent(this.touchPoints, this.interpretingDataButtonAsTouch); }
 
   private sendPressAndTapEvent(points: TouchPoint[], isFromMouse: boolean): void {
     const anchor = points[0];
@@ -708,33 +622,22 @@ export class EventController {
     return this.handleSingleFingerMove(points) || this.handleMultiFingerMove(points);
   }
 
-  private processTouches(ev: TouchEvent, func: (id: number, num: number, x: number, y: number) => void) {
-    const touches = ev.changedTouches;
-    const numFingers = touches.length;
+  public processTouches(ev: TouchEvent, _func: (id: number, num: number, x: number, y: number) => void) {
+    // const touches = ev.changedTouches;
+    // const numFingers = touches.length;
 
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < touches.length; ++i) {
-      const touch = touches[i];
-      const pos = this.getPosition(touch);
-      func(touch.identifier, numFingers, pos.x, pos.y);
-    }
+    // // tslint:disable-next-line:prefer-for-of
+    // for (let i = 0; i < touches.length; ++i) {
+    //   const touch = touches[i];
+    //   const pos = this.getPosition(touch);
+    //   func(touch.identifier, numFingers, pos.x, pos.y);
+    // }
 
     ev.preventDefault();
   }
 
-  private handleTouchStart(ev: TouchEvent) {
-    this.processTouches(ev, (id: number, num: number, x: number, y: number) => { this.touchDown(x, y, id, num, false); });
-  }
-
-  private handleTouchEnd(ev: TouchEvent) {
-    this.processTouches(ev, (id: number, _num: number, _x: number, _y: number) => { this.touchUp(id); });
-  }
-
-  private handleTouchMove(ev: TouchEvent) {
-    this.processTouches(ev, (id: number, _num: number, x: number, y: number) => { this.touchMove(x, y, id); });
-  }
-
-  private handleTouchCancel(_ev: TouchEvent) {
-    this.touchCanceled();
-  }
+  // private handleTouchStart(ev: TouchEvent) { this.processTouches(ev, (id: number, num: number, x: number, y: number) => this.touchDown(x, y, id, num, false)); }
+  // private handleTouchEnd(ev: TouchEvent) { this.processTouches(ev, (id: number, _num: number, _x: number, _y: number) => this.touchUp(id)); }
+  // private handleTouchMove(ev: TouchEvent) { this.processTouches(ev, (id: number, _num: number, x: number, y: number) => this.touchMove(x, y, id)); }
+  // private handleTouchCancel(_ev: TouchEvent) { this.touchCanceled(); }
 }

@@ -473,6 +473,48 @@ describe("OrderedRotationAngles", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("OrderedRotationAnglesVersusYawPitchRoll", () => {
+    const ck = new Checker();
+    const degreesChoices = [Angle.createDegrees(0.0), Angle.createDegrees(10.0), Angle.createDegrees(5.0), Angle.createDegrees(15.0)];
+    const unitX = Vector3d.unitX();
+    const unitY = Vector3d.unitY();
+    const unitZ = Vector3d.unitZ();
+    // Confirm that ypr matrix matches transpose of OrientedRotationAngles matrix for XYZ order and (X=roll, Y= negated pitch, Z = yaw)
+    OrderedRotationAngles.treatVectorsAsColumns = true;
+    for (const rollAngle of degreesChoices) {
+      // this is ROLL
+      const matrixX = RotMatrix.createRotationAroundVector(unitX, rollAngle)!;
+      for (const pitchAngle of degreesChoices) {
+        // this is PITCH
+        const matrixY = RotMatrix.createRotationAroundVector(unitY, pitchAngle)!;
+        matrixY.transposeInPlace();   // PITCH IS NEGATIVE Y !!!!!
+        for (const yawAngle of degreesChoices) {
+          // this is YAW
+          const matrixZ = RotMatrix.createRotationAroundVector(unitZ, yawAngle)!;
+          const matrixZYX = matrixZ.multiplyMatrixMatrix(matrixY.multiplyMatrixMatrix(matrixX));
+          const ypr = YawPitchRollAngles.createRadians(yawAngle.radians, pitchAngle.radians, rollAngle.radians);
+          const yprMatrix = ypr.toRotMatrix();
+          if (!ck.testCoordinate(0, yprMatrix.maxDiff(matrixZYX))) {
+            console.log(JSON.stringify(ypr.toJSON()) + " maxDiff ypr:(Z)(-Y)(X) " + "  ,  " + yprMatrix.maxDiff(matrixZYX));
+            console.log("ypr matrix", yprMatrix);
+            console.log("matrixZYX", matrixZYX);
+          }
+          const orderedAngles = OrderedRotationAngles.createDegrees(rollAngle.degrees, -pitchAngle.degrees, yawAngle.degrees, AxisOrder.XYZ);
+          const orderedMatrix = orderedAngles.toRotMatrix();
+//          const orderedAnglesB = OrderedRotationAngles.createDegrees(-rollAngle.degrees, pitchAngle.degrees, -yawAngle.degrees, AxisOrder.ZYX);
+//          const orderedMatrixB = orderedAngles.toRotMatrix ();
+//         console.log ("B diff", orderedMatrixB.maxDiff (yprMatrix), orderedAnglesB);
+          orderedMatrix.transposeInPlace ();
+          if (!ck.testRotMatrix(yprMatrix, orderedMatrix)) {
+            const orderedMatrix1 = orderedAngles.toRotMatrix();
+            ck.testRotMatrix(yprMatrix, orderedMatrix1);
+
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("OrderedRotationAngles.FromRotMatrix", () => {
     const ck = new Checker();
     const /*x = .0192, y = .7564,*/ z = Math.PI / 2;

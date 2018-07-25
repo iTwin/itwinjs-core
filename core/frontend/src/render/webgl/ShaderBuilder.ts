@@ -6,12 +6,15 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
+import { System } from "./System";
+import { addClipping } from "./glsl/Clipping";
+import { ClipDef } from "./TechniqueFlags";
+import { ClippingType } from "../System";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
   Boolean, // bool
   Int, // int
-  UInt, // uint
   Float, // float
   Vec2, // vec2
   Vec3, // vec3
@@ -49,7 +52,6 @@ namespace Convert {
     switch (type) {
       case VariableType.Boolean: return "bool";
       case VariableType.Int: return "int";
-      case VariableType.UInt: return "uint";
       case VariableType.Float: return "float";
       case VariableType.Vec2: return "vec2";
       case VariableType.Vec3: return "vec3";
@@ -159,7 +161,7 @@ export class ShaderVariable {
  * If the same variable is used in both the fragment and vertex shader (e.g., a varying variable), it should be defined in both ShaderBuilders' ShaderVariables object.
  */
 export class ShaderVariables {
-  private readonly _list: ShaderVariable[] = new Array<ShaderVariable>();
+  public readonly _list: ShaderVariable[] = new Array<ShaderVariable>();
 
   /** Find an existing variable with the specified name */
   public find(name: string): ShaderVariable | undefined { return this._list.find((v: ShaderVariable) => v.name === name); }
@@ -266,9 +268,9 @@ export class SourceBuilder {
  * plus a set of code snippets which can be concatenated together to form the shader source.
  */
 export class ShaderBuilder extends ShaderVariables {
-  private readonly _components: string[] = new Array<string>();
-  private readonly _functions: string[] = new Array<string>();
-  private readonly _extensions: string[] = new Array<string>();
+  public readonly _components: string[] = new Array<string>();
+  public readonly _functions: string[] = new Array<string>();
+  public readonly _extensions: string[] = new Array<string>();
   public headerComment: string = "";
 
   protected constructor(maxComponents: number) {
@@ -319,11 +321,15 @@ export class ShaderBuilder extends ShaderVariables {
     }
   }
 
-  protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false): SourceBuilder {
+  protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false, maxClippingPlanes: number = 0): SourceBuilder {
     const src = new SourceBuilder();
 
     src.addline("#version 100");
     src.addline("#define TEXTURE texture2D");
+    src.addline("#define TEXTURE_CUBE textureCube");
+
+    if (maxClippingPlanes > 0)
+      src.addline("#define MAX_CLIPPING_PLANES " + maxClippingPlanes);
 
     // Header comment
     src.newline();
@@ -336,6 +342,7 @@ export class ShaderBuilder extends ShaderVariables {
     let needMultiDrawBuffers = false;
     for (const ext of this._extensions) {
       if (ext === "GL_EXT_draw_buffers") {
+        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
         needMultiDrawBuffers = true;
       }
 
@@ -414,6 +421,9 @@ export const enum VertexShaderComponent {
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
   private _initializers: string[] = new Array<string>();
+
+  public get computedVarying(): string[] { return this._computedVarying; }
+  public get initializers(): string[] { return this._initializers; }
 
   private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
 
@@ -540,6 +550,8 @@ export const enum FragmentShaderComponent {
 
 /** Assembles the source code for a fragment shader from a set of modular components. */
 export class FragmentShaderBuilder extends ShaderBuilder {
+  public maxClippingPlanes: number = 0;
+
   public constructor() {
     super(FragmentShaderComponent.COUNT);
   }
@@ -547,7 +559,10 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
 
-  public addDrawBuffersExtension(): void { this.addExtension("GL_EXT_draw_buffers"); }
+  public addDrawBuffersExtension(): void {
+    assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
+    this.addExtension("GL_EXT_draw_buffers");
+  }
 
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
@@ -645,7 +660,67 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     return prelude.source;
   }
 
-  private buildPrelude(isLit: boolean): SourceBuilder { return this.buildPreludeCommon(true, isLit); }
+  private buildPrelude(isLit: boolean): SourceBuilder {
+    assert(this.maxClippingPlanes === 0 || this.get(FragmentShaderComponent.ApplyClipping) !== undefined);
+    return this.buildPreludeCommon(true, isLit, this.maxClippingPlanes);
+  }
+}
+
+/** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports. */
+export class ClippingShaders {
+  public builder: ProgramBuilder;
+  public shaders: ShaderProgram[] = [];
+  public maskShader?: ShaderProgram;
+
+  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext) {
+    this.builder = prog.clone();
+    addClipping(this.builder, ClipDef.forPlanes(6));
+
+    const maskBuilder = prog.clone();
+    addClipping(maskBuilder, ClipDef.forMask());
+    this.maskShader = maskBuilder.buildProgram(context);
+    assert(this.maskShader !== undefined);
+  }
+
+  private static roundUpToNearesMultipleOf(value: number, factor: number): number {
+    const maxPlanes = Math.ceil(value / factor) * factor;
+    assert(maxPlanes > 0);
+    assert(maxPlanes <= value);
+    return maxPlanes;
+  }
+
+  private static roundNumPlanes(minPlanes: number): number {
+    // We want to avoid making the shader do too much extra work, but we also want to avoid creating separate clipping shaders for
+    // every unique # of planes
+    if (minPlanes <= 2)
+      return minPlanes;   // 1 or 2 planes fairly common (ex - section cut)
+    else if (minPlanes <= 6)
+      return 6;           // cuboid volume
+    else if (minPlanes <= 120)
+      return this.roundUpToNearesMultipleOf(minPlanes, 20);
+    else
+      return this.roundUpToNearesMultipleOf(minPlanes, 50);
+  }
+
+  public getProgram(clipDef: ClipDef): ShaderProgram | undefined {
+    if (clipDef.type === ClippingType.Mask) {
+      return this.maskShader;
+    } else if (clipDef.type === ClippingType.Planes) {
+      assert(clipDef.numberOfPlanes > 0);
+      const numClips = ClippingShaders.roundNumPlanes(clipDef.numberOfPlanes);
+      for (const shader of this.shaders)
+        if (shader.maxClippingPlanes === numClips)
+          return shader;
+
+      this.builder.frag.maxClippingPlanes = numClips;
+      const newProgram = this.builder.buildProgram(System.instance.context);
+      this.shaders.push(newProgram);
+      return newProgram;
+    } else {
+      assert(false);
+      return undefined;
+    }
+  }
 }
 
 export const enum ShaderType {
@@ -709,9 +784,47 @@ export class ProgramBuilder {
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
-    const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment);
+    const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;
+  }
+
+  public setDebugDescription(description: string): void {
+    this.vert.headerComment = this.frag.headerComment = ("//! " + description);
+  }
+
+  /** Returns a deep copy of this program builder. */
+  public clone(): ProgramBuilder {
+    const clone = new ProgramBuilder(false);
+
+    // Copy from vertex builder
+    clone.vert.headerComment = this.vert.headerComment;
+    for (let i = 0; i < this.vert.computedVarying.length; i++)
+      clone.vert.computedVarying[i] = this.vert.computedVarying[i];
+    for (let i = 0; i < this.vert.initializers.length; i++)
+      clone.vert.initializers[i] = this.vert.initializers[i];
+    for (let i = 0; i < this.vert._components.length; i++)
+      clone.vert._components[i] = this.vert._components[i];
+    for (let i = 0; i < this.vert._functions.length; i++)
+      clone.vert._functions[i] = this.vert._functions[i];
+    for (let i = 0; i < this.vert._extensions.length; i++)
+      clone.vert._extensions[i] = this.vert._extensions[i];
+    for (let i = 0; i < this.vert._list.length; i++)
+      clone.vert._list[i] = this.vert._list[i];
+
+    // Copy from fragment builder
+    clone.frag.headerComment = this.frag.headerComment;
+    clone.frag.maxClippingPlanes = this.frag.maxClippingPlanes;
+    for (let i = 0; i < this.frag._components.length; i++)
+      clone.frag._components[i] = this.frag._components[i];
+    for (let i = 0; i < this.frag._functions.length; i++)
+      clone.frag._functions[i] = this.frag._functions[i];
+    for (let i = 0; i < this.frag._extensions.length; i++)
+      clone.frag._extensions[i] = this.frag._extensions[i];
+    for (let i = 0; i < this.frag._list.length; i++)
+      clone.frag._list[i] = this.frag._list[i];
+
+    return clone;
   }
 }

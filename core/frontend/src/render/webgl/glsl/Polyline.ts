@@ -13,11 +13,9 @@ import {
 } from "../ShaderBuilder";
 import { addModelViewMatrix, addProjectionMatrix, GLSLVertex } from "./Vertex";
 import { addFrustum } from "./Common";
-import { WithClipVolume } from "../TechniqueFlags";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
 import { GLSLDecode } from "./Decode";
-import { addClipping } from "./Clipping";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
@@ -174,7 +172,7 @@ function polylineAddLineCode(prog: ProgramBuilder) {
   */
 }
 
-function addCommon(prog: ProgramBuilder, clip: WithClipVolume) {
+function addCommon(prog: ProgramBuilder) {
   const vert = prog.vert;
   addModelToWindowCoordinates(vert); // adds u_mvp, u_viewportTransformation
   addProjectionMatrix(vert);
@@ -223,9 +221,6 @@ function addCommon(prog: ProgramBuilder, clip: WithClipVolume) {
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
   vert.addFunction(adjustWidth);
-
-  if (WithClipVolume.Yes === clip)
-    addClipping(prog);
 }
 
 const decodeAdjacentPositions = `
@@ -361,11 +356,11 @@ const computePosition = `
 
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
-export function createPolylineBuilder(clip: WithClipVolume): ProgramBuilder {
+export function createPolylineBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(true);
   addShaderFlags(builder);
 
-  addCommon(builder, clip);
+  addCommon(builder);
 
   polylineAddLineCode(builder);
 
@@ -375,9 +370,9 @@ export function createPolylineBuilder(clip: WithClipVolume): ProgramBuilder {
   return builder;
 }
 
-export function createPolylineHiliter(clip: WithClipVolume): ProgramBuilder {
+export function createPolylineHiliter(): ProgramBuilder {
   const builder = new ProgramBuilder(true);
-  addCommon(builder, clip);
+  addCommon(builder);
   addFrustum(builder);
   addHiliter(builder);
   return builder;

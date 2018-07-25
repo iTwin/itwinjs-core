@@ -4,11 +4,10 @@
 /** @module Tile */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
-import { Id64Props, Id64 } from "@bentley/bentleyjs-core";
-import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Angle } from "@bentley/geometry-core";
-import { TileLoader, TileTree, Tile } from "./TileTree";
+import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
+import { Id64Props, Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Vector3d, Angle } from "@bentley/geometry-core";
+import { TileLoader, TileTree, Tile, MissingNodes } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { SpatialModelState } from "../ModelState";
@@ -17,10 +16,15 @@ import { IModelApp } from "../IModelApp";
 import { GeometricModelState } from "../ModelState";
 import { RenderSystem } from "../render/System";
 
-function columnToLongitude(column: number, nTiles: number) { return column / nTiles * 360.0 - 180.; }
-function rowToLatitude(row: number, nTiles: number) {
-  const n = Angle.piRadians - Angle.pi2Radians * row / nTiles;
-  return Angle.degreesPerRadian * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }
+function latitudeToMercator(latitude: number) {
+  const sinLatitude = Math.sin(latitude);
+  return (0.5 - Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude)) / (4.0 * Angle.piRadians));   // https://msdn.microsoft.com/en-us/library/bb259689.aspx
+}
+
+function ecefToMercator(point: Point3d) {
+  const cartoGraphic = Cartographic.fromEcef(point) as Cartographic;
+  return Point3d.create(longitudeToMercator(cartoGraphic.longitude), latitudeToMercator(cartoGraphic.latitude), 0.0);
 }
 
 class QuadId {
@@ -32,7 +36,7 @@ class QuadId {
   public constructor(stringId: string) {
     const idParts = stringId.split("_");
     if (3 !== idParts.length) {
-      assert(false, "Unvalid quadtree ID");
+      assert(false, "Invalid quadtree ID");
       this.level = this.row = this.column = -1;
       return;
     }
@@ -41,28 +45,26 @@ class QuadId {
     this.column = parseInt(idParts[1], 10);
     this.row = parseInt(idParts[2], 10);
   }
-  public getCartographicCorners(): Cartographic[] {
+  public getMercatorCorners(): Point3d[] {
     const nTiles = (1 << this.level);
-    const west = columnToLongitude(this.column, nTiles);
-    const east = columnToLongitude(this.column + 1, nTiles);
-    const north = rowToLatitude(this.row, nTiles);
-    const south = rowToLatitude(this.row + 1, nTiles);
+    const scale = 1.0 / nTiles;
 
-    const corners: Cartographic[] = [];             //    ----x----->
-    corners.push(Cartographic.fromDegrees(west, north, 0.0));   //  | [0]     [1]
-    corners.push(Cartographic.fromDegrees(east, north, 0.0));   //  y
-    corners.push(Cartographic.fromDegrees(west, south, 0.0));   //  | [2]     [3]
-    corners.push(Cartographic.fromDegrees(east, south, 0.0));   //  v
+    const corners: Point3d[] = [];             //    ----x----->
+    corners.push(Point3d.create(scale * this.column, scale * this.row, 0.0));   //  | [0]     [1]
+    corners.push(Point3d.create(scale * (this.column + 1), scale * this.row, 0.0));   //  y
+    corners.push(Point3d.create(scale * this.column, scale * (this.row + 1), 0.0));   //  | [2]     [3]
+    corners.push(Point3d.create(scale * (this.column + 1), scale * (this.row + 1), 0.0));   //  v
 
     return corners;
   }
-  public getEcefCorners(): Point3d[] {
-    const cartographicsCorners = this.getCartographicCorners();
-    const ecefCorners: Point3d[] = [];
-    for (const cartographicCorner of cartographicsCorners) {
-      ecefCorners.push(cartographicCorner.toEcef());
-    }
-    return ecefCorners;
+  public getCorners(mercatorToDb: Transform): Point3d[] {
+    const corners = this.getMercatorCorners();
+    mercatorToDb.multiplyPoint3dArrayInPlace(corners);
+    return corners;
+  }
+  public getRange(mercatorToDb: Transform): Range3d {
+    const corners = this.getCorners(mercatorToDb);
+    return Range3d.createArray(corners);
   }
 }
 class WebMercatorTileTreeProps implements TileTreeProps {
@@ -72,43 +74,32 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
-  public provider: ImageryProvider;
-
-  public constructor(provider: ImageryProvider) {
-    const worldRadius = 6.5E6;
-    const worldRange = Range3d.createXYZXYZ(-worldRadius, -worldRadius, -worldRadius, worldRadius, worldRadius, worldRadius);
-    this.rootTile = new WebMercatorTileProps("0_0_0", worldRange, undefined);
+  public constructor(mercatorToDb: Transform) {
+    this.rootTile = new WebMercatorTileProps("0_0_0", mercatorToDb);
     this.location = Transform.createIdentity();
-    this.provider = provider;
   }
-}
-class WebMercatorGeometry {
-  constructor(public imageSource: ImageSource, public corners: Point3d[]) { }
 }
 class WebMercatorTileProps implements TileProps {
   public id: TileId;
   public parentId?: string;
   public range: Range3dProps;
   public contentRange?: Range3dProps;
-  public maximumSize: number = 256;
+  public maximumSize: number;
+
   public childIds: string[];
   public yAxisUp: boolean = true;
+  public hasContents: boolean = true;
   public geometry?: any;
 
-  // Quad tree location...
-  private quadId: QuadId;
-
-  constructor(thisId: string, range: Range3dProps, geometry: WebMercatorGeometry | undefined) {
+  constructor(thisId: string, mercatorToDb: Transform) {
     this.id = new TileId(new Id64(), thisId);
-    this.quadId = new QuadId(thisId);
-    this.range = range;
-    this.maximumSize = (undefined === geometry) ? 0.0 : 30.0; // nonzero only if content present.
-    this.geometry = geometry;
-
+    const quadId = new QuadId(thisId);
+    this.range = quadId.getRange(mercatorToDb);
     this.childIds = [];
-    const level = this.quadId.level + 1;
-    const column = this.quadId.column * 2;
-    const row = this.quadId.row * 2;
+    const level = quadId.level + 1;
+    const column = quadId.column * 2;
+    const row = quadId.row * 2;
+    this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
     for (let i = 0; i < 2; ++i) {
       for (let j = 0; j < 2; ++j) {
         this.childIds.push(level + "_" + (column + i) + "_" + (row + j));
@@ -116,51 +107,60 @@ class WebMercatorTileProps implements TileProps {
     }
   }
 }
-
 class WebMercatorTileLoader extends TileLoader {
+  private providerInitialized: boolean = false;
+  public mercatorToDb: Transform;
+  constructor(private imageryProvider: ImageryProvider, private modelState: GeometricModelState, groundBias: number) {
+    super();
+    const ecefLocation = modelState.iModel.ecefLocation as EcefLocation;
+    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+
+    const projectExtents = modelState.iModel.projectExtents;
+    const projectCenter = projectExtents.getCenter();
+    const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
+    const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
+
+    const mercatorOrigin = ecefToMercator(dbToEcef.multiplyPoint3d(projectCenter));
+    const mercatorX = ecefToMercator(dbToEcef.multiplyPoint3d(projectEast));
+    const mercatorY = ecefToMercator(dbToEcef.multiplyPoint3d(projectNorth));
+
+    const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
+    const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
+
+    const dbToMercator = Transform.createOriginAndMatrixColumns(mercatorOrigin, deltaX, deltaY, Vector3d.create(0.0, 0.0, 1.0)).multiplyTransformTransform(Transform.createTranslationXYZ(-projectCenter.x, -projectCenter.y, -groundBias));
+    this.mercatorToDb = dbToMercator.inverse() as Transform;
+  }
+  public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: WebMercatorTileProps[] = [];
-    await Promise.all(tileIds.map(async (tileId) => {
-      const tile = await this.loadTileContents(tileId);
-      if (tile !== undefined)
-        props.push(tile);
-    }));
+    for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.mercatorToDb)); }
+
     return props;
   }
-  private async loadTileContents(id: string): Promise<WebMercatorTileProps | undefined> {
-    if (undefined === this.ecefToDb) return undefined;
+  public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
+    const missingArray = missingTiles.extractArray();
+    await Promise.all(missingArray.map(async (missingTile) => {
+      if (missingTile.isNotLoaded) {
+        missingTile.setIsQueued();
+        if (!this.providerInitialized) {
+          await this.imageryProvider.initialize();
+          this.providerInitialized = true;
+        }
 
-    const quadId = new QuadId(id);
-    if (!quadId.isValid) return undefined;
-
-    const imageSource = await this.tree.provider.loadTile(quadId.row, quadId.column, quadId.level);
-    if (undefined === imageSource)
-      return undefined;
-
-    const corners = quadId.getEcefCorners();
-    this.ecefToDb.multiplyPoint3dArrayInPlace(corners);
-
-    const range = Range3d.createArray(corners);
-    return new WebMercatorTileProps(id, range, new WebMercatorGeometry(imageSource, corners));
-  }
-  public loadGraphics(tile: Tile, geometry: any): void {
-    if (undefined === geometry) {
-      tile.setIsReady();
-      return;
-    }
-
-    tile.loadStatus = Tile.LoadStatus.Loading;
-    const webMercatorGeometry = geometry as WebMercatorGeometry;
-    const textureLoad = this.loadTextureImage(webMercatorGeometry.imageSource, tile.root.model, IModelApp.renderSystem);
-
-    textureLoad.catch((_err) => tile.setNotFound());
-    textureLoad.then((result) => {
-      // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
-      if (tile.isLoading) {
-        tile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, webMercatorGeometry.corners));
-        tile.setIsReady();
+        const quadId = new QuadId(missingTile.id);
+        const corners = quadId.getCorners(this.mercatorToDb);
+        const imageSource = await this.imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+        if (undefined === imageSource) {
+          missingTile.setNotFound();
+        } else {
+          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this.modelState, IModelApp.renderSystem);
+          textureLoad.catch((_err) => missingTile.setNotFound());
+          textureLoad.then((result) => {
+            missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
+          });
+        }
       }
-    });
+    }));
   }
 
   private async loadTextureImage(imageSource: ImageSource, model: GeometricModelState, system: RenderSystem): Promise<RenderTexture | undefined> {
@@ -175,10 +175,7 @@ class WebMercatorTileLoader extends TileLoader {
     }
   }
 
-  public getMaxDepth(): number { return this.tree.provider.maximumZoomLevel; }
-  constructor(private tree: WebMercatorTileTreeProps, private ecefToDb: Transform) {
-    super();
-  }
+  public getMaxDepth(): number { return this.providerInitialized ? this.imageryProvider.maximumZoomLevel : 32; }
 }
 
 // The type of background map
@@ -196,12 +193,8 @@ abstract class ImageryProvider {
   public abstract get tileHeight(): number;
   public abstract get minimumZoomLevel(): number;
   public abstract get maximumZoomLevel(): number;
-
-  // construct the Url from the desired Tile
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
-
   public abstract getCopyrightMessage(): string;
-
   public abstract getCopyrightImage(): Uint8Array | undefined;
 
   // initialize the subclass of ImageryProvider
@@ -470,44 +463,33 @@ export class WebMercatorModelState extends SpatialModelState {
 
   public useRangeForFit(): boolean { return false; }    // The webmercator range should not be included for fit...
 
-  // The Tile Tree generated from a WebMercator map model.
-  private static async getTileTreeProps(jsonProperties: any, _iModel: IModelConnection): Promise<WebMercatorTileTreeProps> {
+  public loadTileTree(): TileTree.LoadStatus {
+    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
+      return this._loadStatus;
 
-    if (jsonProperties.hasOwnProperty("providerName") && jsonProperties.hasOwnProperty("providerData")) {
-      const providerName: string = jsonProperties.providerName;
-      const providerData: any = jsonProperties.providerData;
-      let provider: ImageryProvider;
+    if (this.iModel.ecefLocation === undefined)
+      throw new BentleyError(IModelStatus.BadModel, "WebMercator not valid without ecefLocation");
+
+    const webMercatorProperties = this.jsonProperties.webMercatorModel;
+    let provider: ImageryProvider | undefined;
+
+    if (undefined !== webMercatorProperties && webMercatorProperties.hasOwnProperty("providerName") && webMercatorProperties.hasOwnProperty("providerData")) {
+      const providerName: string = webMercatorProperties.providerName;
+      const providerData: any = webMercatorProperties.providerData;
       if (("BingProvider" === providerName) && (providerData.hasOwnProperty("mapType"))) {
         const mapType: number = Number(providerData.mapType);
         provider = new BingMapProvider(mapType);
       } else if (("MapBoxProvider" === providerName) && (providerData.hasOwnProperty("mapType"))) {
         const mapType: number = Number(providerData.mapType);
         provider = new MapBoxProvider(mapType);
-      } else {
-        throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
       }
-      await (provider.initialize());
-      return new WebMercatorTileTreeProps(provider);
     }
-    throw new BentleyError(IModelStatus.BadModel, "WebMercator specification invalid");
-  }
+    if (provider === undefined)
+      throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-  public loadTileTree(): TileTree.LoadStatus {
-    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
-      return this._loadStatus;
-
-    this._loadStatus = TileTree.LoadStatus.Loading;
-
-    WebMercatorModelState.getTileTreeProps(this.jsonProperties.webMercatorModel, this.iModel).then((tileTreeProps: WebMercatorTileTreeProps) => {
-      const ecefLocation = this.iModel.ecefLocation;
-      if (ecefLocation === undefined)
-        throw new BentleyError(IModelStatus.BadModel, "WebMercator not valid without ecefLocation");
-
-      const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
-      const ecefToDb = dbToEcef.inverse() as Transform;
-
-      this.setTileTree(tileTreeProps, new WebMercatorTileLoader(tileTreeProps, ecefToDb));
-    }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
+    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this, JsonUtils.asDouble(webMercatorProperties.groundBias, 0.0));
+    const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
+    this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }
 }

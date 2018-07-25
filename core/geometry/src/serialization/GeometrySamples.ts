@@ -26,9 +26,10 @@ import { Arc3d } from "../curve/Arc3d";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
-import { ClipPlane, ClipPlaneSet, ConvexClipPlaneSet } from "../numerics/ClipPlanes";
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
-
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 /* tslint:disable:no-console */
 
 /** Access the last point in the array. push another shifted by dx,dy,dz */
@@ -168,17 +169,17 @@ export class Sample {
    * * Two squares -- first and fourth quadrant unit squares
    * * Three squares -- first, second and fourtn quarant unit squares
    */
-  public static createClipPlaneSets(): ClipPlaneSet[] {
+  public static createClipPlaneSets(): UnionOfConvexClipPlaneSets[] {
     const result = [];
     const quadrant1 = ConvexClipPlaneSet.createXYBox(0, 0, 1, 1);
-    result.push(ClipPlaneSet.createConvexSets([quadrant1.clone()]));
+    result.push(UnionOfConvexClipPlaneSets.createConvexSets([quadrant1.clone()]));
     const quadrant2 = ConvexClipPlaneSet.createXYBox(-1, 0, 0, 1);
     const quadrant4 = ConvexClipPlaneSet.createXYBox(0, -1, 1, 0);
 
-    result.push(ClipPlaneSet.createConvexSets([
+    result.push(UnionOfConvexClipPlaneSets.createConvexSets([
       quadrant1.clone(),
       quadrant4.clone()]));
-    result.push(ClipPlaneSet.createConvexSets([
+    result.push(UnionOfConvexClipPlaneSets.createConvexSets([
       quadrant1.clone(),
       quadrant2.clone(),
       quadrant4.clone()]));

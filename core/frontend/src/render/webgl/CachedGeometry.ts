@@ -19,12 +19,12 @@ import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
-import { SkyBoxCreateParams } from "../System";
+import { SkyBoxCreateParams, SkyboxSphereType } from "../System";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable {
   // Returns true if white portions of this geometry should render as black on white background
-  protected _wantWoWReversal(_target: Target): boolean { return false; }
+  protected abstract _wantWoWReversal(_target: Target): boolean;
   // Returns the edge/line weight used to render this geometry
   protected _getLineWeight(_params: ShaderProgramParams): number { return 0; }
   // Returns the edge/line pattern used to render this geometry
@@ -149,10 +149,10 @@ export class IndexedGeometryParams implements IDisposable {
   }
 }
 
-// A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
+/** A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer. */
 export abstract class IndexedGeometry extends CachedGeometry {
   protected readonly _params: IndexedGeometryParams;
-
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
   protected constructor(params: IndexedGeometryParams) {
     super();
     this._params = params;
@@ -174,40 +174,110 @@ export abstract class IndexedGeometry extends CachedGeometry {
   public get qScale() { return this._params.positions.scale; }
 }
 
+/** A geometric primitive representative of a set of clipping planes to clip a volume of space. */
+export class ClipMaskGeometry extends IndexedGeometry {
+  public constructor(indices: Uint32Array, vertices: QPoint3dList) {
+    super(IndexedGeometryParams.create(vertices.toTypedArray(), vertices.params, indices)!);
+  }
+
+  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }
+  public getRenderPass(_target: Target): RenderPass { return RenderPass.None; }
+  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
+}
+
 // a cube of quads in normalized device coordinates for skybox rendering techniques
 class SkyBoxQuads {
   public readonly vertices: Uint16Array;
   public readonly vertexParams: QParams3d;
-  public readonly indices: Uint32Array;
 
   public constructor() {
     const skyBoxSz = 1.0;
 
     const qVerts = new QPoint3dList(QParams3d.fromNormalizedRange());
+
+    // NB: After applying the rotation matrix in the shader, Back becomes (Bottom), etc.
+    // See the notes in the parens below.
+
+    // ###TODO: Make this indexed.  Currently not indexed because of previous six-sided texture system.
+
+    // Back (Bottom after rotation)
     qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
     qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
     qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
     qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+
+    // Front (Top after rotation)
     qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
     qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
     qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
     qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+
+    // Top (Front after rotation)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+
+    // Bottom (Back after rotation)
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+
+    // Left (Right after rotation)
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+
+    // Right (Left after rotation)
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
 
     this.vertices = qVerts.toTypedArray();
     this.vertexParams = qVerts.params;
-
-    this.indices = new Uint32Array([ // (after rotation is applied in shader, how it actually appears)
-      0, 1, 2, 1, 3, 2, // back (BOTTOM)
-      4, 5, 6, 5, 7, 6, // front (TOP)
-      4, 5, 1, 4, 0, 1, // top (FRONT)
-      2, 3, 6, 3, 7, 6, // bottom (BACK)
-      0, 4, 2, 4, 6, 2, // left (RIGHT)
-      1, 5, 3, 5, 7, 3, // right (LEFT)
-    ]);
   }
 
   public createParams() {
-    return IndexedGeometryParams.create(this.vertices, this.vertexParams, this.indices);
+    return SkyBoxGeometryParams.create(this.vertices, this.vertexParams);
+  }
+}
+
+// Parameters used to construct an SkyBox
+export class SkyBoxGeometryParams implements IDisposable {
+  public readonly positions: QBufferHandle3d;
+
+  protected constructor(positions: QBufferHandle3d) {
+    this.positions = positions;
+  }
+
+  public static create(positions: Uint16Array, qparams: QParams3d) {
+    const posBuf = QBufferHandle3d.create(qparams, positions);
+    if (undefined === posBuf) {
+      assert(false);
+      return undefined;
+    }
+
+    assert(!posBuf.isDisposed);
+    return new SkyBoxGeometryParams(posBuf);
+  }
+
+  public dispose() {
+    dispose(this.positions);
   }
 }
 
@@ -223,33 +293,43 @@ namespace SkyBoxQuads {
 }
 
 // Geometry used for view-space rendering techniques.
-export class SkyBoxQuadsGeometry extends IndexedGeometry {
+export class SkyBoxQuadsGeometry extends CachedGeometry {
   protected _techniqueId: TechniqueId;
-  public readonly front: RenderTexture;
-  public readonly back: RenderTexture;
-  public readonly top: RenderTexture;
-  public readonly bottom: RenderTexture;
-  public readonly left: RenderTexture;
-  public readonly right: RenderTexture;
+  public readonly cube: RenderTexture;
+  protected readonly _params: SkyBoxGeometryParams;
 
-  protected constructor(ndxGeomParams: IndexedGeometryParams, sbxParams: SkyBoxCreateParams) {
-    super(ndxGeomParams);
-    this.front = sbxParams.front!;
-    this.back = sbxParams.back!;
-    this.top = sbxParams.top!;
-    this.bottom = sbxParams.bottom!;
-    this.left = sbxParams.left!;
-    this.right = sbxParams.right!;
+  protected constructor(ndxGeomParams: SkyBoxGeometryParams, sbxCreateParams: SkyBoxCreateParams) {
+    super();
+    this.cube = sbxCreateParams.texture!;
     this._techniqueId = TechniqueId.SkyBox;
+    this._params = ndxGeomParams;
   }
-  public static create(sbxParams: SkyBoxCreateParams): SkyBoxQuadsGeometry | undefined {
-    const ndxGeomParams = SkyBoxQuads.getInstance().createParams();
-    return undefined !== ndxGeomParams ? new SkyBoxQuadsGeometry(ndxGeomParams, sbxParams) : undefined;
+
+  public static create(sbxCreateParams: SkyBoxCreateParams): SkyBoxQuadsGeometry | undefined {
+    const sbxGeomParams = SkyBoxQuads.getInstance().createParams();
+    return undefined !== sbxGeomParams ? new SkyBoxQuadsGeometry(sbxGeomParams, sbxCreateParams) : undefined;
   }
 
   public getTechniqueId(_target: Target) { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
   public get renderOrder() { return RenderOrder.Surface; }
+
+  public bindVertexArray(attr: AttributeHandle): void {
+    attr.enableArray(this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
+  }
+
+  public draw(): void {
+    System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
+  }
+
+  public get qOrigin() { return this._params.positions.origin; }
+  public get qScale() { return this._params.positions.scale; }
+
+  public dispose() {
+    dispose(this._params);
+  }
+
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
 }
 
 // A quad with its corners mapped to the dimensions as the viewport, used for special rendering techniques.
@@ -327,6 +407,80 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
     for (const texture of this._textures) {
       assert(!(texture instanceof TextureHandle));
     }
+  }
+}
+
+// Geometry used for rendering default gradient-style or single texture spherical skybox.
+export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
+  public worldPos: Float32Array; // LeftBottom, RightBottom, RightTop, LeftTop worl pos of frustum at mid depth.
+  public readonly typeAndExponents: Float32Array; // [0] -1.0 for 2-color gradient, 1.0 for 4-color gradient, 0.0 for texture; [1] sky exponent (4-color only) [2] ground exponent (4-color only)
+  public readonly zenithColor: Float32Array;
+  public readonly skyColor: Float32Array;
+  public readonly groundColor: Float32Array;
+  public readonly nadirColor: Float32Array;
+  protected readonly _worldPosBuff: BufferHandle;
+
+  protected constructor(params: IndexedGeometryParams, skyboxCreateParams: SkyBoxCreateParams, techniqueId: TechniqueId) {
+    super(params, techniqueId);
+    assert(skyboxCreateParams.isSphere);
+    assert(SkyboxSphereType.Texture !== skyboxCreateParams.sphereType);
+    assert(undefined !== skyboxCreateParams.zenithColor);
+    assert(undefined !== skyboxCreateParams.nadirColor);
+    if (SkyboxSphereType.Gradient4Color === skyboxCreateParams.sphereType) {
+      assert(undefined !== skyboxCreateParams.skyColor);
+      assert(undefined !== skyboxCreateParams.groundColor);
+      assert(undefined !== skyboxCreateParams.skyExponent);
+      assert(undefined !== skyboxCreateParams.groundExponent);
+    }
+    this.worldPos = new Float32Array(4 * 3);
+    this._worldPosBuff = new BufferHandle();
+    this.typeAndExponents = new Float32Array(3);
+    this.zenithColor = new Float32Array(3);
+    this.skyColor = new Float32Array(3);
+    this.groundColor = new Float32Array(3);
+    this.nadirColor = new Float32Array(3);
+    if (SkyboxSphereType.Gradient2Color === skyboxCreateParams.sphereType!) {
+      this.typeAndExponents[0] = -1.0;
+      this.typeAndExponents[1] = 4.0;
+      this.typeAndExponents[2] = 4.0;
+      this.skyColor[0] = 0.0;
+      this.skyColor[1] = 0.0;
+      this.skyColor[2] = 0.0;
+      this.groundColor[0] = 0.0;
+      this.groundColor[1] = 0.0;
+      this.groundColor[2] = 0.0;
+    } else {
+      this.typeAndExponents[0] = 1.0;
+      this.typeAndExponents[1] = skyboxCreateParams.skyExponent!;
+      this.typeAndExponents[2] = skyboxCreateParams.groundExponent!;
+      this.skyColor[0] = skyboxCreateParams.skyColor!.colors.r / 255.0;
+      this.skyColor[1] = skyboxCreateParams.skyColor!.colors.g / 255.0;
+      this.skyColor[2] = skyboxCreateParams.skyColor!.colors.b / 255.0;
+      this.groundColor[0] = skyboxCreateParams.groundColor!.colors.r / 255.0;
+      this.groundColor[1] = skyboxCreateParams.groundColor!.colors.g / 255.0;
+      this.groundColor[2] = skyboxCreateParams.groundColor!.colors.b / 255.0;
+    }
+    this.zenithColor[0] = skyboxCreateParams.zenithColor!.colors.r / 255.0;
+    this.zenithColor[1] = skyboxCreateParams.zenithColor!.colors.g / 255.0;
+    this.zenithColor[2] = skyboxCreateParams.zenithColor!.colors.b / 255.0;
+    this.nadirColor[0] = skyboxCreateParams.nadirColor!.colors.r / 255.0;
+    this.nadirColor[1] = skyboxCreateParams.nadirColor!.colors.g / 255.0;
+    this.nadirColor[2] = skyboxCreateParams.nadirColor!.colors.b / 255.0;
+  }
+
+  public static createGeometry(skyboxCreateParams: SkyBoxCreateParams) {
+    const params = ViewportQuad.getInstance().createParams();
+    return undefined !== params ? new SkySphereViewportQuadGeometry(params, skyboxCreateParams, TechniqueId.SkySphere) : undefined;
+  }
+
+  public get worldPosBuff() { return this._worldPosBuff; }
+
+  public bind() {
+    this._worldPosBuff.bindData(GL.Buffer.Target.ArrayBuffer, this.worldPos, GL.Buffer.Usage.StreamDraw);
+  }
+
+  public dispose() {
+    dispose(this._worldPosBuff);
   }
 }
 

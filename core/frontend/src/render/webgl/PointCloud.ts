@@ -45,6 +45,8 @@ export class PointCloudGeometry extends CachedGeometry {
       this.colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
   }
 
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
+
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointCloud; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueGeneral; }
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }

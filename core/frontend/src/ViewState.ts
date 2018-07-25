@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -25,8 +25,11 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, SheetModelState, GeometricModel2dState } from "./ModelState";
+import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
+import { RenderGraphic } from "./render/System";
+import { Sheet } from "./Sheet";
+import { TileTree, Tile } from "./tile/TileTree";
 
 export const enum GridOrientationType {
   View = 0,
@@ -342,7 +345,7 @@ export abstract class ViewState extends ElementState {
   public abstract computeFitRange(): Range3d;
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
-  public abstract onRenderFrame(): void;
+  public abstract onRenderFrame(_viewport: Viewport): void;
 
   public abstract decorate(context: DecorateContext): void;
 
@@ -936,7 +939,7 @@ export abstract class ViewState3d extends ViewState {
   public forceMinFrontDist = 0.0;
   /** @hidden */
   public static get className() { return "ViewDefinition3d"; }
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
@@ -1333,11 +1336,12 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    const useOldSkyBox = true;
+    const useOldSkyBox: boolean = false;
     if (useOldSkyBox)
       this.drawSkyBox(context);
     else
       this.drawRealSkyBox(context);
+
     this.drawGroundPlane(context);
   }
 
@@ -1626,7 +1630,7 @@ export class SpatialViewState extends ViewState3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
+      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
@@ -1700,11 +1704,18 @@ export abstract class ViewState2d extends ViewState {
     return val;
   }
 
+  /** Return the model for this 2d view. */
   public getViewedModel(): GeometricModel2dState | undefined {
     const model = this.iModel.models.getLoaded(this.baseModelId.value);
     if (model && !(model instanceof GeometricModel2dState))
       return undefined;
     return model;
+  }
+
+  /** Create the scene for this view from a set of pre-initialized DrawArgs. */
+  public createSceneFromDrawArgs(args: Tile.DrawArgs) {
+    // ###TODO: Check for a context RenderPlan wait time in the draw arguments given
+    args.root.draw(args);
   }
 
   public equalState(other: ViewState2d): boolean {
@@ -1731,7 +1742,7 @@ export abstract class ViewState2d extends ViewState {
     return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
   }
 
-  public onRenderFrame(): void { }
+  public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
     super.load();
     return this.iModel.models.load(this.baseModelId);
@@ -1771,33 +1782,109 @@ export class SheetViewState extends ViewState2d {
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps);
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
   }
 
   public static get className() { return "SheetViewDefinition"; }
-  public readonly size: Point2d;
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.size.magnitude() * 10 }; }
+  public readonly sheetSize: Point2d;
+  private _attachmentIds: Id64Array;
+  private _attachments = new Sheet.Attachments();
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
+    if (categories instanceof SheetViewState) {
+      // we are coming from clone...
+      this.sheetSize = categories.sheetSize.clone();
+      this._attachmentIds = categories._attachmentIds;
+      this._attachments = categories._attachments;
+    } else {
+      this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
+      this._attachmentIds = [];
+      attachments.forEach((idProp) => this._attachmentIds.push(idProp));
+    }
+  }
 
-    // sheetProps is necessary for a Sheet View, and contains a height and width for the size of the sheet itself
-    // if it does not appear as given by a sheetProps object, we expect it to be included on the props object (from cloning)
-    if (sheetProps)
-      this.size = Point2d.create(sheetProps.width, sheetProps.height);
-    else
-      this.size = Point2d.create(props.sheetProps.width, props.sheetProps.height);
+  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
+  public async load(): Promise<void> {
+    await super.load();
+
+    // Set the size of the sheet
+    const model = this.getViewedModel();
+    if (model === undefined)
+      return;
+
+    this._attachments.clear();
+
+    // Query the attachments using the id list, and grab all of their corresponding view ids
+    const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
+    const attachmentViewIds: Id64Array = [];
+    for (const attachment of attachments)
+      attachmentViewIds.push(attachment.view.toString());
+
+    // Load each view state corresponding to each attachment in the attachments array
+    // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
+    const attachmentViews: ViewState[] = [];
+    for (const viewId of attachmentViewIds)
+      attachmentViews.push(await this.iModel.views.load(viewId));
+
+    // Create the attachment objects and store them on this SheetViewState
+    for (let i = 0; i < attachments.length; i++) {
+      if (attachmentViews[i].is3d())
+        continue; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+      else
+        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
+    }
+  }
+
+  /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
+  public onRenderFrame(_viewport: Viewport) {
+    if (!this._attachments.allLoaded)
+      _viewport.sync.invalidateScene();
+  }
+
+  /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
+  public createScene(context: SceneContext) {
+    super.createScene(context);
+
+    if (!this._attachments.allLoaded) {
+      // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
+      let i = 0;
+      while (i < this._attachments.length) {
+        const attachStatus = this._attachments.load(i);
+
+        // If load fails, attachment gets dropped from the list
+        if (attachStatus !== TileTree.LoadStatus.NotFound && attachStatus !== TileTree.LoadStatus.NotLoaded)
+          i++;
+      }
+    }
+
+    // DEBUG ONLY
+    /*
+    for (const attachment of this._attachments.list)
+      attachment.drawDebugBorder();
+    */
+
+    // Draw all attachments that have a status of loaded
+    for (const attachment of this._attachments.list)
+      if (attachment.getLoadStatus() === TileTree.LoadStatus.Loaded) {
+        assert(attachment.tree !== undefined);
+        attachment.tree!.drawScene(context);
+      }
+  }
+
+  /** Create a sheet border decoration graphic. */
+  private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
+    const border = Sheet.Border.create(width, height, viewContext);
+    const builder: GraphicBuilder = viewContext.createViewBackground();
+    border.addToBuilder(builder);
+    return builder.finish();
   }
 
   public decorate(context: DecorateContext): void {
-    const border = SheetModelState.createBorder(this.size.x, this.size.y, context);
-    context.setViewBackground(border);
-  }
-
-  /** Serialize this SheetViewState into a JSON object. */
-  public toJSON(): any {
-    const json = super.toJSON();
-    json.sheetProps = { width: this.size.x, height: this.size.y };
-    return json;
+    if (this.sheetSize !== undefined) {
+      const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
+      context.setViewBackground(border);
+    }
   }
 }

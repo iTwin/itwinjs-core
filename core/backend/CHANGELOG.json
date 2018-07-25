@@ -1,0 +1,44 @@
+{
+  "name": "@bentley/imodeljs-backend",
+  "entries": [
+    {
+      "version": "0.103.0",
+      "tag": "@bentley/imodeljs-backend_v0.103.0",
+      "date": "Tue, 24 Jul 2018 15:52:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.102.0",
+      "tag": "@bentley/imodeljs-backend_v0.102.0",
+      "date": "Tue, 24 Jul 2018 14:13:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added ToolTips"
+          },
+          {
+            "comment": "remove get/setShow methods on ViewFlags. They were redundant."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.101.0",
+      "tag": "@bentley/imodeljs-backend_v0.101.0",
+      "date": "Mon, 23 Jul 2018 22:00:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added SqliteStatement.isReadonly."
+          },
+          {
+            "comment": "Added SqliteStatement.ts to default imports of the backend package."
+          },
+          {
+            "comment": "TFS#917985: Tweaked the internal mechanism when opening a new IModelConnection for better performance. Added more logging to enable the router/provisioner team to potential diagnose performance issues. "
+          }
+        ]
+      }
+    }
+  ]
+}

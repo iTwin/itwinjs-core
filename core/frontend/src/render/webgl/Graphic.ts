@@ -5,19 +5,19 @@
 
 import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
-import { Clip } from "./ClipVolume";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { TextureHandle, TextureDataUpdater } from "./Texture";
+import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
 import { LUTDimensions, LUTParams, LUTDimension } from "./FeatureDimensions";
 import { Target } from "./Target";
 import { FloatRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
+import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 
 class OvrUniform {
   public floatFlags: number = 0;
@@ -80,12 +80,13 @@ class OvrUniform {
 
     if (app.overridesRgb && app.rgb) {
       this.flags |= OvrFlags.Rgb;
-      this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.g, 1.0)); // ###TODO: alpha 1.0 or 0.0?
+      this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.b, 1.0)); // NB: Alpha ignored unless OvrFlags.Alpha set...
     }
 
     if (app.overridesAlpha && app.alpha) {
+      const alpha = (255.0 - app.alpha) / 255.0; // ###TODO: app.alpha appears to actually be transparency - fix property name!
       this.flags |= OvrFlags.Alpha;
-      this.rgba = FloatRgba.fromColorDef(ColorDef.from(this.rgba.red, this.rgba.green, this.rgba.blue, app.alpha));
+      this.rgba = new FloatRgba(this.rgba.red, this.rgba.green, this.rgba.blue, alpha); // NB: rgb ignored unless OvrFlags.Rgb set...
     }
 
     if (app.overridesWeight && app.weight) {
@@ -123,24 +124,24 @@ class OvrNonUniform {
     this.lutParams = new LUTParams(width, height);
 
     const data = new Uint8Array(width * height * 4);
-    const creator = new TextureDataUpdater(data);
+    const creator = new Texture2DDataUpdater(data);
     this.buildLookupTable(creator, map, ovrs, hilite, flashedElemId);
 
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
   public update(map: FeatureTable, lut: TextureHandle, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
-    const updater = new TextureDataUpdater(lut.dataBytes!);
+    const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs)
       this.updateFlashedAndHilited(updater, map, hilites, flashedElemId);
     else
       this.buildLookupTable(updater, map, ovrs, hilites, flashedElemId);
 
-    lut.update(updater);
+    (lut as Texture2DHandle).update(updater);
   }
 
-  private buildLookupTable(data: TextureDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
     this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
 
     let nHidden = 0;
@@ -222,7 +223,7 @@ class OvrNonUniform {
     this.anyOverridden = (nOverridden > 0);
   }
 
-  private updateFlashedAndHilited(data: TextureDataUpdater, map: FeatureTable, hilites: Set<string>, flashedElemId: Id64) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: FeatureTable, hilites: Set<string>, flashedElemId: Id64) {
     this.anyOverridden = false;
     this.anyHilited = false;
 
@@ -498,13 +499,13 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public readonly localToWorldTransform: Transform;
-  public readonly clips?: Clip.Volume;
+  public readonly clips?: ClipPlanesVolume | ClipMaskVolume;
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
-    this.clips = Clip.getClipVolume(clips);
+    this.clips = clips;
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
   }

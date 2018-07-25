@@ -15,6 +15,7 @@ export * from "./Iterable";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
+export * from "./PromiseUtil";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";

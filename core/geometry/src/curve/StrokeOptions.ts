@@ -43,10 +43,12 @@ export class StrokeOptions {
   /** whether or not to triangulate each added facet */
   public shouldTriangulate: boolean = false;
 
-  public needNormals?: boolean;
-  public _needParams?: boolean;
+  private _needNormals?: boolean;
+  private _needParams?: boolean;
   public get needParams(): boolean { return this._needParams !== undefined ? this._needParams : false; }
   public set needParams(value: boolean) { this._needParams = value; }
+  public get needNormals(): boolean { return this._needNormals !== undefined ? this._needNormals : false; }
+  public set needNormals(value: boolean) { this._needNormals = value; }
   public needColors?: boolean;
   public defaultCircleStrokes = 16;
 

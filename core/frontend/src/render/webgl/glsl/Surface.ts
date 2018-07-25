@@ -12,13 +12,12 @@ import {
   VertexShaderComponent,
   ShaderBuilder,
 } from "../ShaderBuilder";
-import { FeatureMode, WithClipVolume } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal } from "./Fragment";
+import { FeatureMode } from "../TechniqueFlags";
+import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
-import { addClipping } from "./Clipping";
 import { FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
@@ -28,6 +27,14 @@ import { Texture } from "../Texture";
 import { assert } from "@bentley/bentleyjs-core";
 import { Material } from "../Material";
 import { System } from "../System";
+
+const sampleSurfaceTexture = `
+  vec4 sampleSurfaceTexture() {
+    // Textures do NOT contain premultiplied alpha. Multiply in shader.
+    vec4 texColor = TEXTURE(s_texture, v_texCoord);
+    return applyPreMultipliedAlpha(texColor);
+  }
+`;
 
 const applyMaterialOverrides = `
   bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
@@ -45,12 +52,8 @@ const applyMaterialOverrides = `
   }
 
   if (useTextureWeight) {
-    vec4 texColor = TEXTURE(s_texture, v_texCoord);
+    vec4 texColor = sampleSurfaceTexture();
     baseColor = mix(baseColor, texColor, u_textureWeight);
-
-    // Textures do NOT contain premultiplied alpha. Multiply here.
-    // ###TODO: This won't produce correct results if u_textureWeight < 1.0 and baseColor.a < 1.0 - handle.
-    return applyPreMultipliedAlpha(baseColor);
   }
 
   return baseColor;
@@ -59,7 +62,6 @@ const applyMaterialOverrides = `
 export function addMaterial(frag: FragmentShaderBuilder): void {
   // ###TODO: We could pack rgb, alpha, and override flags into two floats.
   frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
   frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyMaterialOverrides);
 
@@ -91,14 +93,11 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(clip: WithClipVolume): ProgramBuilder {
+function createCommon(): ProgramBuilder {
   const builder = new ProgramBuilder(true);
   const vert = builder.vert;
 
   // ###TODO Animation.AddCommon(vert);
-
-  if (WithClipVolume.Yes === clip)
-    addClipping(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -108,8 +107,8 @@ function createCommon(clip: WithClipVolume): ProgramBuilder {
   return builder;
 }
 
-export function createSurfaceHiliter(clip: WithClipVolume): ProgramBuilder {
-  const builder = createCommon(clip);
+export function createSurfaceHiliter(): ProgramBuilder {
+  const builder = createCommon();
   addHiliter(builder);
   return builder;
 }
@@ -186,10 +185,6 @@ const computeNormal = `
   return normalize(u_nmx * octDecodeNormal(normal));
 `;
 
-const isBelowTransparencyThreshold = `
-  return alpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
-`;
-
 const applyBackgroundColor = `
   if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
     baseColor.rgb = u_bgColor.rgb;
@@ -228,10 +223,10 @@ const computeBaseColor = `
       if (u_reverseWhiteOnWhite > 0.5 && delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
         surfCol.rgb = vec3(0.0);
 
-      vec4 texCol = TEXTURE(s_texture, v_texCoord);
+      vec4 texCol = sampleSurfaceTexture();
       return vec4(surfCol.rgb * texCol.rgb, texCol.a);
     } else {
-      return TEXTURE(s_texture, v_texCoord);
+      return sampleSurfaceTexture();
     }
   } else {
     return getSurfaceColor(); // if textured, compute surface/material color first then mix with texture in applyMaterialOverrides...
@@ -260,28 +255,14 @@ function addNormal(builder: ProgramBuilder) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
 }
 
-function addTransparencyThreshold(frag: FragmentShaderBuilder) {
-  frag.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_transparencyThreshold", (uniform, params) => {
-      uniform.setUniform1f(params.target.transparencyThreshold);
-    });
-  });
-
-  frag.set(FragmentShaderComponent.DiscardByAlpha, isBelowTransparencyThreshold);
-}
-
-export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): ProgramBuilder {
-  const builder = createCommon(clip);
+export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
+  const builder = createCommon();
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
   addNormal(builder);
-
-  // NB: We need the transparency threshold in translucent *and* opaque passes.
-  // Opaque because we must compute the alpha in order to decide whether to discard or render opaque.
-  addTransparencyThreshold(builder.frag);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
@@ -309,6 +290,9 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
       }
     });
   });
+
+  builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
+  builder.frag.addFunction(sampleSurfaceTexture);
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
@@ -316,10 +300,10 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
-        texture.texture.bindSampler(uniform, TextureUnit.Zero);
+        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
         // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.Zero);
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       }
     });
   });
@@ -334,7 +318,7 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   });
 
   // Fragment and Vertex
-  addColor(builder);
+  addColor(builder, true);
 
   // Fragment
   builder.frag.addFunction(getSurfaceColor);
@@ -344,11 +328,8 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   if (FeatureMode.None === feat) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
-    builder.frag.addExtension("GL_EXT_draw_buffers");
     builder.frag.addFunction(GLSLDecode.depthRgb);
-    builder.frag.addFunction(GLSLDecode.encodeDepthRgb);
-    builder.frag.addFunction(GLSLFragment.computeLinearDepth);
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
+    addPickBufferOutputs(builder.frag);
   }
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

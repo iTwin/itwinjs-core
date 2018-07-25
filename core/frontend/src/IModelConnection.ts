@@ -129,10 +129,11 @@ export class IModelConnection extends IModel {
   }
 
   private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
-    // Try opening the iModel repeatedly accommodating any pending responses from the backend
-
-    // Set a retry policy for open requests. (Actually, make this half of what you want. See below.)
-    const connectionRetryTime: number = Math.min(25, IModelConnection.connectionTimeout);
+    /* Try opening the iModel repeatedly accommodating any pending responses from the backend.
+     * Waits for an increasing amount of time (but within a range) before checking on the pending request again.
+     */
+    const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
+    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
     let openForReadOperation: RpcOperation | undefined;
     let openForWriteOperation: RpcOperation | undefined;
@@ -140,15 +141,16 @@ export class IModelConnection extends IModel {
       openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
       if (!openForReadOperation)
         throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
-      openForReadOperation.policy.retryInterval = () => connectionRetryTime;
+      openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
     } else {
       openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
       if (!openForWriteOperation)
         throw new IModelError(BentleyStatus.ERROR, "IModelWriteRpcInterface.openForWrite() is not available");
-      openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
+      openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;
     }
 
     Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
 
     const startTime = Date.now();
 
@@ -160,15 +162,17 @@ export class IModelConnection extends IModel {
 
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
-      if (Date.now() - startTime > IModelConnection.connectionTimeout) {
+      const connectionTimeElapsed = Date.now() - startTime;
+      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
         Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      // Double the time that this request will wait the next time it fails with PendingUpdateReceived (if that happens).
-      // (Actually, this doubles the interval for *this* wait. So, that's why we make the policy half of what we want
-      // the initial wait to be.)
-      request.retryInterval *= 2;
+      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
+      if (request.retryInterval !== connectionRetryInterval) {
+        request.retryInterval = connectionRetryInterval;
+        Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+      }
     });
 
     let openResponse: IModel;
@@ -337,39 +341,11 @@ export class IModelConnection extends IModel {
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
-  private _snapPending = false;
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
-    if (this._snapPending)
-      throw Error("busy");
+  /** Request a snap from the backend. */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
 
-    this._snapPending = true; // save flag indicating we're in the process of generating a snap
-    const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
-    await response; // after snap completes, turn off flag
-    this._snapPending = false;
-    return response; // return fulfilled promise
-  }
-  public _cancelPending = false;
-  public async cancelSnap(): Promise<void> {
-    if (this._cancelPending)
-      throw Error("busy");
-
-    this._cancelPending = true; // save flag indicating we're in the process of generating a snap
-    if (this._snapPending) { // if we're waiting for a snap, cancel it.
-      await IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
-      this._snapPending = false;
-    }
-    this._cancelPending = false;
-  }
-
-  private _locateMsgPending = false;
-  public async getLocateMessage(id: string): Promise<string[]> {
-    if (this._locateMsgPending)
-      throw Error("busy");
-    this._locateMsgPending = true;
-    const val = await IModelReadRpcInterface.getClient().getLocateMessage(this.iModelToken, id);
-    this._locateMsgPending = false;
-    return val;
-  }
+  /** Request a tooltip from the backend.  */
+  public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
 }
 
 export namespace IModelConnection {
@@ -587,7 +563,6 @@ export namespace IModelConnection {
   }
 
   /** @hidden */
-  // NB: Very WIP.
   export class Tiles {
     private _iModel: IModelConnection;
     constructor(iModel: IModelConnection) { this._iModel = iModel; }

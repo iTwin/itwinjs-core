@@ -134,6 +134,7 @@ export class ShaderProgram implements IDisposable {
   private _description: string; // for debugging purposes...
   public readonly vertSource: string;
   public readonly fragSource: string;
+  public readonly maxClippingPlanes: number;
   private _glProgram?: WebGLProgram;
   private _inUse: boolean = false;
   private _status: CompileStatus = CompileStatus.Uncompiled;
@@ -141,10 +142,11 @@ export class ShaderProgram implements IDisposable {
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attributes = new Array<Attribute>();
 
-  public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string) {
+  public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string, maxClippingPlanes: number) {
     this._description = description;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
+    this.maxClippingPlanes = maxClippingPlanes;
 
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;

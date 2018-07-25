@@ -371,6 +371,7 @@ export class Viewport {
   private _evController?: EventController;
   private _view!: ViewState;
   private _addFeatureOverrides?: AddFeatureOverrides;
+  private _wantTileBoundingBoxes: boolean = false;
 
   /** @hidden */
   public readonly target: RenderTarget;
@@ -407,6 +408,15 @@ export class Viewport {
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
+  /** @hidden */
+  public get wantTileBoundingBoxes(): boolean { return this._wantTileBoundingBoxes; }
+  /** @hidden */
+  public set wantTileBoundingBoxes(want: boolean) {
+    if (want !== this.wantTileBoundingBoxes) {
+      this._wantTileBoundingBoxes = want;
+      this.invalidateScene();
+    }
+  }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
@@ -1198,15 +1208,10 @@ export class Viewport {
   }
 
   /** @hidden */
-  public removeAnimator() {
-    if (this.animator) {
+  public removeAnimator() { this.setAnimator(undefined); }
+  private setAnimator(animator: Animator | undefined) {
+    if (this.animator)
       this.animator.interrupt(); // will be destroyed
-      this.animator = undefined;
-    }
-  }
-
-  private setAnimator(animator: Animator) {
-    this.removeAnimator();
     this.animator = animator;
   }
 
@@ -1447,7 +1452,7 @@ export class Viewport {
     this.animate();
 
     // Allow ViewState instance to change any state which might affect logic below...
-    view.onRenderFrame();
+    view.onRenderFrame(this);
 
     let isRedrawNeeded = sync.isRedrawPending || this._doContinuousRendering;
     sync.invalidateRedrawPending();
@@ -1488,7 +1493,7 @@ export class Viewport {
     if (!sync.isValidScene) {
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
-      // ###TODO: request missing tiles
+      context.requests.requestMissing();
       target.changeScene(context.graphics);
 
       isRedrawNeeded = true;
@@ -1515,7 +1520,7 @@ export class Viewport {
 
     timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame(this._doContinuousRendering ? timer.elapsed.milliseconds : undefined);
+      target.drawFrame(timer.elapsed.milliseconds);
 
     return true;
   }
@@ -1582,13 +1587,13 @@ export class Viewport {
   }
 
   /**
-   * Find a point on geometry within radius of supplied pick point.
-   * @param pickPoint Center point in world coordinates
-   * @param radius radius of the circular area to include in pixels
-   * @param out Optional Point3d pre-allocated to hold the result
-   * @returns the coordinates of the geometry point within the circular area nearest to the supplied pick point
+   * Find a point on geometry visible in this Viewport within a radius of supplied pick point.
+   * @param pickPoint Point to search about, in world coordinates
+   * @param radius Radius, in pixels, of the circular area to search.
+   * @param out Optional Point3d to hold the result. If undefined, a new Point3d is returned.
+   * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
-  public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
+  public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
     if (0 === picker.doPick(this, pickPoint, radius, new LocateOptions()))
       return undefined;

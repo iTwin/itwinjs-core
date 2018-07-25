@@ -286,7 +286,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns string url for blob data
    */
   public async getBlobStringUrl(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const url = await this.getBlobUrl(token, projectId, tilesId, name);
+    const url = undefined === this.blobUrl ? await this.getBlobUrl(token, projectId, tilesId, name) : this.blobUrl;
     const host = url.origin + url.pathname;
     const query = url.search;
     return `${host}/${this.updateModelName(name)}${query}`;
@@ -338,6 +338,9 @@ export class RealityDataServicesClient extends WsgClient {
   public async getRootDocumentJson(token: AccessToken, projectId: string, tilesId: string): Promise<any> {
     const realityData: RealityData[] = await this.getRealityData(token, projectId, tilesId);
     let root = realityData[0].rootDocument!;
+
+    // reset the blob url when a root document is requested to ensure the previous blob storage key isn't reused
+    this.blobUrl = undefined;
 
     // if the RootDocument is ClarkSimple/RootTile.json, then only use RootTile.json,
     // so we need to only use the last part of the RootDocument path

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
+import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool, EventHandled } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
@@ -97,7 +97,7 @@ export abstract class ViewTool extends InteractiveTool {
     return true;
   }
 
-  public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
+  public async onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return EventHandled.Yes; }
 
   public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
 
@@ -180,6 +180,9 @@ export class ViewHandleArray {
   }
 
   public drawHandles(context: DecorateContext): void {
+    if (0 === this.count)
+      return;
+
     // all handle objects must draw themselves
     for (let i = 0; i < this.count; i++) {
       if (i !== this.hitHandleIndex) {
@@ -299,10 +302,10 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.onReinitialize();
   }
 
-  public onDataButtonDown(ev: BeButtonEvent): boolean {
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     // Tool was started in "drag required" mode, don't advance tool state and wait to see if we get the start drag event.
     if (0 === this.nPts && this.isDragOperationRequired && !this.isDragOperation)
-      return false;
+      return EventHandled.No;
 
     switch (this.nPts) {
       case 0:
@@ -323,30 +326,30 @@ export abstract class ViewManip extends ViewTool {
         this.onReinitialize();
     }
 
-    return true;
+    return EventHandled.Yes;
   }
 
-  public onDataButtonUp(_ev: BeButtonEvent): boolean {
+  public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     if (this.nPts <= 1 && this.isDragOperationRequired && !this.isDragOperation && this.isOneShot)
       this.exitTool();
 
-    return false;
+    return EventHandled.No;
   }
 
-  public onMiddleButtonDown(_ev: BeButtonEvent): boolean {
+  public async onMiddleButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
     // Just let idle tool handle this...
-    return false;
+    return EventHandled.No;
   }
 
-  public onMiddleButtonUp(_ev: BeButtonEvent): boolean {
+  public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     // Can only support middle button for viewing tools in drag mode in order to allow middle click for tentative...
     if (this.nPts <= 1 && !this.isDragOperation && this.isOneShot)
       this.exitTool();
 
-    return false;
+    return EventHandled.No;
   }
 
-  public onMouseWheel(inputEv: BeWheelEvent): boolean {
+  public async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
     const ev = inputEv.clone();
 
     // If the rotate is active, the mouse wheel should work as if the cursor is at the target center
@@ -357,10 +360,10 @@ export abstract class ViewManip extends ViewTool {
 
     IModelApp.toolAdmin.processWheelEvent(ev, false);
     this.doUpdate(true);
-    return true;
+    return EventHandled.Yes;
   }
 
-  public onModelStartDrag(ev: BeButtonEvent): boolean {
+  public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     this.isDragOperation = true;
     this.stoppedOverHandle = false;
 
@@ -368,15 +371,15 @@ export abstract class ViewManip extends ViewTool {
     if (0 === this.nPts)
       this.onDataButtonDown(ev);
 
-    return true;
+    return EventHandled.Yes;
   }
 
-  public onModelEndDrag(ev: BeButtonEvent): boolean {
+  public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     this.isDragOperation = false;
-    return 0 === this.nPts || this.onDataButtonDown(ev);
+    return 0 === this.nPts ? EventHandled.Yes : this.onDataButtonDown(ev);
   }
 
-  public onModelMotion(ev: BeButtonEvent): void {
+  public async onModelMotion(ev: BeButtonEvent) {
     this.stoppedOverHandle = false;
     if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
       this.viewHandles.focusHitHandle();
@@ -387,7 +390,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.motion(ev);
   }
 
-  public onModelMotionStopped(ev: BeButtonEvent): void {
+  public async onModelMotionStopped(ev: BeButtonEvent) {
     if (ev.viewport !== this.viewport)
       return;
 
@@ -402,7 +405,7 @@ export abstract class ViewManip extends ViewTool {
     }
   }
 
-  public onModelNoMotion(ev: BeButtonEvent): void {
+  public async onModelNoMotion(ev: BeButtonEvent) {
     if (0 === this.nPts || !ev.viewport)
       return;
 
@@ -483,7 +486,7 @@ export abstract class ViewManip extends ViewTool {
       return;
     }
 
-    const visiblePoint = vp.determineNearestVisibleGeometryPoint(vp.npcToWorld(NpcCenter), 20.0);
+    const visiblePoint = vp.pickNearestVisibleGeometry(vp.npcToWorld(NpcCenter), 20.0);
     this.setTargetCenterWorld(undefined !== visiblePoint ? visiblePoint : vp.view.getTargetPoint(), false, false);
   }
 
@@ -729,13 +732,10 @@ class ViewTargetCenter extends ViewingToolHandle {
 
     lineHorzPts[0].x = x - size;
     lineHorzPts[0].y = y;
-
     lineHorzPts[1].x = x + size;
     lineHorzPts[1].y = y;
-
     lineVertPts[0].x = x;
     lineVertPts[0].y = y - size;
-
     lineVertPts[1].x = x;
     lineVertPts[1].y = y + size;
 
@@ -815,7 +815,7 @@ class ViewPan extends ViewingToolHandle {
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (CoordSource.User === ev.coordsFrom && vp.isCameraOn()) {
-      const visiblePoint = vp.determineNearestVisibleGeometryPoint(this.anchorPt, 20.0);
+      const visiblePoint = vp.pickNearestVisibleGeometry(this.anchorPt, 20.0);
       if (undefined !== visiblePoint) {
         this.anchorPt.setFrom(visiblePoint);
       } else {
@@ -882,7 +882,7 @@ class ViewRotate extends ViewingToolHandle {
     const vp = ev.viewport!;
 
     if (!tool.targetCenterLocked && vp.view.allow3dManipulations()) {
-      const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
+      const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0);
       if (undefined !== visiblePoint)
         tool.setTargetCenterWorld(visiblePoint, false, false);
     }
@@ -1398,11 +1398,11 @@ export class FitViewTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
-  public onDataButtonDown(_ev: BeButtonEvent): boolean {
+  public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
     if (_ev.viewport) {
-      return this.doFit(_ev.viewport, false, this.doAnimate);
+      return this.doFit(_ev.viewport, false, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
     }
-    return false;
+    return EventHandled.No;
   }
 
   public onPostInstall() {
@@ -1461,17 +1461,17 @@ export class WindowAreaTool extends ViewTool {
     this.viewport = viewport;
   }
 
-  public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
+  public async onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
   public onReinitialize() {
     this.haveFirstPoint = false;
     this.firstPtWorld.setZero();
     this.secondPtWorld.setZero();
   }
 
-  public onModelMotion(ev: BeButtonEvent): void { this.doManipulation(ev, true); }
+  public async onModelMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
   public updateDynamics(ev: BeButtonEvent): void { this.doManipulation(ev, true); }
 
-  public onDataButtonDown(ev: BeButtonEvent): boolean {
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.haveFirstPoint) {
       this.secondPtWorld.setFrom(ev.point);
       this.doManipulation(ev, false);
@@ -1484,13 +1484,13 @@ export class WindowAreaTool extends ViewTool {
       this.lastPtView.setFrom(ev.viewPoint);
     }
 
-    return true;
+    return EventHandled.Yes;
   }
 
-  public onResetButtonUp(ev: BeButtonEvent): boolean {
+  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.haveFirstPoint) {
       this.haveFirstPoint = false;
-      return true;
+      return EventHandled.Yes;
     }
     return super.onResetButtonUp(ev);
   }
@@ -1668,7 +1668,7 @@ export class ViewGestureTool extends ViewManip {
   constructor(ev: BeGestureEvent) {
     super(ev.viewport!, 0, true, false, false);
   }
-  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
+  public async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.No; }
 
   public doGesture(transform: Transform): boolean {
     const vp = this.viewport!;
@@ -1709,6 +1709,7 @@ export class ViewGestureTool extends ViewManip {
   }
 }
 
+/** @hidden */
 export class RotatePanZoomGestureTool extends ViewGestureTool {
   private allowZoom: boolean = true;
   private rotatePrevented: boolean = false;
@@ -1855,8 +1856,24 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
     const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
-    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
-    const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
+
+    // ### TODO Follow rotateViewWorld logic
+    //    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
+    //    const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
+
+    //    if (!vp.setupViewFromFrustum(frustum))
+    //      return true;
+
+    const result = worldRMatrix.getAxisAndAngleOfRotation();
+    const radians = Angle.createRadians(-result.angle.radians);
+    const worldAxis = result.axis;
+
+    const rotationMatrix = RotMatrix.createRotationAroundVector(worldAxis, radians);
+    if (!rotationMatrix)
+      return true;
+    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, rotationMatrix);
+    const frustum = this.frustum.clone();
+    frustum.multiply(worldTransform);
 
     if (!vp.setupViewFromFrustum(frustum))
       return true;
@@ -1885,7 +1902,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(this.startPtView);
     this.startTime = Date.now();
-    const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
+    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0);
     if (!visiblePoint)
       return;
 
@@ -1909,7 +1926,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
-    let zoomCenter = (vp.view.allow3dManipulations() ? vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0) : undefined);
+    let zoomCenter = (vp.view.allow3dManipulations() ? vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0) : undefined);
     if (undefined === zoomCenter)
       zoomCenter = ev.point;
 
@@ -1998,7 +2015,7 @@ export class ViewToggleCameraTool extends ViewTool {
 export class ViewChangeRenderModeTool extends ViewTool {
   public static toolId = "View.ChangeRenderMode";
   private viewport: Viewport;
-  // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundplane, etc.)
+  // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundPlane, etc.)
   private renderOptions: Map<string, boolean>;
   // REFERENCE to app's menu for changing render modes
   private renderMenu: HTMLElement;
@@ -2048,9 +2065,9 @@ export class ViewChangeRenderModeTool extends ViewTool {
     this.viewport.sync.invalidateController();
   }
 
-  public onDataButtonDown(_ev: BeButtonEvent): boolean {
+  public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
     this.renderMenu.style.display = "none";
     this.exitTool();
-    return true;
+    return EventHandled.Yes;
   }
 }

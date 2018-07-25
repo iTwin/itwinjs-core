@@ -19,7 +19,7 @@ export const enum BentleyStatus {
 /** Status codes that are used in conjunction with [[BentleyError]].
  * Error status codes are divided into separate ranges for different kinds of errors. All known ranges at least should be defined here, to avoid collisions.
  */
-export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDbStatus and DbResult on the DgnPlatform C++ side
+export const enum IModelStatus {
   IMODEL_ERROR_BASE = 0x10000,
   Success = 0,
   AlreadyLoaded = IMODEL_ERROR_BASE + 1,
@@ -51,7 +51,7 @@ export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDb
   IsCreatingChangeSet = IMODEL_ERROR_BASE + 27,
   LockNotHeld = IMODEL_ERROR_BASE + 28,
   Mismatch2d3d = IMODEL_ERROR_BASE + 29,
-  MismatchGcs = IMODEL_ERROR_BASE + 30,  // The Geographic Coordinate Systems of the source and target are not based on equivalent projections
+  MismatchGcs = IMODEL_ERROR_BASE + 30,
   MissingDomain = IMODEL_ERROR_BASE + 31,
   MissingHandler = IMODEL_ERROR_BASE + 32,
   MissingId = IMODEL_ERROR_BASE + 33,
@@ -105,140 +105,182 @@ export const enum BriefcaseStatus {
 export const enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
   Success = 0,
   CHANGESET_ERROR_BASE = 0x16000,
-  ApplyError = CHANGESET_ERROR_BASE + 1,                /** Error applying a change set when reversing or reinstating it */
-  ChangeTrackingNotEnabled = CHANGESET_ERROR_BASE + 2,  /** Change tracking has not been enabled. The ChangeSet API mandates this. */
-  CorruptedChangeStream = CHANGESET_ERROR_BASE + 3,     /** Contents of the change stream are corrupted and does not match the ChangeSet */
-  FileNotFound = CHANGESET_ERROR_BASE + 4,              /** File containing the changes to the change set is not found */
-  FileWriteError = CHANGESET_ERROR_BASE + 5,            /** Error writing the contents of the change set to the backing change stream file */
-  HasLocalChanges = CHANGESET_ERROR_BASE + 6,           /**  Cannot perform the operation since the Db has local changes */
-  HasUncommittedChanges = CHANGESET_ERROR_BASE + 7,     /**  Cannot perform the operation since current transaction has uncommitted changes */
-  InvalidId = CHANGESET_ERROR_BASE + 8,                 /**  Invalid ChangeSet Id */
-  InvalidVersion = CHANGESET_ERROR_BASE + 9,            /**  Invalid version of the change set */
-  InDynamicTransaction = CHANGESET_ERROR_BASE + 10,     /** Cannot perform the operation since system is in the middle of a dynamic transaction */
-  IsCreatingChangeSet = CHANGESET_ERROR_BASE + 11,      /** Cannot perform operation since system is in the middle of a creating a change set */
-  IsNotCreatingChangeSet = CHANGESET_ERROR_BASE + 12,   /** Cannot perform operation since the system is not creating a change set */
-  MergePropagationError = CHANGESET_ERROR_BASE + 13,    /** Error propagating the changes after the merge */
-  NothingToMerge = CHANGESET_ERROR_BASE + 14,           /** No change sets to merge */
-  NoTransactions = CHANGESET_ERROR_BASE + 15,           /** No transactions are available to create a change set */
-  ParentMismatch = CHANGESET_ERROR_BASE + 16,           /** Parent change set of the Db does not match the parent id of the change set */
-  SQLiteError = CHANGESET_ERROR_BASE + 17,              /** Error performing a SQLite operation on the Db */
-  WrongDgnDb = CHANGESET_ERROR_BASE + 18,               /** ChangeSet originated in a different Db */
-  CouldNotOpenDgnDb = CHANGESET_ERROR_BASE + 19,        /** Could not open the DgnDb to merge change set */
-  MergeSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 20, /** Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
-  ReverseOrReinstateSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 21,  /** Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
-  ProcessSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 22,             /** Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
-  CannotMergeIntoReadonly = CHANGESET_ERROR_BASE + 23,                /** Cannot merge changes into a Readonly DgnDb. */
-  CannotMergeIntoMaster = CHANGESET_ERROR_BASE + 24,                  /**  Cannot merge changes into a Master DgnDb. */
-  CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 25,                /** Cannot merge changes into a DgnDb that has reversed change sets. */
+  /** Error applying a change set when reversing or reinstating it */
+  ApplyError = CHANGESET_ERROR_BASE + 1,
+  /** Change tracking has not been enabled. The ChangeSet API mandates this. */
+  ChangeTrackingNotEnabled = CHANGESET_ERROR_BASE + 2,
+  /** Contents of the change stream are corrupted and does not match the ChangeSet */
+  CorruptedChangeStream = CHANGESET_ERROR_BASE + 3,
+  /** File containing the changes to the change set is not found */
+  FileNotFound = CHANGESET_ERROR_BASE + 4,
+  /** Error writing the contents of the change set to the backing change stream file */
+  FileWriteError = CHANGESET_ERROR_BASE + 5,
+  /**  Cannot perform the operation since the Db has local changes */
+  HasLocalChanges = CHANGESET_ERROR_BASE + 6,
+  /**  Cannot perform the operation since current transaction has uncommitted changes */
+  HasUncommittedChanges = CHANGESET_ERROR_BASE + 7,
+  /**  Invalid ChangeSet Id */
+  InvalidId = CHANGESET_ERROR_BASE + 8,
+  /**  Invalid version of the change set */
+  InvalidVersion = CHANGESET_ERROR_BASE + 9,
+  /** Cannot perform the operation since system is in the middle of a dynamic transaction */
+  InDynamicTransaction = CHANGESET_ERROR_BASE + 10,
+  /** Cannot perform operation since system is in the middle of a creating a change set */
+  IsCreatingChangeSet = CHANGESET_ERROR_BASE + 11,
+  /** Cannot perform operation since the system is not creating a change set */
+  IsNotCreatingChangeSet = CHANGESET_ERROR_BASE + 12,
+  /** Error propagating the changes after the merge */
+  MergePropagationError = CHANGESET_ERROR_BASE + 13,
+  /** No change sets to merge */
+  NothingToMerge = CHANGESET_ERROR_BASE + 14,
+  /** No transactions are available to create a change set */
+  NoTransactions = CHANGESET_ERROR_BASE + 15,
+  /** Parent change set of the Db does not match the parent id of the change set */
+  ParentMismatch = CHANGESET_ERROR_BASE + 16,
+  /** Error performing a SQLite operation on the Db */
+  SQLiteError = CHANGESET_ERROR_BASE + 17,
+  /** ChangeSet originated in a different Db */
+  WrongDgnDb = CHANGESET_ERROR_BASE + 18,
+  /** Could not open the DgnDb to merge change set */
+  CouldNotOpenDgnDb = CHANGESET_ERROR_BASE + 19,
+  /** Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  MergeSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 20,
+  /** Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  ReverseOrReinstateSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 21,
+  /** Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  ProcessSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 22,
+  /** Cannot merge changes into a Readonly DgnDb. */
+  CannotMergeIntoReadonly = CHANGESET_ERROR_BASE + 23,
+  /**  Cannot merge changes into a Master DgnDb. */
+  CannotMergeIntoMaster = CHANGESET_ERROR_BASE + 24,
+  /** Cannot merge changes into a DgnDb that has reversed change sets. */
+  CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 25,
 }
 
 /** Return codes for methods which perform repository management operations */
 export const enum RepositoryStatus {
   Success = 0,
-  ServerUnavailable = 0x15001, /**  The repository server did not respond to a request */
-  LockAlreadyHeld = 0x15002, /**  A requested lock was already held by another briefcase */
-  SyncError = 0x15003, /**  Failed to sync briefcase manager with server */
-  InvalidResponse = 0x15004, /**  Response from server not understood */
-  PendingTransactions = 0x15005, /**  An operation requires local changes to be committed or abandoned */
-  LockUsed = 0x15006, /**  A lock cannot be relinquished because the associated object has been modified */
-  CannotCreateChangeSet = 0x15007, /**  An operation required creation of a ChangeSet, which failed */
-  InvalidRequest = 0x15008, /**  Request to server not understood */
-  ChangeSetRequired = 0x15009, /**  A change set committed to the server must be integrated into the briefcase before the operation can be completed */
-  CodeUnavailable = 0x1500A, /**  A requested DgnCode is reserved by another briefcase or in use */
-  CodeNotReserved = 0x1500B, /**  A DgnCode cannot be released because it has not been reserved by the requesting briefcase */
-  CodeUsed = 0x1500C, /**  A DgnCode cannot be relinquished because it has been used locally */
-  LockNotHeld = 0x1500D, /**  A required lock is not held by this briefcase */
-  RepositoryIsLocked = 0x1500E, /**  Repository is currently locked, no changes allowed */
+  /** The repository server did not respond to a request */
+  ServerUnavailable = 0x15001,
+  /** A requested lock was already held by another briefcase */
+  LockAlreadyHeld = 0x15002,
+  /** Failed to sync briefcase manager with server */
+  SyncError = 0x15003,
+  /** Response from server not understood */
+  InvalidResponse = 0x15004,
+  /** An operation requires local changes to be committed or abandoned */
+  PendingTransactions = 0x15005,
+  /** A lock cannot be relinquished because the associated object has been modified */
+  LockUsed = 0x15006,
+  /** An operation required creation of a ChangeSet, which failed */
+  CannotCreateChangeSet = 0x15007,
+  /** Request to server not understood */
+  InvalidRequest = 0x15008,
+  /** A change set committed to the server must be integrated into the briefcase before the operation can be completed */
+  ChangeSetRequired = 0x15009,
+  /** A requested DgnCode is reserved by another briefcase or in use */
+  CodeUnavailable = 0x1500A,
+  /** A DgnCode cannot be released because it has not been reserved by the requesting briefcase */
+  CodeNotReserved = 0x1500B,
+  /** A DgnCode cannot be relinquished because it has been used locally */
+  CodeUsed = 0x1500C,
+  /** A required lock is not held by this briefcase */
+  LockNotHeld = 0x1500D,
+  /** Repository is currently locked, no changes allowed */
+  RepositoryIsLocked = 0x1500E,
 }
 
 /** Status from returned HTTP status code */
 export const enum HttpStatus {
-  Success = 0, /** 2xx Success */
-  Info = 0x17001, /** 1xx Informational responses */
-  Redirection = 0x17002, /** 3xx Redirection */
-  ClientError = 0x17003, /** 4xx Client errors */
-  ServerError = 0x17004, /** 5xx Server errors */
+  /** 2xx Success */
+  Success = 0,
+  /** 1xx Informational responses */
+  Info = 0x17001,
+  /** 3xx Redirection */
+  Redirection = 0x17002,
+  /** 4xx Client errors */
+  ClientError = 0x17003,
+  /** 5xx Server errors */
+  ServerError = 0x17004,
 }
 
 /** Server returned WSG errors */
 export const enum WSStatus {
-  Sucess = 0,
+  Success = 0,
   WSERROR_BASE = 0x18000,
-
-  Unknown = WSERROR_BASE + 1, /** Unknown error */
-  LoginFailed = WSERROR_BASE + 2, /** Login Failed */
-  SslRequired = WSERROR_BASE + 3, /** SSL required */
-  NotEnoughRights = WSERROR_BASE + 4, /** Not enough rights */
-  RepositoryNotFound = WSERROR_BASE + 5, /** Repository not found */
-  SchemaNotFound = WSERROR_BASE + 6, /** Schema not found */
-  ClassNotFound = WSERROR_BASE + 7, /** Class not found */
-  PropertyNotFound = WSERROR_BASE + 8, /** Property not found */
-  InstanceNotFound = WSERROR_BASE + 9, /** Instance not found */
-  FileNotFound = WSERROR_BASE + 10, /** File not found */
-  NotSupported = WSERROR_BASE + 11, /** Not supported */
-  NoServerLicense = WSERROR_BASE + 12, /** No server license */
-  NoClientLicense = WSERROR_BASE + 13, /** No client license */
-  TooManyBadLoginAttempts = WSERROR_BASE + 14, /** Too many bad login attempts */
-  LoginRequired = WSERROR_BASE + 15, /** Login required */
+  Unknown = WSERROR_BASE + 1,
+  LoginFailed = WSERROR_BASE + 2,
+  SslRequired = WSERROR_BASE + 3,
+  NotEnoughRights = WSERROR_BASE + 4,
+  RepositoryNotFound = WSERROR_BASE + 5,
+  SchemaNotFound = WSERROR_BASE + 6,
+  ClassNotFound = WSERROR_BASE + 7,
+  PropertyNotFound = WSERROR_BASE + 8,
+  InstanceNotFound = WSERROR_BASE + 9,
+  FileNotFound = WSERROR_BASE + 10,
+  NotSupported = WSERROR_BASE + 11,
+  NoServerLicense = WSERROR_BASE + 12,
+  NoClientLicense = WSERROR_BASE + 13,
+  TooManyBadLoginAttempts = WSERROR_BASE + 14,
+  LoginRequired = WSERROR_BASE + 15,
 }
 
-// iModel Hub Services Errors
+// iModelHub Services Errors
 export enum IModelHubStatus {
   Success = 0,
   IMODELHUBERROR_BASE = 0x19000,
   IMODELHUBERROR_REQUESTERRORBASE = 0x19100,
-  Unknown = IMODELHUBERROR_BASE + 1, /** Unknown error */
-
-  MissingRequiredProperties = IMODELHUBERROR_BASE + 2, /** Missing required properties */
-  InvalidPropertiesValues = IMODELHUBERROR_BASE + 3, /** Invalid properties values */
-  UserDoesNotHavePermission = IMODELHUBERROR_BASE + 4, /** User does not have permission */
-  InvalidBriefcase = IMODELHUBERROR_BASE + 5, /** Invalid briefcase */
-  BriefcaseDoesNotExist = IMODELHUBERROR_BASE + 6, /** Briefcase does not exist */
-  BriefcaseDoesNotBelongToUser = IMODELHUBERROR_BASE + 7, /** Briefcase does not belong to user */
-  AnotherUserPushing = IMODELHUBERROR_BASE + 8, /** Another user pushing */
-  ChangeSetAlreadyExists = IMODELHUBERROR_BASE + 9, /** ChangeSet already exists */
-  ChangeSetDoesNotExist = IMODELHUBERROR_BASE + 10, /** ChangeSet does not exist */
-  FileIsNotUploaded = IMODELHUBERROR_BASE + 11, /** File is not uploaded */
-  iModelIsNotInitialized = IMODELHUBERROR_BASE + 12, /** iModel is not initialized */
-  ChangeSetPointsToBadSeed = IMODELHUBERROR_BASE + 13, /** ChangeSet points to a bad seed file */
-  iModelHubOperationFailed = IMODELHUBERROR_BASE + 14, /** iModelHub operation failed */
-  PullIsRequired = IMODELHUBERROR_BASE + 15, /** Pull is required */
-  MaximumNumberOfBriefcasesPerUser = IMODELHUBERROR_BASE + 16, /** Limit of briefcases per user was reached */
-  MaximumNumberOfBriefcasesPerUserPerMinute = IMODELHUBERROR_BASE + 17, /** Limit of briefcases per user per minute was reached */
-  DatabaseTemporarilyLocked = IMODELHUBERROR_BASE + 18, /** Database is temporarily locked */
-  iModelAlreadyExists = IMODELHUBERROR_BASE + 19, /** iModel already exists */
-  iModelDoesNotExist = IMODELHUBERROR_BASE + 20, /** iModel does not exist */
-  LockDoesNotExist = IMODELHUBERROR_BASE + 21, /** Lock does not exist */
-  LocksExist = IMODELHUBERROR_BASE + 22, /** Lock already exists */
-  LockOwnedByAnotherBriefcase = IMODELHUBERROR_BASE + 23, /** Lock is owned by another briefcase */
-  UserAlreadyExists = IMODELHUBERROR_BASE + 24, /** User already exists */
-  UserDoesNotExist = IMODELHUBERROR_BASE + 25, /** User does not exist */
-  CodeStateInvalid = IMODELHUBERROR_BASE + 26, /** Code state is invalid */
-  CodeReservedByAnotherBriefcase = IMODELHUBERROR_BASE + 27, /** Code is reserved by another briefcase */
-  CodeDoesNotExist = IMODELHUBERROR_BASE + 28, /** Code does not exist */
-  CodesExist = IMODELHUBERROR_BASE + 29, /** Code already exists */
-  FileDoesNotExist = IMODELHUBERROR_BASE + 30, /** File does not exist */
-  FileAlreadyExists = IMODELHUBERROR_BASE + 31, /** File already exists */
-  iModelIsLocked = IMODELHUBERROR_BASE + 32, /** iModel is locked */
-  EventTypeDoesNotExist = IMODELHUBERROR_BASE + 33, /** Event type does not exist */
-  EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 34, /** Event subscription does not exist */
-  EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 35, /** Event subscription already exists */
-  ProjectAssociationIsNotEnabled = IMODELHUBERROR_BASE + 36, /** Project association is not enabled */
-  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 37, /** Project Id is not specified */
-  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 38, /** Failed to get project permissions */
-  ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 39, /** ChangeSet already has version */
-  VersionAlreadyExists = IMODELHUBERROR_BASE + 40, /** Version already exists */
-  QueryIdsNotSpecified = IMODELHUBERROR_BASE + 41, /** Query Id is not specified */
-  ConflictsAggregate = IMODELHUBERROR_BASE + 42, /** Codes or locks are owned by another briefcase */
+  Unknown = IMODELHUBERROR_BASE + 1,
+  MissingRequiredProperties = IMODELHUBERROR_BASE + 2,
+  InvalidPropertiesValues = IMODELHUBERROR_BASE + 3,
+  UserDoesNotHavePermission = IMODELHUBERROR_BASE + 4,
+  InvalidBriefcase = IMODELHUBERROR_BASE + 5,
+  BriefcaseDoesNotExist = IMODELHUBERROR_BASE + 6,
+  BriefcaseDoesNotBelongToUser = IMODELHUBERROR_BASE + 7,
+  AnotherUserPushing = IMODELHUBERROR_BASE + 8,
+  ChangeSetAlreadyExists = IMODELHUBERROR_BASE + 9,
+  ChangeSetDoesNotExist = IMODELHUBERROR_BASE + 10,
+  FileIsNotUploaded = IMODELHUBERROR_BASE + 11,
+  iModelIsNotInitialized = IMODELHUBERROR_BASE + 12,
+  ChangeSetPointsToBadSeed = IMODELHUBERROR_BASE + 13,
+  iModelHubOperationFailed = IMODELHUBERROR_BASE + 14,
+  PullIsRequired = IMODELHUBERROR_BASE + 15,
+  MaximumNumberOfBriefcasesPerUser = IMODELHUBERROR_BASE + 16,
+  MaximumNumberOfBriefcasesPerUserPerMinute = IMODELHUBERROR_BASE + 17,
+  DatabaseTemporarilyLocked = IMODELHUBERROR_BASE + 18,
+  iModelAlreadyExists = IMODELHUBERROR_BASE + 19,
+  iModelDoesNotExist = IMODELHUBERROR_BASE + 20,
+  LockDoesNotExist = IMODELHUBERROR_BASE + 21,
+  LocksExist = IMODELHUBERROR_BASE + 22,
+  LockOwnedByAnotherBriefcase = IMODELHUBERROR_BASE + 23,
+  UserAlreadyExists = IMODELHUBERROR_BASE + 24,
+  UserDoesNotExist = IMODELHUBERROR_BASE + 25,
+  CodeStateInvalid = IMODELHUBERROR_BASE + 26,
+  CodeReservedByAnotherBriefcase = IMODELHUBERROR_BASE + 27,
+  CodeDoesNotExist = IMODELHUBERROR_BASE + 28,
+  CodesExist = IMODELHUBERROR_BASE + 29,
+  FileDoesNotExist = IMODELHUBERROR_BASE + 30,
+  FileAlreadyExists = IMODELHUBERROR_BASE + 31,
+  iModelIsLocked = IMODELHUBERROR_BASE + 32,
+  EventTypeDoesNotExist = IMODELHUBERROR_BASE + 33,
+  EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 34,
+  EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 35,
+  ProjectAssociationIsNotEnabled = IMODELHUBERROR_BASE + 36,
+  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 37,
+  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 38,
+  ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 39,
+  VersionAlreadyExists = IMODELHUBERROR_BASE + 40,
+  QueryIdsNotSpecified = IMODELHUBERROR_BASE + 41,
+  ConflictsAggregate = IMODELHUBERROR_BASE + 42,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 43,
 
-  /** Id for errors that are returned for incorrect iModel Hub request. */
-  UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1, /** Undefined argument */
-  InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2, /** Invalid argument */
-  MissingDownloadUrlError = IMODELHUBERROR_REQUESTERRORBASE + 3, /** Missing download url */
-  NotSupportedInBrowser = IMODELHUBERROR_REQUESTERRORBASE + 4, /** Not supported in browser */
-  FileHandlerNotSet = IMODELHUBERROR_REQUESTERRORBASE + 5, /** File handler is not set */
-  FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6, /** File not found */
+  // Errors that are returned for incorrect iModelHub request.
+  UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
+  InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2,
+  MissingDownloadUrlError = IMODELHUBERROR_REQUESTERRORBASE + 3,
+  NotSupportedInBrowser = IMODELHUBERROR_REQUESTERRORBASE + 4,
+  FileHandlerNotSet = IMODELHUBERROR_REQUESTERRORBASE + 5,
+  FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6,
 }
 
 /** When you want to associate an explanatory message with an error status value. */
@@ -549,7 +591,8 @@ export class BentleyError extends Error {
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.QueryIdsNotSpecified: return "Query Id is not specified";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
-      /** Id for errors that are returned for incorrect iModel Hub request. */
+
+      // errors that are returned for incorrect iModelHub request.
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";
