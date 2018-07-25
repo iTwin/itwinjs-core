@@ -847,6 +847,7 @@ describe("iModel", () => {
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
     const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
+    r1.memberPriority = 1;
     testImodel.linkTableRelationships.insertInstance(r1);
     const r2: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id2);
     testImodel.linkTableRelationships.insertInstance(r2);
@@ -857,8 +858,10 @@ describe("iModel", () => {
 
     assert.deepEqual(g1.id, r1.id);
     assert.equal(g1.classFullName, ElementGroupsMembers.classFullName);
+    assert.equal(g1.memberPriority, 1, "g1.memberPriority");
     assert.deepEqual(g2.id, r2.id);
     assert.equal(g2.classFullName, ElementGroupsMembers.classFullName);
+    assert.equal(g1.memberPriority, undefined, "g1.memberPriority");
 
     // Look up by source and target
     const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
@@ -867,11 +870,11 @@ describe("iModel", () => {
     // TODO: Do an ECSQL query to verify that 0->1 and 0->2 relationships can be found
 
     // Update relationship instance property
-    r1.memberPriority = 1;
+    r1.memberPriority = 2;
     testImodel.linkTableRelationships.updateInstance(r1);
 
     const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
-    assert.equal(g11.memberPriority, 1, "memberPriority");
+    assert.equal(g11.memberPriority, 2, "g11.memberPriority");
 
     // Delete relationship instance property
     testImodel.linkTableRelationships.deleteInstance(r1);
