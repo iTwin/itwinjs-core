@@ -21,6 +21,8 @@ function simulateBackendShutdown() {
   RobotWorldEngine.shutdown();
 }
 
+(global as any).document = { addEventListener: () => { }, removeEventListener: () => { }, cookie: "" };
+
 const bimName = "RobotWorldRpc.bim";
 
 function setUpTest() {
