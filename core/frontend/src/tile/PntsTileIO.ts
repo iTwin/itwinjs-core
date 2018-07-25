@@ -10,8 +10,7 @@ import { GeometricModelState } from "../ModelState";
 import { StringUtils } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
-import { Transform, RotMatrix, Angle, Vector3d } from "@bentley/geometry-core";
+import { Transform, Point3d, RotMatrix, Angle, Vector3d } from "@bentley/geometry-core";
 
 /** Deserializes an Pnts tile. */
 export namespace PntsTileIO {

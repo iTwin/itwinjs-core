@@ -6,7 +6,7 @@
 import { SavedState, AccuDraw, AccuDrawFlags, RotationMode, ContextMode, LockedStates, ThreeAxes, ItemField, KeyinStatus, CompassMode } from "../AccuDraw";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { BeButtonEvent, InputCollector } from "./Tool";
+import { BeButtonEvent, InputCollector, EventHandled } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Vector3d, Point3d, RotMatrix, Geometry, Angle } from "@bentley/geometry-core";
@@ -876,7 +876,7 @@ export class AccuDrawShortcuts {
 
       // AccuDraw:: UpdateAuxCoordinateSystem(* acsPtr, * vp);
       // then fall thru
-        /* falls through */
+      /* falls through */
 
       case RotationMode.ACS:
         rotation = RotationMode.ACS;
@@ -1095,8 +1095,8 @@ class AccuDrawShortcutsTool extends InputCollector {
 
   public onPostInstall(): void { super.onPostInstall(); this.shortcut.doManipulationStart(); }
   public pnCleanup(): void { this.shortcut.doManipulationStop(this.cancel); }
-  public onDataButtonDown(ev: BeButtonEvent): boolean { if (this.shortcut.doManipulation(ev, false)) { this.cancel = false; this.exitTool(); } return false; }
-  public onModelMotion(ev: BeButtonEvent) { this.shortcut.doManipulation(ev, true); }
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this.shortcut.doManipulation(ev, false)) { this.cancel = false; this.exitTool(); } return EventHandled.No; }
+  public async onModelMotion(ev: BeButtonEvent) { this.shortcut.doManipulation(ev, true); }
   public decorate(context: DecorateContext) { this.shortcut.onDecorate(context); }
   public exitTool() { super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
   public constructor(shortcut: AccuDrawTool) { super(); this.shortcut = shortcut; this.cancel = true; }

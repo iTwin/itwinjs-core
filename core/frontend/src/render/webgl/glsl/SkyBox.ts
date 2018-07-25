@@ -10,14 +10,10 @@ import { Texture } from "../Texture";
 import { Matrix3 } from "../Matrix";
 import { SkyBoxQuadsGeometry } from "../CachedGeometry";
 
-const computeBaseColor = "return vec4(0, gl_FragCoord.x / 1000.0, 0,0);";
-
-const assignFragData = `FragColor = TEXTURE(s_texture, v_texCoord);`;
-
-const computePosition = "vec3 pos = u_rot * rawPos.xyz; return pos.xyzz;";
-
-// Positions are in NDC [-1..1]. Compute UV params in [0..1]
-const computeTexCoord = "v_texCoord = (rawPosition.xz + 1.0) * 0.5;";
+const computeBaseColor = `return vec4(0, 0, 0, 0);`;
+const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;
+const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y); return pos.xyzz;`; // rawPos swizzling accounts for iModel rotation.
+const computeTexDir = `v_texDir = rawPosition.xyz;`;
 
 export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgram {
   const prog = new ProgramBuilder(false);
@@ -32,19 +28,17 @@ export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgr
       mat3.m00 = -rot.m00; mat3.m01 = -rot.m01; mat3.m02 = -rot.m02;
       mat3.m10 = -rot.m10; mat3.m11 = -rot.m11; mat3.m12 = -rot.m12;
       mat3.m20 = rot.m20; mat3.m21 = rot.m21; mat3.m22 = rot.m22;
-      // mat3.initIdentity(); // ###TODO: remove.  This is for testing only.
       uniform.setMatrix3(mat3);
     });
   });
 
-  prog.frag.addUniform("s_texture", VariableType.Sampler2D, (prg) => {
-    prg.addGraphicUniform("s_texture", (uniform, params) => {
+  prog.frag.addUniform("s_cube", VariableType.SamplerCube, (prg) => {
+    prg.addGraphicUniform("s_cube", (uniform, params) => {
       const geom = params.geometry as SkyBoxQuadsGeometry;
-      (geom.front as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
+      (geom.cube! as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
     });
   });
-
-  prog.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
+  prog.addInlineComputedVarying("v_texDir", VariableType.Vec3, computeTexDir);
 
   return prog.buildProgram(context);
 }

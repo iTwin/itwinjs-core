@@ -434,7 +434,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     this.inUse++;
   }
 
-  /** Remvoe one point from the back. */
+  /** Remove one point from the back. */
   public pop() {
     if (this.inUse > 0)
       this.inUse--;

@@ -12,7 +12,6 @@ import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { BusyError } from "./tools/EventController";
 
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap {
@@ -187,16 +186,14 @@ export class AccuSnap {
   }
 
   private setNeedsFlashView(view: Viewport) {
-    if (this.isFlashed(view) || this.needsFlash(view))
-      return;
-    this.setNeedsFlash(view);
+    if (!this.isFlashed(view) && !this.needsFlash(view))
+      this.setNeedsFlash(view);
   }
 
   /** flash a hit in its view. */
   private setFlashHit(hit?: HitDetail): void {
-    if (!hit || !this.hitShouldBeHilited(hit))
-      return;
-    this.setNeedsFlashView(hit.viewport!);
+    if (hit !== undefined && this.hitShouldBeHilited(hit))
+      this.setNeedsFlashView(hit.viewport!);
   }
 
   public erase(): void {
@@ -204,10 +201,11 @@ export class AccuSnap {
     this.clearSprites(); // remove all sprites from the screen
   }
 
-  public showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): void {
-    if (IModelApp.viewManager.doesHostHaveFocus())
-      IModelApp.toolAdmin.getToolTip(hit).then((msg) => this.showLocateMessage(viewPt, vp, msg))
-        .catch((err) => { BusyError.check(err); });
+  public async showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): Promise<void> {
+    if (IModelApp.viewManager.doesHostHaveFocus()) {
+      const msg = await IModelApp.toolAdmin.getToolTip(hit);
+      this.showLocateMessage(viewPt, vp, msg);
+    }
   }
 
   private showLocateMessage(viewPt: XAndY, vp: Viewport, msg: string) {
@@ -215,7 +213,7 @@ export class AccuSnap {
       IModelApp.notifications.showToolTip(vp.canvas, msg, viewPt);
   }
 
-  public displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d): void {
+  public async displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d) {
     // if the tooltip is already displayed, or if user doesn't want it, quit.
     if (IModelApp.notifications.isToolTipOpen() || !this.settings.toolTip)
       return;
@@ -263,8 +261,7 @@ export class AccuSnap {
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
     if (!this.errorIcon.isActive && theHit) {
-      this.showElemInfo(viewPt, vp, theHit);
-      return;
+      return this.showElemInfo(viewPt, vp, theHit);
     }
 
     // If we have an error explanation...use it as is!
@@ -779,9 +776,9 @@ export class AccuSnap {
 
   public onMotionStopped(_ev: BeButtonEvent): void { }
 
-  public onNoMotion(ev: BeButtonEvent): void {
+  public async onNoMotion(ev: BeButtonEvent) {
     this.noMotionCount++;
-    this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
+    return this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
   }
 
   private flashElements(context: DecorateContext): void {
@@ -838,11 +835,11 @@ export class AccuSnap {
    * This is useful of an application changes the snap mode and wants AccuSnap to choose it immediately, without
    * requiring the user to move the mouse.
    */
-  public reEvaluate() {
+  public async reEvaluate() {
     if (this.getCurrSnapDetail()) {
       const ev = new BeButtonEvent();
       IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-      this.onMotion(ev).catch((e) => BusyError.check(e));
+      return this.onMotion(ev);
     }
   }
 }

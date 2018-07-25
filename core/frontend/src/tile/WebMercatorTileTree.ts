@@ -130,7 +130,7 @@ class WebMercatorTileLoader extends TileLoader {
     const dbToMercator = Transform.createOriginAndMatrixColumns(mercatorOrigin, deltaX, deltaY, Vector3d.create(0.0, 0.0, 1.0)).multiplyTransformTransform(Transform.createTranslationXYZ(-projectCenter.x, -projectCenter.y, -groundBias));
     this.mercatorToDb = dbToMercator.inverse() as Transform;
   }
-  public tileRequresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
+  public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: WebMercatorTileProps[] = [];
     for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.mercatorToDb)); }

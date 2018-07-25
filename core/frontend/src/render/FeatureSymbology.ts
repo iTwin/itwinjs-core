@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride } from "@bentley/imodeljs-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 
 export namespace FeatureSymbology {
@@ -126,24 +126,24 @@ export namespace FeatureSymbology {
     public get defaultOverrides(): Appearance { return this._defaultOverrides; }
     public get lineWeights(): boolean { return this._lineWeights; }
 
-    public isNeverDrawn(id: Id64): boolean { return this.neverDrawn.has(id.value); }
-    public isAlwaysDrawn(id: Id64): boolean { return this.alwaysDrawn.has(id.value); }
-    public isSubCategoryVisible(id: Id64): boolean { return this.visibleSubCategories.has(id.value); }
+    public isNeverDrawn(id: Id64String): boolean { return this.neverDrawn.has(id.toString()); }
+    public isAlwaysDrawn(id: Id64String): boolean { return this.alwaysDrawn.has(id.toString()); }
+    public isSubCategoryVisible(id: Id64String): boolean { return this.visibleSubCategories.has(id.toString()); }
 
-    public clearModelOverrides(id: Id64): void { this.modelOverrides.delete(id.value); }
-    public clearElementOverrides(id: Id64): void { this.elementOverrides.delete(id.value); }
-    public clearSubCategoryOverrides(id: Id64): void { this.subCategoryOverrides.delete(id.value); }
+    public clearModelOverrides(id: Id64String): void { this.modelOverrides.delete(id.toString()); }
+    public clearElementOverrides(id: Id64String): void { this.elementOverrides.delete(id.toString()); }
+    public clearSubCategoryOverrides(id: Id64String): void { this.subCategoryOverrides.delete(id.toString()); }
 
-    public getModelOverrides(id: Id64): Appearance | undefined { return this.modelOverrides.get(id.value); }
-    public getElementOverrides(id: Id64): Appearance | undefined { return this.elementOverrides.get(id.value); }
-    public getSubCategoryOverrides(id: Id64): Appearance | undefined { return this.subCategoryOverrides.get(id.value); }
+    public getModelOverrides(id: Id64String): Appearance | undefined { return this.modelOverrides.get(id.toString()); }
+    public getElementOverrides(id: Id64String): Appearance | undefined { return this.elementOverrides.get(id.toString()); }
+    public getSubCategoryOverrides(id: Id64String): Appearance | undefined { return this.subCategoryOverrides.get(id.toString()); }
 
-    public setVisibleSubCategory(id: Id64): void { this.visibleSubCategories.add(id.value); }
-    public setNeverDrawn(id: Id64): void { this.neverDrawn.add(id.value); }
-    public setAlwaysDrawn(id: Id64): void { this.alwaysDrawn.add(id.value); }
+    public setVisibleSubCategory(id: Id64String): void { this.visibleSubCategories.add(id.toString()); }
+    public setNeverDrawn(id: Id64String): void { this.neverDrawn.add(id.toString()); }
+    public setAlwaysDrawn(id: Id64String): void { this.alwaysDrawn.add(id.toString()); }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
-    public getAppearance(feature: Feature, modelId: Id64): Appearance | undefined {
+    public getAppearance(feature: Feature, modelId: Id64String): Appearance | undefined {
       let app = !this._lineWeights ? Appearance.fromJSON({ weight: 1 }) : Appearance.defaults;
       const modelApp = this.getModelOverrides(modelId);
       if (undefined !== modelApp)
@@ -215,31 +215,28 @@ export namespace FeatureSymbology {
     }
 
     // Specify overrides for all elements within the specified model. These overrides take priority.
-    public overrideModel(id: Id64, app: Appearance, replaceExisting: boolean = true): void {
-      if (!id.isValid())
-        return;
-
+    public overrideModel(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
       if (replaceExisting || undefined === this.getModelOverrides(id))
-        this.modelOverrides.set(id.value, app);
+        this.modelOverrides.set(id.toString(), app);
     }
 
-    public overrideSubCategory(id: Id64, app: Appearance, replaceExisting: boolean = true): void {
-      if (!id.isValid() || !this.isSubCategoryVisible(id))
+    public overrideSubCategory(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
+      if (!this.isSubCategoryVisible(id))
         return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this subcategory"
       if (replaceExisting || undefined === this.getSubCategoryOverrides(id))
-        this.subCategoryOverrides.set(id.value, app);
+        this.subCategoryOverrides.set(id.toString(), app);
     }
 
     // NB: Appearance can override nothing, which prevents the default overrides from applying to it.
-    public overrideElement(id: Id64, app: Appearance, replaceExisting: boolean = true): void {
-      if (!id.isValid() || this.isNeverDrawn(id))
+    public overrideElement(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
+      if (this.isNeverDrawn(id))
         return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this element"
       if (replaceExisting || undefined === this.getElementOverrides(id))
-        this.elementOverrides.set(id.value, app);
+        this.elementOverrides.set(id.toString(), app);
     }
 
     public setDefaultOverrides(appearance: Appearance, replaceExisting: boolean = true): void {

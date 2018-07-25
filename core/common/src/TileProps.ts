@@ -40,7 +40,7 @@ export interface TileProps {
   /** Optional scaling factor applied to this tile's maximum size */
   zoomFactor?: number;
   /** Optional - set to True for Y Axis Up */
-  yAxisUp: boolean;
+  yAxisUp?: boolean;
   /** WIP: base-64-encoded binary tile geometry data, ArrayBuffer or undefined if no geometry */
   geometry?: any;
 }

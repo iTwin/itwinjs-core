@@ -18,7 +18,6 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { ModelState } from "./ModelState";
 import { IModelApp } from "./IModelApp";
 import { EntityState } from "./EntityState";
-import { OneAtATimePromise } from "./tools/EventController";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -130,10 +129,11 @@ export class IModelConnection extends IModel {
   }
 
   private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
-    // Try opening the iModel repeatedly accommodating any pending responses from the backend
-
-    // Set a retry policy for open requests. (Actually, make this half of what you want. See below.)
-    const connectionRetryTime: number = Math.min(25, IModelConnection.connectionTimeout);
+    /* Try opening the iModel repeatedly accommodating any pending responses from the backend.
+     * Waits for an increasing amount of time (but within a range) before checking on the pending request again.
+     */
+    const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
+    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
     let openForReadOperation: RpcOperation | undefined;
     let openForWriteOperation: RpcOperation | undefined;
@@ -141,15 +141,16 @@ export class IModelConnection extends IModel {
       openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
       if (!openForReadOperation)
         throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
-      openForReadOperation.policy.retryInterval = () => connectionRetryTime;
+      openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
     } else {
       openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
       if (!openForWriteOperation)
         throw new IModelError(BentleyStatus.ERROR, "IModelWriteRpcInterface.openForWrite() is not available");
-      openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
+      openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;
     }
 
     Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
 
     const startTime = Date.now();
 
@@ -161,15 +162,17 @@ export class IModelConnection extends IModel {
 
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
-      if (Date.now() - startTime > IModelConnection.connectionTimeout) {
+      const connectionTimeElapsed = Date.now() - startTime;
+      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
         Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      // Double the time that this request will wait the next time it fails with PendingUpdateReceived (if that happens).
-      // (Actually, this doubles the interval for *this* wait. So, that's why we make the policy half of what we want
-      // the initial wait to be.)
-      request.retryInterval *= 2;
+      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
+      if (request.retryInterval !== connectionRetryInterval) {
+        request.retryInterval = connectionRetryInterval;
+        Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+      }
     });
 
     let openResponse: IModel;
@@ -338,19 +341,11 @@ export class IModelConnection extends IModel {
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
-  private _snap = new OneAtATimePromise<SnapResponseProps>("snap", (args: any[]) => IModelReadRpcInterface.getClient().requestSnap(args[0], args[1], args[2]));
-  /** Request a snap from the backend.
-   * @note Snap requests are *replaceable*. That is, subsequent snap requests replace previous pending snap requests with a BusyError exception.
-   * Therefore, callers *must* catch [[BusyError]] exceptions.
-   */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return this._snap.addRequest(this.iModelToken, this.connectionId, props); }
+  /** Request a snap from the backend. */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
 
-  private _tooltip = new OneAtATimePromise<string[]>("tooltip", (args: any[]) => IModelReadRpcInterface.getClient().getToolTipMessage(args[0], args[1]));
-  /** Request a tooltip from the backend.
-   * @note ToolTip requests are *replaceable*. That is, subsequent requests replace previous pending requests with a BusyError exception.
-   * Therefore, callers *must* catch [[BusyError]] exceptions.
-   */
-  public async getToolTipMessage(id: string): Promise<string[]> { return this._tooltip.addRequest(this.iModelToken, id); }
+  /** Request a tooltip from the backend.  */
+  public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
 }
 
 export namespace IModelConnection {

@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "",
-    "buildDocSite": "node buildDocSite --rootDir=../..",
+    "buildDocSite": "node buildDocSite --rootDir=../.. --ignorePackage=@bentley/bentleyjs-tools",
     "clean": "",
     "docs": "",
     "lint": ""
@@ -13,7 +13,7 @@
   "repository": {},
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bemetalsmith": "^2.5.27",
+    "@bentley/bemetalsmith": "^2.7.13",
     "fs-extra": "^6.0.1"
   }
 }

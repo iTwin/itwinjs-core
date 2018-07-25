@@ -88,7 +88,7 @@ class FindChildResult {
 class RealityModelTileLoader extends TileLoader {
   constructor(private tree: RealityModelTileTreeProps) { super(); }
   public getMaxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
-  public tileRequresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
+  public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 

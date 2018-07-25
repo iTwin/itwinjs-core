@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
+import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool, EventHandled } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { HitDetail, HitSource, SnapDetail, HitPriority } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -35,10 +35,10 @@ export class IdleTool extends InteractiveTool {
     const tp = IModelApp.tentativePoint;
     await tp.process(ev);
 
-    if (tp.isSnapped) {
+    if (tp.isSnapped()) {
       IModelApp.toolAdmin.adjustSnapPoint();
     } else {
-      if (IModelApp.accuDraw.isActive) {
+      if (IModelApp.accuDraw.isActive()) {
         const point = tp.point;
         const vp = ev.viewport!;
         if (vp.isSnapAdjustmentRequired()) {
@@ -60,8 +60,9 @@ export class IdleTool extends InteractiveTool {
       } else {
         IModelApp.toolAdmin.adjustPoint(tp.point, ev.viewport!);
       }
-      IModelApp.accuDraw.onTentative();
     }
+
+    IModelApp.accuDraw.onTentative();
 
     const currTool = IModelApp.toolAdmin.activeViewTool;
     if (currTool && currTool instanceof ViewManip) {
@@ -76,47 +77,51 @@ export class IdleTool extends InteractiveTool {
     IModelApp.toolAdmin.updateDynamics();
   }
 
-  public onMiddleButtonDown(ev: BeButtonEvent): boolean {
-    const vp = ev.viewport;
-    if (!vp)
-      return true;
-    const cur = IModelApp.toolAdmin.currentInputState;
-    if (cur.isDragging(BeButton.Data) || cur.isDragging(BeButton.Reset))
-      return false;
+  public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+    if (!ev.viewport || BeButton.Middle !== ev.button)
+      return EventHandled.No;
 
     let viewTool: ViewTool | undefined;
-    if (ev.isDoubleClick) {
-      viewTool = new FitViewTool(vp, true);
-    } else if (ev.isControlKey) {
-      viewTool = IModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
+    if (ev.isControlKey) {
+      viewTool = IModelApp.tools.create("View." + ev.viewport.view.is3d() ? "Look" : "Scroll", ev.viewport, true, false, true) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
-      viewTool = IModelApp.tools.create("View.Rotate", vp, true, false, true) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Rotate", ev.viewport, true, false, true) as ViewTool | undefined;
     } else {
       const currTool = IModelApp.toolAdmin.activeViewTool;
       if (currTool && currTool instanceof ViewManip) {
         // A current tool is active. If it's not already changing the view, tell it to choose the pan handle if it has one (leave it active regardless)...
         if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
           currTool.forcedHandle = ViewHandleType.ViewPan;
-        // Since we won't get a data button, we need to explicitly clear the tentative...
-        IModelApp.tentativePoint.clear(true);
-        return true;
+        return EventHandled.Yes;
       }
 
-      viewTool = IModelApp.tools.create("View.Pan", vp, true, false, true) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Pan", ev.viewport, true, false, true) as ViewTool | undefined;
     }
 
-    return !!viewTool && viewTool.run();
+    if (viewTool && viewTool.run()) {
+      IModelApp.toolAdmin.currentInputState.buttonDownTool = viewTool;
+      await viewTool.onModelStartDrag(ev);
+    }
+    return EventHandled.Yes;
   }
 
-  public onMiddleButtonUp(ev: BeButtonEvent): boolean {
-    if (ev.isDoubleClick || ev.isControlKey || ev.isShiftKey)
-      return false;
+  public async onMiddleButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (!ev.viewport)
+      return EventHandled.No;
 
-    this.performTentative(ev);
-    return true;
+    if (ev.isDoubleClick) {
+      const viewTool = new FitViewTool(ev.viewport, true);
+      return viewTool.run() ? EventHandled.Yes : EventHandled.No;
+    }
+
+    if (ev.isControlKey || ev.isShiftKey)
+      return EventHandled.No;
+
+    await this.performTentative(ev);
+    return EventHandled.Yes;
   }
 
-  public onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
+  public async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.run(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
   public onSingleTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }

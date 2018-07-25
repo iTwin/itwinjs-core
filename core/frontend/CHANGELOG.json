@@ -1,0 +1,146 @@
+{
+  "name": "@bentley/imodeljs-frontend",
+  "entries": [
+    {
+      "version": "0.103.0",
+      "tag": "@bentley/imodeljs-frontend_v0.103.0",
+      "date": "Tue, 24 Jul 2018 15:52:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix import issues in published packages"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.102.0",
+      "tag": "@bentley/imodeljs-frontend_v0.102.0",
+      "date": "Tue, 24 Jul 2018 14:13:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added ToolTip to AccuSnap"
+          },
+          {
+            "comment": "Rotate view tool target handle add. Fixed data button not accounting for snap location."
+          },
+          {
+            "comment": "Fix getGridPlaneViewIntersections."
+          },
+          {
+            "comment": "Make reality models locate-able"
+          },
+          {
+            "comment": "computeRootToNpc should not be changing frustFraction"
+          },
+          {
+            "comment": "remove get/setShow methods on ViewFlags. They were redundant."
+          },
+          {
+            "comment": "Support tentative with RotateView tool."
+          },
+          {
+            "comment": "alignWithRootZ needs to set corrected rotation on view state."
+          },
+          {
+            "comment": "Remove remnants of rotation sphere in ViewRotate. Change animateFrustumChange to not default to no animation."
+          },
+          {
+            "comment": "Don't call animateFrustumChange from applyViewState if animationTime is undefined."
+          },
+          {
+            "comment": "Updating performance metrics"
+          },
+          {
+            "comment": "Support rendering on iOS."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.101.0",
+      "tag": "@bentley/imodeljs-frontend_v0.101.0",
+      "date": "Mon, 23 Jul 2018 22:00:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Flash snap curve primitive"
+          },
+          {
+            "comment": "Disable accusnap debugging."
+          },
+          {
+            "comment": "Fix adjustSnapPoint. Display normal at snap location."
+          },
+          {
+            "comment": "Fix window area horizontal/vertical decoration line"
+          },
+          {
+            "comment": "Support creating textures from HTML image elements."
+          },
+          {
+            "comment": "Freeze IModel.projectExtents. Drawing grids was destroying it"
+          },
+          {
+            "comment": "Move snap related setting from ElementLocateManager to AccuSnap."
+          },
+          {
+            "comment": "Fix white textures while loading reality model tiles."
+          },
+          {
+            "comment": "Fix import issue in Polyline.ts"
+          },
+          {
+            "comment": "Fix import issue in Primitive.ts"
+          },
+          {
+            "comment": "Handler to reopen a connection if the backend was moved should really be skipped for calls originating from other connections. "
+          },
+          {
+            "comment": "Viewport supports custom logic for overriding symbology."
+          },
+          {
+            "comment": "Fix assertion when creating point string graphics"
+          },
+          {
+            "comment": "ClipVolumes are created using rendering system."
+          },
+          {
+            "comment": "ClipVolume -> RenderClipVolume"
+          },
+          {
+            "comment": "ClipMaskVolume class for clipping view attachments"
+          },
+          {
+            "comment": "Support overriding line pattern symbology."
+          },
+          {
+            "comment": "TFS#917985: Tweaked the internal mechanism when opening a new IModelConnection for better performance. Added more logging to enable the router/provisioner team to potential diagnose performance issues. "
+          },
+          {
+            "comment": "Fix transparency in perspective views"
+          },
+          {
+            "comment": "Fix rendering of translucent textures."
+          },
+          {
+            "comment": "WIP: TFS#914011 - Rendergradient skybox using shader."
+          },
+          {
+            "comment": "Added optional display of tile bounding volumes for debugging purposes."
+          },
+          {
+            "comment": "Fix for testing undefined values for colors"
+          },
+          {
+            "comment": "ShaderBuilder dynamically builds shaders incorporating clipping for various clip plane set lengths alongside normal shader programs"
+          },
+          {
+            "comment": "SheetViewState member name cleanup."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -7,8 +7,8 @@ import { Checker } from "./Checker";
 import { Point2d, Point3d, Vector2d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
-import { ClipShape, ClipMask } from "../numerics/ClipPrimitives";
-import { ClipVector } from "../numerics/ClipVector";
+import { ClipShape, ClipMask } from "../clipping/ClipPrimitive";
+import { ClipVector } from "../clipping/ClipVector";
 import { SmallSystem } from "../numerics/Polynomials";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Matrix4d } from "../numerics/Geometry4d";
@@ -87,7 +87,7 @@ function clipVectorsAreEqual(vector0: ClipVector, vector1: ClipVector): boolean 
   return true;
 }
 
-describe ("ClipVector", () => {
+describe("ClipVector", () => {
   let clipShape0: ClipShape;
   let clipShape1: ClipShape;
   let clipShape2: ClipShape;
@@ -113,7 +113,7 @@ describe ("ClipVector", () => {
    *                                   (2,-7)   (6.5,-7)\  /
    *                                                     \/(7,-8)
    */
-  before (() => {
+  before(() => {
     clipShape0 = ClipShape.createBlock(Range3d.createXYZXYZ(-5, -4, -50, -3, -2, 50), ClipMask.All);
     clipShape1 = ClipShape.createShape([Point3d.create(4.5, 1), Point3d.create(6, 3), Point3d.create(3, 3)])!;
     clipShape2 = ClipShape.createShape([
@@ -139,7 +139,7 @@ describe ("ClipVector", () => {
   });
 
   const ck = new Checker();
-  it ("ClipVector creation and to/from JSON", () => {
+  it("ClipVector creation and to/from JSON", () => {
     // Test the ability to parse ClipPlanes from all ClipShapes in a ClipVector (this test must be completed first before other tests cause the ClipShapes to cache their sets)
     const newlyCreatedClipVector = ClipVector.createClipShapeRefs([clipShape0, clipShape1, clipShape2, clipShape3, clipShape4]);
     for (const clip of newlyCreatedClipVector.clips)
@@ -188,21 +188,21 @@ describe ("ClipVector", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("Point proximity and classification", () => {
+  it("Point proximity and classification", () => {
     const shape0Extremities: Point3d[] = [
       Point3d.create(-5, -3),
       Point3d.create(-3, -2),
       Point3d.create(-4, -3, -50),
       Point3d.create(-4, -3, 50),
     ];
-    const shape0PointAdj: PointAdjustment[] = [ PointAdjustment.AddX, PointAdjustment.SubX, PointAdjustment.AddZ, PointAdjustment.SubZ ];
+    const shape0PointAdj: PointAdjustment[] = [PointAdjustment.AddX, PointAdjustment.SubX, PointAdjustment.AddZ, PointAdjustment.SubZ];
     const shape1Extremities: Point3d[] = [
       Point3d.create(4.5, 3),
       Point3d.create(3.75, 2),
       Point3d.create(5.25, 2),
       Point3d.create(4.5, 2, 100000),
     ];
-    const shape1PointAdj: PointAdjustment[] = [ PointAdjustment.SubY, PointAdjustment.AddX, PointAdjustment.AddY, PointAdjustment.None ];
+    const shape1PointAdj: PointAdjustment[] = [PointAdjustment.SubY, PointAdjustment.AddX, PointAdjustment.AddY, PointAdjustment.None];
     const shape2Extremities: Point3d[] = [
       Point3d.create(7, 1, -.15),
       Point3d.create(9, -1, -.15),
@@ -237,7 +237,7 @@ describe ("ClipVector", () => {
         if (pointAdjustments[1])
           ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[1]!]), 3, "Outer point should be strongly outside for single ClipShape, given it is the only point.");
         if (pointAdjustments[0] && pointAdjustments[1])
-        ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[0]!, pointAdjustments[1]!]), 2, "Array of outer AND inner points should return ambiguous for single ClipShape");
+          ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[0]!, pointAdjustments[1]!]), 2, "Array of outer AND inner points should return ambiguous for single ClipShape");
       }
     }
     // Ensure that pointInside check only passes for points within intersecting ClipShapes
@@ -254,7 +254,7 @@ describe ("ClipVector", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("GetRange", () => {
+  it("GetRange", () => {
     // Check individual ranges of a single held ClipShape
     for (const shape of clipVector012.clips) {
       const clipVectorSingleShape = ClipVector.createClipShapeRefs([shape]);
@@ -314,7 +314,7 @@ describe ("ClipVector", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("Transformations and matrix multiplication", () => {
+  it("Transformations and matrix multiplication", () => {
     const m0 = Matrix4d.createIdentity();
     const t0 = Transform.createIdentity();
     const clipVectorClone = clipVector012.clone();
@@ -333,7 +333,7 @@ describe ("ClipVector", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it ("Extract boundary loops", () => {
+  it("Extract boundary loops", () => {
     const vectorLen = clipVector012.clips.length;
     const expClipMask = ClipMask.XAndY | (clipVector012.clips[vectorLen - 1].zLowValid ? ClipMask.ZLow : 0) | (clipVector012.clips[vectorLen - 1].zHighValid ? ClipMask.ZHigh : 0);
     let expZLow = -Number.MAX_VALUE;

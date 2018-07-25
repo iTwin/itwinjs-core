@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InputCollector, BeButton, BeGestureEvent } from "./Tool";
+import { BeButtonEvent, InputCollector, BeButton, BeGestureEvent, EventHandled } from "./Tool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
@@ -31,8 +31,8 @@ export namespace EditManipulator {
     protected abstract accept(_ev: BeButtonEvent): boolean;
 
     public onPostInstall(): void { super.onPostInstall(); this.init(); }
-    public onDataButtonDown(ev: BeButtonEvent): boolean { if (!this.accept(ev)) return false; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Accept); return true; }
-    public onResetButtonUp(ev: BeButtonEvent): boolean { if (!this.cancel(ev)) return false; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Cancel); return true; }
+    public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (!this.accept(ev)) return EventHandled.No; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Accept); return EventHandled.Yes; }
+    public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (!this.cancel(ev)) return EventHandled.No; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Cancel); return EventHandled.Yes; }
   }
 
   export abstract class Provider {

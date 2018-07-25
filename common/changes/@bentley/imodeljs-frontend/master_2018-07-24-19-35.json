@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "attachment id array on SheetViewState has type Id64Array",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "nate.rex@bentley.com"
+}

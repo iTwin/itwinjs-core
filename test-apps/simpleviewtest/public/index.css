@@ -1,0 +1,393 @@
+.simpleicon {
+  position:relative;
+  background-color: #f0f0f0;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: 3px;
+  margin-top: 3px;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  width: 35px;
+  height: 35px;
+  cursor:pointer;
+}
+
+.imodelview {
+  position: relative;
+  width: 98%;
+  height: 90%;
+  border-color: black;
+  border-style: solid;
+  border-width: 1px;
+  margin-left: 5px;
+  margin-bottom: 5px;
+  background-color: gray;
+}
+
+#tooltip-location {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+}
+
+.topdiv {
+  display: flex;
+  align-items: center;
+  padding-left:2.5px;
+  padding-right:2.5px;
+}
+
+.statusspan {
+  margin-left: 20px;
+}
+
+.fsp-info {
+  background-color: #f0f0f0;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: 3px;
+  margin-right: 3px;
+  display: inline;
+}
+
+.bim-spinner-container {
+    position:absolute;
+    z-index:9999999;
+    height:100%;
+    width:100%;
+    background-color:rgba(255, 255, 255, 0.5);
+    top:0;
+    left:0;
+}
+
+.bim-spinner {
+    position:absolute;
+    display:block;
+    top:calc(50% - 45px);
+    left:calc(50% - 45px);
+    width: 90px;
+    height:90px;
+    border: 5px solid #f3f3f3; /* Light grey */
+    border-top: 5px solid  #008be1; /* Blue */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#viewList {
+  padding: 12px;
+  margin: 5px;
+  cursor:pointer;
+  min-width:200px;
+  max-width:300px;
+}
+
+/*** Bentley Cesium Web Viewer Icon Font ***/
+@font-face {
+  font-family: 'Bentley-Cesium-Web-Viewer-Icons';
+  src:  url('Fonts/Bentley-Cesium-Web-Viewer-Icons.eot');
+  src:  url('Fonts/Bentley-Cesium-Web-Viewer-Icons.eot?#iefix') format('embedded-opentype'),
+    url('Fonts/Bentley-Cesium-Web-Viewer-Icons.ttf') format('truetype'),
+    url('Fonts/Bentley-Cesium-Web-Viewer-Icons.woff') format('woff'),
+    url('Fonts/Bentley-Cesium-Web-Viewer-Icons.svg?#Bentley-Cesium-Web-Viewer-Icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+#root i {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'Bentley-Cesium-Web-Viewer-Icons' !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  font-size: 35px;
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.bim-icon-pan:before {
+  content: "\e91b";
+}
+.bim-icon-walk:before {
+  content: "\e91c";
+}
+.bim-icon-viewnext:before {
+  content: "\e918";
+}
+.bim-icon-viewprevious:before {
+  content: "\e919";
+}
+.bim-icon-windowarea:before {
+  content: "\e91a";
+}
+.bim-icon-hidecategory:before {
+  content: "\e917";
+}
+.bim-icon-appicon:before {
+  content: "\e900";
+}
+.bim-icon-categories:before {
+  content: "\e901";
+}
+.bim-icon-chevrondown:before {
+  content: "\e902";
+}
+.bim-icon-chevronleft:before {
+  content: "\e903";
+}
+.bim-icon-chevronright:before {
+  content: "\e904";
+}
+.bim-icon-chevronup:before {
+  content: "\e905";
+}
+.bim-icon-cornerarrow:before {
+  content: "\e906";
+}
+.bim-icon-cursor:before {
+  content: "\e907";
+}
+.bim-icon-fitview:before {
+  content: "\e908";
+}
+.bim-icon-gyroscope:before {
+  content: "\e909";
+}
+.bim-icon-isolate:before {
+  content: "\e90a";
+}
+.bim-icon-model:before {
+  content: "\e90b";
+}
+.bim-icon-properties:before {
+  content: "\e90c";
+}
+.bim-icon-savedview:before {
+  content: "\e90d";
+}
+.bim-icon-settings:before {
+  content: "\e90e";
+}
+.bim-icon-viewback:before {
+  content: "\e90f";
+}
+.bim-icon-viewbottom:before {
+  content: "\e910";
+}
+.bim-icon-viewfront:before {
+  content: "\e911";
+}
+.bim-icon-viewisoleft:before {
+  content: "\e912";
+}
+.bim-icon-viewisoright:before {
+  content: "\e913";
+}
+.bim-icon-viewleft:before {
+  content: "\e914";
+}
+.bim-icon-viewright:before {
+  content: "\e915";
+}
+.bim-icon-viewtop:before {
+  content: "\e916";
+}
+.bim-icon-link:before {
+    content: "\e9cb";
+}
+.bim-icon-paste:before {
+    content: "\e92d";
+}
+.bim-icon-property-data:before {
+    content: "\e9d8";
+}
+.bim-icon-cancel:before {
+    content: "\ea2a";
+}
+.bim-icon-calendar:before {
+    content: "\e970";
+}
+.bim-icon-briefcases:before {
+    content: "\e9cc";
+}
+.bim-icon-drawer:before {
+    content: "\e979";
+}
+.rd-icon-measure-position:before {
+    content: "\eb08";
+}
+.rd-icon-measure-distance:before {
+    content: "\eb09";
+}
+.rd-icon-measure-area:before {
+    content: "\eb0a";
+}
+.bim-icon-measure-tool:before {
+      content: "\e9b4"
+}
+.bim-icon-undo:before {
+      content: "\e982"
+}
+.bim-icon-redo:before {
+      content: "\e983"
+}
+.bim-icon-model:before {
+      content: "\e90b"
+}
+.bim-icon-model:categories {
+      content: "\e901"
+}
+
+.toolMenu {
+  position:absolute;
+  background-color: #f0f0f0;
+  display:none;
+  width:200px;
+  padding-left: 3px;
+  padding-top: 3px;
+  z-index: 999;
+  top: 45px;
+  left: -1px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+}
+.scrollingToolMenu {
+  position:absolute;
+  background-color: #f0f0f0;
+  display:none;
+  width:200px;
+  padding-left: 3px;
+  padding-top: 3px;
+  z-index: 999;
+  top: 45px;
+  left: -1px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  float:left;
+  overflow-y: auto;
+  height: 400px;
+}
+
+.tooltip {
+  background: rgb(255, 252, 216);
+  color: black;
+  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.9em;
+  font-weight: normal;
+  text-decoration: none;
+  text-align: left;
+  padding: 0.6em 0.75rem;
+  border-radius: 4px;
+  transition: opacity 0.4s;
+  white-space: nowrap;
+  box-shadow: 0 0.5rem 1rem -0.5rem black;
+  z-index: 1000;
+  opacity: 0.9;
+}
+
+.popper .popper__arrow,
+.tooltip .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    margin: 5px;
+}
+
+.tooltip .tooltip-arrow,
+.popper .popper__arrow {
+    border-color: rgb(255, 252, 216);
+}
+.popper[x-placement^="top"],
+.tooltip[x-placement^="top"] {
+    margin-bottom: 10px;
+}
+
+.popper[x-placement^="top"] .popper__arrow,
+.tooltip[x-placement^="top"] .tooltip-arrow {
+    border-width: 5px 5px 0 5px;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    bottom: -5px;
+    left: calc(50% - 5px);
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.popper[x-placement^="bottom"],
+.tooltip[x-placement^="bottom"] {
+    margin-top: 5px;
+}
+.tooltip[x-placement^="bottom"] .tooltip-arrow,
+.popper[x-placement^="bottom"] .popper__arrow {
+    border-width: 0 5px 5px 5px;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    top: -5px;
+    left: calc(50% - 5px);
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.tooltip[x-placement^="right"],
+.popper[x-placement^="right"] {
+    margin-left: 5px;
+}
+.popper[x-placement^="right"] .popper__arrow,
+.tooltip[x-placement^="right"] .tooltip-arrow {
+    border-width: 5px 5px 5px 0;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    left: -5px;
+    top: calc(50% - 5px);
+    margin-left: 0;
+    margin-right: 0;
+}
+.popper[x-placement^="left"],
+.tooltip[x-placement^="left"] {
+    margin-right: 5px;
+}
+.popper[x-placement^="left"] .popper__arrow,
+.tooltip[x-placement^="left"] .tooltip-arrow {
+    border-width: 5px 0 5px 5px;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    right: -5px;
+    top: calc(50% - 5px);
+    margin-left: 0;
+    margin-right: 0;
+}
+
+
+#standardRotationMenu .simpleicon {
+  float:left;
+}
+#renderModeToggle {
+  width: 100%;
+  height: 100%;
+}
+#browserFileSelector {
+  position: absolute;
+  display: none;
+}
