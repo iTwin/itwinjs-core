@@ -4,58 +4,65 @@
 /** @module PresentationRules */
 
 import { ChildNodeRule } from "./ChildNodeRule";
-import { PresentationRuleSpecification } from "../PresentationRuleSpecification";
+import { RuleSpecification } from "../RuleSpecification";
 import { AllInstanceNodesSpecification } from "./AllInstanceNodesSpecification";
 import { AllRelatedInstanceNodesSpecification } from "./AllRelatedInstanceNodesSpecification";
 import { CustomNodeSpecification } from "./CustomNodeSpecification";
 import { InstanceNodesOfSpecificClassesSpecification } from "./InstanceNodesOfSpecificClassesSpecification";
 import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecification";
-import { SearchResultInstanceNodesSpecification } from "./SearchResultInstanceNodesSpecification";
+import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
 import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
 
-/** Base interface for [[ChildNodeSpecification]] */
-export interface ChildNodeSpecificationBase extends PresentationRuleSpecification {
+/** Base interface for all [[ChildNodeSpecification]] implementations */
+export interface ChildNodeSpecificationBase extends RuleSpecification {
   /**
-   * This identifies whether specification always returns nodes. Setting this flag to true will improve performance,
-   * because it would not require to execute the query in order to check whether the node has any children.
-   * By default is set to false.
+   * This tells the rules engine that specification always returns nodes.
+   *
+   * **Note:** setting this flag to `true` improves performance.
    */
   alwaysReturnsChildren?: boolean;
 
   /**
-   * This option allows to hide nodes provided by this specification and show nodes of its children directly.
+   * Hide nodes provided by this specification and directly show nodes of its children.
    * This helps if you need to define related instance nodes of particular parent node that is not available in the
-   * hierarchy. By default is set to false.
+   * hierarchy.
    */
   hideNodesInHierarchy?: boolean;
 
   /**
-   * Hides nodes if they don't have children. Important: this may affect performance significantly.
-   * By default is set to false.
+   * Hide nodes if they don't have children.
    */
   hideIfNoChildren?: boolean;
 
   /**
-   * Set this flag to true to suppress default sorting of ECInstances returned by this specification.
-   * The order of persistence provider will be used. By default is set to false.
+   * Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.
+   *
+   * **Note:** setting this flag to `true` improves performance.
    */
   doNotSort?: boolean;
 
-  /** [[RelatedInstanceSpecification]] */
+  /** Specifications of related instances that can be used in content creation. */
   relatedInstances?: RelatedInstanceSpecification[];
 
-  /** [Nested rules]($docs/learning/hierarchies/Terminology.md#nested-rules) */
+  /** [Nested rule]($docs/learning/hierarchies/Terminology.md#nested-rules) specifications. */
   nestedRules?: ChildNodeRule[];
 }
 
+/** A container of default grouping properties. Used for specifications that support default grouping */
+export interface DefaultGroupingPropertiesContainer {
+  /** Group instances by ECClass. Defaults to `true`. */
+  groupByClass?: boolean;
+
+  /** Group instances by label. Defaults to `true`. */
+  groupByLabel?: boolean;
+}
+
 /**
- * Rule specifications define what content the rule results in.
- * Some of the specifications support filtering which is described in
- * [ECExpressions Available in InstanceFilter]($docs/learning/hierarchies/ECExpressions.md#instance-filter).
+ * Navigation rule specifications that define what content the rule results in.
  */
 export type ChildNodeSpecification = AllInstanceNodesSpecification |
   AllRelatedInstanceNodesSpecification |
   CustomNodeSpecification |
   InstanceNodesOfSpecificClassesSpecification |
   RelatedInstanceNodesSpecification |
-  SearchResultInstanceNodesSpecification;
+  CustomQueryInstanceNodesSpecification;

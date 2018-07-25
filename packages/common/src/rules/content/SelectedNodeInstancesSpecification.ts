@@ -4,42 +4,38 @@
 /** @module PresentationRules */
 
 import { ContentSpecificationBase } from "./ContentSpecification";
-import { PresentationRuleSpecificationTypes } from "../PresentationRuleSpecification";
+import { RuleSpecificationTypes } from "../RuleSpecification";
 
 /**
- * Returns ECInstance(s) of selected node.
+ * Returns content for current selection.
  *
- * **Note:**
- * No data is returned for CustomNode.
+ * **Note:** No data is returned for selected custom nodes.
  */
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  type: PresentationRuleSpecificationTypes.SelectedNodeInstancesSpecification;
+  specType: RuleSpecificationTypes.SelectedNodeInstances;
 
   /**
-   * Allows to filter selected nodes by specified acceptable schema name.
-   * All nodes are accepted if this option is not specified.
+   * Filter selected nodes by specified schema name. All schemas are
+   * accepted if not specified.
    */
   acceptableSchemaName?: string;
 
   /**
-   * Allows to filter selected nodes by specified acceptable class name.
-   * All nodes are accepted if this option is not specified.
+   * Filter selected nodes by specified class names. All classes are
+   * accepted if not specified.
    */
   acceptableClassNames?: string;
 
   /**
-   * Should [[acceptableClassNames]] property be checked polymorphically. If true, all derived classes are accepted as well.
-   * By default is set to false.
-   *
-   * **Note:**
-   * Only makes sense when [[acceptableClassNames]] property is specified
+   * Should [[acceptableClassNames]] property be checked polymorphically. If true, all derived
+   * classes are accepted as well.
    */
   acceptablePolymorphically?: boolean;
 
   /**
    * Identifies whether we should ignore this specification if there is already existing specification
-   * with higher `priority` that already provides content. By default is set to false.
+   * with higher `priority` that already provides content.
    */
   onlyIfNotHandled?: boolean;
 }

@@ -3,11 +3,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { NavigationRule } from "./NavigationRule";
-import { PresentationRuleTypes } from "../PresentationRule";
+import { NavigationRuleBase } from "./NavigationRule";
+import { RuleTypes, ConditionContainer } from "../Rule";
 
-/** Child node rules define the nodes that are displayed at each hierarchy level. */
-export interface ChildNodeRule extends NavigationRule {
+/**
+ * Child node rules define nodes that are displayed at
+ * each child hierarchy level.
+ */
+export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.ChildNodeRule;
+  ruleType: RuleTypes.ChildNodes;
 }

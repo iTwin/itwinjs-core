@@ -3,12 +3,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-/** This is a sub-specification that allows hiding/displaying specified ECInstance properties. */
+/** Sub-specification to hide / display specified ECInstance properties. */
 export interface PropertiesDisplaySpecification {
-  /** Comma separated list of ECProperty names which should be included in content. */
-  propertyNames: string;
-  /** Controls priority of the specification. By default is set to 1000. */
+  /** List of ECProperty names which should be hidden or shown */
+  propertyNames: string[];
+
+  /** Controls priority of the specification. Defaults to `1000`. */
   priority?: number;
-  /** Is property displayed. By default is set to true. */
+
+  /** Should property be displayed. Defaults to `true`. */
   isDisplayed?: boolean;
 }

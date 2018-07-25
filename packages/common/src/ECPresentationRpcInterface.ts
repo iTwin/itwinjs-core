@@ -5,13 +5,13 @@
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { RpcInterface, IModelToken, RpcManager } from "@bentley/imodeljs-common";
+import { Ruleset } from "./rules";
 import { Node, NodeKey, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IECPresentationManager";
 import KeySet from "./KeySet";
 import { SettingValue, SettingValueTypes } from "./IUserSettingsManager";
 import { InstanceKey } from "./EC";
-import { PresentationRuleSet } from "./rules";
 
 export type HierarchyRpcRequestOptions = HierarchyRequestOptions<IModelToken>;
 export type ContentRpcRequestOptions = ContentRequestOptions<IModelToken>;
@@ -47,13 +47,6 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   /** Get the frontend client of this interface */
   public static getClient(): ECPresentationRpcInterface { return RpcManager.getClientForInterface(ECPresentationRpcInterface); }
 
-  /** See [[ECPresentationManager.addRuleSet]] */
-  public addRuleSet(_ruleSet: PresentationRuleSet): Promise<void> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.removeRuleSet]] */
-  public removeRuleSet(_ruleSetId: string): Promise<void> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.clearRuleSets]] */
-  public clearRuleSets(): Promise<void> { return this.forward.apply(this, arguments); }
-
   /** See [[ECPresentationManager.getRootNodes]] */
   public getRootNodes(_options: Paged<HierarchyRpcRequestOptions>): Promise<ReadonlyArray<Readonly<Node>>> { return this.forward.apply(this, arguments); }
   /** See [[ECPresentationManager.getRootNodesCount]] */
@@ -76,10 +69,12 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   /** See [[ECPresentationManager.getDistinctValues]] */
   public getDistinctValues(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): Promise<string[]> { return this.forward.apply(this, arguments); }
 
+  /** See [[IRulesetManager.get]] */
+  public getRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string): Promise<Ruleset | undefined> { return this.forward.apply(this, arguments); }
   /** See [[IRulesetManager.add]] */
-  public addRuleset(_options: RulesetRpcRequestOptions, _ruleSet: PresentationRuleSet): Promise<void> { return this.forward.apply(this, arguments); }
+  public addRuleset(_options: RulesetRpcRequestOptions, _ruleset: Ruleset): Promise<void> { return this.forward.apply(this, arguments); }
   /** See [[IRulesetManager.remove]] */
-  public removeRuleset(_options: RulesetRpcRequestOptions, _ruleSetId: string): Promise<void> { return this.forward.apply(this, arguments); }
+  public removeRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string): Promise<void> { return this.forward.apply(this, arguments); }
   /** See [[IRulesetManager.clear]] */
   public clearRulesets(_options: RulesetRpcRequestOptions): Promise<void> { return this.forward.apply(this, arguments); }
 

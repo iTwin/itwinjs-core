@@ -5,59 +5,55 @@
 
 import { ContentSpecificationBase } from "./ContentSpecification";
 import { RelationshipDirection } from "../RelationshipDirection";
-import { PresentationRuleSpecificationTypes } from "../PresentationRuleSpecification";
+import { RuleSpecificationTypes } from "../RuleSpecification";
+import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 
 /**
- * Returns specified related ECInstance(s) for selected node.
+ * Returns ECInstance(s) related to current selection.
  *
- * **Precondition:** This specification should be used only if selected node is ECInstance node. If selected node is
- * CustomNode, it will search up for the first parent ECInstance node.
- *
- * **Note:** Use ContentRule condition to apply specification on correct selected node.
+ * **Note:** Use [[ContentRule.condition]] to apply specification on correct selection.
  */
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  type: PresentationRuleSpecificationTypes.ContentRelatedInstancesSpecification;
+  specType: RuleSpecificationTypes.ContentRelatedInstances;
 
   /**
-   * Skips defined level of related items and shows next level related items.
-   * By default is set to 0.
+   * List of ECRelationship specifications to follow when looking for related instances.
+   * Optional if [[relatedClasses]] is specified.
+   */
+  relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
+   * List of related instance ECClass specifications. Optional if [[relationships]] is specified.
+   */
+  relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
+   * Direction that will be followed in the relationship select criteria.
+   * Defaults to [[RelationshipDirection.Both]].
+   */
+  requiredDirection?: RelationshipDirection;
+
+  /**
+   * Skips defined level of related items and shows next level related items. Defaults to `0`.
    *
-   * **Warning:** Can't be used together with [[isRecursive]].
+   * **Note:** Can't be used together with [[isRecursive]].
    */
   skipRelatedLevel?: number;
 
   /**
-   * Walks the specified relationships recursively to find related instances. By default is set to false.
+   * Walks the specified relationships recursively to find related instances.
    *
-   * **Warning:** Can't be used together with [[skipRelatedLevel]].
+   * **Note:** Can't be used together with [[skipRelatedLevel]].
+   *
+   * **Warning:** Using this specification has significant negative performance impact.
    */
   isRecursive?: boolean;
 
   /**
    * Condition for filtering instances of defined related classes.
    *
-   * **See Also:** [ECExpressions Available in InstanceFilter]($docs/learning/content/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions available in instance filter]($docs/learning/content/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
-
-  /**
-   * Direction that will be followed in the relationship select criteria. Possible options: `Forward`, `Backward`, `Both`.
-   * By default is set to `Both`.
-   */
-  requiredDirection?: RelationshipDirection;
-
-  /**
-   * Names of ECRelationshipClasses separated by comma.
-   * Format: `SchemaName1:ClassName11,ClassName12;SchemaName2:ClassName21,ClassName22`.
-   * Optional if [[relatedClassNames]] is specified.
-   */
-  relationshipClassNames?: string;
-
-  /**
-   * Names of related ECClasses separated by comma.
-   * Format: `SchemaName1:ClassName11,ClassName12;SchemaName2:ClassName21,ClassName22`.
-   * Optional if [[relationshipClassNames]] is specified.
-   */
-  relatedClassNames?: string;
 }

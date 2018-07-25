@@ -55,24 +55,25 @@ Symbol                              | Type    | Value
 
 ## Symbols in Global Context
 
-### User Settings
+### Ruleset Variables (User Settings)
 
-User settings symbols allow accessing user setting values through
-ECExpressions.
+**Note:** *User Settings* is a deprecated name of *Ruleset Variables* concept.
 
-Symbol                              | Type    | Value
-------------------------------------|---------|----------
-`GetSettingValue("setting_id")`     | string  | Get value of a setting with the specified ID
-`GetSettingIntValue("setting_id")`  | number  | Get value of a setting with the specified ID
-`GetSettingIntValues("setting_id")` | number[]| Get value of a setting with the specified ID
-`GetSettingBoolValue("setting_id")` | bool    | Get value of a setting with the specified ID
-`HasSetting("setting_id")`          | bool    | Does setting with the specified ID exist
+Ruleset variable access symbols allow accessing variable values through ECExpressions.
+
+Symbol                                | Deprecated Symbol                   | Type    | Value
+--------------------------------------| ------------------------------------|---------|----------
+`GetVariableStringValue("setting_id")`| `GetSettingValue("setting_id")`     | string  | Get value of a variable with the specified ID
+`GetVariableBoolValue("setting_id")`  | `GetSettingBoolValue("setting_id")` | bool    | Get value of a variable with the specified ID
+`GetVariableIntValue("setting_id")`   | `GetSettingIntValue("setting_id")`  | number  | Get value of a variable with the specified ID
+`GetVariableIntValues("setting_id")`  | `GetSettingIntValues("setting_id")` | number[]| Get value of a variable with the specified ID
+`HasVariable("variable_id")`          | `HasSetting("setting_id")`          | bool    | Does variable with the specified ID exist
 
 Value lists in ECExpressions can be handled with lambdas. Currently the
 presentation rules engine supports only a single simple lambda for
-`GetSettingIntValues` function:
+`GetVariableIntValues` function:
 ```
-GetSettingIntValues("setting_id").AnyMatch(x => x = this.PropertyValue)
+GetVariableIntValues("variable_id").AnyMatch(x => x = this.PropertyValue)
 ```
-The above expression returns `true` if `GetSettingIntValues("setting_id")`
+The above expression returns `true` if `GetVariableIntValues("setting_id")`
 contains the value of `this.PropertyValue`.

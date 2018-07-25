@@ -3,23 +3,43 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ConditionalCustomizationRuleBase } from "./CustomizationRule";
-import { PresentationRuleTypes } from "../PresentationRule";
+import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
+
+/** Available font styles */
+export const enum FontStyle {
+  Bold = "Bold",
+  Italic = "Italic",
+  ItalicBold = "Italic,Bold",
+  Regular = "Regular",
+}
 
 /**
- * StyleOverride is a rule that allows to override default node style and dynamically define a foreground/background
- * colors and a font style for a particular node based on the context.
+ * Rule to override default node style and dynamically define a foreground/background
+ * colors and a font style for a particular nodes.
  */
-export interface StyleOverride extends ConditionalCustomizationRuleBase {
+export interface StyleOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.StyleOverride;
+  ruleType: RuleTypes.StyleOverride;
 
-  /** Defines the foreground color that should be used for nodes that meet the condition. */
+  /**
+   * Foreground color that should be used for node. Supports on of the following formats:
+   * - color name (`Red`, `Blue`, etc.)
+   * - `rgb(255, 255, 255)`
+   * - `#0F0F0F`
+   */
   foreColor?: string;
 
-  /** Defines the background color that should be used for nodes that meet the condition. */
+  /**
+   * Background color that should be used for node. Supports on of the following formats:
+   * - color name (`Red`, `Blue`, etc.)
+   * - `rgb(255, 255, 255)`
+   * - `#0F0F0F`
+   */
   backColor?: string;
 
-  /** Defines the font style that should be used for nodes that meet the condition. */
-  fontStyle?: string;
+  /**
+   * Font style that should be used for nodes that meet the condition.
+   * Defaults to [[FontStyle.Regular]].
+   */
+  fontStyle?: FontStyle;
 }

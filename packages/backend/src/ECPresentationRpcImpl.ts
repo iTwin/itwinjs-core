@@ -11,7 +11,7 @@ import {
   Content, Descriptor, SelectionInfo,
   SettingValue, SettingValueTypes,
   ECPresentationError, ECPresentationStatus,
-  Paged, RequestOptions, InstanceKey, KeySet, PresentationRuleSet,
+  Paged, RequestOptions, InstanceKey, KeySet, Ruleset,
 } from "@bentley/ecpresentation-common";
 import {
   HierarchyRpcRequestOptions,
@@ -99,7 +99,14 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return await this.getManager().getDistinctValues(this.toIModelDbOptions(requestOptions), descriptor, keys, fieldName, maximumValueCount);
   }
 
-  public async addRuleset(requestOptions: RulesetRpcRequestOptions, ruleset: PresentationRuleSet): Promise<void> {
+  public async getRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string): Promise<Ruleset | undefined> {
+    const ruleset = await this.getManager().rulesets(requestOptions.clientId).get(rulesetId);
+    if (ruleset)
+      return ruleset.toJSON();
+    return undefined;
+  }
+
+  public async addRuleset(requestOptions: RulesetRpcRequestOptions, ruleset: Ruleset): Promise<void> {
     await this.getManager().rulesets(requestOptions.clientId).add(ruleset);
   }
 

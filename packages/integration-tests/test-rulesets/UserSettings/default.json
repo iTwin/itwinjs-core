@@ -1,11 +1,13 @@
 {
-  "ruleSetId": "default",
-  "userSettings": [{
-    "categoryLabel": "categoryLabel",
-    "settingsItems": [{
+  "$schema": "../../../common/lib/ruleset.schema.json",
+  "id": "default",
+  "rules": [],
+  "vars": [{
+    "label": "categoryLabel",
+    "vars": [{
       "id": "JsonRuleSetSetting",
       "label": "some setting label",
-      "options": "StringValue",
+      "type": "StringValue",
       "defaultValue": "test value"
     }]
   }]

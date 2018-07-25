@@ -27,9 +27,10 @@ export interface NativePlatformDefinition extends IDisposable {
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
-  addRuleSet(serializedRulesetJson: string): void;
-  removeRuleSet(rulesetId: string): void;
-  clearRuleSets(): void;
+  getRulesets(rulesetId: string): string;
+  addRuleset(serializedRulesetJson: string): void;
+  removeRuleset(rulesetId: string): void;
+  clearRulesets(): void;
   handleRequest(db: any, options: string): Promise<string>;
   getUserSetting(rulesetId: string, settingId: string, settingType: string): any;
   setUserSetting(rulesetId: string, settingId: string, settingValue: string): void;
@@ -76,14 +77,17 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
         throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "imodel");
       return imodel.nativeDb;
     }
-    public addRuleSet(serializedRulesetJson: string): void {
-      this.handleVoidResult(this._nativeAddon.addRuleSet(serializedRulesetJson));
+    public getRulesets(rulesetId: string): string {
+      return this.handleResult(this._nativeAddon.getRulesets(rulesetId));
     }
-    public removeRuleSet(rulesetId: string): void {
-      this.handleVoidResult(this._nativeAddon.removeRuleSet(rulesetId));
+    public addRuleset(serializedRulesetJson: string): void {
+      this.handleVoidResult(this._nativeAddon.addRuleset(serializedRulesetJson));
     }
-    public clearRuleSets(): void {
-      this.handleVoidResult(this._nativeAddon.clearRuleSets());
+    public removeRuleset(rulesetId: string): void {
+      this.handleVoidResult(this._nativeAddon.removeRuleset(rulesetId));
+    }
+    public clearRulesets(): void {
+      this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public handleRequest(db: any, options: string): Promise<string> {
       return new Promise((resolve, reject) => {

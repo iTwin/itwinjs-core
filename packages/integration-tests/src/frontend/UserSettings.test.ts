@@ -6,7 +6,7 @@ import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
 import { createRandomId } from "@helpers/random";
 import { Id64, using } from "@bentley/bentleyjs-core";
-import { PresentationRuleSet, SettingValueTypes, IUserSettingsManager } from "@common/index";
+import { Ruleset, SettingValueTypes, IUserSettingsManager } from "@common/index";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 
 before(() => {
@@ -20,16 +20,16 @@ after(() => {
 describe("UserSettings", async () => {
 
   let settings: IUserSettingsManager;
-  const ruleset: PresentationRuleSet = require("../../test-rulesets/UserSettings/default");
+  const ruleset: Ruleset = require("../../test-rulesets/UserSettings/default");
 
   beforeEach(() => {
-    settings = ECPresentation.presentation.settings(ruleset.ruleSetId);
+    settings = ECPresentation.presentation.settings(ruleset.id);
   });
 
   it("get setting added through ruleset", async () => {
     await using(await ECPresentation.presentation.rulesets().add(ruleset), async () => {
-      const actualValue = await settings.getString(ruleset.userSettings![0].settingsItems![0].id);
-      expect(actualValue).to.be.equal(ruleset.userSettings![0].settingsItems![0].defaultValue);
+      const actualValue = await settings.getString(ruleset.vars![0].vars![0].id);
+      expect(actualValue).to.be.equal(ruleset.vars![0].vars![0].defaultValue);
     });
   });
 

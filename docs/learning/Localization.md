@@ -16,7 +16,3 @@ the backend**, so localization JSON file must be delivered with the backend.
 The strings in presentation rule sets can be localized by using the following
 format: `@LocalizationNamespace:StringId@`. Additionally, you can use multiple
 localized pieces in one string, e.g. `Concat_@Namespace:String1@_and_@Namespace:String2@`.
-
-## Examples
-
-TODO: Add examples when localization is fully set up.

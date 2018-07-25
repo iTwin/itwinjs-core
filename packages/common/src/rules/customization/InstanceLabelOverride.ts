@@ -3,24 +3,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { CustomizationRuleBase } from "./CustomizationRule";
-import { PresentationRuleTypes } from "../PresentationRule";
+import { RuleTypes, RuleBase } from "../Rule";
+import { SingleSchemaClassSpecification } from "../ClassSpecifications";
 
 /**
- * A label override rule that's applied to all instances of specific ECClass.
- * **Important:** Prefer this rule over [[LabelOverride]] when possible as it works
- * much faster.
+ * Rule to override labels for instances of specific ECClasses.
+ *
+ * **Important:** Prefer this rule over [[LabelOverride]] when possible as it
+ * has better performance.
  */
-export interface InstanceLabelOverride extends CustomizationRuleBase {
+export interface InstanceLabelOverride extends RuleBase {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.InstanceLabelOverride;
-
-  /** Full name of the ECClass to apply this rule to  */
-  className?: string;
+  ruleType: RuleTypes.InstanceLabelOverride;
 
   /**
-   * List of properties which should be used as instance label. The
-   * first property that's set is used as a label.
+   * Specification of the ECClass to apply this rule to.
    */
-  properties?: string[];
+  class: SingleSchemaClassSpecification;
+
+  /**
+   * Names of properties which should be used as instance label. The
+   * first property that has a value is used as the actual label.
+   */
+  propertyNames: string[];
 }

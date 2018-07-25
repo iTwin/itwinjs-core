@@ -1,10 +1,14 @@
 {
-  "ruleSetId": "getRelatedDistinctValues",
+  "$schema": "../../../common/lib/ruleset.schema.json",
+  "id": "getRelatedDistinctValues",
   "rules": [{
-    "type": "Content",
+    "ruleType": "Content",
     "specifications": [{
-      "type": "ContentRelatedInstances",
-      "relatedClassNames": "BisCore:SubCategory, LinkPartition, DefinitionPartition, PhysicalPartition"
+      "specType": "ContentRelatedInstances",
+      "relatedClasses": {
+        "schemaName": "BisCore",
+        "classNames": ["SubCategory", "LinkPartition", "DefinitionPartition", "PhysicalPartition"]
+      }
     }]
   }]
 }

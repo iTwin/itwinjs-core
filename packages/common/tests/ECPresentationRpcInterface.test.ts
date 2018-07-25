@@ -43,22 +43,6 @@ describe("ECPresentationRpcInterface", () => {
       rpcInterface.forward = mock.object;
     });
 
-    it("forwards addRuleSet call", async () => {
-      const ruleset = { ruleSetId: "" };
-      await rpcInterface.addRuleSet(ruleset);
-      mock.verify((x) => x((ruleset as any)), moq.Times.once());
-    });
-
-    it("forwards removeRuleSet call", async () => {
-      await rpcInterface.removeRuleSet("test id");
-      mock.verify((x) => x("test id"), moq.Times.once());
-    });
-
-    it("forwards clearRuleSets call", async () => {
-      await rpcInterface.clearRuleSets();
-      mock.verify((x) => x((undefined as any)), moq.Times.once());
-    });
-
     it("forwards getRootNodes call", async () => {
       const options: Paged<HierarchyRequestOptions<IModelToken>> = {
         imodel: testData.imodelToken,
@@ -157,9 +141,18 @@ describe("ECPresentationRpcInterface", () => {
       mock.verify((x) => x(options as any, descriptor, moq.It.is((a) => a instanceof KeySet), fieldName, maximumValueCount), moq.Times.once());
     });
 
+    it("forwards getRuleset call", async () => {
+      const options = { clientId: faker.random.uuid() };
+      const ruleset = { id: "", rules: [] };
+      mock.setup((x) => x(options as any, ruleset.id)).returns(async () => ruleset).verifiable(moq.Times.once());
+      const result = await rpcInterface.getRuleset(options, ruleset.id);
+      mock.verifyAll();
+      expect(result).to.deep.eq(ruleset);
+    });
+
     it("forwards addRuleset call", async () => {
       const options = { clientId: faker.random.uuid() };
-      const ruleset = { ruleSetId: "" };
+      const ruleset = { id: "", rules: [] };
       await rpcInterface.addRuleset(options, ruleset);
       mock.verify((x) => x(options as any, ruleset), moq.Times.once());
     });

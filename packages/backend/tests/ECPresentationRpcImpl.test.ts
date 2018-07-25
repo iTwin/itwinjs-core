@@ -6,7 +6,7 @@ import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { PageOptions, KeySet, SettingValueTypes, ECPresentationError, InstanceKey, Paged, HierarchyRequestOptions, ContentRequestOptions, IRulesetManager } from "@common/index";
+import { PageOptions, KeySet, SettingValueTypes, ECPresentationError, InstanceKey, Paged, HierarchyRequestOptions, ContentRequestOptions, IRulesetManager, RegisteredRuleset } from "@common/index";
 import { Node } from "@common/hierarchy";
 import { Descriptor, Content } from "@common/content";
 import { IUserSettingsManager } from "@common/IUserSettingsManager";
@@ -292,11 +292,33 @@ describe("ECPresentationRpcImpl", () => {
 
     });
 
+    describe("getRuleset", () => {
+
+      it("calls manager", async () => {
+        const requestOptions = { clientId: faker.random.uuid() };
+        const rulesetDefinition = { id: "", rules: [] };
+        rulesetsMock.setup((x) => x.get(rulesetDefinition.id)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition)).verifiable();
+        const result = await impl.getRuleset(requestOptions, rulesetDefinition.id);
+        presentationManagerMock.verifyAll();
+        expect(result).to.deep.eq(rulesetDefinition);
+      });
+
+      it("handles undefined response", async () => {
+        const requestOptions = { clientId: faker.random.uuid() };
+        const rulesetId = faker.random.uuid();
+        rulesetsMock.setup((x) => x.get(rulesetId)).returns(async () => undefined).verifiable();
+        const result = await impl.getRuleset(requestOptions, rulesetId);
+        presentationManagerMock.verifyAll();
+        expect(result).to.be.undefined;
+      });
+
+    });
+
     describe("addRuleset", () => {
 
       it("calls manager", async () => {
         const requestOptions = { clientId: faker.random.uuid() };
-        const rulesetDefinition = { ruleSetId: "" };
+        const rulesetDefinition = { id: "", rules: [] };
         rulesetsMock.setup((x) => x.add(rulesetDefinition)).verifiable();
         await impl.addRuleset(requestOptions, rulesetDefinition);
         presentationManagerMock.verifyAll();

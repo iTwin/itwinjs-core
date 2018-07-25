@@ -5,7 +5,7 @@
 
 import {
   ECPresentationRpcInterface,
-  IRulesetManager, RegisteredRuleSet, PresentationRuleSet,
+  IRulesetManager, RegisteredRuleset, Ruleset,
 } from "@bentley/ecpresentation-common";
 import { RulesetRpcRequestOptions } from "@bentley/ecpresentation-common/lib/ECPresentationRpcInterface";
 
@@ -24,27 +24,20 @@ export default class RulesetManager implements IRulesetManager {
     };
   }
 
-  public async get(_id: string): Promise<RegisteredRuleSet> {
-    throw new Error("Not implemented");
-    /*const response = this._getNativeAddon().getRuleSet(id);
-    if (!response)
-      throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
-    if (response.error)
-      throw new ECPresentationError(ECPresentationStatus.Error, response.error.message);
-    if (response.result === undefined)
-      throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
-    const serializedRuleset: string = response.result;
-    const ruleset: PresentationRuleSet = JSON.parse(serializedRuleset);
-    return new RegisteredRuleSet(this, ruleset);*/
+  public async get(id: string): Promise<RegisteredRuleset | undefined> {
+    const ruleset = await ECPresentationRpcInterface.getClient().getRuleset(this.createRequestOptions(), id);
+    if (ruleset)
+      return new RegisteredRuleset(this, ruleset);
+    return undefined;
   }
 
-  public async add(ruleset: PresentationRuleSet): Promise<RegisteredRuleSet> {
+  public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
     await ECPresentationRpcInterface.getClient().addRuleset(this.createRequestOptions(), ruleset);
-    return new RegisteredRuleSet(this, ruleset);
+    return new RegisteredRuleset(this, ruleset);
   }
 
-  public async remove(remove: PresentationRuleSet | string): Promise<void> {
-    const rulesetId = (typeof remove === "string") ? remove : remove.ruleSetId;
+  public async remove(remove: Ruleset | string): Promise<void> {
+    const rulesetId = (typeof remove === "string") ? remove : remove.id;
     return await ECPresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), rulesetId);
   }
 

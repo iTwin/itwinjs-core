@@ -6,7 +6,7 @@ import { initialize, terminate } from "../IntegrationTests";
 import "@helpers/Snapshots";
 import { OpenMode, Id64, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey, PresentationRuleSet } from "@bentley/ecpresentation-common";
+import { InstanceKey, Ruleset } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 
 before(() => {
@@ -32,7 +32,7 @@ describe("NodesPaths", () => {
   });
 
   it("gets filtered node paths", async () => {
-    const ruleset: PresentationRuleSet = require("../../test-rulesets/NodePaths/getFilteredNodePaths");
+    const ruleset: Ruleset = require("../../test-rulesets/NodePaths/getFilteredNodePaths");
     /* Hierarchy in the ruleset:
     filter r1
       filter ch1
@@ -45,13 +45,13 @@ describe("NodesPaths", () => {
       filter ch6
     */
     await using(await ECPresentation.presentation.rulesets().add(ruleset), async () => {
-      const result = await ECPresentation.presentation.getFilteredNodePaths({ imodel, rulesetId: ruleset.ruleSetId }, "filter");
+      const result = await ECPresentation.presentation.getFilteredNodePaths({ imodel, rulesetId: ruleset.id }, "filter");
       expect(result).to.matchSnapshot(true);
     });
   });
 
   it("gets node paths", async () => {
-    const ruleset: PresentationRuleSet = require("../../test-rulesets/NodePaths/getNodePaths");
+    const ruleset: Ruleset = require("../../test-rulesets/NodePaths/getNodePaths");
     await using(await ECPresentation.presentation.rulesets().add(ruleset), async () => {
       const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:RepositoryModel" };
       const key2: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };
@@ -59,7 +59,7 @@ describe("NodesPaths", () => {
       const key4: InstanceKey = { id: new Id64("0xe"), className: "BisCore:LinkPartition" };
       const keys: InstanceKey[][] = [[key1, key2, key3], [key1, key2, key4]];
 
-      const result = await ECPresentation.presentation.getNodePaths({ imodel, rulesetId: ruleset.ruleSetId }, keys, 1);
+      const result = await ECPresentation.presentation.getNodePaths({ imodel, rulesetId: ruleset.id }, keys, 1);
       expect(result).to.matchSnapshot();
     });
   });
