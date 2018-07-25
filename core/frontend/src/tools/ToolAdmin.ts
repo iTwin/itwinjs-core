@@ -26,8 +26,8 @@ import { IconSprites } from "../Sprites";
 
 export const enum CoordinateLockOverrides {
   None = 0,
-  ACS = (1 << 1),
-  Grid = (1 << 2),     // also overrides unit lock
+  ACS = 1 << 1,
+  Grid = 1 << 2,     // also overrides unit lock
   All = 0xffff,
 }
 
@@ -48,10 +48,8 @@ export class SuspendedToolState {
   private shuttingDown = false;
 
   constructor() {
-    const toolAdmin = IModelApp.toolAdmin;
-    const viewManager = IModelApp.viewManager;
+    const { toolAdmin, viewManager } = IModelApp;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't save this...
-
     this.toolState = toolAdmin.toolState.clone();
     this.accuSnapState = IModelApp.accuSnap.toolState.clone();
     this.viewCursor = viewManager.cursor;
@@ -64,10 +62,8 @@ export class SuspendedToolState {
     if (this.shuttingDown)
       return;
 
-    const toolAdmin = IModelApp.toolAdmin;
-    const viewManager = IModelApp.viewManager;
+    const { toolAdmin, viewManager } = IModelApp;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't restore this...
-
     toolAdmin.toolState.setFrom(this.toolState);
     IModelApp.accuSnap.toolState.setFrom(this.accuSnapState);
     viewManager.setViewCursor(this.viewCursor);
@@ -158,9 +154,7 @@ export class CurrentInputState {
       ev.viewPoint = ev.viewport.worldToView(ev.rawPoint);
   }
 
-  public updateDownPoint(ev: BeButtonEvent) {
-    this.button[ev.button].downUorPt = ev.point;
-  }
+  public updateDownPoint(ev: BeButtonEvent) { this.button[ev.button].downUorPt = ev.point; }
 
   public onButtonDown(button: BeButton) {
     const viewPt = this.viewport!.worldToView(this.button[button].downRawPt);
@@ -307,115 +301,6 @@ export class CurrentInputState {
       this.touches[i].x = touches[i].x;
       this.touches[i].y = touches[i].y;
     }
-  }
-}
-
-// tslint:disable-next-line:variable-name
-export const WheelSettings = {
-  zoomRatio: 1.75,
-  navigateDistPct: 3.0,
-  navigateMouseDistPct: 10.0,
-};
-
-/** Default processor to handle wheel events. */
-class WheelEventProcessor {
-  public static async process(ev: BeWheelEvent, doUpdate: boolean) {
-    const vp = ev.viewport;
-    if (!vp)
-      return;
-
-    await this.doZoom(ev);
-
-    if (doUpdate) {
-      vp.synchWithView(true);
-
-      // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
-      IModelApp.accuSnap.clear();
-    }
-  }
-
-  private static async doZoom(ev: BeWheelEvent): Promise<ViewStatus> {
-    const vp = ev.viewport;
-    if (!vp)
-      return ViewStatus.InvalidViewport;
-
-    let zoomRatio = WheelSettings.zoomRatio;
-    if (zoomRatio < 1)
-      zoomRatio = 1;
-    if (ev.wheelDelta > 0)
-      zoomRatio = 1 / zoomRatio;
-
-    let isSnapOrPrecision = false;
-    const target = Point3d.create();
-    if (IModelApp.tentativePoint.isActive) {
-      // Always use Tentative location, adjusted point, not cross...
-      isSnapOrPrecision = true;
-      target.setFrom(IModelApp.tentativePoint.getPoint());
-    } else {
-      // Never use AccuSnap location as initial zoom clears snap causing zoom center to "jump"...
-      isSnapOrPrecision = CoordSource.Precision === ev.coordsFrom;
-      target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
-    }
-
-    let status: ViewStatus;
-    if (vp.view.is3d() && vp.isCameraOn()) {
-      let lastEventWasValid: boolean = false;
-      if (!isSnapOrPrecision) {
-        const targetNpc = vp.worldToNpc(target);
-        const newTarget = new Point3d();
-        const lastEvent = IModelApp.toolAdmin.lastWheelEvent;
-        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < 10) {
-          vp.worldToNpc(lastEvent.point, newTarget);
-          targetNpc.z = newTarget.z;
-          lastEventWasValid = true;
-        } else if (undefined !== vp.pickNearestVisibleGeometry(target, 20.0, newTarget)) {
-          vp.worldToNpc(newTarget, newTarget);
-          targetNpc.z = newTarget.z;
-        } else {
-          vp.view.getTargetPoint(newTarget);
-          vp.worldToNpc(newTarget, newTarget);
-          targetNpc.z = newTarget.z;
-        }
-        vp.npcToWorld(targetNpc, target);
-      }
-
-      const cameraView = vp.view as ViewState3d;
-      const transform = Transform.createFixedPointAndMatrix(target, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
-      const oldCameraPos = cameraView.getEyePoint();
-      const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
-      const offset = Vector3d.createStartEnd(oldCameraPos, newCameraPos);
-
-      if (!isSnapOrPrecision && offset.magnitude() < .01) {
-        offset.scaleToLength(1 / 3, offset);
-        lastEventWasValid = false;
-        target.addInPlace(offset);
-      }
-
-      const viewTarget = cameraView.getTargetPoint().clone();
-      viewTarget.addInPlace(offset);
-      newCameraPos.setFrom(oldCameraPos.plus(offset));
-
-      if (!lastEventWasValid) {
-        const thisEvent = ev.clone();
-        thisEvent.point.setFrom(target);
-        IModelApp.toolAdmin.lastWheelEvent = thisEvent;
-      }
-
-      status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
-      vp.synchWithView(false);
-    } else {
-      const targetNpc = vp.worldToNpc(target);
-      const trans = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1));
-      const viewCenter = Point3d.create(.5, .5, .5);
-
-      trans.multiplyPoint3d(viewCenter, viewCenter);
-      vp.npcToWorld(viewCenter, viewCenter);
-      status = vp.zoom(viewCenter, zoomRatio);
-    }
-
-    // if we scrolled out, we may have invalidated the current AccuSnap path
-    await IModelApp.accuSnap.reEvaluate();
-    return status;
   }
 }
 
@@ -1477,3 +1362,112 @@ export class ToolAdmin {
       this.primitiveTool.onCleanup();
   }
 }
+
+/** Default processor to handle wheel events. */
+class WheelEventProcessor {
+  public static async process(ev: BeWheelEvent, doUpdate: boolean) {
+    const vp = ev.viewport;
+    if (!vp)
+      return;
+
+    await this.doZoom(ev);
+
+    if (doUpdate) {
+      vp.synchWithView(true);
+
+      // AccuSnap hit won't be invalidated without cursor motion (closes info window, etc.).
+      IModelApp.accuSnap.clear();
+    }
+  }
+
+  private static async doZoom(ev: BeWheelEvent): Promise<ViewStatus> {
+    const vp = ev.viewport;
+    if (!vp)
+      return ViewStatus.InvalidViewport;
+
+    let zoomRatio = WheelSettings.zoomRatio;
+    if (zoomRatio < 1)
+      zoomRatio = 1;
+    if (ev.wheelDelta > 0)
+      zoomRatio = 1 / zoomRatio;
+
+    let isSnapOrPrecision = false;
+    const target = Point3d.create();
+    if (IModelApp.tentativePoint.isActive) {
+      // Always use Tentative location, adjusted point, not cross...
+      isSnapOrPrecision = true;
+      target.setFrom(IModelApp.tentativePoint.getPoint());
+    } else {
+      // Never use AccuSnap location as initial zoom clears snap causing zoom center to "jump"...
+      isSnapOrPrecision = CoordSource.Precision === ev.coordsFrom;
+      target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
+    }
+
+    let status: ViewStatus;
+    if (vp.view.is3d() && vp.isCameraOn()) {
+      let lastEventWasValid: boolean = false;
+      if (!isSnapOrPrecision) {
+        const targetNpc = vp.worldToNpc(target);
+        const newTarget = new Point3d();
+        const lastEvent = IModelApp.toolAdmin.lastWheelEvent;
+        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < 10) {
+          vp.worldToNpc(lastEvent.point, newTarget);
+          targetNpc.z = newTarget.z;
+          lastEventWasValid = true;
+        } else if (undefined !== vp.pickNearestVisibleGeometry(target, 20.0, newTarget)) {
+          vp.worldToNpc(newTarget, newTarget);
+          targetNpc.z = newTarget.z;
+        } else {
+          vp.view.getTargetPoint(newTarget);
+          vp.worldToNpc(newTarget, newTarget);
+          targetNpc.z = newTarget.z;
+        }
+        vp.npcToWorld(targetNpc, target);
+      }
+
+      const cameraView = vp.view as ViewState3d;
+      const transform = Transform.createFixedPointAndMatrix(target, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
+      const oldCameraPos = cameraView.getEyePoint();
+      const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
+      const offset = Vector3d.createStartEnd(oldCameraPos, newCameraPos);
+
+      if (!isSnapOrPrecision && offset.magnitude() < .01) {
+        offset.scaleToLength(1 / 3, offset);
+        lastEventWasValid = false;
+        target.addInPlace(offset);
+      }
+
+      const viewTarget = cameraView.getTargetPoint().clone();
+      viewTarget.addInPlace(offset);
+      newCameraPos.setFrom(oldCameraPos.plus(offset));
+
+      if (!lastEventWasValid) {
+        const thisEvent = ev.clone();
+        thisEvent.point.setFrom(target);
+        IModelApp.toolAdmin.lastWheelEvent = thisEvent;
+      }
+
+      status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
+      vp.synchWithView(false);
+    } else {
+      const targetNpc = vp.worldToNpc(target);
+      const trans = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1));
+      const viewCenter = Point3d.create(.5, .5, .5);
+
+      trans.multiplyPoint3d(viewCenter, viewCenter);
+      vp.npcToWorld(viewCenter, viewCenter);
+      status = vp.zoom(viewCenter, zoomRatio);
+    }
+
+    // if we scrolled out, we may have invalidated the current AccuSnap path
+    await IModelApp.accuSnap.reEvaluate();
+    return status;
+  }
+}
+
+// tslint:disable-next-line:variable-name
+export const WheelSettings = {
+  zoomRatio: 1.75,
+  navigateDistPct: 3.0,
+  navigateMouseDistPct: 10.0,
+};

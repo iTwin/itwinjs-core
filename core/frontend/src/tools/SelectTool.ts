@@ -40,7 +40,7 @@ export const enum SelectionMode {
 export const enum SelectionProcessing {
   AddElementToSelection,
   RemoveElementFromSelection,
-  /** (if element is in selection remove it else add it.) */
+  /** If element is in selection remove it, else add it. */
   InvertElementInSelection,
   ReplaceSelectionWithElement,
 }

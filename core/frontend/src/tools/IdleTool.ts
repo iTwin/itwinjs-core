@@ -100,7 +100,7 @@ export class IdleTool extends InteractiveTool {
 
     if (viewTool && viewTool.run()) {
       IModelApp.toolAdmin.currentInputState.buttonDownTool = viewTool;
-      viewTool.onModelStartDrag(ev);
+      await viewTool.onModelStartDrag(ev);
     }
     return EventHandled.Yes;
   }

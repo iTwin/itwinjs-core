@@ -1,3 +1,4 @@
+
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
@@ -265,11 +266,10 @@ export class Tool {
   protected static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
   public constructor(..._args: any[]) { }
 
-  private static getKeyinKey() { return this.namespace.name + ":tools." + this.toolId + ".keyin"; }
-
-  private static getFlyoverKey() { return this.namespace.name + ":tools." + this.toolId + ".flyover"; }
-
-  private static getDescriptionKey() { return this.namespace.name + ":tools." + this.toolId + ".description"; }
+  private static getLocalizeBase() { return this.namespace.name + ":tools." + this.toolId; }
+  private static getKeyinKey() { return this.getLocalizeBase() + ".keyin"; }
+  private static getFlyoverKey() { return this.getLocalizeBase() + ".flyover"; }
+  private static getDescriptionKey() { return this.getLocalizeBase() + ".description"; }
 
   /**
    * Register this Tool class with the ToolRegistry.
@@ -560,37 +560,30 @@ export class ToolRegistry {
    */
   public run(toolId: string, ...args: any[]): boolean {
     const tool = this.create(toolId, ...args);
-    return !!tool && tool.run(...args);
+    return tool !== undefined && tool.run(...args);
   }
 
   /** Get a list of Tools currently registered, excluding hidden tools */
   public getToolList(): ToolList {
     if (this._keyinList === undefined) {
       this._keyinList = [];
-      for (const thisTool of this.tools.values()) {
-        if (!thisTool.hidden)
-          this._keyinList.push(thisTool);
-      }
+      this.tools.forEach((thisTool) => { if (!thisTool.hidden) this._keyinList!.push(thisTool); });
     }
     return this._keyinList;
   }
 
   /**
    * Find a tool by its localized keyin using a FuzzySearch
-   * @param keyin the localized keyin string of the tool.
-   * @returns the tool class, if an exact match is found.
+   * @param keyin the localized keyin string of the Tool.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
   public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
-    const toolList: ToolList = this.getToolList();
-    const searcher = new FuzzySearch<ToolType>();
-    const searchResults: FuzzySearchResults<ToolType> = searcher.search(toolList, ["keyin"], keyin);
-    return searchResults;
+    return new FuzzySearch<ToolType>().search(this.getToolList(), ["keyin"], keyin);
   }
 
   /**
    * Find a tool by its localized keyin. If found (via exact match), execute the tool with the supplied arguments.
-   * @param keyin the localized keyin string of the tool to run.
+   * @param keyin the localized keyin string of the Tool to run.
    * @param args the arguments for the tool. Note: these argument are passed to both the constructor and the tools' run method.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
@@ -601,16 +594,11 @@ export class ToolRegistry {
 
   /**
    * Find a tool by its localized keyin.
-   * @param keyin the localized keyin string of the tool.
-   * @returns the tool class, if an exact match is found.
+   * @param keyin the localized keyin string of the Tool.
+   * @returns the Tool class, if an exact match is found, otherwise returns undefined.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
   public findExactMatch(keyin: string): ToolType | undefined {
-    const commandList = this.getToolList();
-    for (const thisTool of commandList) {
-      if (thisTool.keyin === keyin)
-        return thisTool;
-    }
-    return undefined;
+    return this.getToolList().find((thisTool) => thisTool.keyin === keyin);
   }
 }
