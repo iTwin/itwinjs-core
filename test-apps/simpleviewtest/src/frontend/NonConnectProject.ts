@@ -5,7 +5,7 @@ import { AccessToken, IModelRepository, UserProfile } from "@bentley/imodeljs-cl
 import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
 import { SimpleViewState } from "./SimpleViewState";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { OpenMode, assert } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { OpenMode, assert } from "@bentley/bentleyjs-core";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { showStatus } from "./Utils";
 
