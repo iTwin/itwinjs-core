@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64Props, Id64Array } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
@@ -15,6 +15,7 @@ export interface ViewStateData {
   displayStyleProps: ElementProps;
   modelSelectorProps?: ModelSelectorProps;
   sheetProps?: SheetProps;
+  sheetAttachments?: Id64Array;
 }
 /** Properties that define a ModelSelector */
 export interface ModelSelectorProps extends ElementProps {

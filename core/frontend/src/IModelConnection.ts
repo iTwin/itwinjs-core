@@ -591,7 +591,6 @@ export namespace IModelConnection {
   }
 
   /** @hidden */
-  // NB: Very WIP.
   export class Tiles {
     private _iModel: IModelConnection;
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
