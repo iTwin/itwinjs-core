@@ -33,7 +33,7 @@ export class NonConnectProject extends ProjectAbstraction {
     // Now that we know what iModelBank to use, we can set up IModelApp to work with it.
 
     // Tell IModelApp to use this IModelBank client
-    const imbcontext = new IModelBankAccessContext(iminfo.iModelId, iminfo.url, IModelApp.hubDeploymentEnv);
+    const imbcontext = new IModelBankAccessContext(iminfo.iModelId, iminfo.url, IModelApp.hubDeploymentEnv, undefined);
     IModelApp.iModelClient = imbcontext.client!;
 
     // Open the iModel

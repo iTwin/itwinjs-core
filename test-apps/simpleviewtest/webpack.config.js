@@ -14,10 +14,6 @@ module.exports = {
         test: /\.js$/,
         use: "source-map-loader",
         enforce: "pre"
-      },
-      {
-        test: /azure-storage|AzureFileHandler|UrlFileHandler/,
-        use: "null-loader"
       }
     ]
   },
