@@ -5,9 +5,9 @@
 import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d, Path } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { Sprite, IconSprites } from "./Sprites";
-import { DecorateContext } from "./frontend";
 import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { DecorateContext } from "./ViewContext";
 
 export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,

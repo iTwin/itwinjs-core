@@ -17,14 +17,13 @@ import { HitDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
+import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
-import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { ViewToolSettings } from "./frontend";
+import { ToolSettings } from "./tools/ToolAdmin";
 
 // tslint:disable:no-console
 
@@ -1218,7 +1217,7 @@ export class Viewport {
   /** @hidden */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
     if (!animationTime || 0.0 >= animationTime.milliseconds)
-      animationTime = ViewToolSettings.animationTime;
+      animationTime = ToolSettings.animationTime;
 
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
