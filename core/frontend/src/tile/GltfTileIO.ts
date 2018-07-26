@@ -726,7 +726,7 @@ export namespace GltfTileIO {
       if (undefined === textureJson)
         return Promise.resolve();
 
-      return this.loadTextureImage(this.images[textureJson.source], this.samplers[textureJson.sampler]).then((texture) => {
+      return this.loadTextureImage(this.images[textureJson.source], undefined === this.samplers ? undefined : this.samplers[textureJson.sampler]).then((texture) => {
         textureJson.renderTexture = texture;
       });
     }
