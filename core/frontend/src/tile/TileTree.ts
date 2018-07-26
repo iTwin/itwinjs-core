@@ -71,8 +71,6 @@ export class Tile implements IDisposable {
   private _graphic?: RenderGraphic;
   private _rangeGraphic?: RenderGraphic;
 
-  // ###TODO: Artificially limiting depth for now until tile selection is fixed...
-
   public constructor(props: Tile.Params, loader: TileLoader) {
     this.root = props.root;
     this.range = props.range;
@@ -96,7 +94,6 @@ export class Tile implements IDisposable {
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
 
-    // ###TODO: Back-end is not setting maximumSize in json!
     if (undefined === this.maximumSize)
       this.maximumSize = this.hasGraphics ? 512 : 0;
 
