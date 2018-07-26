@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
  | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "~@bentley/bwc/lib/mixins";
 
 $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
 
