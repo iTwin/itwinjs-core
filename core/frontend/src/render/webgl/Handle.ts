@@ -170,6 +170,7 @@ export class QBufferHandle3d extends BufferHandle {
 /** A handle to the location of an attribute within a shader program */
 export class AttributeHandle {
   private readonly _glId: number;
+  private static _allocatedIds = new Set<number>();
 
   private constructor(glId: number) { this._glId = glId; }
 
@@ -180,6 +181,7 @@ export class AttributeHandle {
       return undefined;
     }
 
+    AttributeHandle._allocatedIds.add(glId);
     return new AttributeHandle(glId);
   }
 
@@ -195,6 +197,15 @@ export class AttributeHandle {
     this.setVertexAttribPointer(size, type, normalized, stride, offset);
     this.enableVertexAttribArray();
     BufferHandle.unbind(GL.Buffer.Target.ArrayBuffer);
+  }
+
+  // If we enable a vertex attribute array, assign a buffer to it, and then destroy that buffer (e.g., for decoration graphics),
+  // on a subsequent draw if a different buffer is not assigned to the still-enabled attribute warnings and display issues will
+  // occur. So before each render, disable all vertex attribute arrays.
+  public static disableAll(): void {
+    const gl = System.instance.context;
+    for (const id of this._allocatedIds)
+      gl.disableVertexAttribArray(id);
   }
 }
 
