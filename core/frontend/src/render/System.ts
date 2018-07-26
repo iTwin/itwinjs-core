@@ -299,8 +299,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract onResized(): void;
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
-
-  // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
+  public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
 export enum SkyboxSphereType {
