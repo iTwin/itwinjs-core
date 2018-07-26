@@ -76,7 +76,7 @@ export const enum CoordSource {
   ElemSnap = 3,
 }
 
-/** Numeric mask for a set of modifier keys. */
+/** Numeric mask for a set of modifier keys (control, shift, and alt). */
 export const enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
 
 export class BeButtonState {
@@ -255,9 +255,9 @@ export class BeWheelEvent extends BeButtonEvent {
  * @see [Tools]($docs/learning/frontend/tools.md)
  */
 export class Tool {
-  /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. */
+  /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. This should be overridden in subclasses to hide them. */
   public static hidden = false;
-  /** The unique string that identifies this tool. */
+  /** The unique string that identifies this tool. This must be overridden in every subclass. */
   public static toolId = "";
   /** The [I18NNamespace]($i18n) that provides localized strings for this Tool */
   public static namespace: I18NNamespace;
@@ -329,6 +329,9 @@ export enum EventHandled {
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
  */
 export abstract class InteractiveTool extends Tool {
+
+  /** Used to avoid sending tools up events for which they did not receive the down event. */
+  public receivedDownEvent = false;
 
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
   public onInstall(): boolean { return true; }
@@ -447,6 +450,13 @@ export abstract class InteractiveTool extends Tool {
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
 
   /**
+   * Called when active view changes. Tool may choose to restart or exit based on current view type.
+   * @param previous The previously active view.
+   * @param current The new active view.
+   */
+  public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
+
+  /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
    * @param hit The HitDetail whose info is needed.
    * @param _delimiter Use this string to break lines of the description.
@@ -468,10 +478,11 @@ export abstract class InteractiveTool extends Tool {
   /** Call to terminate dynamics mode. */
   public endDynamics(): void { IModelApp.toolAdmin.endDynamics(); }
 
-  /** Called to allow tool to display dynamic elements. */
+  /** Called to allow Tool to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
 }
 
+/** @hidden */
 export abstract class InputCollector extends InteractiveTool {
   public run(): boolean {
     const toolAdmin = IModelApp.toolAdmin;
@@ -490,7 +501,7 @@ export abstract class InputCollector extends InteractiveTool {
 }
 
 /**
- * The ToolRegistry holds a mapping between toolId and Tool class. This provides the mechanism to
+ * The ToolRegistry holds a mapping between toolIds and the corresponding Tool class. This provides the mechanism to
  * find Tools by their toolId, and also a way to iterate over the collection of Tools available.
  */
 export class ToolRegistry {
@@ -498,7 +509,7 @@ export class ToolRegistry {
   private _keyinList?: ToolList;
 
   /**
-   * Un-register a Tool class.
+   * Un-register a previously registered Tool class.
    * @param toolId the toolId of a previously registered tool to unRegister.
    */
   public unRegister(toolId: string) { this.tools.delete(toolId); this._keyinList = undefined; }
@@ -519,7 +530,7 @@ export class ToolRegistry {
       throw new IModelError(-1, "Tools must have a namespace");
 
     this.tools.set(toolClass.toolId, toolClass);
-    this._keyinList = undefined;  // throw away the current keyinList so we'll produce a new one when asked.
+    this._keyinList = undefined;  // throw away the current keyinList so we'll produce a new one next time we're asked.
   }
 
   /**

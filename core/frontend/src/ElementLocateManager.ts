@@ -192,12 +192,8 @@ export class ElementPicker {
   public testHit(hit: HitDetail, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
     if (0 === this.doPick(vp, pickPointWorld, pickRadiusView, options))
       return false;
-    for (let iHit = 0; iHit < this.hitList!.length; ++iHit) {
-      const thisHit = this.hitList!.getHit(iHit);
-      if (hit.isSameHit(thisHit))
-        return true;
-    }
-    return false;
+
+    return this.hitList!.hits.some((thisHit) => hit.isSameHit(thisHit));
   }
 }
 

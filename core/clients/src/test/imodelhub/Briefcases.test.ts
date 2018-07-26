@@ -9,9 +9,9 @@ import { AccessToken } from "../../";
 
 import { IModelClient } from "../../";
 import {
-  IModelHubClient, Briefcase, IModelHubRequestError, BriefcaseQuery, AzureFileHandler,
+  IModelHubClient, Briefcase, IModelHubRequestError, BriefcaseQuery,
 } from "../../";
-
+import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";

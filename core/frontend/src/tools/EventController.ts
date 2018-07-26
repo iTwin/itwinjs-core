@@ -110,8 +110,6 @@ class TouchPoint extends Point2d {
   }
 }
 
-type RemovalFunction = () => void;
-
 /**
  * An EventController maps user input events from the canvas of a Viewport to the ToolAdmin so that tools can process them.
  * Viewports are assigned an EventController when they are registered with ViewManager.addViewport, and they are destroyed with
@@ -132,10 +130,22 @@ export class EventController {
   private state = TouchState.Invalid;
   private interpretingDataButtonAsTouch = false;
   private endGestureId = GestureId.None;
-  private readonly removals: RemovalFunction[] = [];
+  private readonly removals: VoidFunction[] = [];
 
   constructor(public vp: Viewport) {
-    this.registerListeners();
+    const element = vp.canvas;
+    if (element === undefined)
+      return;
+
+    this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel"], element, true);
+
+    // this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
+    // this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
+    // this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
+    // this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
+
+    element.oncontextmenu = () => false;
+    element.onselectstart = () => false;
     this.initializeTouches();
   }
 
@@ -144,33 +154,23 @@ export class EventController {
     this.removals.length = 0;
   }
 
-  private registerListener(domType: string, element: HTMLElement) {
-    const listener = (ev: Event) => {
-      ev.preventDefault();
-      IModelApp.toolAdmin.addEvent(ev, this.vp);
-    };
-    element.addEventListener(domType, listener, false);
-    this.removals.push(() => { element.removeEventListener(domType, listener, false); });
-  }
-
-  private registerListeners() {
-    const element = this.vp.canvas;
-    if (!element)
-      return;
-
-    this.registerListener("mousedown", element);
-    this.registerListener("mouseup", element);
-    this.registerListener("mousemove", element);
-    this.registerListener("mouseenter", element);
-    this.registerListener("mouseleave", element);
-    this.registerListener("wheel", element);
-    // this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
-    // this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
-    // this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
-    // this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
-
-    element.oncontextmenu = () => false;
-    element.onselectstart = () => false;
+  /**
+   * Call element.addEventListener for each type of DOM event supplied. Creates a listener that will forward the HTML event to ToolAdmin.addEvent.
+   * Records the listener in the [[removals]] member so they are removed when this EventController is destroyed.
+   * @param domType An array of DOM event types to pass to element.addEventListener
+   * @param element The HTML element to which the listeners are added
+   * @param preventDefault If true, the listener will call `preventDefault` when the event is received.
+   */
+  private addDomListeners(domType: string[], element: HTMLElement, preventDefault: boolean) {
+    const vp = this.vp;
+    const { toolAdmin } = IModelApp;
+    const listener = preventDefault ?
+      (ev: Event) => { ev.preventDefault(); toolAdmin.addEvent(ev, vp); } :
+      (ev: Event) => toolAdmin.addEvent(ev, vp);
+    domType.forEach((type) => {
+      element.addEventListener(type, listener, false);
+      this.removals.push(() => { element.removeEventListener(type, listener, false); });
+    });
   }
 
   private initializeTouches(): void {
@@ -230,7 +230,7 @@ export class EventController {
       case GestureId.SingleFingerMove: return IModelApp.toolAdmin.onSingleFingerMove(vp, info);
       case GestureId.TwoFingerTap: return IModelApp.toolAdmin.onTwoFingerTap(vp, info);
       case GestureId.PressAndTap: return IModelApp.toolAdmin.onPressAndTap(vp, info);
-      case GestureId.SingleTap: return IModelApp.toolAdmin.onSingleTap(vp, info);
+      //      case GestureId.SingleTap: return IModelApp.toolAdmin.onSingleTap(vp, info);
       case GestureId.DoubleTap: return IModelApp.toolAdmin.onDoubleTap(vp, info);
       case GestureId.LongPress: return IModelApp.toolAdmin.onLongPress(vp, info);
     }
