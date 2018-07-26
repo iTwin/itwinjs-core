@@ -163,7 +163,7 @@ class WebMercatorTileLoader extends TileLoader {
     }
   }
 
-  public getMaxDepth(): number { return this.providerInitialized ? this.imageryProvider.maximumZoomLevel : 32; }
+  public get maxDepth(): number { return this.providerInitialized ? this.imageryProvider.maximumZoomLevel : 32; }
 }
 
 // The type of background map
