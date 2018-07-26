@@ -1,0 +1,52 @@
+{
+  "overview": {
+    "docSiteId": 1,
+    "displayName": "Overview"
+  },
+  "getting-started": {
+    "docSiteId": 2,
+    "displayName": "Getting Started"
+  },
+  "learning": {
+    "docSiteId": 3,
+    "displayName": "Learning"
+  },
+  "reference": {
+    "docSiteId": 4,
+    "displayName": "API Reference"
+  },
+  "metadata": {
+    "home": "overview",
+    "logo": "overview/imodeljs.ico",
+    "favicon": "overview/imodeljs.ico",
+    "docSiteOrder": [
+      "overview",
+      "getting-started",
+      "learning",
+      "reference"
+    ],
+    "headerTabs": {
+      "Overview": {
+        "docSite": "overview"
+      },
+      "Getting Started": {
+        "docSite": "getting-started"
+      },
+      "Learning": {
+        "docSite": "learning"
+      },
+      "API Reference": {
+        "docSite": "reference"
+      }
+    },
+    "packageAliases": {
+      "components": "ui-components",
+      "core": "ui-core",
+      "framework": "ui-framework",
+      "ninezone": "ui-ninezone",
+      "bwc": "bwc"
+    },
+    "editDocsBaseURL": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-ui?path=%2Fdocs%2Fsite%2F",
+    "editSrcBaseURL": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-ui?path=%2Fpackages%2F"
+  }
+}

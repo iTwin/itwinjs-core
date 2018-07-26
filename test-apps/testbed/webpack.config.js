@@ -2,6 +2,7 @@ const path = require("path");
 const glob = require("glob");
 
 module.exports = {
+  mode: "development",
   entry: glob.sync (path.resolve(__dirname, "lib/frontend**/*.test.js")),
   output: {
     path: path.resolve(__dirname, "lib/dist"),
@@ -22,5 +23,9 @@ module.exports = {
       }
     ]
   },
-  stats: "errors-only"
+  stats: "errors-only",
+  optimization: {
+    nodeEnv: "production"
+  },
 };
+

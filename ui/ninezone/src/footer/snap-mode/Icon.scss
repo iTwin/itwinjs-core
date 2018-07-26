@@ -1,0 +1,13 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../_variables";
+
+.nz-footer-snapMode-icon {
+  height: $snap-mode-icon-size;
+  width: $snap-mode-icon-size;
+  display: flex;
+  justify-content: center;
+
+  &.nz-is-active {
+    background-color: $primary-tint;
+  }
+}

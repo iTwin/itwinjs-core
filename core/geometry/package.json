@@ -9,7 +9,7 @@
   "devDependencies": {
     "@bentley/bentleyjs-tools": "0.103.0",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^2.2.47",
+    "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
@@ -19,17 +19,17 @@
     "semver": "^5.5.0",
     "source-map-support": "^0.5.6",
     "ts-node": "^6.0.3",
-    "tslint": "^5.10.0",
+    "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.7.2"
+    "typescript": "~2.8.2"
   },
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/geometry/json/file.json --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry/json/file.json --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
     "cover:docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"

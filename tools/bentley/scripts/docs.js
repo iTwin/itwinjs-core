@@ -68,7 +68,7 @@ const args = [
     ...includeOptions
 ]
 
-console.log("Arguments to TypeDoc: " + args.toString());
+console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));
 
 spawn(path.resolve(process.cwd(), "node_modules/.bin/typedoc"), args).then((code) => {
     if (code === 0) {

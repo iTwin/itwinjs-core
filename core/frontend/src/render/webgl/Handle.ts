@@ -10,7 +10,7 @@ import { Matrix3, Matrix4 } from "./Matrix";
 import { System } from "./System";
 import { Point3d } from "@bentley/geometry-core";
 
-export type BufferData = ArrayBufferView | ArrayBuffer;
+export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
 
 /**
  * A handle to a WebGLBuffer, such as a vertex or index buffer.

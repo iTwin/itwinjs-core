@@ -1,0 +1,72 @@
+$display2-weight: normal;
+$display2-size: 256%;
+$display2-opacity: 0.88;
+
+$display1-weight: normal;
+$display1-size: 228%;
+$display1-opacity: 0.88;
+
+$headline-weight: normal;
+$headline-size: 170%;
+$headline-opacity: 1.00;
+
+$title-weight: normal;
+$title-size: 114%;
+$title-opacity: 1.00;
+
+$title-inactive-weight: lighter;
+$title-inactive-size: 114%;
+$title-inactive-opacity: 1.00;
+
+$body-weight: lighter;
+$body-size: 100%;
+$body-opacity: 0.88;
+
+$body1-weight: normal;
+$body1-size: 100%;
+$body1-opacity: 0.88;
+
+$body2-weight: bolder;
+$body2-size: 100%;
+$body2-opacity: 0.88;
+
+$body-disabled-weight: lighter;
+$body-disabled-style: italic;
+$body-disabled-size: 100%;
+$body-disabled-opacity: 0.66;
+
+$caption-weight: lighter;
+$caption-size: 86%;
+$caption-opacity: 0.88;
+
+$caption1-weight: lighter;
+$caption1-style: italic;
+$caption1-size: 86%;
+$caption1-opacity: 0.88;
+
+@mixin title($rgb: unset) {
+  font-weight: $title-weight;
+  font-size: $title-size;
+
+  @if $rgb != unset {
+    color: rgba($color, $title-opacity);
+  }
+}
+
+@mixin body($rgb: unset) {
+  font-weight: $body-weight;
+  font-size: $body-size;
+
+  @if $rgb != unset {
+    color: rgba($color, $body-opacity);
+  }
+}
+
+@mixin body1($rgb: unset) {
+  font-weight: $body1-weight;
+  font-size: $body1-size;
+
+  @if $rgb != unset {
+    color: rgba($color, $body1-opacity);
+  }
+}

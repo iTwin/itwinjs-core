@@ -1,0 +1,203 @@
+{
+  "name": "@bentley/ui-core",
+  "entries": [
+    {
+      "version": "0.1.15",
+      "tag": "@bentley/ui-core_v0.1.15",
+      "date": "Wed, 18 Jul 2018 04:53:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependencies to 0.98.0-4"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.14",
+      "tag": "@bentley/ui-core_v0.1.14",
+      "date": "Fri, 13 Jul 2018 18:40:08 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add missing `classnames` dependency"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.13",
+      "tag": "@bentley/ui-core_v0.1.13",
+      "date": "Fri, 13 Jul 2018 13:13:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added documentation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.12",
+      "tag": "@bentley/ui-core_v0.1.12",
+      "date": "Thu, 12 Jul 2018 18:45:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Initial pass at imodeljs-ui package and API documentation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.11",
+      "tag": "@bentley/ui-core_v0.1.11",
+      "date": "Mon, 09 Jul 2018 20:38:01 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved imodeljs-clients to ^7"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.10",
+      "tag": "@bentley/ui-core_v0.1.10",
+      "date": "Mon, 09 Jul 2018 20:15:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved to BWC 6.0.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.9",
+      "tag": "@bentley/ui-core_v0.1.9",
+      "date": "Mon, 09 Jul 2018 18:00:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved to BWC 6.0.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.8",
+      "tag": "@bentley/ui-core_v0.1.8",
+      "date": "Mon, 09 Jul 2018 08:55:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Expose method to get icon class name from message severity."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.7",
+      "tag": "@bentley/ui-core_v0.1.7",
+      "date": "Thu, 28 Jun 2018 19:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Changes required by @types/react 16.4.3. Locked @types/enzyme to 3.1.9 because of problems with 3.1.11."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.6",
+      "tag": "@bentley/ui-core_v0.1.6",
+      "date": "Fri, 22 Jun 2018 17:52:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added ContextMenu, RadialMenu & Splitbutton to ui-core. Added Breadcrumb to ui-components."
+          },
+          {
+            "comment": "Updated imodeljs-frontend to 0.95.1 & geometry-core to 9.1. Experimental code in ViewportComponent for cube/viewport synchronization."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.5",
+      "tag": "@bentley/ui-core_v0.1.5",
+      "date": "Fri, 22 Jun 2018 09:13:41 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.4",
+      "tag": "@bentley/ui-core_v0.1.4",
+      "date": "Tue, 19 Jun 2018 17:49:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added ViewportManager with Rotation and ActiveViewport support. Moved UiEvent to ui-core. Added ContentViewManager with ActiveContent support & highlighting."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.3",
+      "tag": "@bentley/ui-core_v0.1.3",
+      "date": "Fri, 15 Jun 2018 19:15:02 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "WebFontIcon - Removed iconName from <span> props"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.2",
+      "tag": "@bentley/ui-core_v0.1.2",
+      "date": "Wed, 13 Jun 2018 20:28:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed publishing of public folders"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.1",
+      "tag": "@bentley/ui-core_v0.1.1",
+      "date": "Wed, 13 Jun 2018 18:46:23 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "SampleApp is using configurableui from ui-framework. AppUi has been added to SampleApp."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.0",
+      "tag": "@bentley/ui-core_v0.1.0",
+      "date": "Thu, 07 Jun 2018 16:35:47 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Added Dialog, MessageBox & SearchBox to ui-core"
+          },
+          {
+            "comment": "Copied configurableui from Protogist into imodeljs-ui\\framework"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "iModelPanelHeader": {
+    "projects": "Projects"
+  },
+  "iModelPanel": {
+    "noIModels": "There are no IModels in Project {{projectName}}"
+  },
+  "general": {
+    "sheet": "Sheet",
+    "of": "of",
+    "alert": "Alert"
+  },
+  "rotations": {
+    "top": "Top",
+    "bottom": "Bottom",
+    "left": "Left",
+    "right": "Right",
+    "front": "Front",
+    "rear": "Rear",
+    "isoLeft": "Iso Left",
+    "isoRight": "Iso Right"
+  },
+  "cube": {
+    "front": "FRONT",
+    "back": "BACK",
+    "top": "TOP",
+    "bottom": "BOTTOM",
+    "left": "LEFT",
+    "right": "RIGHT"
+  },
+  "messageCenter": {
+    "messages": "Messages",
+    "all": "All",
+    "problems": "Problems"
+  },
+  "tests": {
+    "singleContent": "Single Content",
+    "label": "Test Label"
+  },
+  "ContentLayoutDef": {
+    "SingleContent": "Single Content",
+    "TwoHalvesVertical": "Two Halves Vertical",
+    "ThreeRightStacked": "Three Right Stacked",
+    "FourQuadrants": "Four Quadrants"
+  }
+}

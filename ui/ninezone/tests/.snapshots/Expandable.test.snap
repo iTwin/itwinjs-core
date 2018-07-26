@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Expandable /> renders correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-expandable"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-triangle"
+  />
+</div>
+`;

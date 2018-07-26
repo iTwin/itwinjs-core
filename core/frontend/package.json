@@ -9,7 +9,7 @@
     "build": "tsc 1>&2 && npm run copy:public",
     "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
     "copy:public": "cpx ./src/public/**/* ./lib/public",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/frontend/json/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend/json/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2"
   },
   "repository": {},
@@ -46,10 +46,10 @@
     "@types/js-base64": "^2.3.1",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
-    "tslint": "^5.10.0",
+    "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.7.2"
+    "typescript": "~2.8.2"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

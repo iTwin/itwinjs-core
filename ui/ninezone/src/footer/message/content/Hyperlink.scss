@@ -1,0 +1,28 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../../../theme/_theme";
+
+@include nz-style-component(nz-footer-message-content-hyperlink) {
+  color: $primary-base;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    color: $primary-hover;
+  }
+
+  &:active {
+    color: $primary-tint;
+  }
+}
+
+@include nz-dark-component {
+  color: $primary-tint;
+
+  &:hover {
+    color: $primary-base;
+  }
+
+  &:active {
+    color: $primary-hover;
+  }
+}

@@ -1,0 +1,29 @@
+@import "@bentley/ui-core/lib/colors";
+@import "_variables";
+
+.nz-toolbar-item-expandable-history-item {
+  $fill-color: rgba($background-5, 0.88);
+  $pressed-fill-color: $primary-tone;
+
+  background: $fill-color;
+  width: $desktop-item-width;
+  height: $desktop-item-height;
+  cursor: pointer;
+  position: relative;
+
+  &:active {
+    background: $pressed-fill-color;
+  }
+
+  &.nz-is-active::before {
+    content: '';
+    display: block;
+    position: absolute;
+    background-color: $active-icon-color;
+    left: 3px;
+    top: ($desktop-item-height - $desktop-tool-stripe-height) / 2;
+    border-radius: 2px;
+    width: $desktop-tool-stripe-width;
+    height: $desktop-tool-stripe-height;
+  }
+}

@@ -1,0 +1,40 @@
+@import "@bentley/ui-core/lib/colors";
+
+.nz-footer-message-content-dialog-resizeHandle {
+  $dot-size: 2px;
+  $handle-size: 10px;
+  $dot-offset: 3 * $dot-size;
+
+  width: $handle-size;
+  height: $handle-size;
+  cursor: se-resize;
+  color: $background-4;
+
+  > .dot {
+    position: relative;
+    width: $dot-size;
+    height: $dot-size;
+    background-color: currentColor;
+    top: $dot-offset;
+    left: $dot-offset;
+
+    &:before {
+      content: '';
+      position: absolute;
+      left: -$dot-size * 2;
+      width: $dot-size;
+      height: $dot-size;
+      background-color: currentColor;
+    }
+
+    &:after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: -$dot-size * 2;
+      width: $dot-size;
+      height: $dot-size;
+      background-color: currentColor;
+    }
+  }
+}

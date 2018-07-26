@@ -1,0 +1,49 @@
+@import "../../_geometry";
+
+.nz-popup-popover-triangle {
+  $triangle-height: 20px;
+  $triangle-width: $triangle-height;
+
+  display: flex;
+  color: black;
+
+  &.nz-direction-left {
+    flex-direction: row;
+
+    > .nz-triangle {
+      margin: auto 0;
+
+      @include triangle-right($height: $triangle-width, $width: $triangle-height, $color: currentColor);
+    }
+  }
+
+  &.nz-direction-top {
+    flex-direction: column;
+
+    > .nz-triangle {
+      margin: 0 auto;
+
+      @include triangle-bottom($height: $triangle-height, $width: $triangle-width, $color: currentColor);
+    }
+  }
+
+  &.nz-direction-right {
+    flex-direction: row-reverse;
+
+    > .nz-triangle {
+      margin: auto 0;
+
+      @include triangle-left($height: $triangle-width, $width: $triangle-height, $color: currentColor);
+    }
+  }
+
+  &.nz-direction-bottom {
+    flex-direction: column-reverse;
+
+    > .nz-triangle {
+      margin: 0 auto;
+
+      @include triangle-top($height: $triangle-height, $width: $triangle-width, $color: currentColor);
+    }
+  }
+}

@@ -1,0 +1,57 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+.fw-projectcard-div {
+  height: 60px;
+  margin-left: 0px;
+  margin-right: 0px;
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  cursor: pointer;
+}
+
+.fw-projectcard-div-inheader {
+  height: 50px;
+  margin-left: 30px;
+  margin-right: 30px;
+  background-color: #80ffff;
+  cursor: default;
+}
+
+.fw-projectcard-table {
+  height: 50px;
+  padding-left: 20px;
+  padding-right: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: inline-table;
+  font-size: medium;
+  color: Black;
+}
+
+.fw-projectcard-table-inheader {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: smaller;
+}
+
+.fw-projectcard-icon {
+  margin-right: 10px;
+  font-size: 16px;
+  color: Black;
+};
+
+.fw-projectcard-number {
+  color: Blue;
+}
+
+.fw-projectcard-number-inheader {
+  color: Black;
+}
+
+.fw-projectcard-chevron {
+  margin-right: 10px;
+  color: Black;
+  cursor: pointer;
+}

@@ -1,0 +1,41 @@
+@import "../_z-index";
+
+.nz-base-expandable {
+  > .nz-expanded {
+    position: absolute;
+
+    @include nz-z-index(expandable);
+  }
+
+  &.nz-direction-left {
+    > .nz-expanded {
+      top: 50%;
+      left: 0;
+      transform: translateX(-100%) translateY(-50%);
+    }
+  }
+
+  &.nz-direction-right {
+    > .nz-expanded {
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+    }
+  }
+
+  &.nz-direction-bottom {
+    > .nz-expanded {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  &.nz-direction-top {
+    > .nz-expanded {
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100%);
+    }
+  }
+}

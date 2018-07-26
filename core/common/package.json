@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json ../../generated-docs/common",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/common/json/file.json --tsIndexFile=./common.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/common/json/file.json --tsIndexFile=./common.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2"
   },
   "repository": {},
@@ -48,10 +48,10 @@
     "@bentley/imodeljs-clients": "0.103.0",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
-    "tslint": "^5.10.0",
+    "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.7.2"
+    "typescript": "~2.8.2"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

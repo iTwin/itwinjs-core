@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/i18n/json/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/i18n/json/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2"
   },
   "repository": {},
@@ -35,10 +35,10 @@
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
     "rimraf": "^2.6.2",
-    "tslint": "^5.10.0",
+    "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.7.2"
+    "typescript": "~2.8.2"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-i18n",

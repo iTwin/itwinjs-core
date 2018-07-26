@@ -1,0 +1,165 @@
+// DO NOT ADD COMMENTS IN THIS FILE.  They will be lost when the Rush tool resaves it.
+{
+  "packages": [
+    {
+      "name": "@bentley/bentleyjs-core",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/bwc",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/geometry-core",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/icons-webfont",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-backend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-clients",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-common",
+      "allowedCategories": [ "backend", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-frontend",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-i18n",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-native-platform-api",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/svg-icons",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@bentley/ui-components",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/ui-core",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/ui-framework",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/ui-ninezone",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "classnames",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "deep-assign",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "fs-extra",
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+    },
+    {
+      "name": "fuse.js",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "glob",
+      "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "i18next",
+      "allowedCategories": [ "common", "frontend", "internal" ]
+    },
+    {
+      "name": "i18next-browser-languagedetector",
+      "allowedCategories": [ "common", "frontend", "internal" ]
+    },
+    {
+      "name": "i18next-xhr-backend",
+      "allowedCategories": [ "common", "frontend", "internal" ]
+    },
+    {
+      "name": "inspire-tree",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "js-base64",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "lodash",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "qs",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "react",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "react-data-grid",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-dom",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "react-redux",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "react-split-pane",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "reconnecting-websocket",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "redux",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "semver",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "superagent",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "three",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "tooltip.js",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "xmldom",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "xpath",
+      "allowedCategories": [ "common" ]
+    }
+  ]
+}

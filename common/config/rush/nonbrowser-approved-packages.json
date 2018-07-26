@@ -1,0 +1,285 @@
+// DO NOT ADD COMMENTS IN THIS FILE.  They will be lost when the Rush tool resaves it.
+{
+  "packages": [
+    {
+      "name": "@bentley/bemetalsmith",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/bentleyjs-tools",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/dev-cors-proxy-server",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-react-scripts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "asn1",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "body-parser",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "cache-require-paths",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "chai",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "chai-as-promised",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "chai-jest-snapshot",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "chai-spies",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "chalk",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "child_process",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "chokidar",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "commander",
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "comment-json",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "cpx",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "cross-env",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "cross-spawn",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "css-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "debug",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "dirty-chai",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "electron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "electron-builder",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "electron-devtools-installer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "enzyme",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "enzyme-adapter-react-16",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "enzyme-to-json",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "exceljs",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "express",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "html-webpack-plugin",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "ignore-styles",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "jsdom",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "jsdom-global",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "merge-json",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "mocha",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "mocha-junit-reporter",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "nock",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "node-glob",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "null-loader",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "nyc",
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+    },
+    {
+      "name": "obj-traverse",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "raw-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-markdown",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-router-dom",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "recursive-readdir",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "rimraf",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "sass-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "save",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sinon",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "sinon-chai",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "source-map-loader",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "source-map-support",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "style-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "svg-react-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "ts-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "ts-node",
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+    },
+    {
+      "name": "tsconfig-paths",
+      "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "tslint",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "tslint-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "typedoc",
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+    },
+    {
+      "name": "typedoc-plugin-external-module-name",
+      "allowedCategories": [ "backend", "common", "frontend" ]
+    },
+    {
+      "name": "typemoq",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "typescript",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "url-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "webpack",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "webpack-cli",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "webpack-dev-server",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "xmlhttprequest",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "yargs",
+      "allowedCategories": [ "tools" ]
+    }
+  ]
+}
