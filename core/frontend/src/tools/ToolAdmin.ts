@@ -371,7 +371,6 @@ export class ToolAdmin {
   public acsContextLock = false;
 
   private static _wantEventLoop = false;
-  private static keyEventHandler(ev: Event) { IModelApp.toolAdmin.addEvent(ev); }
   private static readonly removals: VoidFunction[] = [];
 
   /** @hidden */
@@ -382,8 +381,8 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
 
     ["keydown", "keyup"].forEach((type) => {
-      document.addEventListener(type, ToolAdmin.keyEventHandler, true);
-      ToolAdmin.removals.push(() => { document.removeEventListener(type, ToolAdmin.keyEventHandler, true); });
+      document.addEventListener(type, ToolAdmin.keyEventHandler as EventListener, true);
+      ToolAdmin.removals.push(() => { document.removeEventListener(type, ToolAdmin.keyEventHandler as EventListener, true); });
     });
   }
 
@@ -415,6 +414,11 @@ export class ToolAdmin {
     last.ev = event.ev; // sequential mouse moves are not important. Replace the previous one with this one.
     last.vp = event.vp;
     return true;
+  }
+
+  private static keyEventHandler(ev: KeyboardEvent) {
+    if (!ev.repeat) // we don't want repeated keydown events. If we keep them they interfere with replacing mouse motion events.
+      IModelApp.toolAdmin.addEvent(ev);
   }
 
   /** Called from HTML event listeners. Events are processed in the order they're received in ToolAdmin.eventLoop
@@ -1078,7 +1082,7 @@ export class ToolAdmin {
   }
 
   /** @hidden */
-  public startInputCollector(_newTool: InputCollector): void {
+  public startInputCollector(newTool: InputCollector): void {
     if (undefined !== this.inputCollector) {
       this.setInputCollector(undefined);
     } else {
@@ -1089,6 +1093,7 @@ export class ToolAdmin {
     }
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
+    this.setInputCollector(newTool);
   }
 
   /** @hidden */
@@ -1127,7 +1132,7 @@ export class ToolAdmin {
   }
 
   /** @hidden */
-  public startViewTool() {
+  public startViewTool(newTool: ViewTool) {
     IModelApp.accuDraw.onViewToolInstall();
 
     if (undefined !== this.viewTool) {
@@ -1147,6 +1152,7 @@ export class ToolAdmin {
     IModelApp.accuSnap.onStartTool();
 
     this.setCursor(BeCursor.CrossHair);
+    this.setViewTool(newTool);
   }
 
   /** @hidden */
@@ -1188,6 +1194,7 @@ export class ToolAdmin {
     IModelApp.accuSnap.onStartTool();
 
     this.setCursor(newTool.getCursor());
+    this.setPrimitiveTool(newTool);
   }
 
   /**

@@ -266,10 +266,10 @@ export class Tool {
   private static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
   public constructor(..._args: any[]) { }
 
-  private static getLocalizeBase() { return this.namespace.name + ":tools." + this.toolId; }
-  private static getKeyinKey() { return this.getLocalizeBase() + ".keyin"; }
-  private static getFlyoverKey() { return this.getLocalizeBase() + ".flyover"; }
-  private static getDescriptionKey() { return this.getLocalizeBase() + ".description"; }
+  private static get localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
+  private static get keyinKey() { return this.localizeBase + ".keyin"; }
+  private static get flyoverKey() { return this.localizeBase + ".flyover"; }
+  private static get descriptionKey() { return this.localizeBase + ".description"; }
 
   /**
    * Register this Tool class with the ToolRegistry.
@@ -281,21 +281,21 @@ export class Tool {
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this.getKeyinKey())); }
+  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this.keyinKey)); }
 
   /**
    * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the keyin property is returned.
    */
-  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n.translate([this.getFlyoverKey(), this.getKeyinKey()])); }
+  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n.translate([this.flyoverKey, this.keyinKey])); }
 
   /**
    * Get the localized description for this Tool class. This returns the value of "tools." + this.toolId + ".description" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the flyover property is returned.
    */
-  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n.translate([this.getDescriptionKey(), this.getFlyoverKey(), this.getKeyinKey()])); }
+  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n.translate([this.descriptionKey, this.flyoverKey, this.keyinKey])); }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
@@ -319,10 +319,7 @@ export class Tool {
   public run(..._arg: any[]): boolean { return true; }
 }
 
-export enum EventHandled {
-  No = 0,
-  Yes = 1,
-}
+export enum EventHandled { No = 0, Yes = 1 }
 
 /**
  * A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
@@ -491,7 +488,6 @@ export abstract class InputCollector extends InteractiveTool {
       return false;
 
     toolAdmin.startInputCollector(this);
-    toolAdmin.setInputCollector(this);
     toolAdmin.onPostInstallTool(this);
     return true;
   }
@@ -501,8 +497,8 @@ export abstract class InputCollector extends InteractiveTool {
 }
 
 /**
- * The ToolRegistry holds a mapping between toolIds and the corresponding Tool class. This provides the mechanism to
- * find Tools by their toolId, and also a way to iterate over the collection of Tools available.
+ * The ToolRegistry holds a mapping between toolIds and their corresponding Tool class. This provides the mechanism to
+ * find Tools by their toolId, and also a way to iterate over the set of Tools available.
  */
 export class ToolRegistry {
   public readonly tools = new Map<string, ToolType>();
@@ -534,7 +530,7 @@ export class ToolRegistry {
   }
 
   /**
-   * register all the Tool classes found in a module.
+   * Register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
   public registerModule(moduleObj: any, namespace?: I18NNamespace) {
@@ -609,7 +605,5 @@ export class ToolRegistry {
    * @returns the Tool class, if an exact match is found, otherwise returns undefined.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    */
-  public findExactMatch(keyin: string): ToolType | undefined {
-    return this.getToolList().find((thisTool) => thisTool.keyin === keyin);
-  }
+  public findExactMatch(keyin: string): ToolType | undefined { return this.getToolList().find((thisTool) => thisTool.keyin === keyin); }
 }

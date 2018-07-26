@@ -61,13 +61,11 @@ class RealityModelTileProps implements TileProps {
   public maximumSize: number;
   public childIds: string[];
   public geometry?: string | ArrayBuffer;
-  public yAxisUp: boolean;
   public hasContents: boolean;
   constructor(json: any, thisId: string, public tree: RealityModelTileTreeProps) {
     this.id = new TileId(new Id64(), thisId);
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
     this.maximumSize = 0.0; // nonzero only if content present.   CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
-    this.yAxisUp = tree.yAxisUp;
     this.childIds = [];
     const prefix = thisId.length ? thisId + "_" : "";
     if (Array.isArray(json.children))
@@ -100,7 +98,6 @@ class RealityModelTileLoader extends TileLoader {
     return props;
   }
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
-
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
