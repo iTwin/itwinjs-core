@@ -32,8 +32,7 @@ export const enum ViewHandleType {
   ViewZoom = 1 << 4,
   ViewWalk = 1 << 5,
   ViewFly = 1 << 6,
-  ViewWalkMobile = 1 << 7, // Uses tool state instead of mouse for input
-  ViewLook = 1 << 9,
+  ViewLook = 1 << 7,
 }
 
 export const enum ViewManipPriority {
@@ -62,9 +61,7 @@ export abstract class ViewTool extends InteractiveTool {
     if (!toolAdmin.onInstallTool(this))
       return false;
 
-    // toolAdmin.setViewTool(undefined);
-    toolAdmin.startViewTool();
-    toolAdmin.setViewTool(this);
+    toolAdmin.startViewTool(this);
     toolAdmin.onPostInstallTool(this);
     return true;
   }
@@ -154,7 +151,7 @@ export class ViewHandleArray {
       return;
 
     // all handle objects must draw themselves
-    for (let i = 0; i < this.count; i++) {
+    for (let i = 0; i < this.count; ++i) {
       if (i !== this.hitHandleIndex) {
         const handle = this.handles[i];
         handle.drawHandle(context, this.focus === i);
@@ -192,38 +189,11 @@ export class ViewHandleArray {
       this.viewport.invalidateDecorations();
   }
 
-  public onReinitialize(): void {
-    this.handles.forEach((handle: ViewingToolHandle | undefined) => {
-      if (undefined !== handle)
-        handle.onReinitialize();
-    });
-  }
+  public onReinitialize() { this.handles.forEach((handle) => handle.onReinitialize()); }
+  public motion(ev: BeButtonEvent) { this.handles.forEach((handle) => handle.motion(ev)); }
 
   /** determine whether a handle of a specific type exists */
-  public hasHandle(handleType: ViewHandleType): boolean {
-    for (let i = 0; i < this.count; ++i) {
-      const handle = this.getByIndex(i);
-      if (handle && handle.handleType === handleType)
-        return true;
-    }
-
-    return false;
-  }
-
-  public getHandleByType(handleType: ViewHandleType): ViewingToolHandle | undefined {
-    for (let i = 0; i < this.count; i++) {
-      const handle = this.getByIndex(i);
-      if (handle && handle.handleType === handleType)
-        return handle;
-    }
-
-    return undefined;
-  }
-
-  public motion(ev: BeButtonEvent): boolean {
-    this.handles.forEach((handle) => { if (handle) handle.motion(ev); });
-    return true;
-  }
+  public hasHandle(handleType: ViewHandleType): boolean { return this.handles.some((handle) => handle.handleType === handleType); }
 }
 
 /** Base class for tools that manipulate the viewing frustum of a Viewport */
@@ -232,15 +202,12 @@ export abstract class ViewManip extends ViewTool {
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
   public alwaysLeaveLastView = false;
-  public readonly lastPtScreen = new Point3d();
   public readonly targetCenterWorld = new Point3d();
   public isDragging = false;
   public isDragOperation = false;
   public stoppedOverHandle = false;
-  public wantMotionStop = true;
   public targetCenterValid = false;
   public targetCenterLocked = false;
-  public supportsOrientationEvents = true;
   public nPts = 0;
   public forcedHandle = ViewHandleType.None;
   public readonly lastFrustum = new Frustum();
@@ -252,9 +219,7 @@ export abstract class ViewManip extends ViewTool {
     this.changeViewport(viewport);
   }
 
-  public decorate(context: DecorateContext): void {
-    this.viewHandles.drawHandles(context);
-  }
+  public decorate(context: DecorateContext): void { this.viewHandles.drawHandles(context); }
 
   public onReinitialize(): void {
     IModelApp.toolAdmin.gesturePending = false;
@@ -306,10 +271,7 @@ export abstract class ViewManip extends ViewTool {
     return EventHandled.No;
   }
 
-  public async onMiddleButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
-    // Just let idle tool handle this...
-    return EventHandled.No;
-  }
+  public async onMiddleButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }    // Just let idle tool handle this...
 
   public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     // Can only support middle button for viewing tools in drag mode in order to allow middle click for tentative...
@@ -435,25 +397,18 @@ export abstract class ViewManip extends ViewTool {
       return;
     }
 
-    if (IModelApp.tentativePoint.isActive) {
-      this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
-      return;
-    }
+    if (IModelApp.tentativePoint.isActive)
+      return this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
 
-    if (TentativeOrAccuSnap.isHot()) {
-      this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), true, false);
-      return;
-    }
+    if (TentativeOrAccuSnap.isHot())
+      return this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), true, false);
 
-    if (vp.viewCmdTargetCenter && this.isPointVisible(vp.viewCmdTargetCenter)) {
-      this.setTargetCenterWorld(vp.viewCmdTargetCenter, true, true);
-      return;
-    }
+    if (vp.viewCmdTargetCenter && this.isPointVisible(vp.viewCmdTargetCenter))
+      return this.setTargetCenterWorld(vp.viewCmdTargetCenter, true, true);
 
     if (!vp.view.allow3dManipulations()) {
       const defaultPoint = vp.npcToWorld(NpcCenter); defaultPoint.z = 0.0;
-      this.setTargetCenterWorld(defaultPoint, false, false);
-      return;
+      return this.setTargetCenterWorld(defaultPoint, false, false);
     }
 
     const visiblePoint = vp.pickNearestVisibleGeometry(vp.npcToWorld(NpcCenter), ToolSettings.viewToolPickRadius);
@@ -478,9 +433,8 @@ export abstract class ViewManip extends ViewTool {
 
   public processPoint(ev: BeButtonEvent, inDynamics: boolean) {
     const hitHandle = this.viewHandles.hitHandle;
-    if (undefined === hitHandle) {
+    if (undefined === hitHandle)
       return true;
-    }
 
     const doUpdate = hitHandle.doManipulation(ev, inDynamics);
     if (doUpdate)
@@ -516,9 +470,7 @@ export abstract class ViewManip extends ViewTool {
     return pt.z;
   }
 
-  public doUpdate(_abortOnButton: boolean) {
-    // we currently have no built-in support for dynamics, therefore nothing to update.
-  }
+  public doUpdate(_abortOnButton: boolean) { }  // we currently have no built-in support for dynamics, therefore nothing to update.
 
   /**
    * Set the target point for viewing operations.
@@ -1064,9 +1016,7 @@ class NavigateMotion {
     this.moveAndLook(travel, yawRate, pitchRate, isConstrainedToXY);
   }
 
-  public look(yawRate: number, pitchRate: number): void {
-    this.generateRotationTransform(yawRate, pitchRate, this.transform);
-  }
+  public look(yawRate: number, pitchRate: number): void { this.generateRotationTransform(yawRate, pitchRate, this.transform); }
 
   /** reset pitch of view to zero */
   public resetToLevel(): void {

@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
@@ -350,7 +350,7 @@ export abstract class ViewState extends ElementState {
   public abstract decorate(context: DecorateContext): void;
 
   /** Determine whether this ViewDefinition views a given model */
-  public abstract viewsModel(modelId: Id64): boolean;
+  public abstract viewsModel(modelId: Id64String): boolean;
 
   /** Get the origin of this view */
   public abstract getOrigin(): Point3d;
@@ -1656,7 +1656,7 @@ export class SpatialViewState extends ViewState3d {
     return val;
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
-  public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
+  public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
   public clearViewedModels() { this.modelSelector.models.clear(); }
   public addViewedModel(id: Id64Props) { this.modelSelector.addModels(id); }
   public removeViewedModel(id: Id64Props) { this.modelSelector.dropModels(id); }
@@ -1755,7 +1755,7 @@ export abstract class ViewState2d extends ViewState {
   public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
-  public viewsModel(modelId: Id64) { return this.baseModelId.equals(modelId); }
+  public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId.value);
     if (undefined !== model && model.isGeometricModel)
