@@ -117,6 +117,8 @@ class RealityModelTileLoader extends TileLoader {
   }
 
   private findTileInJson(tilesetJson: any, id: string, parentId: string): FindChildResult | undefined {
+    if (id.length === 0)
+      return new FindChildResult(id, tilesetJson);    // Root.
     const separatorIndex = id.indexOf("_");
     const childId = (separatorIndex < 0) ? id : id.substring(0, separatorIndex);
     const childIndex = parseInt(childId, 10);
