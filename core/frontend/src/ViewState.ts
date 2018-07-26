@@ -247,6 +247,25 @@ export abstract class ViewState extends ElementState {
     return this.subCategories.load(this.categorySelector.categories, this.iModel);
   }
 
+  public cancelAllTileLoads(): void {
+    this.forEachModel((model) => {
+      const tileTree = model.tileTree;
+      if (tileTree !== undefined)
+        tileTree.rootTile.cancelAllLoads();
+    });
+  }
+
+  /** Returns true if all the tile trees for this view are loaded. */
+  public get areAllTileTreesLoaded(): boolean {
+    let allLoaded = true;
+    this.forEachModel((model: GeometricModelState) => {
+      const loadStatus = model.loadStatus;
+      if (loadStatus === TileTree.LoadStatus.NotLoaded || loadStatus === TileTree.LoadStatus.Loading)
+        allLoaded = false;
+    });
+    return allLoaded;
+  }
+
   /** Get the name of the ViewDefinition of this ViewState */
   public get name(): string { return this.code.getValue(); }
 
@@ -1785,12 +1804,6 @@ export class SheetViewState extends ViewState2d {
     return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
   }
 
-  public static get className() { return "SheetViewDefinition"; }
-  public readonly sheetSize: Point2d;
-  private _attachmentIds: Id64Array;
-  private _attachments = new Attachments.AttachmentList();
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
-
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof SheetViewState) {
@@ -1804,6 +1817,16 @@ export class SheetViewState extends ViewState2d {
       attachments.forEach((idProp) => this._attachmentIds.push(idProp));
     }
   }
+
+  public static get className() { return "SheetViewDefinition"; }
+  public readonly sheetSize: Point2d;
+  private _attachmentIds: Id64Array;
+  private _attachments = new Attachments.AttachmentList();
+  private all3dAttachmentTilesLoaded: boolean = true;
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
+
+  /** Manually mark this SheetViewState as having to re-create its scene due to incomplete 3d attachments. Called from attachment tile "select" methods. */
+  public markAttachment3dSceneIncomplete() { this.all3dAttachmentTilesLoaded = false; }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
   public async load(): Promise<void> {
@@ -1831,7 +1854,7 @@ export class SheetViewState extends ViewState2d {
     // Create the attachment objects and store them on this SheetViewState
     for (let i = 0; i < attachments.length; i++) {
       if (attachmentViews[i].is3d())
-        continue; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+        this._attachments.add(new Attachments.Attachment3d(attachments[i], attachmentViews[i] as ViewState3d));
       else
         this._attachments.add(new Attachments.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
     }
@@ -1839,34 +1862,37 @@ export class SheetViewState extends ViewState2d {
 
   /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allLoaded)
+    if (!this._attachments.all2dAttachmentTilesLoaded || !this.all3dAttachmentTilesLoaded)
       _viewport.sync.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
   public createScene(context: SceneContext) {
+    // This will be reset to false by the end of the function if any 3d attachments are waiting on tiles...
+    this.all3dAttachmentTilesLoaded = true;
+
     super.createScene(context);
 
-    if (!this._attachments.allLoaded) {
-      // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
+    if (!this._attachments.all2dAttachmentTilesLoaded) {
       let i = 0;
       while (i < this._attachments.length) {
-        const attachStatus = this._attachments.load(i, this, context);
+        const attachmentState = this._attachments.load(i, this, context);
 
         // If load fails, attachment gets dropped from the list
-        if (attachStatus !== TileTree.LoadStatus.NotFound && attachStatus !== TileTree.LoadStatus.NotLoaded)
+        if (attachmentState !== Attachments.State.Empty && attachmentState !== Attachments.State.NotLoaded)
           i++;
       }
     }
 
-    /*  DEBUG ONLY
+    /*
+    DEBUG ONLY
     for (const attachment of this._attachments.list)
       attachment.drawDebugBorder();
     */
 
-    // Draw all attachments that have a status of loaded
+    // Draw all attachments that have a status of ready
     for (const attachment of this._attachments.list)
-      if (attachment.getLoadStatus() === TileTree.LoadStatus.Loaded) {
+      if (attachment.state === Attachments.State.Ready) {
         assert(attachment.tree !== undefined);
         attachment.tree!.drawScene(context);
       }

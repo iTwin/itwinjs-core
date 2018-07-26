@@ -25,6 +25,7 @@ export class NullTarget extends RenderTarget {
   public dispose(): void { }
   public updateViewRect(): boolean { return false; }
   public readPixels() { return undefined; }
+  public readImage() { return undefined; }
 }
 
 export class NullRenderSystem extends RenderSystem {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform, Point2d, Range3d, Point3d } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
@@ -24,6 +24,7 @@ import {
   QPoint3dList,
   ImageSource,
   ImageSourceFormat,
+  GraphicParams,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -286,7 +287,7 @@ export abstract class RenderTarget implements IDisposable {
 
   public abstract dispose(): void;
   public abstract reset(): void;
-  public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
+  public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -398,8 +399,14 @@ export abstract class RenderSystem implements IDisposable {
   /** Create an indexed polyline primitive */
   public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
 
-  // /** Create a point cloud primitive */
+  /** Create a point cloud primitive */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+
+  /** Create polygons on a range for a sheet tile. */
+  public createSheetTilePolyfaces(_corners: Point3d[], _clip: ClipVector): IndexedPolyface[] { return []; }
+
+  /** Create a sheet tile primitive from polyfaces. */
+  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _params: GraphicParams): GraphicList { return []; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }

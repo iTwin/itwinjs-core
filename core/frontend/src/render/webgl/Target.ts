@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, ClipVector, Matrix4d, Point2d } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
@@ -359,9 +359,9 @@ export abstract class Target extends RenderTarget {
     this._decorations = decs;
     AttributeHandle.disableAll();
   }
-  public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
+  public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
     this._scene = scene;
-    // ###TODO active volume
+    this._activeClipVolume = _activeVolume;
   }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...

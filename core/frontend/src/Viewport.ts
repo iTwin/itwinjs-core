@@ -1634,15 +1634,11 @@ export class Viewport {
 }
 
 export class OffScreenViewport extends Viewport {
-  protected _rect: ViewRect;
-
   public constructor(viewState: ViewState) {
     super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect()));
-    this._rect = this.target.viewRect.clone();  // will be null rect
   }
 
   public setRect(rect: ViewRect, temporary: boolean = false) {
-    this._rect.copyFrom(rect);
-    this.target.setViewRect(this._rect, temporary);
+    this.target.setViewRect(rect, temporary);
   }
 }
