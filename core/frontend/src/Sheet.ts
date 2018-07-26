@@ -5,7 +5,7 @@
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform } from "@bentley/geometry-core";
-import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps } from "@bentley/imodeljs-common";
+import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps, ViewFlag } from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
@@ -104,25 +104,12 @@ export namespace Sheet {
   }
 
   export class Tile2dLoader extends TileLoader {
-    public async getTileProps(_ids: string[]): Promise<TileProps[]> {
-      return Promise.resolve([]);
-    }
-
-    public async loadTileContents(_missingtiles: MissingNodes): Promise<void> {
-      return Promise.resolve();
-    }
-
-    public getMaxDepth(): number {
-      return 1;
-    }
-
-    public tileRequiresLoading(_params: Tile.Params): boolean {
-      return false;
-    }
-
-    public loadGraphics(_tile: Tile, _geometry: any): void {
-      assert(false);
-    }
+    public async getTileProps(_ids: string[]): Promise<TileProps[]> { return Promise.resolve([]); }
+    public async loadTileContents(_missingtiles: MissingNodes): Promise<void> { return Promise.resolve(); }
+    public get maxDepth(): number { return 1; }
+    public tileRequiresLoading(_params: Tile.Params): boolean { return false; }
+    public loadGraphics(_tile: Tile, _geometry: any): void { assert(false); }
+    public get viewFlagOverrides() { return new ViewFlag.Overrides(); } // ###TODO use view flags from attached view...
   }
 
   /** An extension of Tile specific to rendering 2d attachments. */
@@ -181,7 +168,6 @@ export namespace Sheet {
         Transform.createIdentity(),
         undefined,
         undefined,    // ClipVector build in child class constructors
-        undefined,
       ));
     }
   }

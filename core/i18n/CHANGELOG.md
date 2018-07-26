@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-i18n
 
-This log was last generated on Tue, 24 Jul 2018 15:52:31 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jul 2018 18:25:15 GMT and should not be manually modified.
+
+## 0.104.0
+Thu, 26 Jul 2018 18:25:15 GMT
+
+*Version update only*
 
 ## 0.103.0
 Tue, 24 Jul 2018 15:52:31 GMT

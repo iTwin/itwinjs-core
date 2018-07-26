@@ -2,6 +2,12 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.104.0",
+      "tag": "@bentley/geometry-core_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.103.0",
       "tag": "@bentley/geometry-core_v0.103.0",
       "date": "Tue, 24 Jul 2018 15:52:30 GMT",

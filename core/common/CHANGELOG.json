@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.104.0",
+      "tag": "@bentley/imodeljs-common_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "SheetProps contains attachment ids for SheetViewState"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.103.0",
       "tag": "@bentley/imodeljs-common_v0.103.0",
       "date": "Tue, 24 Jul 2018 15:52:30 GMT",

@@ -2,6 +2,12 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.104.0",
+      "tag": "@bentley/ui-core_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.1.15",
       "tag": "@bentley/ui-core_v0.1.15",
       "date": "Wed, 18 Jul 2018 04:53:37 GMT",

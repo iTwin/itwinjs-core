@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 24 Jul 2018 15:52:31 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jul 2018 18:25:15 GMT and should not be manually modified.
+
+## 0.104.0
+Thu, 26 Jul 2018 18:25:15 GMT
+
+### Updates
+
+- Implement six-sided skybox cubes.
+- 2d geometry is properly clipped using ClipMaskVolume
+- attachment id array on SheetViewState has type Id64Array
+- Maintain image aspect ratio in cubemap skybox.
+- Add support for dynamic 3d clipping volumes.
 
 ## 0.103.0
 Tue, 24 Jul 2018 15:52:31 GMT
