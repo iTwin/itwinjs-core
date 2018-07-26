@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.104.1",
+      "tag": "@bentley/ui-components_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ~ to @import of @bentley/bwc/lib/mixins for webpack"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.104.0",
       "tag": "@bentley/ui-components_v0.104.0",
       "date": "Thu, 26 Jul 2018 18:25:15 GMT",

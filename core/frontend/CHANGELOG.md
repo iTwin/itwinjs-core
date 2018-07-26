@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 26 Jul 2018 18:25:15 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jul 2018 21:35:07 GMT and should not be manually modified.
+
+## 0.104.1
+Thu, 26 Jul 2018 21:35:07 GMT
+
+### Updates
+
+- Support separate view flags per model.
 
 ## 0.104.0
 Thu, 26 Jul 2018 18:25:15 GMT
