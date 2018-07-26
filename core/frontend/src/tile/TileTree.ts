@@ -427,7 +427,10 @@ export namespace Tile {
 
       const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
       const branch = this.context.createBranch(this.graphics, this.location, clipVolume);
-      this.context.outputGraphic(branch);
+      if (this.root.isTerrain)
+        this.context.outputTerrain(branch);
+      else
+        this.context.outputGraphic(branch);
     }
 
     public insertMissing(tile: Tile): void { this.missing.insert(tile); }
@@ -466,6 +469,7 @@ export class TileTree implements IDisposable {
   public clipVector?: ClipVector;
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
+  public readonly isTerrain: boolean = false;
 
   public constructor(props: TileTree.Params) {
     this.model = props.model;
@@ -477,6 +481,7 @@ export class TileTree implements IDisposable {
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this), props.loader); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.loader = props.loader;
+    this.isTerrain = props.isTerrain;
   }
 
   public get rootTile(): Tile { return this._rootTile; }
@@ -604,10 +609,11 @@ export namespace TileTree {
       public readonly location: Transform,
       public readonly maxTilesToSkip?: number,
       public readonly clipVector?: ClipVector,
-      public readonly viewFlagOverrides?: ViewFlag.Overrides) { }
+      public readonly viewFlagOverrides?: ViewFlag.Overrides,
+      public readonly isTerrain: boolean = false) { }
 
     public static fromJSON(props: TileTreeProps, model: GeometricModelState, loader: TileLoader) {
-      return new Params(Id64.fromJSON(props.id), props.rootTile, model, loader, Transform.fromJSON(props.location), props.maxTilesToSkip);
+      return new Params(Id64.fromJSON(props.id), props.rootTile, model, loader, Transform.fromJSON(props.location), props.maxTilesToSkip, undefined, undefined, props.isTerrain);
     }
   }
 

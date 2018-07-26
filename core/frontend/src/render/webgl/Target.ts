@@ -141,6 +141,7 @@ export class PerformanceMetrics {
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
+  private _terrain: GraphicList = [];
   private _decorations?: Decorations;
   private _dynamics?: DecorationList;
   private _worldDecorations?: WorldDecorations;
@@ -360,6 +361,9 @@ export abstract class Target extends RenderTarget {
   public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
     this._scene = scene;
     // ###TODO active volume
+  }
+  public changeTerrain(terrain: GraphicList) {
+    this._terrain = terrain;
   }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
@@ -632,7 +636,7 @@ export abstract class Target extends RenderTarget {
     gl.viewport(0, 0, rect.width, rect.height);
 
     this.setFrameTime();
-    this._renderCommands.init(this._scene, this._decorations, this._dynamics);
+    this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
 
     this.setFrameTime();
     this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
@@ -770,7 +774,7 @@ export abstract class Target extends RenderTarget {
     // ###TODO: Handle pickable decorations.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
-    this._renderCommands.init(this._scene, this._decorations, this._dynamics, true);
+    this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
 
     // Don't bother rendering + reading if we know there's nothing to draw.

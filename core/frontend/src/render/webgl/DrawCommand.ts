@@ -345,7 +345,7 @@ export class RenderCommands {
         // Want these items to draw in general opaque pass so they are not in pick data.
         if (FeatureIndexType.Empty === command.featureIndexType)
           pass = RenderPass.OpaqueGeneral;
-        /* falls through */
+      /* falls through */
       case RenderPass.OpaqueGeneral:
         if (this._translucentOverrides && haveFeatureOverrides && !this._addTranslucentAsOpaque)
           this.getCommands(RenderPass.Translucent).push(command);
@@ -421,7 +421,7 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
-  public init(scene: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -435,6 +435,7 @@ export class RenderCommands {
     }
 
     this.addGraphics(scene);
+    this.addGraphics(terrain); //  ###TODO: this.addTerrain
 
     if (undefined !== dynamics && 0 < dynamics.list.length) {
       this.addDecorations(dynamics);

@@ -55,5 +55,7 @@ export interface TileTreeProps {
   location: TransformProps;
   /** If defined, limits the number of child tiles which can be skipped in selecting tiles of appropriate LOD */
   maxTilesToSkip?: number;
+  /** If defined and true, this TileTree contains only terrain tiles. */
+  isTerrain?: boolean;
   // ###TODO: ViewFlag.Overrides, ClipVector
 }

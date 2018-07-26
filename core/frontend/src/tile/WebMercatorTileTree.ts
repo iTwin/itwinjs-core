@@ -74,6 +74,8 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
+  /** Contents of WebMercator trees are always considered terrain graphics. */
+  public isTerrain?: boolean = true;
   public constructor(mercatorToDb: Transform) {
     this.rootTile = new WebMercatorTileProps("0_0_0", mercatorToDb);
     this.location = Transform.createIdentity();

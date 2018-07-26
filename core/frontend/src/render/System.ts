@@ -287,6 +287,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract dispose(): void;
   public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
+  public abstract changeTerrain(_scene: GraphicList): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;

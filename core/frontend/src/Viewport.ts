@@ -1492,6 +1492,7 @@ export class Viewport {
       view.createScene(context);
       context.requests.requestMissing();
       target.changeScene(context.graphics);
+      target.changeTerrain(context.terrain);
 
       isRedrawNeeded = true;
       sync.setValidScene();
