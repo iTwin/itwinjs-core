@@ -347,19 +347,21 @@ interface ToolEvent {
 
 /** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
 export class ToolAdmin {
-  public currentInputState = new CurrentInputState();
+  /** @hidden */
+  public readonly currentInputState = new CurrentInputState();
+  /** @hidden */
   public readonly toolState = new ToolState();
   private suspendedByViewTool?: SuspendedToolState;
-  public suspendedByInputCollector?: SuspendedToolState;
+  private suspendedByInputCollector?: SuspendedToolState;
   public lastWheelEvent?: BeWheelEvent;
   public cursorView?: Viewport;
   private _viewTool?: ViewTool;
   private _primitiveTool?: PrimitiveTool;
   private _idleTool?: IdleTool;
   private _inputCollector?: InputCollector;
-  public saveCursor?: BeCursor = undefined;
-  public saveLocateCircle = false;
-  public defaultTool = "Select";
+  private saveCursor?: BeCursor = undefined;
+  private saveLocateCircle = false;
+  private defaultTool = "Select";
   public gesturePending = false;
   private modifierKeyWentDown = false;
   private modifierKey = BeModifierKeys.None;
