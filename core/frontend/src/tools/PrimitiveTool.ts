@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { CoordinateLockOverrides } from "./ToolAdmin";
-import { BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
+import { BeButtonEvent, BeCursor, InteractiveTool, BeButton } from "./Tool";
 import { Viewport } from "../Viewport";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
@@ -125,6 +125,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     if (undefined === vp)
       return false;
+
+    if (isButtonEvent && BeButton.Data !== ev.button)
+      return true;
 
     const view = vp.view;
     const iModel = view.iModel;

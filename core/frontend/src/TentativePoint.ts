@@ -6,7 +6,7 @@
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Viewport } from "./Viewport";
-import { BeButtonEvent } from "./tools/Tool";
+import { BeButtonEvent, BeButton } from "./tools/Tool";
 import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, HitSource, HitDetailType } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { HitListHolder } from "./ElementLocateManager";
@@ -100,7 +100,20 @@ export class TentativePoint {
     return hit;
   }
 
-  public onButtonEvent(): void {
+  public onButtonEvent(ev: BeButtonEvent): void {
+    switch (ev.button) {
+      case BeButton.Data:
+        if (!ev.isDown)
+          return; // cleared on down...
+        break;
+      case BeButton.Reset:
+        if (ev.isDown)
+          return; // cleared on up...
+        break;
+      case BeButton.Middle:
+        return;
+    }
+
     this.removeTentative();
     IModelApp.accuSnap.synchSnapMode();
     this.snapList.empty();
