@@ -36,7 +36,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
   public targetModelId?: string;
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
-  public toolStateId: string = "";  // Tool State Id can be used to determine prompts and control UI control state.
 
   /** Get the iModel the tool is operating against. */
   public get iModel(): IModelConnection { return this.targetView!.view!.iModel as IModelConnection; }

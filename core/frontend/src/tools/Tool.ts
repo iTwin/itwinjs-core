@@ -484,7 +484,7 @@ export abstract class InputCollector extends InteractiveTool {
   public run(): boolean {
     const toolAdmin = IModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
-    if (undefined !== toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
+    if (undefined !== toolAdmin.viewTool || !toolAdmin.onInstallTool(this))
       return false;
 
     toolAdmin.startInputCollector(this);

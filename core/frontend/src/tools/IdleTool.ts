@@ -64,7 +64,7 @@ export class IdleTool extends InteractiveTool {
 
     IModelApp.accuDraw.onTentative();
 
-    const currTool = IModelApp.toolAdmin.activeViewTool;
+    const currTool = IModelApp.toolAdmin.viewTool;
     if (currTool && currTool instanceof ViewManip) {
       if (currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
         currTool.forcedHandle = ViewHandleType.None; // Didn't get start drag, don't leave ViewPan active...
@@ -84,7 +84,7 @@ export class IdleTool extends InteractiveTool {
     } else if (ev.isShiftKey) {
       viewTool = IModelApp.tools.create("View.Rotate", ev.viewport, true, false, true) as ViewTool | undefined;
     } else {
-      const currTool = IModelApp.toolAdmin.activeViewTool;
+      const currTool = IModelApp.toolAdmin.viewTool;
       if (currTool && currTool instanceof ViewManip) {
         // A current tool is active. If it's not already changing the view, tell it to choose the pan handle if it has one (leave it active regardless)...
         if (!currTool.isDragging && currTool.viewHandles.hasHandle(ViewHandleType.ViewPan))
