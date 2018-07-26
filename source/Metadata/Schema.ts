@@ -13,9 +13,9 @@ import KindOfQuantity from "./KindOfQuantity";
 import Unit from "./Unit";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion, SchemaItemKey } from "../ECObjects";
+import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
+import processCustomAttributes, { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
 import UnitSystem from "./UnitSystem";
 import Phenomenon from "./Phenomenon";
@@ -440,7 +440,7 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    this.schemaFromJson(jsonObj);
+    this.fromJsonSync(jsonObj);
   }
 
   /**
@@ -448,14 +448,6 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public fromJsonSync(jsonObj: any): void {
-    this.schemaFromJson(jsonObj);
-  }
-
-  /**
-   *
-   * @param jsonObj
-   */
-  public schemaFromJson(jsonObj: any) {
     if (Schema.ec32 && SCHEMAURL3_2 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `Schema namespace '${jsonObj.$schema}' is not supported.`);
     else if (!Schema.ec32 && SCHEMAURL3_1 !== jsonObj.$schema)
@@ -513,6 +505,7 @@ export default class Schema implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
       this._description = jsonObj.description;
     }
+    this._customAttributes = processCustomAttributes(jsonObj.customAttributes, this.name, CustomAttributeContainerType.Schema);
   }
 
   /////////////////////////

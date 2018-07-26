@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
@@ -39,12 +39,90 @@ describe("RelationshipConstraint", () => {
       const unloadedAbstractConstraintJson = { abstractConstraint: "ThisClassDoesNotExist" };
       expect(testConstraint.fromJson(unloadedAbstractConstraintJson)).to.be.rejectedWith(ECObjectsError);
     });
-
     it("should throw for invalid constraintClasses", async () => {
       await testInvalidAttribute("constraintClasses", "string[]", 0);
       await testInvalidAttribute("constraintClasses", "string[]", [0]);
       const unloadedConstraintClassesJson = { constraintClasses: ["ThisClassDoesNotExist"] };
       expect(testConstraint.fromJson(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError);
+    });
+    it("should throw for invalid customAttributes", async () => {
+      const json: any = { ["customAttributes"]: "array" };
+      await expect(testConstraint.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      const unloadedConstraintClassesJson = { constraintClasses: ["ThisClassDoesNotExist"] };
+      expect(testConstraint.fromJson(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError, ``);
+    });
+    const oneCustomAttributeJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "ValidSchema",
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.HiddenSchema",
+          ShowClasses: true,
+        },
+      ],
+    };
+    it("async - Deserialize One Custom Attribute", async () => {
+      await testConstraint.fromJson(oneCustomAttributeJson);
+      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+    });
+    it("sync - Deserialize One Custom Attribute", () => {
+      testConstraint.fromJsonSync(oneCustomAttributeJson);
+      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+    });
+    const twoCustomAttributesJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "ValidSchema",
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.HiddenSchema",
+        },
+        {
+          className: "ExampleCustomAttributes.ExampleSchema",
+        },
+      ],
+    };
+    it("async - Deserialize Two Custom Attributes", async () => {
+      await testConstraint.fromJson(twoCustomAttributesJson);
+      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      expect(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+    });
+    it("sync - Deserialize Two Custom Attributes",  () => {
+      testConstraint.fromJsonSync(twoCustomAttributesJson);
+      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      expect(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+    });
+    it("sync - Deserialize Two Custom Attributes with additional properties",  () => {
+      const relConstraintJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+            ShowClasses: false,
+          },
+          {
+            className: "ExampleCustomAttributes.ExampleSchema",
+            ShowClasses: true,
+          },
+        ],
+      };
+      testConstraint.fromJsonSync(relConstraintJson);
+      assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === false);
+      assert(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
+    });
+    const mustBeAnArrayJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "InvalidSchema",
+      customAttributes:  "CoreCustomAttributes.HiddenSchema",
+    };
+    it("async - Custom Attributes must be an array", async () => {
+      await expect(testConstraint.fromJson(mustBeAnArrayJson)).to.be.rejectedWith(ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+
+    });
+    it("sync - Custom Attributes must be an array",  () => {
+      assert.throws(() => testConstraint.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
   });
 });

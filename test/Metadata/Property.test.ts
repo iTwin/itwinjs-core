@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 
 import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
@@ -143,6 +143,105 @@ describe("Property", () => {
       expect(testProp.isReadOnly).to.eql(false);
       expect(await testProp.category).to.eql(testCategory);
       expect(await testProp.kindOfQuantity).to.eql(testKindOfQuantity);
+    });
+    const oneCustomAttributeJson = {
+      name: "BadProp",
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.HiddenSchema",
+          ExampleAttribute: 1234,
+        },
+      ],
+    };
+    it("async - Deserialize One Custom Attribute", async () => {
+
+      const testProp = new MockProperty("BadProp");
+      expect(testProp).to.exist;
+      await testProp.fromJson(oneCustomAttributeJson);
+
+      expect(testProp.name).to.eql("BadProp");
+      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ExampleAttribute === 1234);
+    });
+    it("sync - Deserialize One Custom Attribute", () => {
+      const testProp = new MockProperty("BadProp");
+      expect(testProp).to.exist;
+      testProp.fromJsonSync(oneCustomAttributeJson);
+
+      expect(testProp.name).to.eql("BadProp");
+      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ExampleAttribute === 1234);
+    });
+    const twoCustomAttributesJson = {
+      name: "BadProp",
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.HiddenSchema",
+        },
+        {
+          className: "ExampleCustomAttributes.ExampleSchema",
+        },
+      ],
+    };
+    it("async - Deserialize Two Custom Attributes", async () => {
+
+      const testProp = new MockProperty("BadProp");
+      expect(testProp).to.exist;
+      await testProp.fromJson(twoCustomAttributesJson);
+
+      expect(testProp.name).to.eql("BadProp");
+      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      expect(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+    });
+    it("sync - Deserialize Two Custom Attributes", () => {
+      const testProp = new MockProperty("BadProp");
+      expect(testProp).to.exist;
+      testProp.fromJsonSync(twoCustomAttributesJson);
+
+      expect(testProp.name).to.eql("BadProp");
+      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      expect(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+    });
+    const mustBeArrayJson = {
+      name: "BadProp",
+      label: "SomeDisplayLabel",
+      description: "A really long description...",
+      customAttributes: "CoreCustomAttributes.HiddenSchema",
+    };
+    it("async - Custom Attributes must be an array", async () => {
+      const testProp = new MockProperty("BadProp");
+      expect(testProp).to.exist;
+      await expect(testProp.fromJson(mustBeArrayJson)).to.be.rejectedWith(ECObjectsError, "The AnyProperty BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
+    });
+    it("sync - Custom Attributes must be an array", async () => {
+      const testProp = new MockProperty("BadProp");
+      expect(testProp).to.exist;
+      assert.throws(() => testProp.fromJsonSync(mustBeArrayJson), ECObjectsError, "The AnyProperty BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
+    });
+    it("sync - Deserialize Multiple Custom Attributes with additional properties",  () => {
+      const propertyJson = {
+        name: "Prop",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+            ShowClasses: 1.2,
+          },
+          {
+            className: "ExampleCustomAttributes.ExampleSchema",
+            ExampleAttribute: true,
+          },
+          {
+            className: "AnotherCustomAttributes.ExampleSchema1",
+            Example2Attribute: "example",
+          },
+        ],
+      };
+      const testProp = new MockProperty("Prop");
+      expect(testProp).to.exist;
+      testProp.fromJsonSync(propertyJson);
+      assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === 1.2);
+      assert(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ExampleAttribute === true);
+      assert(testProp.customAttributes!["AnotherCustomAttributes.ExampleSchema1"].Example2Attribute === "example");
     });
 
     it("should throw for mismatched name", async () => {

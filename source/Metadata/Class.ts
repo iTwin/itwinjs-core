@@ -4,8 +4,8 @@
 
 import Enumeration from "./Enumeration";
 import SchemaItem from "./SchemaItem";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType, SchemaItemKey } from "../ECObjects";
-import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
+import processCustomAttributes, { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -374,6 +374,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
           return baseClass;
       });
     }
+    this._customAttributes = processCustomAttributes(jsonObj.customAttributes, this.name, CustomAttributeContainerType.AnyClass);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

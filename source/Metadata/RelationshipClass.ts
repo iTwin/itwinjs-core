@@ -4,8 +4,9 @@
 
 import ECClass from "./Class";
 import { ECClassModifier, StrengthDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
-        parseStrength, parseStrengthDirection, SchemaItemKey } from "../ECObjects";
+        parseStrength, parseStrengthDirection, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
+import processCustomAttributes, { CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -94,6 +95,7 @@ export class RelationshipConstraint {
   protected _polymorphic?: boolean;
   protected _roleLabel?: string;
   protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
+  protected _customAttributes?: CustomAttributeSet;
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
     this._relationshipEnd = relEnd;
@@ -113,6 +115,7 @@ export class RelationshipConstraint {
   get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
   get relationshipClass() { return this._relationshipClass; }
   get relationshipEnd() { return this._relationshipEnd; }
+  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)
@@ -211,6 +214,7 @@ export class RelationshipConstraint {
       const constraintClasses = await Promise.all<AnyConstraintClass>(jsonObj.constraintClasses.map(loadEachConstraint));
       constraintClasses.forEach((constraintClass: AnyConstraintClass) => this.addClass(constraintClass));
     }
+    this._customAttributes = processCustomAttributes(jsonObj.customAttributes, debugName(this), CustomAttributeContainerType.AnyRelationshipConstraint);
   }
   /**
    * Populates this object with the provided json object.
@@ -278,6 +282,7 @@ export class RelationshipConstraint {
         this.addClass(constraintClass);
       }
     }
+    this._customAttributes = processCustomAttributes(jsonObj.customAttributes, debugName(this), CustomAttributeContainerType.AnyRelationshipConstraint);
   }
 }
 

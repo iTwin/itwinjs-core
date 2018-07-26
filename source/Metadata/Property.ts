@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedRelationshipClass, LazyLoadedSchemaItem } from "../Interfaces";
-import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType, SchemaItemKey } from "../ECObjects";
+import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
 import ECClass, { StructClass } from "./Class";
@@ -13,6 +13,7 @@ import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import { AnyClass } from "../Interfaces";
 import { RelationshipClass } from "..";
+import processCustomAttributes, { CustomAttributeSet } from "./CustomAttribute";
 import Enumeration from "./Enumeration";
 
 /**
@@ -29,6 +30,7 @@ export abstract class Property {
   protected _priority: number = 0;
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
+  protected _customAttributes?: CustomAttributeSet;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     this._class = ecClass as AnyClass;
@@ -57,6 +59,8 @@ export abstract class Property {
   get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
 
   get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
+
+  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   protected getReferencedSchemaItemSync<T extends SchemaItem>(key?: LazyLoadedSchemaItem<T>): T | undefined {
     if (!key)
@@ -152,7 +156,7 @@ export abstract class Property {
             return koq;
       });
     }
-    // TODO CustomAttributes
+    this._customAttributes = processCustomAttributes(jsonObj.customAttributes, this.name, CustomAttributeContainerType.AnyProperty);
   }
 }
 

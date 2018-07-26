@@ -7,9 +7,9 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItemType } from "../ECObjects";
 import { SchemaItemVisitor, LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 import Schema from "./Schema";
-import Format, { MutableFormat } from "../Metadata/Format";
-import Unit from "../Metadata/Unit";
-import InvertedUnit from "../Metadata/InvertedUnit";
+import Format, { MutableFormat } from "./Format";
+import Unit from "./Unit";
+import InvertedUnit from "./InvertedUnit";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
 

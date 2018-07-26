@@ -7,8 +7,8 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItemType, SchemaItemKey } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
-import UnitSystem from "../Metadata/UnitSystem";
-import Phenomenon from "../Metadata/Phenomenon";
+import UnitSystem from "./UnitSystem";
+import Phenomenon from "./Phenomenon";
 import { LazyLoadedUnitSystem, LazyLoadedPhenomenon } from "../Interfaces";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 

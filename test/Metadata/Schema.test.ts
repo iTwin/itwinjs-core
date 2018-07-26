@@ -118,6 +118,107 @@ describe("Schema", () => {
         await testSchema.fromJson(propertyJson);
         assertValidSchema(testSchema);
       });
+      const oneCustomAttributeJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+            ShowClasses: true,
+          },
+        ],
+      };
+      it("async - Deserialize One Custom Attribute", async () => {
+        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        await testSchema.fromJson(oneCustomAttributeJson);
+        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+        assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+      });
+      it("sync - Deserialize One Custom Attribute", () => {
+        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        testSchema.fromJsonSync(oneCustomAttributeJson);
+        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+        assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+      });
+      const twoCustomAttributeJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+          },
+          {
+            className: "ExampleCustomAttributes.ExampleSchema",
+          },
+        ],
+      };
+      it("async - Deserialize Two Custom Attributes", async () => {
+        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        await testSchema.fromJson(twoCustomAttributeJson);
+        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+        expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+      });
+      it("sync - Deserialize Two Custom Attributes",  () => {
+        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        testSchema.fromJsonSync(twoCustomAttributeJson);
+        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+        expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+      });
+      it("sync - Deserialize Two Custom Attributes with additional properties",  () => {
+        const propertyJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          customAttributes: [
+            {
+              className: "CoreCustomAttributes.HiddenSchema",
+              ShowClasses: false,
+            },
+            {
+              className: "ExampleCustomAttributes.ExampleSchema",
+              ShowClasses: true,
+            },
+          ],
+        };
+        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        testSchema.fromJsonSync(propertyJson);
+        assertValidSchema(testSchema);
+        assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === false);
+        assert(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
+      });
+      const mustBeArrayJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "InvalidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        customAttributes:  "CoreCustomAttributes.HiddenSchema",
+      };
+      it("async - Custom Attributes must be an array", async () => {
+        const testSchema = new Schema("InvalidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        await expect(testSchema.fromJson(mustBeArrayJson)).to.be.rejectedWith(ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+
+      });
+      it("sync - Custom Attributes must be an array",  () => {
+        const testSchema = new Schema("InvalidSchema", 1, 2, 3);
+        expect(testSchema).to.exist;
+        assert.throws(() => testSchema.fromJsonSync(mustBeArrayJson), ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+
+      });
     });
 
     async function testInvalidAttribute(schema: Schema, attributeName: string, expectedType: string, value: any) {
