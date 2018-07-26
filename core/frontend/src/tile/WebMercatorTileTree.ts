@@ -74,6 +74,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
+  public yAxisUp: boolean = true;
   public constructor(mercatorToDb: Transform) {
     this.rootTile = new WebMercatorTileProps("0_0_0", mercatorToDb);
     this.location = Transform.createIdentity();
@@ -87,7 +88,6 @@ class WebMercatorTileProps implements TileProps {
   public maximumSize: number;
 
   public childIds: string[];
-  public yAxisUp: boolean = true;
   public hasContents: boolean = true;
   public geometry?: any;
 

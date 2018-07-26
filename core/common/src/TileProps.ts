@@ -39,8 +39,6 @@ export interface TileProps {
   childIds: string[];
   /** Optional scaling factor applied to this tile's maximum size */
   zoomFactor?: number;
-  /** Optional - set to True for Y Axis Up */
-  yAxisUp?: boolean;
   /** WIP: base-64-encoded binary tile geometry data, ArrayBuffer or undefined if no geometry */
   geometry?: any;
 }
@@ -55,5 +53,7 @@ export interface TileTreeProps {
   location: TransformProps;
   /** If defined, limits the number of child tiles which can be skipped in selecting tiles of appropriate LOD */
   maxTilesToSkip?: number;
+  /** Optional - set to True for Y Axis up. By default Z Axis is up. */
+  yAxisUp?: boolean;
   // ###TODO: ViewFlag.Overrides, ClipVector
 }
