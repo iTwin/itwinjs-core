@@ -16,6 +16,7 @@ export const enum RenderPass {
     WorldOverlay,
     ViewOverlay,
     SkyBox,
+    Terrain,
     COUNT,
 }
 

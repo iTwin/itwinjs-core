@@ -192,7 +192,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], [], []];
+  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], [], [], []];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -238,6 +238,13 @@ export class RenderCommands {
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
     scene.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    this._forcedRenderPass = RenderPass.None;
+  }
+
+  /** Add terrain graphics to their own render pass. */
+  public addTerrain(terrain: GraphicList): void {
+    this._forcedRenderPass = RenderPass.Terrain;
+    terrain.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -435,7 +442,7 @@ export class RenderCommands {
     }
 
     this.addGraphics(scene);
-    this.addGraphics(terrain); //  ###TODO: this.addTerrain
+    this.addTerrain(terrain);
 
     if (undefined !== dynamics && 0 < dynamics.list.length) {
       this.addDecorations(dynamics);
