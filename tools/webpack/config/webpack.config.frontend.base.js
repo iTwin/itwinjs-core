@@ -158,6 +158,7 @@ module.exports = (publicPath) => {
             // Inline SVG icons
             {
               test: /\.svg$/,
+              issuer: { exclude: /\.css$/ },
               use: [
                 {
                   loader: require.resolve("svg-sprite-loader"),
