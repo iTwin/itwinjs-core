@@ -2,13 +2,10 @@
   "name": "@bentley/ecjs",
   "version": "0.8.0",
   "description": "ECObjects core concepts in typescript",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index",
-  "repository": {
-    "type": "git",
-    "url": "http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js"
-  },
+  "repository": {},
   "scripts": {
     "clean": "rimraf lib .nyc_output",
     "lint": "tslint --project . 1>&2",
@@ -19,7 +16,7 @@
     "docs": "betools docs --onlyJson --json=./lib/docs/json/ec-js/file.json",
     "docs:dev": "npm run docs && bmsWatch --source ./lib/docs --destination public --typeDocSource C:/dev/imodeljs/ecobjects-js/source",
     "cover": "nyc node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
-    "start": "npm run build && npm run test"
+    "start": "npm run build && npm run test & npm run cover & npm run docs"
   },
   "keywords": [
     "Bentley",
@@ -32,22 +29,22 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^2.5.26",
-    "@bentley/bentleyjs-tools": "^5.1.0",
+    "@bentley/bemetalsmith": "^2.9.0",
+    "@bentley/bentleyjs-tools": "0.98.0-5",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7.1.0",
+    "@types/glob": "^5.0.35",
     "@types/mocha": "^5.2.3",
     "@types/sinon": "^5.0.1",
     "chai-as-promised": "^7.1.1",
     "nyc": "^12.0.2",
     "rimraf": "^2.6.2",
-    "sinon": "^6.0.1",
-    "ts-node": "^3.3.0",
-    "typescript": "^2.9.2",
-    "@types/glob": "^5.0.35"
+    "sinon": "^6.1.4",
+    "ts-node": "^7.0.0",
+    "typescript": "^2.9.2"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^8.6.0"
+    "@bentley/bentleyjs-core": "0.98.0-5"
   },
   "nyc": {
     "include": [
