@@ -13324,6 +13324,11 @@
         "resolve": "1.1.7"
       }
     },
+    "reconnecting-websocket": {
+      "version": "4.0.0-rc5",
+      "resolved": "https://registry.npmjs.org/reconnecting-websocket/-/reconnecting-websocket-4.0.0-rc5.tgz",
+      "integrity": "sha512-ew+Twq9j66vhRtW9mT0xIgkLCQsDpslAideVYuB1JjW4U9wm27XZfA786K6pCKcUFkDWmktL+uI92ITLdn2eOQ=="
+    },
     "recursive-readdir": {
       "version": "2.2.2",
       "resolved": "https://registry.npmjs.org/recursive-readdir/-/recursive-readdir-2.2.2.tgz",

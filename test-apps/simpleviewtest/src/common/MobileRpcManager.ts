@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { RpcRequest, RpcRequestFulfillment, RpcProtocol, RpcProtocolEvent, RpcConfiguration, RpcInterfaceDefinition, SerializedRpcRequest } from "@bentley/imodeljs-common/lib/common";
-
+import ReconnectingWebSocket from "reconnecting-websocket";
 declare var bentley: any;
 
 /** Holds configuration for the RpcInterfaces used by the application. */
@@ -37,7 +37,7 @@ export class MobileRpcManager {
     }
 
     class MobileProtocol extends RpcProtocol {
-      public socket: WebSocket = (undefined as any);
+      public socket: ReconnectingWebSocket = (undefined as any);
       public map: Map<string, MobileRequest> = new Map();
       public pending: string[] = [];
       public readonly requestType = MobileRequest;
@@ -46,7 +46,7 @@ export class MobileRpcManager {
         super(configuration);
 
         if (typeof (WebSocket) !== "undefined") {
-          this.socket = new WebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
+          this.socket = new ReconnectingWebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
 
           this.socket.addEventListener("message", (event) => {
             const response: MobileResponse = JSON.parse(event.data);
