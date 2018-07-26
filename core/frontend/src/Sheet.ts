@@ -85,13 +85,17 @@ export namespace Sheet {
 
     /** Add this border to the given GraphicBuilder. */
     public addToBuilder(builder: GraphicBuilder) {
-      builder.setSymbology(ColorDef.black, ColorDef.black, 2);
+      const lineColor = ColorDef.black;
+      const fillColor = ColorDef.black;
+      builder.setSymbology(lineColor, fillColor, 2);
       builder.addLineString2d(this.rect, 0);
 
       const params = new GraphicParams();
-      params.setFillColor(ColorDef.black);
+      params.setFillColor(fillColor);
       if (Border._wantGradient)
         params.gradient = this.gradient;
+      else
+        params.setLineColor(lineColor);
 
       builder.activateGraphicParams(params);
 

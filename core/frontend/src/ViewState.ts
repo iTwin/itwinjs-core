@@ -1820,7 +1820,7 @@ export class SheetViewState extends ViewState2d {
     const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
     const attachmentViewIds: Id64Array = [];
     for (const attachment of attachments)
-      attachmentViewIds.push(attachment.view.toString());
+      attachmentViewIds.push(attachment.view.id.toString());
 
     // Load each view state corresponding to each attachment in the attachments array
     // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
