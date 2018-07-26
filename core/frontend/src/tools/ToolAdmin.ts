@@ -104,10 +104,17 @@ export class CurrentInputState {
   public get isAltDown() { return 0 !== (this.qualifiers & BeModifierKeys.Alt); }
   public isDragging(button: BeButton) { return this.button[button].isDragging; }
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
-  public setKeyQualifier(qual: BeModifierKeys, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
   public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
   public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
+  private isAnyDragging() { return this.button.some((button) => button.isDragging); }
   private disableIgnoreTouchMotionTest() { this.wantIgnoreTest = false; }
+  private setKeyQualifier(qual: BeModifierKeys, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
+
+  public setKeyQualifiers(ev: MouseEvent | KeyboardEvent): void {
+    this.setKeyQualifier(BeModifierKeys.Shift, ev.shiftKey);
+    this.setKeyQualifier(BeModifierKeys.Control, ev.ctrlKey);
+    this.setKeyQualifier(BeModifierKeys.Alt, ev.altKey);
+  }
 
   public clearTouch() {
     this.numberTouches = 0;
@@ -208,7 +215,6 @@ export class CurrentInputState {
     const uorPt = state.downUorPt;
     const rawPt = state.downRawPt;
     const viewPt = this.viewport!.worldToView(rawPt);
-
     ev.initEvent(uorPt, rawPt, viewPt, this.viewport!, CoordSource.User, this.qualifiers, BeButton.Data, state.isDown, state.isDoubleClick, state.inputSource);
   }
 
@@ -239,14 +245,6 @@ export class CurrentInputState {
   public fromGesture(vp: Viewport, gestureInfo: GestureInfo, applyLocks: boolean) {
     this.disableIgnoreTouchMotionTest();
     this.fromButton(vp, gestureInfo.ptsLocation, InputSource.Touch, applyLocks);
-  }
-
-  private isAnyDragging() {
-    for (const button of this.button)
-      if (button.isDragging)
-        return true;
-
-    return false;
   }
 
   public isStartDrag(button: BeButton): boolean {
@@ -304,13 +302,13 @@ export class CurrentInputState {
   }
 }
 
-/** A tool event combines an HTML Event and a Viewport. */
+/** A ToolEvent combines an HTML Event and a Viewport. It is stored in a queue for processing by the ToolAdmin.eventLoop. */
 interface ToolEvent {
   ev: Event;
-  vp?: Viewport;
+  vp?: Viewport; // Viewport is optional - keyboard events aren't associated with a Viewport.
 }
 
-/** Controls the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
+/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
 export class ToolAdmin {
   public currentInputState = new CurrentInputState();
   public readonly toolState = new ToolState();
@@ -337,20 +335,26 @@ export class ToolAdmin {
   public acsPlaneSnapLock = false;
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
+
   private static _wantEventLoop = false;
-  private static keyEventHandler(ev: KeyboardEvent) { IModelApp.toolAdmin.addEvent(ev); }
+  private static keyEventHandler(ev: Event) { IModelApp.toolAdmin.addEvent(ev); }
+  private static readonly removals: VoidFunction[] = [];
 
   /** @hidden */
   public onInitialized() {
+    if (typeof document === "undefined") // if document isn't defined, we're probably running in a test environment
+      return;
+
     this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
-    if (typeof document !== "undefined") {
-      document.addEventListener("keydown", ToolAdmin.keyEventHandler, true);
-      document.addEventListener("keyup", ToolAdmin.keyEventHandler, true);
-    }
+
+    ["keydown", "keyup"].forEach((type) => {
+      document.addEventListener(type, ToolAdmin.keyEventHandler, true);
+      ToolAdmin.removals.push(() => { document.removeEventListener(type, ToolAdmin.keyEventHandler, true); });
+    });
   }
 
   /** @hidden */
-  public startEventLoop(): void {
+  public startEventLoop() {
     if (!ToolAdmin._wantEventLoop) {
       ToolAdmin._wantEventLoop = true;
       requestAnimationFrame(ToolAdmin.eventLoop);
@@ -358,14 +362,12 @@ export class ToolAdmin {
   }
 
   /** @hidden */
-  public onShutDown(): void {
+  public onShutDown() {
+    this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._wantEventLoop = false;
-    this._idleTool = undefined;
-    if (typeof document !== "undefined") {
-      document.removeEventListener("keydown", ToolAdmin.keyEventHandler, true);
-      document.removeEventListener("keyup", ToolAdmin.keyEventHandler, true);
-    }
+    ToolAdmin.removals.forEach((remove) => remove());
+    ToolAdmin.removals.length = 0;
   }
 
   /** A first-in-first-out queue of ToolEvents. */
@@ -376,27 +378,18 @@ export class ToolAdmin {
     const last = this.toolEvents[this.toolEvents.length - 1];
     if (last.ev.type !== "mousemove" || event.ev.type !== "mousemove") // only mousemove can replace previous
       return false;
-    last.ev = event.ev;
+    last.ev = event.ev; // sequential mouse moves are not important. Replace the previous one with this one.
     last.vp = event.vp;
     return true;
   }
 
-  /** Called from EventListeners of viewport EventControllers. Events are processed in the order they're received in ToolAdmin.eventLoop
+  /** Called from HTML event listeners. Events are processed in the order they're received in ToolAdmin.eventLoop
    * @hidden
    */
   public addEvent(ev: Event, vp?: Viewport): void {
     const event = { ev, vp };
     if (!this.tryReplace(event)) // see if this event replaces the last event in the queue
       this.toolEvents.push(event); // otherwise put it at the end of the queue.
-  }
-
-  private recordKeyboardModifiers(ev: MouseEvent): void {
-    const state = this.currentInputState;
-    state.clearKeyQualifiers();
-    if (ev.shiftKey)
-      state.setKeyQualifier(BeModifierKeys.Shift, true);
-    if (ev.ctrlKey)
-      state.setKeyQualifier(BeModifierKeys.Control, true);
   }
 
   private getMousePosition(event: ToolEvent): Point2d {
@@ -419,14 +412,13 @@ export class ToolAdmin {
     const pos = this.getMousePosition(event);
     const button = this.getMouseButton(ev.button);
 
-    this.recordKeyboardModifiers(ev);
+    this.currentInputState.setKeyQualifiers(ev);
     return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
   }
 
   private async callWheel(event: ToolEvent): Promise<EventHandled> {
     const ev = event.ev as WheelEvent;
-    const vp = event.vp!;
-    this.recordKeyboardModifiers(ev);
+    this.currentInputState.setKeyQualifiers(ev);
 
     if (ev.deltaY === 0)
       return EventHandled.No;
@@ -444,7 +436,7 @@ export class ToolAdmin {
         break;
     }
 
-    return this.onWheel(vp, delta, this.getMousePosition(event));
+    return this.onWheel(event.vp!, delta, this.getMousePosition(event));
   }
 
   /** Process the next event in the event queue, if any. */
@@ -530,7 +522,7 @@ export class ToolAdmin {
   public async getToolTip(hit: HitDetail): Promise<string> { return this.currentTool.getToolTip(hit); }
 
   /**
-   * Event that is raised whenever the active tool changes. This includes both primitive and viewing tools.
+   * Event raised whenever the active tool changes. This includes both primitive and viewing tools.
    * @param newTool The newly activated tool
    */
   public readonly activeToolChanged = new BeEvent<(tool: Tool) => void>();
@@ -608,7 +600,6 @@ export class ToolAdmin {
    */
   private async onTimerEvent(): Promise<void> {
     const tool = this.activeTool;
-
     const current = this.currentInputState;
     if (current.numberTouches !== 0 && !this.touchBridgeMode) {
       const touchMotionStopped = current.hasTouchMotionPaused;
@@ -1012,6 +1003,7 @@ export class ToolAdmin {
       return;
 
     const keyEvent = event.ev as KeyboardEvent;
+    this.currentInputState.setKeyQualifiers(keyEvent);
     const modifierKey = ToolAdmin.getModifierKey(keyEvent);
     if (BeModifierKeys.None !== modifierKey)
       return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
