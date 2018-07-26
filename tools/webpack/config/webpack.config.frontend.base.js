@@ -15,6 +15,12 @@ const plugins = require("../scripts/utils/webpackPlugins");
 const paths = require("./paths");
 const helpers = require("./helpers");
 
+// NEEDSWORK: For now, we need this monkey patch to speed up sass-loader
+const backup = require("sass-loader/lib/normalizeOptions");
+require.cache[require.resolve("sass-loader/lib/normalizeOptions")] = {
+  exports: (a, b, c) => { const opts = backup(a, b, c); delete opts.importer; return opts; }
+};
+
 //======================================================================================================================================
 // This is the BASE configuration.
 // It contains settings which are common to both PRODUCTION and DEVELOPMENT configs.
