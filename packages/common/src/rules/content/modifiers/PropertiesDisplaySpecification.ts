@@ -8,7 +8,11 @@ export interface PropertiesDisplaySpecification {
   /** List of ECProperty names which should be hidden or shown */
   propertyNames: string[];
 
-  /** Controls priority of the specification. Defaults to `1000`. */
+  /**
+   * Controls priority of the specification. Defaults to `1000`.
+   *
+   * @type integer
+   */
   priority?: number;
 
   /** Should property be displayed. Defaults to `true`. */

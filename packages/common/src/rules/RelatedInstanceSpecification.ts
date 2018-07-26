@@ -28,6 +28,8 @@ export interface RelatedInstanceSpecification {
    * instance filter and customization rules.
    *
    * **The value must be unique per-specification!**
+   *
+   * @pattern ^\w[\w\d]*$
    */
   alias: string;
 

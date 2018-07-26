@@ -18,12 +18,16 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
   /**
    * Filter selected nodes by specified schema name. All schemas are
    * accepted if not specified.
+   *
+   * @pattern ^[\w\d]+$
    */
   acceptableSchemaName?: string;
 
   /**
    * Filter selected nodes by specified class names. All classes are
    * accepted if not specified.
+   *
+   * @pattern ^[\w\d]+$
    */
   acceptableClassNames?: string;
 

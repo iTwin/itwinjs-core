@@ -7,10 +7,18 @@
  * Specification for a single ECClass
  */
 export interface SingleSchemaClassSpecification {
-  /** Name of ECSchema */
+  /**
+   * Name of ECSchema
+   *
+   * @pattern ^[\w\d]+$
+   */
   schemaName: string;
 
-  /** Name of ECClass */
+  /**
+   * Name of ECClass
+   *
+   * @pattern ^[\w\d]+$
+   */
   className: string;
 }
 
@@ -19,9 +27,17 @@ export interface SingleSchemaClassSpecification {
  * the same ECSchema.
  */
 export interface MultiSchemaClassesSpecification {
-  /** Name of ECSchema */
+  /**
+   * Name of ECSchema
+   *
+   * @pattern ^[\w\d]+$
+   */
   schemaName: string;
 
-  /** List of ECClass names */
+  /**
+   * List of ECClass names
+   *
+   * @pattern ^[\w\d]+$
+   */
   classNames: string[];
 }

@@ -49,7 +49,12 @@ export interface PropertyEditorMultilineParameters extends PropertyEditorParamet
   /** Used for serializing to JSON. */
   paramsType: PropertyEditorParameterTypes.Multiline;
 
-  /** Number of lines. **Must be positive.** Defaults to `1` */
+  /**
+   * Number of lines. Defaults to `1`.
+   *
+   * @type integer
+   * @minimum 1
+   */
   height?: number;
 }
 
@@ -76,11 +81,13 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
   /** Maximum value that can be set. */
   max: number;
 
-  /** Count of intervals. **Must be non negative.** Defaults to `1`. */
+  /**
+   * Count of intervals. Defaults to `1`.
+   *
+   * @type integer
+   * @minimum 1
+   */
   intervalsCount?: number;
-
-  /** Factor used to produce an integer (`0.1=10`, `0.01=100`, `0.001=1000`). Defaults to `1`. */
-  valueFactor?: number;
 
   /** Is slider vertical. */
   isVertical?: boolean;

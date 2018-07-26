@@ -1,5 +1,5 @@
 {
-  "$schema": "../../../common/lib/ruleset.schema.json",
+  "$schema": "../../../common/Ruleset.schema.json",
   "id": "getFilteredNodePaths",
   "rules": [{
     "ruleType": "RootNodes",

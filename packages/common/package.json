@@ -16,13 +16,16 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src",
-    "clean": "rimraf lib package-deps.json",
+    "build": "tsc -p ./src && npm run ruleset-json-schema",
+    "clean": "rimraf lib package-deps.json Ruleset.schema.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name ecpresentation-common",
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/ecpresentation-common/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
+    "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
+    "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
+    "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
     "test": "node ../../scripts/run-tests.js --testsDir ./tests",
@@ -62,7 +65,8 @@
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
-    "typescript": "^2.8.3"
+    "typescript": "^2.8.3",
+    "typescript-json-schema": "^0.28.0"
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",

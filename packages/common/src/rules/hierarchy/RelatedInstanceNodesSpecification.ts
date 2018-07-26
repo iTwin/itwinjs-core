@@ -51,6 +51,9 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
    * ones will be used to create content.
    *
    * Defaults to `0`.
+   *
+   * @type integer
+   * @minimum 0
    */
   skipRelatedLevel?: number;
 

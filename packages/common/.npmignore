@@ -2,5 +2,6 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!Ruleset.schema.json
 !package.json
 !*.md

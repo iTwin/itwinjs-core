@@ -38,5 +38,5 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
    *
    * **Note:** Only makes sense when not bound to an ECProperty.
    */
-  isEnabled?: string;
+  isEnabled?: string | boolean;
 }

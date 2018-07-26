@@ -10,6 +10,7 @@
 # production
 /out
 /packages/common/lib
+/packages/common/Ruleset.schema.json
 /packages/backend/lib
 /packages/frontend/lib
 /packages/controls/lib

@@ -22,6 +22,8 @@ export interface CalculatedPropertiesSpecification {
    * Priority of the property. Determines the position of this property in UI
    * components - higher priority means the property should be more visible.
    * Defaults to `1000`.
+   *
+   * @type integer
    */
   priority?: number;
 }

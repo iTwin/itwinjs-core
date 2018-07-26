@@ -26,6 +26,8 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
    * - `#0F0F0F`
+   *
+   * @pattern ^(\w+|rgb\(\d{1,3}, *\d{1,3}, *\d{1,3}\)|#[0-9a-fA-F]{6})$
    */
   foreColor?: string;
 
@@ -34,6 +36,8 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
    * - `#0F0F0F`
+   *
+   * @pattern ^(\w+|rgb\(\d{1,3}, *\d{1,3}, *\d{1,3}\)|#[0-9a-fA-F]{6})$
    */
   backColor?: string;
 

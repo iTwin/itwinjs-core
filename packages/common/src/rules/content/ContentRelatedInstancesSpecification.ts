@@ -38,6 +38,9 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
    * Skips defined level of related items and shows next level related items. Defaults to `0`.
    *
    * **Note:** Can't be used together with [[isRecursive]].
+   *
+   * @type integer
+   * @minimum 0
    */
   skipRelatedLevel?: number;
 

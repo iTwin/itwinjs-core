@@ -13,7 +13,11 @@ export interface RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes;
 
-  /** Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`. */
+  /**
+   * Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.
+   *
+   * @type integer
+   */
   priority?: number;
 
   /**
