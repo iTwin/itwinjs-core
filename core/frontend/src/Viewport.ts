@@ -25,8 +25,6 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
 
-// tslint:disable:no-console
-
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
 
@@ -1545,7 +1543,7 @@ export class Viewport {
   public requestScene(_plan: UpdatePlan): void { }
 
   /**
-   * Read selected data about each pixel within a rectangular region of the viewport.
+   * Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
    * @param selector Specifies which aspect(s) of data to read.
    * @returns a Pixel.Buffer object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
@@ -1586,7 +1584,7 @@ export class Viewport {
   }
 
   /**
-   * Find a point on geometry visible in this Viewport within a radius of supplied pick point.
+   * Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * @param pickPoint Point to search about, in world coordinates
    * @param radius Radius, in pixels, of the circular area to search.
    * @param out Optional Point3d to hold the result. If undefined, a new Point3d is returned.

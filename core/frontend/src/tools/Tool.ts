@@ -261,9 +261,9 @@ export class Tool {
   public static toolId = "";
   /** The [I18NNamespace]($i18n) that provides localized strings for this Tool */
   public static namespace: I18NNamespace;
-  protected static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
-  protected static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
-  protected static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
+  private static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
+  private static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
+  private static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
   public constructor(..._args: any[]) { }
 
   private static getLocalizeBase() { return this.namespace.name + ":tools." + this.toolId; }

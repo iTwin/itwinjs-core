@@ -6,17 +6,14 @@
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool, EventHandled } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
-import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
-import { RotMatrix, Transform } from "@bentley/geometry-core";
-import { Range3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Angle } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { GraphicBuilder } from "../rendering";
+import { ToolSettings } from "./ToolAdmin";
 
 export const enum ViewHandleWeight {
   Thin = 1,
@@ -54,17 +51,6 @@ const enum OrientationResult {
 }
 
 const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
-
-/** Settings that may be modified by applications to control behavior of built-in viewing tools. */
-// tslint:disable-next-line:variable-name
-export const ViewToolSettings = {
-  preserveWorldUp: true,
-  walkEnforceZUp: true,
-  walkVelocity: 3.5, // in meters/second
-  walkCameraAngle: Angle.createDegrees(75.6),
-  animationTime: BeDuration.fromMilliseconds(260),
-  wheelZoomRatio: 1.75,
-};
 
 /** An InteractiveTool that manipulates a view. */
 export abstract class ViewTool extends InteractiveTool {
@@ -416,7 +402,7 @@ export abstract class ViewManip extends ViewTool {
       vp.synchWithView(true);
 
       if (restorePrevious)
-        vp.doUndo(ViewToolSettings.animationTime);
+        vp.doUndo(ToolSettings.animationTime);
 
       vp.invalidateDecorations();
     }
@@ -470,7 +456,7 @@ export abstract class ViewManip extends ViewTool {
       return;
     }
 
-    const visiblePoint = vp.pickNearestVisibleGeometry(vp.npcToWorld(NpcCenter), 20.0);
+    const visiblePoint = vp.pickNearestVisibleGeometry(vp.npcToWorld(NpcCenter), ToolSettings.viewToolPickRadius);
     this.setTargetCenterWorld(undefined !== visiblePoint ? visiblePoint : vp.view.getTargetPoint(), false, false);
   }
 
@@ -799,7 +785,7 @@ class ViewPan extends ViewingToolHandle {
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (CoordSource.User === ev.coordsFrom && vp.isCameraOn()) {
-      const visiblePoint = vp.pickNearestVisibleGeometry(this.anchorPt, 20.0);
+      const visiblePoint = vp.pickNearestVisibleGeometry(this.anchorPt, ToolSettings.viewToolPickRadius);
       if (undefined !== visiblePoint) {
         this.anchorPt.setFrom(visiblePoint);
       } else {
@@ -866,7 +852,7 @@ class ViewRotate extends ViewingToolHandle {
     const vp = ev.viewport!;
 
     if (!tool.targetCenterLocked && vp.view.allow3dManipulations()) {
-      const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0);
+      const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, ToolSettings.viewToolPickRadius);
       if (undefined !== visiblePoint)
         tool.setTargetCenterWorld(visiblePoint, false, false);
     }
@@ -928,7 +914,7 @@ class ViewRotate extends ViewingToolHandle {
       const yDelta = (currPt.y - firstPt.y);
 
       // Movement in screen x == rotation about drawing Z (preserve up) or rotation about screen  Y...
-      const xAxis = ViewToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.rotMatrix.getRow(1);
+      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.rotMatrix.getRow(1);
 
       // Movement in screen y == rotation about screen X...
       const yAxis = viewport.rotMatrix.getRow(0);
@@ -1128,7 +1114,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     return elapsedTime;
   }
 
-  public getMaxLinearVelocity() { return ViewToolSettings.walkVelocity; }
+  public getMaxLinearVelocity() { return ToolSettings.walkVelocity; }
   public getMaxAngularVelocity() { return Math.PI / 4; }
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1268,7 +1254,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
       return;
 
     const startFrust = vp.getWorldFrustum();
-    const walkAngle = ViewToolSettings.walkCameraAngle;
+    const walkAngle = ToolSettings.walkCameraAngle;
     if (!tool.lensAngleMatches(walkAngle, Angle.degreesToRadians(10)) || !tool.isZUp()) {
       //  This turns on the camera if its not already on. It also assures the camera is centered. Obviously this is required if
       //  the camera is not on or the lens angle is not what we want. We also want to do it if Z will be
@@ -1277,7 +1263,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
       tool.setCameraLensAngle(walkAngle, tool.lensAngleMatches(walkAngle, Angle.degreesToRadians(45.)));
     }
 
-    if (ViewToolSettings.walkEnforceZUp)
+    if (ToolSettings.walkEnforceZUp)
       this.viewTool.enforceZUp(view.getTargetPoint());
 
     const endFrust = vp.getWorldFrustum();
@@ -1291,10 +1277,6 @@ abstract class ViewNavigate extends ViewingToolHandle {
   }
 
   public onCleanup(): void {
-    //   if (Cesium.defined(this._removeEventListener)) {
-    //     this._removeEventListener();
-    //     this._removeEventListener = undefined;
-    //   }
   }
 
   public firstPoint(ev: BeButtonEvent): boolean {
@@ -1381,9 +1363,9 @@ export class FitViewTool extends ViewTool {
   }
 
   public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
-    if (_ev.viewport) {
+    if (_ev.viewport)
       return this.doFit(_ev.viewport, false, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
-    }
+
     return EventHandled.No;
   }
 
@@ -1833,7 +1815,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     const xDelta = currPt.x - this.startPtView.x;
     const yDelta = currPt.y - this.startPtView.y;
 
-    const xAxis = ViewToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
+    const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
     const yAxis = vp.rotMatrix.getRow(0);
     const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
     const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
@@ -1884,7 +1866,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
 
     this.lastPtView.setFrom(this.startPtView);
     this.startTime = Date.now();
-    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0);
+    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, ToolSettings.viewToolPickRadius);
     if (!visiblePoint)
       return;
 
@@ -1908,7 +1890,7 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (!vp.setupViewFromFrustum(this.frustum))
       return true;
 
-    let zoomCenter = (vp.view.allow3dManipulations() ? vp.pickNearestVisibleGeometry(ev.rawPoint, 20.0) : undefined);
+    let zoomCenter = (vp.view.allow3dManipulations() ? vp.pickNearestVisibleGeometry(ev.rawPoint, ToolSettings.viewToolPickRadius) : undefined);
     if (undefined === zoomCenter)
       zoomCenter = ev.point;
 
@@ -1956,7 +1938,7 @@ export class ViewUndoTool extends ViewTool {
   constructor(vp: Viewport) { super(); this.viewport = vp; }
 
   public onPostInstall() {
-    this.viewport.doUndo(ViewToolSettings.animationTime);
+    this.viewport.doUndo(ToolSettings.animationTime);
     this.exitTool();
   }
 }
@@ -1968,7 +1950,7 @@ export class ViewRedoTool extends ViewTool {
   constructor(vp: Viewport) { super(); this.viewport = vp; }
 
   public onPostInstall() {
-    this.viewport.doRedo(ViewToolSettings.animationTime);
+    this.viewport.doRedo(ToolSettings.animationTime);
     this.exitTool();
   }
 }

@@ -3,16 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, XAndY, Vector3d, Transform, RotMatrix } from "@bentley/geometry-core";
+import { Point3d, Point2d, XAndY, Vector3d, Transform, RotMatrix, Angle, Constant } from "@bentley/geometry-core";
 import { ViewStatus, ViewState3d } from "../ViewState";
 import { Viewport } from "../Viewport";
 import {
   BeModifierKeys, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
   BeCursor, BeWheelEvent, InputSource, InteractiveTool, InputCollector, EventHandled,
 } from "./Tool";
-import { ViewTool, ViewToolSettings } from "./ViewTool";
+import { ViewTool } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
@@ -33,6 +33,41 @@ export const enum CoordinateLockOverrides {
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
+/** Settings that control the behavior of built-in tools. Applications may modify these values. */
+export class ToolSettings {
+  /** Duration of animations of viewing operations. */
+  public static animationTime = BeDuration.fromMilliseconds(260);
+  /** Two clicks must be within this period to be a double click. */
+  public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
+  /** Number of pixels of movement allowed between clicks to still qualify as a double-click.  */
+  public static doubleClickTolerance = 4.0;
+  /** Duration without movement before a no-motion event is generated. */
+  public static noMotionTimeout = BeDuration.fromMilliseconds(50);
+  /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
+  public static preserveWorldUp = true;
+  /** Delay with the mouse down before a drag operation begins. */
+  public static startDragDelay = BeDuration.fromMilliseconds(110);
+  /** Distance in pixels the cursor must move before a drag operation begins. */
+  public static startDragDistance = 15;
+  /** Radius in pixels to search for elements that anchor viewing operations. */
+  public static viewToolPickRadius = 20;
+  /** Camera angle enforced for walk tool. */
+  public static walkCameraAngle = Angle.createDegrees(75.6);
+  /** Whether the walk tool enforces worldZ be aligned with screenY */
+  public static walkEnforceZUp = true;
+  /** Speed, in meters per second, for the walk tool. */
+  public static walkVelocity = 3.5;
+  /** Scale factor applied for wheel events with "per-line" modifier. */
+  public static wheelLineFactor = 40;
+  /** Scale factor applied for wheel events with "per-page" modifier. */
+  public static wheelPageFactor = 120;
+  /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
+  public static wheelZoomBumpDistance = Constant.oneCentimeter;
+  /** Scale factor for zooming with mouse wheel. */
+  public static wheelZoomRatio = 1.75;
+}
+
+/** @hidden */
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.None;
   public locateCircleOn = true;
@@ -40,6 +75,7 @@ export class ToolState {
   public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
 }
 
+/** @hidden */
 export class SuspendedToolState {
   private readonly toolState: ToolState;
   private readonly accuSnapState: AccuSnap.ToolState;
@@ -49,7 +85,7 @@ export class SuspendedToolState {
 
   constructor() {
     const { toolAdmin, viewManager } = IModelApp;
-    toolAdmin.setIncompatibleViewportCursor(true); // Don't save this...
+    toolAdmin.setIncompatibleViewportCursor(true); // Don't save this
     this.toolState = toolAdmin.toolState.clone();
     this.accuSnapState = IModelApp.accuSnap.toolState.clone();
     this.viewCursor = viewManager.cursor;
@@ -63,7 +99,7 @@ export class SuspendedToolState {
       return;
 
     const { toolAdmin, viewManager } = IModelApp;
-    toolAdmin.setIncompatibleViewportCursor(true); // Don't restore this...
+    toolAdmin.setIncompatibleViewportCursor(true); // Don't restore this
     toolAdmin.toolState.setFrom(this.toolState);
     IModelApp.accuSnap.toolState.setFrom(this.accuSnapState);
     viewManager.setViewCursor(this.viewCursor);
@@ -72,6 +108,7 @@ export class SuspendedToolState {
   }
 }
 
+/** @hidden */
 export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
   private _uorPoint: Point3d = new Point3d();
@@ -87,9 +124,6 @@ export class CurrentInputState {
   public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
   public touchMotionTime: number = 0;
   public lastMotion = new Point2d();
-
-  private static doubleClickTimeout = 500;   // half-second
-  private static doubleClickTolerance = 4.0;
 
   public get rawPoint() { return this._rawPoint; }
   public set rawPoint(pt: Point3d) { this._rawPoint.setFrom(pt); }
@@ -129,23 +163,23 @@ export class CurrentInputState {
   }
 
   public get hasMotionStopped(): boolean {
-    const result = this.hasEventInputStopped(this.motionTime, 3 * 16);
+    const result = this.hasEventInputStopped(this.motionTime, ToolSettings.noMotionTimeout);
     if (result.stopped)
       this.motionTime = result.eventTimer;
     return result.stopped;
   }
 
   public get hasTouchMotionPaused(): boolean {
-    const result = this.hasEventInputStopped(this.touchMotionTime, 3 * 16);
+    const result = this.hasEventInputStopped(this.touchMotionTime, ToolSettings.noMotionTimeout);
     if (result.stopped)
       this.touchMotionTime = result.eventTimer;
 
     return result.stopped;
   }
 
-  private hasEventInputStopped(timer: number, eventTimeout: number) {
+  private hasEventInputStopped(timer: number, eventTimeout: BeDuration) {
     let isStopped = false;
-    if (0 !== timer && ((Date.now() - timer) >= eventTimeout)) {
+    if (0 !== timer && ((Date.now() - timer) >= eventTimeout.milliseconds)) {
       isStopped = true;
       timer = 0;
     }
@@ -168,8 +202,8 @@ export class CurrentInputState {
     viewPt.z = center.z;
 
     const now = Date.now();
-    const isDoubleClick = ((now - this.button[button].downTime) < CurrentInputState.doubleClickTimeout)
-      && (viewPt.distance(this.viewPoint) < CurrentInputState.doubleClickTolerance);
+    const isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds)
+      && (viewPt.distance(this.viewPoint) < ToolSettings.doubleClickTolerance);
 
     this.button[button].init(this.uorPoint, this.rawPoint, now, true, isDoubleClick, false, this.inputSource);
     this.lastButton = button;
@@ -190,7 +224,7 @@ export class CurrentInputState {
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (snap) {
         from = snap.isHot() ? CoordSource.ElemSnap : CoordSource.User;
-        uorPt.setFrom(snap.adjustedPoint); // NOTE: Updated by AdjustSnapPoint even when not hot...
+        uorPt.setFrom(snap.adjustedPoint); // NOTE: Updated by AdjustSnapPoint even when not hot
         vp = snap.viewport;
       } else if (IModelApp.tentativePoint.isActive) {
         from = CoordSource.TentativePoint;
@@ -231,7 +265,7 @@ export class CurrentInputState {
   public fromButton(vp: Viewport, pt: XAndY, source: InputSource, applyLocks: boolean) {
     this.fromPoint(vp, pt, source);
 
-    // NOTE: Using the hit point on the element is preferable to ignoring a snap that is not "hot" completely...
+    // NOTE: Using the hit point on the element is preferable to ignoring a snap that is not "hot" completely
     if (TentativeOrAccuSnap.getCurrentSnap(false)) {
       if (applyLocks)
         IModelApp.toolAdmin.adjustSnapPoint();
@@ -248,7 +282,7 @@ export class CurrentInputState {
   }
 
   public isStartDrag(button: BeButton): boolean {
-    // First make sure we aren't already dragging any button...
+    // First make sure we aren't already dragging any button
     if (this.isAnyDragging())
       return false;
 
@@ -256,14 +290,14 @@ export class CurrentInputState {
     if (!state.isDown)
       return false;
 
-    if ((Date.now() - state.downTime) <= (7 * 16))
+    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
       return false;
 
     const viewPt = this.viewport!.worldToView(state.downRawPt);
     const deltaX = Math.abs(this._viewPoint.x - viewPt.x);
     const deltaY = Math.abs(this._viewPoint.y - viewPt.y);
 
-    return ((deltaX + deltaY) > 15);
+    return ((deltaX + deltaY) > ToolSettings.startDragDistance);
   }
 
   public ignoreTouchMotion(numberTouches: number, touches: XAndY[]) {
@@ -275,7 +309,7 @@ export class CurrentInputState {
       return false;
 
     // Treat anything less than 0.05 inches as noise
-    // Note our definition of "inches" may or may not correspond to physical inches as the browser refuses to tell us the PPI of the device...
+    // Note our definition of "inches" may or may not correspond to physical inches as the browser refuses to tell us the PPI of the device
     const pixelLimit = this.viewport!.pixelsFromInches(0.05);
     for (let i = 0; i < numberTouches; i++) {
       const deltaX = Math.abs(touches[i].x - this.touches[i].x);
@@ -425,14 +459,14 @@ export class ToolAdmin {
 
     let delta: number;
     switch (ev.deltaMode) {
-      case ev.DOM_DELTA_PIXEL:
-        delta = -ev.deltaY;
-        break;
       case ev.DOM_DELTA_LINE:
-        delta = -ev.deltaY * 40;
+        delta = -ev.deltaY * ToolSettings.wheelLineFactor; // 40
         break;
-      default:
-        delta = -ev.deltaY * 120;
+      case ev.DOM_DELTA_PAGE:
+        delta = -ev.deltaY * ToolSettings.wheelPageFactor; // 120;
+        break;
+      default: // DOM_DELTA_PIXEL:
+        delta = -ev.deltaY;
         break;
     }
 
@@ -512,7 +546,7 @@ export class ToolAdmin {
   public get activeViewTool(): ViewTool | undefined { return this.viewTool; }
   public get activePrimitiveTool(): PrimitiveTool | undefined { return this.primitiveTool; }
   public get activeTool(): InteractiveTool | undefined {
-    return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives...
+    return this.viewTool ? this.viewTool : (this.inputCollector ? this.inputCollector : this.primitiveTool); // NOTE: Viewing tools suspend input collectors as well as primitives
   }
 
   /** The current tool. May be viewing tool, input collector, primitive tool, or idle tool - in that priority order. */
@@ -649,7 +683,7 @@ export class ToolAdmin {
         tool = undefined;
     }
 
-    // Don't send tool end drag event if it didn't get the start drag event...
+    // Don't send tool end drag event if it didn't get the start drag event
     if (undefined === tool || EventHandled.Yes !== await tool.onModelEndDrag(ev))
       return this.idleTool.onModelEndDrag(ev);
   }
@@ -690,7 +724,7 @@ export class ToolAdmin {
       if (undefined !== tool && isValidLocation)
         tool.receivedDownEvent = true;
 
-      // Pass start drag event to idle tool if active tool doesn't explicitly handle it...
+      // Pass start drag event to idle tool if active tool doesn't explicitly handle it
       if (undefined === tool || !isValidLocation || EventHandled.Yes !== await tool.onModelStartDrag(ev))
         return this.idleTool.onModelStartDrag(ev);
       return;
@@ -706,7 +740,7 @@ export class ToolAdmin {
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
-    // The "I don't want ACS lock" flag can be set by tools to override the default behavior...
+    // The "I don't want ACS lock" flag can be set by tools to override the default behavior
     if (0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.ACS))
       return;
 
@@ -722,7 +756,7 @@ export class ToolAdmin {
     const auxRMatrixRoot = vp.getAuxCoordRotation();
     let auxNormalRoot = auxRMatrixRoot.getRow(2);
 
-    // If ACS xy plane is perpendicular to view and not snapping, project to closest xz or yz plane instead...
+    // If ACS xy plane is perpendicular to view and not snapping, project to closest xz or yz plane instead
     if (auxNormalRoot.isPerpendicularTo(viewZRoot) && !TentativeOrAccuSnap.isHot()) {
       const auxXRoot = auxRMatrixRoot.getRow(0);
       const auxYRoot = auxRMatrixRoot.getRow(1);
@@ -732,7 +766,7 @@ export class ToolAdmin {
   }
 
   public adjustPointToGrid(pointActive: Point3d, vp: Viewport) {
-    // The "I don't want grid lock" flag can be set by tools to override the default behavior...
+    // The "I don't want grid lock" flag can be set by tools to override the default behavior
     if (!this.gridLock || 0 !== (this.toolState.coordLockOvr & CoordinateLockOverrides.Grid))
       return;
     vp.pointToGrid(pointActive);
@@ -740,14 +774,14 @@ export class ToolAdmin {
 
   public adjustPoint(pointActive: Point3d, vp: Viewport, projectToACS: boolean = true, applyLocks: boolean = true): void {
     if (Math.abs(pointActive.z) < 1.0e-7)
-      pointActive.z = 0.0; // remove Z fuzz introduced by active depth when near 0...
+      pointActive.z = 0.0; // remove Z fuzz introduced by active depth when near 0
 
     let handled = false;
 
     if (applyLocks && !(IModelApp.tentativePoint.isActive || IModelApp.accuSnap.isHot()))
       handled = IModelApp.accuDraw.adjustPoint(pointActive, vp, false);
 
-    // NOTE: We don't need to support axis lock, it is worthless if you have AccuDraw...
+    // NOTE: We don't need to support axis lock, it is worthless if you have AccuDraw
     if (!handled && vp.isPointAdjustmentRequired()) {
       if (applyLocks)
         this.adjustPointToGrid(pointActive, vp);
@@ -778,7 +812,7 @@ export class ToolAdmin {
     const point = snap.getPoint().clone();
     const savePt = point.clone();
 
-    if (!isHot) // Want point adjusted to grid for a hit that isn't hot...
+    if (!isHot) // Want point adjusted to grid for a hit that isn't hot
       this.adjustPointToGrid(point, vp);
 
     if (!IModelApp.accuDraw.adjustPoint(point, vp, isHot)) {
@@ -818,11 +852,11 @@ export class ToolAdmin {
           break;
         }
 
-        // Lock tool to target model of this view on first data button...
+        // Lock tool to target model of this view on first data button
         if (tool instanceof PrimitiveTool)
           tool.autoLockTarget();
 
-        // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event...
+        // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
         this.updateDynamics(undefined, true);
         break;
       }
@@ -839,7 +873,7 @@ export class ToolAdmin {
       }
 
       case BeButton.Middle: {
-        // Pass middle button event to idle tool if active tool doesn't explicitly handle it...
+        // Pass middle button event to idle tool if active tool doesn't explicitly handle it
         if (ev.isDown) {
           if (undefined === tool || EventHandled.Yes !== await tool.onMiddleButtonDown(ev))
             await this.idleTool.onMiddleButtonDown(ev);
@@ -1075,7 +1109,7 @@ export class ToolAdmin {
       return;
     let unsuspend = false;
     if (undefined !== this.suspendedByViewTool) {
-      this.suspendedByViewTool.stop(); // Restore state of suspended tool...
+      this.suspendedByViewTool.stop(); // Restore state of suspended tool
       this.suspendedByViewTool = undefined;
       unsuspend = true;
     }
@@ -1145,7 +1179,7 @@ export class ToolAdmin {
     // send message that will clear state specific UI
     this.activeToolChanged.raiseEvent(newTool);
 
-    this.setIncompatibleViewportCursor(true); // Don't restore this...
+    this.setIncompatibleViewportCursor(true); // Don't restore this
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.None;
     this.toolState.locateCircleOn = false;
@@ -1188,7 +1222,7 @@ export class ToolAdmin {
     const ev = new BeButtonEvent();
     this.fillEventFromCursorLocation(ev);
 
-    const hit = IModelApp.accuDraw.isActive() ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active...
+    const hit = IModelApp.accuDraw.isActive() ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn(), hit);
   }
 
@@ -1336,7 +1370,7 @@ export class WheelEventProcessor {
     if (!vp)
       return ViewStatus.InvalidViewport;
 
-    let zoomRatio = ViewToolSettings.wheelZoomRatio;
+    let zoomRatio = ToolSettings.wheelZoomRatio;
     if (zoomRatio < 1)
       zoomRatio = 1;
     if (ev.wheelDelta > 0)
@@ -1349,7 +1383,7 @@ export class WheelEventProcessor {
       isSnapOrPrecision = true;
       target.setFrom(IModelApp.tentativePoint.getPoint());
     } else {
-      // Never use AccuSnap location as initial zoom clears snap causing zoom center to "jump"...
+      // Never use AccuSnap location as initial zoom clears snap causing zoom center to "jump"
       isSnapOrPrecision = CoordSource.Precision === ev.coordsFrom;
       target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
     }
@@ -1365,7 +1399,7 @@ export class WheelEventProcessor {
           vp.worldToNpc(lastEvent.point, newTarget);
           targetNpc.z = newTarget.z;
           lastEventWasValid = true;
-        } else if (undefined !== vp.pickNearestVisibleGeometry(target, 20.0, newTarget)) {
+        } else if (undefined !== vp.pickNearestVisibleGeometry(target, ToolSettings.viewToolPickRadius, newTarget)) {
           vp.worldToNpc(newTarget, newTarget);
           targetNpc.z = newTarget.z;
         } else {
@@ -1382,8 +1416,9 @@ export class WheelEventProcessor {
       const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
       const offset = Vector3d.createStartEnd(oldCameraPos, newCameraPos);
 
-      if (!isSnapOrPrecision && offset.magnitude() < .01) {
-        offset.scaleToLength(1 / 3, offset);
+      // when you're too close to an object, the wheel zoom operation will stop. We set a "bump distance" so you can blast through obstacles.
+      if (!isSnapOrPrecision && offset.magnitude() < ToolSettings.wheelZoomBumpDistance) {
+        offset.scaleToLength(ToolSettings.wheelZoomBumpDistance / 3.0, offset); // move 1/3 of the bump distance, just to get to the other side.
         lastEventWasValid = false;
         target.addInPlace(offset);
       }
