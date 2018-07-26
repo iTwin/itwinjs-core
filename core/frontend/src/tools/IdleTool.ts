@@ -72,9 +72,6 @@ export class IdleTool extends InteractiveTool {
       if (currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
         currTool.updateTargetCenter(); // Change target center to tentative location...
     }
-
-    // NOTE: Need to synch tool dynamics because of updateDynamics call in _ExitViewTool before point was adjusted.
-    IModelApp.toolAdmin.updateDynamics();
   }
 
   public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
@@ -99,7 +96,7 @@ export class IdleTool extends InteractiveTool {
     }
 
     if (viewTool && viewTool.run()) {
-      IModelApp.toolAdmin.currentInputState.buttonDownTool = viewTool;
+      viewTool.receivedDownEvent = true; // Request up events for the viewTool even though the IdleTool got the down event...
       await viewTool.onModelStartDrag(ev);
     }
     return EventHandled.Yes;

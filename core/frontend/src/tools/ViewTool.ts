@@ -18,15 +18,6 @@ import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { GraphicBuilder } from "../rendering";
 
-const scratchFrustum = new Frustum();
-const scratchTransform1 = Transform.createIdentity();
-const scratchTransform2 = Transform.createIdentity();
-const scratchRotMatrix1 = new RotMatrix();
-const scratchPoint3d1 = new Point3d();
-const scratchPoint3d2 = new Point3d();
-const scratchVector3d1 = new Vector3d();
-const scratchVector3d2 = new Vector3d();
-
 export const enum ViewHandleWeight {
   Thin = 1,
   Normal = 2,
@@ -62,22 +53,17 @@ const enum OrientationResult {
   RejectedByController = 3,
 }
 
-const enum NavigateMode {
-  Pan = 0,
-  Look = 1,
-  Travel = 2,
-}
+const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
 
+/** Settings that may be modified by applications to control behavior of built-in viewing tools. */
 // tslint:disable-next-line:variable-name
 export const ViewToolSettings = {
   preserveWorldUp: true,
   walkEnforceZUp: true,
-  viewBallRadius: 0.35, // percent of screen width
-  walkVelocity: 3.5,      // in meters/second
-  walkCameraAngle: Angle.createDegrees(75.6),  // in degrees
+  walkVelocity: 3.5, // in meters/second
+  walkCameraAngle: Angle.createDegrees(75.6),
   animationTime: BeDuration.fromMilliseconds(260),
-  animateZoom: false,
-  pickSize: 13,
+  wheelZoomRatio: 1.75,
 };
 
 /** An InteractiveTool that manipulates a view. */
@@ -98,8 +84,6 @@ export abstract class ViewTool extends InteractiveTool {
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return EventHandled.Yes; }
-
-  public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
 
   /** Do not override. */
   public exitTool(): void { IModelApp.toolAdmin.exitViewTool(); }
@@ -441,7 +425,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public isSameFrustum(): boolean {
-    const frust = this.viewport!.getWorldFrustum(scratchFrustum);
+    const frust = this.viewport!.getWorldFrustum();
     if (this.frustumValid && frust.equals(this.lastFrustum))
       return true;
 
@@ -576,12 +560,12 @@ export abstract class ViewManip extends ViewTool {
     if (!vp)
       return false;
     const testPtView = vp.worldToView(testPt);
-    const frustum = vp.getFrustum(CoordSystem.View, false, scratchFrustum);
+    const frustum = vp.getFrustum(CoordSystem.View, false);
 
-    const screenRange = scratchPoint3d1;
-    screenRange.x = frustum.points[Npc._000].distance(frustum.points[Npc._100]);
-    screenRange.y = frustum.points[Npc._000].distance(frustum.points[Npc._010]);
-    screenRange.z = frustum.points[Npc._000].distance(frustum.points[Npc._001]);
+    const screenRange = Point3d.create(
+      frustum.points[Npc._000].distance(frustum.points[Npc._100]),
+      frustum.points[Npc._000].distance(frustum.points[Npc._010]),
+      frustum.points[Npc._000].distance(frustum.points[Npc._001]));
 
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
@@ -590,7 +574,7 @@ export abstract class ViewManip extends ViewTool {
   public static fitView(viewport: Viewport, doUpdate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
-    const before = viewport.getWorldFrustum(scratchFrustum);
+    const before = viewport.getWorldFrustum();
 
     if (this._useViewAlignedVolume)
       viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
@@ -638,12 +622,12 @@ export abstract class ViewManip extends ViewTool {
 
     const view = vp.view;
     const viewY = view.getYVector();
-    const rotMatrix = RotMatrix.createRotationVectorToVector(viewY, Vector3d.unitZ(), scratchRotMatrix1);
+    const rotMatrix = RotMatrix.createRotationVectorToVector(viewY, Vector3d.unitZ());
     if (!rotMatrix)
       return false;
 
-    const transform = Transform.createFixedPointAndMatrix(pivotPoint, rotMatrix, scratchTransform1);
-    const frust = vp.getWorldFrustum(scratchFrustum);
+    const transform = Transform.createFixedPointAndMatrix(pivotPoint, rotMatrix);
+    const frust = vp.getWorldFrustum();
     frust.multiply(transform);
     vp.setupViewFromFrustum(frust);
     return true;
@@ -911,14 +895,14 @@ class ViewRotate extends ViewingToolHandle {
       ptNpc.setFrom(this.firstPtNpc);
 
     this.lastPtNpc.setFrom(ptNpc);
-    const currentFrustum = viewport.getWorldFrustum(scratchFrustum);
+    const currentFrustum = viewport.getWorldFrustum();
     const frustumChange = !currentFrustum.equals(this.activeFrustum);
     if (frustumChange)
       this.frustum.setFrom(currentFrustum);
     else if (!viewport.setupViewFromFrustum(this.frustum))
       return false;
 
-    const currPt = viewport.npcToView(ptNpc, scratchPoint3d2);
+    const currPt = viewport.npcToView(ptNpc);
     if (frustumChange)
       this.firstPtNpc.setFrom(ptNpc);
 
@@ -993,9 +977,7 @@ class NavigateMotion {
   }
 
   public takeElevator(distance: number): void {
-    const trans = scratchPoint3d1;
-    trans.x = trans.y = 0;
-    trans.z = distance * this.deltaTime;
+    const trans = Point3d.create(0, 0, distance * this.deltaTime);
     Transform.createTranslation(trans, this.transform);
   }
 
@@ -1006,8 +988,8 @@ class NavigateMotion {
     if (0.0 === pitchAngle)
       return 0.0;
 
-    const viewUp = this.getViewUp(scratchVector3d1);
-    const viewDir = this.getViewDirection(scratchVector3d2);
+    const viewUp = this.getViewUp();
+    const viewDir = this.getViewDirection();
     const worldUp = Vector3d.unitZ();
 
     let viewAngle = worldUp.angleTo(viewUp).radians;
@@ -1037,7 +1019,7 @@ class NavigateMotion {
     const vp = this.viewport;
     const view = vp.view as ViewState3d;
     const viewRot = vp.rotMatrix;
-    const invViewRot = viewRot.inverse(scratchRotMatrix1)!;
+    const invViewRot = viewRot.inverse()!;
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
     const pitchMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
     const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(viewRot);
@@ -1081,8 +1063,8 @@ class NavigateMotion {
   }
 
   protected moveAndLook(linearVelocity: Vector3d, angularVelocityX: number, angularVelocityY: number, isConstrainedToXY: boolean): void {
-    const rotateTrans = this.generateRotationTransform(angularVelocityX, angularVelocityY, scratchTransform1);
-    const dollyTrans = this.generateTranslationTransform(linearVelocity, isConstrainedToXY, scratchTransform2);
+    const rotateTrans = this.generateRotationTransform(angularVelocityX, angularVelocityY);
+    const dollyTrans = this.generateTranslationTransform(linearVelocity, isConstrainedToXY);
     this.transform.setMultiplyTransformTransform(rotateTrans, dollyTrans);
   }
 
@@ -1107,7 +1089,7 @@ class NavigateMotion {
       return;
     const angles = YawPitchRollAngles.createFromRotMatrix(this.viewport.rotMatrix)!;
     angles.pitch.setRadians(0); // reset pitch to zero
-    Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toRotMatrix(scratchRotMatrix1), this.transform);
+    Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toRotMatrix(), this.transform);
   }
 }
 
@@ -1211,7 +1193,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     const motion = this.getNavigateMotion(elapsedTime);
     let haveNavigateEvent: boolean = !!motion;
     if (haveNavigateEvent) {
-      const frust = vp.getWorldFrustum(scratchFrustum);
+      const frust = vp.getWorldFrustum();
       frust.multiply(motion!.transform);
       if (!vp.setupViewFromFrustum(frust)) {
         haveNavigateEvent = false;
@@ -1361,7 +1343,7 @@ class ViewWalk extends ViewNavigate {
   public get handleType(): ViewHandleType { return ViewHandleType.ViewWalk; }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
-    const input = this.getInputVector(scratchVector3d1);
+    const input = this.getInputVector();
     if (0 === input.x && 0 === input.y)
       return undefined;
 
@@ -1598,7 +1580,7 @@ export class WindowAreaTool extends ViewTool {
 
     let delta: Vector3d;
     const vp = this.viewport;
-    const startFrust = vp.getWorldFrustum(scratchFrustum);
+    const startFrust = vp.getWorldFrustum();
     vp.viewToWorldArray(corners);
 
     if (vp.view.is3d() && vp.view.isCameraOn()) {
@@ -1672,7 +1654,7 @@ export class ViewGestureTool extends ViewManip {
 
   public doGesture(transform: Transform): boolean {
     const vp = this.viewport!;
-    const frustum = vp.getFrustum(CoordSystem.Npc, false, scratchFrustum);
+    const frustum = vp.getFrustum(CoordSystem.Npc, false);
     frustum.multiply(transform);
     vp.npcToWorldArray(frustum.points);
 
@@ -1818,9 +1800,9 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     let transform = translateTransform.multiplyTransformTransform(rotationTransform);
 
     const zoomRatio = this.computeZoomRatio(info);
-    const scaleTransform = Transform.createScaleAboutPoint(startPt0, zoomRatio, scratchTransform1);
+    const scaleTransform = Transform.createScaleAboutPoint(startPt0, zoomRatio);
 
-    transform = scaleTransform.multiplyTransformTransform(transform, scratchTransform2);
+    transform = scaleTransform.multiplyTransformTransform(transform);
     const frust = this.frustum.transformBy(transform);
 
     vp.setupViewFromFrustum(frust);

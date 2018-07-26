@@ -10,7 +10,7 @@ import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels, FillFlags, GraphicParams } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { BeButtonEvent, CoordSource } from "./tools/Tool";
+import { BeButtonEvent, CoordSource, BeButton } from "./tools/Tool";
 import { SnapMode, SnapDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -769,9 +769,9 @@ export class AccuDraw {
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
 
     // Send both down and up events...
-    IModelApp.toolAdmin.sendDataPoint(ev);
+    IModelApp.toolAdmin.sendButtonEvent(ev);
     ev.isDown = false;
-    IModelApp.toolAdmin.sendDataPoint(ev);
+    IModelApp.toolAdmin.sendButtonEvent(ev);
   }
 
   public clearTentative(): boolean {
@@ -2607,21 +2607,11 @@ export class AccuDraw {
 
   public refreshDecorationsAndDynamics(): void {
     // Make sure AccuDraw updates its decorations...
-    const vp = this.currentView;
-    if (!vp)
-      return;
+    if (undefined !== this.currentView)
+      this.currentView.invalidateDecorations();
 
-    vp.invalidateDecorations();
-
-    // Make sure active tool updates its dynamics. NOTE: Can't just call updateDynamics, need point adjusted for new locks, etc.
-    const tool = IModelApp.toolAdmin.activeTool;
-    if (!tool)
-      return;
-
-    const ev = new BeButtonEvent();
-    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-    IModelApp.toolAdmin.adjustPoint(ev.point, ev.viewport!);
-    IModelApp.toolAdmin.updateDynamics(ev);
+    // Make sure active tool updates its dynamics. NOTE: Need point adjusted for new locks, etc.
+    IModelApp.toolAdmin.updateDynamics(undefined, undefined, true);
   }
 
   public onBeginDynamics(): boolean {
@@ -2690,8 +2680,14 @@ export class AccuDraw {
     return false;
   }
 
-  public onPreDataButton(ev: BeButtonEvent): boolean {
-    if (!this.isEnabled())
+  /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
+   * Should also choose active x or y input field in rectangular mode based on cursor position when
+   * axis isn't locked to support "smart lock".
+   */
+  public onMotion(_ev: BeButtonEvent): void { }
+
+  public onPreButtonEvent(ev: BeButtonEvent): boolean {
+    if (BeButton.Data !== ev.button || !ev.isDown || !this.isEnabled())
       return false;
 
     this.onEventCommon();
@@ -2704,8 +2700,8 @@ export class AccuDraw {
     return false;
   }
 
-  public onPostDataButton(ev: BeButtonEvent): boolean {
-    if (!this.isEnabled())
+  public onPostButtonEvent(ev: BeButtonEvent): boolean {
+    if (BeButton.Data !== ev.button || !ev.isDown || !this.isEnabled())
       return false;
 
     this.onEventCommon();

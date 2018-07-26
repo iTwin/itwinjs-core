@@ -1094,7 +1094,7 @@ class AccuDrawShortcutsTool extends InputCollector {
   private shortcut: AccuDrawTool;
 
   public onPostInstall(): void { super.onPostInstall(); this.shortcut.doManipulationStart(); }
-  public pnCleanup(): void { this.shortcut.doManipulationStop(this.cancel); }
+  public onCleanup(): void { this.shortcut.doManipulationStop(this.cancel); }
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this.shortcut.doManipulation(ev, false)) { this.cancel = false; this.exitTool(); } return EventHandled.No; }
   public async onModelMotion(ev: BeButtonEvent) { this.shortcut.doManipulation(ev, true); }
   public decorate(context: DecorateContext) { this.shortcut.onDecorate(context); }

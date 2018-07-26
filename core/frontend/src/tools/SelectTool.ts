@@ -244,7 +244,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    if (this.manipulator && this.manipulator.onButtonEvent(ev))
+    if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
       return EventHandled.Yes;
     return this.selectByPointsStart(ev) ? EventHandled.Yes : EventHandled.No;
   }
@@ -258,14 +258,15 @@ export class SelectionTool extends PrimitiveTool {
     if (ev.viewport === undefined)
       return EventHandled.No;
 
-    if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return EventHandled.No;
+    if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
+      return EventHandled.Yes;
 
     if (SelectionMethod.Pick !== this.getSelectionMethod()) {
       if (!this.selectByPointsEnd(ev)) { // If line/box selection active, end it...otherwise start it
         if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
           this.iModel.selectionSet.emptyAll();
         this.selectByPointsStart(ev);
+        return EventHandled.Yes;
       }
       return EventHandled.No;
     }
@@ -301,8 +302,8 @@ export class SelectionTool extends PrimitiveTool {
       return EventHandled.No;
     }
 
-    if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return EventHandled.No;
+    if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
+      return EventHandled.Yes;
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : IModelApp.locateManager.currHit;
@@ -329,8 +330,11 @@ export class SelectionTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onSingleTap(ev: BeGestureEvent): boolean {
-    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool send data button down/up events if not handled by manipulator
+  public onSingleTap(_ev: BeGestureEvent): boolean {
+    // ### TODO Touch events...
+    //    if (undefined !== this.manipulator)
+    //      return this.manipulator.onGestureEvent(ev);
+    return false; // Let idle tool send data button down/up events if not handled by manipulator
   }
 
   public onSingleFingerMove(ev: BeGestureEvent): boolean {
@@ -341,7 +345,9 @@ export class SelectionTool extends PrimitiveTool {
     if (0 !== ev.gestureInfo!.previousNumberTouches)
       return false; // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool
 
-    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+    // ### TODO Touch events...
+    //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+    return false;
   }
 
   public onEndGesture(ev: BeGestureEvent): boolean {
@@ -351,7 +357,9 @@ export class SelectionTool extends PrimitiveTool {
     if (this.isSelectByPoints)
       return this.selectByPointsEnd(ev);
 
-    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+    // ### TODO Touch events...
+    //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+    return false;
   }
 
   public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
