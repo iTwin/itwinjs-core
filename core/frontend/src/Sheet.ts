@@ -81,25 +81,20 @@ export namespace Sheet {
       return range;
     }
 
-    private static _wantGradient: boolean = false; // ###TODO not working properly yet...
-
     /** Add this border to the given GraphicBuilder. */
     public addToBuilder(builder: GraphicBuilder) {
       const lineColor = ColorDef.black;
       const fillColor = ColorDef.black;
-      builder.setSymbology(lineColor, fillColor, 2);
-      builder.addLineString2d(this.rect, 0);
 
       const params = new GraphicParams();
       params.setFillColor(fillColor);
-      if (Border._wantGradient)
-        params.gradient = this.gradient;
-      else
-        params.setLineColor(lineColor);
+      params.gradient = this.gradient;
 
       builder.activateGraphicParams(params);
-
       builder.addShape2d(this.shadow, RenderTarget.frustumDepth2d);
+
+      builder.setSymbology(lineColor, fillColor, 2);
+      builder.addLineString2d(this.rect, 0);
     }
   }
 

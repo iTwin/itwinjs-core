@@ -46,6 +46,8 @@ export class PolylineFlags {
     this.type = type;
   }
 
+  public clone(): PolylineFlags { return new PolylineFlags(this.is2d, this.isPlanar, this.isDisjoint, this.type); }
+
   /** Create a PolylineFlags from a serialized numeric representation. */
   public static unpack(value: number): PolylineFlags {
     const isDisjoint = 0 !== (value & 1);
