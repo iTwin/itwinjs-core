@@ -1,4 +1,2 @@
 package.json text eol=lf
 package-lock.json text eol=lf
-browser-approved-packages.json eol=lf
-nonbrowser-approved-packages.json eol=lf
