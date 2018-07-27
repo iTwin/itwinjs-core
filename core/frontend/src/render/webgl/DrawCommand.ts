@@ -436,7 +436,7 @@ export class RenderCommands {
       this._addTranslucentAsOpaque = true;
       // Add the scene graphics.
       this.addGraphics(scene);
-      // TODO: also may want to add pickable decorations.
+      // TODO: also add any pickable decorations.
       this._addTranslucentAsOpaque = false;
       return;
     }
@@ -505,7 +505,7 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes) {
+    if (undefined !== this._frustumPlanes && !batch.range.isNull()) {
       let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
       frustum = frustum.transformBy(this.target.currentTransform, frustum);
       if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {

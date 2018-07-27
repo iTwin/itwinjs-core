@@ -103,7 +103,7 @@ export class HitDetail {
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
-  public isElementHit(): boolean { const id = new Id64(this.sourceId); return (id.isValid() && (0xffffffff !== id.getHigh())); }
+  public get isElementHit(): boolean { return !Id64.isInvalidId(this.sourceId) && !Id64.isTransientId(this.sourceId); }
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
 
@@ -115,6 +115,10 @@ export class HitDetail {
    * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<string> {
+    if (!this.isElementHit) {
+      return Promise.resolve(""); // ###TODO: Ask PickableDecoration to supply tooltip...
+    }
+
     const msg: string[] = await this.viewport.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
     // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
     // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.

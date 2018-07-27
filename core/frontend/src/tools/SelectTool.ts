@@ -273,7 +273,7 @@ export class SelectionTool extends PrimitiveTool {
 
     // NOTE: Non-element hits are only handled by a manipulator that specifically requested them, can be ignored here
     const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
-    if (hit !== undefined && hit.isElementHit()) {
+    if (hit !== undefined && hit.isElementHit) {
       switch (this.getSelectionMode()) {
         case SelectionMode.Replace:
           this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
@@ -373,7 +373,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMode.Replace === mode)
       return true;
 
-    const elementId = (hit.isElementHit() ? hit.sourceId : undefined);
+    const elementId = (hit.isElementHit ? hit.sourceId : undefined);
     if (!elementId)
       return true; // Don't reject transients...
 

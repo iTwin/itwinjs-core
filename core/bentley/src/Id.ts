@@ -203,6 +203,19 @@ export class Id64 {
 
   /** Obtain an Id64 instance with an invalid value. */
   public static invalidId: Id64 = new Id64();
+
+  /** Return whether this is a transient Id64. A transient ID is used to identify non-element entities like pickable decorations. */
+  public get isTransient(): boolean { return Id64.isTransientId(this); }
+
+  /** Return whether the supplied id string is a transient Id64. A transient ID is used to identify non-element entities like pickable decorations. */
+  public static isTransientId(id: Id64String): boolean {
+    // A transient ID is of the format "0xffffffxxxxxxxxxx" where the leading 6 digits indicate an invalid briefcase ID.
+    const str = id.toString();
+    return 18 === str.length && str.startsWith("0xffffff");
+  }
+
+  /** Return true if the supplied id string represents an invalid ID. */
+  public static isInvalidId(id: Id64String): boolean { return "0" === id; }
 }
 
 /**

@@ -244,6 +244,11 @@ describe("IModelConnection (#integration)", () => {
       const id = iModel.transientIds.next;
       expect(id.getLow()).to.equal(i); // auto-incrementing local ID beginning at 1
       expect(id.getHigh()).to.equal(0xffffffff); // illegal briefcase ID
+      expect(Id64.isTransientId(id)).to.be.true;
+      expect(Id64.isTransientId(id.toString())).to.be.true;
     }
+
+    expect(Id64.isTransientId(Id64.invalidId)).to.be.false;
+    expect(Id64.isTransientId("0xffffff6789abcdef")).to.be.false;
   });
 });

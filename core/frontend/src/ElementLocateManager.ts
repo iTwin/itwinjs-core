@@ -233,7 +233,7 @@ export class ElementLocateManager {
 
   public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.isElementHit() && !this.options.allowDecorations) {
+    if (!hit.isElementHit && !this.options.allowDecorations) {
       out.reason = ElementLocateManager.getFailureMessageKey("Transient");
       return true;
     }
