@@ -111,11 +111,11 @@ export class BeButtonEvent {
   public viewport?: Viewport;
   public coordsFrom = CoordSource.User;   // how were the coordinate values in point generated?
   public keyModifiers = BeModifierKeys.None;
-  public isDoubleClick = false;
   public isDown = false;
+  public isDoubleClick = false;
+  public isDragging = false;
   public button = BeButton.Data;
   public inputSource = InputSource.Unknown;
-  public actualInputSource = InputSource.Unknown;
 
   public get isValid(): boolean { return this.viewport !== undefined; }
   public get point() { return this._point; }
@@ -126,18 +126,18 @@ export class BeButtonEvent {
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
   public invalidate() { this.viewport = undefined; }
-  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
+  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, isDragging = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
     this.viewPoint = viewPt;
     this.viewport = vp;
     this.coordsFrom = from;
     this.keyModifiers = keyModifiers;
-    this.isDoubleClick = doubleClick;
     this.isDown = isDown;
+    this.isDoubleClick = doubleClick;
+    this.isDragging = isDragging;
     this.button = button;
     this.inputSource = source;
-    this.actualInputSource = source;
   }
 
   public getDisplayPoint(): Point2d { return new Point2d(this._viewPoint.x, this._viewPoint.y); }
@@ -152,11 +152,11 @@ export class BeButtonEvent {
     this.viewport = src.viewport;
     this.coordsFrom = src.coordsFrom;
     this.keyModifiers = src.keyModifiers;
-    this.isDoubleClick = src.isDoubleClick;
     this.isDown = src.isDown;
+    this.isDoubleClick = src.isDoubleClick;
+    this.isDragging = src.isDragging;
     this.button = src.button;
     this.inputSource = src.inputSource;
-    this.actualInputSource = src.actualInputSource;
   }
   public clone(result?: BeButtonEvent): BeButtonEvent {
     result = result ? result : new BeButtonEvent();
@@ -233,6 +233,24 @@ export class BeGestureEvent extends BeButtonEvent {
     result = result ? result : new BeGestureEvent();
     result.setFrom(this);
     return result;
+  }
+}
+
+/** Specialization of ButtonEvent for touch input. */
+export class BeTouchEvent extends BeButtonEvent {
+  public constructor(public touchInfo: TouchEvent) { super(); }
+  public setFrom(src: BeTouchEvent) {
+    super.setFrom(src);
+    this.touchInfo = src.touchInfo;
+  }
+  public clone(result?: BeTouchEvent): BeTouchEvent {
+    result = result ? result : new BeTouchEvent(this.touchInfo);
+    result.setFrom(this);
+    return result;
+  }
+  public static getTouchPosition(touch: Touch, vp: Viewport): Point2d {
+    const rect = vp.getClientRect();
+    return Point2d.createFrom({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
   }
 }
 
@@ -396,6 +414,16 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
+  /** Invoked when a mouse button is clicked.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
+  //  public async onClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+
+  /** Invoked when a mouse button is double clicked.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
+  //  public async onDoubleClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+
   /** Invoked when the cursor is moving */
   public async onModelMotion(_ev: BeButtonEvent): Promise<void> { }
   /** Invoked when the cursor is not moving */
@@ -442,6 +470,11 @@ export abstract class InteractiveTool extends Tool {
   public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
   public onLongPress(_ev: BeGestureEvent): boolean { return false; }
   public onTouchMotionPaused(): boolean { return false; }
+
+  public async onTouchStart(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
+  public async onTouchEnd(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
+  public async onTouchCancel(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
+  public async onTouchMove(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }

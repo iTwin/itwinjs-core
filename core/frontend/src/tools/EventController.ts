@@ -137,12 +137,10 @@ export class EventController {
     if (element === undefined)
       return;
 
-    this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel"], element, true);
-
-    // this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
-    // this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
-    // this.registerListener("touchmove", element, this.handleTouchMove as EventListener);
-    // this.registerListener("touchcancel", element, this.handleTouchCancel as EventListener);
+    // this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel"], element, true);
+    // this.addDomListeners(["touchstart", "touchend", "touchcancel", "touchmove"], element, false);
+    this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element, true);
+    // this.addDomListeners(["touchstart", "touchend", "touchcancel"], element, false); // Allow mouse events for clicks...
 
     element.oncontextmenu = () => false;
     element.onselectstart = () => false;
