@@ -45,6 +45,8 @@ function findPackageJson(pkgName, parentPath) {
     const parentContainingDir = parentPath.replace(/^(.*node_modules).*$/, "$1");
     searchPaths.push(parentNodeModules, parentContainingDir);
   }
+  // Also search in node_modules/@bentley/imodeljs-backend, since we can't rely on imodeljs-native-platform-api being hoisted in a rush monorepo.
+  searchPaths.push(path.join(paths.appNodeModules, "@bentley", "imodeljs-backend"));
   searchPaths.push(paths.appNodeModules);
 
   try {
@@ -72,6 +74,9 @@ class CopyNativeAddonsPlugin {
   apply(compiler) {
     compiler.hooks.environment.tap("CopyNativeAddonsPlugin", () => {
       const appPackageJson = require(paths.appPackageJson);
+      // NEEDSWORK: We need to special case imodeljs-native-platform-api now that it is not an explicit dependency of most apps.
+      // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
+      const appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native-platform-api"]);
       let packagesToCopy = [];
       
       // Copy any modules excluded from the bundle via the "externals" webpack config option
@@ -86,7 +91,7 @@ class CopyNativeAddonsPlugin {
       const copiedPackages = new Set();
       for (const pkg of packagesToCopy) {
         const pkgName = pathToPackageName(pkg);
-        if (copiedPackages.has(pkgName) || undefined === appPackageJson.dependencies[pkgName])
+        if (copiedPackages.has(pkgName) || !appDependencies.has(pkgName))
           continue;
           
         const packageJsonPath = copyPackage(pkgName);
@@ -201,11 +206,10 @@ class PrettyLicenseWebpackPlugin extends LicenseWebpackPlugin {
       }
 
       if (formattedErrors.length > 0) {
-        console.log();
         console.log(`${chalk.bold.yellow("WARNING:")} ${chalk.yellow("License notices for the following packages could not be found:")}`);
         formattedErrors.sort().forEach((e) => console.log(e));
         console.log(chalk.yellow("Don't worry, this warning will not be treated as an error in CI builds (yet)."));
-        console.log(chalk.yellow("We're still looking for a good way to pull and manage these notices.\n"));
+        console.log(chalk.yellow("We're still looking for a good way to pull and manage these notices."));
       }
     });
   }
@@ -234,11 +238,34 @@ LicenseExtractor.prototype.getLicenseText = function(packageJson, licenseName,  
   return baseGetLicenseText.call(this, packageJson, licenseName,  modulePrefix);
 }
 
+class WatchBackendPlugin {
+  constructor() {
+    this.isFirstRun = 0;
+    this.prevTimestamp = Date.now();
+  }
+
+  apply(compiler) {
+    compiler.hooks.emit.tap("WatchBackendPlugin", compilation => {
+      const newTimestamp = compilation.fileTimestamps.get(paths.appBuiltMainJs);
+      const didBackendChange = this.prevTimestamp < (newTimestamp || -Infinity);
+      if (didBackendChange) {
+        this.prevTimestamp = newTimestamp;
+        compilation.modifyHash(newTimestamp+"");
+        return true;
+      }
+    });
+    compiler.hooks.afterCompile.tap("WatchBackendPlugin", compilation => {
+      compilation.fileDependencies.add(paths.appBuiltMainJs);
+    });
+  }
+}
+
 module.exports = {
   BanFrontendImportsPlugin,
   BanBackendImportsPlugin,
   CopyNativeAddonsPlugin,
   CopyAppAssetsPlugin,
   CopyBentleyStaticResourcesPlugin,
-  PrettyLicenseWebpackPlugin
+  PrettyLicenseWebpackPlugin,
+  WatchBackendPlugin
 };

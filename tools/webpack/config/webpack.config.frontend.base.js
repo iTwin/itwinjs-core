@@ -15,6 +15,15 @@ const plugins = require("../scripts/utils/webpackPlugins");
 const paths = require("./paths");
 const helpers = require("./helpers");
 
+// NEEDSWORK: Normally, sass-loader passes a very expensive custom "importer" function as a node-sass option.
+// That custom importer tries to hook into webpack's module resolution system, but it's just not worth the
+// massive hit to build performance (about 6x slower frontend builds).
+// Instead of forking node-sass, I'm just going to add this monkey patch for now:
+const backup = require("sass-loader/lib/normalizeOptions");
+require.cache[require.resolve("sass-loader/lib/normalizeOptions")] = {
+  exports: (...args) => { const opts = backup(...args); delete opts.importer; return opts; }
+};
+
 //======================================================================================================================================
 // This is the BASE configuration.
 // It contains settings which are common to both PRODUCTION and DEVELOPMENT configs.
@@ -48,27 +57,12 @@ module.exports = (publicPath) => {
         process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
       ),
       // These are the reasonable defaults supported by the Node ecosystem.
-      // We also include JSX as a common component filename extension to support
-      // some tools, although we do not recommend using it, see:
-      // https://github.com/facebookincubator/create-react-app/issues/290
-      // `web` extension prefixes have been added for better support
-      // for React Native Web.
       extensions: [
-        ".web.ts",
         ".ts",
-        ".web.tsx",
         ".tsx",
-        ".web.js",
         ".js",
         ".json",
-        ".web.jsx",
-        ".jsx",
       ],
-      alias: {
-        // Support React Native Web
-        // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
-        "react-native": "react-native-web",
-      },
       plugins: [
         // Prevents users from importing files from outside of src/ (or node_modules/).
         // This often causes confusion because we only process files within src/ with babel.
@@ -116,6 +110,12 @@ module.exports = (publicPath) => {
           // match the requirements. When no loader matches it will fall
           // back to the "file" loader at the end of the loader list.
           oneOf: [
+            // Exclude azure-storage (and related packages).
+            {
+              test: /azure-storage|AzureFileHandler|UrlFileHandler/,
+              include: /@bentley[\\\/]imodeljs-clients/,
+              loader: require.resolve("null-loader"),
+            },
             // "url" loader works just like "file" loader but it also embeds
             // assets smaller than specified size as data URLs to avoid requests.
             {
@@ -143,12 +143,12 @@ module.exports = (publicPath) => {
             // Inline SVG icons
             {
               test: /\.svg$/,
+              issuer: { exclude: /\.css$/ },
               use: [
                 {
                   loader: require.resolve("svg-sprite-loader"),
                   options: {
-                    runtimeGenerator: require.resolve("./generateSvgUrl"),
-                    extract: true,
+                    runtimeCompat: true,
                     spriteFilename: "sprite-[hash:6].svg"
                   },
                 }
@@ -230,7 +230,7 @@ module.exports = (publicPath) => {
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       // For a PRODUCTION build, it is absolutely essential that NODE_ENV was set to production here.
       // Otherwise React will be compiled in the very slow development mode.
-      new webpack.DefinePlugin(env.stringified),
+      new webpack.DefinePlugin(env.frontendStringified),
       // Watcher doesn't work well if you mistype casing in a path so we use
       // a plugin that prints an error when you attempt to do this.
       // See https://github.com/facebookincubator/create-react-app/issues/240

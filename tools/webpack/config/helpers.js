@@ -42,6 +42,7 @@ const _ = require("lodash");
 const merge = require("webpack-merge");
 const uniteRules = require("webpack-merge/lib/join-arrays-smart").uniteRules;
 
+const mergeWdioConfigs = merge;
 const mergeWebpackConfigs = merge({
   customizeArray: (a, b, key) => {
     if (key === "module.rules") {
@@ -58,6 +59,8 @@ const mergeWebpackConfigs = merge({
       });
 
       return [..._.unionWith(a, preAndPostRules, uniteRules.bind(null, {}, key)), oneOfRule];
+    } else if (key === "externals") {
+      return [...b, ...a];
     }
 
     // Fall back to default merging
@@ -90,6 +93,7 @@ module.exports = {
   createDevToolModuleFilename,
   createBentleySourceMapsIncludePaths,
   getCustomizedWebpackConfig,
+  mergeWdioConfigs,
   mergeWebpackConfigs,
   modulesToExcludeFromTests,
 };

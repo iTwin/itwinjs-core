@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 "use strict";
 
-const errorOverlayMiddleware = require("react-error-overlay/middleware");
+const errorOverlayMiddleware = require("react-dev-utils/errorOverlayMiddleware");
 const config = require("./webpack.config.frontend.dev");
 const paths = require("./paths");
 
@@ -83,9 +83,6 @@ module.exports = function(proxy, allowedHost) {
     before(app) {
       // This lets us open files from the runtime error overlay.
       app.use(errorOverlayMiddleware());
-
-      global.webpackDevServer = app;
-      require(paths.appBuiltMainJs);
     },
   };
 };

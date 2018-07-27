@@ -88,7 +88,10 @@ module.exports = (publicPath) => {
         // Don't parse dtrace-provider for `require` calls.
         // It attempts to include (optional) DTrace bindings on MacOS only.
         // According to the bunyan README (https://github.com/trentm/node-bunyan#webpack), we can safely ignore this.
-        /dtrace-provider.js$/
+        /dtrace-provider.js$/,
+        // Don't parse this file in express - it's causing another "the request of a dependency is an expression" error.
+        // As far as I can tell, this attempts to dynamically include an optional templating engine, which we shouldn't need anyway...
+        /express[\\\/]lib[\\\/]view.js$/,
       ],
       strictExportPresence: true,
       rules: [
@@ -140,7 +143,7 @@ module.exports = (publicPath) => {
       new plugins.CopyNativeAddonsPlugin(),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
-      new webpack.DefinePlugin(env.stringified),
+      new webpack.DefinePlugin(env.backendStringified),
       new webpack.DefinePlugin({ "global.GENTLY": false }),
       // Watcher doesn't work well if you mistype casing in a path so we use
       // a plugin that prints an error when you attempt to do this.
@@ -149,4 +152,3 @@ module.exports = (publicPath) => {
     ]
   };
 };
-  

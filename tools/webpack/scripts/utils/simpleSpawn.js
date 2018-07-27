@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 const spawn = require("react-dev-utils/crossSpawn");
 const chalk = require("chalk");
+var kill = require('tree-kill');
 
 function simpleSpawn(cmd, args, cwd, env) {
   if (!cwd)
@@ -16,8 +17,8 @@ function simpleSpawn(cmd, args, cwd, env) {
     });
 
     child.stdout.on("data", (data) => {
-        process.stdout.write(data);
-      })
+      process.stdout.write(data);
+    })
     child.stderr.on("data", (data) => {
       process.stderr.write(data);
     })
@@ -28,20 +29,17 @@ function simpleSpawn(cmd, args, cwd, env) {
 }
 
 simpleSpawn.children = [];
-simpleSpawn.killAll = function() {
+simpleSpawn.killAll = async function() {
+  const promises = [];
   simpleSpawn.children.forEach((proc) => {
-    proc.stdin.end();
+    promises.push(new Promise((resolve) => {
+      kill(proc.pid, undefined, resolve);
+    }));
   });
+  await Promise.all(promises);
 }
 
 function handleInterrupts(callback) {
-  if (!callback) {
-    callback = () => {
-      simpleSpawn.killAll();
-      process.exit();
-    };
-  }
-
   if (process.platform === "win32") {
     require("readline")
       .createInterface({
@@ -57,8 +55,11 @@ function handleInterrupts(callback) {
   }
 
   ["SIGINT", "SIGTERM"].forEach(function(sig) {
-    process.on(sig, function() {
-      callback();
+    process.on(sig, async function() {
+      if (callback)
+        callback();
+      await simpleSpawn.killAll();
+      process.exit();
     });
   });
 }

@@ -9,6 +9,7 @@ const webpack = require("webpack");
 const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeModulesPlugin");
 const paths = require("./paths");
 const helpers = require("./helpers");
+const plugins = require("../scripts/utils/webpackPlugins");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -109,6 +110,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
     // makes the discovery automatic so you don't have to restart.
     // See https://github.com/facebookincubator/create-react-app/issues/186
     // FIXME: new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+    new plugins.WatchBackendPlugin(),
   ],
   // Turn off performance hints during development because we don't do any
   // splitting or minification in interest of speed. These warnings become

@@ -8,17 +8,22 @@ const chalk = require("chalk");
 exports.command = "build <target>";
 exports.describe = chalk.bold("Runs a production build.");
 exports.builder = (yargs) =>
-  yargs.positional("target", {
+  yargs.strict(true)
+  .positional("target", {
     choices: ["electron", "web"],
     describe: `The target environment.`,
     type: "string"
   })
   .options({
-    "only": {
-      type: "string",
-      alias: "o",
-      choices: ["frontend", "backend"],
-      describe: "only build a particular bundle"
+    "frontend": {
+      alias: "F",
+      describe: "Only build the FRONTEND bundle",
+      conflicts: "backend"
+    },
+    "backend": {
+      alias: "B",
+      describe: "Only build the BACKEND bundle",
+      conflicts: "frontend"
     },
   });
 
@@ -39,24 +44,15 @@ exports.handler = async (argv) => {
   const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
   const printHostingInstructions = require("react-dev-utils/printHostingInstructions");
   const { measureFileSizesBeforeBuild, printFileSizesAfterBuild } = require("react-dev-utils/FileSizeReporter");
-  const { buildFrontend, buildBackend, saveJsonStats } = require("./utils/buildBackend");
+  const { buildFrontend, buildBackend, saveJsonStats } = require("./utils/webpackWrappers");
 
   const paths = require("../config/paths");
   const frontendConfig = require("../config/webpack.config.frontend.prod");
   const backendConfig = require("../config/webpack.config.backend.prod");
   const statDumpPromises = [];
 
-  const skipBackend = (argv.only === "frontend");
-  const skipFrontend = (argv.only === "backend");
-
-  async function runBuild(name, callback) {
-    const startTime = Date.now();
-    console.log(`${chalk.inverse(" " + name + " ")} Starting build...`);
-    await callback();  
-    const elapsed = Date.now() - startTime;
-    console.log(`${chalk.inverse(" " + name + " ")} Build completed successfully in ${chalk.green(elapsed.toLocaleString() + " ms")}`);
-    console.log();
-  }
+  const skipBackend = Boolean(argv.frontend);
+  const skipFrontend = Boolean(argv.backend);
 
   async function prepFrontendBuild() {
     if (skipFrontend)
@@ -89,41 +85,39 @@ exports.handler = async (argv) => {
   
   // Start the webpack backend build
   if (!skipBackend) {
-    await runBuild("BACKEND", async () => {
-      const stats = await buildBackend(backendConfig);
-      statDumpPromises.push(saveJsonStats(stats, paths.appBackendStats));
-    });
+    const stats = await buildBackend(backendConfig);
+    statDumpPromises.push(saveJsonStats(stats, paths.appBackendStats));
   }
 
   // _Now_ we need those previousFileSizes ready.
   const previousFileSizes = await prepFrontendPromise;
+  console.groupEnd();
+  console.log();
 
   // Now, start the webpack frontend build
   if (!skipFrontend) {
-    await runBuild("FRONTEND", async () => {
-      console.log(chalk.dim("\nCreating an optimized production build..."));
-      const stats = await buildFrontend(frontendConfig);
-      statDumpPromises.push(saveJsonStats(stats, paths.appFrontendStats));
+    const stats = await buildFrontend(frontendConfig);
+    statDumpPromises.push(saveJsonStats(stats, paths.appFrontendStats));
+    
+    // These sizes are pretty large. We'll warn for bundles exceeding them.
+    const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
+    const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024;
+    
+    console.groupEnd();
+    console.log("\nFile sizes after gzip:\n");
+    printFileSizesAfterBuild(
+      stats,
+      previousFileSizes,
+      paths.appLibPublic,
+      WARN_AFTER_BUNDLE_GZIP_SIZE,
+      WARN_AFTER_CHUNK_GZIP_SIZE
+    );
+    console.log();
 
-      // These sizes are pretty large. We'll warn for bundles exceeding them.
-      const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
-      const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024;
-
-      console.log("File sizes after gzip:\n");
-      printFileSizesAfterBuild(
-        stats,
-        previousFileSizes,
-        paths.appLibPublic,
-        WARN_AFTER_BUNDLE_GZIP_SIZE,
-        WARN_AFTER_CHUNK_GZIP_SIZE
-      );
-      console.log();
-
-      if (buildTarget === "web") {
-        console.log(`The project's web frontend was built assuming it is located at ${chalk.green(frontendConfig.output.publicPath)}.`);
-        console.log(`This can be configured via the ${chalk.green("homepage")} field of your ${chalk.cyan("package.json")}.` + "\n");
-      }
-    });
+    if (buildTarget === "web") {
+      console.log(`The project's web frontend was built assuming it is located at ${chalk.green(frontendConfig.output.publicPath)}.`);
+      console.log(`This can be configured via the ${chalk.green("homepage")} field of your ${chalk.cyan("package.json")}.` + "\n");
+    }
   }
 
   if (buildTarget === "web") {
@@ -145,4 +139,6 @@ exports.handler = async (argv) => {
     console.log(`   ${chalk.bold("Webpack Analyse:")} ${chalk.underline(chalk.cyan("http://webpack.github.io/analyse/"))}`);
     console.log(`   ${chalk.bold("Webpack Visualizer:")} ${chalk.underline(chalk.cyan("https://chrisbateman.github.io/webpack-visualizer/"))}`);
   }
+
+  process.exit();
 };

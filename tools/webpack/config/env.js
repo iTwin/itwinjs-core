@@ -80,15 +80,26 @@ function getClientEnvironment(publicUrl) {
         PUBLIC_URL: publicUrl,
       }
     );
-  // Stringify all values so we can feed into Webpack DefinePlugin
-  const stringified = {
+
+  // Stringify all values so we can feed into Webpack DefinePlugin for frontend builds
+  const frontendStringified = {
     "process.env": Object.keys(raw).reduce((env, key) => {
       env[key] = JSON.stringify(raw[key]);
       return env;
     }, {}),
   };
+  
+  // On the backend, we still want to use Webpack DefinePlugin to make these 
+  // compile-time environment variables available (and fixed), but we *also*
+  //  want to preserve other run-time environment variables.
+  // So we'll use Webpack DefinePlugin to rewrite specific values (i.e., `process.env.NODE_ENV` ===> `"development"`)
+  // ***but not*** other instances of `process.env`.
+  const backendStringified = Object.keys(raw).reduce((env, key) => {
+    env[`process.env.${key}`] = JSON.stringify(raw[key]);
+    return env;
+  }, {});
 
-  return { raw, stringified };
+  return { raw, frontendStringified, backendStringified };
 }
 
 module.exports = getClientEnvironment;
