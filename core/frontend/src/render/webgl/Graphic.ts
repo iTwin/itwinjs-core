@@ -45,8 +45,8 @@ class OvrUniform {
     // NB: To be consistent with the lookup table approach for non-uniform feature tables and share shader code, we pass
     // the override data as two RGBA values - hence all the conversions to floating point range [0.0..1.0]
     const kvp = map.getArray()[0];
-    const isFlashed = flashedElemId.isValid && kvp.value.elementId.value === flashedElemId.value;
-    const isHilited = hilites.has(kvp.value.elementId.value);
+    const isFlashed = flashedElemId.isValid && kvp.value.elementId === flashedElemId.value;
+    const isHilited = hilites.has(kvp.value.elementId);
 
     if (undefined === ovrs) {
       // We only need to update the 'flashed' and 'hilited' flags
@@ -171,7 +171,7 @@ class OvrNonUniform {
       }
 
       let flags = OvrFlags.None;
-      if (hilites.has(feature.elementId.value)) {
+      if (hilites.has(feature.elementId)) {
         flags |= OvrFlags.Hilited;
         this.anyHilited = true;
       }
@@ -211,7 +211,7 @@ class OvrNonUniform {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (flashedElemId.isValid && feature.elementId.value === flashedElemId.value)
+      if (flashedElemId.isValid && feature.elementId === flashedElemId.value)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);
@@ -239,8 +239,8 @@ class OvrNonUniform {
         continue;
       }
 
-      const isFlashed = feature.elementId.value === flashedElemId.value;
-      const isHilited = hilites.has(feature.elementId.value);
+      const isFlashed = feature.elementId === flashedElemId.value;
+      const isHilited = hilites.has(feature.elementId);
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
@@ -390,7 +390,7 @@ function createNonUniformPickTable(features: FeatureTable): NonUniformPickTable 
   const bytes = new Uint8Array(dims.width * dims.height * 4);
   const ids = new Uint32Array(bytes.buffer);
   for (const entry of features.getArray()) {
-    const elemId = entry.value.elementId;
+    const elemId = new Id64(entry.value.elementId);
     const index = entry.index;
     ids[index * 2] = elemId.getLowUint32();
     ids[index * 2 + 1] = elemId.getHighUint32();
@@ -403,7 +403,7 @@ function createPickTable(features: FeatureTable): PickTable {
   if (!features.anyDefined)
     return {};
   else if (features.isUniform)
-    return { uniform: createUniformPickTable(features.uniform!.elementId) };
+    return { uniform: createUniformPickTable(new Id64(features.uniform!.elementId)) };
   else
     return { nonUniform: createNonUniformPickTable(features) };
 }
