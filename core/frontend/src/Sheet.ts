@@ -5,11 +5,11 @@
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
-import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, TileProps, RenderTexture, ImageBuffer } from "@bentley/imodeljs-common";
+import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, RenderTexture, ImageBuffer } from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
-import { TileTree, Tile, TileLoader, MissingNodes, TileRequests } from "./tile/TileTree";
+import { TileTree, Tile, TileRequests, IModelTileLoader } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { RenderTarget, GraphicList, RenderGraphic, RenderPlan } from "./render/System";
@@ -96,7 +96,6 @@ export class SheetBorder {
     builder.setSymbology(lineColor, fillColor, 2);
     builder.addLineString2d(this.rect, 0);
   }
-}
 }
 
 /** Contains functionality specific to view attachments. */
@@ -204,8 +203,9 @@ export namespace Attachments {
 
   const QUERY_SHEET_TILE_PIXELS: number = 512;
 
-  /** @hidden - Internal null tile loader used to satisfy parameter requirements when instantiating subclasses of Tile. */
-  class NullTileLoader extends TileLoader {
+  /** @hidden - Internal 'near null' tile loader used to satisfy parameter requirements when instantiating subclasses of Tile. */
+  /*
+  class AttachmentTileLoader extends TileLoader {
     public async getTileProps(_ids: string[]): Promise<TileProps[]> {
       return Promise.resolve([]);
     }
@@ -213,16 +213,16 @@ export namespace Attachments {
       return Promise.resolve();
     }
     public getMaxDepth(): number {
-      return 1;
+      return 362;
     }
     public tileRequiresLoading(_params: Tile.Params): boolean {
-      return false;
+      return true;  // always true... otherwise our root tiles may get skipped
     }
     public loadGraphics(_tile: Tile, _geometry: any): void {
       assert(false);
     }
   }
-
+*/
   /** An extension of Tile specific to rendering 2d attachments. */
   export class Tile2d extends Tile {
     public constructor(root: Tree2d, range: ElementAlignedBox2d) {
@@ -232,7 +232,7 @@ export namespace Attachments {
         new ElementAlignedBox3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
         512,  // does not matter... have no children
         [],
-      ), new NullTileLoader());
+      ), new IModelTileLoader(root.view.iModel, new Id64()));
     }
 
     // override
@@ -270,7 +270,7 @@ export namespace Attachments {
         [],
         undefined,
         parent,
-      ), new NullTileLoader());
+      ), new IModelTileLoader(root.sheetView.iModel, new Id64()));
 
       this._placement = placement;
       const tree = this.rootAsTree3d;
@@ -527,12 +527,17 @@ export namespace Attachments {
           childIds: [],
         },
         model,
-        new NullTileLoader(),
+        new IModelTileLoader(model.iModel, new Id64()),
         Transform.createIdentity(),
         undefined,
         undefined,    // ClipVector build in child class constructors
       ));
     }
+
+    // override (don't depend on viewed model)
+    public get is2d(): boolean { return true; }
+    // override (don't depend on viewed model)
+    public get is3d(): boolean { return false; }
   }
 
   /** An extension of TileTree specific to rendering 2d attachments. */
@@ -604,9 +609,9 @@ export namespace Attachments {
       if (!viewedModel)
         return State.Empty;
 
-      const tileTree = viewedModel.getOrLoadTileTree();
-      if (tileTree !== undefined)
-        attachment.tree = new Tree2d(viewedModel, attachment, view, tileTree);
+      viewedModel.getOrLoadTileTree();
+      if (viewedModel.tileTree !== undefined)
+        attachment.tree = new Tree2d(viewedModel, attachment, view, viewedModel.tileTree);
 
       if (viewedModel.loadStatus === TileTree.LoadStatus.Loaded)
         return State.Ready;
@@ -682,6 +687,9 @@ export namespace Attachments {
 
       this._rootTile = new Tile3d(this, undefined, Tile3dPlacement.Root);
       (this._rootTile as Tile3d).createPolyfaces(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)
+
+      this.location.setFrom(this.viewport.toParent.clone());
+      this.expirationTime = BeDuration.fromSeconds(15);
     }
 
     public static create(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext): Tree3d {
@@ -840,7 +848,7 @@ export namespace Attachments {
   /** A 2d sheet view attachment. */
   export class Attachment2d extends Attachment {
     /** The status of whether or not this attachment's tile tree is still attempting to load any tiles, forcing the SheetViewState to continue creating the scene. */
-    private _loadStatus: State = State.NotLoaded;
+    private _status: State = State.NotLoaded;
 
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
@@ -848,12 +856,11 @@ export namespace Attachments {
 
     public get is2d(): boolean { return true; }
     public get is3d(): boolean { return false; }
-    public get state(): State { return this._loadStatus; }
+    public get state(): State { return this._status; }
 
     public load(_sheetView: SheetViewState, _sceneContext: SceneContext) {
-      if (this._loadStatus === State.Ready)
-        return;
-      this._loadStatus = Tree2d.create(this);
+      if (this.tree === undefined)
+        this._status = Tree2d.create(this);
     }
   }
 
@@ -901,8 +908,16 @@ export namespace Attachments {
 
     /** The number of attachments in this list. */
     public get length(): number { return this.list.length; }
-    /** Returns true if all of the 2d attachments in the list have tile trees that are fully loaded. */
-    public get all2dAttachmentTilesLoaded(): boolean { return this._all2dReady; }
+
+    /** Returns true if all of the 2d attachments in the list have tile trees that are fully loaded, and all 3d attachments have tile trees that are atleast not undefined. */
+    public get allLoaded(): boolean {
+      if (!this._all2dReady)
+        return false;
+      for (const attachment of this.list)
+        if (attachment.tree === undefined)
+          return false;
+      return true;
+    }
 
     /** Given a view id, return an attachment containing that view from the list. If no attachment in the list stores that view, returns undefined. */
     public findByViewId(viewId: Id64): Attachment | undefined {
@@ -919,7 +934,8 @@ export namespace Attachments {
 
     /** Add an attachment to this list of attachments. */
     public add(attachment: Attachment) {
-      this._all2dReady = this._all2dReady && (attachment.state === State.Ready);
+      if (attachment.is2d)
+        this._all2dReady = this._all2dReady && (attachment.state === State.Ready);
       this.list.push(attachment);
     }
 
@@ -947,8 +963,6 @@ export namespace Attachments {
       assert(idx < this.length);
 
       const attachment = this.list[idx];
-      if (attachment.state === State.Ready)
-        return State.Ready;
 
       // Load each attachment and clean out any attachments that failed to load
       attachment.load(sheetView, sceneContext);

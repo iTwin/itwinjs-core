@@ -1862,7 +1862,7 @@ export class SheetViewState extends ViewState2d {
 
   /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.all2dAttachmentTilesLoaded || !this.all3dAttachmentTilesLoaded)
+    if (!this._attachments.allLoaded || !this.all3dAttachmentTilesLoaded)
       _viewport.sync.invalidateScene();
   }
 
@@ -1873,7 +1873,7 @@ export class SheetViewState extends ViewState2d {
 
     super.createScene(context);
 
-    if (!this._attachments.all2dAttachmentTilesLoaded) {
+    if (!this._attachments.allLoaded) {
       let i = 0;
       while (i < this._attachments.length) {
         const attachmentState = this._attachments.load(i, this, context);
@@ -1893,7 +1893,8 @@ export class SheetViewState extends ViewState2d {
     // Draw all attachments that have a status of ready
     for (const attachment of this._attachments.list)
       if (attachment.state === Attachments.State.Ready) {
-        assert(attachment.tree !== undefined);
+        if (attachment.is2d)
+          assert(attachment.tree !== undefined);  // 2d attachments must have fully-loaded tile tree before being drawn
         attachment.tree!.drawScene(context);
       }
   }

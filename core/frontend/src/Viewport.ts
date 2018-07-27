@@ -705,8 +705,8 @@ export class Viewport {
     const viewRect = this.viewRect;
     corners.high.x = viewRect.right;
     corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
-    corners.low.x = 0;
-    corners.high.y = 0;
+    corners.low.x = viewRect.left;
+    corners.high.y = viewRect.top;
     corners.low.z = -32767;
     corners.high.z = 32767;
     return corners;
@@ -1635,8 +1635,10 @@ export class Viewport {
 
 export class OffScreenViewport extends Viewport {
   public constructor(viewState: ViewState) {
-    super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect()));
+    super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
   }
+
+  public get viewRect(): ViewRect { return this.target.viewRect; }
 
   public setRect(rect: ViewRect, temporary: boolean = false) {
     this.target.setViewRect(rect, temporary);
