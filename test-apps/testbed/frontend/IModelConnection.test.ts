@@ -167,9 +167,9 @@ describe("IModelConnection (#integration)", () => {
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
     const expectedId = new Id64(expectedRow.id);
-    assert.isTrue(expectedId.isValid());
+    assert.isTrue(expectedId.isValid);
     const expectedModel: NavigationValue = expectedRow.model;
-    assert.isTrue(new Id64(expectedModel.id).isValid());
+    assert.isTrue(new Id64(expectedModel.id).isValid);
     const expectedLastMod: ECSqlTypedString = { type: ECSqlStringType.DateTime, value: expectedRow.lastMod };
     const expectedFedGuid: ECSqlTypedString | undefined = expectedRow.federationGuid !== undefined ? { type: ECSqlStringType.Guid, value: expectedRow.federationGuid } : undefined;
     const expectedOrigin: XYAndZ = expectedRow.origin;

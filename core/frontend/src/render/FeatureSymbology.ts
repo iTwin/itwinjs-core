@@ -153,7 +153,7 @@ export namespace FeatureSymbology {
       const { elementId, subCategoryId, geometryClass } = feature;
       let elemApp, alwaysDrawn = false;
 
-      if (elementId.isValid()) {
+      if (elementId.isValid) {
         if (this.isNeverDrawn(elementId))
           return undefined;
 
@@ -167,7 +167,7 @@ export namespace FeatureSymbology {
           app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
       }
 
-      if (subCategoryId.isValid()) {
+      if (subCategoryId.isValid) {
         if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
           return undefined;
 
@@ -199,7 +199,7 @@ export namespace FeatureSymbology {
       // TFS#808986: Navigator puts some elements into both the 'never' and 'always' lists which is weird but
       // the docs for ViewController::GetNeverDrawn() assert that in that case the 'never' list wins.
       const { elementId, subCategoryId, geometryClass } = feature;
-      const isValidElemId = elementId.isValid();
+      const isValidElemId = elementId.isValid;
 
       if (isValidElemId && this.isNeverDrawn(elementId))
         return false;

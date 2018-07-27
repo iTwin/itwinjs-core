@@ -160,7 +160,7 @@ export class SelectionTool extends PrimitiveTool {
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
             continue; // no geometry at this location...
           if (undefined !== outline && !offset.containsPoint(testPoint))
             outline.add(pixel.elementId.toString());
@@ -178,7 +178,7 @@ export class SelectionTool extends PrimitiveTool {
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
             continue; // no geometry at this location...
           const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
           pts[0].interpolate(fraction, pts[1], closePoint);

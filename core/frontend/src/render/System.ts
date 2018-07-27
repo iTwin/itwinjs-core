@@ -454,7 +454,7 @@ export abstract class RenderSystem implements IDisposable {
    * @returns A RenderGraphic suitable for adding to a DecorateContext.
    */
   public createPickableDecoration(graphic: RenderGraphic, id: Id64, range?: ElementAlignedBox3d): RenderGraphic {
-    if (!id.isValid()) {
+    if (!id.isValid) {
       assert(false, "Pickable decoration requires an ID");
       return graphic;
     }

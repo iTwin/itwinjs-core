@@ -56,8 +56,8 @@ export abstract class Element extends Entity implements ElementProps {
   /** Add this Element's properties to an object for serializing to JSON. */
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (this.id.isValid()) val.id = this.id;
-    if (this.code.spec.isValid()) val.code = this.code;
+    if (this.id.isValid) val.id = this.id;
+    if (this.code.spec.isValid) val.code = this.code;
     val.model = this.model;
     if (this.parent) val.parent = this.parent;
     if (this.federationGuid) val.federationGuid = this.federationGuid;

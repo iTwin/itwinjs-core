@@ -1315,7 +1315,7 @@ export class GeometryParams {
   public gradient?: Gradient.Symb; // gradient fill settings.
   public pattern?: AreaPattern.Params; // area pattern settings.
 
-  constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid()) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
+  constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
 
   public clone(): GeometryParams {
     const retVal = new GeometryParams(this.categoryId, this.subCategoryId);
@@ -1511,7 +1511,7 @@ export class Feature implements Comparable<Feature> {
     this.geometryClass = geometryClass;
   }
 
-  public get isDefined(): boolean { return this.elementId.isValid() || this.subCategoryId.isValid() || this.geometryClass !== GeometryClass.Primary; }
+  public get isDefined(): boolean { return this.elementId.isValid || this.subCategoryId.isValid || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
 
   public equals(other: Feature): boolean { return 0 === this.compare(other); }

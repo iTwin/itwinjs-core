@@ -211,7 +211,7 @@ class OvrNonUniform {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (flashedElemId.isValid() && feature.elementId.value === flashedElemId.value)
+      if (flashedElemId.isValid && feature.elementId.value === flashedElemId.value)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);

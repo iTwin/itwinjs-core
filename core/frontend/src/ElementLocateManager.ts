@@ -157,7 +157,7 @@ export class ElementPicker {
     for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
       for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
         const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+        if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
           continue; // no geometry at this location...
         const distXY = testPointView.distance(testPoint);
         if (distXY > pixelRadius)

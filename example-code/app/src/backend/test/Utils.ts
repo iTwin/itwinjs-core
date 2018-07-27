@@ -129,7 +129,7 @@ export class IModelTestUtils {
         // The model
         const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
         const newModelId = outputImodel.models.insertModel(newModel);
-        assert.isTrue(newModelId.isValid());
+        assert.isTrue(newModelId.isValid);
 
         return modeledElementId;
     }

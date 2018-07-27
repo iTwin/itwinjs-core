@@ -477,7 +477,7 @@ export namespace IModelConnection {
      * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
      */
     public async getById(codeSpecId: Id64): Promise<CodeSpec> {
-      if (!codeSpecId.isValid())
+      if (!codeSpecId.isValid)
         return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory, () => ({ codeSpecId })));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded

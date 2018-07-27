@@ -165,7 +165,7 @@ describe("iModel", () => {
     const newEl = el3;
     newEl.federationGuid = undefined;
     const newId: Id64 = imodel2.elements.insertElement(newEl);
-    assert.isTrue(newId.isValid(), "insert worked");
+    assert.isTrue(newId.isValid, "insert worked");
   });
 
   it("should create elements", () => {
@@ -188,7 +188,7 @@ describe("iModel", () => {
       element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
 
       const elementId: Id64 = imodel2.elements.insertElement(element);
-      assert.isTrue(elementId.isValid());
+      assert.isTrue(elementId.isValid);
     }
 
   });
@@ -458,7 +458,7 @@ describe("iModel", () => {
 
     const newTestElemId = imodel4.elements.insertElement(newTestElem);
 
-    assert.isTrue(newTestElemId.isValid(), "insert worked");
+    assert.isTrue(newTestElemId.isValid, "insert worked");
 
     const newTestElemFetched = imodel4.elements.getElement(newTestElemId);
     assert.isDefined(newTestElemFetched);
@@ -629,7 +629,7 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isTrue(new Id64(row.id).isValid());
+        assert.isTrue(new Id64(row.id).isValid);
         lastId = row.id;
         if (row.codeValue !== undefined)
           firstCodeValue = row.codeValue;
@@ -648,7 +648,7 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isTrue(new Id64(row.id).isValid());
+        assert.isTrue(new Id64(row.id).isValid);
         lastIterId = row.id;
         iteratorCount = iteratorCount + 1;
         if (row.codeValue !== undefined)
@@ -801,7 +801,7 @@ describe("iModel", () => {
       relClassName1 = "TestBim:TestModelModelsElement";
       const modeledElementRef = new RelatedElement({ id: newPartition1, relClassName: relClassName1 });
       newModelId1 = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef);
-      assert.isTrue(newModelId1.isValid());
+      assert.isTrue(newModelId1.isValid);
     }
 
     if (true) {
@@ -922,7 +922,7 @@ describe("iModel", () => {
       };
 
       id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
-      assert.isTrue(id1.isValid());
+      assert.isTrue(id1.isValid);
 
       // The second one should point to the first.
       elementProps.id = new Id64();
@@ -931,7 +931,7 @@ describe("iModel", () => {
       elementProps.longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
       id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
-      assert.isTrue(id2.isValid());
+      assert.isTrue(id2.isValid);
     }
 
     if (true) {
@@ -1197,7 +1197,7 @@ describe("iModel", () => {
       // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
       // element.dtUtc = dtUtc;
 
-      assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid(), "insert worked");
+      assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid, "insert worked");
       if (0 === (i % 100))
         ifperfimodel.saveChanges();
     }

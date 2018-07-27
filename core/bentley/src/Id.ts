@@ -33,7 +33,7 @@ export class Id64 {
 
   /** get the "low" part of this Id64. This is the "local id", and is the lower 40 bits of the 64 bit value. */
   public getLow(): number {
-    if (!this.isValid())
+    if (!this.isValid)
       return 0;
 
     let start = 2;
@@ -46,7 +46,7 @@ export class Id64 {
 
   /** Get the "high" part of this Id64. This is the "briefcase id", and is the high 24 bits of the 64 bit value. */
   public getHigh(): number {
-    if (!this.isValid())
+    if (!this.isValid)
       return 0;
 
     let start = 2;
@@ -113,7 +113,7 @@ export class Id64 {
   /** Determine whether this Id64 is valid.
    * @note The value of an invalid Id64 is "0".
    */
-  public isValid(): boolean { return this.value !== "0"; }
+  public get isValid(): boolean { return this.value !== "0"; }
 
   /** Test whether two Id64s are the same
    * @param other the other Id64 to compare
@@ -151,7 +151,7 @@ export class Id64 {
    * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
    */
   public getLowUint32(): number {
-    if (!this.isValid())
+    if (!this.isValid)
       return 0;
 
     let start = 2;
@@ -166,7 +166,7 @@ export class Id64 {
    * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
    */
   public getHighUint32(): number {
-    if (!this.isValid())
+    if (!this.isValid)
       return 0;
 
     const len = this.value.length;
@@ -247,7 +247,7 @@ export class Guid {
     this.value = "";
   }
   public equals(other: Guid): boolean { return this.value === other.value; }
-  public isValid(): boolean { return this.value !== ""; }
+  public get isValid(): boolean { return this.value !== ""; }
   public toString(): string { return this.value; }
   public toJSON(): string { return this.value; }
   public static fromJSON(val?: GuidProps): Guid | undefined { return val ? new Guid(val) : undefined; }

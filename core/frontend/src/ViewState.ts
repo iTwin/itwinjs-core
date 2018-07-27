@@ -239,7 +239,7 @@ export abstract class ViewState extends ElementState {
   public async load(): Promise<void> {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
-    if (acsId.isValid()) {
+    if (acsId.isValid) {
       const props = await this.iModel.elements.getProps(acsId);
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     }
