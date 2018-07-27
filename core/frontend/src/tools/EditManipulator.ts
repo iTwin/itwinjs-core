@@ -86,12 +86,10 @@ export namespace EditManipulator {
       if (BeButton.Data !== ev.button)
         return EventHandled.No;
 
-      const isDragging = ev.isDown && IModelApp.toolAdmin.currentInputState.isDragging(BeButton.Data);
-
-      if (isDragging && ev.isControlKey)
+      if (ev.isDragging && ev.isControlKey)
         return EventHandled.No; // Don't select or modify controls with ctrl+drag...
 
-      if ((ev.isDown && !isDragging) || !this.selectControls(ev))
+      if ((ev.isDown && !ev.isDragging) || !this.selectControls(ev))
         return EventHandled.No; // Select controls on up event or down event only after drag started...
 
       if (ev.isControlKey)
@@ -126,7 +124,7 @@ export namespace EditManipulator {
 export class TestEditManipulatorTool extends EditManipulator.Tool {
   protected init(): void { super.init(); this.beginDynamics(); }
   protected accept(_ev: BeButtonEvent): boolean { return true; }
-  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { /* console.log("Dynamics");*/ }
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { /* console.log("Dynamics"); */ }
 }
 
 /** @hidden */

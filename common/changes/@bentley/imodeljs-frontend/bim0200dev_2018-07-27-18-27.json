@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix being able to pan when rotate toolis active. Start of touch event support.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}
