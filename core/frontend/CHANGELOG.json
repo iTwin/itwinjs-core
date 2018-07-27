@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.104.1",
+      "tag": "@bentley/imodeljs-frontend_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support separate view flags per model."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.104.0",
       "tag": "@bentley/imodeljs-frontend_v0.104.0",
       "date": "Thu, 26 Jul 2018 18:25:15 GMT",
