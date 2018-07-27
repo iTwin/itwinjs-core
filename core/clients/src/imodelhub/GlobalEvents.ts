@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { request, Response } from "./../Request";
+import { request, Response, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
-import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener, IModelHubLockedEvent } from "./EventsBase";
+import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -33,13 +33,10 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
    * @param obj Object instance.
    */
   public fromJson(obj: any) {
+    super.fromJson(obj);
     this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
   }
-}
-
-export class IModelHubGlobalLockedEvent extends IModelHubLockedEvent {
-  public event: IModelHubGlobalEvent;
 }
 
 /** Sent when iModel is archived */
@@ -90,7 +87,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
   }
 }
 
-type GlobalEventConstructor = (new () => IModelHubGlobalEvent);
+type GlobalEventConstructor = (new (handler?: IModelBaseHandler, sasToken?: string) => IModelHubGlobalEvent);
 /** Get constructor from GlobalEventType name. */
 function ConstructorFromEventType(type: GlobalEventType): GlobalEventConstructor {
   switch (type) {
@@ -112,18 +109,11 @@ function ConstructorFromEventType(type: GlobalEventType): GlobalEventConstructor
  * @param response Response object to parse.
  * @returns Appropriate global event object.
  */
-export function ParseGlobalEvent(response: Response): IModelHubGlobalEvent {
+export function ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent {
   const constructor: GlobalEventConstructor = ConstructorFromEventType(response.header["content-type"]);
-  const globalEvent = new constructor();
-  globalEvent.fromJson(response.body);
+  const globalEvent = new constructor(handler, sasToken);
+  globalEvent.fromJson({ ...response.header, ...response.body });
   return globalEvent;
-}
-
-export function ParseLockedGlobalEvent(response: Response): IModelHubGlobalLockedEvent {
-  const lockedEvent = new IModelHubGlobalLockedEvent();
-  lockedEvent.event = ParseGlobalEvent(response);
-  lockedEvent.lockUrl = response.header.location;
-  return lockedEvent;
 }
 
 /** GlobalEventSubscription */
@@ -215,6 +205,13 @@ export class GlobalEventSubscriptionHandler {
   }
 }
 
+export enum GetEventOperationType {
+  /** Event will get removed from queue. */
+  Destructive = 0,
+  /** Event does not get removed from queue. And can be removed via method @see IModelHubBaseEvent.delete */
+  Peek,
+}
+
 /**
  * Handler for all methods related to iModel Hub global events.
  */
@@ -287,10 +284,16 @@ export class GlobalEventHandler extends EventBaseHandler {
    * @param timeout Optional timeout duration in seconds for request, when using long polling.
    * @return Global Event if it exists, undefined otherwise.
    */
-  public async getEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number): Promise<IModelHubGlobalEvent | undefined> {
+  public async getEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation: GetEventOperationType = GetEventOperationType.Destructive): Promise<IModelHubGlobalEvent | undefined> {
     Logger.logInfo(loggingCategory, `Getting global event from subscription with instance id: ${subscriptionInstanceId}`);
 
-    const options = this.getEventRequestOptions(sasToken, timeout);
+    let options: RequestOptions;
+    if (getOperation === GetEventOperationType.Destructive)
+      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
+    else if (getOperation === GetEventOperationType.Peek)
+      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetPeek, sasToken, timeout);
+    else // Unknown operation type.
+      return undefined;
 
     const result = await request(this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
 
@@ -299,84 +302,10 @@ export class GlobalEventHandler extends EventBaseHandler {
       return undefined;
     }
 
-    const event = ParseGlobalEvent(result);
+    const event = ParseGlobalEvent(result, this._handler, sasToken);
     Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);
 
     return Promise.resolve(event);
-  }
-
-  /**
-   * Gets global event from Service Bus Topic.
-   * Event does not get removed from queue. Returned value contains lockUrl, it will be used to @see unlockEvent or @see deleteLockedEvent.
-   * While lock is active it is guaranteed to not be delivered to further requests.
-   * Lock will timeout after 1 minute. @see renewLockForEvent for renewing lock expiration time.
-   * @param sasToken Service Bus SAS Token.
-   * @param baseAddress Base address of Service Bus topic.
-   * @param subscriptionInstanceId Id of the subscription instance to the topic.
-   * @param timeout Optional timeout duration in seconds for request, when using long polling.
-   * @return Locked Global Event with lockUrl if it exists, undefined otherwise.
-   */
-  public async peekLockEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number): Promise<IModelHubGlobalLockedEvent | undefined> {
-    Logger.logInfo(loggingCategory, `Peek-lock start - global event from subscription with instance id: ${subscriptionInstanceId}`);
-
-    const options = this.getPeekLockEventRequestOptions(sasToken, timeout);
-
-    const result = await request(this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
-
-    if (result.status === 204) {
-      Logger.logTrace(loggingCategory, `No events found on subscription ${subscriptionInstanceId}`);
-      return undefined;
-    }
-
-    const event = ParseLockedGlobalEvent(result);
-    Logger.logTrace(loggingCategory, `Peek-lock success - Global Event from subscription with instance id: ${subscriptionInstanceId}`);
-
-    return Promise.resolve(event);
-  }
-
-  /**
-   * Unlocks event and makes it receivable again.
-   * @param sasToken Service Bus SAS Token.
-   * @param lockUrl from Peek-lock operation.
-   */
-  public async unlockEvent(sasToken: string, lockUrl: string): Promise<boolean> {
-    const options = this.getUnlockEventRequestOptions(sasToken);
-    const result = await request(lockUrl, options);
-
-    if (result.status === 200)
-      return Promise.resolve(true);
-
-    return Promise.resolve(false);
-  }
-
-  /**
-   * While lock is active you can safely delete the event with this method.
-   * @param sasToken Service Bus SAS Token.
-   * @param lockUrl from Peek-lock operation.
-   */
-  public async deleteLockedEvent(sasToken: string, lockUrl: string): Promise<boolean> {
-    const options = this.getDeleteLockedEventRequestOptions(sasToken);
-    const result = await request(lockUrl, options);
-
-    if (result.status === 200)
-      return Promise.resolve(true);
-
-    return Promise.resolve(false);
-  }
-
-  /**
-   * If processing takes longer than expected, you might want to renew the lock time for event to ensure it can't be received while processing.
-   * @param sasToken Service Bus SAS Token.
-   * @param lockUrl from Peek-lock operation.
-   */
-  public async renewLockForEvent(sasToken: string, lockUrl: string): Promise<boolean> {
-    const options = this.getRenewLockForEventRequestOptions(sasToken);
-    const result = await request(lockUrl, options);
-
-    if (result.status === 200)
-      return Promise.resolve(true);
-
-    return Promise.resolve(false);
   }
 
   /**
