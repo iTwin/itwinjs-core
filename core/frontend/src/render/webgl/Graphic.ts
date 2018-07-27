@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -370,10 +370,10 @@ function uint32ToFloatArray(value: number): Float32Array {
   return floats;
 }
 
-function createUniformPickTable(elemId: Id64): UniformPickTable {
+function createUniformPickTable(elemId: Id64String): UniformPickTable {
   return {
-    elemId0: uint32ToFloatArray(elemId.getLowUint32()),
-    elemId1: uint32ToFloatArray(elemId.getHighUint32()),
+    elemId0: uint32ToFloatArray(Id64.getLowUint32(elemId)),
+    elemId1: uint32ToFloatArray(Id64.getHighUint32(elemId)),
   };
 }
 
@@ -390,10 +390,10 @@ function createNonUniformPickTable(features: FeatureTable): NonUniformPickTable 
   const bytes = new Uint8Array(dims.width * dims.height * 4);
   const ids = new Uint32Array(bytes.buffer);
   for (const entry of features.getArray()) {
-    const elemId = new Id64(entry.value.elementId);
+    const elemId = entry.value.elementId;
     const index = entry.index;
-    ids[index * 2] = elemId.getLowUint32();
-    ids[index * 2 + 1] = elemId.getHighUint32();
+    ids[index * 2] = Id64.getLowUint32(elemId);
+    ids[index * 2 + 1] = Id64.getHighUint32(elemId);
   }
 
   return TextureHandle.createForData(dims.width, dims.height, bytes);
@@ -403,7 +403,7 @@ function createPickTable(features: FeatureTable): PickTable {
   if (!features.anyDefined)
     return {};
   else if (features.isUniform)
-    return { uniform: createUniformPickTable(new Id64(features.uniform!.elementId)) };
+    return { uniform: createUniformPickTable(features.uniform!.elementId) };
   else
     return { nonUniform: createNonUniformPickTable(features) };
 }
