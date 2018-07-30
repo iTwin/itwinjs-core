@@ -6,7 +6,7 @@ import { request, Response } from "./../Request";
 import { CodeState } from "./Codes";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
-import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription } from "./EventsBase";
+import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -367,7 +367,7 @@ export class EventHandler extends EventBaseHandler {
   public async getEvent(sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined> {
     Logger.logInfo(loggingCategory, `Getting event from subscription ${subscriptionId}`);
 
-    const options = this.getEventRequestOptions(sasToken, timeout);
+    const options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
 
     const result = await request(this.getEventUrl(baseAddress, subscriptionId, timeout), options);
 
