@@ -267,6 +267,18 @@ export class RenderCommands {
     });
   }
 
+  private addPickableDecorations(decs: Decorations): void {
+    if (undefined !== decs.normal) {
+      for (const normal of decs.normal) {
+        const gf = normal as Graphic;
+        if (gf.isPickable)
+          gf.addCommands(this);
+      }
+    }
+
+    // ###TODO the rest of the world decorations...
+  }
+
   public addBackground(gf?: Graphic): void {
     if (undefined === gf)
       return;
@@ -434,9 +446,14 @@ export class RenderCommands {
     if (initForReadPixels) {
       // Set flag to force translucent gometry to be put into the opaque pass.
       this._addTranslucentAsOpaque = true;
+
       // Add the scene graphics.
       this.addGraphics(scene);
-      // TODO: also add any pickable decorations.
+
+      // Also add any pickable decorations.
+      if (undefined !== dec)
+        this.addPickableDecorations(dec);
+
       this._addTranslucentAsOpaque = false;
       return;
     }

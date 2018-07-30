@@ -18,7 +18,6 @@ import {
   ImageBuffer,
   RenderTexture,
   FeatureTable,
-  Feature,
   Gradient,
   ElementAlignedBox3d,
   QParams3d,
@@ -445,24 +444,6 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create a RenderGraphic consisting of batched Features. */
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
-
-  /**
-   * Create a pickable decoration. A pickable decoration is a decoration graphic which can be located by tools.
-   * @param graphic The graphics which will be rendered for the decoration. The graphic must be defined in world coordinates, so it cannot be a view overlay, but could be a world overlay.
-   * @param id Uniquely identifies the decoration, obtained from IModelConnection.transientIds.
-   * @param range Optionally describes the range of the graphic in world coordinates. Used for culling.
-   * @returns A RenderGraphic suitable for adding to a DecorateContext.
-   */
-  public createPickableDecoration(graphic: RenderGraphic, id: Id64, range?: ElementAlignedBox3d): RenderGraphic {
-    if (!id.isValid) {
-      assert(false, "Pickable decoration requires an ID");
-      return graphic;
-    }
-
-    const features = new FeatureTable(1);
-    features.insert(new Feature(id));
-    return this.createBatch(graphic, features, undefined !== range ? range : new ElementAlignedBox3d());
-  }
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
   public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }

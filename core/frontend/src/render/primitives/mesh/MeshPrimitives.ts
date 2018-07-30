@@ -216,15 +216,6 @@ export class Mesh {
   public readonly hasBakedLighting: boolean;
   public displayParams: DisplayParams;
 
-  /**
-   * @param props
-   *    props.displayParams: DisplayParams
-   *    props.features?: Mesh.Features | undefined
-   *    props.type: Mesh.PrimitiveType
-   *    props.range: Range3d
-   *    props.is2d: boolean
-   *    props.isPlanar: boolean
-   */
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
     this._data = Mesh.PrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();

@@ -12,6 +12,8 @@ import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 import { GeometryList } from "./GeometryList";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { FeatureTable } from "@bentley/imodeljs-common";
 
 export class GeometryAccumulator {
   private _transform: Transform;
@@ -114,22 +116,21 @@ export class GeometryAccumulator {
    * note  : removed featureTable, ViewContext
    * @param tolerance should derive from Viewport.getPixelSizeAtPoint
    */
-  public toMeshBuilderMap(options: GeometryOptions, tolerance: number): MeshBuilderMap {
+  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickableId?: Id64): MeshBuilderMap {
     const { geometries } = this; // declare internal dependencies
     const { wantSurfacesOnly, wantPreserveOrder } = options;
 
     const range = geometries.computeRange();
     const is2d = !range.isNull() && range.isAlmostZeroZ();
 
-    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, wantSurfacesOnly, wantPreserveOrder);
+    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, wantSurfacesOnly, wantPreserveOrder, pickableId);
   }
 
-  /** removed ViewContext */
-  public toMeshes(options: GeometryOptions, tolerance: number): MeshList {
+  public toMeshes(options: GeometryOptions, tolerance: number, pickableId?: Id64): MeshList {
     if (this.geometries.isEmpty)
       return new MeshList();
 
-    const builderMap = this.toMeshBuilderMap(options, tolerance);
+    const builderMap = this.toMeshBuilderMap(options, tolerance, pickableId);
     return builderMap.toMeshes();
   }
 
@@ -137,13 +138,15 @@ export class GeometryAccumulator {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number): void {
-    const meshes = this.toMeshes(options, tolerance);
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: Id64): FeatureTable | undefined {
+    const meshes = this.toMeshes(options, tolerance, pickableId);
     const args = new MeshGraphicArgs();
     for (const mesh of meshes) {
       const graphic = mesh.getGraphics(args, this.system);
       if (undefined !== graphic)
         graphics.push(graphic);
     }
+
+    return meshes.features;
   }
 }
