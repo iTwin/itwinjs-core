@@ -221,76 +221,101 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return this.polyface.addPointXYZ(x, y, z);
   }
 
+  /** Returns a transform who can be applied to points on a triangular facet in order to obtain UV parameters. */
+  private getUVTransformForTriangleFacet(pointA: Point3d, pointB: Point3d, pointC: Point3d): Transform | undefined {
+    const vectorAB = pointA.vectorTo(pointB);
+    const vectorAC = pointA.vectorTo(pointC);
+    const unitAxes = RotMatrix.createRigidFromColumns(vectorAB, vectorAC, AxisOrder.XYZ);
+    const localToWorld = Transform.createOriginAndMatrix(pointA, unitAxes);
+    return localToWorld.inverse();
+  }
+
+  /** Returns the normal to a triangular facet. */
+  private getNormalForTriangularFacet(pointA: Point3d, pointB: Point3d, pointC: Point3d): Vector3d {
+    const vectorAB = pointA.vectorTo(pointB);
+    const vectorAC = pointA.vectorTo(pointC);
+    let normal = vectorAB.crossProduct(vectorAC).normalize();
+    normal = normal ? normal : Vector3d.create();
+    return normal;
+  }
+
   // ###: Consider case where normals will be reversed and point through the other end of the facet
-  // ###: We should be able to only append one normal for this entire quad
-  // ###: May want to use Growable iterable due to the way we pass onto addTriangle()...
   /**
    * Add a quad to the polyface given its points in order around the edges.
-   * Optionally provide params and normals, otherwise they will be calculated without reference data.
+   * Optionally provide params and the plane normal, otherwise they will be calculated without reference data.
    * Optionally mark this quad as the last piece of a face in this polyface.
    */
   public addQuadFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[]) {
+    // If params and/or normals are needed, calculate them first
+    const needParams = this.options.needParams;
+    const needNormals = this.options.needNormals;
+    let param0: Point2d, param1: Point2d, param2: Point2d, param3: Point2d;
+    let normal0: Vector3d, normal1: Vector3d, normal2: Vector3d, normal3: Vector3d;
+    if (needParams) {
+      if (params !== undefined && params.length > 3) {
+        param0 = params[0];
+        param0 = params[1];
+        param0 = params[2];
+        param0 = params[3];
+      } else {
+        const paramTransform = this.getUVTransformForTriangleFacet(points[0], points[1], points[2]);
+        if (paramTransform === undefined) {
+          param0 = param1 = param2 = param3 = Point2d.createZero();
+        } else {
+          param0 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[0]));
+          param1 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[1]));
+          param2 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[2]));
+          param3 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[3]));
+        }
+      }
+    }
+    if (needNormals) {
+      if (normals !== undefined && normals.length > 3) {
+        normal0 = normals[0];
+        normal1 = normals[1];
+        normal2 = normals[2];
+        normal3 = normals[3];
+      } else {
+        normal0 = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
+        normal1 = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
+        normal2 = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
+        normal3 = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
+      }
+    }
+
     if (this._options.shouldTriangulate) {
       // Add as two triangles, with a diagonal along the shortest distance
       const vectorAC = points[0].vectorTo(points[2]);
       const vectorBD = points[1].vectorTo(points[3]);
 
+      // Note: We pass along any values for normals or params that we calculated
       if (vectorAC.magnitude() >= vectorBD.magnitude()) {
-        this.addTriangleFacet([points[0], points[1], points[2]], params ? [params[0], params[1], params[2]] : undefined, normals ? [normals[0], normals[1], normals[2]] : undefined);
-        this.addTriangleFacet([points[0], points[2], points[3]], params ? [params[0], params[2], params[3]] : undefined, normals ? [normals[0], normals[2], normals[3]] : undefined);
+        this.addTriangleFacet([points[0], points[1], points[2]], needParams ? [param0!, param1!, param2!] : undefined, needNormals ? [normal0!, normal1!, normal2!] : undefined);
+        this.addTriangleFacet([points[0], points[2], points[3]], needParams ? [param0!, param2!, param3!] : undefined, needNormals ? [normal0!, normal2!, normal3!] : undefined);
       } else {
-        this.addTriangleFacet([points[0], points[1], points[3]], params ? [params[0], params[1], params[3]] : undefined, normals ? [normals[0], normals[1], normals[3]] : undefined);
-        this.addTriangleFacet([points[1], points[2], points[3]], params ? [params[1], params[2], params[3]] : undefined, normals ? [normals[1], normals[2], normals[3]] : undefined);
+        this.addTriangleFacet([points[0], points[1], points[3]], needParams ? [param0!, param1!, param3!] : undefined, needNormals ? [normal0!, normal1!, normal3!] : undefined);
+        this.addTriangleFacet([points[1], points[2], points[3]], needParams ? [param1!, param2!, param3!] : undefined, needNormals ? [normal1!, normal2!, normal3!] : undefined);
       }
       return;
     }
 
-    let idx0;
-    let idx1;
-    let idx2;
-    let idx3;
+    let idx0, idx1, idx2, idx3;
 
     // Add params if needed
-    if (this._options.needParams) {
-      if (params && params.length >= 4) { // Params were given
-        idx0 = this.polyface.addParam(params[0]);
-        idx1 = this.polyface.addParam(params[1]);
-        idx2 = this.polyface.addParam(params[2]);
-        idx3 = this.polyface.addParam(params[3]);
-      } else {  // Compute params
-        const vectorAB = points[0].vectorTo(points[1]);
-        const vectorAC = points[0].vectorTo(points[2]);
-        const unitAxes = RotMatrix.createRigidFromColumns(vectorAB, vectorAC, AxisOrder.XYZ);
-        const localToWorld = Transform.createOriginAndMatrix(points[0], unitAxes);
-        idx0 = this.polyface.addParam(Point2d.createFrom(localToWorld.multiplyInversePoint3d(points[0])));
-        idx1 = this.polyface.addParam(Point2d.createFrom(localToWorld.multiplyInversePoint3d(points[1])));
-        idx2 = this.polyface.addParam(Point2d.createFrom(localToWorld.multiplyInversePoint3d(points[2])));
-        idx3 = this.polyface.addParam(Point2d.createFrom(localToWorld.multiplyInversePoint3d(points[3])));
-      }
+    if (needParams) {
+      idx0 = this.polyface.addParam(param0!);
+      idx1 = this.polyface.addParam(param1!);
+      idx2 = this.polyface.addParam(param2!);
+      idx3 = this.polyface.addParam(param3!);
       this.addIndexedQuadParamIndexes(idx0, idx1, idx3, idx2);
     }
 
     // Add normals if needed
-    if (this._options.needParams) {
-      if (normals && normals.length >= 4) { // Normals were given
-        const normal0 = normals[0].normalize();
-        const normal1 = normals[1].normalize();
-        const normal2 = normals[2].normalize();
-        const normal3 = normals[3].normalize();
-        idx0 = this.polyface.addNormal(normal0 ? normal0 : Vector3d.create());
-        idx1 = this.polyface.addNormal(normal1 ? normal1 : Vector3d.create());
-        idx2 = this.polyface.addNormal(normal2 ? normal2 : Vector3d.create());
-        idx3 = this.polyface.addNormal(normal3 ? normal3 : Vector3d.create());
-      } else {  // Compute normals
-        const vectorAB = points[0].vectorTo(points[1]);
-        const vectorAC = points[0].vectorTo(points[2]);
-        let normal = vectorAB.crossProduct(vectorAC).normalize();
-        normal = normal ? normal : Vector3d.create();   // Will be cloned in addNormal() method
-        idx0 = this.polyface.addNormal(normal);
-        idx1 = this.polyface.addNormal(normal);
-        idx2 = this.polyface.addNormal(normal);
-        idx3 = this.polyface.addNormal(normal);
-      }
+    if (needNormals) {
+      idx0 = this.polyface.addNormal(normal0!);
+      idx1 = this.polyface.addNormal(normal1!);
+      idx2 = this.polyface.addNormal(normal2!);
+      idx3 = this.polyface.addNormal(normal3!);
       this.addIndexedQuadNormalIndexes(idx0, idx1, idx3, idx2);
     }
 
@@ -355,11 +380,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   // ### TODO: Consider case where normals will be reversed and point through the other end of the facet
-  // ### TODO: We should be able to only append one normal for this entire quad
   /**
    * Add a triangle to the polyface given its points in order around the edges.
-   * Optionally provide params and normals, otherwise they will be calculated without reference data.
-   * Optionally mark this triangle as the last piece of a face in this polyface.
+   * * Optionally provide params and triangle normals, otherwise they will be calculated without reference data.
    */
   public addTriangleFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[]) {
     let idx0: number;
@@ -373,31 +396,22 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         idx1 = this.polyface.addParam(params[1]);
         idx2 = this.polyface.addParam(params[2]);
       } else {  // Compute params
-        const vectorAB = points[0].vectorTo(points[1]);
-        const vectorAC = points[0].vectorTo(points[2]);
-        const unitAxes = RotMatrix.createRigidFromColumns(vectorAB, vectorAC, AxisOrder.XYZ);
-        const localToWorld = Transform.createOriginAndMatrix(points[0], unitAxes);
-        idx0 = this.polyface.addParam(Point2d.createFrom(localToWorld.multiplyInversePoint3d(points[0])));
-        idx1 = this.polyface.addParam(Point2d.createFrom(localToWorld.multiplyInversePoint3d(points[1])));
-        idx2 = this.polyface.addParam(Point2d.createFrom(localToWorld.multiplyInversePoint3d(points[2])));
+        const paramTransform = this.getUVTransformForTriangleFacet(points[0], points[1], points[2]);
+        idx0 = this.polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[0]) : undefined));
+        idx1 = this.polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[1]) : undefined));
+        idx2 = this.polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[2]) : undefined));
       }
       this.addIndexedTriangleParamIndexes(idx0, idx1, idx2);
     }
 
     // Add normals if needed
-    if (this._options.needParams) {
-      if (normals && normals.length >= 3) { // Normals were given
-        const normal0 = normals[0].normalize();
-        const normal1 = normals[1].normalize();
-        const normal2 = normals[2].normalize();
-        idx0 = this.polyface.addNormal(normal0 ? normal0 : Vector3d.create());
-        idx1 = this.polyface.addNormal(normal1 ? normal1 : Vector3d.create());
-        idx2 = this.polyface.addNormal(normal2 ? normal2 : Vector3d.create());
+    if (this._options.needNormals) {
+      if (normals !== undefined && normals.length > 2) { // Normals were given
+        idx0 = this.polyface.addNormal(normals[0]);
+        idx1 = this.polyface.addNormal(normals[1]);
+        idx2 = this.polyface.addNormal(normals[2]);
       } else {  // Compute normals
-        const vectorAB = points[0].vectorTo(points[1]);
-        const vectorAC = points[0].vectorTo(points[2]);
-        let normal = vectorAB.crossProduct(vectorAC).normalize();
-        normal = normal ? normal : Vector3d.create();   // Will be cloned in addNormal() method
+        const normal = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
         idx0 = this.polyface.addNormal(normal);
         idx1 = this.polyface.addNormal(normal);
         idx2 = this.polyface.addNormal(normal);
@@ -408,7 +422,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     // Add point and point indexes last (terminates the facet)
     idx0 = this.findOrAddPoint(points[0]);
     idx1 = this.findOrAddPoint(points[1]);
-    idx2 = this.findOrAddPoint(points[3]);
+    idx2 = this.findOrAddPoint(points[2]);
     this.addIndexedTrianglePointIndexes(idx0, idx1, idx2);
   }
 

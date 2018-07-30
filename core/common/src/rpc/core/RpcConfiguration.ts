@@ -5,7 +5,7 @@
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcProtocol, RpcRequestFulfillment, RpcProtocolEvent } from "./RpcProtocol";
-import { RpcRequest } from "./RpcRequest";
+import { RpcRequest, RpcResponseType } from "./RpcRequest";
 import { INSTANCE } from "./RpcRegistry";
 import { RpcControlChannel } from "./RpcControl";
 
@@ -108,13 +108,18 @@ export class RpcDirectProtocol extends RpcProtocol {
 // A default request type that can be used for basic testing within a library.
 export class RpcDirectRequest extends RpcRequest {
   public headers: Map<string, string> = new Map();
-  public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "" };
+  public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "", type: RpcResponseType.Unknown };
 
   protected send(): void {
     const request = this.protocol.serialize(this);
 
     this.protocol.fulfill(request).then((fulfillment) => {
+      const result = fulfillment.result;
       this.fulfillment = JSON.parse(JSON.stringify(fulfillment));
+      if (result instanceof ArrayBuffer) {
+        this.fulfillment.result = result;
+      }
+
       this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
     });
   }
@@ -128,6 +133,24 @@ export class RpcDirectRequest extends RpcRequest {
   }
 
   public getResponseText(): string {
-    return this.fulfillment.result;
+    const result = this.fulfillment.result;
+    if (typeof (result) === "string") {
+      return result;
+    } else {
+      return super.getResponseText();
+    }
+  }
+
+  public getResponseBytes(): ArrayBuffer {
+    const result = this.fulfillment.result;
+    if (typeof (result) !== "string") {
+      return result;
+    } else {
+      return super.getResponseBytes();
+    }
+  }
+
+  public getResponseType(): RpcResponseType {
+    return this.fulfillment.type;
   }
 }

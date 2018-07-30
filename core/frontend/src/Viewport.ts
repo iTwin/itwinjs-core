@@ -17,7 +17,7 @@ import { HitDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
+import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
@@ -126,18 +126,33 @@ export class ViewRect {
     return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
 
+  /** Inset this ViewRect by values in the x and y directions. Positive values make the ViewRect smaller, and negative values will make it larger.
+   * @param deltaX The distance to inset the ViewRect in the x direction.
+   * @param deltaY The distance to inset the ViewRect in the y direction.
+   */
+  public inset(deltaX: number, deltaY: number): void {
+    if (this.width - 2 * deltaX <= 0 || this.height - 2 * deltaY <= 0) {
+      this.init(0, 0, 0, 0);
+      return;
+    }
+    this._left += deltaX;
+    this._right -= deltaX;
+    this._top += deltaY;
+    this._bottom -= deltaY;
+  }
+
   /** Inset this ViewRect by the same value in all directions.
    * @param offset The distance to inset this ViewRect. Positive values will make this ViewRect smaller and negative values will make it larger.
    * @note The inset operation can cause a previously valid ViewRect to become invalid.
    */
-  public inset(offset: number): void { this.left += offset; this.top += offset; this.right -= offset; this.bottom -= offset; }
+  public insetUniform(offset: number): void { this.inset(offset, offset); }
 
   /** Inset this ViewRect by a percentage of its current width.
    * @param percent The percentage of this ViewRect's width to inset in all directions.
    * @note The ViewRect will become smaller (or larger, if percent is negative) by `percent * width * 2` in each direction, since each side is moved by that distance.
    * @see [[inset]]
    */
-  public insetByPercent(percent: number): void { this.inset(this.width * percent); }
+  public insetByPercent(percent: number): void { this.insetUniform(this.width * percent); }
 
   /** Determine if this ViewRect is entirely contained within the bounds of another ViewRect. */
   public isContained(other: ViewRect): boolean { return this.left >= other.left && this.right <= other.right && this.bottom <= other.bottom && this.top >= other.top; }
@@ -430,8 +445,8 @@ export class Viewport {
    * @param canvas The HTMLCanvasElement for the new Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
-  constructor(public canvas: HTMLCanvasElement, viewState: ViewState) {
-    this.target = IModelApp.renderSystem.createTarget(canvas);
+  constructor(public canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
+    this.target = target ? target : IModelApp.renderSystem.createTarget(canvas);
     this.changeView(viewState);
     this.setCursor();
     this.saveViewUndo();
@@ -690,8 +705,8 @@ export class Viewport {
     const viewRect = this.viewRect;
     corners.high.x = viewRect.right;
     corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
-    corners.low.x = 0;
-    corners.high.y = 0;
+    corners.low.x = viewRect.left;
+    corners.high.y = viewRect.top;
     corners.low.z = -32767;
     corners.high.z = 32767;
     return corners;
@@ -1564,6 +1579,15 @@ export class Viewport {
     return this.target.readPixels(rect, selector);
   }
 
+  /**
+   * Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.
+   * @param rect The area of the view to read. The origin of a viewRect must specify the upper left corner.
+   * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
+   */
+  public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero()): ImageBuffer | undefined {
+    return this.target.readImage(rect, targetSize);
+  }
+
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
@@ -1606,5 +1630,17 @@ export class Viewport {
     const result = undefined !== out ? out : new Point3d();
     result.setFrom(picker.getHit(0)!.getPoint());
     return result;
+  }
+}
+
+export class OffScreenViewport extends Viewport {
+  public constructor(viewState: ViewState) {
+    super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+  }
+
+  public get viewRect(): ViewRect { return this.target.viewRect; }
+
+  public setRect(rect: ViewRect, temporary: boolean = false) {
+    this.target.setViewRect(rect, temporary);
   }
 }
