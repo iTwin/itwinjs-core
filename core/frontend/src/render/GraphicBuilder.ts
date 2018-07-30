@@ -4,6 +4,7 @@
 /** @module Rendering */
 
 import { IModelConnection } from "../IModelConnection";
+import { Id64 } from "@bentley/bentleyjs-core";
 import {
   Transform,
   Point3d,
@@ -56,6 +57,10 @@ Object.freeze(identityTransform);
 
 /** Parameters used to construct a GraphicBuilder. */
 export class GraphicBuilderCreateParams {
+  private readonly _placement: Transform;
+  public readonly type: GraphicType;
+  public readonly pickableId?: Id64;
+  public readonly viewport: Viewport;
 
   public get placement(): Transform { return this._placement; }
   public set placement(tf: Transform) { this._placement.setFrom(tf); }
@@ -66,38 +71,26 @@ export class GraphicBuilderCreateParams {
   public get isViewBackground(): boolean { return this.type === GraphicType.ViewBackground; }
   public get isOverlay(): boolean { return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay; }
 
-  private readonly _placement: Transform;
-  public readonly type: GraphicType;
-  public readonly viewport: Viewport;
   public get iModel(): IModelConnection { return this.viewport.iModel; }
 
-  constructor(placement: Transform = identityTransform, type: GraphicType, viewport: Viewport) {
+  constructor(placement: Transform = identityTransform, type: GraphicType, viewport: Viewport, pickableId?: Id64) {
     this._placement = placement;
     this.type = type;
     this.viewport = viewport;
+    if (undefined !== pickableId && pickableId.isValid)
+      this.pickableId = pickableId;
   }
 
-  /**
-   * consolidates viewport and imodel parameters, as we would always want to use the imodel of the viewport if the viewport was passed
-   */
   public static create(type: GraphicType, vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, type, vp);
   }
 
-  /**
-   * Create params for a graphic in world coordinates, not necessarily associated with any viewport.
-   * When an iModel parameter is given, this function is chiefly used for tile generation code as the tolerance for faceting the graphic's geometry is independent of any viewport.
-   * When an iModel parameter is not given, this function is chiefly used for code which produces 'normal' decorations and dynamics.
-   * If this function is used outside of tile generation context, a default coarse tolerance will be used.
-   * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
-   */
+  /** Create params for a graphic in world coordinates to be displayed within the specified Viewport */
   public static scene(vp: Viewport, placement?: Transform) {
     return new GraphicBuilderCreateParams(placement, GraphicType.Scene, vp);
   }
 
-  /**
-   * Create params for a subgraphic
-   */
+  /** Create params for a subgraphic */
   public subGraphic(placement?: Transform): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, this.type, this.viewport);
   }
@@ -118,11 +111,14 @@ export class GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, GraphicType.WorldOverlay, vp);
   }
 
-  /**
-   * Create params for a ViewOverlay-type RenderGraphic
-   */
+  /** Create params for a ViewOverlay-type RenderGraphic */
   public static viewOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp);
+  }
+
+  /** Create params for a pickable decoration defined in world coordinates. */
+  public static pickableDecoration(vp: Viewport, id: Id64, isOverlay: boolean, placement?: Transform): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(placement, isOverlay ? GraphicType.WorldOverlay : GraphicType.Scene, vp, id);
   }
 }
 

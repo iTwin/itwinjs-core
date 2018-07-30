@@ -1805,13 +1805,15 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
+  private _skipAttachments = true; // ###TODO: Remove after merge - bug fixed on master
+
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
   public async load(): Promise<void> {
     await super.load();
 
     // Set the size of the sheet
     const model = this.getViewedModel();
-    if (model === undefined)
+    if (model === undefined || this._skipAttachments)
       return;
 
     this._attachments.clear();
@@ -1873,10 +1875,12 @@ export class SheetViewState extends ViewState2d {
       }
   }
 
+  private _pickableBorder = false; // ###TODO: Remove - testing pickable decorations
+
   /** Create a sheet border decoration graphic. */
   private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = Sheet.Border.create(width, height, viewContext);
-    const builder: GraphicBuilder = viewContext.createViewBackground();
+    const border = Sheet.Border.create(width, height, this._pickableBorder ? undefined : viewContext);
+    const builder: GraphicBuilder = this._pickableBorder ? viewContext.createPickableDecoration(new Id64("0xffffff0000000001")) : viewContext.createViewBackground();
     border.addToBuilder(builder);
     return builder.finish();
   }
@@ -1884,7 +1888,10 @@ export class SheetViewState extends ViewState2d {
   public decorate(context: DecorateContext): void {
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
-      context.setViewBackground(border);
+      if (this._pickableBorder)
+        context.addNormal(border);
+      else
+        context.setViewBackground(border);
     }
   }
 }

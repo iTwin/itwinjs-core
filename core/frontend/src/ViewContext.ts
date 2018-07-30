@@ -13,6 +13,7 @@ import { TileRequests } from "./tile/TileTree";
 import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ViewState3d } from "./ViewState";
+import { Id64 } from "@bentley/bentleyjs-core";
 
 const gridConstants = { maxGridPoints: 50, maxGridRefs: 25, maxGridDotsInRow: 250, maxHorizonGrids: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225 };
 
@@ -53,6 +54,9 @@ export class RenderContext extends ViewContext {
   }
   public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic {
     return this.target.renderSystem.createBranch(branch, location, clip);
+  }
+  protected createPickableGraphic(tf: Transform, id: Id64, isOverlay: boolean): GraphicBuilder {
+    return this.target.createGraphic(GraphicBuilderCreateParams.pickableDecoration(this.viewport, id, isOverlay, tf));
   }
 }
 
@@ -462,6 +466,8 @@ export class DecorateContext extends RenderContext {
   public createWorldDecoration(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldDecoration)!; }
   public createWorldOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldOverlay)!; }
   public createViewOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewOverlay)!; }
+  public createPickableDecoration(id: Id64, tf = Transform.createIdentity()): GraphicBuilder { return this.createPickableGraphic(tf, id, false); }
+  public createPickableOverlay(id: Id64, tf = Transform.createIdentity()): GraphicBuilder { return this.createPickableGraphic(tf, id, true); }
 }
 
 export class SceneContext extends RenderContext {

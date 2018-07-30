@@ -434,9 +434,12 @@ export class RenderCommands {
     if (initForReadPixels) {
       // Set flag to force translucent gometry to be put into the opaque pass.
       this._addTranslucentAsOpaque = true;
+
       // Add the scene graphics.
       this.addGraphics(scene);
-      // TODO: also add any pickable decorations.
+
+      // ###TODO: also add any pickable decorations.
+
       this._addTranslucentAsOpaque = false;
       return;
     }
