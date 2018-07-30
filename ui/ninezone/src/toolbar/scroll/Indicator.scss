@@ -1,0 +1,38 @@
+@import "_variables";
+
+.nz-toolbar-scroll-indicator {
+  $fade-from-color: transparent;
+  $fade-to-color: white;
+  $scroll-indicator-offset: 8px;
+
+  display: grid;
+  box-sizing: border-box;
+
+  &.nz-direction-left {
+    background: linear-gradient(to left, $fade-from-color, $fade-to-color);
+    align-content: center;
+    justify-content: left;
+    padding-left: $scroll-indicator-offset;
+  }
+
+  &.nz-direction-right {
+    background: linear-gradient(to right, $fade-from-color, $fade-to-color);
+    align-content: center;
+    justify-content: right;
+    padding-right: $scroll-indicator-offset;
+  }
+
+  &.nz-direction-top {
+    background: linear-gradient(to top, $fade-from-color, $fade-to-color);
+    align-content: start;
+    justify-content: center;
+    padding-top: $scroll-indicator-offset;
+  }
+
+  &.nz-direction-bottom {
+    background: linear-gradient(to bottom, $fade-from-color, $fade-to-color);
+    align-content: end;
+    justify-content: center;
+    padding-bottom: $scroll-indicator-offset;
+  }
+}

@@ -1,0 +1,72 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/colors";
+@import "../../_variables";
+
+.nz-widget-rectangular-tab-tab {
+  $width: 32px;
+  $active-width: 36px;
+
+  box-sizing: border-box;
+  width: $width;
+  height: $tab-height;
+  background-color: $background-3;
+  border-color: $background-5;
+  border-top-left-radius: $tab-border-radius;
+  border-bottom-left-radius: $tab-border-radius;
+  border-top-width: $tab-border-width;
+  border-left-width: $tab-border-width;
+  border-bottom-width: $tab-border-width;
+  border-right-width: 0;
+  border-style: solid;
+  margin-left: auto;
+  margin-right: 0;
+  color: rgba($text-dark, 0.88);
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+
+  &.nz-left-anchor {
+    margin-left: 0;
+    margin-right: unset;
+    border-left-width: 0;
+    border-right-width: $tab-border-width;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: $tab-border-radius;
+    border-bottom-right-radius: $tab-border-radius;
+
+    &.nz-is-active {
+      &::before {
+        right: $tab-strip-margin;
+        left: unset;
+      }
+    }
+  }
+
+  > * {
+    filter: drop-shadow((-0.4px) 0.9px 0 #FFF);
+  }
+
+  &.nz-is-active {
+    width: $active-width;
+    background-color: $background-2;
+    color: $primary-base;
+
+    > * {
+      filter: drop-shadow(0 1px 0 $text-light);
+    }
+
+    &::before {
+      content: '';
+      display: block;
+      position: absolute;
+      background-color: $primary-base;
+      left: $tab-strip-margin;
+      top: $tab-strip-margin;
+      width: $tab-strip-width;
+      height: $tab-height - $tab-strip-margin * 2 - $tab-border-width * 2;
+    }
+  }
+}

@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
+import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -27,6 +27,9 @@ import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
+import { ClipDef } from "./TechniqueFlags";
+import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { AttributeHandle } from "./Handle";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -86,64 +89,40 @@ export class FrustumUniforms {
   }
 }
 
-/** Interface for GPU clipping. Max of 6 planes of clipping; no nesting */
+/** Interface for 3d GPU clipping. */
 export class Clips {
-  private readonly _clips: Float32Array;
-  private _clipCount: number;
-  private _clipActive: number;  // count of SetActiveClip nesting (only outermost used)
+  private _texture?: TextureHandle;
+  private clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
+  private clipCount: number = 0;
 
-  public constructor() {
-    this._clipCount = 0;
-    this._clipActive = 0;
-    const data = [];
-    for (let i = 0; i < 6 * 4; i++) {
-      data[i] = 0.0;
-    }
+  public get texture(): TextureHandle | undefined { return this._texture; }
+  public get count(): number { return this.clipCount; }
+  public get isValid(): boolean { return this.clipCount > 0; }
 
-    this._clips = new Float32Array(data);
+  public set(numPlanes: number, texture: TextureHandle) {
+    this.clipActive++;
+    if (this.clipActive !== 1)
+      return;
+
+    this.clipCount = numPlanes;
+    this._texture = texture;
   }
 
-  public setFrom(planes: ClipPlane[], viewMatrix: Transform): void {
-    this._clipActive++;
-    if (1 === this._clipActive) {
-      const count = planes.length;
-      this._clipCount = count;
-      for (let i = 0; i < count; ++i) {
-        // Transform direction of clip plane
-        const norm: Vector3d = planes[i].inwardNormalRef;
-        const dir: Vector3d = viewMatrix.multiplyVector(norm);
-        dir.normalizeInPlace();
-        this._clips[i * 4] = dir.x;
-        this._clips[i * 4 + 1] = dir.y;
-        this._clips[i * 4 + 2] = dir.z;
-
-        // Transform distance of clip plane
-        const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
-        const xFormPos: Point3d = viewMatrix.multiplyPoint3d(pos);
-        this._clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
-      }
+  public clear() {
+    if (this.clipActive === 1) {
+      this.clipCount = 0;
+      this._texture = undefined;
     }
+    if (this.clipActive > 0)
+      this.clipActive--;
   }
-
-  public clear(): void {
-    if (this._clipActive === 1) {
-      this._clipCount = 0;
-    }
-
-    if (this._clipActive > 0) {
-      this._clipActive--;
-    }
-  }
-
-  public get clips(): Float32Array { return this._clips; }
-  public get length(): number { return this._clipCount; }
-  public get isValid(): boolean { return this.length > 0; }
 }
 
 export class PerformanceMetrics {
   public frameTimes: BeTimePoint[] = [];
   public curFrameTimeIndex = 0;
-  public gatherFrameTimings = true;
+  public gatherGlFinish = false;
+  public gatherCurPerformanceMetrics = false;
   public curSpfTimeIndex = 0;
   public spfTimes: number[] = [];
   public spfSum: number = 0;
@@ -153,6 +132,11 @@ export class PerformanceMetrics {
   public loadTileSum: number = 0;
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
+
+  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false) {
+    this.gatherGlFinish = gatherGlFinish;
+    this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
+  }
 }
 
 export abstract class Target extends RenderTarget {
@@ -171,19 +155,23 @@ export abstract class Target extends RenderTarget {
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   public readonly compositor: SceneCompositor;
+  private _activeClipVolume?: ClipPlanesVolume | ClipMaskVolume;
   private _clipMask?: TextureHandle;
+  public readonly clips = new Clips();
+  protected _fbo?: FrameBuffer;
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
-  private _performanceMetrics = new PerformanceMetrics();
   protected _dcAssigned: boolean = false;
-  public readonly clips = new Clips();
+  public performanceMetrics?: PerformanceMetrics;
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
   public readonly bgColor = ColorDef.red.clone();
   public readonly monoColor = ColorDef.white.clone();
   public readonly hiliteSettings = new Hilite.Settings();
   public readonly planFrustum = new Frustum();
+  public readonly renderRect = new ViewRect();
+  private _planFraction: number = 0;
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
@@ -196,14 +184,15 @@ export abstract class Target extends RenderTarget {
   public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
 
-  protected constructor() {
+  protected constructor(rect?: ViewRect) {
     super();
     this._renderCommands = new RenderCommands(this, this._stack);
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this.compositor = new SceneCompositor(this);  // compositor is created but not yet initialized... we are still undisposed
+    this.compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
+    this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
   }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
@@ -239,13 +228,13 @@ export abstract class Target extends RenderTarget {
 
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
       const vf = new ViewFlags();
-      vf.setRenderMode(RenderMode.SmoothShade);
-      vf.setShowClipVolume(false);
+      vf.renderMode = RenderMode.SmoothShade;
+      vf.clipVolume = false;
 
       const showLights = !this.is2d;
-      vf.setShowSourceLights(showLights);
-      vf.setShowCameraLights(showLights);
-      vf.setShowSolarLight(showLights);
+      vf.sourceLights = showLights;
+      vf.cameraLights = showLights;
+      vf.solarLight = showLights;
 
       this._worldDecorations = new WorldDecorations(vf);
     }
@@ -256,16 +245,23 @@ export abstract class Target extends RenderTarget {
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
-  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
+  public get clipDef(): ClipDef {
+    if (this.hasClipVolume)
+      return new ClipDef(ClippingType.Planes, this.clips.count);
+    else if (this.hasClipMask)
+      return new ClipDef(ClippingType.Mask);
+    else
+      return new ClipDef();
+  }
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
   public get clipMask(): TextureHandle | undefined { return this._clipMask; }
   public set clipMask(mask: TextureHandle | undefined) {
-    assert(!this.hasClipMask);
+    assert((mask === undefined) === this.hasClipMask);
     assert(this.is2d);
-    dispose(this._clipMask);
     this._clipMask = mask;
   }
 
@@ -280,7 +276,6 @@ export abstract class Target extends RenderTarget {
     dispose(this.compositor);
     this._dynamics = dispose(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
-    this._clipMask = dispose(this._clipMask);
     this._environmentMap = dispose(this._environmentMap);
     this._diffuseMap = dispose(this._diffuseMap);
 
@@ -296,7 +291,7 @@ export abstract class Target extends RenderTarget {
     this._stack.pushBranch(branch);
     const clip = this._stack.top.clipVolume;
     if (undefined !== clip) {
-      (clip as any).push(exec);
+      clip.pushToShaderExecutor(exec);
     }
   }
   public pushState(state: BranchState) {
@@ -306,14 +301,21 @@ export abstract class Target extends RenderTarget {
   public popBranch(): void {
     const clip = this._stack.top.clipVolume;
     if (undefined !== clip) {
-      (clip as any).pop(this);
+      clip.pop(this);
     }
 
     this._stack.pop();
   }
 
-  public pushActiveVolume(): void { } // ###TODO
-  public popActiveVolume(): void { } // ###TODO
+  public pushActiveVolume(): void {
+    if (this._activeClipVolume !== undefined)
+      this._activeClipVolume.pushToTarget(this);
+  }
+
+  public popActiveVolume(): void {
+    if (this._activeClipVolume !== undefined)
+      this._activeClipVolume.pop(this);
+  }
 
   public addBatch(batch: Batch) {
     assert(this._batches.indexOf(batch) < 0);
@@ -326,23 +328,23 @@ export abstract class Target extends RenderTarget {
     this._batches.splice(index, 1);
   }
 
-  public setFrameTime(sceneTime = 0.0) {
-    if (this._performanceMetrics.gatherFrameTimings) {
-      if (sceneTime > 0.0) {
-        this._performanceMetrics.frameTimes[0] = BeTimePoint.beforeNow(BeDuration.fromSeconds(sceneTime));
-        this._performanceMetrics.frameTimes[1] = BeTimePoint.now();
-        this._performanceMetrics.curFrameTimeIndex = 2;
-      } else if (this._performanceMetrics.curFrameTimeIndex < 12)
-        this._performanceMetrics.frameTimes[this._performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
+  public setFrameTime(sceneTime?: number) {
+    if (this.performanceMetrics) {
+      if (sceneTime !== undefined) {
+        this.performanceMetrics.frameTimes[1] = BeTimePoint.now();
+        this.performanceMetrics.frameTimes[0] = this.performanceMetrics.frameTimes[1].minus(BeDuration.fromMilliseconds(sceneTime));
+        this.performanceMetrics.curFrameTimeIndex = 2;
+      } else if (this.performanceMetrics.curFrameTimeIndex < 12)
+        this.performanceMetrics.frameTimes[this.performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
     }
   }
   public get frameTimings(): number[] {
+    if (this.performanceMetrics === undefined) return [];
     const timings: number[] = [];
     for (let i = 0; i < 11; ++i)
-      timings[i] = (this._performanceMetrics.frameTimes[i + 1].milliseconds - this._performanceMetrics.frameTimes[i].milliseconds);
+      timings[i] = (this.performanceMetrics.frameTimes[i + 1].milliseconds - this.performanceMetrics.frameTimes[i].milliseconds);
     return timings;
   }
-  public get performanceMetrics(): PerformanceMetrics { return this._performanceMetrics; }
 
   // ---- Implementation of RenderTarget interface ---- //
 
@@ -350,17 +352,16 @@ export abstract class Target extends RenderTarget {
   public get cameraFrustumNearScaleLimit() {
     return 0; // ###TODO
   }
+  public get planFraction() { return this._planFraction; }
 
   public changeDecorations(decs: Decorations): void {
     this._decorations = dispose(this._decorations);
     this._decorations = decs;
-    for (let i = 0; i < 16; i++) {
-      System.instance.context.disableVertexAttribArray(i);
-    }
+    AttributeHandle.disableAll();
   }
-  public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
+  public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
     this._scene = scene;
-    // ###TODO active volume
+    this._activeClipVolume = _activeVolume;
   }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
@@ -414,7 +415,14 @@ export abstract class Target extends RenderTarget {
     this.hiliteSettings.copyFrom(plan.hiliteSettings);
     this._transparencyThreshold = 0.0;
 
-    // ##TODO active volume...
+    let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
+    if (plan.activeVolume !== undefined)
+      if (plan.activeVolume.type === ClippingType.Planes)
+        clipVolume = plan.activeVolume as ClipPlanesVolume;
+      else if (plan.activeVolume.type === ClippingType.Mask)
+        clipVolume = plan.activeVolume as ClipMaskVolume;
+
+    this._activeClipVolume = clipVolume;
 
     const scratch = Target._scratch;
     const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
@@ -426,15 +434,15 @@ export abstract class Target extends RenderTarget {
     switch (vf.renderMode) {
       case RenderMode.Wireframe: {
         // Edge overrides never apply in wireframe mode
-        vf.setShowVisibleEdges(false);
-        vf.setShowHiddenEdges(false);
+        vf.visibleEdges = false;
+        vf.hiddenEdges = false;
         forceEdgesOpaque = false;
         break;
       }
       case RenderMode.SmoothShade: {
         // Hidden edges require visible edges
-        if (!vf.showVisibleEdges()) {
-          vf.setShowHiddenEdges(false);
+        if (!vf.visibleEdges) {
+          vf.hiddenEdges = false;
         }
 
         break;
@@ -452,7 +460,7 @@ export abstract class Target extends RenderTarget {
       /* falls through */
       case RenderMode.HiddenLine: {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
-        vf.setShowVisibleEdges(true);
+        vf.visibleEdges = true;
 
         assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
         if (undefined !== plan.hline) {
@@ -488,6 +496,8 @@ export abstract class Target extends RenderTarget {
     const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, scratch.viewX);
     const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, scratch.viewY);
     const viewZ = viewX.crossProduct(viewY, scratch.viewZ).normalize()!;
+
+    this._planFraction = plan.fraction;
 
     if (!plan.is3d) {
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
@@ -582,10 +592,10 @@ export abstract class Target extends RenderTarget {
     let enabled = false;
     if (RenderPass.HiddenEdge === pass) {
       ovrs = this._hiddenEdgeOverrides;
-      enabled = this.currentViewFlags.showHiddenEdges();
+      enabled = this.currentViewFlags.hiddenEdges;
     } else {
       ovrs = this._visibleEdgeOverrides;
-      enabled = this.currentViewFlags.showVisibleEdges();
+      enabled = this.currentViewFlags.visibleEdges;
     }
 
     return enabled ? ovrs : undefined;
@@ -635,32 +645,34 @@ export abstract class Target extends RenderTarget {
     this.drawPass(RenderPass.ViewOverlay);
     this._stack.pop();
 
-    this._endPaint();
     this.setFrameTime();
+    this._endPaint();
 
-    if (sceneMilSecElapsed !== undefined) {
-      const perfMet = this._performanceMetrics;
-      const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
-      if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
-      perfMet.spfSum += fpsTimerElapsed;
-      perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
+    if (this.performanceMetrics) {
+      if (this.performanceMetrics.gatherCurPerformanceMetrics) {
+        const perfMet = this.performanceMetrics;
+        const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
+        if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
+        perfMet.spfSum += fpsTimerElapsed;
+        perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
 
-      const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
-      if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
-      perfMet.renderSpfSum += renderTimeElapsed;
-      perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
+        const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
+        if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
+        perfMet.renderSpfSum += renderTimeElapsed;
+        perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
 
-      if (sceneMilSecElapsed !== undefined) {
-        if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
-        perfMet.loadTileSum += sceneMilSecElapsed;
-        perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
-        if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+        if (sceneMilSecElapsed !== undefined) {
+          if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
+          perfMet.loadTileSum += sceneMilSecElapsed;
+          perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
+          if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+        }
+        perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
       }
-      perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
-    }
-    if (this._performanceMetrics.gatherFrameTimings) {
-      gl.finish();
-      this.setFrameTime();
+      if (this.performanceMetrics.gatherGlFinish) {
+        gl.finish();
+        this.setFrameTime();
+      }
     }
   }
 
@@ -712,17 +724,17 @@ export abstract class Target extends RenderTarget {
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     // Temporarily turn off textures and lighting. We don't need them and it will speed things up not to use them.
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.setShowTransparency(false);
-    vf.setShowTextures(false);
-    vf.setShowSourceLights(false);
-    vf.setShowCameraLights(false);
-    vf.setShowSolarLight(false);
-    vf.setShowShadows(false);
-    vf.setIgnoreGeometryMap(true);
-    vf.setShowAcsTriad(false);
-    vf.setShowGrid(false);
-    vf.setMonochrome(false);
-    vf.setShowMaterials(false);
+    vf.transparency = false;
+    vf.textures = false;
+    vf.sourceLights = false;
+    vf.cameraLights = false;
+    vf.solarLight = false;
+    vf.shadows = false;
+    vf.noGeometryMap = true;
+    vf.acsTriad = false;
+    vf.grid = false;
+    vf.monochrome = false;
+    vf.materials = false;
 
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);
@@ -778,6 +790,107 @@ export abstract class Target extends RenderTarget {
     return this.compositor.readPixels(rect, selector);
   }
 
+  /** Given a ViewRect, return a new rect that has been adjusted for the given aspect ratio. */
+  private adjustRectForAspectRatio(requestedRect: ViewRect, targetAspectRatio: number): ViewRect {
+    const rect = requestedRect.clone();
+    if (targetAspectRatio >= 1) {
+      const requestedWidth = rect.width;
+      const requiredWidth = rect.height * targetAspectRatio;
+      const adj = requiredWidth - requestedWidth;
+      rect.inset(-adj / 2, 0);
+    } else {
+      const requestedHeight = rect.height;
+      const requiredHeight = rect.width / targetAspectRatio;
+      const adj = requiredHeight - requestedHeight;
+      rect.inset(0, -adj / 2);
+    }
+    return rect;
+  }
+
+  protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {
+    assert(this._fbo !== undefined);
+    if (this._fbo === undefined)
+      return false;
+
+    const context = System.instance.context;
+    let didSucceed = true;
+    System.instance.frameBufferStack.execute(this._fbo, true, () => {
+      try {
+        context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
+      } catch (e) {
+        didSucceed = false;
+      }
+    });
+    if (!didSucceed)
+      return false;
+    return true;
+  }
+
+  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d): ImageBuffer | undefined {
+    // Determine capture rect and validate
+    const actualViewRect = this.renderRect;
+
+    const wantRect = wantRectIn.clone();
+    if (wantRect.right === -1 || wantRect.bottom === -1) {  // Indicates to get the entire view, no clipping
+      wantRect.right = actualViewRect.right;
+      wantRect.bottom = actualViewRect.bottom;
+    }
+
+    const targetSize = targetSizeIn.clone();
+    if (targetSize.x === 0 || targetSize.y === 0) { // Indicates image should have same dimensions as rect (no scaling)
+      targetSize.x = wantRect.width;
+      targetSize.y = wantRect.height;
+    }
+
+    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1); // in BSIRect, the right and bottom are actually *outside* of the rectangle
+    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
+      return undefined;
+
+    let captureRect = this.adjustRectForAspectRatio(wantRect, targetSize.x / targetSize.y);
+
+    // CLIPPING AND SCALING NOT AVAILABLE FOR D3D ----------------
+    captureRect = wantRect.clone();
+    targetSize.x = captureRect.width;
+    targetSize.y = captureRect.height;
+    // -----------------------------------------------------------
+
+    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
+      return undefined; // ###TODO: additional logic to shrink requested rectangle to fit inside view
+
+    this.assignDC();
+
+    // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
+    const bytesPerPixel = 4;
+    const imageData = new Uint8Array(bytesPerPixel * captureRect.width * captureRect.height);
+    const isValidImageData = this.readImagePixels(imageData, captureRect.left, actualViewRect.height - captureRect.bottom, captureRect.width, captureRect.height);
+    if (!isValidImageData)
+      return undefined;
+    const image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, targetSize.x);
+    if (!image)
+      return undefined;
+
+    // No need to scale image.
+    // Some callers want background pixels to be treated as fully-transparent
+    // They indicate this by supplying a background color with full transparency
+    // Any other pixels are treated as fully-opaque as alpha has already been blended
+    // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
+    const preserveBGAlpha = 0x00 === this.bgColor.getAlpha();
+
+    // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
+    let isEmptyImage = true;
+    for (let i = 3; i < image.data.length; i += 4) {
+      const a = image.data[i];
+      if (!preserveBGAlpha || 0 < a) {
+        image.data[i] = 0xff;
+        isEmptyImage = false;
+      }
+    }
+    if (isEmptyImage)
+      return undefined;
+
+    return image;
+  }
+
   // ---- Methods expected to be overridden by subclasses ---- //
 
   protected abstract _assignDC(): boolean;
@@ -787,9 +900,7 @@ export abstract class Target extends RenderTarget {
 
 /** A Target which renders to a canvas on the screen */
 export class OnScreenTarget extends Target {
-  private readonly _viewRect = new ViewRect();
   private readonly _canvas: HTMLCanvasElement;
-  private _fbo?: FrameBuffer;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
   private _prevViewRect: ViewRect = new ViewRect();
 
@@ -805,9 +916,9 @@ export class OnScreenTarget extends Target {
   }
 
   public get viewRect(): ViewRect {
-    this._viewRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
-    assert(Math.floor(this._viewRect.width) === this._viewRect.width && Math.floor(this._viewRect.height) === this._viewRect.height, "fractional view rect dimensions");
-    return this._viewRect;
+    this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
+    return this.renderRect;
   }
 
   public setViewRect(_rect: ViewRect, _temporary: boolean): void { assert(false); }
@@ -815,14 +926,13 @@ export class OnScreenTarget extends Target {
   protected _assignDC(): boolean {
     assert(undefined === this._fbo);
 
-    const rect = this.viewRect;
+    const rect = this.viewRect; // updates the render rect to be the client width and height
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     if (undefined === color) {
       return false;
     }
 
     this._fbo = FrameBuffer.create([color]);
-    // color.dispose();  // dispose of the texture (it is not used anymore)...?
     if (undefined === this._fbo) {
       return false;
     }
@@ -909,20 +1019,20 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
-  private _viewRect: ViewRect;
-
   public constructor(rect: ViewRect) {
-    super();
-    this._viewRect = new ViewRect(rect.left, rect.bottom, rect.right, rect.top);
+    super(rect);
   }
 
-  public get viewRect(): ViewRect { return this._viewRect; }
+  public get viewRect(): ViewRect { return this.renderRect; }
+
+  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
+  public updateViewRect(): boolean { return false; } // offscreen target does not dynmaically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
-    if (this._viewRect.equals(rect))
+    if (this.renderRect.equals(rect))
       return;
 
-    this._viewRect.copyFrom(rect);
+    this.renderRect.copyFrom(rect);
     if (temporary) {
       // Temporarily adjust view rect in order to create scene for a view attachment.
       // Will be reset before attachment is rendered - so don't blow away our framebuffers + textures
@@ -930,18 +1040,30 @@ export class OffScreenTarget extends Target {
     }
 
     this._dcAssigned = false;
-    // ###TODO this._fbo = undefined;
+    this._fbo = dispose(this._fbo);
     dispose(this.compositor);
   }
 
-  // ###TODO...
-  protected _assignDC(): boolean { return false; }
-  protected _makeCurrent(): void { }
-  protected _beginPaint(): void { }
-  protected _endPaint(): void { }
-  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
-  public updateViewRect(): boolean {
-    return false;
+  protected _assignDC(): boolean {
+    if (!this.updateViewRect() && this._fbo !== undefined)
+      return true;
+
+    const rect = this.viewRect;
+    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (color === undefined)
+      return false;
+    this._fbo = FrameBuffer.create([color]);
+    assert(this._fbo !== undefined);
+    return this._fbo !== undefined;
+  }
+
+  protected _beginPaint(): void {
+    assert(this._fbo !== undefined);
+    System.instance.frameBufferStack.push(this._fbo!, true);
+  }
+
+  protected _endPaint(): void {
+    System.instance.frameBufferStack.pop();
   }
 }
 
@@ -954,7 +1076,7 @@ function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3
   return result;
 }
 
-function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
+export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
   const result = undefined !== out ? out : new Point3d();
   result.x = p.x + v.x * scale;
   result.y = p.y + v.y * scale;

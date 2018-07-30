@@ -12,13 +12,12 @@ import {
   VertexShaderComponent,
   ShaderBuilder,
 } from "../ShaderBuilder";
-import { FeatureMode, WithClipVolume } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal } from "./Fragment";
+import { FeatureMode } from "../TechniqueFlags";
+import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
-import { addClipping } from "./Clipping";
 import { FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
@@ -68,19 +67,19 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
   frag.addUniform("u_matRgb", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_matRgb", (uniform, params) => {
-      const mat: Material = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      const mat: Material = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform4fv(mat.diffuseUniform);
     });
   });
   frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_matAlpha", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform2fv(mat.alphaUniform);
     });
   });
   frag.addUniform("u_textureWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_textureWeight", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials() && params.geometry.material ? params.geometry.material : Material.default;
+      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform1f(mat.textureWeight);
     });
   });
@@ -94,14 +93,11 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(clip: WithClipVolume): ProgramBuilder {
+function createCommon(): ProgramBuilder {
   const builder = new ProgramBuilder(true);
   const vert = builder.vert;
 
   // ###TODO Animation.AddCommon(vert);
-
-  if (WithClipVolume.Yes === clip)
-    addClipping(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -111,8 +107,8 @@ function createCommon(clip: WithClipVolume): ProgramBuilder {
   return builder;
 }
 
-export function createSurfaceHiliter(clip: WithClipVolume): ProgramBuilder {
-  const builder = createCommon(clip);
+export function createSurfaceHiliter(): ProgramBuilder {
+  const builder = createCommon();
   addHiliter(builder);
   return builder;
 }
@@ -189,10 +185,6 @@ const computeNormal = `
   return normalize(u_nmx * octDecodeNormal(normal));
 `;
 
-const isBelowTransparencyThreshold = `
-  return alpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
-`;
-
 const applyBackgroundColor = `
   if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
     baseColor.rgb = u_bgColor.rgb;
@@ -263,28 +255,14 @@ function addNormal(builder: ProgramBuilder) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
 }
 
-function addTransparencyThreshold(frag: FragmentShaderBuilder) {
-  frag.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_transparencyThreshold", (uniform, params) => {
-      uniform.setUniform1f(params.target.transparencyThreshold);
-    });
-  });
-
-  frag.set(FragmentShaderComponent.DiscardByAlpha, isBelowTransparencyThreshold);
-}
-
-export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): ProgramBuilder {
-  const builder = createCommon(clip);
+export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
+  const builder = createCommon();
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
   addNormal(builder);
-
-  // NB: We need the transparency threshold in translucent *and* opaque passes.
-  // Opaque because we must compute the alpha in order to decide whether to discard or render opaque.
-  addTransparencyThreshold(builder.frag);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
@@ -322,10 +300,10 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
-        texture.texture.bindSampler(uniform, TextureUnit.Zero);
+        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
         // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.Zero);
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       }
     });
   });
@@ -340,21 +318,18 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   });
 
   // Fragment and Vertex
-  addColor(builder);
+  addColor(builder, true);
 
   // Fragment
   builder.frag.addFunction(getSurfaceColor);
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
-  if (FeatureMode.None === feat || !System.instance.capabilities.supportsPickShaders) {
+  if (FeatureMode.None === feat) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
-    builder.frag.addExtension("GL_EXT_draw_buffers");
     builder.frag.addFunction(GLSLDecode.depthRgb);
-    builder.frag.addFunction(GLSLDecode.encodeDepthRgb);
-    builder.frag.addFunction(GLSLFragment.computeLinearDepth);
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
+    addPickBufferOutputs(builder.frag);
   }
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

@@ -150,6 +150,9 @@ describe("iModel", () => {
     const phys = imodel1.elements.getElement(new Id64("0x38"));
     assert.isTrue(phys instanceof GeometricElement3d);
 
+    const locateMsg = phys.getLocateMessage();
+    assert.isDefined(locateMsg);
+
     const a2 = imodel2.elements.getElement(new Id64("0x1d"));
     assert.exists(a2);
     assert.isTrue(a2.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");

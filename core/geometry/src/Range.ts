@@ -6,7 +6,7 @@
 
 import { Geometry, BeJSONFunctions } from "./Geometry";
 import { Point2d, Vector2d, Point3d, Vector3d } from "./PointVector";
-import { Transform } from "./Transform";
+import { Transform, RotMatrix } from "./Transform";
 import { Range1dProps, Range2dProps, Range3dProps } from "./PointVector";
 import { LowAndHighXYZ, LowAndHighXY } from "./PointVector";
 import { XAndY, XYAndZ } from "./PointVector";
@@ -604,6 +604,30 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       this.high.x + delta, this.high.y + delta, this.high.z + delta, true);
   }
 
+  /** Create a local to world transform from this range. */
+  public getLocalToWorldTransform(result?: Transform): Transform {
+    return Transform.createOriginAndMatrix(Point3d.create(this.low.x, this.low.y, this.low.z), RotMatrix.createRowValues(
+      this.high.x - this.low.x, 0, 0,
+      0, this.high.y - this.low.y, 0,
+      0, 0, this.high.z - this.low.z,
+    ), result);
+  }
+
+  /**
+   * Creates an NPC to world transformation to go from 000...111 to the globally aligned cube with diagonally opposite corners that are the
+   * min and max of this range. The diagonal component for any degenerate direction is 1.
+   */
+  public getNpcToWorldRangeTransform(result?: Transform): Transform {
+    const transform = this.getLocalToWorldTransform(result);
+    const matrix = transform.matrix;
+    if (matrix.coffs[0] === 0)
+      matrix.coffs[0] = 1;
+    if (matrix.coffs[4] === 0)
+      matrix.coffs[4] = 1;
+    if (matrix.coffs[8] === 0)
+      matrix.coffs[8] = 1;
+    return transform;
+  }
 }
 export class Range1d extends RangeBase {
 

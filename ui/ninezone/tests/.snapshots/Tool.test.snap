@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Tool /> renders correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;

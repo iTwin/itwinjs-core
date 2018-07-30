@@ -1,0 +1,33 @@
+@import "_variables";
+
+.nz-toolbar-button-app {
+  > .nz-bars {
+    height: 100%;
+    position: relative;
+    top: -100%;
+    display: flex;
+    flex-flow: column;
+    align-items: start;
+    justify-content: center;
+
+    > .nz-bar {
+      background-color: $button-stroke-color;
+      width: $bar-width;
+      height: $bar-height;
+      border-top-right-radius: $bar-right-corner-radius;
+      border-bottom-right-radius: $bar-right-corner-radius;
+      filter: $icon-shadow;
+    }
+
+    > .nz-bar:not(:first-child) {
+      margin-top: 5px;
+    }
+  }
+
+  &:active {
+    > .nz-bars {
+      width: 0;
+      height: 0;
+    }
+  }
+}

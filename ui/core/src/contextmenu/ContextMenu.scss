@@ -1,0 +1,100 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/bwc/lib/mixins";
+
+.context-menu {
+  &:hover {
+    color: $bwc-text-color;
+    cursor: auto;
+  }
+
+  width: 0px;
+  height: 0px;
+  position: relative;
+  z-index: 9999;
+
+  .context-menu-container {
+    position: fixed;
+    overflow: hidden;
+
+    &.opened {
+      visibility: inherit;
+      transform-origin: top;
+      transform: scaleY(1);
+    }
+
+    transition: transform .3s;
+    visibility: hidden;
+    transform: scaleY(0);
+    display: inline-block;
+    background-color: $bwc-white;
+    border: 1px solid $bwc-inputs-border-color;
+    box-shadow: rgba($bwc-black, 0.25) 0px 1px 1px;
+
+    .context-menu-item {
+      display: flex;
+      cursor: default;
+      padding: ($bwc-unbordered-padding / 2) $bwc-bordered-padding;
+
+      &.selected {
+        background-color: $bwc-gray;
+      }
+
+      &:first-child {
+        padding-top: $bwc-bordered-padding;
+      }
+
+      &:last-child {
+        padding-bottom: $bwc-bordered-padding;
+      }
+
+      &.disabled {
+        color: $bwc-gray;
+      }
+
+      > .context-menu-icon {
+        flex-shrink: 0;
+        flex-grow: 0;
+        width: $bwc-icons-small;
+        height: $bwc-line-height;
+        font-size: $bwc-icons-small;
+        line-height: $bwc-line-height;
+        text-align: center;
+      }
+
+      > .context-menu-content {
+        flex-shrink: 0;
+        flex-grow: 1;
+        margin-left: $bwc-unbordered-padding;
+      }
+    }
+
+    &:focus {
+      border: 1px solid $bwc-inputs-border-color;
+      box-shadow: rgba($bwc-black, 0.25) 0px 1px 1px;
+      outline: 0px;
+
+      > .context-menu-item.selected,
+      > .context-submenu > .context-menu-item.selected {
+        background-color: $bwc-blue;
+      }
+    }
+
+    .context-submenu .context-submenu-container .context-submenu-arrow {
+      flex-shrink: 0;
+      flex-grow: 0;
+      margin-left: $bwc-unbordered-padding;
+      width: $bwc-icons-small;
+      height: $bwc-line-height;
+      font-size: $bwc-icons-small / 2;
+      line-height: $bwc-line-height;
+      text-align: center;
+    }
+  }
+
+  .context-menu-divider {
+    border-bottom: 1px solid $bwc-inputs-border-color;
+    height: 0px;
+  }
+}

@@ -13,12 +13,11 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
-import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
+import { ViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
-import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState } from "./ModelState";
 import { IModelApp } from "./IModelApp";
+import { EntityState } from "./EntityState";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -66,6 +65,37 @@ export class IModelConnection extends IModel {
    */
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
+  }
+
+  /** Registry of className to EntityState class */
+  private static _registry = new Map<string, typeof EntityState>();
+
+  /** Register a class by classFullName */
+  public static registerClass(className: string, classType: typeof EntityState) { this._registry.set(className, classType); }
+
+  /** @hidden */
+  public static findClass(className: string) { return this._registry.get(className); }
+
+  /**
+   * Find the first base class of the given class that is registered. Then, register that EntityState as the handler of the given class so we won't need this method again for that class.
+   * @hidden
+   */
+  public async findRegisteredBaseClass(className: string, defaultClass: typeof EntityState | undefined): Promise<typeof EntityState | undefined> {
+    let ctor = defaultClass; // worst case, we don't find any registered base classes
+
+    // wait until we get the full list of base classes from backend
+    const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken, className);
+    // walk through the list until we find a registered base class
+    baseClasses.some((baseClass: string) => {
+      const test = IModelConnection.findClass(baseClass);
+      if (test === undefined)
+        return false; // nope, not registered
+
+      ctor = test; // found it, save it
+      IModelConnection.registerClass(className, ctor); // and register the fact that our starting class is handled by this ModelState subclass.
+      return true; // stop
+    });
+    return ctor; // either the baseClass handler or ModelState if we didn't find a registered baseClass
   }
 
   private constructor(iModel: IModel, openMode: OpenMode, accessToken?: AccessToken) {
@@ -313,17 +343,36 @@ export class IModelConnection extends IModel {
 
   private _snapPending = false;
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    if (this._snapPending)
+      throw Error("busy");
+
     this._snapPending = true; // save flag indicating we're in the process of generating a snap
     const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
     await response; // after snap completes, turn off flag
     this._snapPending = false;
     return response; // return fulfilled promise
   }
+  public _cancelPending = false;
   public async cancelSnap(): Promise<void> {
+    if (this._cancelPending)
+      throw Error("busy");
+
+    this._cancelPending = true; // save flag indicating we're in the process of generating a snap
     if (this._snapPending) { // if we're waiting for a snap, cancel it.
+      await IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
       this._snapPending = false;
-      return IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
     }
+    this._cancelPending = false;
+  }
+
+  private _locateMsgPending = false;
+  public async getLocateMessage(id: string): Promise<string[]> {
+    if (this._locateMsgPending)
+      throw Error("busy");
+    this._locateMsgPending = true;
+    const val = await IModelReadRpcInterface.getClient().getLocateMessage(this.iModelToken, id);
+    this._locateMsgPending = false;
+    return val;
   }
 }
 
@@ -344,14 +393,6 @@ export namespace IModelConnection {
     /** The set of loaded models for this IModelConnection, indexed by Id. */
     public loaded = new Map<string, ModelState>();
 
-    /** Registry of className to ModelState class */
-    private static _registry = new Map<string, typeof ModelState>();
-
-    /** Register a class by classFullName */
-    public static registerClass(className: string, classType: typeof ModelState) { this._registry.set(className, classType); }
-
-    private static findClass(className: string) { return this._registry.get(className); }
-
     /** @hidden */
     constructor(private _iModel: IModelConnection) { }
 
@@ -364,25 +405,6 @@ export namespace IModelConnection {
     }
 
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
-
-    /** Find the first base class of the given class that is registered. Then, register that ModelState as the handler of the given class so we won't need this method again for that class. */
-    private async findRegisteredBaseClass(className: string): Promise<typeof ModelState> {
-      let ctor = ModelState; // worst case, we don't find any registered base classes
-
-      // wait until we get the full list of base classes from backend
-      const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this._iModel.iModelToken, className);
-      // walk through the list until we find a registered base class
-      baseClasses.some((baseClass: string) => {
-        const test = Models.findClass(baseClass);
-        if (test === undefined)
-          return false; // nope, not registered
-
-        ctor = test; // found it, save it
-        Models.registerClass(className, ctor); // and register the fact that our starting class is handled by this ModelState subclass.
-        return true; // stop
-      });
-      return ctor; // either the baseClass handler or ModelState if we didn't find a registered baseClass
-    }
 
     /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
@@ -398,11 +420,11 @@ export namespace IModelConnection {
 
       try {
         (await this.getProps(notLoaded)).forEach(async (props) => {
-          let ctor = Models.findClass(props.classFullName);
+          let ctor = IModelConnection.findClass(props.classFullName);
           if (undefined === ctor) // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
-            ctor = await this.findRegisteredBaseClass(props.classFullName); // must wait for this
-          const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
-          this.loaded.set(modelState.id.value, modelState); // save it in loaded set
+            ctor = await this._iModel.findRegisteredBaseClass(props.classFullName, ModelState); // must wait for this
+          const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
+          this.loaded.set(modelState.id.value, modelState as ModelState); // save it in loaded set
         });
       } catch (err) { } // ignore error, we had nothing to do.
     }
@@ -551,63 +573,28 @@ export namespace IModelConnection {
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64Props): Promise<ViewState> {
-      const viewStateData: any = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
+      const viewStateData = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
       const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
-      let viewState: ViewState;
-      switch (viewStateData.viewDefinitionProps.classFullName) {
-        case SpatialViewState.getClassFullName(): {
-          const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
-          const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
-          viewState = new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
-          break;
-        }
-        case OrthographicViewState.getClassFullName(): {
-          const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
-          const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
-          viewState = new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
-          break;
-        }
-        case ViewState2d.getClassFullName(): {
-          const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-          viewState = new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
-          break;
-        }
-        case DrawingViewState.getClassFullName(): {
-          const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-          viewState = new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
-          break;
-        }
-        case SheetViewState.getClassFullName(): {
-          const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-          viewState = new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
-          break;
-        }
-        default:
+      const className = viewStateData.viewDefinitionProps.classFullName;
+      let ctor = IModelConnection.findClass(className) as typeof ViewState | undefined;
+      if (undefined === ctor) { // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
+        ctor = (await this._iModel.findRegisteredBaseClass(className, undefined)) as typeof ViewState | undefined; // must wait for this
+        if (ctor === undefined)
           return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggingCategory, () => viewStateData));
       }
 
+      const viewState = ctor.createFromStateData(viewStateData, categorySelectorState, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
       return viewState;
     }
   }
 
   /** @hidden */
-  // NB: Very WIP.
   export class Tiles {
     private _iModel: IModelConnection;
-
-    /** @hidden */
-    constructor(iModel: IModelConnection) {
-      this._iModel = iModel;
-    }
-
-    public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> {
-      return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids);
-    }
-
-    public async getTileProps(ids: TileId[]): Promise<TileProps[]> {
-      return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids);
-    }
+    constructor(iModel: IModelConnection) { this._iModel = iModel; }
+    public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids); }
+    public async getTileProps(ids: TileId[]): Promise<TileProps[]> { return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids); }
   }
 }

@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+
+import Tooltip from "@src/popup/tooltip/Tooltip";
+
+describe("<Tooltip />", () => {
+  it("should render", () => {
+    mount(<Tooltip />);
+  });
+
+  it("renders correctly", () => {
+    shallow(<Tooltip />).should.matchSnapshot();
+  });
+});

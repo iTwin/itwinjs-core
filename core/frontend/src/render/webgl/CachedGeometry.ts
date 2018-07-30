@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d, RenderTexture } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
@@ -19,7 +19,7 @@ import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
-import { SkyBoxCreateParams } from "../System";
+import { SkyBoxCreateParams, SkyboxSphereType } from "../System";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable {
@@ -38,6 +38,8 @@ export abstract class CachedGeometry implements IDisposable {
   public abstract get renderOrder(): RenderOrder;
   // Returns true if this is a lit surface
   public get isLitSurface(): boolean { return false; }
+  // Returns true if this is an unlit surface with baked-in lighting (e.g. 3mx, scalable mesh reality models)
+  public get hasBakedLighting(): boolean { return false; }
 
   /** Returns the origin of this geometry's quantization parameters. */
   public abstract get qOrigin(): Float32Array;
@@ -72,10 +74,10 @@ export abstract class CachedGeometry implements IDisposable {
     return !params.isOverlayPass && this._wantWoWReversal(params.target);
   }
   public getLineCode(params: ShaderProgramParams): number {
-    return params.target.currentViewFlags.showStyles() ? this._getLineCode(params) : LineCode.solid;
+    return params.target.currentViewFlags.styles ? this._getLineCode(params) : LineCode.solid;
   }
   public getLineWeight(params: ShaderProgramParams): number {
-    if (!params.target.currentViewFlags.showWeights()) {
+    if (!params.target.currentViewFlags.weights) {
       return 1.0;
     }
 
@@ -85,6 +87,18 @@ export abstract class CachedGeometry implements IDisposable {
     weight = Math.min(weight, 31.0);
     assert(Math.floor(weight) === weight);
     return weight;
+  }
+  // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
+  public wantMixHiliteColorForFlash(vf: ViewFlags): boolean {
+    // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
+    if (this.hasBakedLighting)
+      return true;
+    else if (!this.isLitSurface)
+      return false;
+    else if (RenderMode.SmoothShade !== vf.renderMode)
+      return false;
+    else
+      return vf.sourceLights || vf.cameraLights || vf.solarLight;
   }
 }
 
@@ -171,123 +185,99 @@ export class ClipMaskGeometry extends IndexedGeometry {
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }
 
-class SkyBoxSides {
-  public static readonly front = 0.0;
-  public static readonly back = 0.2;
-  public static readonly top = 0.4;
-  public static readonly bottom = 0.6;
-  public static readonly left = 0.8;
-  public static readonly right = 1.0;
-}
-
 // a cube of quads in normalized device coordinates for skybox rendering techniques
 class SkyBoxQuads {
   public readonly vertices: Uint16Array;
   public readonly vertexParams: QParams3d;
-  public readonly uvs: Float32Array;
-  public readonly sides: Float32Array;
 
   public constructor() {
     const skyBoxSz = 1.0;
 
     const qVerts = new QPoint3dList(QParams3d.fromNormalizedRange());
-    this.sides = new Float32Array(36);
-    this.uvs = new Float32Array(36 * 2);
 
     // NB: After applying the rotation matrix in the shader, Back becomes (Bottom), etc.
     // See the notes in the parens below.
 
+    // ###TODO: Make this indexed.  Currently not indexed because of previous six-sided texture system.
+
     // Back (Bottom after rotation)
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 0], 0);  // back upper left - 0
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 2);   // back upper right - 1
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 0], 4); // back lower left - 2
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 6);   // back upper right - 1
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 8);  // back lower right - 3
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 0], 10); // back lower left - 2
-    this.sides.set([SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom, SkyBoxSides.bottom], 0);
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
 
     // Front (Top after rotation)
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 1], 12);  // front upper left - 4
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 14);   // front upper right - 5
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 1], 16); // front lower left - 6
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 18);   // front upper right - 5
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 20);  // front lower right - 7
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 1], 22); // front lower left - 6
-    this.sides.set([SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top, SkyBoxSides.top], 6);
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
 
     // Top (Front after rotation)
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 24); // front upper left - 4
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 26);  // front upper right - 5
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 28);   // back upper right - 1
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 30); // front upper left - 4
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 32);  // back upper left - 0
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 34);   // back upper right - 1
-    this.sides.set([SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front, SkyBoxSides.front], 12);
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
 
     // Bottom (Back after rotation)
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 36);  // back lower left - 2
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 38);   // back lower right - 3
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 40); // front lower left - 6
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 42);   // back lower right - 3
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 44);  // front lower right - 7
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 46); // front lower left - 6
-    this.sides.set([SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back, SkyBoxSides.back], 18);
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
 
     // Left (Right after rotation)
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 48);   // back upper left - 0
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 50);  // front upper left - 4
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 52);  // back lower left - 2
-    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 54);  // front upper left - 4
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 56); // front lower left - 6
-    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 58);  // back lower left - 2
-    this.sides.set([SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right, SkyBoxSides.right], 24);
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, skyBoxSz));   // back upper left - 0
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
+    qVerts.add(new Point3d(-skyBoxSz, skyBoxSz, -skyBoxSz));  // front upper left - 4
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, -skyBoxSz)); // front lower left - 6
+    qVerts.add(new Point3d(-skyBoxSz, -skyBoxSz, skyBoxSz));  // back lower left - 2
 
     // Right (Left after rotation)
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz)); this.uvs.set([0, 1], 60);   // back upper right - 1
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 62);  // front upper right - 5
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 64);  // back lower right - 3
-    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz)); this.uvs.set([0, 0], 66);  // front upper right - 5
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz)); this.uvs.set([1, 0], 68); // front lower right - 7
-    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz)); this.uvs.set([1, 1], 70);  // back lower right - 3
-    this.sides.set([SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left, SkyBoxSides.left], 30);
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, skyBoxSz));    // back upper right - 1
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
+    qVerts.add(new Point3d(skyBoxSz, skyBoxSz, -skyBoxSz));   // front upper right - 5
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, -skyBoxSz));  // front lower right - 7
+    qVerts.add(new Point3d(skyBoxSz, -skyBoxSz, skyBoxSz));   // back lower right - 3
 
     this.vertices = qVerts.toTypedArray();
     this.vertexParams = qVerts.params;
   }
 
   public createParams() {
-    return SkyBoxGeometryParams.create(this.vertices, this.vertexParams, this.uvs, this.sides);
+    return SkyBoxGeometryParams.create(this.vertices, this.vertexParams);
   }
 }
 
 // Parameters used to construct an SkyBox
 export class SkyBoxGeometryParams implements IDisposable {
   public readonly positions: QBufferHandle3d;
-  public readonly uvs: BufferHandle;
-  public readonly sides: BufferHandle;
 
-  protected constructor(positions: QBufferHandle3d, uvs: BufferHandle, sides: BufferHandle) {
+  protected constructor(positions: QBufferHandle3d) {
     this.positions = positions;
-    this.uvs = uvs;
-    this.sides = sides;
   }
 
-  public static create(positions: Uint16Array, qparams: QParams3d, uvs: Float32Array, sides: Float32Array) {
+  public static create(positions: Uint16Array, qparams: QParams3d) {
     const posBuf = QBufferHandle3d.create(qparams, positions);
-    const uvBuf = BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, uvs);
-    const sideBuf = BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, sides);
-    if (undefined === posBuf || undefined === uvBuf || undefined === sideBuf) {
+    if (undefined === posBuf) {
       assert(false);
       return undefined;
     }
 
-    assert(!posBuf.isDisposed && !sideBuf.isDisposed);
-    return new SkyBoxGeometryParams(posBuf, uvBuf, sideBuf);
+    assert(!posBuf.isDisposed);
+    return new SkyBoxGeometryParams(posBuf);
   }
 
   public dispose() {
     dispose(this.positions);
-    dispose(this.sides);
   }
 }
 
@@ -305,22 +295,12 @@ namespace SkyBoxQuads {
 // Geometry used for view-space rendering techniques.
 export class SkyBoxQuadsGeometry extends CachedGeometry {
   protected _techniqueId: TechniqueId;
-  public readonly front: RenderTexture;
-  public readonly back: RenderTexture;
-  public readonly top: RenderTexture;
-  public readonly bottom: RenderTexture;
-  public readonly left: RenderTexture;
-  public readonly right: RenderTexture;
+  public readonly cube: RenderTexture;
   protected readonly _params: SkyBoxGeometryParams;
 
   protected constructor(ndxGeomParams: SkyBoxGeometryParams, sbxCreateParams: SkyBoxCreateParams) {
     super();
-    this.front = sbxCreateParams.front!;
-    this.back = sbxCreateParams.back!;
-    this.top = sbxCreateParams.top!;
-    this.bottom = sbxCreateParams.bottom!;
-    this.left = sbxCreateParams.left!;
-    this.right = sbxCreateParams.right!;
+    this.cube = sbxCreateParams.texture!;
     this._techniqueId = TechniqueId.SkyBox;
     this._params = ndxGeomParams;
   }
@@ -336,14 +316,6 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
 
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
-  }
-
-  public bindTexCoordArray(attr: AttributeHandle): void {
-    attr.enableArray(this._params.uvs, 2, GL.DataType.Float, false, 0, 0);
-  }
-
-  public bindSideArray(attr: AttributeHandle): void {
-    attr.enableArray(this._params.sides, 1, GL.DataType.Float, false, 0, 0);
   }
 
   public draw(): void {
@@ -435,6 +407,109 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
     for (const texture of this._textures) {
       assert(!(texture instanceof TextureHandle));
     }
+  }
+}
+
+// Geometry used for rendering default gradient-style or single texture spherical skybox.
+export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
+  public worldPos: Float32Array; // LeftBottom, RightBottom, RightTop, LeftTop worl pos of frustum at mid depth.
+  public readonly typeAndExponents: Float32Array; // [0] -1.0 for 2-color gradient, 1.0 for 4-color gradient, 0.0 for texture; [1] sky exponent (4-color only) [2] ground exponent (4-color only)
+  public readonly zOffset: number;
+  public readonly rotation: number;
+  public readonly zenithColor: Float32Array;
+  public readonly skyColor: Float32Array;
+  public readonly groundColor: Float32Array;
+  public readonly nadirColor: Float32Array;
+  public readonly skyTexture?: RenderTexture;
+  protected readonly _worldPosBuff: BufferHandle;
+
+  protected constructor(params: IndexedGeometryParams, skyboxCreateParams: SkyBoxCreateParams, techniqueId: TechniqueId) {
+    super(params, techniqueId);
+    assert(skyboxCreateParams.isSphere);
+    if (SkyboxSphereType.Gradient4Color === skyboxCreateParams.sphereType) {
+      assert(undefined !== skyboxCreateParams.skyColor);
+      assert(undefined !== skyboxCreateParams.groundColor);
+      assert(undefined !== skyboxCreateParams.skyExponent);
+      assert(undefined !== skyboxCreateParams.groundExponent);
+    }
+    if (SkyboxSphereType.Texture === skyboxCreateParams.sphereType!) {
+      assert(undefined !== skyboxCreateParams.texture);
+    } else {
+      assert(undefined !== skyboxCreateParams.zenithColor);
+      assert(undefined !== skyboxCreateParams.nadirColor);
+    }
+    this.worldPos = new Float32Array(4 * 3);
+    this._worldPosBuff = new BufferHandle();
+    this.typeAndExponents = new Float32Array(3);
+    this.zenithColor = new Float32Array(3);
+    this.skyColor = new Float32Array(3);
+    this.groundColor = new Float32Array(3);
+    this.nadirColor = new Float32Array(3);
+    this.zOffset = skyboxCreateParams.zOffset!;
+    this.rotation = skyboxCreateParams.rotation!;
+    if (SkyboxSphereType.Texture === skyboxCreateParams.sphereType!) {
+      this.skyTexture = skyboxCreateParams.texture!;
+      this.typeAndExponents[0] = 0.0;
+      this.typeAndExponents[1] = 1.0;
+      this.typeAndExponents[2] = 1.0;
+      this.zenithColor[0] = 0.0;
+      this.zenithColor[1] = 0.0;
+      this.zenithColor[2] = 0.0;
+      this.nadirColor[0] = 0.0;
+      this.nadirColor[1] = 0.0;
+      this.nadirColor[2] = 0.0;
+      this.skyColor[0] = 0.0;
+      this.skyColor[1] = 0.0;
+      this.skyColor[2] = 0.0;
+      this.groundColor[0] = 0.0;
+      this.groundColor[1] = 0.0;
+      this.groundColor[2] = 0.0;
+    } else {
+      this.zenithColor[0] = skyboxCreateParams.zenithColor!.colors.r / 255.0;
+      this.zenithColor[1] = skyboxCreateParams.zenithColor!.colors.g / 255.0;
+      this.zenithColor[2] = skyboxCreateParams.zenithColor!.colors.b / 255.0;
+      this.nadirColor[0] = skyboxCreateParams.nadirColor!.colors.r / 255.0;
+      this.nadirColor[1] = skyboxCreateParams.nadirColor!.colors.g / 255.0;
+      this.nadirColor[2] = skyboxCreateParams.nadirColor!.colors.b / 255.0;
+      if (SkyboxSphereType.Gradient2Color === skyboxCreateParams.sphereType!) {
+        this.typeAndExponents[0] = -1.0;
+        this.typeAndExponents[1] = 4.0;
+        this.typeAndExponents[2] = 4.0;
+        this.skyColor[0] = 0.0;
+        this.skyColor[1] = 0.0;
+        this.skyColor[2] = 0.0;
+        this.groundColor[0] = 0.0;
+        this.groundColor[1] = 0.0;
+        this.groundColor[2] = 0.0;
+      } else {
+        this.typeAndExponents[0] = 1.0;
+        this.typeAndExponents[1] = skyboxCreateParams.skyExponent!;
+        this.typeAndExponents[2] = skyboxCreateParams.groundExponent!;
+        this.skyColor[0] = skyboxCreateParams.skyColor!.colors.r / 255.0;
+        this.skyColor[1] = skyboxCreateParams.skyColor!.colors.g / 255.0;
+        this.skyColor[2] = skyboxCreateParams.skyColor!.colors.b / 255.0;
+        this.groundColor[0] = skyboxCreateParams.groundColor!.colors.r / 255.0;
+        this.groundColor[1] = skyboxCreateParams.groundColor!.colors.g / 255.0;
+        this.groundColor[2] = skyboxCreateParams.groundColor!.colors.b / 255.0;
+      }
+    }
+  }
+
+  public static createGeometry(skyboxCreateParams: SkyBoxCreateParams) {
+    assert(skyboxCreateParams.isSphere);
+    const params = ViewportQuad.getInstance().createParams();
+    const technique = (SkyboxSphereType.Texture === skyboxCreateParams.sphereType ? TechniqueId.SkySphereTexture : TechniqueId.SkySphereGradient);
+    return undefined !== params ? new SkySphereViewportQuadGeometry(params, skyboxCreateParams, technique) : undefined;
+  }
+
+  public get worldPosBuff() { return this._worldPosBuff; }
+
+  public bind() {
+    this._worldPosBuff.bindData(GL.Buffer.Target.ArrayBuffer, this.worldPos, GL.Buffer.Usage.StreamDraw);
+  }
+
+  public dispose() {
+    dispose(this._worldPosBuff);
   }
 }
 

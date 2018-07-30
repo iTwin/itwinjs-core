@@ -4,13 +4,14 @@ node_modules
 # build output
 .nyc_output
 /core/**/lib
+/ui/**/lib
 /example-code/**/lib
 /test-apps/**/lib
-/bank-demo/**/lib
 /core/geometry/src/test/output
 /core/backend/src/test/output
 /generated-docs
-/generated_docs
+/out
+**/DevBuild.txt
 
 # rush-specific
 /common/temp

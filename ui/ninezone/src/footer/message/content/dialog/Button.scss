@@ -1,0 +1,14 @@
+@import "@bentley/ui-core/lib/colors";
+
+.nz-footer-message-content-dialog-button {
+  color: $background-4;
+  cursor: pointer;
+
+  &:hover {
+    color: $background-1;
+  }
+
+  &:active {
+    color: $background-3;
+  }
+}

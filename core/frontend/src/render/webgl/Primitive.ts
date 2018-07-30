@@ -15,6 +15,7 @@ import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { RenderCommands, DrawCommand, DrawCommands } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
+import { System } from "./System";
 
 export const enum PolylineParam {
   kNone = 0,
@@ -140,6 +141,26 @@ export abstract class Primitive extends Graphic {
 }
 
 export class SkyBoxPrimitive extends Primitive {
+  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+
+  public draw(shader: ShaderProgramExecutor): void {
+    // Alter viewport to maintain square aspect ratio of skybox images even as viewRect resizes
+    const vh = shader.target.viewRect.height;
+    const vw = shader.target.viewRect.width;
+    if (vw > vh)
+      System.instance.context.viewport(0, -(vw - vh) / 2, vw, vw);
+    else
+      System.instance.context.viewport(-(vh - vw) / 2, 0, vh, vh);
+
+    super.draw(shader); // Draw the skybox cubemap
+
+    System.instance.context.viewport(0, 0, vw, vh); // Restore viewport
+  }
+
+  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
+}
+
+export class SkySpherePrimitive extends Primitive {
   public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }

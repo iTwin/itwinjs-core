@@ -1,0 +1,59 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/bwc";
+
+$cube-width: 96px;
+$button-width: 14px;
+
+.cube-container {
+  position: relative;
+  width: $cube-width;
+  height: $cube-width;
+
+  .cube-canvas-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: $cube-width;
+    height: $cube-width;
+  }
+
+  .cube-pointer-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: $cube-width;
+    height: $cube-width;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .cube-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+
+      &.cube-pointer-center {
+        justify-content: space-between;
+      }
+    }
+
+    .cube-pointer {
+      height: $button-width;
+      width: $button-width;
+      font-size: $button-width;
+      color: $bwc-gray;
+      text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+      cursor: pointer;
+
+      &:hover {
+        color: $bwc-blue;
+      }
+    }
+
+    &:not(.visible) {
+      display: none;
+    }
+  }
+}

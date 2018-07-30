@@ -1,0 +1,6 @@
+.nz-toolbar-item-expandable-group-columns {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-gap: 12px;
+  grid-auto-flow: column;
+}

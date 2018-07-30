@@ -9,6 +9,7 @@ import { RpcRegistry } from "./RpcRegistry";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
+import { IModelError, BentleyStatus } from "../../IModelError";
 
 let marshalingScope = "";
 
@@ -31,17 +32,21 @@ export class RpcMarshaling {
   private constructor() { }
 
   /** Serializes a value. */
-  public static serialize(operation: RpcOperation, _protocol: RpcProtocol, value: any) {
+  public static serialize(operation: RpcOperation | string, _protocol: RpcProtocol | undefined, value: any) {
     if (typeof (value) === "undefined") {
       return "";
     }
 
-    marshalingScope = operation.interfaceDefinition.name;
+    if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+      throw new IModelError(BentleyStatus.ERROR, "Cannot serialize binary data.");
+    }
+
+    marshalingScope = typeof (operation) === "string" ? operation : operation.interfaceDefinition.name;
     return JSON.stringify(value, RpcMarshaling.marshal);
   }
 
   /** Deserializes a value. */
-  public static deserialize(_operation: RpcOperation, _protocol: RpcProtocol, value: any) {
+  public static deserialize(_operation: RpcOperation, _protocol: RpcProtocol | undefined, value: any) {
     if (value === "") {
       return undefined;
     }

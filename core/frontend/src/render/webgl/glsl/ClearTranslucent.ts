@@ -24,7 +24,7 @@ export function createClearTranslucentProgram(context: WebGLRenderingContext): S
     frag.addDrawBuffersExtension();
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   } else {
-    // ###TODO: For 2-pass transparency just gl.clear() each attachment - no shader required.
+    // NB: This shader is never used - we just gl.clear() directly
     frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   }
 

@@ -1,0 +1,40 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+.nz-widget-tools {
+  display: grid;
+  box-sizing: border-box;
+  grid-gap: 20px;
+  align-items: start;
+  justify-items: start;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "button htools" "vtools .";
+
+  &.nz-no-app-button {
+    grid-gap: 5px;
+  }
+
+  &.nz-is-navigation {
+    justify-items: end;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "htools button" "  .    vtools";
+  }
+
+  & > * {
+    pointer-events: auto;
+  }
+
+  & > .nz-app-button {
+    grid-area: button;
+  }
+
+  & > .nz-horizontal-toolbar {
+    grid-area: htools;
+  }
+
+  & > .nz-vertical-toolbar {
+    grid-area: vtools;
+  }
+}

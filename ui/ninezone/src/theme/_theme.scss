@@ -1,0 +1,83 @@
+@if global-variable-exists(nz-themes) != true {
+  $nz-themes: () !global;
+}
+
+@function nz-get-theme-class-name($name) {
+  @return nz-theme-#{$name};
+}
+
+@mixin nz-add-theme($theme) {
+  @if index($nz-themes, $theme) == null {
+    $nz-themes: append($nz-themes, $theme) !global;
+  }
+}
+
+@function nz-try-get-theme($theme) {
+  @if index($nz-themes, $theme) == null {
+    @error "Can not get theme `#{$theme}`, check the spelling or add a new theme.";
+  }
+
+  @return nz-get-theme-class-name($theme);
+}
+
+@mixin nz-set-styling-component($name) {
+  $nz-styling-component: $name !global;
+}
+
+@function nz-try-get-styling-component() {
+  @if variable-exists(nz-styling-component) {
+    @return $nz-styling-component;
+  }
+  @else {
+    @error "Can not get component name. Provide it in parameters or call nz-set-styling-component()";
+  }
+}
+
+/** Use this mixin to style component. */
+@mixin nz-style-component($name: null) {
+  @if $name {
+    @include nz-set-styling-component($name);
+  }
+  @else {
+    $name: nz-try-get-styling-component();
+  }
+
+  .#{$name} {
+    @content;
+  }
+}
+
+@mixin nz-theme-component($theme, $name: null) {
+  $theme: nz-try-get-theme($theme);
+
+  @if $name == null {
+    $name: nz-try-get-styling-component();
+  }
+
+  @include nz-style-component($name) {
+    &.#{$theme} {
+      @content;
+    }
+  }
+}
+
+// Supported themes:
+$nz-theme-light: light;
+$nz-theme-dark: dark;
+
+@include nz-add-theme($nz-theme-light);
+@include nz-add-theme($nz-theme-dark);
+
+/** Use this mixin to style component for light theme. */
+@mixin nz-light-component($name: null) {
+  @include nz-theme-component($nz-theme-light, $name) {
+    @content;
+  }
+}
+
+/** Use this mixin to style component for dark theme. */
+@mixin nz-dark-component($name: null) {
+  @include nz-theme-component($nz-theme-dark, $name) {
+    @content;
+  }
+}

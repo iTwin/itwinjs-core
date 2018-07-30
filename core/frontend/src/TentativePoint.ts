@@ -80,7 +80,7 @@ export class TentativePoint {
   public showTentative(): void {
     if (this.isSnapped()) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
-      IModelApp.accuSnap.displayInfoBalloon(this.viewPt, this.viewport!, undefined);
+      IModelApp.accuSnap.displayToolTip(this.viewPt, this.viewport!, undefined);
     } else {
       this.viewport!.invalidateDecorations();
     }

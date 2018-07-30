@@ -8,7 +8,7 @@ import { ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Branch } from "./Graphic";
-import { RenderClipVolume } from "../System";
+import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 
 /**
  * Represents a branch node in the scene graph, with associated view flags and transform to be applied to
@@ -18,7 +18,7 @@ export class BranchState {
   public readonly transform: Transform;
   private readonly _viewFlags: ViewFlags;
   public symbologyOverrides: FeatureSymbology.Overrides;
-  public readonly clipVolume?: RenderClipVolume;
+  public readonly clipVolume?: ClipPlanesVolume | ClipMaskVolume;
 
   public static fromBranch(prev: BranchState, branch: Branch) {
     const vf = branch.branch.getViewFlags(prev.viewFlags);
@@ -27,24 +27,24 @@ export class BranchState {
     return new BranchState(vf, transform, ovrs, branch.clips);
   }
 
-  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: RenderClipVolume) {
+  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipMaskVolume | ClipPlanesVolume) {
     return new BranchState(ViewFlags.createFrom(flags), undefined !== transform ? transform.clone() : Transform.createIdentity(), ovrs, clip);
   }
 
   public static createForDecorations(): BranchState {
     const vf = new ViewFlags();
-    vf.setRenderMode(RenderMode.SmoothShade);
-    vf.setShowSourceLights(false);
-    vf.setShowCameraLights(false);
-    vf.setShowSolarLight(false);
+    vf.renderMode = RenderMode.SmoothShade;
+    vf.sourceLights = false;
+    vf.cameraLights = false;
+    vf.solarLight = false;
     return new BranchState(vf, Transform.createIdentity(), new FeatureSymbology.Overrides());
   }
 
   public get viewFlags() { return this._viewFlags; }
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
-  public get showClipVolume(): boolean { return this.viewFlags.showClipVolume(); }
+  public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
-  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: RenderClipVolume) {
+  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume) {
     this._viewFlags = flags;
     this.transform = transform;
     this.symbologyOverrides = ovrs;

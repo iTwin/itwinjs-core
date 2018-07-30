@@ -1,0 +1,41 @@
+{
+  "name": "@bentley/bentleyjs-core",
+  "entries": [
+    {
+      "version": "0.104.1",
+      "tag": "@bentley/bentleyjs-core_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.104.0",
+      "tag": "@bentley/bentleyjs-core_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.103.0",
+      "tag": "@bentley/bentleyjs-core_v0.103.0",
+      "date": "Tue, 24 Jul 2018 15:52:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.102.0",
+      "tag": "@bentley/bentleyjs-core_v0.102.0",
+      "date": "Tue, 24 Jul 2018 14:13:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.101.0",
+      "tag": "@bentley/bentleyjs-core_v0.101.0",
+      "date": "Mon, 23 Jul 2018 22:00:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added BeDuration.wait() - an async method to wait for a specified amount of time. "
+          }
+        ]
+      }
+    }
+  ]
+}

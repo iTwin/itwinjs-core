@@ -131,6 +131,7 @@ export class MeshArgs {
   public fillFlags = FillFlags.None;
   public isPlanar = false;
   public is2d = false;
+  public hasBakedLighting = false;
 
   public clear() {
     this.edges.clear();
@@ -143,7 +144,7 @@ export class MeshArgs {
     this.features.reset();
     this.material = undefined;
     this.fillFlags = FillFlags.None;
-    this.isPlanar = this.is2d = false;
+    this.isPlanar = this.is2d = this.hasBakedLighting = false;
   }
   public init(mesh: Mesh): boolean {
     this.clear();
@@ -171,6 +172,7 @@ export class MeshArgs {
     this.fillFlags = mesh.displayParams.fillFlags;
     this.isPlanar = mesh.isPlanar;
     this.is2d = mesh.is2d;
+    this.hasBakedLighting = (true === mesh.hasBakedLighting);
 
     this.edges.width = mesh.displayParams.width;
     this.edges.linePixels = mesh.displayParams.linePixels;
@@ -211,6 +213,7 @@ export class Mesh {
   public readonly type: Mesh.PrimitiveType;
   public readonly is2d: boolean;
   public readonly isPlanar: boolean;
+  public readonly hasBakedLighting: boolean;
   public displayParams: DisplayParams;
 
   /**
@@ -230,6 +233,7 @@ export class Mesh {
     this.type = type;
     this.is2d = is2d;
     this.isPlanar = isPlanar;
+    this.hasBakedLighting = (true === props.hasBakedLighting);
     this.points = new QPoint3dList(QParams3d.fromRange(range));
   }
 
@@ -361,14 +365,14 @@ export namespace Mesh {
     range: Range3d;
     is2d: boolean;
     isPlanar: boolean;
+    hasBakedLighting?: boolean;
   }
 }
 
 export class MeshList extends Array<Mesh> {
   public readonly features?: FeatureTable;
-  constructor(features?: FeatureTable, ...args: Mesh[]) {
-    super(...args);
-    if (undefined !== features)
-      this.features = features;
+  constructor(features?: FeatureTable) {
+    super();
+    this.features = features;
   }
 }

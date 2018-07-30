@@ -1,0 +1,40 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "~@bentley/bwc/lib/mixins";
+
+.searchbox {
+  @include bwc-font-family;
+  position: relative;
+  padding: $bwc-unbordered-padding;
+  width: 12em;
+  height: $bwc-line-height;
+  line-height: $bwc-line-height;
+  font-size: $bwc-font-size;
+  .searchbox-input {
+    position: absolute;
+    font-size: $bwc-font-size;
+    @include bwc-inputs-input;
+    width: 12em;
+    height: $bwc-line-height;
+    line-height: $bwc-line-height;
+    left: 0px;
+    top: 0px;
+  }
+  .searchbox-icon {
+    position: absolute;
+    padding: $bwc-bordered-padding;
+    width: $bwc-line-height;
+    height: $bwc-line-height;
+    line-height: $bwc-line-height;
+    font-size: $bwc-icons-small;
+    cursor: pointer;
+    top: 0px;
+    right: 0px;
+    text-align: center;
+    color: black;
+    &:hover {
+      color: $bwc-icons-blue;
+    }
+  }
+}

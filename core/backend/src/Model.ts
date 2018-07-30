@@ -50,14 +50,15 @@ export class Model extends Entity implements ModelProps {
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
-  /** get a set of JSON user properties by namespace */
+  /** Get a set of JSON user properties by namespace */
   public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
 
-  /** change a set of user JSON properties of this Element by namespace. */
+  /** Change a set of user JSON properties of this Element by namespace. */
   public setUserProperties(nameSpace: string, value: any) { this.getAllUserProperties()[nameSpace] = value; }
 
-  /** remove a set of JSON user properties, specified by namespace, from this Element */
+  /** Remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
+
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 

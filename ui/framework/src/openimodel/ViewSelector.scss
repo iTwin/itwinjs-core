@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ .fw-viewcheckbox-label {
+  margin-left: 10px;
+ }
+
+ .fw-viewselector-div {
+  position: absolute;
+  background-color: #f0f0f0;
+  z-index: 100;
+  border-color: black;
+  border-width: 3px;
+  border-style: solid;
+ }
+
+ .fw-viewselector-paragraph {
+  margin: 5px 30px 5px 30px;
+ }
+
+.fw-viewselector-button {
+  margin: 0 auto;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  display: block;
+  cursor: pointer;
+ }
+
+.fw-viewselector-form {
+  margin: 5px 10px 5px 10px;
+ }
+

@@ -62,6 +62,8 @@ export abstract class Token {
       email: extractAttribute("emailaddress"),
       userId: extractAttribute("userid"),
       organization: extractAttribute("organization"),
+      ultimateId: extractAttribute("ultimatesite"),
+      usageCountryIso: extractAttribute("usagecountryiso"),
     };
 
     this.startsAt = new Date(startsAtStr);
@@ -138,7 +140,7 @@ export class AccessToken extends Token {
     if (!this.samlAssertion)
       return undefined;
 
-    const tokenStr = Base64.btoa(this.samlAssertion);
+    const tokenStr: string = Base64.btoa(this.samlAssertion);
     return AccessToken.tokenPrefix + " " + tokenStr;
   }
 

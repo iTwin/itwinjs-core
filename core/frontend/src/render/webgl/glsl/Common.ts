@@ -26,6 +26,14 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addFunction(isShaderBitSet);
 }
 
+export function addViewMatrix(vert: ShaderBuilder): void {
+  vert.addUniform("u_viewMatrix", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_viewMatrix", (uniform, params) => {
+      uniform.setMatrix4(params.viewMatrix);
+    });
+  });
+}
+
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   assert(params.geometry instanceof LUTGeometry);
   const geom = params.geometry as LUTGeometry;

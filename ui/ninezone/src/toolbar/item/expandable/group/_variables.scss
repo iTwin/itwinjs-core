@@ -1,0 +1,10 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../../../../_typography";
+
+$panel-padding-left: 16px;
+$panel-padding-right: 8px;
+$panel-padding-top: $panel-padding-right;
+$panel-padding-bottom: 12px;
+$title-color: rgba($text-light, 0.88);
+$back-arrow-thickness: 2px;
+$back-arrow-size-val: 6;

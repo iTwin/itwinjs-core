@@ -1,5 +1,6 @@
 const path = require("path");
 const glob = require("glob");
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   entry: glob.sync(path.resolve(__dirname, "lib/frontend/performance/*.test.js")),
@@ -22,5 +23,18 @@ module.exports = {
       }
     ]
   },
-  stats: "errors-only"
+  stats: "errors-only",
+  optimization: {
+    minimizer: [
+      new UglifyJSPlugin({
+        uglifyOptions: {
+        keep_classnames: true,
+        },
+      })
+    ],
+  },
+  externals: {
+    electron: "require('electron')",
+    fs: "require('fs')"
+  }
 };

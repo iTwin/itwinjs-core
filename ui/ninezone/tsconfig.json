@@ -1,0 +1,17 @@
+{
+  "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "outDir": "./lib",
+    "baseUrl": "./node_modules/",
+    "jsx": "react"
+  },
+  "include": [
+    "./src/**/*.ts*"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ]
+}

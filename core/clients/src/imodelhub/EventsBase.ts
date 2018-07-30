@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { RequestOptions } from "../Request";
+import { request, RequestOptions } from "../Request";
 import { Config } from "../Config";
 import { DefaultRequestOptionsProvider } from "../Client";
 import { ECJsonTypeMap, WsgInstance } from "../ECJsonTypeMap";
@@ -23,6 +23,14 @@ export abstract class IModelHubBaseEvent {
   public eventTopic?: string;
   public fromEventSubscriptionId?: string;
   public toEventSubscriptionId?: string;
+  protected _handler?: IModelBaseHandler;
+  protected _sasToken?: string;
+  protected _lockUrl?: string;
+
+  constructor(handler?: IModelBaseHandler, sasToken?: string) {
+    this._handler = handler;
+    this._sasToken = sasToken;
+  }
 
   /**
    * Construct this event from object instance.
@@ -32,7 +40,58 @@ export abstract class IModelHubBaseEvent {
     this.eventTopic = obj.EventTopic;
     this.fromEventSubscriptionId = obj.FromEventSubscriptionId;
     this.toEventSubscriptionId = obj.ToEventSubscriptionId;
+    this._lockUrl = obj.location;
   }
+
+  /**
+   * Removes single event from queue.
+   * @returns true if operation succeeded.
+   */
+  public async delete(): Promise<boolean> {
+    if (this._handler && this._lockUrl && this._sasToken) {
+      const options = getEventBaseOperationRequestOptions(this._handler, ModifyEventOperationToRequestType.Delete, this._sasToken);
+      const result = await request(this._lockUrl, options);
+
+      if (result.status === 200)
+        return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
+  }
+}
+
+export enum ModifyEventOperationToRequestType {
+  /** Deleted event from queue */
+  Delete = "DELETE",
+}
+
+export enum GetEventOperationToRequestType {
+  /** Gets event request options, destructive get. */
+  GetDestructive = "DELETE",
+  /** Gets event request options, non destructive get. */
+  GetPeek = "POST",
+}
+
+/**
+ * Gets base request options for event operations.
+ * @param method Method for request.
+ * @param sasToken Service Bus SAS Token.
+ * @param requestTimeout Timeout for the request.
+ * @return Event if it exists.
+ */
+export function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, method: string, sasToken: string, requestTimeout?: number): RequestOptions {
+  const options: RequestOptions = {
+    method,
+    headers: { authorization: sasToken },
+    agent: handler.getAgent(),
+  };
+
+  // Request timeout is in seconds, wait 50% more than the expected timeout from server
+  if (requestTimeout)
+    options.timeout = requestTimeout * 1500;
+
+  new DefaultRequestOptionsProvider().assignOptions(options);
+
+  return options;
 }
 
 export abstract class EventBaseHandler {
@@ -53,7 +112,7 @@ export abstract class EventBaseHandler {
         res.on("data", (chunk: any) => { res.text += chunk; });
         res.on("end", () => {
           try {
-            if (res.statusCode === 200) {
+            if (res.statusCode === 200 || res.statusCode === 201) {
               cb(null, parse(res.text));
             } else if (res.statusCode === 204) {
               cb(null, "");
@@ -69,23 +128,13 @@ export abstract class EventBaseHandler {
   }
 
   /**
-   * Gets event from Service Bus Topic.
+   * Gets event request options, gets event from queue.
    * @param sasToken Service Bus SAS Token.
    * @param requestTimeout Timeout for the request.
    * @return Event if it exists.
    */
-  protected getEventRequestOptions(sasToken: string, requestTimeout?: number): RequestOptions {
-    const options: RequestOptions = {
-      method: "DELETE",
-      headers: { authorization: sasToken },
-      agent: this._handler.getAgent(),
-    };
-
-    // Request timeout is in seconds, wait 50% more than the expected timeout from server
-    if (requestTimeout)
-      options.timeout = requestTimeout * 1500;
-
-    new DefaultRequestOptionsProvider().assignOptions(options);
+  protected getEventRequestOptions(operation: GetEventOperationToRequestType, sasToken: string, requestTimeout?: number): RequestOptions {
+    const options = getEventBaseOperationRequestOptions(this._handler, operation, sasToken, requestTimeout);
 
     this.setServiceBusOptions(options);
 

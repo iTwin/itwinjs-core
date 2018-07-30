@@ -1,0 +1,13 @@
+@import "../_variables";
+
+.nz-widget-toolSettings-settings-settings {
+  $horizontal-padding: 5px;
+  $vertical-padding: $horizontal-padding;
+
+  padding-left: $horizontal-padding;
+  padding-right: $horizontal-padding;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+  position: relative;
+  background-color: $widget-background-color;
+}

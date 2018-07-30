@@ -1,0 +1,13 @@
+@import "../_variables";
+@import "../../_geometry";
+
+.nz-footer-indicatorDialog-dialog {
+  > .nz-content {
+    border-style: solid;
+    border-color: $dialog-border-color;
+    border-width: $dialog-border-width;
+    min-width: 200px;
+    min-height: 75px;
+    background-color: $dialog-bg-color;
+  }
+}

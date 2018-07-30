@@ -1,0 +1,64 @@
+@import "_variables";
+
+.nz-toolbar-item-icon {
+  border-width: 0;
+
+  .nz-icon {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    color: $icon-color;
+    filter: $icon-shadow;
+    transition: all 500ms ease;
+
+    svg {
+      filter: $icon-shadow;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &:hover {
+    .nz-icon {
+      color: $hovered-icon-color;
+      transition-duration: 150ms;
+    }
+  }
+
+  &:active {
+    .nz-icon {
+      color: $pressed-icon-color;
+      filter: $no-shadow;
+
+      svg {
+        filter: $no-shadow;
+      }
+    }
+  }
+
+  &.is-active {
+    .nz-icon {
+      color: $active-icon-color;
+      filter: $no-shadow;
+      transition-duration: 0s;
+      transition-duration: 150ms;
+      transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+
+      svg {
+        filter: $no-shadow;
+      }
+    }
+  }
+
+  &.nz-is-disabled {
+    .nz-icon {
+      color: $icon-color;
+      opacity: .22;
+    }
+  }
+}

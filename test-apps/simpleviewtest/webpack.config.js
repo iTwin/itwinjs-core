@@ -1,6 +1,7 @@
 const path = require("path");
 
 module.exports = {
+  mode: "development",
   entry: "./lib/frontend/SimpleViewTest.js",
   output: {
     path: path.resolve(__dirname, "./lib/backend/public"),

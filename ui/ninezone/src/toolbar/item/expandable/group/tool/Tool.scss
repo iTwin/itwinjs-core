@@ -1,0 +1,106 @@
+@import "_variables";
+@import "../../../../../_typography";
+
+.nz-toolbar-item-expandable-group-tool-item {
+  $label-color: rgba($text-light, 0.88);
+  $pressed-label-color: rgba($text-light, 0.88);
+  $hovered-label-color: $primary-tint;
+  $focused-label-color: $primary-tint;
+  $active-label-color: $primary-tint;
+  $item-height: 32px;
+  $item-border-width: 2px;
+  $active-tool-stripe-height: 22px;
+  $active-tool-stripe-width: 2px;
+  $icon-size: 16px;
+  $space-between-icon-and-label: 32px - 16px;
+
+  white-space: nowrap;
+  height: $item-height;
+  color: $label-color;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+
+  @include body;
+
+  > .nz-icon {
+    width: $icon-size;
+    height: $icon-size;
+    display: inline-block;
+    margin-right: $space-between-icon-and-label;
+    margin-left: 8px;
+    filter: $shadow;
+  }
+
+  > .nz-label {
+    display: inline-block;
+    margin-right: $space-after-label;
+    line-height: $item-height;
+    filter: $shadow;
+
+    &:after {
+      display: block;
+      content: attr(title);
+      font-weight: bold;
+      height: 1px;
+      color: transparent;
+      overflow: hidden;
+      visibility: hidden;
+    }
+  }
+
+  &:hover {
+    color: $hovered-label-color;
+
+    @include body1;
+
+    > .nz-icon, .nz-label {
+      filter: $shadow;
+    }
+  }
+
+  &:active {
+    background: $primary-tone;
+    color: $pressed-label-color;
+
+    > .nz-icon, .nz-label {
+      filter: $no-shadow;
+    }
+  }
+
+  &.nz-is-focused {
+    color: $focused-label-color;
+    border-color: $primary-tint;
+    border-width: $item-border-width;
+    border-style: solid;
+
+    @include body1;
+
+    > .nz-icon, .nz-label {
+      filter: $shadow;
+    }
+  }
+
+  &.nz-is-active {
+    color: $active-label-color;
+
+    @include body1;
+
+    &::before {
+      content: '';
+      background-color: $active-label-color;
+      display: block;
+      position: relative;
+      top: 0;
+      left: $item-border-width + 1;
+      width: $active-tool-stripe-width;
+      height: $active-tool-stripe-height;
+      border-radius: 2px;
+    }
+
+    > .nz-icon, .nz-label {
+      filter: $no-shadow;
+    }
+  }
+}

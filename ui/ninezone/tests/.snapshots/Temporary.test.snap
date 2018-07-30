@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Temporary /> renders correctly 1`] = `
+<div
+  className="nz-footer-message-temporary"
+/>
+`;

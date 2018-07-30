@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform, Point2d, Range3d, Point3d } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
@@ -47,7 +47,7 @@ export class RenderPlan {
   public readonly hiliteSettings: Hilite.Settings;
   public readonly aaLines: AntiAliasPref;
   public readonly aaText: AntiAliasPref;
-  public readonly activeVolume?: ClipVector;
+  public readonly activeVolume?: RenderClipVolume;
   public readonly hline?: HiddenLine.Params;
   public readonly lights?: SceneLights;
 
@@ -64,9 +64,11 @@ export class RenderPlan {
     this.hiliteSettings = vp.hilite;
     this.aaLines = vp.wantAntiAliasLines;
     this.aaText = vp.wantAntiAliasText;
-    this.activeVolume = view.getViewClip();
     this.hline = style.is3d() ? style.getHiddenLineParams() : undefined;
     this.lights = undefined; // view.is3d() ? view.getLights() : undefined
+
+    const clipVec = view.getViewClip();
+    this.activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
   }
 }
 
@@ -75,8 +77,18 @@ export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
 
+/** A type of clip volume being used for clipping. */
+export const enum ClippingType {
+  None,
+  Mask,
+  Planes,
+}
+
 /** Interface adopted by a type which can apply a clipping volume to a Target. */
 export abstract class RenderClipVolume implements IDisposable {
+  /** Returns the type of this clipping volume. */
+  public abstract get type(): ClippingType;
+
   public abstract dispose(): void;
 }
 
@@ -274,7 +286,7 @@ export abstract class RenderTarget implements IDisposable {
 
   public abstract dispose(): void;
   public abstract reset(): void;
-  public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
+  public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -287,40 +299,65 @@ export abstract class RenderTarget implements IDisposable {
   public abstract onResized(): void;
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
+  public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
+}
 
-  // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
+export enum SkyboxSphereType {
+  Gradient2Color,
+  Gradient4Color,
+  Texture,
 }
 
 export class SkyBoxCreateParams {
-  private _isGradient: boolean;
+  private _isSphere: boolean;
 
-  public readonly front?: RenderTexture;
-  public readonly back?: RenderTexture;
-  public readonly top?: RenderTexture;
-  public readonly bottom?: RenderTexture;
-  public readonly left?: RenderTexture;
-  public readonly right?: RenderTexture;
+  public readonly texture?: RenderTexture;
+  public readonly sphereType?: SkyboxSphereType;
+  public readonly zOffset?: number;
+  public readonly rotation?: number;
+  public readonly zenithColor?: ColorDef;
+  public readonly skyColor?: ColorDef;
+  public readonly groundColor?: ColorDef;
+  public readonly nadirColor?: ColorDef;
+  public readonly skyExponent?: number;
+  public readonly groundExponent?: number;
 
-  public get isTexturedCube() { return !this._isGradient; }
-  public get isGradient() { return this._isGradient; }
+  public get isTexturedCube() { return !this._isSphere; }
+  public get isSphere() { return this._isSphere; }
 
-  private constructor(isGradient: boolean, front?: RenderTexture, back?: RenderTexture, top?: RenderTexture, bottom?: RenderTexture, left?: RenderTexture, right?: RenderTexture) {
-    this._isGradient = isGradient;
-    this.front = front;
-    this.back = back;
-    this.top = top;
-    this.bottom = bottom;
-    this.left = left;
-    this.right = right;
+  private constructor(_isSphere: boolean, texture?: RenderTexture, sphereType?: SkyboxSphereType, zOffset?: number, rotation?: number, zenithColor?: ColorDef, nadirColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+    this._isSphere = _isSphere;
+    this.texture = texture;
+    this.sphereType = sphereType;
+    this.zOffset = zOffset;
+    this.rotation = rotation;
+    this.zenithColor = zenithColor;
+    this.skyColor = skyColor;
+    this.groundColor = groundColor;
+    this.nadirColor = nadirColor;
+    this.skyExponent = skyExponent;
+    this.groundExponent = groundExponent;
   }
 
-  public static createForTexturedCube(front: RenderTexture, back: RenderTexture, top: RenderTexture, bottom: RenderTexture, left: RenderTexture, right: RenderTexture) {
-    return new SkyBoxCreateParams(false, front, back, top, bottom, left, right);
+  public static createForTexturedCube(cube: RenderTexture) {
+    return new SkyBoxCreateParams(false, cube);
   }
 
-  public static createForGradient() {
-    // ###TODO
-    return new SkyBoxCreateParams(true);
+  public static createForGradientSphere(sphereType: SkyboxSphereType, zOffset: number, zenithColor: ColorDef, nadirColor: ColorDef,
+    skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+    // Check arguments.
+    assert(SkyboxSphereType.Texture !== sphereType);
+    if (SkyboxSphereType.Gradient4Color !== sphereType) {
+      assert(undefined !== skyColor);
+      assert(undefined !== groundColor);
+      assert(undefined !== skyExponent);
+      assert(undefined !== groundExponent);
+    }
+    return new SkyBoxCreateParams(true, undefined, sphereType, zOffset, 0, zenithColor, nadirColor, skyColor, groundColor, skyExponent, groundExponent);
+  }
+
+  public static createForTexturedSphere(texture: RenderTexture, zOffset: number, rotation: number) {
+    return new SkyBoxCreateParams(true, texture, SkyboxSphereType.Texture, zOffset, rotation);
   }
 }
 
@@ -364,8 +401,14 @@ export abstract class RenderSystem implements IDisposable {
   /** Create an indexed polyline primitive */
   public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
 
-  // /** Create a point cloud primitive */
+  /** Create a point cloud primitive */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+
+  /** Create polygons on a range for a sheet tile. */
+  public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
+
+  /** Create a sheet tile primitive from polyfaces. */
+  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[]): GraphicList { return []; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
@@ -425,6 +468,9 @@ export abstract class RenderSystem implements IDisposable {
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     return ImageUtil.extractImage(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
   }
+
+  /** Create a new Texture from a cube of HTML images. Typically the images were extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
+  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   // /** Create a Light from Light.Parameters */
   // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;

@@ -95,7 +95,7 @@ describe("FeatureSymbology.Overrides", () => {
     expect(overrides.isClassVisible(GeometryClass.Construction)).to.equal(viewState.viewFlags.constructions);
     expect(overrides.isClassVisible(GeometryClass.Dimension)).to.equal(viewState.viewFlags.dimensions);
     expect(overrides.isClassVisible(GeometryClass.Pattern)).to.equal(viewState.viewFlags.patterns);
-    expect(overrides.lineWeights).to.equal(viewState.viewFlags.showWeights());
+    expect(overrides.lineWeights).to.equal(viewState.viewFlags.weights);
     expect(Array.from(overrides.neverDrawn)).to.deep.equals(Array.from(viewState.neverDrawn!));
     expect(Array.from(overrides.alwaysDrawn)).to.deep.equals(Array.from(viewState.alwaysDrawn!));
   });

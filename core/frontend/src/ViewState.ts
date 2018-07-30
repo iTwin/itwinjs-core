@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
@@ -10,10 +10,10 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, SheetProps, ViewAttachmentProps,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState, EntityState } from "./EntityState";
+import { ElementState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -25,9 +25,10 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, GeometricModel2dState, SheetModelState } from "./ModelState";
+import { GeometricModelState, GeometricModel2dState } from "./ModelState";
+import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";
-import { Sheet } from "./Sheet";
+import { Attachments, SheetBorder } from "./Sheet";
 import { TileTree, Tile } from "./tile/TileTree";
 
 export const enum GridOrientationType {
@@ -196,7 +197,9 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** get the ViewFlags from the displayStyle of this ViewState. */
+  public static createFromStateData(_viewStateData: ViewStateData, _cat: CategorySelectorState, _iModel: IModelConnection): ViewState | undefined { return undefined; }
+
+  /** Get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
 
   /** Set the ViewFlags and mark them as dirty if they have changed. */
@@ -207,27 +210,17 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** determine whether this ViewState exactly matches another */
+  /** Determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
-  /** determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
+  /** Determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
   public equalState(other: ViewState): boolean {
-    if (this.isPrivate !== other.isPrivate)
-      return false;
-
-    if (!this.categorySelector.id.equals(other.categorySelector.id))
-      return false;
-
-    if (!this.displayStyle.id.equals(other.displayStyle.id))
-      return false;
-
-    if (!this.categorySelector.equalState(other.categorySelector))
-      return false;
-
-    if (!this.displayStyle.equalState(other.displayStyle))
-      return false;
-
-    return JSON.stringify(this.getDetails()) === (JSON.stringify(other.getDetails()));
+    return (this.isPrivate === other.isPrivate &&
+      this.categorySelector.id.equals(other.categorySelector.id) &&
+      this.displayStyle.id.equals(other.displayStyle.id) &&
+      this.categorySelector.equalState(other.categorySelector) &&
+      this.displayStyle.equalState(other.displayStyle) &&
+      JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails()));
   }
 
   public toJSON(): ViewDefinitionProps {
@@ -252,6 +245,25 @@ export abstract class ViewState extends ElementState {
     }
 
     return this.subCategories.load(this.categorySelector.categories, this.iModel);
+  }
+
+  public cancelAllTileLoads(): void {
+    this.forEachModel((model) => {
+      const tileTree = model.tileTree;
+      if (tileTree !== undefined)
+        tileTree.rootTile.cancelAllLoads();
+    });
+  }
+
+  /** Returns true if all the tile trees for this view are loaded. */
+  public get areAllTileTreesLoaded(): boolean {
+    let allLoaded = true;
+    this.forEachModel((model: GeometricModelState) => {
+      const loadStatus = model.loadStatus;
+      if (loadStatus === TileTree.LoadStatus.NotLoaded || loadStatus === TileTree.LoadStatus.Loading)
+        allLoaded = false;
+    });
+    return allLoaded;
   }
 
   /** Get the name of the ViewDefinition of this ViewState */
@@ -422,13 +434,15 @@ export abstract class ViewState extends ElementState {
     context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 
-  private computeRootToNpc(): Map4d | undefined {
-    const viewRot = this.getRotation();
-    const delta = this.getExtents();
-    const inOrigin = this.getOrigin();
+  /** @hidden */
+  public computeWorldToNpc(viewRot?: RotMatrix, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
+    if (viewRot === undefined) viewRot = this.getRotation();
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
+
+    if (delta === undefined) delta = this.getExtents();
+    if (inOrigin === undefined) inOrigin = this.getOrigin();
 
     let frustFraction = 1.0;
     let xExtent: Vector3d;
@@ -458,7 +472,7 @@ export abstract class ViewState extends ElementState {
         zDelta = zFront - eyeToOrigin.z;
       }
 
-      // z out back of eye ====> origin z coordinates are negative.  (Back plane more negative than front plane)
+      // z out back of eye ===> origin z coordinates are negative.  (Back plane more negative than front plane)
       const backFraction = -zBack / focusDistance;    // Perspective fraction at back clip plane.
       const frontFraction = -zFront / focusDistance;  // Perspective fraction at front clip plane.
       frustFraction = frontFraction / backFraction;
@@ -468,11 +482,8 @@ export abstract class ViewState extends ElementState {
       yExtent = yVector.scale(delta.y * backFraction);   // yExtent at back == delta.y * backFraction.
 
       // Calculate the zExtent in the View coordinate system.
-      zExtent = new Vector3d(
-        eyeToOrigin.x * (frontFraction - backFraction), // eyeToOrigin.x * frontFraction - eyeToOrigin.x * backFraction
-        eyeToOrigin.y * (frontFraction - backFraction), // eyeToOrigin.y * frontFraction - eyeToOrigin.y * backFraction
-        zDelta);
-      viewRot.multiplyVectorInPlace(zExtent);   // rotate back to root coordinates.
+      zExtent = new Vector3d(eyeToOrigin.x * (frontFraction - backFraction), eyeToOrigin.y * (frontFraction - backFraction), zDelta);
+      viewRot.multiplyTransposeVectorInPlace(zExtent);   // rotate back to root coordinates.
 
       origin = new Point3d(
         eyeToOrigin.x * backFraction,   // Calculate origin in eye coordinates
@@ -489,7 +500,7 @@ export abstract class ViewState extends ElementState {
     }
 
     // calculate the root-to-npc mapping (using expanded frustum)
-    return Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction);
+    return { map: Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction), frustFraction };
   }
 
   /**
@@ -498,12 +509,12 @@ export abstract class ViewState extends ElementState {
    * @returns The 8-point Frustum with the corners of this ViewState, or undefined if the parameters are invalid.
    */
   public calculateFrustum(result?: Frustum): Frustum | undefined {
-    const rootToNpc = this.computeRootToNpc();
-    if (undefined === rootToNpc)
+    const val = this.computeWorldToNpc();
+    if (undefined === val.map)
       return undefined;
 
     const box = result ? result.initNpc() : new Frustum();
-    rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
+    val.map.transform1.multiplyPoint3dArrayQuietNormalize(box.points);
     return box;
   }
 
@@ -563,10 +574,10 @@ export abstract class ViewState extends ElementState {
     return ViewStatus.Success;
   }
 
-  /** get the largest and smallest values allowed for the extents for this ViewState
+  /** Get the largest and smallest values allowed for the extents for this ViewState
    * @returns an object with members {min, max}
    */
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: 2.0 * Constant.diameterOfEarth }; }
+  public abstract getExtentLimits(): { min: number, max: number };
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
@@ -596,6 +607,19 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
   }
 
+  public showFrustumErrorMessage(status: ViewStatus): void {
+    let key: string;
+    switch (status) {
+      case ViewStatus.InvalidWindow: key = "InvalidWindow"; break;
+      case ViewStatus.MaxWindow: key = "MaxWindow"; break;
+      case ViewStatus.MinWindow: key = "MinWindow"; break;
+      case ViewStatus.MaxZoom: key = "MaxZoom"; break;
+      default:
+        return;
+    }
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + key)));
+  }
+
   public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
@@ -617,14 +641,13 @@ export abstract class ViewState extends ElementState {
     delta.y = limitWindowSize(delta.y, false);
     delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2D views
 
-    if (messageNeeded && error !== ViewStatus.Success) {
-      //      Viewport::OutputFrustumErrorMessage(error);
-    }
+    if (messageNeeded && error !== ViewStatus.Success)
+      this.showFrustumErrorMessage(error);
 
     return error;
   }
 
-  /** Peek to see if a detail is defined. May return undefined. */
+  /** Peek to see if a view detail is defined. May return undefined. */
   public peekDetail(name: string): any { return this.getDetails()[name]; }
 
   /** Get the current value of a view detail. If not present, return empty object. */
@@ -1332,7 +1355,7 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    const useOldSkyBox: boolean = true;
+    const useOldSkyBox: boolean = false;
     if (useOldSkyBox)
       this.drawSkyBox(context);
     else
@@ -1591,6 +1614,14 @@ export abstract class ViewState3d extends ViewState {
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
 
+  public static createFromStateData(viewStateData: ViewStateData, categorySelectorState: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, iModel);
+    const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps!, iModel);
+
+    // use "new this" so subclasses are correct.
+    return new this(viewStateData.viewDefinitionProps as SpatialViewDefinitionProps, iModel, categorySelectorState, displayStyleState, modelSelectorState);
+  }
+
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
     this.modelSelector = modelSelector;
@@ -1612,12 +1643,13 @@ export class SpatialViewState extends ViewState3d {
 
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
 
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined) {   // can we assume that a loaded model
+      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
         range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
       }
     });
@@ -1665,7 +1697,7 @@ export class OrthographicViewState extends SpatialViewState {
 }
 
 /** Defines the state of a view of a single 2d model. */
-export class ViewState2d extends ViewState {
+export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
@@ -1705,26 +1737,12 @@ export class ViewState2d extends ViewState {
     args.root.draw(args);
   }
 
-  /**
-   * This should be overridden by more specific leaf classes of ViewState2d
-   * @hidden
-   */
-  public decorate(_context: DecorateContext): void { }
-
   public equalState(other: ViewState2d): boolean {
-    if (!this.baseModelId.equals(other.baseModelId))
-      return false;
-
-    if (!this.origin.isAlmostEqual(other.origin))
-      return false;
-
-    if (!this.delta.isAlmostEqual(other.delta))
-      return false;
-
-    if (!this.angle.isAlmostEqualNoPeriodShift(other.angle))
-      return false;
-
-    return super.equalState(other);
+    return this.baseModelId.equals(other.baseModelId) &&
+      this.origin.isAlmostEqual(other.origin) &&
+      this.delta.isAlmostEqual(other.delta) &&
+      this.angle.isAlmostEqualNoPeriodShift(other.angle) &&
+      super.equalState(other);
   }
 
   public computeFitRange(): Range3d { return this.getViewedExtents(); }
@@ -1745,7 +1763,7 @@ export class ViewState2d extends ViewState {
 
   public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
-    await super.load();
+    super.load();
     return this.iModel.models.load(this.baseModelId);
   }
 
@@ -1767,35 +1785,48 @@ export class ViewState2d extends ViewState {
 
 /** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
+  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
+    // use "new this" so subclasses are correct
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState);
+  }
+
   public static get className() { return "DrawingViewDefinition"; }
+  public getExtentLimits() { return { min: Constant.oneCentimeter, max: this.iModel.projectExtents.xLength() * 2 }; }
+  public decorate(_context: DecorateContext): void { }
 }
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  public static get className() { return "SheetViewDefinition"; }
-  private _size: Point2d = Point2d.create();
-  private _attachments = new Sheet.Attachments();
+  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
+    // use "new this" so subclasses are correct
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
+  }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
+    if (categories instanceof SheetViewState) {
+      // we are coming from clone...
+      this.sheetSize = categories.sheetSize.clone();
+      this._attachmentIds = categories._attachmentIds;
+      this._attachments = categories._attachments;
+    } else {
+      this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
+      this._attachmentIds = [];
+      attachments.forEach((idProp) => this._attachmentIds.push(idProp));
+    }
   }
 
-  /** If the view has been loaded, returns a valid sheet size in the form (width, height). */
-  public get sheetSize(): Point2d | undefined { return this._size; }
-  /** If the view has been loaded, returns valid extents of the sheet. */
-  public get sheetExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(Point3d.create(), Point3d.create(this._size.x, this._size.y, 0)); }
-  /** If the view has been loaded, returns the attachments of this sheet. */
-  public get attachments(): Sheet.Attachments | undefined { return this._attachments; }
+  public static get className() { return "SheetViewDefinition"; }
+  public readonly sheetSize: Point2d;
+  private _attachmentIds: Id64Array;
+  private _attachments = new Attachments.AttachmentList();
+  private all3dAttachmentTilesLoaded: boolean = true;
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  /**
-   * Given the base model of this view, obtain, set, and return the size of the entire sheet by performing an asynchronous
-   * request for the modeled element.
-   */
-  private async getSheetSize(model: SheetModelState) {
-    const sheetElement = (await this.iModel.elements.getProps(model.modeledElement.id))[0] as SheetProps;
-    assert(sheetElement !== undefined, "Sheet modeled element is undefined");
-    this._size.set(sheetElement.width, sheetElement.height);
-  }
+  /** Manually mark this SheetViewState as having to re-create its scene due to incomplete 3d attachments. Called from attachment tile "select" methods. */
+  public markAttachment3dSceneIncomplete() { this.all3dAttachmentTilesLoaded = false; }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
   public async load(): Promise<void> {
@@ -1805,20 +1836,14 @@ export class SheetViewState extends ViewState2d {
     const model = this.getViewedModel();
     if (model === undefined)
       return;
-    this.getSheetSize(model);
 
-    // Query the attachment ids
     this._attachments.clear();
-    const queryResult = (await this.iModel.executeQuery("SELECT ECInstanceId FROM BisCore.ViewAttachment WHERE Model.Id=" + model.id));
-    const attachmentIds: string[] = [];
-    for (const row of queryResult)
-      attachmentIds.push(row.id);
 
     // Query the attachments using the id list, and grab all of their corresponding view ids
-    const attachments = await this.iModel.elements.getProps(attachmentIds) as ViewAttachmentProps[];
-    const attachmentViewIds: Id64Props[] = [];
+    const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
+    const attachmentViewIds: Id64Array = [];
     for (const attachment of attachments)
-      attachmentViewIds.push((attachment.view as any).id);
+      attachmentViewIds.push(attachment.view.id.toString());
 
     // Load each view state corresponding to each attachment in the attachments array
     // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
@@ -1829,74 +1854,63 @@ export class SheetViewState extends ViewState2d {
     // Create the attachment objects and store them on this SheetViewState
     for (let i = 0; i < attachments.length; i++) {
       if (attachmentViews[i].is3d())
-        continue; // this._attachments.add(new Sheet.Attachment3d(attachments[i], attachmentViews[i]));
+        this._attachments.add(new Attachments.Attachment3d(attachments[i], attachmentViews[i] as ViewState3d));
       else
-        this._attachments.add(new Sheet.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
+        this._attachments.add(new Attachments.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
     }
   }
 
   /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allLoaded)
+    if (!this._attachments.allLoaded || !this.all3dAttachmentTilesLoaded)
       _viewport.sync.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
   public createScene(context: SceneContext) {
+    // This will be reset to false by the end of the function if any 3d attachments are waiting on tiles...
+    this.all3dAttachmentTilesLoaded = true;
+
     super.createScene(context);
 
     if (!this._attachments.allLoaded) {
-      // ###TODO: Do this incrementally (honor the timeout, if any, on the context's UpdatePlan)
       let i = 0;
       while (i < this._attachments.length) {
-        const attachStatus = this._attachments.load(i);
+        const attachmentState = this._attachments.load(i, this, context);
 
         // If load fails, attachment gets dropped from the list
-        if (attachStatus !== TileTree.LoadStatus.NotFound && attachStatus !== TileTree.LoadStatus.NotLoaded)
+        if (attachmentState !== Attachments.State.Empty && attachmentState !== Attachments.State.NotLoaded)
           i++;
       }
     }
 
-    // DEBUG ONLY
     /*
+    DEBUG ONLY
     for (const attachment of this._attachments.list)
       attachment.drawDebugBorder();
     */
 
-    // Draw all attachments that have a status of loaded
+    // Draw all attachments that have a status of ready
     for (const attachment of this._attachments.list)
-      if (attachment.getLoadStatus() === TileTree.LoadStatus.Loaded) {
-        assert(attachment.tree !== undefined);
+      if (attachment.state === Attachments.State.Ready) {
+        if (attachment.is2d)
+          assert(attachment.tree !== undefined);  // 2d attachments must have fully-loaded tile tree before being drawn
         attachment.tree!.drawScene(context);
       }
   }
 
   /** Create a sheet border decoration graphic. */
   private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = Sheet.Border.create(width, height, viewContext);
+    const border = SheetBorder.create(width, height, viewContext);
     const builder: GraphicBuilder = viewContext.createViewBackground();
     border.addToBuilder(builder);
     return builder.finish();
   }
 
   public decorate(context: DecorateContext): void {
-    if (this._size !== undefined) {
-      const border = this.createBorder(this._size.x, this._size.y, context);
+    if (this.sheetSize !== undefined) {
+      const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
       context.setViewBackground(border);
     }
-  }
-
-  /** Serialize this SheetViewState into a JSON object. */
-  public toJSON(): any {
-    const json = super.toJSON();
-    return json;
-  }
-
-  // override - copy references to view attachments and sheet size
-  public clone<T extends EntityState>(): T {
-    const viewStateClone = super.clone();
-    (viewStateClone as any)._size = this._size;
-    (viewStateClone as any)._attachments = this._attachments;
-    return viewStateClone as T;
   }
 }

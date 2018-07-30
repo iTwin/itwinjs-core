@@ -19,9 +19,9 @@ import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Material } from "./Material";
 
-function wantMaterials(vf: ViewFlags) { return vf.showMaterials() && RenderMode.SmoothShade === vf.renderMode; }
+function wantMaterials(vf: ViewFlags) { return vf.materials && RenderMode.SmoothShade === vf.renderMode; }
 function wantLighting(vf: ViewFlags) {
-  return RenderMode.SmoothShade === vf.renderMode && (vf.showSourceLights() || vf.showCameraLights() || vf.showSolarLight());
+  return RenderMode.SmoothShade === vf.renderMode && (vf.sourceLights || vf.cameraLights || vf.solarLight);
 }
 
 export class SurfaceGeometry extends MeshGeometry {
@@ -64,6 +64,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getTechniqueId(_target: Target) { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
+  public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -86,14 +87,14 @@ export class SurfaceGeometry extends MeshGeometry {
 
     const vf = target.currentViewFlags;
     if (RenderMode.Wireframe === vf.renderMode) {
-      const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.showFill() && FillFlags.ByView === (fillFlags & FillFlags.ByView));
+      const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
       if (!showFill) {
         return RenderPass.None;
       }
     }
 
     if (!this.isGlyph) {
-      if (!vf.showTransparency() || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) {
+      if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) {
         return opaquePass;
       }
     }
@@ -120,7 +121,7 @@ export class SurfaceGeometry extends MeshGeometry {
       return true; // fill displayed even in wireframe
 
     const vf = target.currentViewFlags;
-    if (RenderMode.Wireframe === vf.renderMode || vf.showVisibleEdges())
+    if (RenderMode.Wireframe === vf.renderMode || vf.visibleEdges)
       return false; // never invert surfaces when edges are displayed
 
     if (this.isLit && wantLighting(vf))
@@ -193,8 +194,8 @@ export class SurfaceGeometry extends MeshGeometry {
 
     // ###TODO need to distinguish between gradient fill and actual textures...
     switch (flags.renderMode) {
-      case RenderMode.SmoothShade: return flags.showTextures();
-      case RenderMode.Wireframe: return FillFlags.Always === (fill & FillFlags.Always) || (flags.showFill() && FillFlags.ByView === (fill & FillFlags.ByView));
+      case RenderMode.SmoothShade: return flags.textures;
+      case RenderMode.Wireframe: return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
       default: return FillFlags.Always === (fill & FillFlags.Always);
     }
   }

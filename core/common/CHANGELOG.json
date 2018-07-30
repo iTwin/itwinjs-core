@@ -1,0 +1,59 @@
+{
+  "name": "@bentley/imodeljs-common",
+  "entries": [
+    {
+      "version": "0.104.1",
+      "tag": "@bentley/imodeljs-common_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.104.0",
+      "tag": "@bentley/imodeljs-common_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "SheetProps contains attachment ids for SheetViewState"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.103.0",
+      "tag": "@bentley/imodeljs-common_v0.103.0",
+      "date": "Tue, 24 Jul 2018 15:52:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.102.0",
+      "tag": "@bentley/imodeljs-common_v0.102.0",
+      "date": "Tue, 24 Jul 2018 14:13:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added tooltips"
+          },
+          {
+            "comment": "Make fit tool ignore web mercator tile range."
+          },
+          {
+            "comment": "remove get/setShow methods on ViewFlags. They were redundant."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.101.0",
+      "tag": "@bentley/imodeljs-common_v0.101.0",
+      "date": "Mon, 23 Jul 2018 22:00:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved EntityMetaData from backend to common"
+          }
+        ]
+      }
+    }
+  ]
+}

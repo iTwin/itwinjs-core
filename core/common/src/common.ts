@@ -25,7 +25,6 @@ export * from "./Snapping";
 export * from "./TileProps";
 export * from "./ViewProps";
 export * from "./Render";
-export * from "./Utility";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/GeometryStream";

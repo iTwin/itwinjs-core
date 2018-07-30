@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IModelRepository, UserProfile, IModelBankAccessContext } from "@bentley/imodeljs-clients";
+import { AccessToken, IModelRepository, UserProfile } from "@bentley/imodeljs-clients";
+import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
 import { SimpleViewState } from "./SimpleViewState";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { OpenMode, assert } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { OpenMode, assert } from "@bentley/bentleyjs-core";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { showStatus } from "./Utils";
 
@@ -37,7 +38,7 @@ export class NonConnectProject extends ProjectAbstraction {
     // surrounding project, user, and deployment infrastructure.
 
     // *** NON-CONNECT - ask the user mgr to authenticate the user and obtain an AccessToken.
-    const userProfile = new UserProfile("first", "last", "email@organization.org", "userid", "organization");
+    const userProfile = new UserProfile("first", "last", "email@organization.org", "userid", "organization", "1004144426", "US");
     const foreignAccessTokenWrapper: any = {};
     foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
     state.accessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper));

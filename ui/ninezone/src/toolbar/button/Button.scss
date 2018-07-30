@@ -1,0 +1,35 @@
+@import "_variables";
+
+.nz-toolbar-button-button {
+  box-sizing: border-box;
+  width: $mls-button-width;
+  height: $mls-button-height;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background: $background-1;
+  border: {
+    width: $button-stroke-width;
+    color: $button-stroke-color;
+    radius: $button-stroke-radius;
+    style: solid;
+  }
+
+  > .nz-gradient {
+    background: linear-gradient(to bottom, rgba($gradient-dark, 0), rgba($gradient-dark, 0.22));
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  &:active {
+    background: $primary-tone;
+
+    > .nz-gradient {
+      width: 0;
+      height: 0;
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "general": {
+    "search": "Search"
+  },
+  "dialog": {
+    "ok": "OK",
+    "retry": "Retry",
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "close": "Close"
+  }
+}

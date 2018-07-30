@@ -1,0 +1,75 @@
+@import "../../../../_geometry";
+@import "../../_variables";
+
+.nz-widget-toolSettings-settings-popover-overflow {
+  $triangle-width: 8px;
+  $triangle-height: 6px;
+  $max-height: 100px;
+
+  max-height: $max-height;
+  overflow: hidden;
+  position: relative;
+
+  > .nz-scrollableArea {
+    > .nz-container {
+      position: relative;
+      max-height: $max-height;
+      overflow: hidden;
+    }
+  }
+
+  &.nz-is-in-vertical-scroll {
+    height: $max-height;
+
+    > .nz-scrollableArea {
+      > .nz-container {
+        position: absolute;
+        overflow: auto;
+      }
+    }
+  }
+
+  &.nz-is-scroll-bottom-indicator-visible {
+    > .nz-bottom-indicator {
+      display: flex;
+    }
+  }
+
+  > .nz-bottom-indicator {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 20px;
+    left: 0;
+    bottom: 0;
+    background: linear-gradient(rgba($widget-background-color, 0.5), rgba($widget-background-color, 1), rgba($widget-background-color, 1));
+    align-items: center;
+    justify-content: center;
+
+    > .nz-triangle {
+      @include triangle-bottom($height: $triangle-height, $width: $triangle-width, $color: #666);
+    }
+  }
+
+  &.nz-is-scroll-top-indicator-visible {
+    > .nz-top-indicator {
+      display: flex;
+    }
+  }
+
+  > .nz-top-indicator {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 20px;
+    left: 0;
+    top: 0;
+    background: linear-gradient(rgba($widget-background-color, 1), rgba($widget-background-color, 1), rgba($widget-background-color, 0.5));
+    align-items: center;
+    justify-content: center;
+
+    > .nz-triangle {
+      @include triangle-top($height: $triangle-height, $width: $triangle-width, $color: #666);
+    }
+  }
+}
