@@ -10,7 +10,7 @@ import { ECObjectsError } from "../../source/Exception";
 import { Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty, StructArrayProperty, EnumerationArrayProperty, NavigationProperty  } from "../../source/Metadata/Property";
 import { PropertyType } from "../../source/PropertyTypes";
 import Enumeration from "../../source/Metadata/Enumeration";
-import { StructClass } from "../../source/Metadata/Class";
+import ECClass, { StructClass, MutableClass } from "../../source/Metadata/Class";
 import PropertyCategory from "../../source/Metadata/PropertyCategory";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
@@ -320,6 +320,76 @@ describe("PrimitiveProperty", () => {
     it("should throw for invalid minValue", async () => testInvalidAttribute(testProperty, "minValue", "number", "0"));
     it("should throw for invalid maxValue", async () => testInvalidAttribute(testProperty, "maxValue", "number", "0"));
     it("should throw for invalid extendedTypeName", async () => testInvalidAttribute(testProperty, "extendedTypeName", "string", 0));
+    });
+
+  describe("KindOfQuantity in referenced schema", () => {
+    let testProperty: PrimitiveProperty;
+    beforeEach(() => {
+      const referencedSchema = new Schema("Reference", 1, 0, 0) as MutableSchema;
+      referencedSchema.createKindOfQuantitySync("MyKindOfQuantity");
+
+      const schema = new Schema("TestSchema", 1, 0, 0) as MutableSchema;
+      schema.addReferenceSync(referencedSchema);
+
+      const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
+      testProperty = testClass.createPrimitivePropertySync("Primitive", PrimitiveType.Double);
+    });
+
+    const propertyJson = {
+      kindOfQuantity : "Reference.MyKindOfQuantity",
+      name : "Primitive",
+      propertyType : "PrimitiveProperty",
+      typeName : "double",
+    };
+
+    it("Should load KindOfQuantity synchronously", () => {
+      testProperty.fromJsonSync(propertyJson);
+      const koq = testProperty.getKindOfQuantitySync();
+      assert(koq !== undefined);
+      assert(koq!.name === "MyKindOfQuantity");
+    });
+
+    it("Should load KindOfQuantity", async () => {
+      await testProperty.fromJson(propertyJson);
+      const koq = await testProperty.kindOfQuantity;
+      assert(koq !== undefined);
+      assert(koq!.name === "MyKindOfQuantity");
+    });
+  });
+
+  describe("PropertyCategory in referenced schema", () => {
+    let testProperty: PrimitiveProperty;
+    beforeEach(() => {
+      const referencedSchema = new Schema("Reference", 1, 0, 0) as MutableSchema;
+      referencedSchema.createPropertyCategorySync("MyCategory");
+
+      const schema = new Schema("TestSchema", 1, 0, 0) as MutableSchema;
+      schema.addReferenceSync(referencedSchema);
+
+      const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
+      testProperty = testClass.createPrimitivePropertySync("Primitive", PrimitiveType.Double);
+    });
+
+    const propertyJson = {
+      category : "Reference.MyCategory",
+      name : "Primitive",
+      propertyType : "PrimitiveProperty",
+      typeName : "double",
+    };
+
+    it("Should load PropertyCategory synchronously", () => {
+      testProperty.fromJsonSync(propertyJson);
+      const cat = testProperty.getCategorySync();
+      assert(cat !== undefined);
+      assert(cat!.name === "MyCategory");
+    });
+
+    it("Should load PropertyCategory", async () => {
+      await testProperty.fromJson(propertyJson);
+      const cat = await testProperty.category;
+      assert(cat !== undefined);
+      assert(cat!.name === "MyCategory");
+    });
   });
 });
 

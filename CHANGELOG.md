@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added basic Custom Attribute deserialization support
 
 ### Fixed
+- Loading KindOfQuantity and PropertyCategory from referenced schemas on a property now resolves correctly
 - Property iteration now follows the same sorting rules that EC native has.
 
 ## [0.8.0]  -  2018-07-17
