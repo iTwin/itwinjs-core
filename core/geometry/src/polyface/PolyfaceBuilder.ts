@@ -262,10 +262,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         if (paramTransform === undefined) {
           param0 = param1 = param2 = param3 = Point2d.createZero();
         } else {
-          param0 = Point2d.createFrom(paramTransform.multiplyInversePoint3d(points[0]));
-          param1 = Point2d.createFrom(paramTransform.multiplyInversePoint3d(points[1]));
-          param2 = Point2d.createFrom(paramTransform.multiplyInversePoint3d(points[2]));
-          param3 = Point2d.createFrom(paramTransform.multiplyInversePoint3d(points[3]));
+          param0 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[0]));
+          param1 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[1]));
+          param2 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[2]));
+          param3 = Point2d.createFrom(paramTransform.multiplyPoint3d(points[3]));
         }
       }
     }
@@ -311,7 +311,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
     // Add normals if needed
-    if (needParams) {
+    if (needNormals) {
       idx0 = this.polyface.addNormal(normal0!);
       idx1 = this.polyface.addNormal(normal1!);
       idx2 = this.polyface.addNormal(normal2!);
