@@ -880,13 +880,14 @@ export abstract class Target extends RenderTarget {
     let isEmptyImage = true;
     for (let i = 3; i < image.data.length; i += 4) {
       const a = image.data[i];
-      if (!preserveBGAlpha || 0 < a || true) {
+      if (!preserveBGAlpha || 0 < a) {
         image.data[i] = 0xff;
         isEmptyImage = false;
       }
     }
     if (isEmptyImage)
       return undefined;
+
     return image;
   }
 

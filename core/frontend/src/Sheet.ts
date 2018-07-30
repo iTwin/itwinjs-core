@@ -649,7 +649,7 @@ export namespace Attachments {
       const style = view.displayStyle;
 
       // Override the background color. This is to match v8, but there should probably be an option in the "Details" about whether to do this or not.
-      const bgColor = ColorDef.red.clone(); // sheetView.displayStyle.backgroundColor.clone();
+      const bgColor = sheetView.displayStyle.backgroundColor.clone();
       // Set fully-transparent so that we discard background pixels (probably no point to the above line any more...)
       bgColor.setAlpha(0xff);
       style.backgroundColor.setFrom(bgColor);
@@ -664,8 +664,9 @@ export namespace Attachments {
       }
 
       const range = attachment.placement.calculateRange();
-      const biasDistance = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
-      this.biasDistance = biasDistance;
+      // ###TODO: Figure out why bias distance dependent upon attachment display priority puts us out of range to draw
+      // this.biasDistance = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
+      this.biasDistance = 0.5;
 
       range.getNpcToWorldRangeTransform(this.viewport.toParent);
       this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1);

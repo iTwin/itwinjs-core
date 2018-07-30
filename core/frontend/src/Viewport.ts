@@ -1643,4 +1643,10 @@ export class OffScreenViewport extends Viewport {
   public setRect(rect: ViewRect, temporary: boolean = false) {
     this.target.setViewRect(rect, temporary);
   }
+
+  /** @hidden */
+  public prepareDecorations(_plan: UpdatePlan, _decorations: Decorations): void { }
+
+  /** @hidden */
+  public decorate(_context: DecorateContext): void { }
 }

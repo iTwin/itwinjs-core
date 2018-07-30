@@ -602,8 +602,10 @@ export class System extends RenderSystem {
       meshArgs.isPlanar = true;
 
       const mesh = this.createTriMesh(meshArgs);
-      if (mesh !== undefined)
+      if (mesh !== undefined) {
+        (mesh as any)._primitives[0].cachedGeometry.DEBUG = true;
         sheetTileGraphics.push(mesh);
+      }
     }
 
     return sheetTileGraphics;
