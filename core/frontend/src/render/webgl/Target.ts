@@ -842,7 +842,7 @@ export abstract class Target extends RenderTarget {
       targetSize.y = wantRect.height;
     }
 
-    const lowerRight = Point2d.create(wantRect.right = 1, wantRect.bottom - 1); // in BSIRect, the right and bottom are actually *outside* of the rectangle
+    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1); // in BSIRect, the right and bottom are actually *outside* of the rectangle
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;
 
@@ -850,8 +850,8 @@ export abstract class Target extends RenderTarget {
 
     // CLIPPING AND SCALING NOT AVAILABLE FOR D3D ----------------
     captureRect = wantRect.clone();
-    targetSize.x = captureRect.width - 1;
-    targetSize.y = captureRect.height - 1;
+    targetSize.x = captureRect.width;
+    targetSize.y = captureRect.height;
     // -----------------------------------------------------------
 
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
@@ -862,7 +862,7 @@ export abstract class Target extends RenderTarget {
     // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
     const bytesPerPixel = 4;
     const imageData = new Uint8Array(bytesPerPixel * captureRect.width * captureRect.height);
-    const isValidImageData = this.readImagePixels(imageData, captureRect.left, actualViewRect.height - captureRect.bottom, captureRect.width - 1, captureRect.height - 1);
+    const isValidImageData = this.readImagePixels(imageData, captureRect.left, actualViewRect.height - captureRect.bottom, captureRect.width, captureRect.height);
     if (!isValidImageData)
       return undefined;
     const image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, targetSize.x);
@@ -880,7 +880,7 @@ export abstract class Target extends RenderTarget {
     let isEmptyImage = true;
     for (let i = 3; i < image.data.length; i += 4) {
       const a = image.data[i];
-      if (!preserveBGAlpha || 0 < a) {
+      if (!preserveBGAlpha || 0 < a || true) {
         image.data[i] = 0xff;
         isEmptyImage = false;
       }
@@ -1025,7 +1025,7 @@ export class OffScreenTarget extends Target {
   public get viewRect(): ViewRect { return this.renderRect; }
 
   public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
-  public updateViewRect(): boolean { return true; } // offscreen target does not dynmaically resize the view rect
+  public updateViewRect(): boolean { return false; } // offscreen target does not dynmaically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
     if (this.renderRect.equals(rect))
@@ -1044,10 +1044,8 @@ export class OffScreenTarget extends Target {
   }
 
   protected _assignDC(): boolean {
-    if (!this.updateViewRect() || this._fbo !== undefined)
+    if (!this.updateViewRect() && this._fbo !== undefined)
       return true;
-
-    this._makeCurrent();
 
     const rect = this.viewRect;
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
@@ -1058,13 +1056,14 @@ export class OffScreenTarget extends Target {
     return this._fbo !== undefined;
   }
 
-  protected _makeCurrent(): void {
-    // System.instance.makeDefaultSurfaceCurrent();
+  protected _beginPaint(): void {
+    assert(this._fbo !== undefined);
+    System.instance.frameBufferStack.push(this._fbo!, true);
   }
 
-  // ###TODO...
-  protected _beginPaint(): void { }
-  protected _endPaint(): void { }
+  protected _endPaint(): void {
+    System.instance.frameBufferStack.pop();
+  }
 }
 
 function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3d {

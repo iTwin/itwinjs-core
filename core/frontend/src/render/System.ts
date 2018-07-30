@@ -24,7 +24,6 @@ import {
   QPoint3dList,
   ImageSource,
   ImageSourceFormat,
-  GraphicParams,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -406,7 +405,7 @@ export abstract class RenderSystem implements IDisposable {
   public createSheetTilePolyfaces(_corners: Point3d[], _clip: ClipVector): IndexedPolyface[] { return []; }
 
   /** Create a sheet tile primitive from polyfaces. */
-  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _params: GraphicParams): GraphicList { return []; }
+  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[]): GraphicList { return []; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }

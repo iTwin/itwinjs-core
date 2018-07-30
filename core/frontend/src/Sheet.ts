@@ -203,26 +203,16 @@ export namespace Attachments {
 
   const QUERY_SHEET_TILE_PIXELS: number = 512;
 
-  /** @hidden - Internal 'near null' tile loader used to satisfy parameter requirements when instantiating subclasses of Tile. */
-  /*
-  class AttachmentTileLoader extends TileLoader {
-    public async getTileProps(_ids: string[]): Promise<TileProps[]> {
-      return Promise.resolve([]);
-    }
-    public async loadTileContents(_missingtiles: MissingNodes): Promise<void> {
-      return Promise.resolve();
-    }
-    public getMaxDepth(): number {
-      return 362;
-    }
+  /**
+   * @hidden - Override of IModelTileLoader that ensures tiles are marked as needing to be loaded regardless of the presence of a geometry member.
+   * The tiles create their own geometry/graphics.
+   */
+  class AttachmentTileLoader extends IModelTileLoader {
     public tileRequiresLoading(_params: Tile.Params): boolean {
-      return true;  // always true... otherwise our root tiles may get skipped
-    }
-    public loadGraphics(_tile: Tile, _geometry: any): void {
-      assert(false);
+      return true;  // always true
     }
   }
-*/
+
   /** An extension of Tile specific to rendering 2d attachments. */
   export class Tile2d extends Tile {
     public constructor(root: Tree2d, range: ElementAlignedBox2d) {
@@ -232,7 +222,7 @@ export namespace Attachments {
         new ElementAlignedBox3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
         512,  // does not matter... have no children
         [],
-      ), new IModelTileLoader(root.view.iModel, new Id64()));
+      ), new AttachmentTileLoader(root.view.iModel, new Id64()));
     }
 
     // override
@@ -270,7 +260,7 @@ export namespace Attachments {
         [],
         undefined,
         parent,
-      ), new IModelTileLoader(root.sheetView.iModel, new Id64()));
+      ), new AttachmentTileLoader(root.sheetView.iModel, new Id64()));
 
       this._placement = placement;
       const tree = this.rootAsTree3d;
@@ -311,9 +301,9 @@ export namespace Attachments {
     /** Get the root tile tree cast to a Tree3d. */
     private get rootAsTree3d(): Tree3d { return this.root as Tree3d; }
     /** Get the load state from the owner attachment's array at this tile's depth. */
-    private getState(): State { return this.rootAsTree3d.getState(this.depth); }
+    private getState(): State { return this.rootAsTree3d.getState(this.depth - 1); }
     /** Set the load state of the onwner attachment's array at this tile's depth. */
-    private setState(state: State) { this.rootAsTree3d.setState(this.depth, state); }
+    private setState(state: State) { this.rootAsTree3d.setState(this.depth - 1, state); }
 
     // override
     public get hasGraphics(): boolean { return this.isReady; }
@@ -338,7 +328,7 @@ export namespace Attachments {
     }
 
     private select(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
-      if (this.depth === 0)
+      if (this.depth === 1)
         this.rootAsTree3d.viewport.rendering = false;
 
       if (this.isNotFound)
@@ -438,7 +428,7 @@ export namespace Attachments {
       const viewport = tree.viewport;
 
       if (currentState !== State.Ready) {
-        viewport.setSceneDepth(this.depth, tree);
+        viewport.setSceneDepth(this.depth - 1, tree);
         viewport.setupFromView();
 
         // Create the scene and if the scene is complete, mark the state as ready
@@ -478,8 +468,7 @@ export namespace Attachments {
             if (viewport.texture === undefined) {
               this.setNotFound();
             } else {
-              const gfParams = GraphicParams.fromSymbology(Tree3d.tileColor, Tree3d.tileColor, 0);
-              this._graphics = system.createSheetTile(viewport.texture, this._tilePolyfaces, gfParams);
+              this._graphics = system.createSheetTile(viewport.texture, this._tilePolyfaces);
               this.setIsReady();
             }
 
@@ -624,7 +613,7 @@ export namespace Attachments {
 
   /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
   export class Tree3d extends Tree {
-    public static readonly tileColor: ColorDef = ColorDef.white;
+    public static readonly tileColor: ColorDef = ColorDef.red;
     public readonly biasDistance: number; // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
     public readonly viewport: AttachmentViewport;
     /** A reference to the SheetViewState that this attachment corresponds to. */
@@ -660,9 +649,9 @@ export namespace Attachments {
       const style = view.displayStyle;
 
       // Override the background color. This is to match v8, but there should probably be an option in the "Details" about whether to do this or not.
-      const bgColor = sheetView.displayStyle.backgroundColor.clone();
+      const bgColor = ColorDef.red.clone(); // sheetView.displayStyle.backgroundColor.clone();
       // Set fully-transparent so that we discard background pixels (probably no point to the above line any more...)
-      bgColor.setAlpha(0x00);
+      bgColor.setAlpha(0xff);
       style.backgroundColor.setFrom(bgColor);
 
       // turn off skybox and groundplane

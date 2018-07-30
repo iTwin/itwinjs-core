@@ -50,8 +50,10 @@ export class TileRequests {
     });
   }
   public get hasMissingTiles(): boolean {
-    const values = Array.from(this._map.values());
-    return values.length !== 0;
+    for (const value of this._map.values())
+      if (value.length > 0)
+        return true;
+    return false;
   }
 }
 

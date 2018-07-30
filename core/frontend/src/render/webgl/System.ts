@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, GraphicParams, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, StrokeOptions, Range3d, Point2d, IndexedPolyfaceVisitor, IndexedPolyface } from "@bentley/geometry-core";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
+import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, StrokeOptions, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume, GraphicList } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
@@ -558,7 +558,7 @@ export class System extends RenderSystem {
     return sheetTilePolys;
   }
 
-  public createSheetTile(tile: RenderTexture, polyfaces: IndexedPolyface[], params: GraphicParams): GraphicList {
+  public createSheetTile(tile: RenderTexture, polyfaces: IndexedPolyface[]): GraphicList {
     const sheetTileGraphics: GraphicList = [];
 
     for (const polyface of polyfaces) {
@@ -598,7 +598,7 @@ export class System extends RenderSystem {
       meshArgs.textureUv = uvsOut;
       meshArgs.vertIndices = pointIndices;
       meshArgs.texture = tile;
-      meshArgs.material = params.material;
+      meshArgs.material = undefined;
       meshArgs.isPlanar = true;
 
       const mesh = this.createTriMesh(meshArgs);
