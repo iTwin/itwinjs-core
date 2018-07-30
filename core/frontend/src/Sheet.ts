@@ -12,7 +12,7 @@ import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState }
 import { TileTree, Tile, TileRequests, IModelTileLoader } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
-import { RenderTarget, GraphicList, RenderGraphic, RenderPlan } from "./render/System";
+import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
 import { UpdatePlan } from "./render/UpdatePlan";
 
@@ -248,7 +248,6 @@ export namespace Attachments {
   /** An extension of Tile specific to rendering 3d attachments. */
   export class Tile3d extends Tile {
     private _tilePolyfaces: IndexedPolyface[] = [];
-    private _graphics: RenderGraphic[] = [];
     private _placement: Tile3dPlacement;
 
     public constructor(root: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement) {
@@ -309,13 +308,6 @@ export namespace Attachments {
     public get hasGraphics(): boolean { return this.isReady; }
     // override
     public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
-
-    // override
-    public drawGraphics(args: Tile.DrawArgs) {
-      assert(this.isReady);
-      for (const graphic of this._graphics)
-        args.graphics.add(graphic);
-    }
 
     /** override - Should not be used. Use getChildren() method on Tile3d instead. */
     public get children(): Tile[] | undefined {
@@ -465,12 +457,10 @@ export namespace Attachments {
             viewport.setupViewFromFrustum(frust);
 
             viewport.renderTexture();
-            if (viewport.texture === undefined) {
+            if (viewport.texture === undefined)
               this.setNotFound();
-            } else {
-              this._graphics = system.createSheetTile(viewport.texture, this._tilePolyfaces);
-              this.setIsReady();
-            }
+            else
+              this.setGraphic(system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces)));
 
             // restore frustum
             viewport.setupViewFromFrustum(frustumToRestore);
