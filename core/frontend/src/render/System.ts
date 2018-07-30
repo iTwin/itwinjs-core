@@ -402,7 +402,7 @@ export abstract class RenderSystem implements IDisposable {
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
   /** Create polygons on a range for a sheet tile. */
-  public createSheetTilePolyfaces(_corners: Point3d[], _clip: ClipVector): IndexedPolyface[] { return []; }
+  public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
 
   /** Create a sheet tile primitive from polyfaces. */
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[]): GraphicList { return []; }

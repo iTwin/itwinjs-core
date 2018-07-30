@@ -490,7 +490,7 @@ export namespace Attachments {
 
   /** An extension of TileTree specific to rendering attachments. */
   export abstract class Tree extends TileTree {
-    public graphicsClip: ClipVector = ClipVector.createEmpty();
+    public graphicsClip?: ClipVector;
 
     public constructor(model: GeometricModelState) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
@@ -574,8 +574,6 @@ export namespace Attachments {
       if (sheetToDrawing !== undefined) {
         this.graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
         sheetToDrawing.multiplyRange(attachRange, this.graphicsClip.boundingRange);
-      } else {
-        this.graphicsClip = ClipVector.createEmpty();
       }
 
       this._rootTile = new Tile2d(this, attachment.placement.bbox);
