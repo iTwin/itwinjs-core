@@ -305,7 +305,7 @@ export abstract class SceneCompositor implements IDisposable {
   }
 }
 
-// The actual base class. Specializations are provided based on whether or not multipl render targets are supported.
+// The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
 abstract class Compositor extends SceneCompositor {
   protected _target: Target;
   protected _width: number = -1;

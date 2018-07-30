@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform, Point2d, Range3d, Point3d } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
@@ -286,7 +286,7 @@ export abstract class RenderTarget implements IDisposable {
 
   public abstract dispose(): void;
   public abstract reset(): void;
-  public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
+  public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -299,8 +299,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract onResized(): void;
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
-
-  // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
+  public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
 export enum SkyboxSphereType {
@@ -399,8 +398,14 @@ export abstract class RenderSystem implements IDisposable {
   /** Create an indexed polyline primitive */
   public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
 
-  // /** Create a point cloud primitive */
+  /** Create a point cloud primitive */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+
+  /** Create polygons on a range for a sheet tile. */
+  public createSheetTilePolyfaces(_corners: Point3d[], _clip: ClipVector): IndexedPolyface[] { return []; }
+
+  /** Create a sheet tile primitive from polyfaces. */
+  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[]): GraphicList { return []; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }

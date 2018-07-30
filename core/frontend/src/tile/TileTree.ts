@@ -49,6 +49,12 @@ export class TileRequests {
       tree.requestTiles(missing);
     });
   }
+  public get hasMissingTiles(): boolean {
+    for (const value of this._map.values())
+      if (value.length > 0)
+        return true;
+    return false;
+  }
 }
 
 export class Tile implements IDisposable {
@@ -63,13 +69,13 @@ export class Tile implements IDisposable {
   public readonly radius: number;
   public readonly zoomFactor?: number;
   public readonly yAxisUp: boolean;
-  private readonly _childIds: string[];
-  private _childrenLastUsed: BeTimePoint;
-  private _childrenLoadStatus: TileTree.LoadStatus;
-  private _children?: Tile[];
-  private _contentRange?: ElementAlignedBox3d;
-  private _graphic?: RenderGraphic;
-  private _rangeGraphic?: RenderGraphic;
+  protected readonly _childIds: string[];
+  protected _childrenLastUsed: BeTimePoint;
+  protected _childrenLoadStatus: TileTree.LoadStatus;
+  protected _children?: Tile[];
+  protected _contentRange?: ElementAlignedBox3d;
+  protected _graphic?: RenderGraphic;
+  protected _rangeGraphic?: RenderGraphic;
 
   public constructor(props: Tile.Params, loader: TileLoader) {
     this.root = props.root;
@@ -110,6 +116,16 @@ export class Tile implements IDisposable {
 
     this._children = undefined;
     this.loadStatus = Tile.LoadStatus.Abandoned;
+  }
+
+  public cancelAllLoads(): void {
+    if (this.isLoading) {
+      this.loadStatus = Tile.LoadStatus.NotLoaded;
+      if (this._children !== undefined) {
+        for (const child of this._children)
+          child.cancelAllLoads();
+      }
+    }
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
@@ -296,7 +312,7 @@ export class Tile implements IDisposable {
     }
   }
 
-  private unloadChildren(olderThan: BeTimePoint): void {
+  protected unloadChildren(olderThan: BeTimePoint): void {
     const children = this.children;
     if (undefined === children) {
       return;

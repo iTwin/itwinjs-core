@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Frustum fromRange bug",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "nate.rex@bentley.com"
+}

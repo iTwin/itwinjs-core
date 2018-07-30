@@ -99,11 +99,11 @@ export abstract class ClipPrimitive {
    * clippers such as polygons swept through a volume with front and back planes.
    */
   public abstract getRange(returnMaskRange: boolean, transform: Transform, result?: Range3d): Range3d | undefined;
-  /** Apply a transform to the clipper (e.g. transform all planes) */
-  public abstract transformInPlace(transform: Transform): boolean;
+
   public abstract multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean;
 
-  protected transformInPlaceSuper(transform: Transform): boolean {
+  /** Apply a transform to the clipper (e.g. transform all planes) */
+  public transformInPlace(transform: Transform): boolean {
     if (this._clipPlanes)
       this._clipPlanes.transformInPlace(transform);
     if (this._maskPlanes)
@@ -712,7 +712,7 @@ export class ClipShape extends ClipPrimitive {
     if (transform.isIdentity())
       return true;
 
-    this.transformInPlaceSuper(transform);
+    super.transformInPlace(transform);
 
     if (this._transformValid)
       transform.multiplyTransformTransform(this._transformFromClip!, this._transformFromClip);
