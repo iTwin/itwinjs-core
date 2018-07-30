@@ -56,6 +56,11 @@ Each package will have its own **node_modules** directory which will contain sym
 * [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 2.7.2
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
+### Linux
+
+You must install the following on a Linux computer before attempting to run imodeljs-backend:
+* libc++abi1
+
 ## (Bentley Developers only) Authentication
 
 Configure npm and log in to the Bentley npm registry with the following commands:
