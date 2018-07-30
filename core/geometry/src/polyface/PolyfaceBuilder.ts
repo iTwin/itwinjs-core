@@ -254,9 +254,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (needParams) {
       if (params !== undefined && params.length > 3) {
         param0 = params[0];
-        param0 = params[1];
-        param0 = params[2];
-        param0 = params[3];
+        param1 = params[1];
+        param2 = params[2];
+        param3 = params[3];
       } else {
         const paramTransform = this.getUVTransformForTriangleFacet(points[0], points[1], points[2]);
         if (paramTransform === undefined) {

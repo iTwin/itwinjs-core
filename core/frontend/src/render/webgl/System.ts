@@ -552,7 +552,15 @@ export class System extends RenderSystem {
       strokeOptions.needParams = true;
       strokeOptions.shouldTriangulate = true;
       const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-      polyfaceBuilder.addQuadFacet(polygon);
+
+      // This is a simple case in which we have a quad, and we know that the root tile range is from (0,0) to (1,1)
+      // Therefore, we can build the polyface for this tile using only the points and supplying the params, which go from (0,0) to (1,1)
+      polyfaceBuilder.addQuadFacet(polygon, [
+        Point2d.create(0, 0),
+        Point2d.create(1, 0),
+        Point2d.create(1, 1),
+        Point2d.create(0, 1),
+      ]);
       sheetTilePolys.push(polyfaceBuilder.claimPolyface());
     }
     return sheetTilePolys;
