@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Removed Composite from Format and merged the properties into the Format class
 - Added basic Custom Attribute deserialization support
 
+### Fixed
+- Property iteration now follows the same sorting rules that EC native has.
+
 ## [0.8.0]  -  2018-07-17
 ### Added
 - Iterator for properties of a class

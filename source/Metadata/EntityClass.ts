@@ -98,6 +98,45 @@ export default class EntityClass extends ECClass {
     return undefined;
   }
 
+  protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
+    if (!existingValues) {
+      existingValues = new Map<string, number>();
+    }
+
+    if (this.baseClass) {
+      ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
+    }
+
+    for (const mixin of this.mixins) {
+      ECClass.mergeProperties(result, existingValues, await (await mixin).getProperties(resetBaseCaches), false);
+    }
+
+    if (!this.properties)
+      return;
+
+    ECClass.mergeProperties(result, existingValues, this.properties, true);
+  }
+
+  protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
+    if (!existingValues) {
+      existingValues = new Map<string, number>();
+    }
+
+    const baseClass = this.getBaseClassSync();
+    if (baseClass) {
+      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
+    }
+
+    for (const mixin of this.getMixinsSync()) {
+      ECClass.mergeProperties(result, existingValues, mixin.getPropertiesSync(resetBaseCaches), false);
+    }
+
+    if (!this.properties)
+      return;
+
+    ECClass.mergeProperties(result, existingValues, this.properties, true);
+  }
+
   /**
    *
    * @param name

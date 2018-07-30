@@ -20,6 +20,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
   protected _baseClass?: LazyLoadedECClass;
   protected _properties?: Property[];
   protected _customAttributes?: CustomAttributeSet;
+  private _mergedPropertyCache?: Property[];
 
   get modifier() { return this._modifier; }
 
@@ -78,18 +79,19 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * @param name
    */
   public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
-    let foundProp: Property | undefined;
-
     if (this.properties) {
-      foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase());
-      if (foundProp)
-        return (await foundProp);
+      const upperKey = name.toUpperCase();
+      const foundProp = this.properties.find((prop) => prop.name.toUpperCase() === upperKey);
+      if (foundProp) {
+        return foundProp;
+      }
     }
 
-    if (includeInherited)
-      return this.getInheritedProperty(name);
+    if (!includeInherited) {
+      return undefined;
+    }
 
-    return undefined;
+    return await this.getInheritedProperty(name);
   }
 
   /**
@@ -97,18 +99,19 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * @param name
    */
   public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
-    let foundProp: Property | undefined;
-
     if (this.properties) {
-      foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase());
-      if (foundProp)
+      const upperKey = name.toUpperCase();
+      const foundProp = this.properties.find((prop) => prop.name.toLocaleUpperCase() === upperKey);
+      if (foundProp) {
         return foundProp;
+      }
     }
 
-    if (includeInherited)
-      return this.getInheritedPropertySync(name);
+    if (!includeInherited) {
+      return undefined;
+    }
 
-    return undefined;
+    return this.getInheritedPropertySync(name);
   }
 
   /**
@@ -116,17 +119,9 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * @param name The name of the inherited property to find.
    */
   public async getInheritedProperty(name: string): Promise<Property | undefined> {
-    let inheritedProperty;
-
     if (this.baseClass) {
       const baseClassObj = await this.baseClass;
-      inheritedProperty = await baseClassObj.getProperty(name);
-      if (inheritedProperty)
-        return inheritedProperty;
-
-      inheritedProperty = baseClassObj.getInheritedProperty(name);
-      if (inheritedProperty)
-        return inheritedProperty;
+      return await baseClassObj.getProperty(name, true);
     }
 
     return undefined;
@@ -137,21 +132,9 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * @param name The name of the inherited property to find.
    */
   public getInheritedPropertySync(name: string): Property | undefined {
-    let inheritedProperty;
-
-    if (this.baseClass) {
-      const baseClassObj = this.getBaseClassSync();
-      if (!baseClassObj)
-        return undefined;
-
-      inheritedProperty = baseClassObj.getPropertySync(name);
-      if (inheritedProperty)
-        return inheritedProperty;
-
-      inheritedProperty = baseClassObj.getInheritedPropertySync(name);
-      if (inheritedProperty)
-        return inheritedProperty;
-    }
+    const baseClassObj = this.getBaseClassSync();
+    if (baseClassObj)
+      return baseClassObj.getPropertySync(name, true);
 
     return undefined;
   }
@@ -429,72 +412,79 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     }
   }
 
-  public async *getProperties(): AsyncIterableIterator<Property> {
-    const baseClasses: ECClass[] = [];
-    for await (const baseClass of this.getAllBaseClasses()) {
-      baseClasses.push(baseClass);
+  protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Property[], overwriteExisting: boolean) {
+    for (const property of propertiesToMerge) {
+      const upperCaseName = property.name.toUpperCase();
+      const existing = existingValues.get(upperCaseName);
+      if (existing !== undefined) {
+        if (overwriteExisting) {
+          target[existing] = property;
+        }
+      } else {
+        existingValues.set(upperCaseName, target.length);
+        target.push(property);
+      }
+    }
+  }
+
+  protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
+    if (!existingValues) {
+      existingValues = new Map<string, number>();
     }
 
-    baseClasses.reverse();
-    baseClasses.push(this);
-
-    const results: Property[] = [];
-
-    const visitedProperties = new Map<string, number>();
-    const visitedClasses = new Set<ECClass>();
-    for (const c of baseClasses) {
-      // FIXME: This shouldn't? be necessary...
-      if (visitedClasses.has(c))
-        continue;
-
-      visitedClasses.add(c);
-      for (const prop of c.properties || []) {
-        const existing = visitedProperties.get(prop.name);
-        if (undefined !== existing) {
-          results[existing] = prop;
-        } else {
-          visitedProperties.set(prop.name, results.length);
-          results.push(prop);
-        }
-      }
-    } // for base class
-
-    for (const prop of results)
-      yield prop;
-  } // method
-
-  public getPropertiesSync(): Iterable<Property> {
-    const baseClasses: ECClass[] = [];
-    for (const baseClass of this.getAllBaseClassesSync()) {
-      baseClasses.push(baseClass);
+    if (this.baseClass) {
+      ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
     }
 
-    baseClasses.reverse();
-    baseClasses.push(this);
+    if (!this.properties)
+      return;
 
-    const results: Property[] = [];
+    ECClass.mergeProperties(result, existingValues, this.properties, true);
+  }
 
-    const visitedProperties = new Map<string, number>();
-    const visitedClasses = new Set<ECClass>();
-    for (const c of baseClasses) {
-      // FIXME: This shouldn't? be necessary...
-      if (visitedClasses.has(c))
-        continue;
+  protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
+    if (!existingValues) {
+      existingValues = new Map<string, number>();
+    }
 
-      visitedClasses.add(c);
-      for (const prop of c.properties || []) {
-        const existing = visitedProperties.get(prop.name);
-        if (undefined !== existing) {
-          results[existing] = prop;
-        } else {
-          visitedProperties.set(prop.name, results.length);
-          results.push(prop);
-        }
-      }
-    } // for base class
+    const baseClass = this.getBaseClassSync();
+    if (baseClass) {
+      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
+    }
 
-    return results;
-  } // method
+    if (!this.properties)
+      return;
+
+    ECClass.mergeProperties(result, existingValues, this.properties, true);
+  }
+
+  /**
+   * Iterates all properties, including the ones merged from base classes and mixins. To obtain only local properties, use the 'properties' field.
+   * Since this is an expensive operation, results will be cached after first call.
+   * @param resetCache if true, any previously cached results will be dropped and cache will be rebuilt
+   */
+  public getPropertiesSync(resetCache: boolean = false): Property[] {
+    if (!this._mergedPropertyCache || resetCache) {
+      this._mergedPropertyCache = [];
+      this.buildPropertyCacheSync(this._mergedPropertyCache, undefined, resetCache);
+    }
+
+    return this._mergedPropertyCache;
+  }
+
+  /**
+   * Iterates all properties, including the ones merged from base classes and mixins. To obtain only local properties, use the 'properties' field.
+   * Since this is an expensive operation, results will be cached after first call.
+   * @param resetCache if true, any previously cached results will be dropped and cache will be rebuilt
+   */
+  public async getProperties(resetCache: boolean = false): Promise<Property[]> {
+    if (!this._mergedPropertyCache || resetCache) {
+      this._mergedPropertyCache = [];
+      await this.buildPropertyCache(this._mergedPropertyCache, undefined, resetCache);
+    }
+
+    return this._mergedPropertyCache;
+  }
 }
 
 /**
