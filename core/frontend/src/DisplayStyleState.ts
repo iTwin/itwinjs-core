@@ -254,11 +254,9 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     const skybox = this.getEnvironment().sky;
     // ###TODO: Need something in Skybox to tell us whether to use gradient, spherical texture, or cube texture.
-    const useGradient = true;
-    if (useGradient) {
-      this.loadGradientSkyBoxParams(skybox);
-      return true;
-    }
+    const useSpherical = true;
+    if (useSpherical)
+      return this.loadSphericalSkyBoxParams(skybox, system);
 
     if (this._useSkyBoxImages)
       return this.loadImageSkyBoxParams(system);
@@ -306,11 +304,36 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return true;
   }
 
-  public loadGradientSkyBoxParams(sky: SkyBox) {
-    if (sky.twoColor)
-      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient2Color, sky.zenithColor, sky.nadirColor);
+  public loadSphericalSkyBoxParams(sky: SkyBox, system: RenderSystem): boolean {
+    // sky.jpegFile = "texturify_pano-1-13SMall.jpg"; // SphericalChurch.jpg";
+    if (undefined !== sky.jpegFile && "" !== sky.jpegFile) {
+      if (this._loadingImages)
+        return true;
+
+      this._loadingImages = true;
+
+      const promises: Array<Promise<HTMLImageElement>> = [];
+      const url = "./skyboxes/" + sky.jpegFile;
+      const promise = new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = url;
+      });
+      promises.push(promise);
+
+      Promise.all(promises).then((images: HTMLImageElement[]) => {
+        const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
+        const texture = system.createTextureFromImage(images[0], false, this.iModel, params);
+        this.skyBoxParams = SkyBoxCreateParams.createForTexturedSphere(texture!, this.iModel.globalOrigin.z, 0.0); // ###TODO: where do we get rotation from?
+        this._loadingImages = false;
+      });
+    } else if (sky.twoColor)
+      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient2Color, this.iModel.globalOrigin.z, sky.zenithColor, sky.nadirColor);
     else
-      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient4Color, sky.zenithColor, sky.nadirColor, sky.skyColor, sky.groundColor, sky.skyExponent, sky.groundExponent);
+      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient4Color, this.iModel.globalOrigin.z, sky.zenithColor, sky.nadirColor, sky.skyColor, sky.groundColor, sky.skyExponent, sky.groundExponent);
+
+    return true;
   }
 
   /** Attempts to create a texture and material for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
