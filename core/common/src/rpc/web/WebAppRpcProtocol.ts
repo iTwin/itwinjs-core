@@ -4,13 +4,22 @@
 /** @module RpcInterface */
 
 import { RpcOperation } from "../core/RpcOperation";
-import { RpcRequest, RpcRequestStatus } from "../core/RpcRequest";
+import { RpcRequest, RpcRequestStatus, RpcResponseType } from "../core/RpcRequest";
 import { RpcProtocol, RpcProtocolEvent } from "../core/RpcProtocol";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcInvocation } from "../core/RpcInvocation";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
+import { IModelError, BentleyStatus } from "../../IModelError";
+
+/** @hidden @internal */
+export const WEB_RPC_CONSTANTS = {
+  CONTENT: "Content-Type",
+  TEXT: "text/plain",
+  ANY_TEXT: "text/",
+  BINARY: "application/octet-stream",
+};
 
 /** An http server request object. */
 export interface HttpServerRequest {
@@ -24,6 +33,7 @@ export interface HttpServerRequest {
 export interface HttpServerResponse {
   send(body?: any): HttpServerResponse;
   status(code: number): HttpServerResponse;
+  set(field: string, value: string): void;
 }
 
 /** The HTTP application protocol. */
@@ -32,7 +42,18 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
     const request = WebAppRpcRequest.deserialize(this, req);
     const fulfillment = await this.fulfill(request);
-    res.status(fulfillment.status).send(fulfillment.result);
+
+    if (fulfillment.type === RpcResponseType.Text) {
+      const response = fulfillment.result as string;
+      res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
+      res.status(fulfillment.status).send(response);
+    } else if (fulfillment.type === RpcResponseType.Binary) {
+      const response = Buffer.from((fulfillment.result as ArrayBuffer));
+      res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
+      res.status(fulfillment.status).send(response);
+    } else {
+      throw new IModelError(BentleyStatus.ERROR, "Unknown response type.");
+    }
   }
 
   /** Convenience handler for an OpenAPI description request for an http server. */
@@ -84,11 +105,6 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation. */
   public abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
-
-  /** Returns an HTTP request object for an RPC operation request. */
-  public supplyConnectionForRequest(): XMLHttpRequest {
-    return new XMLHttpRequest();
-  }
 
   /** Supplies error objects for protocol events. */
   public supplyErrorForEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): Error {

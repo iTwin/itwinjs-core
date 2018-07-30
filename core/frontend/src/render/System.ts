@@ -313,6 +313,8 @@ export class SkyBoxCreateParams {
 
   public readonly texture?: RenderTexture;
   public readonly sphereType?: SkyboxSphereType;
+  public readonly zOffset?: number;
+  public readonly rotation?: number;
   public readonly zenithColor?: ColorDef;
   public readonly skyColor?: ColorDef;
   public readonly groundColor?: ColorDef;
@@ -323,10 +325,12 @@ export class SkyBoxCreateParams {
   public get isTexturedCube() { return !this._isSphere; }
   public get isSphere() { return this._isSphere; }
 
-  private constructor(_isSphere: boolean, texture?: RenderTexture, sphereType?: SkyboxSphereType, zenithColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, nadirColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
+  private constructor(_isSphere: boolean, texture?: RenderTexture, sphereType?: SkyboxSphereType, zOffset?: number, rotation?: number, zenithColor?: ColorDef, nadirColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
     this._isSphere = _isSphere;
     this.texture = texture;
     this.sphereType = sphereType;
+    this.zOffset = zOffset;
+    this.rotation = rotation;
     this.zenithColor = zenithColor;
     this.skyColor = skyColor;
     this.groundColor = groundColor;
@@ -339,7 +343,7 @@ export class SkyBoxCreateParams {
     return new SkyBoxCreateParams(false, cube);
   }
 
-  public static createForGradientSphere(sphereType: SkyboxSphereType, zenithColor: ColorDef, nadirColor: ColorDef,
+  public static createForGradientSphere(sphereType: SkyboxSphereType, zOffset: number, zenithColor: ColorDef, nadirColor: ColorDef,
     skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
     // Check arguments.
     assert(SkyboxSphereType.Texture !== sphereType);
@@ -349,12 +353,11 @@ export class SkyBoxCreateParams {
       assert(undefined !== skyExponent);
       assert(undefined !== groundExponent);
     }
-    return new SkyBoxCreateParams(true, undefined, sphereType, zenithColor, skyColor, groundColor, nadirColor, skyExponent, groundExponent);
+    return new SkyBoxCreateParams(true, undefined, sphereType, zOffset, 0, zenithColor, nadirColor, skyColor, groundColor, skyExponent, groundExponent);
   }
 
-  public static createForTexturedSphere(texture: RenderTexture) {
-    // ###TODO: may be other attributes here like a z offset
-    return new SkyBoxCreateParams(true, texture, SkyboxSphereType.Texture, undefined, undefined, undefined, undefined, undefined, undefined);
+  public static createForTexturedSphere(texture: RenderTexture, zOffset: number, rotation: number) {
+    return new SkyBoxCreateParams(true, texture, SkyboxSphereType.Texture, zOffset, rotation);
   }
 }
 
@@ -402,7 +405,7 @@ export abstract class RenderSystem implements IDisposable {
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 
   /** Create polygons on a range for a sheet tile. */
-  public createSheetTilePolyfaces(_corners: Point3d[], _clip: ClipVector): IndexedPolyface[] { return []; }
+  public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
 
   /** Create a sheet tile primitive from polyfaces. */
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[]): GraphicList { return []; }

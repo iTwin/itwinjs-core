@@ -26,7 +26,7 @@ import { TestConfig, UserCredentials } from "../TestConfig";
 export class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
   public getUserProfile(): UserProfile | undefined {
-    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley");
+    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley", "1004144426", "US");
   }
   public toTokenString() { return ""; }
 }

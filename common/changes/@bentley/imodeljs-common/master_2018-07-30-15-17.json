@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added support for transfering binary resources to RPC layer.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

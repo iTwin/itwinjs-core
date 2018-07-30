@@ -10,10 +10,12 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcProtocol, RpcProtocolEvent } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling } from "./RpcMarshaling";
-import { OPERATION, CURRENT_REQUEST } from "./RpcRegistry";
+import { CURRENT_REQUEST, RESOURCE_OP } from "./RpcRegistry";
 import { aggregateLoad, RpcNotFoundResponse } from "./RpcControl";
 import { IModelToken } from "../../IModel";
 import { IModelError } from "../../IModelError";
+
+const emptyBuffer = new ArrayBuffer(0);
 
 /** Supplies an IModelToken for an RPC request. */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
@@ -53,6 +55,13 @@ export enum RpcRequestStatus {
 export enum RpcRequestEvent {
   StatusChanged,
   PendingUpdateReceived,
+}
+
+/** RPC request response types. */
+export enum RpcResponseType {
+  Unknown,
+  Text,
+  Binary,
 }
 
 /** Handles RPC request events. */
@@ -164,14 +173,26 @@ export class RpcRequest<TResponse = any> {
     this._created = new Date().getTime();
     this.client = client;
     this.protocol = client.configuration.protocol;
-    this.operation = (client.constructor.prototype as any)[operation][OPERATION];
-    this.parameters = parameters;
+    this.operation = RpcOperation.lookup(client.constructor as any, operation);
+    this.parameters = this.processParameters(parameters, operation);
     this.retryInterval = this.operation.policy.retryInterval(client.configuration);
     this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
     this.id = this.operation.policy.requestId(this);
     this.protocol.events.addListener(this.handleProtocolEvent, this);
     this.setStatus(RpcRequestStatus.Created);
     this.operation.policy.requestCallback(this);
+  }
+
+  private processParameters(parameters: any[], operationName: string) {
+    if (this.operation.operationName === RESOURCE_OP) {
+      if (parameters.length)
+        throw new IModelError(BentleyStatus.ERROR, "Invalid parameters for resource fetch request.");
+
+      const resourceName = operationName.split(":", 2)[1];
+      parameters.push(resourceName);
+    }
+
+    return parameters;
   }
 
   /** Override to initialize the request communication channel. */
@@ -188,6 +209,12 @@ export class RpcRequest<TResponse = any> {
 
   /** Override to supply response text. */
   public getResponseText(): string { return ""; }
+
+  /** Override to supply response bytes. */
+  public getResponseBytes(): ArrayBuffer { return emptyBuffer; }
+
+  /** Override to supply response type. */
+  public getResponseType(): RpcResponseType { return RpcResponseType.Unknown; }
 
   protected setLastUpdatedTime() { this._lastUpdated = new Date().getTime(); }
 
@@ -208,6 +235,7 @@ export class RpcRequest<TResponse = any> {
       this.initializeChannel();
       this.setHeaders();
       this.send();
+      this.operation.policy.sentCallback(this);
     } catch (e) {
       this._connecting = false;
       this.reject(e);
@@ -248,8 +276,16 @@ export class RpcRequest<TResponse = any> {
 
     switch (status) {
       case RpcRequestStatus.Resolved: {
-        const result = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-        return this.resolve(result);
+        const type = this.getResponseType();
+        if (type === RpcResponseType.Text) {
+          const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+          return this.resolve(result);
+        } else if (type === RpcResponseType.Binary) {
+          const result: TResponse = this.getResponseBytes() as any; // ts bug? why necessary to cast?
+          return this.resolve(result);
+        } else {
+          throw new IModelError(BentleyStatus.ERROR, "Unknown response content type.");
+        }
       }
 
       case RpcRequestStatus.Rejected: {

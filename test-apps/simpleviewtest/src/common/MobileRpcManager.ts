@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RpcRequest, RpcRequestFulfillment, RpcProtocol, RpcProtocolEvent, RpcConfiguration, RpcInterfaceDefinition, SerializedRpcRequest } from "@bentley/imodeljs-common/lib/common";
+import { RpcRequest, RpcRequestFulfillment, RpcProtocol, RpcProtocolEvent, RpcConfiguration, RpcInterfaceDefinition, SerializedRpcRequest, RpcResponseType } from "@bentley/imodeljs-common/lib/common";
 import ReconnectingWebSocket from "reconnecting-websocket";
 declare var bentley: any;
 
@@ -20,11 +20,35 @@ export class MobileRpcManager {
 
     class MobileRequest extends RpcRequest {
       public readonly protocol: MobileProtocol = this.client.configuration.protocol as any;
-      public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "" };
+      public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "", type: RpcResponseType.Unknown };
       protected initializeChannel(): void { }
       protected setHeader(_name: string, _value: string): void { }
       public getResponseStatusCode(): number { return this.fulfillment.status; }
-      public getResponseText(): string { return this.fulfillment.result || ""; }
+
+      /** Supplies response text. */
+      public getResponseText(): string {
+        const result = this.fulfillment.result;
+        if (typeof (result) === "string") {
+          return result;
+        } else {
+          return super.getResponseText();
+        }
+      }
+
+      /** Supplies response bytes. */
+      public getResponseBytes(): ArrayBuffer {
+        const result = this.fulfillment.result;
+        if (typeof (result) !== "string") {
+          return result;
+        } else {
+          return super.getResponseBytes();
+        }
+      }
+
+      /** Supplies response type. */
+      public getResponseType(): RpcResponseType {
+        return this.fulfillment.type;
+      }
 
       protected send(): void {
         this.protocol.map.set(this.id, this);
