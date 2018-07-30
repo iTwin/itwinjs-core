@@ -44,7 +44,7 @@ export class TestbedConfig {
   public static swaggerURI = "/v3/swagger.json";
   public static cloudRpc: BentleyCloudRpcConfiguration;
   public static get ipc(): any { return ___TESTBED_IPC_RENDERER___; }
-  public static useHttp2 = true;
+  public static useHttp2 = false;
 
   public static get localServerUrlPrefix() {
     const protocol = TestbedConfig.useHttp2 ? "https" : "http";

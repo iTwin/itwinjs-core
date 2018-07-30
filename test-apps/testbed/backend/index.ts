@@ -12,7 +12,7 @@ import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer } from "./
 import { CONSTANTS } from "../common/Testbed";
 import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { HttpServerRequest, HttpServerResponse } from "../../core/common/lib/rpc/web/WebAppRpcProtocol";
+import { HttpServerRequest, HttpServerResponse } from "../../../core/common/lib/rpc/web/WebAppRpcProtocol";
 const compatibleVersion = IModelReadRpcInterface.version;
 
 let pendingsSent = 0;
