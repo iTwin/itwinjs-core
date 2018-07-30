@@ -4,7 +4,7 @@
 /** @module RpcInterface */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { RpcRequest, RpcRequestStatus } from "./RpcRequest";
+import { RpcRequest, RpcRequestStatus, RpcResponseType } from "./RpcRequest";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcOperation } from "./RpcOperation";
@@ -36,11 +36,29 @@ export interface RpcRequestFulfillment {
   /** The id for the request. */
   id: string;
 
-  /** The serialized result for the request. */
-  result: string;
+  /** The result for the request. */
+  result: string | ArrayBuffer;
 
   /** A protocol-specific status code value for the request. */
   status: number;
+
+  /** The type of the result. */
+  type: RpcResponseType;
+}
+
+/** @internal @hidden */
+export namespace RpcRequestFulfillment {
+  export function forUnknownError(request: SerializedRpcRequest, error: any): RpcRequestFulfillment {
+    const result = RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
+
+    return {
+      interfaceName: request.operation.interfaceDefinition,
+      id: request.id,
+      result,
+      status: RpcRequestStatus.Rejected,
+      type: RpcResponseType.Text,
+    };
+  }
 }
 
 /** RPC protocol event types. */

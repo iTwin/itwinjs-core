@@ -17,7 +17,7 @@ import { TestData } from "./TestData";
 
 TestbedConfig.initializeRpcFrontend();
 if (TestbedConfig.cloudRpc)
-  TestbedConfig.cloudRpc.protocol.pathPrefix = `http://localhost:${TestbedConfig.serverPort}`;
+  TestbedConfig.cloudRpc.protocol.pathPrefix = TestbedConfig.localServerUrlPrefix;
 
 after(() => {
   setTimeout(() => {
@@ -31,7 +31,7 @@ describe("Testbed", function () {
       const info = TestbedConfig.cloudRpcParams.info;
 
       const req = new XMLHttpRequest();
-      req.open("GET", `http://localhost:${TestbedConfig.serverPort}${TestbedConfig.swaggerURI}`);
+      req.open("GET", `${TestbedConfig.localServerUrlPrefix}${TestbedConfig.swaggerURI}`);
       req.addEventListener("load", () => {
         assert.equal(200, req.status);
         const desc = JSON.parse(req.responseText);
