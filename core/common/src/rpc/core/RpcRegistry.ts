@@ -32,10 +32,7 @@ export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/RpcRequest/_
 export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/RpcInvocation/__current__");
 
 /** @hidden @internal */
-export const RESOURCE_OP = "resource:";
-
-/** @hidden @internal */
-export const builtins: string[] = [RESOURCE_OP];
+export const builtins: string[] = [];
 
 /** @hidden @internal */
 export class RpcRegistry {
