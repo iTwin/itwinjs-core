@@ -1,0 +1,18 @@
+@import "@bentley/ui-core/lib/colors";
+@import "_variables";
+
+.nz-footer-message-content-dialog-titleBar {
+  $horizontal-padding: $nz-dialog-padding;
+  $vertical-padding: 12px;
+
+  background-color: $background-5;
+  min-height: 36px;
+  box-sizing: border-box;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  grid-gap: $horizontal-padding;
+  padding-left: $horizontal-padding;
+  padding-right: $horizontal-padding;
+}

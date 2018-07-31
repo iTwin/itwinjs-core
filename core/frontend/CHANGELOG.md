@@ -1,6 +1,39 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 24 Jul 2018 15:52:31 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Jul 2018 11:36:14 GMT and should not be manually modified.
+
+## 0.105.0
+Tue, 31 Jul 2018 11:36:14 GMT
+
+### Updates
+
+- Added OneAtATimePromise for handling mouse move round-trips to the server over slow HTTP connections
+- Let IdleTool handle start drag event to install view tools instead of using middle button events. Fixes for tentative points.
+- make all tool event methods async
+- Added receivedDownEvent to InteractiveTool to check if up events should be sent. ToolAdmin button event cleanup.
+- throw away repeated keyboard events. They interfere with mouse motion replacement
+- Fix being able to pan when rotate toolis active. Start of touch event support.
+- 3d view attachments
+- EN: TFS#914011 - Finished Skybox gradient and spherical texture shaders
+- 3d view attachments are working
+
+## 0.104.1
+Thu, 26 Jul 2018 21:35:07 GMT
+
+### Updates
+
+- Support separate view flags per model.
+
+## 0.104.0
+Thu, 26 Jul 2018 18:25:15 GMT
+
+### Updates
+
+- Implement six-sided skybox cubes.
+- 2d geometry is properly clipped using ClipMaskVolume
+- attachment id array on SheetViewState has type Id64Array
+- Maintain image aspect ratio in cubemap skybox.
+- Add support for dynamic 3d clipping volumes.
 
 ## 0.103.0
 Tue, 24 Jul 2018 15:52:31 GMT

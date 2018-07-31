@@ -1,0 +1,71 @@
+# @bentley/ui-ninezone
+
+React components for 9 zone UI and other purposes.
+
+## Usage
+
+### Installation
+
+```shell
+npm install @bentley/ui-ninezone
+```
+
+### Basic Usage
+
+```javascript
+import BackButton from "@bentley/ui-ninezone/lib/components/buttons/Back";
+
+<BackButton />
+```
+
+## Demo
+
+Live demo is hosted [here](https://ninezone.azurewebsites.net/)
+
+### Components
+
+* Buttons
+  * App
+  * Back
+  * Button
+  * Close
+* ...
+
+## Contributing
+
+Please push code and pull requests to the [Git repository](http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-ui/)
+
+### Local Demo
+
+```shell
+git clone http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-ui
+cd imodeljs-ui
+rush install
+rush build
+cd packages/ninezone
+npm start
+```
+
+### Coding Guidelines
+
+Look at the existing code and try to keep your code similar.
+
+* Every component class name should follow nz-path-to-component-componentName naming style.
+
+* Every inner class name should have nz- prefix.
+
+* Import the Sass classnames with: `import "./YourComponent.scss";`
+
+* Every component should accept `className?: string` and `style?: React.CSSProperties` props.
+
+* Components that accept one or a list of children should use the `children?: React.ReactNode` prop.
+
+### Advice
+
+* Use [classnames](https://www.npmjs.com/package/classnames) function to create className strings for the elements.
+
+* Use `const className` inside render for the root element className value.
+
+## Contact
+
+* [Gerardas Butkevičius](mailto:gerardas.butkevicius@bentley.com)

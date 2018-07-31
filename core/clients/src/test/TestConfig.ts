@@ -9,14 +9,17 @@ import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
 
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 
-// Logger.initializeToConsole();
+Logger.initializeToConsole();
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
 // especially when diagnosing CI job failures.
-
-Logger.setLevelDefault(LogLevel.Error);
+const loggingConfigFile: string | undefined = process.env.imodeljs_test_logging_config;
+if (!!loggingConfigFile) {
+  // tslint:disable-next-line:no-var-requires
+  Logger.configureLevels(require(loggingConfigFile));
+}
 
 /** Credentials for test users */
 export interface UserCredentials {

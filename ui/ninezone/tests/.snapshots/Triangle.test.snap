@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Triangle /> renders correctly 1`] = `
+<Component
+  className="nz-popup-popover-triangle"
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;

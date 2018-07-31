@@ -1,0 +1,102 @@
+{
+  "name": "@bentley/ui-ninezone",
+  "version": "0.105.0",
+  "description": "IModelJs Nine-zone React UI components",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc 1>&2 && npm run copy:scss",
+    "build:demo": "webpack --config ./demo/webpack.config.js",
+    "clean": "rimraf lib out demo/lib package-deps.json",
+    "copy:scss": "cpx src/**/*.scss lib",
+    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --coverage",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ninezone/json/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2 && tslint --project ./tests/tsconfig.json 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
+    "pack": "npm run build && node ../../scripts/pack.js",
+    "start": "webpack-dev-server --config ./demo/webpack.dev.config.js",
+    "test": "node ../../tools/bentley/scripts/uitesting/run-tests.js --testsDir ./tests",
+    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --coverage --report",
+    "test:watch": "npm test -- --watch"
+  },
+  "repository": {},
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/ui-core": "0.105.0"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "0.105.0",
+    "@bentley/ui-core": "0.105.0",
+    "@bentley/svg-icons": "^6.4.0",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/chai-jest-snapshot": "^1.3.0",
+    "@types/chai-spies": "^0",
+    "@types/classnames": "^2.2.3",
+    "@types/enzyme": "3.1.9",
+    "@types/mocha": "^2.2.48",
+    "@types/react": "^16.4.4",
+    "@types/react-dom": "^16.0.3",
+    "@types/react-router-dom": "^4.2.7",
+    "@types/sinon": "^5.0.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "chai-jest-snapshot": "^1.3.0",
+    "chai-spies": "1.0.0",
+    "cpx": "^1.5.0",
+    "cross-env": "^5.1.4",
+    "css-loader": "^0.28.7",
+    "dirty-chai": "^2.0.1",
+    "enzyme": "^3.3.0",
+    "html-webpack-plugin": "^3.2.0",
+    "mocha": "^5.2.0",
+    "nyc": "^11.8.0",
+    "raw-loader": "^0.5.1",
+    "react-markdown": "^3.2.1",
+    "react-router-dom": "^4.2.2",
+    "rimraf": "^2.6.2",
+    "sass-loader": "^6.0.6",
+    "sinon": "^6.1.3",
+    "sinon-chai": "^3.2.0",
+    "style-loader": "^0.19.1",
+    "svg-react-loader": "^0.4.5",
+    "ts-loader": "^4.4.0",
+    "ts-node": "^6.0.3",
+    "tsconfig-paths": "^3.3.2",
+    "tslint": "^5.10.1",
+    "tslint-loader": "^3.6.0",
+    "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typescript": "~2.8.2",
+    "url-loader": "^1.0.1",
+    "webpack": "^4.16.1",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.4"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+  ],
+  "dependencies": {
+    "@bentley/bwc": "^6.0.1",
+    "@bentley/icons-webfont": "^6.5.0",
+    "classnames": "^2.2.5",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  },
+  "nyc": {
+    "nycrc-path": "../../.nycrc",
+    "temp-directory": "../../out/reports/coverage/ninezone/.nyc_output",
+    "report-dir": "../../out/reports/coverage/ninezone"
+  }
+}

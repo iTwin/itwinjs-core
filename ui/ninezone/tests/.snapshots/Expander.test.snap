@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Expander /> renders correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-expander"
+>
+  <Tool>
+    <div
+      className="nz-expansion-indicator"
+    >
+      &gt;
+    </div>
+  </Tool>
+</div>
+`;

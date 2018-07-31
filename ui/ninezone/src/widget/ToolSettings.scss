@@ -1,0 +1,10 @@
+.nz-widget-toolSettings {
+  display: grid;
+  grid-gap: 10px;
+
+  > * {
+    pointer-events: auto;
+    display: grid;
+    justify-content: center;
+  }
+}

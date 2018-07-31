@@ -1,0 +1,150 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../../../../_geometry";
+
+.nz-toolbar-item-expandable-history-tray {
+  $border-radius: 3px;
+  $extend-tool-history-tab-width: 5px;
+  $triangle-width: 3px;
+  $triangle-color: $text-light;
+
+  display: flex;
+
+  > .nz-items {
+    display: flex;
+
+    & > * {
+      display: none;
+    }
+
+    & > *:first-child {
+      display: block;
+    }
+  }
+
+  &.nz-is-extended {
+    > .nz-items {
+      & > * {
+        display: block;
+      }
+    }
+  }
+
+  > .nz-tab {
+    display: none;
+    width: $extend-tool-history-tab-width;
+    background: $background-4;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.nz-direction-left {
+    flex-direction: row-reverse;
+
+    > .nz-items {
+      flex-direction: row-reverse;
+
+      & > *:last-child {
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: $border-radius;
+      }
+    }
+
+    > .nz-tab {
+      border-radius: 0;
+      border-top-left-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+
+      > .nz-triangle {
+        @include triangle-left($width: $triangle-width, $color: $triangle-color);
+      }
+    }
+  }
+
+  &.nz-direction-top {
+    flex-direction: column-reverse;
+
+    > .nz-items {
+      flex-direction: column-reverse;
+
+      & > *:last-child {
+        border-radius: 0;
+        border-top-left-radius: $border-radius;
+        border-top-right-radius: $border-radius;
+      }
+    }
+
+    > .nz-tab {
+      width: auto;
+      height: $extend-tool-history-tab-width;
+      border-radius: 0;
+      border-top-left-radius: $border-radius;
+      border-top-right-radius: $border-radius;
+
+      > .nz-triangle {
+        @include triangle-top($width: $triangle-width, $color: $triangle-color);
+      }
+    }
+  }
+
+  &.nz-direction-right {
+    flex-direction: row;
+
+    > .nz-items {
+      flex-direction: row;
+
+      & > *:last-child {
+        border-radius: 0;
+        border-top-right-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+      }
+    }
+
+    > .nz-tab {
+      border-radius: 0;
+      border-top-right-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+
+      > .nz-triangle {
+        @include triangle-right($width: $triangle-width, $color: $triangle-color);
+      }
+    }
+  }
+
+  &.nz-direction-bottom {
+    flex-direction: column;
+
+    > .nz-items {
+      flex-direction: column;
+
+      & > *:last-child {
+        border-radius: 0;
+        border-bottom-left-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+      }
+    }
+
+    > .nz-tab {
+      width: auto;
+      height: $extend-tool-history-tab-width;
+      border-radius: 0;
+      border-bottom-left-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+
+      > .nz-triangle {
+        @include triangle-bottom($width: $triangle-width, $color: $triangle-color);
+      }
+    }
+  }
+
+  &.nz-tab-is-visible {
+    > .nz-tab {
+      display: flex;
+    }
+
+    > .nz-items {
+      & > *:last-child {
+        border-radius: 0;
+      }
+    }
+  }
+}

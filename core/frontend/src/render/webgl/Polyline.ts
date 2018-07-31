@@ -34,7 +34,7 @@ export class PolylineInfo {
     this.features = FeaturesInfo.create(args.features);
     this.lineWeight = args.width;
     this.lineCode = LineCode.valueFromLinePixels(args.linePixels);
-    this.flags = args.flags;
+    this.flags = args.flags.clone();
   }
 
   public get isPlanar(): boolean { return this.flags.isPlanar; }

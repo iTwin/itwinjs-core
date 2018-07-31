@@ -25,7 +25,8 @@ export const enum TechniqueId {
   ClearPickAndColor,
   ClipMask,
   SkyBox,
-  SkySphere,
+  SkySphereGradient,
+  SkySphereTexture,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,

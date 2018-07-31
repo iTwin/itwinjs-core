@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<PointerCaptor /> renders correctly 1`] = `
+<div
+  className="nz-base-pointerCaptor"
+  onMouseDown={[Function]}
+>
+  <div
+    className="nz-overlay"
+  />
+</div>
+`;

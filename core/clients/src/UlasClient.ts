@@ -1,0 +1,380 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
+import { ImsDelegationSecureTokenClient } from "./ImsClients";
+import { AccessToken, AuthorizationToken } from "./Token";
+import { request, RequestOptions, Response } from "./Request";
+import { Logger, BentleyStatus, Guid, GuidProps, LogLevel } from "@bentley/bentleyjs-core";
+import { UserProfile } from "./UserProfile";
+
+const loggingCategory: string = "imodeljs-clients.Ulas";
+
+/**
+ * Represents one of the potential sources of usage log entries.
+ * See [FeatureLogEntry]$(imodeljs-clients)
+ */
+export enum LogPostingSource {
+  RealTime, Offline, Checkout,
+}
+/**
+ * Represents one of the potential usage types.
+ * See [FeatureLogEntry]$(imodeljs-clients)
+ */
+export enum UsageType {
+  Production, Trial, Beta, HomeUse, PreActivation,
+}
+
+/**
+ * Represents arbitrary metadata that can be attached to a
+ * [FeatureLogEntry]$(imodeljs-clients) when collecting
+ * information about feature usage.
+ */
+export interface FeatureLogEntryAttribute {
+  name: string;
+  value: any;
+}
+
+/**
+ * Feature log entry data that is submitted to the ULAS Posting Service.
+ * See [UlasClient]$(imodeljs-clients)
+ */
+export class FeatureLogEntry {
+  /* ID of the feature to log usage for (from FeatureRegistry). */
+  public readonly featureId: GuidProps;
+  /* The product ID for which usage is being submitted. It is a 4-digit Product ID from the GPR */
+  public readonly productId: number;
+
+  /* Product version expressed as array of the version digits */
+  public productVersion: number[];
+
+  /* Additional user-defined metadata for the feature usage. */
+  public usageData: FeatureLogEntryAttribute[];
+
+  /* The client's machine name */
+  public hostName: string;
+  /* The user's login name. */
+  public hostUserName: string;
+
+  /* Identifies the source of the usage log entry. */
+  public logPostingSource: LogPostingSource;
+  /* The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
+  should not count towards a customer’s peak processing. */
+  public usageType: UsageType;
+
+  /* The GUID of the project that the usage should be associated with.  */
+  public projectId?: GuidProps;
+
+  public readonly timestamp: string;
+
+  public constructor(featureId: GuidProps, productId: number) {
+    this.featureId = featureId;
+    this.productId = productId;
+    this.usageData = [];
+    this.timestamp = new Date().toISOString();
+  }
+}
+
+/**
+ * Data to log the start of a Feature usage with the ULAS Posting Service.
+ * Use [FeatureEndedLogEntry]($imodeljs-clients) to log the end of the feature usage.
+ * See [UlasClient]$(imodeljs-clients)
+ */
+export class FeatureStartedLogEntry extends FeatureLogEntry {
+  public readonly entryId: Guid;
+
+  public constructor(featureId: GuidProps, productId: number) {
+    super(featureId, productId);
+    this.entryId = new Guid(true);
+  }
+}
+
+/**
+ * Data to log the end of a Feature usage with the ULAS Posting Service.
+ * Must have logged an [FeatureStartedLogEntry]($imodeljs-clients) before.
+ * See [UlasClient]$(imodeljs-clients)
+ */
+export class FeatureEndedLogEntry extends FeatureLogEntry {
+  public readonly startEntryId: Guid;
+
+  public constructor(startEntry: FeatureStartedLogEntry) {
+    super(startEntry.featureId, startEntry.productId);
+    this.productVersion = startEntry.productVersion;
+    this.usageData = startEntry.usageData;
+    this.hostName = startEntry.hostName;
+    this.hostUserName = startEntry.hostUserName;
+    this.logPostingSource = startEntry.logPostingSource;
+    this.usageType = startEntry.usageType;
+    this.startEntryId = startEntry.entryId;
+  }
+}
+
+/**
+ * Response from posting a Feature Log entry with
+ * [UlasClient]$(imodeljs-clients)
+ */
+export interface LogPostingResponse {
+  /* The overall status of the request. */
+  status: BentleyStatus;
+  /* The message localized in client's language. */
+  message: string;
+  /* The time in milliseconds it took to complete the request submitted by the client. */
+  time: number;
+  /* The unique ID of the request assigned by the server when handling the client's request. */
+  requestId: GuidProps;
+}
+
+/**
+ * Client for the Bentley Usage Logging & Analysis Services.
+ */
+export class UlasClient extends Client {
+  public static readonly searchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
+  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+    DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
+    QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
+    PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
+    // WIP: Is this the right URL?
+    PERF: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
+  };
+
+  // Workaround until these values can be read from Policy API
+  private readonly _policyIds: ImsPolicyIds = new ImsPolicyIds();
+
+  /**
+   * Creates an instance of UlasClient.
+   * @param deploymentEnv Deployment environment
+   */
+  constructor(public deploymentEnv: DeploymentEnv) { super(deploymentEnv); }
+
+  /**
+   * WIP: iModelBank might not be able to access the BUDDI service. How to solve that?
+   *
+   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
+   * @returns Search key for the URL.
+   */
+  protected getUrlSearchKey(): string { return UlasClient.searchKey; }
+
+  /**
+   * @returns Default URL for the service.
+   */
+  protected getDefaultUrl(): string { return UlasClient.defaultUrlDescriptor[this.deploymentEnv]; }
+
+  /**
+   * Gets the (delegation) access token to acess the service
+   * @param authTokenInfo Access token.
+   * @returns Resolves to the (delegation) access token.
+   */
+  public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
+    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
+    return imsClient.getToken(authorizationToken);
+  }
+
+  public async logFeature(token: AccessToken, entry: FeatureLogEntry): Promise<LogPostingResponse> {
+    const postUrl: string = await this.getUrl();
+    const entriesJson: any = FeatureEntryLogConverter.toJson(token, entry, this._policyIds);
+
+    const options: RequestOptions = {
+      method: "POST",
+      headers: { authorization: "SAML " + Base64.btoa(token.getSamlAssertion()!) },
+      body: entriesJson,
+    };
+
+    await this.setupOptionDefaults(options);
+
+    if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
+      Logger.logTrace(loggingCategory, "Sending Feature Log REST request...", () => ({ url: postUrl, request: options }));
+
+    const resp: Response = await request(postUrl, options);
+
+    const requestDetails = { url: postUrl, request: options, response: resp };
+    if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
+      Logger.logTrace(loggingCategory, "Sent Feature Log REST request.", () => requestDetails);
+
+    const respBody: any = resp.body;
+    if (!respBody || !respBody.status || !respBody.reqID)
+      throw new Error(`Post Feature Log REST request failed: No response body available. Details: ${JSON.stringify(requestDetails)}`);
+
+    const status: BentleyStatus = respBody.status.toLowerCase() === "success" ? BentleyStatus.SUCCESS : BentleyStatus.ERROR;
+    const message: string = !!respBody.msg ? respBody.msg : "";
+    const time: number = !!respBody.time ? respBody.time : -1;
+    const requestId = new Guid(respBody.reqID);
+    if (status !== BentleyStatus.SUCCESS)
+      throw new Error(`Post Feature Log REST request failed: ${message}. Details: ${JSON.stringify(requestDetails)}`);
+
+    return { status, message, time, requestId };
+  }
+}
+
+class FeatureEntryLogConverter {
+  public static toJson(token: AccessToken, entry: FeatureLogEntry, policyIds: ImsPolicyIds): any {
+    if (!token.getUserProfile())
+      throw new Error("AccessToken is expected to include user information");
+
+    const ftrID: string = FeatureEntryLogConverter.guidToString(entry.featureId);
+    const prdid: number = entry.productId;
+    // empty for now
+    const fstr: string = "";
+
+    const userProfile: UserProfile = token.getUserProfile()!;
+    const ultId: number = parseInt(userProfile.ultimateId, 10);
+    const imsID: string = userProfile.userId;
+    // WIP: must be replaced by pulling from policy file. For now we use imsID.
+    const pid: string = imsID;
+
+    const hID: string = FeatureEntryLogConverter.prepareMachineName(entry.hostName);
+    const cSID: string = hID.length > 0 ? FeatureEntryLogConverter.computeHash(hID) : "";
+
+    const uID: string = FeatureEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
+    const uSID: string = uID.length > 0 ? FeatureEntryLogConverter.computeHash(uID) : "";
+
+    const polID: string = FeatureEntryLogConverter.guidToString(policyIds.policyFileId);
+    const secID: string = FeatureEntryLogConverter.guidToString(policyIds.securableId);
+
+    // version must be encoded into a single number where each version digit is padded out to 4 digits
+    // Ex: 3.99.4 -> 300990004
+    const lastVersionDigitIx: number = entry.productVersion.length - 1;
+    let ver: number = 0;
+    for (let i = lastVersionDigitIx; i >= 0; i--) {
+      ver += entry.productVersion[i] * Math.pow(10000, lastVersionDigitIx - i);
+    }
+
+    let projID: string | undefined;
+    if (!!entry.projectId)
+      projID = FeatureEntryLogConverter.guidToString(entry.projectId);
+
+    const evTimeZ: string = entry.timestamp;
+
+    let sDateZ: string;
+    let eDateZ: string;
+    let corID: string;
+    const startEntry: FeatureStartedLogEntry = entry as FeatureStartedLogEntry;
+    const endEntry: FeatureEndedLogEntry = entry as FeatureEndedLogEntry;
+    const defaultDate: string = "0001-01-01T00:00:00Z";
+    if (!!startEntry.entryId) {
+      sDateZ = evTimeZ;
+      eDateZ = defaultDate;
+      corID = FeatureEntryLogConverter.guidToString(startEntry.entryId);
+    } else if (!!endEntry.startEntryId) {
+      sDateZ = defaultDate;
+      eDateZ = evTimeZ;
+      corID = FeatureEntryLogConverter.guidToString(endEntry.startEntryId);
+    } else {
+      sDateZ = evTimeZ;
+      eDateZ = evTimeZ;
+      corID = FeatureEntryLogConverter.guidToString(policyIds.correlationId);
+    }
+
+    // for now this is always 1
+    const lVer: number = 1;
+
+    const lSrc: string = FeatureEntryLogConverter.logPostingSourceToString(entry.logPostingSource);
+    const country: string = userProfile.usageCountryIso;
+
+    const uType: string = FeatureEntryLogConverter.usageTypeToString(entry.usageType);
+
+    const uData = [];
+    for (const att of entry.usageData) {
+      uData.push({ name: att.name, value: att.value.toString() });
+    }
+
+    return {
+      ultId, pid, imsID, hID, cSID, uID, uSID, polID, secID, prdid, fstr, ver, projID, corID,
+      evTimeZ, lVer, lSrc, country, uType, ftrID, sDateZ, eDateZ, uData,
+    };
+  }
+
+  private static guidToString(guid: GuidProps): string {
+    if (typeof (guid) === "string")
+      return guid;
+
+    return guid.toString();
+  }
+
+  private static prepareMachineName(machineName: string): string {
+    if (!machineName || machineName.length === 0)
+      return "";
+
+    if (machineName === "::1" || machineName === "127.0.0.1")
+      return "localhost";
+
+    return machineName.toLowerCase();
+  }
+
+  private static prepareUserName(userName: string, machineName: string): string {
+    if (!userName || userName.length === 0)
+      return "";
+
+    let preparedUserName: string = userName;
+
+    const backslashPos: number = userName.indexOf("\\");
+    if (backslashPos >= 0)
+      preparedUserName = userName.substr(backslashPos + 1);
+    else {
+      const slashPos: number = userName.indexOf("/");
+      if (slashPos >= 0)
+        preparedUserName = userName.substr(slashPos + 1);
+    }
+
+    preparedUserName = preparedUserName.toLowerCase();
+    if (!!machineName && machineName.length > 0 && (preparedUserName.includes("administrator") || preparedUserName.includes("system")))
+      preparedUserName = `${machineName.toLowerCase()}\\${preparedUserName}`;
+
+    return preparedUserName;
+  }
+
+  private static computeHash(preparedName: string): string {
+    /* if (!preparedName || preparedName.length === 0)
+      return "";
+
+    const sha1 = require("sha.js").sha1;
+    let hash: string = preparedName;
+    for (let i = 0; i < 17; i++) {
+      hash = sha1.update(hash).digest("ascii");
+    }
+    return hash; */
+    return preparedName;
+  }
+
+  private static logPostingSourceToString(val: LogPostingSource): string {
+    switch (val) {
+      case LogPostingSource.Checkout:
+        return "Checkout";
+      case LogPostingSource.Offline:
+        return "Offline";
+      case LogPostingSource.RealTime:
+        return "RealTime";
+      default:
+        throw new Error("Unhandled LogPostingSource enum value");
+    }
+  }
+
+  private static usageTypeToString(val: UsageType): string {
+    switch (val) {
+      case UsageType.Beta:
+        return "Beta";
+      case UsageType.HomeUse:
+        return "HomeUse";
+      case UsageType.PreActivation:
+        return "PreActivation";
+      case UsageType.Production:
+        return "Production";
+      case UsageType.Trial:
+        return "Trial";
+      default:
+        throw new Error("Unhandled UsageType enum value");
+    }
+  }
+}
+
+// Workaround until these values can be read from Policy API
+class ImsPolicyIds {
+  public readonly policyFileId: Guid;
+  public readonly securableId: Guid;
+  public readonly correlationId: Guid;
+
+  public constructor() {
+    this.policyFileId = new Guid(true);
+    this.securableId = new Guid(true);
+    this.correlationId = new Guid(true);
+  }
+}

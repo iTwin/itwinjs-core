@@ -5,6 +5,7 @@
 
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
+import { IModelError, BentleyStatus } from "./IModelError";
 
 // tslint:disable-next-line:ban-types
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; }
@@ -23,6 +24,16 @@ export abstract class RpcInterface {
     request.submit();
     (this as any)[CURRENT_REQUEST] = request;
     return request.response;
+  }
+
+  /** Fetches the binary content of a backend resource identified by a string name. */
+  public fetchResource(name: string): Promise<ArrayBuffer> {
+    return this.forward(`resource:${name}`);
+  }
+
+  /** @protected Implement on the backend to fulfill fetch resource requests from the frontend. */
+  public _loadResource(name: string): Promise<ArrayBuffer> {
+    return Promise.reject(new IModelError(BentleyStatus.ERROR, `RpcInterface._loadResource for resource "${name}" is not implemented.`));
   }
 
   /** @hidden @internal */

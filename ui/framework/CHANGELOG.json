@@ -1,0 +1,556 @@
+{
+  "name": "@bentley/ui-framework",
+  "entries": [
+    {
+      "version": "0.105.0",
+      "tag": "@bentley/ui-framework_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.104.1",
+      "tag": "@bentley/ui-framework_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ~ to @import of @bentley/bwc/lib/mixins for webpack"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.104.0",
+      "tag": "@bentley/ui-framework_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.1.26",
+      "tag": "@bentley/ui-framework_v0.1.26",
+      "date": "Wed, 18 Jul 2018 04:53:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependencies to 0.98.0-4"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.14` to `0.1.15`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.9` to `0.3.10`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.2.2` to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.14` to `0.1.15`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.9` to `0.3.10`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.2.2` to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.25",
+      "tag": "@bentley/ui-framework_v0.1.25",
+      "date": "Fri, 13 Jul 2018 18:40:08 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.13` to `0.1.14`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.8` to `0.3.9`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.2.1` to `^0.2.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.24",
+      "tag": "@bentley/ui-framework_v0.1.24",
+      "date": "Fri, 13 Jul 2018 13:13:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added tests and documentation"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.12` to `0.1.13`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.7` to `0.3.8`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.2.0` to `^0.2.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.23",
+      "tag": "@bentley/ui-framework_v0.1.23",
+      "date": "Fri, 13 Jul 2018 10:14:39 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.6` to `0.3.7`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.22",
+      "tag": "@bentley/ui-framework_v0.1.22",
+      "date": "Thu, 12 Jul 2018 18:45:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "React to ui-ninezone changes."
+          },
+          {
+            "comment": "Initial pass at imodeljs-ui package and API documentation"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.11` to `0.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.5` to `0.3.6`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.1.4` to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.21",
+      "tag": "@bentley/ui-framework_v0.1.21",
+      "date": "Wed, 11 Jul 2018 11:52:45 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.4` to `0.3.5`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.1.3` to `^0.1.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.20",
+      "tag": "@bentley/ui-framework_v0.1.20",
+      "date": "Mon, 09 Jul 2018 20:38:01 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved imodeljs-clients to ^7"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.10` to `0.1.11`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.3` to `0.3.4`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.1.2` to `^0.1.3`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.19",
+      "tag": "@bentley/ui-framework_v0.1.19",
+      "date": "Mon, 09 Jul 2018 20:15:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Item.tsx tests"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.9` to `0.1.10`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.2` to `0.3.3`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.1.1` to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.18",
+      "tag": "@bentley/ui-framework_v0.1.18",
+      "date": "Mon, 09 Jul 2018 18:00:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved to BWC 6.0.1"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.8` to `0.1.9`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.1` to `0.3.2`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.1.0` to `^0.1.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.17",
+      "tag": "@bentley/ui-framework_v0.1.17",
+      "date": "Mon, 09 Jul 2018 14:04:45 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Upgrade to imodeljs-frontend 0.96.4"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.3.0` to `0.3.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.16",
+      "tag": "@bentley/ui-framework_v0.1.16",
+      "date": "Mon, 09 Jul 2018 08:55:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "React to ui-ninezone changes."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.7` to `0.1.8`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.14` to `0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.28` to `^0.1.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.15",
+      "tag": "@bentley/ui-framework_v0.1.15",
+      "date": "Thu, 28 Jun 2018 19:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Changes required by @types/react 16.4.3. Locked @types/enzyme to 3.1.9 because of problems with 3.1.11."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.6` to `0.1.7`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.13` to `0.2.14`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.26` to `^0.0.27`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.14",
+      "tag": "@bentley/ui-framework_v0.1.14",
+      "date": "Wed, 27 Jun 2018 17:42:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added synchronization between Viewport and CubeNa and fixed StandardRotationNavigationAid clipping bug.NavigationAidvigationAid"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.12` to `0.2.13`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.13",
+      "tag": "@bentley/ui-framework_v0.1.13",
+      "date": "Wed, 27 Jun 2018 14:07:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added support for onIModelViewsSelected to receive iModelConnection & views selected in app. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.12",
+      "tag": "@bentley/ui-framework_v0.1.12",
+      "date": "Fri, 22 Jun 2018 17:52:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Updated imodeljs-frontend to 0.95.1 & geometry-core to 9.1. Experimental code in ViewportComponent for cube/viewport synchronization."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.5` to `0.1.6`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.11` to `0.2.12`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.25` to `^0.0.26`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.11",
+      "tag": "@bentley/ui-framework_v0.1.11",
+      "date": "Fri, 22 Jun 2018 09:13:41 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.4` to `0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.10` to `0.2.11`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.24` to `^0.0.25`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.10",
+      "tag": "@bentley/ui-framework_v0.1.10",
+      "date": "Wed, 20 Jun 2018 15:53:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Renamed Viewport in ui-components to ViewportComponent. WIP: view rotation synchronization."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.9` to `0.2.10`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.8",
+      "tag": "@bentley/ui-framework_v0.1.8",
+      "date": "Wed, 20 Jun 2018 12:23:51 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-frontend dependency to 0.94"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.7` to `0.2.8`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.7",
+      "tag": "@bentley/ui-framework_v0.1.7",
+      "date": "Wed, 20 Jun 2018 07:06:26 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.6` to `0.2.7`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.6",
+      "tag": "@bentley/ui-framework_v0.1.6",
+      "date": "Tue, 19 Jun 2018 17:49:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added ViewportManager with Rotation and ActiveViewport support. Moved UiEvent to ui-core. Added ContentViewManager with ActiveContent support & highlighting."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.3` to `0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.5` to `0.2.6`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.23` to `^0.0.24`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.5",
+      "tag": "@bentley/ui-framework_v0.1.5",
+      "date": "Tue, 19 Jun 2018 13:09:17 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.4` to `0.2.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.4",
+      "tag": "@bentley/ui-framework_v0.1.4",
+      "date": "Tue, 19 Jun 2018 11:08:40 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.3` to `0.2.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.3",
+      "tag": "@bentley/ui-framework_v0.1.3",
+      "date": "Fri, 15 Jun 2018 19:15:02 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added support for tile rendering & added some tools to ViewsFrontstage. Updated versions of imodeljs-core packages. Added execute() support to ToolItemProps and ToolButton.  Transitioned most componentWillReceiveProps methods to getDerivedStateFromProps.  Fixed PropertyGrid property rendering."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.2` to `0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.2` to `0.2.3`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.22` to `^0.0.23`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.2",
+      "tag": "@bentley/ui-framework_v0.1.2",
+      "date": "Wed, 13 Jun 2018 20:28:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed publishing of public folders"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.1` to `0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0.2.1` to `0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.21` to `^0.0.22`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.1",
+      "tag": "@bentley/ui-framework_v0.1.1",
+      "date": "Wed, 13 Jun 2018 18:46:23 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "SampleApp is using configurableui from ui-framework. AppUi has been added to SampleApp."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.0` to `0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0` to `0.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-ninezone\" from `^0.0.20` to `^0.0.21`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.0",
+      "tag": "@bentley/ui-framework_v0.1.0",
+      "date": "Thu, 07 Jun 2018 16:35:47 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Added Dialog, MessageBox & SearchBox to ui-core"
+          },
+          {
+            "comment": "Copied configurableui from Protogist into imodeljs-ui\\framework"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0` to `0.1.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.0",
+      "tag": "@bentley/ui-framework_v0.0.0",
+      "date": "Tue, 05 Jun 2018 19:35:37 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-components\" from `0` to `0.1.2`"
+          }
+        ]
+      }
+    }
+  ]
+}

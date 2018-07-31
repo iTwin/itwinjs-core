@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+
+ // application header overall style
+.fw-application-header {
+  background-color: #222;
+  height: 56px;
+  color: white;
+  align-items: center;
+  display: flex;
+ }
+
+.fw-application-message {
+  font-size: x-large;
+  padding-left: 20px;
+ }

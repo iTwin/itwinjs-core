@@ -1,0 +1,36 @@
+@import "_variables";
+
+.nz-toolbar-item-overflow {
+  $ellipsis-size: 4px;
+  $ellipsis-spacing: 8px;
+
+  .nz-ellipsis-icon {
+    .nz-ellipsis {
+      position: relative;
+      width: $ellipsis-size;
+      height: $ellipsis-size;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .nz-ellipsis:before {
+      content: '';
+      position: absolute;
+      left: -$ellipsis-spacing;
+      width: $ellipsis-size;
+      height: $ellipsis-size;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .nz-ellipsis:after {
+      content: '';
+      position: absolute;
+      left: $ellipsis-spacing;
+      width: $ellipsis-size;
+      height: $ellipsis-size;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+  }
+}

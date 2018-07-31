@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Overflow /> renders correctly 1`] = `
+<ExpandableItem
+  className="nz-toolbar-item-overflow"
+>
+  <Icon
+    className="nz-ellipsis-icon"
+  >
+    <div
+      className="nz-ellipsis"
+    />
+  </Icon>
+</ExpandableItem>
+`;
+
+exports[`<Overflow /> renders correctly 2`] = `
+<div
+  className="nz-widget-toolSettings-settings-popover-overflow"
+>
+  <ScrollableArea
+    className="nz-scrollableArea"
+    containerRef={[Function]}
+    onScroll={[Function]}
+  >
+    <div
+      className="nz-content"
+    />
+  </ScrollableArea>
+  <div
+    className="nz-top-indicator"
+  >
+    <div
+      className="nz-triangle"
+    />
+  </div>
+  <div
+    className="nz-bottom-indicator"
+  >
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;

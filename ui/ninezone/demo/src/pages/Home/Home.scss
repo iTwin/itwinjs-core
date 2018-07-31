@@ -1,0 +1,42 @@
+@import "@bentley/ui-core/lib/colors";
+
+.nzdemo-pages-home-home {
+  $menu-width: 200px;
+  $padding: 10px;
+
+  font-family: Arial;
+  color: #333;
+
+  a {
+    color: $primary-base;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: $primary-hover;
+    text-decoration: underline;
+  }
+
+  a:active {
+    color: $primary-tint;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: $menu-width;
+    padding-left: $padding;
+    box-sizing: border-box;
+
+    .version {
+      position: absolute;
+      bottom: $padding;
+    }
+  }
+
+  section {
+    margin-left: $menu-width;
+  }
+}

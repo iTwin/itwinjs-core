@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<RadialMenu /> renders correctly 1`] = `
+<div
+  className="radial-menu opened"
+  style={
+    Object {
+      "left": 100,
+      "top": 100,
+    }
+  }
+>
+  <svg
+    className="radial-menu-container"
+    height={202}
+    version="1.1"
+    width={202}
+    xmlns="http://w3.org/2000/svg"
+  />
+</div>
+`;

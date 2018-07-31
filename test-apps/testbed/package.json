@@ -18,13 +18,13 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.103.0",
-    "@bentley/geometry-core": "0.103.0",
-    "@bentley/imodeljs-backend": "0.103.0",
-    "@bentley/imodeljs-clients": "0.103.0",
-    "@bentley/imodeljs-common": "0.103.0",
-    "@bentley/imodeljs-i18n": "0.103.0",
-    "@bentley/imodeljs-frontend": "0.103.0",
+    "@bentley/bentleyjs-core": "0.105.0",
+    "@bentley/geometry-core": "0.105.0",
+    "@bentley/imodeljs-backend": "0.105.0",
+    "@bentley/imodeljs-clients": "0.105.0",
+    "@bentley/imodeljs-common": "0.105.0",
+    "@bentley/imodeljs-i18n": "0.105.0",
+    "@bentley/imodeljs-frontend": "0.105.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
@@ -39,7 +39,7 @@
     "save": "^2.3.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.103.0",
+    "@bentley/bentleyjs-tools": "0.105.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/exceljs": "^0.5.2",
@@ -49,7 +49,7 @@
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
     "@types/js-base64": "^2.3.1",
-    "@types/mocha": "^2.2.47",
+    "@types/mocha": "^2.2.48",
     "@types/webpack": "^3.8.5",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
@@ -59,8 +59,8 @@
     "null-loader": "^0.1.1",
     "rimraf": "^2.6.2",
     "source-map-loader": "^0.2.3",
-    "tslint": "^5.10.0",
-    "typescript": "~2.7.2",
-    "webpack": "^3.10.0"
+    "tslint": "^5.10.1",
+    "typescript": "~2.8.2",
+    "webpack": "^4.16.1"
   }
 }

@@ -1,0 +1,37 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+.nz-zones-target-unmerge {
+  $grid-color: #FFF;
+
+  > .nz-grid {
+    > .nz-cell:not(.nz-merge) {
+      background-color: transparent;
+      position: relative;
+
+      &::before {
+        content: "";
+        width: 65%;
+        height: 65%;
+        right: 0;
+        top: 0;
+        position: absolute;
+        background-color: $grid-color;
+      }
+
+      &.nz-left-outline {
+        &::before {
+          right: unset;
+          left: 0;
+        }
+      }
+
+      &.nz-bottom-outline {
+        &::before {
+          top: unset;
+          bottom: 0;
+        }
+      }
+    }
+  }
+}

@@ -211,7 +211,7 @@ export class ResponseBuilder {
         nock(url)
           .post(requestPath, postBody)
           .delayConnection(delay)
-          .reply(responseCode, response);
+          .reply(responseCode, response, headers);
         break;
       case RequestType.Delete:
         nock(url)

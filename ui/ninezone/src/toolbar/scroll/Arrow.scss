@@ -1,0 +1,24 @@
+@import "../../_geometry";
+@import "_variables";
+
+.nz-toolbar-scroll-arrow {
+  $color: currentColor;
+
+  cursor: pointer;
+
+  &.nz-direction-left {
+    @include triangle-left($scroll-indicator-height, $scroll-indicator-width, $color);
+  }
+
+  &.nz-direction-right {
+    @include triangle-right($scroll-indicator-height, $scroll-indicator-width, $color);
+  }
+
+  &.nz-direction-top {
+    @include triangle-top($scroll-indicator-width, $scroll-indicator-height, $color);
+  }
+
+  &.nz-direction-bottom {
+    @include triangle-bottom($scroll-indicator-width, $scroll-indicator-height, $color);
+  }
+}

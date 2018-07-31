@@ -1,0 +1,72 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../../../../theme/_theme";
+
+@include nz-style-component(nz-footer-message-content-status-message) {
+  $min-width: 300px;
+  $min-height: 40px;
+  $border-width: 1px;
+  $icon-width: 45px;
+
+  min-width: $min-width;
+  min-height: $min-height;
+  display: flex;
+  background-color: $background-1;
+  overflow: hidden;
+  border: {
+    style: solid;
+    width: $border-width;
+    radius: 5px;
+  };
+
+  > .nz-icon {
+    color: $text-light;
+    width: $icon-width;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.nz-status-information {
+    border-color: $primary-base;
+
+    > .nz-icon {
+      background-color: $primary-base;
+    }
+  }
+
+  &.nz-status-success {
+    border-color: $accent-base;
+
+    > .nz-icon {
+      background-color: $accent-base;
+    }
+  }
+
+  &.nz-status-error {
+    border-color: $alert-base;
+
+    > .nz-icon {
+      background-color: $alert-base;
+    }
+  }
+}
+
+@include nz-dark-component() {
+  background-color: rgb(90, 105, 115);
+
+  &.nz-status-information {
+    border-color: $primary-tint;
+  }
+
+  &.nz-status-success {
+    border-color: $accent-tint;
+  }
+
+  &.nz-status-error {
+    border-color: $alert-tint;
+  }
+}
+
+@include nz-light-component() {
+  background-color: rgb(255, 255, 255);
+}

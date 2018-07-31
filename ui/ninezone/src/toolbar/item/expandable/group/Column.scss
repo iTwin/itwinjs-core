@@ -1,0 +1,9 @@
+.nz-toolbar-item-expandable-group-column {
+  > * {
+    margin-bottom: 9px;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}

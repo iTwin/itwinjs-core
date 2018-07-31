@@ -7,16 +7,22 @@ import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcProtocolEvent, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRequest } from "../core/RpcRequest";
-import { WebAppRpcProtocol, HttpServerRequest } from "./WebAppRpcProtocol";
+import { RpcRequest, RpcResponseType } from "../core/RpcRequest";
+import { WebAppRpcProtocol, HttpServerRequest, WEB_RPC_CONSTANTS } from "./WebAppRpcProtocol";
+
+const emptyBuffer = new ArrayBuffer(0);
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
+  private request: RequestInit = {};
+  private responseText: string = "";
+  private responseBytes: ArrayBuffer = emptyBuffer;
+  private connectionResponse: Response | undefined;
 
-  /** The underlying HTTP request object. */
-  public connection: XMLHttpRequest | undefined;
+  /** The underlying HTTP connection object. */
+  public connection: Promise<Response> | undefined;
 
   /** The URI path component for this request. */
   public path: string;
@@ -63,57 +69,80 @@ export class WebAppRpcRequest extends RpcRequest {
     if (this._loading)
       throw new IModelError(BentleyStatus.ERROR, `Loading in progress.`);
 
-    this.connection = this.protocol.supplyConnectionForRequest();
-    this.connection.open(this.method, this.path, true);
-
-    this.connection.addEventListener("load", () => {
-      if (!this._loading)
-        return;
-
-      if (this.connection!.readyState === 4) {
-        this._loading = false;
-        this.setLastUpdatedTime();
-        this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
-      } else {
-        this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
-      }
-    });
-
-    this.connection.addEventListener("error", () => {
-      if (!this._loading)
-        return;
-
-      this._loading = false;
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
-    });
-
-    this.connection.addEventListener("abort", () => {
-      if (!this._loading)
-        return;
-
-      this._loading = false;
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionAborted, this);
-    });
+    this.request.method = this.method;
+    this.request.headers = {};
   }
 
   /** Sets request header values. */
   protected setHeader(name: string, value: string): void {
-    this.connection!.setRequestHeader(name, value);
+    const headers = this.request.headers as { [key: string]: string };
+    headers[name] = value;
   }
 
   /** Sends the request. */
   protected send(): void {
     this._loading = true;
-    this.connection!.send(this.protocol.serialize(this).parameters);
+    this.request.body = this.protocol.serialize(this).parameters;
+    this.connection = fetch(new Request(this.path, this.request));
+
+    this.connection.then(async (response) => {
+      if (!this._loading)
+        return;
+
+      this.connectionResponse = response;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
+
+      if (this.getResponseType() === RpcResponseType.Text) {
+        this.responseText = await response.text();
+      } else if (this.getResponseType() === RpcResponseType.Binary) {
+        this.responseBytes = await response.arrayBuffer();
+      } else {
+        throw new IModelError(BentleyStatus.ERROR, "Unknown response type");
+      }
+
+      this._loading = false;
+      this.setLastUpdatedTime();
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
+    }, (reason) => {
+      if (!this._loading)
+        return;
+
+      this._loading = false;
+      // this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionAborted, this), reason;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this, reason);
+    });
   }
 
   /** Supplies response status code. */
   public getResponseStatusCode(): number {
-    return this.connection!.status;
+    return this.connectionResponse ? this.connectionResponse.status : 0;
   }
 
   /** Supplies response text. */
   public getResponseText(): string {
-    return this.connection!.responseText;
+    return this.responseText;
+  }
+
+  /** Supplies response bytes. */
+  public getResponseBytes(): ArrayBuffer {
+    return this.responseBytes;
+  }
+
+  /** Supplies response type. */
+  public getResponseType(): RpcResponseType {
+    if (!this.connectionResponse)
+      return RpcResponseType.Unknown;
+
+    const type = this.connectionResponse.headers.get(WEB_RPC_CONSTANTS.CONTENT);
+    if (!type)
+      return RpcResponseType.Unknown;
+
+    if (type.indexOf(WEB_RPC_CONSTANTS.ANY_TEXT) === 0) {
+      return RpcResponseType.Text;
+    } else if (type.indexOf(WEB_RPC_CONSTANTS.BINARY) === 0) {
+      return RpcResponseType.Binary;
+    } else {
+      return RpcResponseType.Unknown;
+    }
   }
 }

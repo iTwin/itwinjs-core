@@ -4,7 +4,7 @@
 /** @module Models */
 
 import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
-import { ModelProps, GeometricModel2dProps, RelatedElement } from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, GeometricModel2dProps, IModelError, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -73,6 +73,13 @@ export class Model extends Entity implements ModelProps {
  * A container for persisting geometric elements.
  */
 export class GeometricModel extends Model {
+  /** Query for the union of the extents of the elements contained by this model. */
+  public queryExtents(): AxisAlignedBox3d {
+    const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
+    if (error)
+      throw new IModelError(error.status);
+    return AxisAlignedBox3d.fromJSON(JSON.parse(result!).modelExtents);
+  }
 }
 
 /**
@@ -87,6 +94,7 @@ export abstract class GeometricModel3d extends GeometricModel {
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
   public globalOrigin?: Point2d;
 }
+
 /**
  * A container for persisting 2d graphical elements.
  */

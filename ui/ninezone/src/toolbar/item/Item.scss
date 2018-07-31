@@ -1,0 +1,54 @@
+@import "_variables";
+
+.nz-toolbar-item-item {
+  background: $background-1;
+  background-origin: border-box;
+  border-color: $background-5;
+  border-style: solid;
+  cursor: pointer;
+  transition: all 500ms ease;
+  width: $desktop-item-width;
+  height: $desktop-item-height;
+  position: relative;
+
+  .nz-gradient {
+    background: linear-gradient(to bottom, rgba($gradient-dark, 0), rgba($gradient-dark, 0.22));
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:active {
+    background: $primary-tone;
+    color: rgba($text-light, 0.88);
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+
+    .nz-gradient {
+      width: 0;
+      height: 0;
+    }
+  }
+
+  &.nz-is-active {
+    background: $background-1;
+    transition-duration: 0s;
+
+    .nz-gradient {
+      width: 0;
+      height: 0;
+    }
+  }
+
+  &.nz-is-active::before {
+    content: '';
+    display: block;
+    position: absolute;
+    background-color: $primary-base;
+    left: 3px;
+    top: ($desktop-item-height - $desktop-tool-stripe-height) / 2;
+    border-radius: 2px;
+    width: $desktop-tool-stripe-width;
+    height: $desktop-tool-stripe-height;
+  }
+}

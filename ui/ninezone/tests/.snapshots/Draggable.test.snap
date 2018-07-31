@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Draggable /> renders correctly 1`] = `
+<Tab
+  className="nz-widget-rectangular-tab-draggable"
+>
+  <PointerCaptor
+    className="nz-draggable"
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</Tab>
+`;

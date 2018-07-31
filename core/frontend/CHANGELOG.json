@@ -2,6 +2,78 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.105.0",
+      "tag": "@bentley/imodeljs-frontend_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added OneAtATimePromise for handling mouse move round-trips to the server over slow HTTP connections"
+          },
+          {
+            "comment": "Let IdleTool handle start drag event to install view tools instead of using middle button events. Fixes for tentative points."
+          },
+          {
+            "comment": "make all tool event methods async"
+          },
+          {
+            "comment": "Added receivedDownEvent to InteractiveTool to check if up events should be sent. ToolAdmin button event cleanup."
+          },
+          {
+            "comment": "throw away repeated keyboard events. They interfere with mouse motion replacement"
+          },
+          {
+            "comment": "Fix being able to pan when rotate toolis active. Start of touch event support."
+          },
+          {
+            "comment": "3d view attachments"
+          },
+          {
+            "comment": "EN: TFS#914011 - Finished Skybox gradient and spherical texture shaders"
+          },
+          {
+            "comment": "3d view attachments are working"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.104.1",
+      "tag": "@bentley/imodeljs-frontend_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support separate view flags per model."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.104.0",
+      "tag": "@bentley/imodeljs-frontend_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement six-sided skybox cubes."
+          },
+          {
+            "comment": "2d geometry is properly clipped using ClipMaskVolume"
+          },
+          {
+            "comment": "attachment id array on SheetViewState has type Id64Array"
+          },
+          {
+            "comment": "Maintain image aspect ratio in cubemap skybox."
+          },
+          {
+            "comment": "Add support for dynamic 3d clipping volumes."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.103.0",
       "tag": "@bentley/imodeljs-frontend_v0.103.0",
       "date": "Tue, 24 Jul 2018 15:52:31 GMT",

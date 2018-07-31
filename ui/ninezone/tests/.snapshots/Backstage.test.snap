@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Backstage /> renders correctly 1`] = `
+<div
+  className="nz-backstage-backstage"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Backstage /> should set is-open class 1`] = `
+<div
+  className="nz-backstage-backstage nz-is-open"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;

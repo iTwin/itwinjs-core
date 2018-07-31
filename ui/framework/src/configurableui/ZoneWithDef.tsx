@@ -1,0 +1,128 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+/** @module Zone */
+
+import * as React from "react";
+
+import { WidgetType, WidgetDef } from "./WidgetDef";
+import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
+import StackedWidget, { EachWidgetProps } from "./StackedWidget";
+import ZoneTargets from "./ZoneTargets";
+import { ZoneTargetProvider } from "./FrontstageZone";
+import { StatusBar } from "./StatusBar";
+import { ZoneDef } from "./ZoneDef";
+
+import NZ_ZoneState from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
+import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
+import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
+import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Management";
+
+// -----------------------------------------------------------------------------
+// Zone React Components
+// -----------------------------------------------------------------------------
+
+/** Props for the Zone Component.
+ */
+export interface ZoneWithDefProps {
+  zoneState: NZ_ZoneState;
+  targetedBounds: RectangleProps | undefined;
+  widgetChangeHandler: WidgetChangeHandler;
+  targetChangeHandler: TargetChangeHandler;
+  targetProvider: ZoneTargetProvider;
+  zoneDefProvider: ZoneDefProvider;
+}
+
+/** ConfigurableUI Zone React Component.
+ */
+export class ZoneWithDef extends React.Component<ZoneWithDefProps> {
+
+  public render(): React.ReactNode {
+    return (
+      <>
+        <NZ_Zone bounds={this.props.zoneState.floatingBounds || this.props.zoneState.bounds}>
+          {this.getWidget()}
+        </NZ_Zone>
+        <NZ_Zone bounds={this.props.zoneState.bounds}>
+          <ZoneTargets
+            zoneId={this.props.zoneState.id}
+            targetProvider={this.props.targetProvider}
+            targetChangeHandler={this.props.targetChangeHandler}
+          />
+        </NZ_Zone>
+        {
+          this.props.targetedBounds &&
+          <NZ_Zone bounds={this.props.targetedBounds}>
+            <GhostOutline />
+          </NZ_Zone>
+        }
+      </>
+    );
+  }
+
+  private getWidget = () => {
+    if (this.props.zoneState.widgets.length === 1) {
+      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
+      if (!zoneDef)
+        return null;
+      if (zoneDef.widgetCount === 1 && zoneDef.widgetDefs[0].widgetType !== WidgetType.Rectangular)
+        return zoneDef.widgetDefs[0].reactElement;
+    }
+
+    let activeZoneDef: ZoneDef | undefined;
+    let activeWidgetDef: WidgetDef | undefined;
+    const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
+
+    this.props.zoneState.widgets.forEach((widget) => {
+      const zoneDef = this.props.zoneDefProvider.getZoneDef(widget.id);
+      if (!zoneDef)
+        return;
+
+      widgets.push({
+        id: widget.id,
+        tabs: zoneDef.widgetDefs.map((widgetDef, tabIndex) => {
+          let isActive = false;
+          if (!activeWidgetDef && widget.tabIndex === tabIndex) {
+            activeWidgetDef = widgetDef;
+            activeZoneDef = zoneDef;
+            isActive = true;
+          }
+
+          return {
+            isActive,
+            icon: widgetDef.iconInfo,
+          };
+        }),
+      });
+    });
+
+    let content: React.ReactNode;
+    if (activeWidgetDef && activeZoneDef) {
+      content = activeWidgetDef.reactElement;
+
+      if (activeWidgetDef.isStatusBar) {
+        content = (
+          <StatusBar
+            zoneDef={activeZoneDef}
+            isInFooterMode={false}
+          />
+        );
+      }
+    }
+
+    if (widgets.length === 0)
+      return null;
+
+    return (
+      <StackedWidget
+        zoneId={this.props.zoneState.id}
+        widgets={widgets}
+        widgetChangeHandler={this.props.widgetChangeHandler}
+        anchor={NineZoneStateManagement.getZoneAnchor(this.props.zoneState.id)}
+      >
+        {content}
+      </StackedWidget>
+    );
+  }
+}

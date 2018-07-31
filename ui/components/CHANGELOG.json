@@ -1,0 +1,497 @@
+{
+  "name": "@bentley/ui-components",
+  "entries": [
+    {
+      "version": "0.105.0",
+      "tag": "@bentley/ui-components_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.104.1",
+      "tag": "@bentley/ui-components_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ~ to @import of @bentley/bwc/lib/mixins for webpack"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.104.0",
+      "tag": "@bentley/ui-components_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.3.10",
+      "tag": "@bentley/ui-components_v0.3.10",
+      "date": "Wed, 18 Jul 2018 04:53:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependencies to 0.98.0-4"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.14` to `0.1.15`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.14` to `0.1.15`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.9",
+      "tag": "@bentley/ui-components_v0.3.9",
+      "date": "Fri, 13 Jul 2018 18:40:08 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.13` to `0.1.14`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.8",
+      "tag": "@bentley/ui-components_v0.3.8",
+      "date": "Fri, 13 Jul 2018 13:13:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added documentation, fixed bugs"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.12` to `0.1.13`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.7",
+      "tag": "@bentley/ui-components_v0.3.7",
+      "date": "Fri, 13 Jul 2018 10:14:39 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix `classnames` dependency"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.6",
+      "tag": "@bentley/ui-components_v0.3.6",
+      "date": "Thu, 12 Jul 2018 18:45:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Initial pass at imodeljs-ui package and API documentation"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.11` to `0.1.12`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.5",
+      "tag": "@bentley/ui-components_v0.3.5",
+      "date": "Wed, 11 Jul 2018 11:52:45 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added shouldComponentUpdate to DataTree"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.4",
+      "tag": "@bentley/ui-components_v0.3.4",
+      "date": "Mon, 09 Jul 2018 20:38:01 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved imodeljs-clients to ^7"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.10` to `0.1.11`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.3",
+      "tag": "@bentley/ui-components_v0.3.3",
+      "date": "Mon, 09 Jul 2018 20:15:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved to BWC 6.0.1"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.9` to `0.1.10`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.2",
+      "tag": "@bentley/ui-components_v0.3.2",
+      "date": "Mon, 09 Jul 2018 18:00:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Moved to BWC 6.0.1"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.8` to `0.1.9`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.1",
+      "tag": "@bentley/ui-components_v0.3.1",
+      "date": "Mon, 09 Jul 2018 14:04:45 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Upgrade to imodeljs-frontend 0.96.4"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.0",
+      "tag": "@bentley/ui-components_v0.3.0",
+      "date": "Mon, 09 Jul 2018 08:55:22 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Added SimpleTreeDataProvider, PageOptions."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.7` to `0.1.8`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.14",
+      "tag": "@bentley/ui-components_v0.2.14",
+      "date": "Thu, 28 Jun 2018 19:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Changes required by @types/react 16.4.3. Locked @types/enzyme to 3.1.9 because of problems with 3.1.11."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.6` to `0.1.7`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.13",
+      "tag": "@bentley/ui-components_v0.2.13",
+      "date": "Wed, 27 Jun 2018 17:42:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added synchronization between Viewport and CubeNavigationAid"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.12",
+      "tag": "@bentley/ui-components_v0.2.12",
+      "date": "Fri, 22 Jun 2018 17:52:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added ContextMenu, RadialMenu & Splitbutton to ui-core. Added Breadcrumb to ui-components."
+          },
+          {
+            "comment": "Updated imodeljs-frontend to 0.95.1 & geometry-core to 9.1. Experimental code in ViewportComponent for cube/viewport synchronization."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.5` to `0.1.6`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.11",
+      "tag": "@bentley/ui-components_v0.2.11",
+      "date": "Fri, 22 Jun 2018 09:13:41 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.4` to `0.1.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.10",
+      "tag": "@bentley/ui-components_v0.2.10",
+      "date": "Wed, 20 Jun 2018 15:53:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Renamed Viewport in ui-components to ViewportComponent. WIP: view rotation synchronization."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.9",
+      "tag": "@bentley/ui-components_v0.2.9",
+      "date": "Wed, 20 Jun 2018 15:49:05 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Renamed Viewport in ui-components to ViewportComponent. WIP: view rotation synchronization."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.8",
+      "tag": "@bentley/ui-components_v0.2.8",
+      "date": "Wed, 20 Jun 2018 12:23:51 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-frontend dependency to 0.94"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.7",
+      "tag": "@bentley/ui-components_v0.2.7",
+      "date": "Wed, 20 Jun 2018 07:06:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix nodes setting nodes selection state when expanding their parent"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.6",
+      "tag": "@bentley/ui-components_v0.2.6",
+      "date": "Tue, 19 Jun 2018 17:49:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added ViewportManager with Rotation and ActiveViewport support. Moved UiEvent to ui-core. Added ContentViewManager with ActiveContent support & highlighting."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.3` to `0.1.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.5",
+      "tag": "@bentley/ui-components_v0.2.5",
+      "date": "Tue, 19 Jun 2018 13:09:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Set canvas width and height to 100% to make it fill its parent"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.4",
+      "tag": "@bentley/ui-components_v0.2.4",
+      "date": "Tue, 19 Jun 2018 11:08:40 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add a viewport component"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.3",
+      "tag": "@bentley/ui-components_v0.2.3",
+      "date": "Fri, 15 Jun 2018 19:15:02 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed PropertyGrid property rendering."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.2` to `0.1.3`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.2",
+      "tag": "@bentley/ui-components_v0.2.2",
+      "date": "Wed, 13 Jun 2018 20:28:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed publishing of public folders"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.1` to `0.1.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.1",
+      "tag": "@bentley/ui-components_v0.2.1",
+      "date": "Wed, 13 Jun 2018 18:46:23 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "SampleApp is using configurableui from ui-framework. AppUi has been added to SampleApp."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0.1.0` to `0.1.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.0",
+      "tag": "@bentley/ui-components_v0.2.0",
+      "date": "Wed, 13 Jun 2018 08:50:02 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "[Tree] Multi-selection support: tree can show multiple selected nodes, but user can select only one at a time (for now)"
+          },
+          {
+            "comment": "[Tree] Do not fire `deselected`+`selected` events when changing selection. Instead, just fire one `selected` event with `replace` flag"
+          },
+          {
+            "comment": "[Tree] Allow consumers to describe selected nodes either with an array of node ids, or a callback function which receives a node"
+          },
+          {
+            "comment": "[TableDataProvider] Add two events: onColumnsChanged and onRowsChanged. Controls that use this provider should reload columns/rows on these events"
+          },
+          {
+            "comment": "[Table] More type-safety"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "[Tree] Keep expanded nodes when tree is reloaded due to props change"
+          },
+          {
+            "comment": "[Tree] Fix state being set after data arrives asynchronously when component is already unmounted"
+          },
+          {
+            "comment": "[Table] Add 3 additional optional Props callbacks: isRowSelected, onRowsSelected, onRowsDeselected"
+          },
+          {
+            "comment": "[PropertyGrid] Keep category blocks open after props change if they were previously open."
+          },
+          {
+            "comment": "[PropertyGrid] Fix state being set after data arrives asynchronously when control is already unmounted."
+          },
+          {
+            "comment": "[PropertyGrid] Fix property data not updated after props change."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.5",
+      "tag": "@bentley/ui-components_v0.1.5",
+      "date": "Fri, 08 Jun 2018 14:15:13 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add PropertyDataProvider.onDataChanged event to be fired when controls should re-request fresh data"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.4",
+      "tag": "@bentley/ui-components_v0.1.4",
+      "date": "Fri, 08 Jun 2018 10:47:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Expose node selection change callbacks through DataTree Props"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.3",
+      "tag": "@bentley/ui-components_v0.1.3",
+      "date": "Thu, 07 Jun 2018 16:35:47 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ui-core\" from `0` to `0.1.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.2",
+      "tag": "@bentley/ui-components_v0.1.2",
+      "date": "Tue, 05 Jun 2018 19:35:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed SimpleTableDataProvider.sortRows for PropertyValueFormat.Primitive"
+          }
+        ]
+      }
+    }
+  ]
+}

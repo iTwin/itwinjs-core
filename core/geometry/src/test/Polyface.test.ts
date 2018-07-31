@@ -418,7 +418,7 @@ describe("Polyface.Faces", () => {
 
     const options = new StrokeOptions();
     options.needParams = true;
-    options.needParams = true;
+    options.needNormals = true;
     options.shouldTriangulate = false;
     options.maxEdgeLength = 4;
 

@@ -90,7 +90,7 @@ export interface GeometryPartProps extends ElementProps {
 
 /** Properties for a [ViewAttachment]($backend) */
 export interface ViewAttachmentProps extends GeometricElement2dProps {
-  view: Id64Props;
+  view: RelatedElementProps;
 }
 
 /** Properties of a [Subject]($backend) */

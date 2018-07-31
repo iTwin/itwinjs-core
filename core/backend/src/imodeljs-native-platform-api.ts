@@ -241,9 +241,16 @@ export declare class NativeDgnDb {
   /**
    * Get the properties of a Model
    * @param opts Identifies the model
-   * @param In case of success, the result property of the returned object will be the model's properties in stringified JSON format.
+   * @returns In case of success, the result property of the returned object will be the model's properties in stringified JSON format.
    */
   public getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;
+
+  /**
+   * Query for the extents of a GeometricModel.
+   * @param options Identifies the model
+   * @returns In case of success, the result property of the returned object will be the model's extents (AxisAlignedBox3d) in stringified JSON format.
+   */
+  public queryModelExtents(options: string): ErrorStatusOrResult<IModelStatus, string>;
 
   /**
    * Get the properties of a tile tree

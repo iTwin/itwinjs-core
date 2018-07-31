@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StandardRotationNavigationAid <StandardRotationNavigationAid /> renders correctly 1`] = `
+<div
+  className="standard-rotation-navigation"
+>
+  <ExpandableButton
+    button={
+      <ToolbarIcon
+        className="icon-button"
+        icon={
+          <span
+            className="three-d-icon icon icon-cube-faces-top"
+          />
+        }
+        onClick={[Function]}
+      />
+    }
+    className="expandable"
+    direction={3}
+  />
+</div>
+`;

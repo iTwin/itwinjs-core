@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ContextMenu /> renders correctly 1`] = `
+<div
+  className="context-menu"
+  onClick={[Function]}
+  onKeyUp={[Function]}
+>
+  <div
+    className="context-menu-container opened"
+    style={
+      Object {
+        "left": 0,
+        "top": 0,
+      }
+    }
+    tabIndex={0}
+  />
+</div>
+`;
+
+exports[`ContextMenu <ContextMenu /> renders correctly 1`] = `
+<div
+  className="context-menu"
+  onClick={[Function]}
+  onKeyUp={[Function]}
+>
+  <div
+    className="context-menu-container opened"
+    style={
+      Object {
+        "left": 0,
+        "top": 0,
+      }
+    }
+    tabIndex={0}
+  />
+</div>
+`;

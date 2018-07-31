@@ -1,0 +1,17 @@
+@import "@bentley/ui-core/lib/colors";
+
+.nz-footer-message-toast {
+  &.nz-stage-animating {
+    > .nz-toast {
+      opacity: 0;
+      overflow: hidden;
+      transition: 1s ease-in-out;
+    }
+  }
+
+  &.nz-stage-animated {
+    > .nz-toast {
+      display: none;
+    }
+  }
+}

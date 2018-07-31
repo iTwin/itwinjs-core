@@ -1,0 +1,42 @@
+@import "@bentley/ui-core/lib/colors";
+
+.nz-footer-snapMode-snap {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-gap: 15px;
+  align-items: center;
+  cursor: pointer;
+  color: $text-light;
+
+  > .nz-icon {
+    grid-row: 1;
+    color: $text-dark;
+    background-color: $text-light;
+  }
+
+  > .nz-label {
+    grid-row: 1;
+  }
+
+  &.nz-is-active {
+    > .nz-label {
+      color: $primary-tint;
+    }
+  }
+
+  &:hover {
+    color: $primary-hover;
+
+    > .nz-icon {
+      background-color: $primary-hover;
+    }
+  }
+
+  &:active {
+    color: $primary-tint;
+
+    > .nz-icon {
+      background-color: $primary-tint;
+    }
+  }
+}

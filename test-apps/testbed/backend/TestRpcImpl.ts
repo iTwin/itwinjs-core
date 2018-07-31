@@ -5,6 +5,7 @@ import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, 
 import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, IModelToken, RpcInvocation } from "@bentley/imodeljs-common";
 import { BentleyError, BentleyStatus, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
+import { testInterfaceResource } from "../common/TestbedConfig";
 
 let op8Initializer = 0;
 
@@ -15,6 +16,14 @@ export const resetOp8Initializer = () => {
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
+  }
+
+  public _loadResource(name: string): Promise<ArrayBuffer> {
+    if (name === "test") {
+      return testInterfaceResource();
+    } else {
+      return super._loadResource(name);
+    }
   }
 
   public async op1(params: TestOp1Params): Promise<number> {

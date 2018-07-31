@@ -1,0 +1,27 @@
+$nz-scrollbar-width: 8px;
+$nz-scrollbar-padding: 2px;
+
+@mixin nz-scrollbar($color, $width: $nz-scrollbar-width, $padding: $nz-scrollbar-padding) {
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: $width;
+    background-color: $color;
+    background-clip: content-box;
+    border-style: solid;
+    border-color: transparent;
+    border-width: $padding;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-track-piece:corner-present {
+    margin-bottom: -2 * $padding;
+    margin-right: -2 * $padding;
+  }
+}

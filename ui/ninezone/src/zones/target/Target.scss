@@ -1,0 +1,23 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "../../_geometry";
+
+.nz-zones-target-target {
+  $size: 100px;
+
+  background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.6), rgba(#000, 0.3), rgba(#000, 0));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.25s ease-out;
+  pointer-events: auto;
+
+  @include oval($size);
+
+  &:hover {
+    background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.8), rgba(#000, 0.4), rgba(#000, 0));
+    @include oval($size * 1.1);
+  }
+}

@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { request, Response } from "./../Request";
+import { request, Response, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
-import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener } from "./EventsBase";
+import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -33,6 +33,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
    * @param obj Object instance.
    */
   public fromJson(obj: any) {
+    super.fromJson(obj);
     this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
   }
@@ -86,7 +87,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
   }
 }
 
-type GlobalEventConstructor = (new () => IModelHubGlobalEvent);
+type GlobalEventConstructor = (new (handler?: IModelBaseHandler, sasToken?: string) => IModelHubGlobalEvent);
 /** Get constructor from GlobalEventType name. */
 function ConstructorFromEventType(type: GlobalEventType): GlobalEventConstructor {
   switch (type) {
@@ -108,10 +109,10 @@ function ConstructorFromEventType(type: GlobalEventType): GlobalEventConstructor
  * @param response Response object to parse.
  * @returns Appropriate global event object.
  */
-export function ParseGlobalEvent(response: Response) {
+export function ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent {
   const constructor: GlobalEventConstructor = ConstructorFromEventType(response.header["content-type"]);
-  const globalEvent = new constructor();
-  globalEvent.fromJson(response.body);
+  const globalEvent = new constructor(handler, sasToken);
+  globalEvent.fromJson({ ...response.header, ...response.body });
   return globalEvent;
 }
 
@@ -204,6 +205,13 @@ export class GlobalEventSubscriptionHandler {
   }
 }
 
+export enum GetEventOperationType {
+  /** Event will get removed from queue. */
+  Destructive = 0,
+  /** Event does not get removed from queue. And can be removed via method @see IModelHubBaseEvent.delete */
+  Peek,
+}
+
 /**
  * Handler for all methods related to iModel Hub global events.
  */
@@ -276,10 +284,16 @@ export class GlobalEventHandler extends EventBaseHandler {
    * @param timeout Optional timeout duration in seconds for request, when using long polling.
    * @return Global Event if it exists, undefined otherwise.
    */
-  public async getEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number): Promise<IModelHubGlobalEvent | undefined> {
+  public async getEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation: GetEventOperationType = GetEventOperationType.Destructive): Promise<IModelHubGlobalEvent | undefined> {
     Logger.logInfo(loggingCategory, `Getting global event from subscription with instance id: ${subscriptionInstanceId}`);
 
-    const options = this.getEventRequestOptions(sasToken, timeout);
+    let options: RequestOptions;
+    if (getOperation === GetEventOperationType.Destructive)
+      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
+    else if (getOperation === GetEventOperationType.Peek)
+      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetPeek, sasToken, timeout);
+    else // Unknown operation type.
+      return undefined;
 
     const result = await request(this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
 
@@ -288,7 +302,7 @@ export class GlobalEventHandler extends EventBaseHandler {
       return undefined;
     }
 
-    const event = ParseGlobalEvent(result);
+    const event = ParseGlobalEvent(result, this._handler, sasToken);
     Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);
 
     return Promise.resolve(event);

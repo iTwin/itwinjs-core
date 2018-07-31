@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Toast /> renders correctly 1`] = `
+<Component
+  className="nz-footer-message-toast nz-stage-visible"
+>
+  <div
+    className="nz-toast"
+    onTransitionEnd={[Function]}
+  />
+</Component>
+`;

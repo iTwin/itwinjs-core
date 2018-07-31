@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, ClipVector, Matrix4d } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -29,6 +29,7 @@ import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { AttributeHandle } from "./Handle";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -158,6 +159,7 @@ export abstract class Target extends RenderTarget {
   private _activeClipVolume?: ClipPlanesVolume | ClipMaskVolume;
   private _clipMask?: TextureHandle;
   public readonly clips = new Clips();
+  protected _fbo?: FrameBuffer;
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
   private _shaderLights?: ShaderLights;
@@ -169,6 +171,7 @@ export abstract class Target extends RenderTarget {
   public readonly monoColor = ColorDef.white.clone();
   public readonly hiliteSettings = new Hilite.Settings();
   public readonly planFrustum = new Frustum();
+  public readonly renderRect = new ViewRect();
   private _planFraction: number = 0;
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
@@ -182,7 +185,7 @@ export abstract class Target extends RenderTarget {
   public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
 
-  protected constructor() {
+  protected constructor(rect?: ViewRect) {
     super();
     this._renderCommands = new RenderCommands(this, this._stack);
     this._overlayRenderState = new RenderState();
@@ -190,6 +193,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
     this.compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
+    this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
   }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
@@ -354,13 +358,11 @@ export abstract class Target extends RenderTarget {
   public changeDecorations(decs: Decorations): void {
     this._decorations = dispose(this._decorations);
     this._decorations = decs;
-    for (let i = 0; i < 16; i++) {
-      System.instance.context.disableVertexAttribArray(i);
-    }
+    AttributeHandle.disableAll();
   }
-  public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
+  public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
     this._scene = scene;
-    // ###TODO active volume
+    this._activeClipVolume = _activeVolume;
   }
   public changeTerrain(terrain: GraphicList) {
     this._terrain = terrain;
@@ -786,6 +788,107 @@ export abstract class Target extends RenderTarget {
     return this.compositor.readPixels(rect, selector);
   }
 
+  /** Given a ViewRect, return a new rect that has been adjusted for the given aspect ratio. */
+  private adjustRectForAspectRatio(requestedRect: ViewRect, targetAspectRatio: number): ViewRect {
+    const rect = requestedRect.clone();
+    if (targetAspectRatio >= 1) {
+      const requestedWidth = rect.width;
+      const requiredWidth = rect.height * targetAspectRatio;
+      const adj = requiredWidth - requestedWidth;
+      rect.inset(-adj / 2, 0);
+    } else {
+      const requestedHeight = rect.height;
+      const requiredHeight = rect.width / targetAspectRatio;
+      const adj = requiredHeight - requestedHeight;
+      rect.inset(0, -adj / 2);
+    }
+    return rect;
+  }
+
+  protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {
+    assert(this._fbo !== undefined);
+    if (this._fbo === undefined)
+      return false;
+
+    const context = System.instance.context;
+    let didSucceed = true;
+    System.instance.frameBufferStack.execute(this._fbo, true, () => {
+      try {
+        context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
+      } catch (e) {
+        didSucceed = false;
+      }
+    });
+    if (!didSucceed)
+      return false;
+    return true;
+  }
+
+  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d): ImageBuffer | undefined {
+    // Determine capture rect and validate
+    const actualViewRect = this.renderRect;
+
+    const wantRect = wantRectIn.clone();
+    if (wantRect.right === -1 || wantRect.bottom === -1) {  // Indicates to get the entire view, no clipping
+      wantRect.right = actualViewRect.right;
+      wantRect.bottom = actualViewRect.bottom;
+    }
+
+    const targetSize = targetSizeIn.clone();
+    if (targetSize.x === 0 || targetSize.y === 0) { // Indicates image should have same dimensions as rect (no scaling)
+      targetSize.x = wantRect.width;
+      targetSize.y = wantRect.height;
+    }
+
+    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1); // in BSIRect, the right and bottom are actually *outside* of the rectangle
+    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
+      return undefined;
+
+    let captureRect = this.adjustRectForAspectRatio(wantRect, targetSize.x / targetSize.y);
+
+    // CLIPPING AND SCALING NOT AVAILABLE FOR D3D ----------------
+    captureRect = wantRect.clone();
+    targetSize.x = captureRect.width;
+    targetSize.y = captureRect.height;
+    // -----------------------------------------------------------
+
+    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
+      return undefined; // ###TODO: additional logic to shrink requested rectangle to fit inside view
+
+    this.assignDC();
+
+    // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
+    const bytesPerPixel = 4;
+    const imageData = new Uint8Array(bytesPerPixel * captureRect.width * captureRect.height);
+    const isValidImageData = this.readImagePixels(imageData, captureRect.left, actualViewRect.height - captureRect.bottom, captureRect.width, captureRect.height);
+    if (!isValidImageData)
+      return undefined;
+    const image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, targetSize.x);
+    if (!image)
+      return undefined;
+
+    // No need to scale image.
+    // Some callers want background pixels to be treated as fully-transparent
+    // They indicate this by supplying a background color with full transparency
+    // Any other pixels are treated as fully-opaque as alpha has already been blended
+    // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
+    const preserveBGAlpha = 0x00 === this.bgColor.getAlpha();
+
+    // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
+    let isEmptyImage = true;
+    for (let i = 3; i < image.data.length; i += 4) {
+      const a = image.data[i];
+      if (!preserveBGAlpha || 0 < a) {
+        image.data[i] = 0xff;
+        isEmptyImage = false;
+      }
+    }
+    if (isEmptyImage)
+      return undefined;
+
+    return image;
+  }
+
   // ---- Methods expected to be overridden by subclasses ---- //
 
   protected abstract _assignDC(): boolean;
@@ -795,9 +898,7 @@ export abstract class Target extends RenderTarget {
 
 /** A Target which renders to a canvas on the screen */
 export class OnScreenTarget extends Target {
-  private readonly _viewRect = new ViewRect();
   private readonly _canvas: HTMLCanvasElement;
-  private _fbo?: FrameBuffer;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
   private _prevViewRect: ViewRect = new ViewRect();
 
@@ -813,9 +914,9 @@ export class OnScreenTarget extends Target {
   }
 
   public get viewRect(): ViewRect {
-    this._viewRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
-    assert(Math.floor(this._viewRect.width) === this._viewRect.width && Math.floor(this._viewRect.height) === this._viewRect.height, "fractional view rect dimensions");
-    return this._viewRect;
+    this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
+    return this.renderRect;
   }
 
   public setViewRect(_rect: ViewRect, _temporary: boolean): void { assert(false); }
@@ -823,14 +924,13 @@ export class OnScreenTarget extends Target {
   protected _assignDC(): boolean {
     assert(undefined === this._fbo);
 
-    const rect = this.viewRect;
+    const rect = this.viewRect; // updates the render rect to be the client width and height
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     if (undefined === color) {
       return false;
     }
 
     this._fbo = FrameBuffer.create([color]);
-    // color.dispose();  // dispose of the texture (it is not used anymore)...?
     if (undefined === this._fbo) {
       return false;
     }
@@ -917,20 +1017,20 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
-  private _viewRect: ViewRect;
-
   public constructor(rect: ViewRect) {
-    super();
-    this._viewRect = new ViewRect(rect.left, rect.bottom, rect.right, rect.top);
+    super(rect);
   }
 
-  public get viewRect(): ViewRect { return this._viewRect; }
+  public get viewRect(): ViewRect { return this.renderRect; }
+
+  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
+  public updateViewRect(): boolean { return false; } // offscreen target does not dynmaically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
-    if (this._viewRect.equals(rect))
+    if (this.renderRect.equals(rect))
       return;
 
-    this._viewRect.copyFrom(rect);
+    this.renderRect.copyFrom(rect);
     if (temporary) {
       // Temporarily adjust view rect in order to create scene for a view attachment.
       // Will be reset before attachment is rendered - so don't blow away our framebuffers + textures
@@ -938,18 +1038,30 @@ export class OffScreenTarget extends Target {
     }
 
     this._dcAssigned = false;
-    // ###TODO this._fbo = undefined;
+    this._fbo = dispose(this._fbo);
     dispose(this.compositor);
   }
 
-  // ###TODO...
-  protected _assignDC(): boolean { return false; }
-  protected _makeCurrent(): void { }
-  protected _beginPaint(): void { }
-  protected _endPaint(): void { }
-  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
-  public updateViewRect(): boolean {
-    return false;
+  protected _assignDC(): boolean {
+    if (!this.updateViewRect() && this._fbo !== undefined)
+      return true;
+
+    const rect = this.viewRect;
+    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (color === undefined)
+      return false;
+    this._fbo = FrameBuffer.create([color]);
+    assert(this._fbo !== undefined);
+    return this._fbo !== undefined;
+  }
+
+  protected _beginPaint(): void {
+    assert(this._fbo !== undefined);
+    System.instance.frameBufferStack.push(this._fbo!, true);
+  }
+
+  protected _endPaint(): void {
+    System.instance.frameBufferStack.pop();
   }
 }
 
