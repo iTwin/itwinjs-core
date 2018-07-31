@@ -30,7 +30,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/imodeljs-react-scripts": "^5.4.5",
+    "@bentley/imodeljs-react-scripts": "^5.4.6",
     "@bentley/dev-cors-proxy-server": "0.0.6",
     "@bentley/bentleyjs-tools": "0.106.0",
     "@bentley/bentleyjs-core": "0.106.0",

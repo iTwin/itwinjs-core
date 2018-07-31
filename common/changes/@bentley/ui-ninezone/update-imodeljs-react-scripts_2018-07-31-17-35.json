@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated to use TypeScript 2.9",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "Bill.Goehrig@bentley.com"
+}
