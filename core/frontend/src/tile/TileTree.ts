@@ -609,7 +609,7 @@ export class IModelTileLoader extends TileLoader {
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return undefined !== params.geometry; }
 
-  private static _viewFlagOverrides = new ViewFlag.Overrides();
+  protected static _viewFlagOverrides = new ViewFlag.Overrides();
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {

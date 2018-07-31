@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, StrokeOptions, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator, StrokeOptions } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume, GraphicList } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
@@ -540,27 +540,48 @@ export class System extends RenderSystem {
   public createSheetTilePolyfaces(corners: Point3d[], clip?: ClipVector): IndexedPolyface[] {
     const sheetTilePolys: IndexedPolyface[] = [];
 
+    // Texture params for this sheet tile will always go from (0,0) to (1,1). However, we may be dealing with a tile that is a sub-division. Store the
+    // lower-left corner in order to subtract from point values later in order to get UV params.
+    const sheetTileRange = Range3d.createArray(corners);
+    const sheetTileScale = 1 / (sheetTileRange.high.x - sheetTileRange.low.x);
+    const sheetTileOrigin = sheetTileRange.low;
+
     let clippedPolygons: Point3d[][];
     if (clip !== undefined)
-      clippedPolygons = ClipUtilities.clipPolygonToClipVector(corners, clip);
+      clippedPolygons = ClipUtilities.clipPolygonToClipShape(corners, clip.clips[0]); // ###TODO: Currently assume that there is only one shape...
     else
       clippedPolygons = [corners];
 
-    for (const polygon of clippedPolygons) {  // expect to have only one
-      assert(polygon.length === 4, "Expect this use-case to not work with polygons with more than 4 points... otherwise sweep contours must be used to triangulate & track params");
+    // The result of clipping will be several polygons, which may lie next to each other, or be detached, and can be of any length
+    for (const polygon of clippedPolygons) {
       const strokeOptions = new StrokeOptions();
       strokeOptions.needParams = true;
       strokeOptions.shouldTriangulate = true;
       const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
 
-      // This is a simple case in which we have a quad, and we know that the root tile range is from (0,0) to (1,1)
-      // Therefore, we can build the polyface for this tile using only the points and supplying the params, which go from (0,0) to (1,1)
-      polyfaceBuilder.addQuadFacet(polygon, [
-        Point2d.create(0, 0),
-        Point2d.create(1, 0),
-        Point2d.create(1, 1),
-        Point2d.create(0, 1),
-      ]);
+      if (polygon.length === 3) {
+        const params: Point2d[] = [];
+        for (const point of polygon) {
+          const paramUnscaled = point.minus(sheetTileOrigin);
+          params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
+        }
+        polyfaceBuilder.addTriangleFacet(polygon, params);
+
+      } else if (polygon.length === 4) {
+        const params: Point2d[] = [];
+        for (const point of polygon) {
+          const paramUnscaled = point.minus(sheetTileOrigin);
+          params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
+        }
+        polyfaceBuilder.addQuadFacet(polygon, params);
+
+      } else {
+        const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
+        Triangulator.cleanupTriangulation(triangulatedPolygon);
+        polyfaceBuilder.addGraph(triangulatedPolygon, true);  // Params are set equal to point values, which is exactly what we are looking for (we started unclipped going from (0,0) to (1,1))
+
+      }
+
       sheetTilePolys.push(polyfaceBuilder.claimPolyface());
     }
     return sheetTilePolys;

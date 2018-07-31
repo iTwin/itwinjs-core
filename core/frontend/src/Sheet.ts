@@ -205,12 +205,27 @@ export namespace Attachments {
 
   /**
    * @hidden - Override of IModelTileLoader that ensures tiles are marked as needing to be loaded regardless of the presence of a geometry member.
-   * The tiles create their own geometry/graphics.
+   * The graphic ends up being a single SurfacePrimitive with a texture.
    */
   class AttachmentTileLoader extends IModelTileLoader {
     public tileRequiresLoading(_params: Tile.Params): boolean {
-      return true;  // always true
+      return true;  // always true (in parent class, would check if the tile had geometry)
     }
+
+    /*
+    protected static _viewFlagOverrides: ViewFlag.Overrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
+      renderMode: RenderMode.SmoothShade,
+      visEdges: true,
+      noTexture: false,
+      shadows: false,
+      noCameraLights: true,
+      noSourceLights: true,
+      noSolarLight: true,
+      noTransp: false,
+    }));
+
+    public get viewFlagOverrides(): ViewFlag.Overrides { return AttachmentTileLoader._viewFlagOverrides; }
+    */
   }
 
   /** An extension of Tile specific to rendering 2d attachments. */
@@ -506,7 +521,7 @@ export namespace Attachments {
           childIds: [],
         },
         model,
-        new IModelTileLoader(model.iModel, new Id64()),
+        new AttachmentTileLoader(model.iModel, new Id64()),
         Transform.createIdentity(),
         undefined,
         undefined,    // ClipVector build in child class constructors
@@ -657,7 +672,7 @@ export namespace Attachments {
       this.biasDistance = 0.5;
 
       range.getNpcToWorldRangeTransform(this.viewport.toParent);
-      this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1);
+      this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1, this.viewport.toParent.matrix);
 
       const fromParent = this.viewport.toParent.inverse();
       if (fromParent !== undefined)
