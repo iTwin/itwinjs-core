@@ -53,6 +53,6 @@
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.10.1",
-    "typescript": "~2.8.2"
+    "typescript": "~2.9.1"
   }
 }

@@ -34,7 +34,7 @@
     "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.8.2",
+    "typescript": "~2.9.1",
     "ts-node": "^6.0.3",
     "nyc": "^11.8.0",
     "source-map-support": "^0.5.6"

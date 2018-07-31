@@ -22,7 +22,7 @@
     "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.8.2"
+    "typescript": "~2.9.1"
   },
   "scripts": {
     "build": "tsc 1>&2",
