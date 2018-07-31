@@ -559,6 +559,7 @@ export class System extends RenderSystem {
       strokeOptions.shouldTriangulate = true;
       const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
 
+      let polyface: IndexedPolyface;
       if (polygon.length === 3) {
         const params: Point2d[] = [];
         for (const point of polygon) {
@@ -566,6 +567,7 @@ export class System extends RenderSystem {
           params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
         }
         polyfaceBuilder.addTriangleFacet(polygon, params);
+        polyface = polyfaceBuilder.claimPolyface();
 
       } else if (polygon.length === 4) {
         const params: Point2d[] = [];
@@ -574,12 +576,24 @@ export class System extends RenderSystem {
           params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
         }
         polyfaceBuilder.addQuadFacet(polygon, params);
+        polyface = polyfaceBuilder.claimPolyface();
 
       } else {
+        // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must add adjusted UV params ourselves requiring a PolyfaceVisitor....)
+        // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
         const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
-        polyfaceBuilder.addGraph(triangulatedPolygon, true);  // Params are set equal to point values, which is exactly what we are looking for (we started unclipped going from (0,0) to (1,1))
+        polyfaceBuilder.addGraph(triangulatedPolygon, false);
+        polyface = polyfaceBuilder.claimPolyface();
 
+        const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
+        while (visitor.moveToNextFacet()) {
+          for (let i = 0; i < 3; i++) {
+            const point = visitor.getPoint(i).minus(sheetTileOrigin);
+            const idx = polyface.addParamXY(point.x * sheetTileScale, point.y * sheetTileScale);
+            polyface.addParamIndex(idx);
+          }
+        }
       }
 
       sheetTilePolys.push(polyfaceBuilder.claimPolyface());
