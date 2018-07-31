@@ -1889,7 +1889,7 @@ export class SheetViewState extends ViewState2d {
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
       if (this._pickableBorder)
-        context.addNormal(border);
+        context.addWorldDecoration(border);
       else
         context.setViewBackground(border);
     }

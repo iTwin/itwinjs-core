@@ -276,7 +276,18 @@ export class RenderCommands {
       }
     }
 
-    // ###TODO the rest of the world decorations...
+    if (undefined !== decs.world) {
+      const world = this.target.getWorldDecorations(decs.world);
+      this.pushAndPopBranch(world, () => {
+        for (let i = 0; i < world.branch.entries.length; i++) {
+          const gf = (world.branch.entries[i] as Graphic);
+          if (gf.isPickable)
+            this.addDecoration(gf, world.overrides[i]);
+        }
+      });
+    }
+
+    // ###TODO: overlays
   }
 
   public addBackground(gf?: Graphic): void {

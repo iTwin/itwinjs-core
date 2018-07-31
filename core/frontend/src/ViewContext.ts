@@ -197,6 +197,8 @@ export class DecorateContext extends RenderContext {
     this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, [org, xCorn, org.plus(yVector), xCorn.plus(yVector)])!, ovr);
   }
 
+  private _pickableGrid: boolean = false; // ###TODO: Remove - testing only...
+
   /** @private */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: RotMatrix, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
@@ -269,7 +271,7 @@ export class DecorateContext extends RenderContext {
     uorPerPixel *= refScale;
 
     const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeparationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeparationPixels);
-    const graphic = this.createWorldDecoration();
+    const graphic = this._pickableGrid ? this.createPickableDecoration(new Id64("0xffffff0000000002")) : this.createWorldDecoration();
 
     DecorateContext.drawGrid(graphic, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
     this.addWorldDecoration(graphic.finish()!);
