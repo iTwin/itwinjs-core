@@ -305,7 +305,7 @@ describe("RpcInterface", () => {
   });
 
   it("should support retrieving binary resources from the backend", async () => {
-    const data = await TestRpcInterface.getClient().fetchResource("test");
+    const data = await TestRpcInterface.getClient().op12();
     assert.equal(data.byteLength, 4);
     const view = new Uint8Array(data);
     assert.equal(view[0], 1);
