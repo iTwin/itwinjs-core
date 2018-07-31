@@ -5,7 +5,23 @@
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
-import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, RenderTexture, ImageBuffer, TileProps, ViewFlag, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
+import {
+  ColorDef,
+  Gradient,
+  GraphicParams,
+  Placement2d,
+  ElementAlignedBox2d,
+  ViewAttachmentProps,
+  ElementAlignedBox3d,
+  RenderTexture,
+  ImageBuffer,
+  TileProps,
+  ViewFlag,
+  ViewFlags,
+  RenderMode,
+  Feature,
+  FeatureTable,
+} from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
@@ -479,10 +495,12 @@ export namespace Attachments {
             viewport.setupViewFromFrustum(frust);
 
             viewport.renderTexture();
-            if (viewport.texture === undefined)
+            if (viewport.texture === undefined) {
               this.setNotFound();
-            else
-              this.setGraphic(system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces)));
+            } else {
+              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces));
+              this.setGraphic(system.createBatch(graphic, this.rootAsTree3d.featureTable, this.contentRange));
+            }
 
             // restore frustum
             viewport.setupViewFromFrustum(frustumToRestore);
@@ -514,10 +532,10 @@ export namespace Attachments {
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(loader: TileLoader, model: GeometricModelState) {
+    public constructor(loader: TileLoader, model: GeometricModelState, attachment: Attachment) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
-        new Id64(),
+        attachment.id,
         {
           id: { treeId: "", tileId: "" },
           range: {
@@ -547,7 +565,7 @@ export namespace Attachments {
     public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
     private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-      super(new TileLoader2d(view), model);
+      super(new TileLoader2d(view), model, attachment);
 
       this.view = view;
       this.viewRoot = viewRoot;
@@ -624,13 +642,15 @@ export namespace Attachments {
     public static readonly tileColor: ColorDef = ColorDef.red;
     public readonly biasDistance: number; // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
     public readonly viewport: AttachmentViewport;
-    /** A reference to the SheetViewState that this attachment corresponds to. */
     public readonly sheetView: SheetViewState;
-    /** A reference to the attachment that owns this tile tree. */
     public readonly attachment: Attachment3d;
+    public readonly featureTable: FeatureTable;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-      super(new TileLoader3d(), new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel));   // Pass along a null Model3dState
+      super(new TileLoader3d(), new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel), attachment);   // Pass along a null Model3dState
+
+      this.featureTable = new FeatureTable(1);
+      this.featureTable.insert(new Feature(attachment.id));
 
       this.viewport = viewport;
       this.sheetView = sheetView;
