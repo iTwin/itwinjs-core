@@ -76,7 +76,7 @@ export class Tile implements IDisposable {
   protected _graphic?: RenderGraphic;
   protected _rangeGraphic?: RenderGraphic;
 
-  public constructor(props: Tile.Params, loader: TileLoader) {
+  public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
@@ -88,11 +88,11 @@ export class Tile implements IDisposable {
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
 
-    if (!loader.tileRequiresLoading(props)) {
+    if (!this.root.loader.tileRequiresLoading(props)) {
       this.setIsReady();    // If no contents, this node is for structure only and no content loading is required.
     } else {
       if (undefined !== props.geometry)
-        loader.loadGraphics(this, props.geometry);
+        this.root.loader.loadGraphics(this, props.geometry);
     }
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
@@ -101,7 +101,7 @@ export class Tile implements IDisposable {
     if (undefined === this.maximumSize)
       this.maximumSize = this.hasGraphics ? 512 : 0;
 
-    this._childrenLoadStatus = this.hasChildren && this.depth < loader.maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
+    this._childrenLoadStatus = this.hasChildren && this.depth < this.root.loader.maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
   public dispose() {
@@ -354,7 +354,7 @@ export class Tile implements IDisposable {
           const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
           for (const prop of props) {
             // ###TODO if child is empty don't bother adding it to list...
-            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader);
+            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
               parentRange.extendRange(child.contentRange);
@@ -490,8 +490,8 @@ export class TileTree implements IDisposable {
     this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
     this.clipVector = props.clipVector;
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this), props.loader); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.loader = props.loader;
+    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
     this.isTerrain = props.isTerrain ? props.isTerrain : false;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;

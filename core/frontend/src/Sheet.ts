@@ -5,11 +5,11 @@
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
-import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, RenderTexture, ImageBuffer } from "@bentley/imodeljs-common";
+import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, RenderTexture, ImageBuffer, TileProps, ViewFlag, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
-import { TileTree, Tile, TileRequests, IModelTileLoader } from "./tile/TileTree";
+import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
@@ -203,14 +203,37 @@ export namespace Attachments {
 
   const QUERY_SHEET_TILE_PIXELS: number = 512;
 
-  /**
-   * @hidden - Override of IModelTileLoader that ensures tiles are marked as needing to be loaded regardless of the presence of a geometry member.
-   * The tiles create their own geometry/graphics.
-   */
-  class AttachmentTileLoader extends IModelTileLoader {
-    public tileRequiresLoading(_params: Tile.Params): boolean {
-      return true;  // always true
+  abstract class AttachmentTileLoader extends TileLoader {
+    public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
+    public async getTileProps(_ids: string[]): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
+    public async loadTileContents(_missing: MissingNodes): Promise<void> {
+      // ###TODO: This doesn't appear to be needed, yet it gets invoked?
+      return Promise.resolve();
     }
+  }
+
+  class TileLoader2d extends AttachmentTileLoader {
+    private readonly _viewFlagOverrides: ViewFlag.Overrides;
+
+    public constructor(view: ViewState) {
+      super();
+      this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
+    }
+
+    public get maxDepth() { return 1; }
+    public get viewFlagOverrides() { return this._viewFlagOverrides; }
+  }
+
+  class TileLoader3d extends AttachmentTileLoader {
+    private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
+      renderMode: RenderMode.SmoothShade,
+      noCameraLights: true,
+      noSourceLights: true,
+      noSolarLight: true,
+    }));
+
+    public get maxDepth() { return 32; }
+    public get viewFlagOverrides() { return TileLoader3d._viewFlagOverrides; }
   }
 
   /** An extension of Tile specific to rendering 2d attachments. */
@@ -222,23 +245,20 @@ export namespace Attachments {
         new ElementAlignedBox3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
         512,  // does not matter... have no children
         [],
-      ), new AttachmentTileLoader(root.view.iModel, new Id64()));
+      ));
     }
 
-    // override
     public get hasChildren(): boolean { return false; }
-    // override
     public get hasGraphics(): boolean { return true; }
 
-    // override
     public drawGraphics(args: Tile.DrawArgs) {
       const myRoot = this.root as Tree2d;
       const viewRoot = myRoot.viewRoot;
 
       const drawArgs = viewRoot.createDrawArgs(args.context);
       drawArgs.location.setFrom(myRoot.drawingToAttachment);
-      // drawArgs.viewFlagOverrides = new ViewFlag.Overrides(myRoot.view.viewFlags);
       drawArgs.clip = myRoot.graphicsClip;
+      drawArgs.graphics.setViewFlagOverrides(this.root.viewFlagOverrides);
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
       myRoot.view.createSceneFromDrawArgs(drawArgs);
@@ -261,7 +281,7 @@ export namespace Attachments {
         undefined,
         undefined,
         undefined,
-      ), new AttachmentTileLoader(root.sheetView.iModel, new Id64()));
+      ));
 
       this._placement = placement;
       const tree = this.rootAsTree3d;
@@ -494,7 +514,7 @@ export namespace Attachments {
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(model: GeometricModelState) {
+    public constructor(loader: TileLoader, model: GeometricModelState) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
         new Id64(),
@@ -508,16 +528,14 @@ export namespace Attachments {
           childIds: [],
         },
         model,
-        new IModelTileLoader(model.iModel, new Id64()),
+        loader,
         Transform.createIdentity(),
         undefined,
-        undefined,    // ClipVector build in child class constructors
+        undefined,
       ));
     }
 
-    // override (don't depend on viewed model)
     public get is2d(): boolean { return true; }
-    // override (don't depend on viewed model)
     public get is3d(): boolean { return false; }
   }
 
@@ -529,7 +547,7 @@ export namespace Attachments {
     public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
     private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-      super(model);
+      super(new TileLoader2d(view), model);
 
       this.view = view;
       this.viewRoot = viewRoot;
@@ -612,7 +630,7 @@ export namespace Attachments {
     public readonly attachment: Attachment3d;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-      super(new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel));   // Pass along a null Model3dState
+      super(new TileLoader3d(), new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel));   // Pass along a null Model3dState
 
       this.viewport = viewport;
       this.sheetView = sheetView;
