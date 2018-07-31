@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+
+import Temporary from "@src/footer/message/Temporary";
+
+describe("<Temporary />", () => {
+  it("should render", () => {
+    mount(<Temporary />);
+  });
+
+  it("renders correctly", () => {
+    shallow(<Temporary />).should.matchSnapshot();
+  });
+});

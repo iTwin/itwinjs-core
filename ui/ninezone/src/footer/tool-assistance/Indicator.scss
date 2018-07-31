@@ -1,0 +1,57 @@
+@import "../../_geometry";
+@import "../_variables";
+
+.nz-footer-toolAssistance-indicator {
+  $indicator-height: 30px;
+  $margin-from-triangle-to-stroke: 2px;
+  $triangle-width: 5px;
+  $padding-ltb: $margin-from-triangle-to-stroke;
+  $padding-r: $margin-from-triangle-to-stroke * 2 + $triangle-width;
+
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: $nz-footer-indicator-horizontal-padding;
+  padding-right: $nz-footer-indicator-horizontal-padding;
+
+  > .nz-indicator {
+    height: $indicator-height;
+    border: 2px solid black;
+    min-width: 20px;
+    position: relative;
+    padding-left: $padding-ltb;
+    padding-top: $padding-ltb;
+    padding-bottom: $padding-ltb;
+    padding-right: $padding-r;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    box-sizing: border-box;
+
+    > .nz-icons {
+      color: rgba($icon-color, $icon-opacity);
+      font-size: $icon-size;
+      filter: $icon-shadow;
+    }
+
+    > .nz-step-string {
+      margin-left: 10px;
+      display: none;
+      font-size: $text-font-size;
+
+      &.nz-is-visible {
+        display: block;
+      }
+    }
+
+    > .nz-triangle {
+      position: absolute;
+      right: $margin-from-triangle-to-stroke;
+      bottom: $margin-from-triangle-to-stroke;
+      filter: $icon-shadow;
+
+      @include triangle-bottom-right($width: $triangle-width, $color: $text-font-color);
+    }
+  }
+}

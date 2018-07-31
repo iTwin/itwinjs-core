@@ -13,23 +13,20 @@ import { KnownLocations } from "../../Platform";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe("ApplyChangeSets (#integration)", () => {
-  let accessToken: AccessToken;
   const iModelRootDir = path.join(KnownLocations.tmpdir, "IModelJsTest/");
 
   before(async () => {
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
-
     // Note: Change to LogLevel.Info for useful debug information
     Logger.setLevel(HubUtility.logCategory, LogLevel.Error);
     Logger.setLevel("DgnCore", LogLevel.Error);
     Logger.setLevel("BeSQLite", LogLevel.Error);
   });
 
-  const testAllChangeSetOperations = async (projectName: string, iModelName: string) => {
-    const iModelDir = path.join(iModelRootDir, iModelName);
+  const testAllChangeSetOperations = async (accessToken: AccessToken, projectId: string, iModelId: string) => {
+    const iModelDir = path.join(iModelRootDir, iModelId);
 
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
-    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+    await HubUtility.downloadIModelById(accessToken, projectId, iModelId, iModelDir);
 
     const seedPathname = HubUtility.getSeedPathname(iModelDir);
     const iModelPathname = path.join(iModelDir, path.basename(seedPathname));
@@ -64,28 +61,62 @@ describe("ApplyChangeSets (#integration)", () => {
     assert(status === ChangeSetStatus.Success, "Error applying change sets");
   };
 
-  const testOpen = async (projectName: string, iModelName: string) => {
-    const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
-    const iModelDb = IModelDb.open(accessToken, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+  const testOpen = async (accessToken: AccessToken, projectId: string, iModelId: string) => {
+    const iModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert(!!iModelDb);
   };
 
-  const testAllOperations = async (projectName: string, iModelName: string) => {
-    testAllChangeSetOperations(projectName, iModelName);
-    testOpen(projectName, iModelName);
+  const testAllOperations = async (accessToken: AccessToken, projectId: string, iModelId: string) => {
+    await testOpen(accessToken, projectId, iModelId);
+    await testAllChangeSetOperations(accessToken, projectId, iModelId);
   };
 
   it("should test all change set operations after downloading iModel from the hub", async () => {
     console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // tslint:disable-line:no-console
-    await testAllOperations("plant-sta", "atp_10K.bim");
-    await testAllOperations("iModelJsTest", "ReadOnlyTest");
-    await testAllOperations("iModelJsTest", "ReadWriteTest");
-    await testAllOperations("iModelJsTest", "NoVersionsTest");
-    await testAllOperations("NodeJsTestProject", "TestModel");
-    await testAllOperations("SampleBisPlant", "samplePlant20");
-    // await testAllOperations("iModelHubTest", "Office Building4"); Fails due to an assertion DgnGeoCoord
-    // await testAllOperations("AbdTestProject", "ATP_2018050310145994_scenario22"); Waiting for new Db after converter fix
-  });
 
+    const accessToken = await IModelTestUtils.getTestUserAccessToken();
+
+    let projectName = "iModelJsTest"; let iModelName = "ReadOnlyTest";
+    let projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    let iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    await testAllOperations(accessToken, projectId, iModelId);
+
+    projectName = "iModelJsTest"; iModelName = "ReadWriteTest";
+    projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    await testAllOperations(accessToken, projectId, iModelId);
+
+    projectName = "iModelJsTest"; iModelName = "NoVersionsTest";
+    projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    await testAllOperations(accessToken, projectId, iModelId);
+
+    projectName = "NodeJsTestProject"; iModelName = "TestModel";
+    projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    await testAllOperations(accessToken, projectId, iModelId);
+
+    projectName = "SampleBisPlant"; iModelName = "samplePlant20";
+    projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    await testAllOperations(accessToken, projectId, iModelId);
+
+    // iModel was removed - find permanent replacement
+    // projectName = "plant-sta"; iModelName = "atp_10K.bim";
+    // projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    // iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    // await testAllOperations(accessToken, projectId, iModelId);
+
+    // Fails due to an assertion DgnGeoCoord
+    // projectName = "iModelHubTest"; iModelName = "Office Building4";
+    // projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    // iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    // await testAllOperations(accessToken, projectId, iModelId);
+
+    // Waiting for new Db after converter fix
+    // projectName = "AbdTestProject"; iModelName = "ATP_2018050310145994_scenario22";
+    // projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    // iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    // await testAllOperations(accessToken, projectId, iModelId);
+  });
 });

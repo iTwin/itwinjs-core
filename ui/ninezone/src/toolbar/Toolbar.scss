@@ -1,0 +1,76 @@
+@import "./item/_variables";
+@import "_variables";
+@import "../_z-index";
+
+.nz-toolbar-toolbar {
+  display: inline-block;
+  position: relative;
+
+  > .nz-panels {
+    pointer-events: none;
+
+    > .nz-item {
+      > * {
+        pointer-events: auto;
+      }
+    }
+  }
+
+  > .nz-expanded {
+    position: absolute;
+    @include nz-z-index(expandable);
+  }
+
+  &.nz-vertical {
+    > .nz-expanded {
+      > .nz-item {
+        height: $desktop-item-height;
+        display: grid;
+        align-content: center;
+      }
+    }
+  }
+
+  &.nz-horizontal {
+    > .nz-expanded {
+      display: flex;
+
+      > .nz-item {
+        width: $desktop-item-width;
+        display: grid;
+        justify-content: center;
+      }
+    }
+
+    > .nz-panels {
+      > .nz-item {
+        > * {
+          float: left;
+        }
+      }
+    }
+  }
+
+  &.nz-direction-left {
+    > .nz-expanded {
+      top: $items-border-width;
+      left: 0;
+      transform: translateX(-100%);
+    }
+  }
+
+  &.nz-direction-right {
+    > .nz-expanded {
+      top: $items-border-width;
+      left: 100%;
+      transform: translateX(-$items-border-width);
+    }
+  }
+
+  &.nz-direction-bottom {
+    > .nz-expanded {
+      top: 100%;
+      left: $items-border-width;
+    }
+  }
+}

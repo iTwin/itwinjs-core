@@ -1,0 +1,94 @@
+/* $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $ */
+@import "~@bentley/bwc";
+@import "../colors.scss";
+
+/* FIXME: Without this, the loader animation is broken...
+ * I guess we'd need to fix BWC's animations to support CSS modules?
+ * (I mean, we should probably just be using the loader component anyway...)
+ */
+@keyframes :global(bwc-loaders-animate-opacity) {
+
+  0% {    opacity:        0.85; }
+  50% {   opacity:        0.25; }
+  100% {  opacity:        0.25; }
+}
+
+.nz-tree-node {
+  /* Rules applied to the <be-tree-node> itself */
+  display: block;
+  width: fit-content;
+  min-width: 100%;
+  line-height: 24px;
+  font-family: $bwc-sans;
+  font-size: 13px;
+  color: $text-dark;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  clear: both;
+
+  * {
+    vertical-align: top;
+  }
+
+  > .loader {
+    @include bwc-loaders-small;
+    margin: 4px;
+    display: block;
+    float: left;
+    z-index: 2;
+  }
+
+  > .contents {
+    min-height: 24px;
+    margin-left: $bwc-l;
+    position: relative;
+    z-index: 2;
+
+    > .icon {
+      width: 16px;
+      height: 24px;
+      display: inline-block;
+      box-sizing: border-box;
+      padding: 4px 0;
+      margin-right: 2px;
+    }
+  }
+
+  > .expansion-toggle {
+    position: relative;
+    float: left;
+    z-index: 2;
+  }
+
+  > .whole-row {
+    height: 24px;
+    left: 0;
+    margin-top: -24px;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+  }
+
+  &.is-focused, &:focus {
+    outline: none;
+
+    > .whole-row {
+      outline: 1px dotted #000;
+    }
+  }
+
+  &:not(.is-hover-disabled) {
+    *:hover + * + .whole-row,
+    *:hover + .whole-row,
+    .whole-row:hover {
+      background: $primary-hover;
+    }
+  }
+
+  &.is-selected {
+    >.whole-row {
+      background: $primary-tint;
+      outline: none;
+    }
+  }
+}

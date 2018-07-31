@@ -18,7 +18,7 @@ export class NonConnectProject extends ProjectAbstraction {
     // surrounding project, user, and deployment infrastructure.
 
     // *** SOLUTION TODO - ask the user mgr to authenticate the user and obtain an AccessToken.
-    const userProfile = new UserProfile("first", "last", "email@organization.org", "userid", "organization");
+    const userProfile = new UserProfile("first", "last", "email@organization.org", "userid", "organization", "ultimateId", "usageCountryIso");
     const foreignAccessTokenWrapper: any = {};
     foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
     state.accessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper));

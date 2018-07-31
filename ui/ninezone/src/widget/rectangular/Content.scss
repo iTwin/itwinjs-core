@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/colors";
+@import "../../_scrollbar";
+@import "../_variables";
+
+.nz-widget-rectangular-content {
+  max-height: 100%;
+  overflow: auto;
+
+  &.nz-left-anchor {
+    direction: rtl;
+  }
+
+  @include nz-scrollbar($color: $background-4);
+
+  > div {
+    direction: ltr;
+  }
+}

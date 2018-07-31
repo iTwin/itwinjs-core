@@ -7,7 +7,7 @@ import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps,
-  CategorySelectorProps, Camera, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, ViewAttachmentProps, LightLocationProps,
+  CategorySelectorProps, Camera, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, ViewAttachmentProps, LightLocationProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -285,10 +285,10 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
  */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
-  public view: Id64;
+  public view: RelatedElement;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
-    this.view = new Id64(props.view);
+    this.view = new RelatedElement(props.view);
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in jsonProperties...
   }
 }

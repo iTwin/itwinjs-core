@@ -28,6 +28,7 @@ import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
+import { MobileRpcManager } from "../common/MobileRpcManager";
 import * as ttjs from "tooltip.js";
 
 type Tooltip = ttjs.default;
@@ -410,6 +411,7 @@ function updateRenderModeOptionsMap() {
   updateRenderModeOption("weights", viewflags.weights, renderModeOptions.flags);
   updateRenderModeOption("styles", viewflags.styles, renderModeOptions.flags);
   updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
+  updateRenderModeOption("clipVolume", viewflags.clipVolume, renderModeOptions.flags);
 
   renderModeOptions.mode = viewflags.renderMode;
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
@@ -622,6 +624,7 @@ function wireIconsToFunctions() {
   addRenderModeHandler("lights");
   addRenderModeHandler("monochrome");
   addRenderModeHandler("constructions");
+  addRenderModeHandler("clipVolume");
   addRenderModeHandler("weights");
   addRenderModeHandler("styles");
   addRenderModeHandler("transparency");
@@ -748,10 +751,11 @@ const docReady = new Promise((resolve) => {
 
 // main entry point.
 async function main() {
-  // retrieve, set, and output the global configuration variable
-  await retrieveConfiguration(); // (does a fetch)
-  console.log("Configuration", JSON.stringify(configuration));
-
+  if (!MobileRpcManager.isMobile) {
+    // retrieve, set, and output the global configuration variable
+    await retrieveConfiguration(); // (does a fetch)
+    console.log("Configuration", JSON.stringify(configuration));
+  }
   // Start the app. (This tries to fetch a number of localization json files from the orgin.)
   SVTIModelApp.startup();
 
@@ -759,15 +763,17 @@ async function main() {
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  } else if (MobileRpcManager.isMobile) {
+    Object.assign(configuration, { standalone: true, iModelName: "assets/sample_documents/04_Plant.i.ibim" });
+    rpcConfiguration = MobileRpcManager.initializeMobile([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     Config.devCorsProxyServer = "https://localhost:3001";
+    // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
+    // RPC without any imodel and fails...
+    for (const definition of rpcConfiguration.interfaces())
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
   }
-
-  // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
-  // RPC without any imodel and fails...
-  for (const definition of rpcConfiguration.interfaces())
-    RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
   const uiReady = displayUi();  // Get the browser started loading our html page and the svgs that it references but DON'T WAIT
 

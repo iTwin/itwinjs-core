@@ -1,0 +1,126 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "~@bentley/bwc/lib/mixins";
+
+.dialog {
+  @include bwc-font-family;
+  display: none;
+  position: fixed;
+  z-index: 590;
+  padding-top: 100px;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: rgba(0,0,0, 0.4);
+  &.dialog-open {
+    display: block;
+  }
+  &.dialog-hidden {
+    width: 0;
+    height: 0;
+  }
+  > .dialog-container {
+    margin: 100px auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 50%;
+    height: fit-content;
+
+    display: flex;
+    flex-direction: column;
+
+    > .dialog-area {
+      display: flex;
+      height: inherit;
+      flex-direction: column;
+      border: 1px solid $bwc-gray-3;
+      border-radius: $bwc-border-radius;
+      background-color: $bwc-gray-c;
+      padding: 0;
+      > .dialog-head {
+        flex-shrink: 0;
+        background-color: $bwc-blue;
+        color: $bwc-blue-highlight;
+        display: flex;
+        padding: $bwc-unbordered-padding;
+        &.dialog-movable {
+          cursor: move;
+        }
+        > .dialog-title {
+          flex: 1 1;
+          @include bwc-text-title;
+          margin: 0;
+        }
+        > .dialog-close {
+          cursor: pointer;
+          height: $bwc-font-size-title;
+          width: $bwc-font-size-title;
+          line-height: $bwc-font-size-title;
+          flex: 0 0 $bwc-icons-medium;
+          text-align: center;
+          &:hover {
+            color: $bwc-white;
+          }
+        }
+      }
+      > .dialog-content {
+        overflow: auto;
+        flex: 1 1;
+        @include bwc-text-block;
+        padding: $bwc-unbordered-padding;
+      }
+      > .dialog-footer {
+        flex-shrink: 0;
+        padding: $bwc-unbordered-padding;
+        > .dialog-buttons {
+          display: flex;
+          justify-content: flex-end;
+          > * {
+            min-width: 80px;
+            &:not(:first-child) {
+              margin-left: $bwc-inputs-margin;
+            }
+          }
+        }
+      }
+    }
+    $dialog-resize-bar-width: 8px;
+    .dialog-drag {
+      position: absolute;
+      z-index: auto;
+      padding: 0px;
+      &:not(.dialog-drag-enabled) {
+        display: none;
+      }
+      &.dialog-drag-right {
+        right: -$dialog-resize-bar-width / 2;
+
+        width: $dialog-resize-bar-width;
+        height: 100%;
+        cursor: ew-resize;
+      }
+      &.dialog-drag-bottom-mid {
+        bottom: -$dialog-resize-bar-width / 2;
+
+        height: $dialog-resize-bar-width;
+        width: 100%;
+        cursor: ns-resize;
+      }
+      &.dialog-drag-bottom-right {
+        right: -$dialog-resize-bar-width / 2;
+        bottom: -$dialog-resize-bar-width / 2;
+
+        height: $dialog-resize-bar-width;
+        width: $dialog-resize-bar-width;
+        cursor: nwse-resize;
+      }
+    }
+  }
+}

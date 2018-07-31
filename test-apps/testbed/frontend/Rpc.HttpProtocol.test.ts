@@ -36,11 +36,12 @@ if (TestbedConfig.cloudRpc) {
 
       const params = new TestOp1Params(1, 1);
       const remoteSum = await TestRpcInterface.getClient().op1(params);
-      assert.equal(pendingsReceived, expectedPendings);
-      assert.equal(remoteSum, params.sum());
 
       assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE, value: 0 }));
       removeListener();
+
+      assert.equal(pendingsReceived, expectedPendings);
+      assert.equal(remoteSum, params.sum());
     });
   });
 }

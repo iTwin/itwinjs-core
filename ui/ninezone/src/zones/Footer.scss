@@ -1,0 +1,12 @@
+.nz-zones-footer {
+  &.nz-is-in-footer-mode {
+    padding: 0;
+  }
+
+  &:not(.nz-is-in-footer-mode) {
+    height: 100%;
+    box-sizing: border-box;
+    display: grid;
+    align-items: end;
+  }
+}

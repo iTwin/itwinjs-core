@@ -1,0 +1,25 @@
+@import "./_variables";
+
+.nz-toolbar-item-expandable-group-nested {
+  .nz-back-arrow-container {
+    width: 15px;
+    height: 20px;
+    position: absolute;
+    left: 6px;
+    top: 8px;
+
+    &:hover {
+      cursor: pointer;
+
+      > * {
+        color: $primary-tint;
+      }
+    }
+
+    > * {
+      position: relative;
+      left: 3px;
+      top: 3px;
+    }
+  }
+}

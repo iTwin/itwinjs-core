@@ -1,0 +1,194 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Node /> renders correctly 1`] = `
+<div
+  className="nz-tree-node"
+  onClick={[Function]}
+>
+  <ExpansionToggle
+    className="expansion-toggle"
+    onClick={[Function]}
+  />
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> renders expander correctly 1`] = `
+<div
+  className="nz-tree-node"
+  onClick={[Function]}
+>
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> renders expander correctly 2`] = `
+<div
+  className="nz-tree-node"
+  onClick={[Function]}
+>
+  <ExpansionToggle
+    className="expansion-toggle"
+    isExpanded={true}
+    onClick={[Function]}
+  />
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> renders expander correctly 3`] = `
+<div
+  className="nz-tree-node"
+  onClick={[Function]}
+>
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> renders icon correctly 1`] = `
+<div
+  className="nz-tree-node"
+  onClick={[Function]}
+>
+  <ExpansionToggle
+    className="expansion-toggle"
+    onClick={[Function]}
+  />
+  <div
+    className="contents"
+  >
+    <div
+      className="icon"
+    >
+      <img
+        src="testIcon"
+      />
+    </div>
+  </div>
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> renders label correctly 1`] = `
+<div
+  className="nz-tree-node"
+  onClick={[Function]}
+>
+  <ExpansionToggle
+    className="expansion-toggle"
+    onClick={[Function]}
+  />
+  <div
+    className="contents"
+  >
+    <span
+      id="test"
+    >
+      This is some test label
+    </span>
+  </div>
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> renders loader correctly 1`] = `
+<div
+  className="nz-tree-node"
+  onClick={[Function]}
+>
+  <div
+    className="loader"
+  >
+    <i />
+    <i />
+    <i />
+    <i />
+    <i />
+    <i />
+  </div>
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> should set is-focused class 1`] = `
+<div
+  className="nz-tree-node is-focused"
+  onClick={[Function]}
+>
+  <ExpansionToggle
+    className="expansion-toggle"
+    onClick={[Function]}
+  />
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> should set is-hover-disabled class 1`] = `
+<div
+  className="nz-tree-node is-hover-disabled"
+  onClick={[Function]}
+>
+  <ExpansionToggle
+    className="expansion-toggle"
+    onClick={[Function]}
+  />
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;
+
+exports[`<Node /> should set is-selected class 1`] = `
+<div
+  className="nz-tree-node is-selected"
+  onClick={[Function]}
+>
+  <ExpansionToggle
+    className="expansion-toggle"
+    onClick={[Function]}
+  />
+  <div
+    className="contents"
+  />
+  <div
+    className="whole-row"
+  />
+</div>
+`;

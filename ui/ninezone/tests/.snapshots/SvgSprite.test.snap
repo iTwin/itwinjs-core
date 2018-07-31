@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SvgSprite /> renders correctly 1`] = `
+<svg
+  className="nz-base-svgSprite"
+  height="100%"
+  width="100%"
+>
+  <use
+    xlinkHref="#test-sprite"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+  />
+</svg>
+`;

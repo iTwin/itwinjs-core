@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Tray /> renders correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-tab"
+  >
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Tray /> renders expanded 1`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-tab"
+  >
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Tray /> renders tabs 1`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-tab-is-visible"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-items"
+  >
+    <br />
+    <br />
+  </div>
+  <div
+    className="nz-tab"
+  >
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;

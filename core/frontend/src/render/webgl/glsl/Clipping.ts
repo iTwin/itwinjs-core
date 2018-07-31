@@ -139,7 +139,8 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   vert.set(VertexShaderComponent.CalcClipDist, calcClipCamPos);
   addViewMatrix(frag);
 
-  if (System.instance.capabilities.supportsTextureFloat) {
+  const useFloatIfAvailable = false; // ###TODO...
+  if (useFloatIfAvailable && System.instance.capabilities.supportsTextureFloat) {
     frag.addFunction(getClipPlaneFloat);
   } else {
     frag.addFunction(unpackFloat);

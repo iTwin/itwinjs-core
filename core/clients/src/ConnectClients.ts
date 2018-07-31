@@ -265,8 +265,10 @@ export class ConnectClient extends WsgClient {
   public async getProject(token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
     return this.getProjects(token, queryOptions)
       .then((projects: Project[]) => {
-        if (projects.length !== 1) {
-          return Promise.reject(new Error("Expected a single project to be returned by query"));
+        if (projects.length === 0) {
+          return Promise.reject(new Error("Could not find a project with the specified criteria"));
+        } else if (projects.length > 1) {
+          return Promise.reject(new Error("More than one project found with the specified criteria"));
         }
         return Promise.resolve(projects[0]);
       });

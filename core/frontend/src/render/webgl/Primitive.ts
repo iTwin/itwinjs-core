@@ -152,11 +152,9 @@ export class SkyBoxPrimitive extends Primitive {
     else
       System.instance.context.viewport(-(vh - vw) / 2, 0, vh, vh);
 
-    // Draw the skybox cubemap
-    super.draw(shader);
+    super.draw(shader); // Draw the skybox cubemap
 
-    // Restore viewport
-    System.instance.context.viewport(0, 0, shader.target.viewRect.width, shader.target.viewRect.height);
+    System.instance.context.viewport(0, 0, vw, vh); // Restore viewport
   }
 
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }

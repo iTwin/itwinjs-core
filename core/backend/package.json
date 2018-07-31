@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.103.0",
+  "version": "0.105.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib package-deps.json ../../generated-docs/backend",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/backend/json/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/backend/json/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
@@ -34,26 +34,26 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.103.0",
-    "@bentley/geometry-core": "0.103.0",
-    "@bentley/imodeljs-clients": "0.103.0",
-    "@bentley/imodeljs-common": "0.103.0"
+    "@bentley/bentleyjs-core": "0.105.0",
+    "@bentley/geometry-core": "0.105.0",
+    "@bentley/imodeljs-clients": "0.105.0",
+    "@bentley/imodeljs-common": "0.105.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.103.0",
-    "@bentley/bentleyjs-tools": "0.103.0",
-    "@bentley/geometry-core": "0.103.0",
-    "@bentley/imodeljs-clients": "0.103.0",
-    "@bentley/imodeljs-common": "0.103.0",
+    "@bentley/bentleyjs-core": "0.105.0",
+    "@bentley/bentleyjs-tools": "0.105.0",
+    "@bentley/geometry-core": "0.105.0",
+    "@bentley/imodeljs-clients": "0.105.0",
+    "@bentley/imodeljs-common": "0.105.0",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/js-base64": "^2.3.1",
-    "@types/mocha": "^2.2.47",
+    "@types/mocha": "^2.2.48",
     "@types/semver": "5.5.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
@@ -62,16 +62,16 @@
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.6",
     "ts-node": "^6.0.3",
-    "tslint": "^5.10.0",
+    "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
-    "typescript": "~2.7.2",
-    "webpack": "^3.10.0",
+    "typescript": "~2.8.2",
+    "webpack": "^4.16.1",
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~25.0.0",
+    "@bentley/imodeljs-native-platform-api": "~26.0.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

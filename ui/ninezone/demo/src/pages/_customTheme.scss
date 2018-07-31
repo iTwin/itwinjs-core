@@ -1,0 +1,32 @@
+@import "../../../src/theme/_theme";
+
+// Name of custom theme.
+$nz-theme-custom: custom;
+
+// Add to themes.
+@include nz-add-theme($nz-theme-custom);
+
+// Helper mixin.
+@mixin nz-custom-component($name) {
+  @include nz-theme-component($nz-theme-custom, $name) {
+    @content;
+  }
+}
+
+// Custom style for the status message component.
+@include nz-custom-component(nz-footer-message-content-status-message) {
+  background-color: palevioletred;
+  min-width: 400px;
+}
+
+
+// Custom style for the progress bar component.
+@include nz-custom-component(nz-footer-message-content-progress) {
+  > .nz-progress {
+    background-color: yellowgreen;
+
+    > .nz-progress-bar {
+      background-color: yellow;
+    }
+  }
+}

@@ -1,0 +1,62 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/bwc/lib/mixins";
+
+.split-button {
+  flex-shrink: 1;
+
+  @include bwc-font-family;
+  @include bwc-buttons-button;
+
+  cursor: pointer;
+  margin: 0;
+  display: flex;
+  background-color: $bwc-white;
+
+  > .split-button-label {
+    &:hover {
+      color: $bwc-blue;
+    }
+
+    @include bwc-text(body);
+  }
+
+  > .split-button-arrow {
+    &:focus {
+      border: none;
+      box-shadow: none;
+      outline: 0px;
+
+      > .split-button-arrow-icon {
+        color: $bwc-blue;
+      }
+    }
+
+    > .split-button-arrow-icon {
+      transition: transform .2s;
+
+      &:hover {
+        color: $bwc-blue;
+      }
+
+      text-align: center;
+      font-size: $bwc-icons-small;
+      line-height: $bwc-line-height;
+    }
+
+    width: $bwc-line-height;
+    height: $bwc-line-height;
+    margin-left: 4px;
+
+    > .context-menu {
+      top: $bwc-inputs-padding-bordered;
+    }
+  }
+
+  &.expanded {
+    > .split-button-arrow > .split-button-arrow-icon {
+      transform: scaleY(-1);
+    }
+  }
+}

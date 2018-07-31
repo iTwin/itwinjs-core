@@ -2,6 +2,24 @@
   "name": "@bentley/bentleyjs-tools",
   "entries": [
     {
+      "version": "0.105.0",
+      "tag": "@bentley/bentleyjs-tools_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.104.1",
+      "tag": "@bentley/bentleyjs-tools_v0.104.1",
+      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.104.0",
+      "tag": "@bentley/bentleyjs-tools_v0.104.0",
+      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.103.0",
       "tag": "@bentley/bentleyjs-tools_v0.103.0",
       "date": "Tue, 24 Jul 2018 15:52:30 GMT",

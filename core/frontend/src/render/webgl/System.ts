@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume } from "../System";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
+import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, StrokeOptions, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume, GraphicList } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -339,7 +339,7 @@ export class IdMap implements IDisposable {
 export class System extends RenderSystem {
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
-  public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system (only a storage device)
+  public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
@@ -535,6 +535,88 @@ export class System extends RenderSystem {
   private getIdMap(imodel: IModelConnection): IdMap {
     const map = this.resourceCache.get(imodel);
     return undefined !== map ? map : this.createIModelMap(imodel);
+  }
+
+  public createSheetTilePolyfaces(corners: Point3d[], clip?: ClipVector): IndexedPolyface[] {
+    const sheetTilePolys: IndexedPolyface[] = [];
+
+    let clippedPolygons: Point3d[][];
+    if (clip !== undefined)
+      clippedPolygons = ClipUtilities.clipPolygonToClipVector(corners, clip);
+    else
+      clippedPolygons = [corners];
+
+    for (const polygon of clippedPolygons) {  // expect to have only one
+      assert(polygon.length === 4, "Expect this use-case to not work with polygons with more than 4 points... otherwise sweep contours must be used to triangulate & track params");
+      const strokeOptions = new StrokeOptions();
+      strokeOptions.needParams = true;
+      strokeOptions.shouldTriangulate = true;
+      const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+
+      // This is a simple case in which we have a quad, and we know that the root tile range is from (0,0) to (1,1)
+      // Therefore, we can build the polyface for this tile using only the points and supplying the params, which go from (0,0) to (1,1)
+      polyfaceBuilder.addQuadFacet(polygon, [
+        Point2d.create(0, 0),
+        Point2d.create(1, 0),
+        Point2d.create(1, 1),
+        Point2d.create(0, 1),
+      ]);
+      sheetTilePolys.push(polyfaceBuilder.claimPolyface());
+    }
+    return sheetTilePolys;
+  }
+
+  public createSheetTile(tile: RenderTexture, polyfaces: IndexedPolyface[]): GraphicList {
+    const sheetTileGraphics: GraphicList = [];
+
+    for (const polyface of polyfaces) {
+      const rawParams = polyface.data.param;
+      if (rawParams === undefined)
+        return sheetTileGraphics;   // return empty
+
+      const meshArgs = new MeshArgs();
+      const pts = polyface.data.point.getPoint3dArray();
+
+      meshArgs.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(pts)));  // use these point params
+      for (const point of pts)
+        meshArgs.points.push(QPoint3d.create(point, meshArgs.points.params));
+
+      const uvs: Point2d[] = [];  // temporary uv storage - will be rearranged below
+      for (const param of rawParams)
+        uvs.push(param.clone());
+
+      const pointIndices: number[] = [];
+      const uvIndices: number[] = [];
+      const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
+      while (visitor.moveToNextFacet()) {
+        for (let i = 0; i < 3; i++) {
+          pointIndices.push(visitor.clientPointIndex(i));
+          uvIndices.push(visitor.clientParamIndex(i));
+        }
+      }
+
+      // make uv arrangement and indices match that of points
+      // this is necessary because MeshArgs assumes vertIndices refers to both points and UVs
+      // output uvsOut to clippedTile
+      let j = 0;
+      const uvsOut: Point2d[] = [];
+      for (const pointIdx of pointIndices)
+        uvsOut[pointIdx] = uvs[uvIndices[j++]];   // passing the reference should not matter
+
+      meshArgs.textureUv = uvsOut;
+      meshArgs.vertIndices = pointIndices;
+      meshArgs.texture = tile;
+      meshArgs.material = undefined;
+      meshArgs.isPlanar = true;
+
+      const mesh = this.createTriMesh(meshArgs);
+      if (mesh !== undefined) {
+        (mesh as any)._primitives[0].cachedGeometry.DEBUG = true;
+        sheetTileGraphics.push(mesh);
+      }
+    }
+
+    return sheetTileGraphics;
   }
 }
 

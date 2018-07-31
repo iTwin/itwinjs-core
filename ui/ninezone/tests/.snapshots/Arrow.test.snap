@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Arrow /> renders correctly 1`] = `
+<div
+  className="nz-toolbar-scroll-arrow nz-direction-left"
+/>
+`;

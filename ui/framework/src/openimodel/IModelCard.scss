@@ -1,0 +1,40 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+
+.fw-imodelcard {
+  border: 2px;
+  border-style: solid;
+  border-color: black;
+  border-radius: 2px;
+  height: 150px;
+  width: 200px;
+  display: inline-grid;
+  margin: 10px 10px 10px 10px;
+  padding: 5px 5px 5px 5px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.fw-imodelcard-thumbnail {
+  border: 1px;
+  border-style: solid;
+  display: block;
+  width: 120px;
+  height: 80px;
+  margin: 10px 10px 10px 10px;
+}
+
+.fw-imodelcard-fallbackicon {
+  font-size: 80px;
+  color: Blue;
+  margin: auto;
+  padding: 10px;
+}
+
+.fw-imodelcard-name {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  overflow: hidden;
+  justify-content: center;
+}

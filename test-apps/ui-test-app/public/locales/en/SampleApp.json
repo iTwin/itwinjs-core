@@ -1,0 +1,98 @@
+{
+  "Header": {
+    "welcome": "Welcome to UI Sample Application"
+  },
+  "IModelListHeader": {
+    "projects": "Projects"
+  },
+  "IModelList": {
+    "noIModels": "There are no IModels in Project {{projectName}}"
+  },
+  "ContentDef": {
+    "OneView": "Single View",
+    "TwoAlongside": "Side by Side",
+    "TwoStacked": "Stacked",
+    "ThreeRightStacked": "Three Right Stacked",
+    "FourQuadranted": "Quadranted"
+  },
+  "Test": {
+    "my-label": "My Label"
+  },
+  "backstage": {
+    "command": "Command",
+    "testFrontstage1": "Test 1 Frontstage",
+    "testFrontstage2": "Test 2 Frontstage",
+    "testFrontstage3": "Test 3 Frontstage",
+    "testFrontstage4": "Test 4 Frontstage",
+    "task1": "Task 1",
+    "task2": "Task 2",
+    "task3": "Task 3",
+    "exit": "Exit"
+  },
+  "zone6": {
+    "month": "Month",
+    "number": "Number",
+    "password": "Password",
+    "radio": "Radio",
+    "range": "Range",
+    "reset": "Reset",
+    "resetNow": "Reset Now",
+    "search": "Search",
+    "submit": "Submit",
+    "submitNow": "Submit Now",
+    "Tel": "Telephone",
+    "Text": "Text"
+  },
+  "zone7": {
+    "button": "Button",
+    "checkbox": "Checkbox",
+    "color": "Color",
+    "date": "Date",
+    "datetimeLocal": "Datetime-Local",
+    "email": "Email",
+    "file": "File"
+  },
+  "tool1": {
+    "month": "Month",
+    "number": "Number",
+    "password": "Password",
+    "radio": "Radio",
+    "range": "Range"
+  },
+  "tool2": {
+    "month": "Month2",
+    "number": "Number2"
+  },
+  "toolAssist": {
+    "startPoint": "Start Point"
+  },
+  "snapMode": {
+    "snapMode": "Snap Mode",
+    "keypoint": "Keypoint",
+    "intersection": "Intersection",
+    "center": "Center",
+    "nearest": "Nearest"
+  },
+  "buttons": {
+    "toolGroup": "Tool Group",
+    "anotherGroup": "Another Group",
+    "tool1": "Tool 1",
+    "tool2": "Tool 2",
+    "item1": "Item 1",
+    "item2": "Item 2",
+    "item3": "Item 3",
+    "item4": "Item 4",
+    "item5": "Item 5",
+    "item6": "Item 6",
+    "item7": "Item 7",
+    "item8": "Item 8",
+    "modalFrontstage": "Modal Frontstage",
+    "successMessageBox": "Success",
+    "informationMessageBox": "Information",
+    "questionMessageBox": "Question",
+    "warningMessageBox": "Warning",
+    "errorMessageBox": "Error",
+    "alertMessageBox": "Alert",
+    "openMessageBox": "Open Message Box"
+  }
+}

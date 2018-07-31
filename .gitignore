@@ -7,10 +7,10 @@ node_modules
 /ui/**/lib
 /example-code/**/lib
 /test-apps/**/lib
-/bank-demo/**/lib
 /core/geometry/src/test/output
 /core/backend/src/test/output
 /generated-docs
+/out
 **/DevBuild.txt
 
 # rush-specific

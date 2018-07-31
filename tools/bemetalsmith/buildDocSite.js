@@ -63,8 +63,8 @@ function runStagingCopy() {
     const genDocsDir = path.resolve(rootDir, "generated-docs");
 
     packages.forEach(function (pkg) {
-      let packageDir = pkg["projectFolder"].split("/")[1];
-      let packageName = pkg["packageName"].split("/")[1];
+      let packageDir = pkg.projectFolder;
+      let packageName = pkg.packageName
       fs.copySync(
         path.join(genDocsDir, packageDir, "json"),
         path.join(refOutputDir, packageName)

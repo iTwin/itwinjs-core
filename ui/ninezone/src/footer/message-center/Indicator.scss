@@ -1,0 +1,68 @@
+@import "../../_geometry";
+@import "../_variables";
+
+.nz-footer-messageCenter-indicator {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: $nz-footer-indicator-horizontal-padding;
+  padding-right: $nz-footer-indicator-horizontal-padding;
+
+  > .nz-label {
+    margin-right: $space-between-text-and-icon;
+    display: none;
+    font-size: $text-font-size;
+
+    &.nz-is-visible {
+      display: block;
+    }
+  }
+
+  > .nz-balloon-container {
+    height: 100%;
+    position: relative;
+    display: grid;
+
+    > .nz-balloon {
+      background-color: $text-font-color;
+      text-align: center;
+      cursor: pointer;
+      min-width: $min-balloon-width;
+      min-height: $min-balloon-height;
+      border-radius: 50%;
+      padding: $balloon-padding;
+      filter: $icon-shadow;
+      position: relative;
+      align-self: center;
+
+      > .nz-arrow {
+        position: absolute;
+        width: 0;
+        bottom: -3px;
+        left: 0;
+        display: block;
+        border-width: 0;
+        border-bottom-width: $balloon-arrow-height;
+        border-left-width: $balloon-arrow-width;
+        border-style: solid;
+        border-color: transparent $text-font-color;
+        transform: rotate(25deg);
+      }
+
+      > .nz-content {
+        position: relative;
+        color: #FFFFFF;
+        line-height: $min-balloon-height;
+        font-size: 11px;
+      }
+    }
+
+    > .nz-dialog {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 50%;
+    }
+  }
+}
