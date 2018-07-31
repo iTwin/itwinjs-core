@@ -31,31 +31,39 @@ export class Id64 {
   private static toHex(str: string): number { const v = parseInt(str, 16); return Number.isNaN(v) ? 0 : v; }
   protected toJSON(): string { return this.value; }
 
-  /** get the "low" part of this Id64. This is the "local id", and is the lower 40 bits of the 64 bit value. */
-  public getLow(): number {
-    if (!this.isValid())
+  /** Get the "low" part of this Id64. This is the "local id", and is the lower 40 bits of the 64 bit value. */
+  public getLow(): number { return Id64.getLow(this); }
+
+  /** Get the "low" part of an Id64 string. This is the "local id", and is the lower 40 bits of the 64 bit value. */
+  public static getLow(id: Id64String): number {
+    if (this.isInvalidId(id))
       return 0;
 
+    const str = id.toString();
     let start = 2;
-    const len = this.value.length;
+    const len = str.length;
     if (len > 12)
       start = (len - 10);
 
-    return Id64.toHex(this.value.slice(start));
+    return this.toHex(str.slice(start));
   }
 
   /** Get the "high" part of this Id64. This is the "briefcase id", and is the high 24 bits of the 64 bit value. */
-  public getHigh(): number {
-    if (!this.isValid())
+  public getHigh(): number { return Id64.getHigh(this); }
+
+  /** Get the "high" part of an Id64 string. This is the "briefcase id", and is the high 24 bits of the 64 bit value. */
+  public static getHigh(id: Id64String): number {
+    if (this.isInvalidId(id))
       return 0;
 
+    const str = id.toString();
     let start = 2;
-    const len = this.value.length;
+    const len = str.length;
     if (len <= 12)
       return 0;
 
     start = (len - 10);
-    return Id64.toHex(this.value.slice(2, start));
+    return this.toHex(str.slice(2, start));
   }
 
   /**
@@ -113,23 +121,37 @@ export class Id64 {
   /** Determine whether this Id64 is valid.
    * @note The value of an invalid Id64 is "0".
    */
-  public isValid(): boolean { return this.value !== "0"; }
+  public get isValid(): boolean { return this.value !== "0"; }
 
   /** Test whether two Id64s are the same
    * @param other the other Id64 to compare
    */
   public equals(other: Id64): boolean { return this.value === other.value; }
 
-  /** Compare two (potentially undefined) Id64 values.
+  /** Compare two (potentially undefined) Id64 strings.
    * @param a The first value, may be undefined
    * @param b The second value, may be undefined
    */
-  public static areEqual(a?: Id64, b?: Id64): boolean { return (a === b) || (a !== undefined && b !== undefined && a.equals(b)); }
+  public static areEqual(a?: Id64String, b?: Id64String): boolean {
+    if (undefined === a)
+      return undefined === b;
+    else if (undefined === b)
+      return false;
+    else
+      return a.toString() === b.toString();
+  }
 
   /** Create an Id64 from a json object. If val is already an Id64, just return it since Id64s are immutable.
    * @param val the json object containing Id64Props. If val does not contain valid values, result will be an invalid Id64.
    */
-  public static fromJSON(val?: Id64Props): Id64 { return val instanceof Id64 ? val : new Id64(val); }
+  public static fromJSON(val?: Id64Props): Id64 {
+    if (undefined === val)
+      return this.invalidId;
+    else if (val instanceof Id64)
+      return val;
+    else
+      return new Id64(val);
+  }
 
   /** Create an Id64 from a pair of unsigned 32-bit integers.
    * @param lowBytes The lower 4 bytes of the ID
@@ -150,31 +172,43 @@ export class Id64 {
   /** Extract an unsigned 32-bit integer from the low 4 bytes of an Id64's value.
    * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
    */
-  public getLowUint32(): number {
-    if (!this.isValid())
+  public getLowUint32(): number { return Id64.getLowUint32(this); }
+
+  /** Extract an unsigned 32-bit integer from the low 4 bytes of an Id64 string.
+   * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
+   */
+  public static getLowUint32(id: Id64String): number {
+    if (this.isInvalidId(id))
       return 0;
 
+    const str = id.toString();
     let start = 2;
-    const len = this.value.length;
+    const len = str.length;
     if (len > 10)
       start = len - 8;
 
-    return Id64.toHex(this.value.slice(start));
+    return this.toHex(str.slice(start));
   }
 
   /** Extract an unsigned 32-bit integer from the high 4 bytes of an Id64's value.
    * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
    */
-  public getHighUint32(): number {
-    if (!this.isValid())
+  public getHighUint32(): number { return Id64.getHighUint32(this); }
+
+  /** Extract an unsigned 32-bit integer from the high 4 bytes of an Id64 string.
+   * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
+   */
+  public static getHighUint32(id: Id64String): number {
+    if (this.isInvalidId(id))
       return 0;
 
-    const len = this.value.length;
+    const str = id.toString();
+    const len = str.length;
     if (len <= 10)
       return 0;
 
     const start = len - 8;
-    return Id64.toHex(this.value.slice(2, start));
+    return this.toHex(str.slice(2, start));
   }
 
   /** Convert an Id64Arg into an Id64Set.
@@ -203,6 +237,19 @@ export class Id64 {
 
   /** Obtain an Id64 instance with an invalid value. */
   public static invalidId: Id64 = new Id64();
+
+  /** Return whether this is a transient Id64. A transient ID is used to identify non-element entities like pickable decorations. */
+  public get isTransient(): boolean { return Id64.isTransientId(this); }
+
+  /** Return whether the supplied id string is a transient Id64. A transient ID is used to identify non-element entities like pickable decorations. */
+  public static isTransientId(id: Id64String): boolean {
+    // A transient ID is of the format "0xffffffxxxxxxxxxx" where the leading 6 digits indicate an invalid briefcase ID.
+    const str = id.toString();
+    return 18 === str.length && str.startsWith("0xffffff");
+  }
+
+  /** Return true if the supplied id string represents an invalid ID. */
+  public static isInvalidId(id: Id64String): boolean { return "0" === id; }
 }
 
 /**
@@ -234,7 +281,7 @@ export class Guid {
     this.value = "";
   }
   public equals(other: Guid): boolean { return this.value === other.value; }
-  public isValid(): boolean { return this.value !== ""; }
+  public get isValid(): boolean { return this.value !== ""; }
   public toString(): string { return this.value; }
   public toJSON(): string { return this.value; }
   public static fromJSON(val?: GuidProps): Guid | undefined { return val ? new Guid(val) : undefined; }

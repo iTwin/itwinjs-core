@@ -167,9 +167,9 @@ describe("IModelConnection (#integration)", () => {
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
     const expectedId = new Id64(expectedRow.id);
-    assert.isTrue(expectedId.isValid());
+    assert.isTrue(expectedId.isValid);
     const expectedModel: NavigationValue = expectedRow.model;
-    assert.isTrue(new Id64(expectedModel.id).isValid());
+    assert.isTrue(new Id64(expectedModel.id).isValid);
     const expectedLastMod: ECSqlTypedString = { type: ECSqlStringType.DateTime, value: expectedRow.lastMod };
     const expectedFedGuid: ECSqlTypedString | undefined = expectedRow.federationGuid !== undefined ? { type: ECSqlStringType.Guid, value: expectedRow.federationGuid } : undefined;
     const expectedOrigin: XYAndZ = expectedRow.origin;
@@ -244,6 +244,11 @@ describe("IModelConnection (#integration)", () => {
       const id = iModel.transientIds.next;
       expect(id.getLow()).to.equal(i); // auto-incrementing local ID beginning at 1
       expect(id.getHigh()).to.equal(0xffffffff); // illegal briefcase ID
+      expect(Id64.isTransientId(id)).to.be.true;
+      expect(Id64.isTransientId(id.toString())).to.be.true;
     }
+
+    expect(Id64.isTransientId(Id64.invalidId)).to.be.false;
+    expect(Id64.isTransientId("0xffffff6789abcdef")).to.be.false;
   });
 });

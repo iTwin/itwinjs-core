@@ -75,7 +75,7 @@ describe("IModelApp", () => {
     assert.equal(testVal2, "test2", "arg2 was correct");
     assert.isFalse(IModelApp.tools.run("Not.Found"), "toolId is not registered");
     assert.isTrue(IModelApp.tools.run("View.Pan"), "run view pan");
-    assert.instanceOf(IModelApp.toolAdmin.activeViewTool, PanTool, "pan tool is active");
+    assert.instanceOf(IModelApp.toolAdmin.viewTool, PanTool, "pan tool is active");
 
     assert.isUndefined(IModelApp.features.check("feature1.test1"));
     assert.isTrue(IModelApp.features.check("feature2.a"));

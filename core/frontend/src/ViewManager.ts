@@ -191,7 +191,8 @@ export class ViewManager {
 
   // Invoked by ToolAdmin event loop.
   public renderLoop(): void {
-    if (0 === this._viewports.length) return;
+    if (0 === this._viewports.length)
+      return;
 
     if (this._skipSceneCreation)
       this.validateViewportScenes();
@@ -207,9 +208,6 @@ export class ViewManager {
       for (const vp of this._viewports)
         if (vp !== cursorVp && !vp.renderFrame(plan))
           break;
-
-    // const tileGenerationSeconds = 5.0;
-    // requests.requestMissing(BeDuration.fromSeconds(tileGenerationSeconds));
 
     this.processIdle();
   }

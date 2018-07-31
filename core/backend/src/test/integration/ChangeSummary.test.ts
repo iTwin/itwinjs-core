@@ -247,7 +247,7 @@ describe("ChangeSummary", () => {
       // now extract change summary for that one changeset
       const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
-      assert.isTrue(summaryIds[0].isValid());
+      assert.isTrue(summaryIds[0].isValid);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);

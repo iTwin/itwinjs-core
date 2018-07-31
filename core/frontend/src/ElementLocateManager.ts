@@ -46,10 +46,15 @@ export const enum SnapStatus {
   FilteredByAppQuietly = 700,
 }
 
+/** Options that customize the way element location (i.e. *picking*) works. */
 export class LocateOptions {
+  /** If true, also test graphics from view decorations. */
   public allowDecorations = false;
+  /** Maximum number of hits to return. */
   public maxHits = 20;
+  /** The [[HitSource]] identifying the caller. */
   public hitSource = HitSource.DataPoint;
+  /** Make a copy of this LocateOptions. */
   public clone(): LocateOptions {
     const other = new LocateOptions();
     other.allowDecorations = this.allowDecorations;
@@ -92,18 +97,12 @@ export class ElementPicker {
     return list;
   }
 
-  public getNextHit(): HitDetail | undefined {
-    return this.hitList ? this.hitList.getNextHit() : undefined;
-  }
+  public getNextHit(): HitDetail | undefined { return this.hitList ? this.hitList.getNextHit() : undefined; }
 
-  /** return a particular hit from the list of hits from the last time pickElements was called. */
-  public getHit(i: number): HitDetail | undefined {
-    return this.hitList ? this.hitList.getHit(i) : undefined;
-  }
+  /** Return a hit from the list of hits created the last time pickElements was called. */
+  public getHit(i: number): HitDetail | undefined { return this.hitList ? this.hitList.getHit(i) : undefined; }
 
-  public resetCurrentHit(): void {
-    if (this.hitList) this.hitList.resetCurrentHit();
-  }
+  public resetCurrentHit(): void { if (this.hitList) this.hitList.resetCurrentHit(); }
 
   private getPixelPriority(pixel: Pixel.Data) {
     switch (pixel.type) {
@@ -123,20 +122,18 @@ export class ElementPicker {
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
     const priority1 = this.getPixelPriority(pixel1);
     const priority2 = this.getPixelPriority(pixel2);
-
     if (priority1 < priority2) return -1;
     if (priority1 > priority2) return 1;
-
     if (distXY1 < distXY2) return -1;
     if (distXY1 > distXY2) return 1;
-
     if (pixel1.distanceFraction > pixel2.distanceFraction) return -1;
     if (pixel1.distanceFraction < pixel2.distanceFraction) return 1;
-
     return 0;
   }
 
-  /** Generate a list of elements that are close to a given point. */
+  /** Generate a list of elements that are close to a given point.
+   * @returns The number of hits in the hitList of this object.
+   */
   public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
     if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
@@ -160,7 +157,7 @@ export class ElementPicker {
     for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
       for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
         const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+        if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
           continue; // no geometry at this location...
         const distXY = testPointView.distance(testPoint);
         if (distXY > pixelRadius)
@@ -195,12 +192,8 @@ export class ElementPicker {
   public testHit(hit: HitDetail, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
     if (0 === this.doPick(vp, pickPointWorld, pickRadiusView, options))
       return false;
-    for (let iHit = 0; iHit < this.hitList!.length; ++iHit) {
-      const thisHit = this.hitList!.getHit(iHit);
-      if (hit.isSameHit(thisHit))
-        return true;
-    }
-    return false;
+
+    return this.hitList!.hits.some((thisHit) => hit.isSameHit(thisHit));
   }
 }
 
@@ -213,15 +206,12 @@ export class ElementLocateManager {
   /** get the full message key for a locate failure  */
   public static getFailureMessageKey(key: string) { return "LocateFailure." + key; }
   public onInitialized() { }
-  public getApertureInches() { return 0.11; }
-  public getElementPicker() { return this.picker; }
+  public get apertureInches() { return 0.11; }
 
   public clear(): void { this.setCurrHit(undefined); }
   public setHitList(list?: HitList<HitDetail>) { this.hitList = list; }
   public setCurrHit(hit?: HitDetail): void { this.currHit = hit; }
-  public getNextHit(): HitDetail | undefined {
-    return this.hitList ? this.hitList.getNextHit() : undefined;
-  }
+  public getNextHit(): HitDetail | undefined { return this.hitList ? this.hitList.getNextHit() : undefined; }
 
   /** return the current path from either the snapping logic or the pre-locating systems. */
   public getPreLocatedHit(): HitDetail | undefined {
@@ -231,7 +221,7 @@ export class ElementLocateManager {
     if (!preLocated && !!(preLocated = IModelApp.tentativePoint.getHitAndList(this))) {
       const vp = preLocated.viewport!;
       this.picker.empty(); // Get new hit list at hit point; want reset to cycle hits using adjusted point location...
-      this.picker.doPick(vp, preLocated.getPoint(), (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.options);
+      this.picker.doPick(vp, preLocated.getPoint(), (vp.pixelsFromInches(this.apertureInches) / 2.0) + 1.5, this.options);
       this.setHitList(this.picker.getHitList(true));
     }
 
@@ -243,7 +233,7 @@ export class ElementLocateManager {
 
   public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): boolean {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.isElementHit() && !this.options.allowDecorations) {
+    if (!hit.isElementHit && !this.options.allowDecorations) {
       out.reason = ElementLocateManager.getFailureMessageKey("Transient");
       return true;
     }
@@ -263,7 +253,7 @@ export class ElementLocateManager {
   public initToolLocate() {
     this.initLocateOptions();
     this.clear();
-    this.getElementPicker().empty();
+    this.picker.empty();
     IModelApp.tentativePoint.clear(true);
   }
 
@@ -284,7 +274,7 @@ export class ElementLocateManager {
       }
 
       this.picker.empty();
-      this.picker.doPick(vp, testPoint, (vp.pixelsFromInches(this.getApertureInches()) / 2.0) + 1.5, this.options);
+      this.picker.doPick(vp, testPoint, (vp.pixelsFromInches(this.apertureInches) / 2.0) + 1.5, this.options);
 
       const hitList = this.picker.getHitList(true);
       this.setHitList(hitList);
