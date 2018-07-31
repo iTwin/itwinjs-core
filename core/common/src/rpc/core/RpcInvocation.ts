@@ -8,7 +8,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
-import { RpcRegistry, CURRENT_INVOCATION, RESOURCE_OP } from "./RpcRegistry";
+import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
 import { RpcRequestStatus, RpcResponseType } from "./RpcRequest";
 import { RpcProtocol, RpcProtocolEvent, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
@@ -103,13 +103,8 @@ export class RpcInvocation {
     const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
-
-    if (this.operation.operationName === RESOURCE_OP) {
-      return impl._loadResource(parameters[0]);
-    } else {
-      const op = this.lookupOperationFunction(impl);
-      return Promise.resolve(op.call(impl, ...parameters));
-    }
+    const op = this.lookupOperationFunction(impl);
+    return Promise.resolve(op.call(impl, ...parameters));
   }
 
   private reject(error: any): Promise<any> {

@@ -1,6 +1,31 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 26 Jul 2018 21:35:07 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Jul 2018 16:29:14 GMT and should not be manually modified.
+
+## 0.107.0
+Tue, 31 Jul 2018 16:29:14 GMT
+
+*Version update only*
+
+## 0.106.0
+Tue, 31 Jul 2018 13:01:51 GMT
+
+*Version update only*
+
+## 0.105.0
+Tue, 31 Jul 2018 11:36:14 GMT
+
+### Updates
+
+- Added OneAtATimePromise for handling mouse move round-trips to the server over slow HTTP connections
+- Let IdleTool handle start drag event to install view tools instead of using middle button events. Fixes for tentative points.
+- make all tool event methods async
+- Added receivedDownEvent to InteractiveTool to check if up events should be sent. ToolAdmin button event cleanup.
+- throw away repeated keyboard events. They interfere with mouse motion replacement
+- Fix being able to pan when rotate toolis active. Start of touch event support.
+- 3d view attachments
+- EN: TFS#914011 - Finished Skybox gradient and spherical texture shaders
+- 3d view attachments are working
 
 ## 0.104.1
 Thu, 26 Jul 2018 21:35:07 GMT

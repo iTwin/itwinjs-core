@@ -2,6 +2,36 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.107.0",
+      "tag": "@bentley/imodeljs-clients_v0.107.0",
+      "date": "Tue, 31 Jul 2018 16:29:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.106.0",
+      "tag": "@bentley/imodeljs-clients_v0.106.0",
+      "date": "Tue, 31 Jul 2018 13:01:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.105.0",
+      "tag": "@bentley/imodeljs-clients_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Split tile loading into property and tile loading so that"
+          },
+          {
+            "comment": "imodeljs-clients is now safe for browser-specific code to import - hide file handler dependencies"
+          },
+          {
+            "comment": "Added Client for Bentley Usage Logging & Analytics Services"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.104.1",
       "tag": "@bentley/imodeljs-clients_v0.104.1",
       "date": "Thu, 26 Jul 2018 21:35:07 GMT",

@@ -17,7 +17,7 @@ describe("Ids", () => {
 
   it("Id64 should construct properly", () => {
     const id1 = new Id64("0x123");
-    assert.isTrue(id1.isValid(), "good");
+    assert.isTrue(id1.isValid, "good");
     assert.equal(id1.toString(), "0x123");
     assert.equal(id1.value, "0x123");
     assert.equal(id1.getHigh(), 0);
@@ -25,16 +25,16 @@ describe("Ids", () => {
     const one = new Id64("0x1");
     assert.equal(one.value, "0x1");
     const badid = new Id64("0");
-    assert.isNotTrue(badid.isValid(), "bad");
+    assert.isNotTrue(badid.isValid, "bad");
     assert.equal(badid.value, "0");
     const id2 = new Id64("badness");
     assert.equal(id2.value, "0");
-    assert.isNotTrue(id2.isValid());
+    assert.isNotTrue(id2.isValid);
     const id3 = new Id64("0xtbadness");
-    assert.isNotTrue(id3.isValid());
+    assert.isNotTrue(id3.isValid);
     assert.equal("0", id3.value);
     const id4 = new Id64("0x1234567890abcdef");
-    assert.isTrue(id4.isValid());
+    assert.isTrue(id4.isValid);
     assert.equal(id4.getHigh(), 0x123456);
     assert.equal(id4.getLow(), 0x7890abcdef);
     const i5 = "0x20000000011";
@@ -53,10 +53,10 @@ describe("Ids", () => {
     assert.isTrue(id8.equals(id7));
     const abc: any = { a: 1, b: 2 };
     const id9 = new Id64(abc);
-    assert.isNotTrue(id9.isValid(), "bad type");
+    assert.isNotTrue(id9.isValid, "bad type");
     const badarray: any = ["a", "b"];
     const id10 = new Id64(badarray);
-    assert.isNotTrue(id10.isValid(), "bad type");
+    assert.isNotTrue(id10.isValid, "bad type");
 
     const t1 = { a: id7 };
     const j7 = JSON.stringify(t1);
@@ -129,28 +129,28 @@ describe("Ids", () => {
     const v1 = "274e25dc-8407-11e7-bb31-be2e44b06b34"; // a valid v1 id
     const v4 = "3d04156c-4faa-4eac-b20e-353a9e6c0183"; // a valid v4 id
     const id1 = new Guid(v1);
-    assert.isTrue(id1.isValid());
+    assert.isTrue(id1.isValid);
     assert.isFalse(Guid.isV4Guid(v1));
 
     const id4 = new Guid(v4);
-    assert.isTrue(id4.isValid());
+    assert.isTrue(id4.isValid);
     assert.isTrue(Guid.isV4Guid(v4));
 
     const id5 = new Guid(id4);
-    assert.isTrue(id5.isValid());
+    assert.isTrue(id5.isValid);
     assert.isTrue(id5.equals(id4));
     assert.equal(JSON.stringify(id4), '"' + v4 + '"');
-    assert.isFalse(new Guid("0x123").isValid());
-    assert.isFalse(new Guid("badstuff").isValid());
-    assert.isFalse(new Guid().isValid());
-    assert.isFalse(new Guid("3d04156c-4faa-4eac-b20e-353a9e6c0183d").isValid()); // too long
-    assert.isFalse(new Guid("3d04156c-4faa-4eac-b20e-353a9e6c018r").isValid()); // "r" is invalid
-    assert.isTrue(new Guid("3d04156C-4fAa-4eac-b20e-353a9e6c018F").isValid()); // should accept uppercase characters
-    assert.isFalse(new Guid(false).isValid());
+    assert.isFalse(new Guid("0x123").isValid);
+    assert.isFalse(new Guid("badstuff").isValid);
+    assert.isFalse(new Guid().isValid);
+    assert.isFalse(new Guid("3d04156c-4faa-4eac-b20e-353a9e6c0183d").isValid); // too long
+    assert.isFalse(new Guid("3d04156c-4faa-4eac-b20e-353a9e6c018r").isValid); // "r" is invalid
+    assert.isTrue(new Guid("3d04156C-4fAa-4eac-b20e-353a9e6c018F").isValid); // should accept uppercase characters
+    assert.isFalse(new Guid(false).isValid);
 
     const id6 = new Guid(true);
     const id7 = new Guid(true);
-    assert.isTrue(id6.isValid());
+    assert.isTrue(id6.isValid);
     assert.isDefined(id6.value);
     assert.isTrue(Guid.isGuid(id6.value));
     assert.isTrue(Guid.isV4Guid(id6.value));

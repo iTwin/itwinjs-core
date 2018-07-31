@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "EN: TFS#914011 - Finished Skybox gradient and spherical texture shaders",
+      "comment": "Fixed bugs with simple 3d attachment cases",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "marc.neely@bentley.com"
+  "email": "nate.rex@bentley.com"
 }

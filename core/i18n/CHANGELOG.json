@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-i18n",
   "entries": [
     {
+      "version": "0.107.0",
+      "tag": "@bentley/imodeljs-i18n_v0.107.0",
+      "date": "Tue, 31 Jul 2018 16:29:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.106.0",
+      "tag": "@bentley/imodeljs-i18n_v0.106.0",
+      "date": "Tue, 31 Jul 2018 13:01:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.105.0",
+      "tag": "@bentley/imodeljs-i18n_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added translateKeys"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.104.1",
       "tag": "@bentley/imodeljs-i18n_v0.104.1",
       "date": "Thu, 26 Jul 2018 21:35:07 GMT",

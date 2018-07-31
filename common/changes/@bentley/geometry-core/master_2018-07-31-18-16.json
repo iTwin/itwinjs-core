@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "PolyfaceBuilder bug fixes for addingQuads that end up getting triangulated",
+      "comment": "Clipping polygon using clipshape returns union of clipped pieces",
       "packageName": "@bentley/geometry-core",
       "type": "none"
     }

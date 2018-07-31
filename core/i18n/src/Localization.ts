@@ -46,7 +46,27 @@ export class I18N {
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
   }
 
+  /**
+   * Replace all instances of `%{key}` within a string with the translations of those keys.
+   * For example:
+   * ``` ts
+   * "MyKeys": {
+   *   "Key1": "First value",
+   *   "Key2": "Second value"
+   *  }
+   * ```
+   *
+   * ``` ts
+   * i18.translateKeys("string with %{MyKeys.Key1} followed by %{MyKeys.Key2}!"") // returns "string with First Value followed by Second Value!"
+   * ```
+   * @param line The input line, potentially containing %{keys}.
+   * @returns The line with all %{keys} translated
+   */
+  public translateKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.translate(tag)); }
+
+  /** Return the translated value of a key. */
   public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this.i18n.t(key, options); }
+
   public loadNamespace(name: string, i18nCallback: any) { this.i18n.loadNamespaces(name, i18nCallback); }
   public languageList(): string[] { return this.i18n.languages; }
 

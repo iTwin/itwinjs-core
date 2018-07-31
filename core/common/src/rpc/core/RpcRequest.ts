@@ -10,7 +10,7 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcProtocol, RpcProtocolEvent } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling } from "./RpcMarshaling";
-import { CURRENT_REQUEST, RESOURCE_OP } from "./RpcRegistry";
+import { CURRENT_REQUEST } from "./RpcRegistry";
 import { aggregateLoad, RpcNotFoundResponse } from "./RpcControl";
 import { IModelToken } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -183,15 +183,7 @@ export class RpcRequest<TResponse = any> {
     this.operation.policy.requestCallback(this);
   }
 
-  private processParameters(parameters: any[], operationName: string) {
-    if (this.operation.operationName === RESOURCE_OP) {
-      if (parameters.length)
-        throw new IModelError(BentleyStatus.ERROR, "Invalid parameters for resource fetch request.");
-
-      const resourceName = operationName.split(":", 2)[1];
-      parameters.push(resourceName);
-    }
-
+  private processParameters(parameters: any[], _operationName: string) {
     return parameters;
   }
 
@@ -368,6 +360,12 @@ export class RpcRequest<TResponse = any> {
   /** @hidden @internal */
   public dispose(): void {
     this.setStatus(RpcRequestStatus.Disposed);
+    this.protocol.events.removeListener(this.handleProtocolEvent, this);
+
+    const client = this.client as any;
+    if (client[CURRENT_REQUEST] === this) {
+      client[CURRENT_REQUEST] = undefined;
+    }
   }
 
   private setPending(status: RpcRequestStatus.Provisioning | RpcRequestStatus.Pending, extendedStatus: string): void {

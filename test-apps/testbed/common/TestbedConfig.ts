@@ -29,12 +29,8 @@ export function testInterfaceResource() {
 }
 
 class TestRpcImplDirect extends TestRpcInterface {
-  public _loadResource(name: string): Promise<ArrayBuffer> {
-    if (name === "test") {
-      return testInterfaceResource();
-    } else {
-      return super._loadResource(name);
-    }
+  public async op12(): Promise<ArrayBuffer> {
+    return testInterfaceResource();
   }
 }
 

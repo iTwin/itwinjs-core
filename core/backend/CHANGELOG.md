@@ -1,6 +1,27 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 26 Jul 2018 21:35:07 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Jul 2018 16:29:14 GMT and should not be manually modified.
+
+## 0.107.0
+Tue, 31 Jul 2018 16:29:14 GMT
+
+*Version update only*
+
+## 0.106.0
+Tue, 31 Jul 2018 13:01:51 GMT
+
+### Updates
+
+- ChangeSummaryManager.extractChangeSummaries now takes an AccessToken.
+
+## 0.105.0
+Tue, 31 Jul 2018 11:36:14 GMT
+
+### Updates
+
+- rename getLocatMessage to getToolTip
+- imodeljs-clients is now safe for browser-specific code to import - hide file handler dependencies
+- TFS#923316 - JsInterop::InsertLinkTableRelationship should not ignore relationship instance properties supplied by the caller
 
 ## 0.104.1
 Thu, 26 Jul 2018 21:35:07 GMT
