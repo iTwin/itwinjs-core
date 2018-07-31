@@ -103,6 +103,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   public op11(_input: string, _call: number): Promise<string> {
     return this.forward.apply(this, arguments);
   }
+
+  public op12(): Promise<ArrayBuffer> {
+    return this.forward.apply(this, arguments);
+  }
 }
 
 export abstract class TestRpcInterface2 extends RpcInterface {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Clipping polygon using clipshape returns union of clipped pieces",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "nate.rex@bentley.com"
+}

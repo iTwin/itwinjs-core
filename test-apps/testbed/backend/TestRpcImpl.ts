@@ -19,14 +19,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }
 
-  public _loadResource(name: string): Promise<ArrayBuffer> {
-    if (name === "test") {
-      return testInterfaceResource();
-    } else {
-      return super._loadResource(name);
-    }
-  }
-
   public async op1(params: TestOp1Params): Promise<number> {
     return params.sum();
   }
@@ -101,6 +93,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     } else {
       throw new Error("Invalid.");
     }
+  }
+
+  public async op12(): Promise<ArrayBuffer> {
+    return testInterfaceResource();
   }
 }
 

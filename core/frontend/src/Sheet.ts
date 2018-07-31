@@ -677,7 +677,7 @@ export namespace Attachments {
       this.biasDistance = 0.5;
 
       range.getNpcToWorldRangeTransform(this.viewport.toParent);
-      this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1);
+      this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1, this.viewport.toParent.matrix);
 
       const fromParent = this.viewport.toParent.inverse();
       if (fromParent !== undefined)

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { UlasClient, FeatureLogEntry, LogPostingResponse, LogPostingSource, UsageType } from "../UlasClient";
+import { UlasClient, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, LogPostingResponse, LogPostingSource, UsageType } from "../UlasClient";
 import { TestConfig, TestUsers } from "./TestConfig";
 
 import { UrlDiscoveryMock } from "./ResponseBuilder";
@@ -75,6 +75,35 @@ describe("UlasClient", () => {
     chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
     chai.assert.equal(resp.message, "Accepted");
     chai.assert.isAtLeast(resp.time, 0);
+  });
+
+  it("Post duration feature log", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    const myFeatureId = new Guid(true);
+    const startEntry = new FeatureStartedLogEntry(myFeatureId, 43);
+    startEntry.productVersion = [3, 4, 99];
+    startEntry.logPostingSource = LogPostingSource.RealTime;
+    startEntry.usageType = UsageType.Beta;
+    startEntry.usageData.push({ name: "imodelid", value: (new Guid(true).toString()) });
+    startEntry.usageData.push({ name: "user", value: "123-123" });
+    const startResp: LogPostingResponse = await ulasClient.logFeature(accessToken, startEntry);
+    chai.assert(startResp);
+    chai.assert.equal(startResp.status, BentleyStatus.SUCCESS);
+    chai.assert.equal(startResp.message, "Accepted");
+    chai.assert.isAtLeast(startResp.time, 0);
+
+    const endEntry = new FeatureEndedLogEntry(myFeatureId, 43, startEntry.entryId);
+    endEntry.productVersion = startEntry.productVersion;
+    endEntry.logPostingSource = startEntry.logPostingSource;
+    endEntry.usageType = startEntry.usageType;
+    endEntry.usageData = startEntry.usageData;
+    const endResp: LogPostingResponse = await ulasClient.logFeature(accessToken, endEntry);
+    chai.assert(endResp);
+    chai.assert.equal(endResp.status, BentleyStatus.SUCCESS);
+    chai.assert.equal(endResp.message, "Accepted");
+    chai.assert.isAtLeast(endResp.time, 0);
   });
 
 });

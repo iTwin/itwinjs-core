@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed bugs with simple 3d attachment cases",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "nate.rex@bentley.com"
+}

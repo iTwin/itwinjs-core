@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 31 Jul 2018 13:01:51 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Jul 2018 16:29:14 GMT and should not be manually modified.
+
+## 0.107.0
+Tue, 31 Jul 2018 16:29:14 GMT
+
+*Version update only*
 
 ## 0.106.0
 Tue, 31 Jul 2018 13:01:51 GMT

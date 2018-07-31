@@ -91,21 +91,18 @@ export class FeatureStartedLogEntry extends FeatureLogEntry {
 
 /**
  * Data to log the end of a Feature usage with the ULAS Posting Service.
- * Must have logged an [FeatureStartedLogEntry]($imodeljs-clients) before.
+ * Must have logged a [FeatureStartedLogEntry]($imodeljs-clients) before.
  * See [UlasClient]$(imodeljs-clients)
  */
 export class FeatureEndedLogEntry extends FeatureLogEntry {
+  /* Id of the corresponding [FeatureStartedLogEntry]($imodeljs-clients).
+   * See [FeatureStartedLogEntry.entryId]($imodeljs-clients)
+   */
   public readonly startEntryId: Guid;
 
-  public constructor(startEntry: FeatureStartedLogEntry) {
-    super(startEntry.featureId, startEntry.productId);
-    this.productVersion = startEntry.productVersion;
-    this.usageData = startEntry.usageData;
-    this.hostName = startEntry.hostName;
-    this.hostUserName = startEntry.hostUserName;
-    this.logPostingSource = startEntry.logPostingSource;
-    this.usageType = startEntry.usageType;
-    this.startEntryId = startEntry.entryId;
+  public constructor(featureId: GuidProps, productId: number, startEntryId: Guid) {
+    super(featureId, productId);
+    this.startEntryId = startEntryId;
   }
 }
 
