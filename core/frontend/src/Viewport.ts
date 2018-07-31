@@ -17,16 +17,13 @@ import { HitDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
+import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
-import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { ViewToolSettings } from "./frontend";
-
-// tslint:disable:no-console
+import { ToolSettings } from "./tools/ToolAdmin";
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -1223,22 +1220,17 @@ export class Viewport {
   }
 
   /** @hidden */
-  public removeAnimator() {
-    if (this.animator) {
+  public removeAnimator() { this.setAnimator(undefined); }
+  private setAnimator(animator: Animator | undefined) {
+    if (this.animator)
       this.animator.interrupt(); // will be destroyed
-      this.animator = undefined;
-    }
-  }
-
-  private setAnimator(animator: Animator) {
-    this.removeAnimator();
     this.animator = animator;
   }
 
   /** @hidden */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
     if (!animationTime || 0.0 >= animationTime.milliseconds)
-      animationTime = ViewToolSettings.animationTime;
+      animationTime = ToolSettings.animationTime;
 
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
@@ -1515,6 +1507,7 @@ export class Viewport {
       view.createScene(context);
       context.requests.requestMissing();
       target.changeScene(context.graphics);
+      target.changeTerrain(context.terrain);
 
       isRedrawNeeded = true;
       sync.setValidScene();
@@ -1566,7 +1559,7 @@ export class Viewport {
   public requestScene(_plan: UpdatePlan): void { }
 
   /**
-   * Read selected data about each pixel within a rectangular region of the viewport.
+   * Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
    * @param selector Specifies which aspect(s) of data to read.
    * @returns a Pixel.Buffer object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
@@ -1616,13 +1609,13 @@ export class Viewport {
   }
 
   /**
-   * Find a point on geometry within radius of supplied pick point.
-   * @param pickPoint Center point in world coordinates
-   * @param radius radius of the circular area to include in pixels
-   * @param out Optional Point3d pre-allocated to hold the result
-   * @returns the coordinates of the geometry point within the circular area nearest to the supplied pick point
+   * Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
+   * @param pickPoint Point to search about, in world coordinates
+   * @param radius Radius, in pixels, of the circular area to search.
+   * @param out Optional Point3d to hold the result. If undefined, a new Point3d is returned.
+   * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
-  public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
+  public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
     if (0 === picker.doPick(this, pickPoint, radius, new LocateOptions()))
       return undefined;

@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorProps } from "@bentley/imodeljs-common";
 
 /** The state of a [ModelSelector]($backend). It holds a set of ids of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
-  /** the set of ModelIds of this ModelSelectorState */
+  /** The set of ModelIds of this ModelSelectorState */
   public readonly models = new Set<string>();
   constructor(props: ModelSelectorProps, iModel: IModelConnection) {
     super(props, iModel);
@@ -55,7 +55,7 @@ export class ModelSelectorState extends ElementState {
   public has(id: string): boolean { return this.models.has(id); }
 
   /** Determine whether this ModelSelectorState includes the specified modelId */
-  public containsModel(modelId: Id64): boolean { return this.has(modelId.value); }
+  public containsModel(modelId: Id64String): boolean { return this.has(modelId.toString()); }
 
   /** Make sure all models referenced by this ModelSelectorState are loaded. */
   public load(): Promise<void> { return this.iModel.models.load(this.models); }

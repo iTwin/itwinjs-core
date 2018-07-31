@@ -257,8 +257,10 @@ export namespace Attachments {
         new ElementAlignedBox3d(),
         .5 * Math.sqrt(2 * QUERY_SHEET_TILE_PIXELS * QUERY_SHEET_TILE_PIXELS),
         [],
-        undefined,
         parent,
+        undefined,
+        undefined,
+        undefined,
       ), new AttachmentTileLoader(root.sheetView.iModel, new Id64()));
 
       this._placement = placement;

@@ -43,7 +43,7 @@ describe("PushRetry", () => {
     }
 
     // Extract summary information about the current (or latest change set) of the briefcase/iModel into the change cache
-    await ChangeSummaryManager.extractChangeSummaries(testIModel, { currentVersionOnly: true });
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, testIModel, { currentVersionOnly: true });
 
     // Attach a change cache file to the iModel
     ChangeSummaryManager.attachChangeCache(testIModel);

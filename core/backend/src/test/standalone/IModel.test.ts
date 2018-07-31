@@ -150,7 +150,7 @@ describe("iModel", () => {
     const phys = imodel1.elements.getElement(new Id64("0x38"));
     assert.isTrue(phys instanceof GeometricElement3d);
 
-    const locateMsg = phys.getLocateMessage();
+    const locateMsg = phys.getToolTipMessage();
     assert.isDefined(locateMsg);
 
     const a2 = imodel2.elements.getElement(new Id64("0x1d"));
@@ -165,7 +165,7 @@ describe("iModel", () => {
     const newEl = el3;
     newEl.federationGuid = undefined;
     const newId: Id64 = imodel2.elements.insertElement(newEl);
-    assert.isTrue(newId.isValid(), "insert worked");
+    assert.isTrue(newId.isValid, "insert worked");
   });
 
   it("should create elements", () => {
@@ -188,7 +188,7 @@ describe("iModel", () => {
       element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
 
       const elementId: Id64 = imodel2.elements.insertElement(element);
-      assert.isTrue(elementId.isValid());
+      assert.isTrue(elementId.isValid);
     }
 
   });
@@ -458,7 +458,7 @@ describe("iModel", () => {
 
     const newTestElemId = imodel4.elements.insertElement(newTestElem);
 
-    assert.isTrue(newTestElemId.isValid(), "insert worked");
+    assert.isTrue(newTestElemId.isValid, "insert worked");
 
     const newTestElemFetched = imodel4.elements.getElement(newTestElemId);
     assert.isDefined(newTestElemFetched);
@@ -629,7 +629,7 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isTrue(new Id64(row.id).isValid());
+        assert.isTrue(new Id64(row.id).isValid);
         lastId = row.id;
         if (row.codeValue !== undefined)
           firstCodeValue = row.codeValue;
@@ -648,7 +648,7 @@ describe("iModel", () => {
         assert.isNotNull(row);
         assert.isObject(row);
         assert.isTrue(row.id !== undefined);
-        assert.isTrue(new Id64(row.id).isValid());
+        assert.isTrue(new Id64(row.id).isValid);
         lastIterId = row.id;
         iteratorCount = iteratorCount + 1;
         if (row.codeValue !== undefined)
@@ -801,7 +801,7 @@ describe("iModel", () => {
       relClassName1 = "TestBim:TestModelModelsElement";
       const modeledElementRef = new RelatedElement({ id: newPartition1, relClassName: relClassName1 });
       newModelId1 = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef);
-      assert.isTrue(newModelId1.isValid());
+      assert.isTrue(newModelId1.isValid);
     }
 
     if (true) {
@@ -847,6 +847,7 @@ describe("iModel", () => {
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
     const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
+    r1.memberPriority = 1;
     testImodel.linkTableRelationships.insertInstance(r1);
     const r2: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id2);
     testImodel.linkTableRelationships.insertInstance(r2);
@@ -857,8 +858,10 @@ describe("iModel", () => {
 
     assert.deepEqual(g1.id, r1.id);
     assert.equal(g1.classFullName, ElementGroupsMembers.classFullName);
+    assert.equal(g1.memberPriority, 1, "g1.memberPriority");
     assert.deepEqual(g2.id, r2.id);
     assert.equal(g2.classFullName, ElementGroupsMembers.classFullName);
+    assert.equal(g2.memberPriority, 0, "g2.memberPriority");  // The memberPriority parameter defaults to 0 in ElementGroupsMembers.create
 
     // Look up by source and target
     const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
@@ -867,11 +870,11 @@ describe("iModel", () => {
     // TODO: Do an ECSQL query to verify that 0->1 and 0->2 relationships can be found
 
     // Update relationship instance property
-    r1.memberPriority = 1;
+    r1.memberPriority = 2;
     testImodel.linkTableRelationships.updateInstance(r1);
 
     const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
-    assert.equal(g11.memberPriority, 1, "memberPriority");
+    assert.equal(g11.memberPriority, 2, "g11.memberPriority");
 
     // Delete relationship instance property
     testImodel.linkTableRelationships.deleteInstance(r1);
@@ -919,7 +922,7 @@ describe("iModel", () => {
       };
 
       id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
-      assert.isTrue(id1.isValid());
+      assert.isTrue(id1.isValid);
 
       // The second one should point to the first.
       elementProps.id = new Id64();
@@ -928,7 +931,7 @@ describe("iModel", () => {
       elementProps.longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
       id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
-      assert.isTrue(id2.isValid());
+      assert.isTrue(id2.isValid);
     }
 
     if (true) {
@@ -1194,7 +1197,7 @@ describe("iModel", () => {
       // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
       // element.dtUtc = dtUtc;
 
-      assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid(), "insert worked");
+      assert.isTrue((ifperfimodel.elements.insertElement(element)).isValid, "insert worked");
       if (0 === (i % 100))
         ifperfimodel.saveChanges();
     }

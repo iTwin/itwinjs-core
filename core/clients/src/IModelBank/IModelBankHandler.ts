@@ -6,9 +6,8 @@ import { DefaultWsgRequestOptionsProvider } from "../WsgClient";
 import * as https from "https";
 import { RequestOptions } from "../Request";
 import { assert } from "@bentley/bentleyjs-core";
-import { UrlFileHandler } from "../UrlFileHandler";
 import { IModelBankError } from "./Errors";
-import { FileHandler, Config } from "..";
+import { FileHandler } from "..";
 
 /**
  * Provides default options for iModelBank requests.
@@ -22,10 +21,6 @@ class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsPr
   }
 }
 
-function constructUrlFileHandler(): FileHandler | undefined {
-  return Config.isBrowser() ? undefined : new UrlFileHandler();
-}
-
 /**
  * This class acts as the WsgClient for other iModelBank Handlers.
  */
@@ -36,9 +31,11 @@ export class IModelBankHandler extends IModelBaseHandler {
   /**
    * Creates an instance of IModelBankWsgClient.
    * @param deploymentEnv Deployment environment.
+   * @param handler The upload/download handler to use -- backends only.
+   * @param keepAliveDuration TBD
    */
-  public constructor(url: string, keepAliveDuration = 30000) {
-    super("PROD", keepAliveDuration, constructUrlFileHandler());
+  public constructor(url: string, handler: FileHandler | undefined, keepAliveDuration = 30000) {
+    super("PROD", keepAliveDuration, handler);
     this._url = url;
   }
 

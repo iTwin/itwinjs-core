@@ -163,7 +163,7 @@ export abstract class IModel implements IModelProps {
   }
 
   /** Get the default subCategoryId for the supplied categoryId */
-  public static getDefaultSubCategoryId(categoryId: Id64): Id64 { return categoryId.isValid() ? new Id64([categoryId.getLow() + 1, categoryId.getHigh()]) : new Id64(); }
+  public static getDefaultSubCategoryId(categoryId: Id64): Id64 { return categoryId.isValid ? new Id64([categoryId.getLow() + 1, categoryId.getHigh()]) : new Id64(); }
 
   /** True if this iModel has an [EcefLocation]($docs/learning/glossary#ecefLocation). */
   public get isGeoLocated() { return undefined !== this._ecefLocation; }

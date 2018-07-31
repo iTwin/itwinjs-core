@@ -56,17 +56,12 @@ export abstract class Element extends Entity implements ElementProps {
   /** Add this Element's properties to an object for serializing to JSON. */
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (this.id.isValid())
-      val.id = this.id;
-    if (this.code.spec.isValid())
-      val.code = this.code;
+    if (this.id.isValid) val.id = this.id;
+    if (this.code.spec.isValid) val.code = this.code;
     val.model = this.model;
-    if (this.parent)
-      val.parent = this.parent;
-    if (this.federationGuid)
-      val.federationGuid = this.federationGuid;
-    if (this.userLabel)
-      val.userLabel = this.userLabel;
+    if (this.parent) val.parent = this.parent;
+    if (this.federationGuid) val.federationGuid = this.federationGuid;
+    if (this.userLabel) val.userLabel = this.userLabel;
     if (Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
     return val;
@@ -93,19 +88,20 @@ export abstract class Element extends Entity implements ElementProps {
   /** Get a display label for this Element. By default returns userLabel if present, otherwise code value. */
   public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.getValue(); }
 
-  /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
+  /**
+   * Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
    */
-  public getLocateMessage(): string[] {
+  public getToolTipMessage(): string[] {
+    const addKey = (key: string) => "<b>%{iModelJs:Element." + key + "}:</b> "; // %{iModelJs:Element.xxx} is replaced with localized value of xxx in frontend.
     const msg: string[] = [];
-
     const display = this.getDisplayLabel();
-    msg.push(display ? display : "<b>%{iModelJs:Element.Id}:</b> " + this.id.value + ", <b>%{iModelJs:Element.Type}:</b> " + this.className);
+    msg.push(display ? display : addKey("Id") + this.id.value + ", " + addKey("Type") + this.className);
 
     if (this.category)
-      msg.push("<b>%{iModelJs:Element.Category}:</b> " + this.iModel.elements.getElement(this.category).getDisplayLabel());
+      msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
 
-    msg.push("<b>%{iModelJs:Element.Model}:</b> " + this.iModel.elements.getElement(this.model).getDisplayLabel());
+    msg.push(addKey("Model") + this.iModel.elements.getElement(this.model).getDisplayLabel());
     return msg;
   }
 

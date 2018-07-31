@@ -57,13 +57,7 @@ export interface ChangeSummaryExtractOptions {
 }
 
 class ChangeSummaryExtractContext {
-  public readonly iModel: IModelDb;
-  public readonly accessToken: AccessToken;
-
-  public constructor(iModel: IModelDb) {
-    this.iModel = iModel;
-    this.accessToken = IModelDb.getAccessToken(this.iModelId);
-  }
+  public constructor(public readonly accessToken: AccessToken, public readonly iModel: IModelDb) { }
 
   public get iModelId(): string { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
 }
@@ -137,11 +131,11 @@ export class ChangeSummaryManager {
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
    */
-  public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64[]> {
+  public static async extractChangeSummaries(accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64[]> {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
-    const ctx = new ChangeSummaryExtractContext(iModel);
+    const ctx = new ChangeSummaryExtractContext(accessToken, iModel);
 
     const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
     assert(endChangeSetId.length !== 0);

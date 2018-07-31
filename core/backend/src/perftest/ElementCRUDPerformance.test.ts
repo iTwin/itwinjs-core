@@ -135,7 +135,7 @@ describe("PerformanceElementsTests", () => {
             const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
             const geomElement = seedIModel.elements.createElement(elementProps);
             const id = seedIModel.elements.insertElement(geomElement);
-            assert.isTrue(id.isValid(), "insert worked");
+            assert.isTrue(id.isValid, "insert worked");
           }
 
           seedIModel.saveChanges();
@@ -167,7 +167,7 @@ describe("PerformanceElementsTests", () => {
             const geomElement = perfimodel.elements.createElement(elementProps);
             const startTime = new Date().getTime();
             const id = perfimodel.elements.insertElement(geomElement);
-            assert.isTrue(id.isValid(), "insert worked");
+            assert.isTrue(id.isValid, "insert worked");
             const endTime = new Date().getTime();
             const elapsedTime = (endTime - startTime) / 1000.0;
             totalTime = totalTime + elapsedTime;

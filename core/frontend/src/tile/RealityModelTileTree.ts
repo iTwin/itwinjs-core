@@ -61,13 +61,11 @@ class RealityModelTileProps implements TileProps {
   public maximumSize: number;
   public childIds: string[];
   public geometry?: string | ArrayBuffer;
-  public yAxisUp: boolean;
   public hasContents: boolean;
   constructor(json: any, thisId: string, public tree: RealityModelTileTreeProps) {
     this.id = new TileId(new Id64(), thisId);
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
     this.maximumSize = 0.0; // nonzero only if content present.   CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
-    this.yAxisUp = tree.yAxisUp;
     this.childIds = [];
     const prefix = thisId.length ? thisId + "_" : "";
     if (Array.isArray(json.children))
@@ -100,7 +98,6 @@ class RealityModelTileLoader extends TileLoader {
     return props;
   }
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
-
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
@@ -117,6 +114,8 @@ class RealityModelTileLoader extends TileLoader {
   }
 
   private findTileInJson(tilesetJson: any, id: string, parentId: string): FindChildResult | undefined {
+    if (id.length === 0)
+      return new FindChildResult(id, tilesetJson);    // Root.
     const separatorIndex = id.indexOf("_");
     const childId = (separatorIndex < 0) ? id : id.substring(0, separatorIndex);
     const childIndex = parseInt(childId, 10);
@@ -183,6 +182,7 @@ class RealityModelTileClient {
   private baseUrl: string = "";
   private static token?: AccessToken;
   private static client = new RealityDataServicesClient("QA"); // ###TODO the deployementEnv needs to be customizeable
+  private static onCloseListener?: () => void;
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   constructor(url: string) {
@@ -220,6 +220,12 @@ class RealityModelTileClient {
       const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
       RealityModelTileClient.token = await RealityModelTileClient.client.getAccessToken(authToken);
     }
+    if (undefined === RealityModelTileClient.onCloseListener)
+      RealityModelTileClient.onCloseListener = IModelConnection.onClose.addListener(RealityModelTileClient.removeToken);
+  }
+
+  public static removeToken() {
+    RealityModelTileClient.token = undefined;
   }
 
   // this is only used for accessing locally served reality tiles.
