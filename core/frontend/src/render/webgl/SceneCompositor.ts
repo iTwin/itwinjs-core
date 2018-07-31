@@ -10,7 +10,7 @@ import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, Single
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType } from "./System";
-import { Pixel } from "../System";
+import { Pixel, DecorationList } from "../System";
 import { ViewRect } from "../../Viewport";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
@@ -289,7 +289,7 @@ export abstract class SceneCompositor implements IDisposable {
   public abstract get currentRenderTargetIndex(): number;
   public abstract dispose(): void;
   public abstract draw(_commands: RenderCommands): void;
-  public abstract drawForReadPixels(_commands: RenderCommands): void;
+  public abstract drawForReadPixels(_commands: RenderCommands, overlays?: DecorationList): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined;
@@ -411,16 +411,44 @@ abstract class Compositor extends SceneCompositor {
   }
 
   public get fullHeight(): number { return this._target.viewRect.height; }
-  public drawForReadPixels(commands: RenderCommands) {
+  public drawForReadPixels(commands: RenderCommands, overlays?: DecorationList) {
     if (!this.update()) {
       assert(false);
       return;
     }
 
     this.clearOpaque(false);
-    this._target.pushActiveVolume();
+
+    // On entry the RenderCommands has been initialized for all scene graphics and pickable decorations with the exception of world overlays.
+    // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
+    const haveRenderCommands = !commands.isEmpty;
+    if (haveRenderCommands) {
+      this._target.pushActiveVolume();
+      this.renderOpaque(commands, false, true);
+      this._target.popActiveVolume();
+    }
+
+    if (undefined === overlays || 0 === overlays.list.length)
+      return;
+
+    // Now populate the opaque passes with any pickable world overlays
+    commands.initForPickOverlays(overlays);
+    if (commands.isEmpty)
+      return;
+
+    // Clear the depth buffer so that overlay decorations win the depth test.
+    // (If *only* overlays exist, then clearOpaque() above already took care of this).
+    if (haveRenderCommands) {
+      const system = System.instance;
+      system.frameBufferStack.execute(this._fbos.opaqueColor!, true, () => {
+        system.applyRenderState(RenderState.defaults);
+        system.context.clearDepth(1.0);
+        system.context.clear(GL.BufferBit.Depth);
+      });
+    }
+
+    // Render overlays as opaque into the pick buffers
     this.renderOpaque(commands, false, true);
-    this._target.popActiveVolume();
   }
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     return PixelBuffer.create(rect, selector, this);

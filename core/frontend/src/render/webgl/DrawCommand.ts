@@ -451,6 +451,22 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
+  public initForPickOverlays(overlays: DecorationList): void {
+    this.clear();
+
+    this._addTranslucentAsOpaque = true;
+    this._stack.pushState(this.target.decorationState);
+
+    for (const overlay of overlays.list) {
+      const gf = overlay.graphic as Graphic;
+      if (gf.isPickable)
+        this.addDecoration(gf, overlay.overrides);
+    }
+
+    this._stack.pop();
+    this._addTranslucentAsOpaque = false;
+  }
+
   public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 
@@ -524,7 +540,8 @@ export class RenderCommands {
   public addBatch(batch: Batch): void {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
-    assert(RenderPass.None === this._forcedRenderPass);
+    // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?
+    // assert(RenderPass.None === this._forcedRenderPass);
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
 
