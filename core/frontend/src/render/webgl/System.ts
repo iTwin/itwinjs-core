@@ -560,7 +560,9 @@ export class System extends RenderSystem {
       const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
 
       let polyface: IndexedPolyface;
-      if (polygon.length === 3) {
+      if (polygon.length < 3)
+        continue;
+      else if (polygon.length === 3) {
         const params: Point2d[] = [];
         for (const point of polygon) {
           const paramUnscaled = point.minus(sheetTileOrigin);
@@ -579,19 +581,20 @@ export class System extends RenderSystem {
         polyface = polyfaceBuilder.claimPolyface();
 
       } else {
-        // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must add adjusted UV params ourselves requiring a PolyfaceVisitor....)
+        // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
         const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
-        polyfaceBuilder.addGraph(triangulatedPolygon, false);
+        polyfaceBuilder.addGraph(triangulatedPolygon, true);
         polyface = polyfaceBuilder.claimPolyface();
 
         const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
         while (visitor.moveToNextFacet()) {
           for (let i = 0; i < 3; i++) {
-            const point = visitor.getPoint(i).minus(sheetTileOrigin);
-            const idx = polyface.addParamXY(point.x * sheetTileScale, point.y * sheetTileScale);
-            polyface.addParamIndex(idx);
+            const point = visitor.getParam(i);  // this is a reference
+            point.minus(sheetTileOrigin);
+            point.x *= sheetTileScale;
+            point.y *= sheetTileScale;
           }
         }
       }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Attachment tile 3d bug fixes",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "nate.rex@bentley.com"
+}
