@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Thu, 26 Jul 2018 21:35:07 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Jul 2018 11:36:14 GMT and should not be manually modified.
+
+## 0.105.0
+Tue, 31 Jul 2018 11:36:14 GMT
+
+### Updates
+
+- Split tile loading into property and tile loading so that
+- imodeljs-clients is now safe for browser-specific code to import - hide file handler dependencies
+- Added Client for Bentley Usage Logging & Analytics Services
 
 ## 0.104.1
 Thu, 26 Jul 2018 21:35:07 GMT

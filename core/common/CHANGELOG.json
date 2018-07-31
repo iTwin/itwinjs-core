@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.105.0",
+      "tag": "@bentley/imodeljs-common_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Frustum fromRange bug"
+          },
+          {
+            "comment": "Added support for transfering binary resources to RPC layer."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.104.1",
       "tag": "@bentley/imodeljs-common_v0.104.1",
       "date": "Thu, 26 Jul 2018 21:35:07 GMT",
