@@ -1,19 +1,28 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { app as electron } from "electron";
 import { Logger } from "@bentley/bentleyjs-core";
+import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelTileRpcInterface, IModelReadRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
-// tslint:disable:no-var-requires
-import { app } from "electron";
+// initialize logging
+Logger.initializeToConsole();
 
-// Start the backend
+// initialize imodeljs-backend
 IModelHost.startup();
-Logger.initializeToConsole(); // configure logging for imodeljs-core
 
-// Now switch as required to either Electron or Webserver.
-if (app) {
-  require("./electron/ElectronMain");
-} else {
-  require("./web/WebServer");
-}
+// invoke platform-specific initialization
+(async () => {
+  // get platform-specific initialization function
+  let init: (rpcs: RpcInterfaceDefinition[]) => void;
+  if (electron) {
+    init = (await import("./electron/ElectronMain")).default;
+  } else {
+    init = (await import("./web/WebServer")).default;
+  }
+  // get RPCs supported by this backend
+  const rpcs = [ IModelTileRpcInterface, IModelReadRpcInterface ];
+  // do initialize
+  init(rpcs);
+})();
