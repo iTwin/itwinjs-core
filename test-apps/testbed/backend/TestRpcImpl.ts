@@ -5,6 +5,7 @@ import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, 
 import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, IModelToken, RpcInvocation } from "@bentley/imodeljs-common";
 import { BentleyError, BentleyStatus, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { testInterfaceResource } from "../common/TestbedConfig";
 
 let op8Initializer = 0;
@@ -63,8 +64,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     }
   }
 
-  public async extractChangeSummaries(iModelToken: IModelToken, options: any): Promise<void> {
-    await ChangeSummaryManager.extractChangeSummaries(IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
+  public async extractChangeSummaries(accessToken: AccessToken, iModelToken: IModelToken, options: any): Promise<void> {
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(iModelToken: IModelToken): Promise<void> {

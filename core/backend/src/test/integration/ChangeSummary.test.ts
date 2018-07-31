@@ -195,7 +195,7 @@ describe("ChangeSummary", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModel);
     try {
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel);
+      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -245,7 +245,7 @@ describe("ChangeSummary", () => {
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(changesetId));
 
       // now extract change summary for that one changeset
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel, { currentVersionOnly: true });
+      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
       assert.isTrue(summaryIds[0].isValid);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
@@ -284,7 +284,7 @@ describe("ChangeSummary", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), endVersion);
     try {
       assert.exists(iModel);
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel, { startVersion });
+      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { startVersion });
       assert.equal(summaryIds.length, 2);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
@@ -332,7 +332,7 @@ describe("ChangeSummary", () => {
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(firstChangesetId));
 
       // now extract change summary for that one changeset
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(iModel, { currentVersionOnly: true });
+      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
@@ -360,7 +360,7 @@ describe("ChangeSummary", () => {
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
-      await ChangeSummaryManager.extractChangeSummaries(iModel, { currentVersionOnly: true });
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentVersionOnly: true });
 
       // WIP
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -393,7 +393,7 @@ describe("ChangeSummary", () => {
     try {
       assert.exists(iModel);
       using(new DisableNativeAssertions(), async () => {
-        await ChangeSummaryManager.extractChangeSummaries(iModel);
+        await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
@@ -407,7 +407,7 @@ describe("ChangeSummary", () => {
     try {
       assert.exists(iModel);
       using(new DisableNativeAssertions(), async () => {
-        await ChangeSummaryManager.extractChangeSummaries(iModel);
+        await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
@@ -422,7 +422,7 @@ describe("ChangeSummary", () => {
       assert.exists(iModel);
       await iModel.close(accessToken);
       using(new DisableNativeAssertions(), async () => {
-        await ChangeSummaryManager.extractChangeSummaries(iModel);
+        await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
@@ -436,7 +436,7 @@ describe("ChangeSummary", () => {
     assert.isTrue(iModel.briefcase!.isStandalone);
     try {
       using(new DisableNativeAssertions(), async () => {
-        await ChangeSummaryManager.extractChangeSummaries(iModel);
+        await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
@@ -457,7 +457,7 @@ describe("ChangeSummary", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     perfLogger.dispose();
     try {
-      await ChangeSummaryManager.extractChangeSummaries(iModel);
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));

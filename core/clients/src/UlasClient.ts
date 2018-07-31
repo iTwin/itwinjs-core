@@ -182,11 +182,11 @@ export class UlasClient extends Client {
     await this.setupOptionDefaults(options);
 
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, "Sending Feature Log REST request...", () => ({ url: postUrl, request: options }));
+      Logger.logTrace(loggingCategory, "Sending Feature Log REST request...", () => ({ url: postUrl, body: entriesJson }));
 
     const resp: Response = await request(postUrl, options);
 
-    const requestDetails = { url: postUrl, request: options, response: resp };
+    const requestDetails = { url: postUrl, body: entriesJson, response: resp };
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
       Logger.logTrace(loggingCategory, "Sent Feature Log REST request.", () => requestDetails);
 

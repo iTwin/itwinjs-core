@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "ChangeSummaryManager.extractChangeSummaries now takes an AccessToken.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Krischan.Eberle@bentley.com"
+}
