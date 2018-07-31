@@ -252,6 +252,14 @@ export class BeTouchEvent extends BeButtonEvent {
     const rect = vp.getClientRect();
     return Point2d.createFrom({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
   }
+  public static findTouchById(list: TouchList, id: number): Touch | undefined {
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < list.length; i++) {
+      if (id === list[i].identifier)
+        return list[i];
+    }
+    return undefined;
+  }
 }
 
 /** Information about movement of the mouse wheel. */
@@ -414,16 +422,6 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  /** Invoked when a mouse button is clicked.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
-   */
-  //  public async onClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
-
-  /** Invoked when a mouse button is double clicked.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
-   */
-  //  public async onDoubleClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
-
   /** Invoked when the cursor is moving */
   public async onModelMotion(_ev: BeButtonEvent): Promise<void> { }
   /** Invoked when the cursor is not moving */
@@ -475,6 +473,9 @@ export abstract class InteractiveTool extends Tool {
   public async onTouchEnd(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
   public async onTouchCancel(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
   public async onTouchMove(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
+
+  public async onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent, _touchCount: number): Promise<EventHandled> { return EventHandled.No; }
+  public async onTouchTap(_ev: BeTouchEvent, _touchCount: number, _tapCount: number): Promise<EventHandled> { return EventHandled.No; }
 
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }

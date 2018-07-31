@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButton, BeButtonEvent, BeWheelEvent, InteractiveTool, EventHandled, BeTouchEvent } from "./Tool";
+import { BeButton, BeButtonEvent, BeWheelEvent, InteractiveTool, EventHandled, BeTouchEvent, InputSource } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, DefaultViewTouchTool } from "./ViewTool";
 import { HitDetail, HitSource, SnapDetail, HitPriority } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -118,9 +118,30 @@ export class IdleTool extends InteractiveTool {
   }
 
   public async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
-  public async onTouchMove(ev: BeTouchEvent): Promise<EventHandled> { if (!ev.viewport) return EventHandled.No; const tool = new DefaultViewTouchTool(ev, true); tool.run(); return EventHandled.Yes; }
-  // public async onTouchEnd(ev: BeTouchEvent): Promise<EventHandled> { if (!ev.viewport || !ev.isDoubleClick) return EventHandled.No; const tool = new FitViewTool(ev.viewport, true); tool.run(); return EventHandled.Yes; } // ### TODO Try dblclick event...
-  // public async onDoubleClick(ev: BeButtonEvent): Promise<EventHandled> { if (!ev.viewport) return EventHandled.No; const tool = new FitViewTool(ev.viewport, true); tool.run(); return EventHandled.Yes; }
+
+  public async onTouchMoveStart(ev: BeTouchEvent, _startEv: BeTouchEvent, _touchCount: number): Promise<EventHandled> {
+    const tool = new DefaultViewTouchTool(ev, true);
+    return (tool.run() ? EventHandled.Yes : EventHandled.No);
+  }
+
+  public async onTouchTap(ev: BeTouchEvent, touchCount: number, tapCount: number): Promise<EventHandled> {
+    if (touchCount < 1 || touchCount > 2 || tapCount < 1 || tapCount > 2)
+      return EventHandled.No;
+
+    if (1 === tapCount) {
+      // Send data down/up for single finger tap. Send reset down/up for two finger tap.
+      const button = (1 === touchCount ? BeButton.Data : BeButton.Reset);
+      const pt2d = ev.getDisplayPoint();
+      await IModelApp.toolAdmin.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
+      await IModelApp.toolAdmin.onButtonUp(ev.viewport!, pt2d, button, InputSource.Touch);
+      return EventHandled.Yes;
+    } else if (2 === tapCount && 1 === touchCount) {
+      // Fit view on single finger double tap.
+      const tool = new FitViewTool(ev.viewport!, true);
+      return (tool.run() ? EventHandled.Yes : EventHandled.No);
+    }
+    return EventHandled.No;
+  }
 
   public exitTool(): void { }
   public run() { return true; }

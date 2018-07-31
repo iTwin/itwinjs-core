@@ -137,10 +137,7 @@ export class EventController {
     if (element === undefined)
       return;
 
-    // this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel"], element, true);
-    // this.addDomListeners(["touchstart", "touchend", "touchcancel", "touchmove"], element, false);
     this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element, true);
-    // this.addDomListeners(["touchstart", "touchend", "touchcancel"], element, false); // Allow mouse events for clicks...
 
     element.oncontextmenu = () => false;
     element.onselectstart = () => false;
@@ -620,19 +617,19 @@ export class EventController {
     return this.handleSingleFingerMove(points) || this.handleMultiFingerMove(points);
   }
 
-  public processTouches(ev: TouchEvent, _func: (id: number, num: number, x: number, y: number) => void) {
-    // const touches = ev.changedTouches;
-    // const numFingers = touches.length;
+  // public processTouches(ev: TouchEvent, _func: (id: number, num: number, x: number, y: number) => void) {
+  // const touches = ev.changedTouches;
+  // const numFingers = touches.length;
 
-    // // tslint:disable-next-line:prefer-for-of
-    // for (let i = 0; i < touches.length; ++i) {
-    //   const touch = touches[i];
-    //   const pos = this.getPosition(touch);
-    //   func(touch.identifier, numFingers, pos.x, pos.y);
-    // }
+  // // tslint:disable-next-line:prefer-for-of
+  // for (let i = 0; i < touches.length; ++i) {
+  //   const touch = touches[i];
+  //   const pos = this.getPosition(touch);
+  //   func(touch.identifier, numFingers, pos.x, pos.y);
+  // }
 
-    ev.preventDefault();
-  }
+  //    ev.preventDefault();
+  //  }
 
   // private handleTouchStart(ev: TouchEvent) { this.processTouches(ev, (id: number, num: number, x: number, y: number) => this.touchDown(x, y, id, num, false)); }
   // private handleTouchEnd(ev: TouchEvent) { this.processTouches(ev, (id: number, _num: number, _x: number, _y: number) => this.touchUp(id)); }

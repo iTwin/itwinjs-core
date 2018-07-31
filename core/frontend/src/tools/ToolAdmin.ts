@@ -39,20 +39,22 @@ const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 export class ToolSettings {
   /** Duration of animations of viewing operations. */
   public static animationTime = BeDuration.fromMilliseconds(260);
+  /** Two tap must be within this period to be a double tap. */
+  public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
   /** Two clicks must be within this period to be a double click. */
   public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
-  /** Number of pixels of movement allowed between clicks to still qualify as a double-click.  */
-  public static doubleClickTolerance = 4.0;
+  /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
+  public static doubleClickToleranceInches = 0.05;
   /** Duration without movement before a no-motion event is generated. */
   public static noMotionTimeout = BeDuration.fromMilliseconds(50);
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
   /** Delay with the mouse down before a drag operation begins. */
   public static startDragDelay = BeDuration.fromMilliseconds(110);
-  /** Distance in pixels the cursor must move before a drag operation begins. */
-  public static startDragDistance = 15;
-  /** Radius in pixels to search for elements that anchor viewing operations. */
-  public static viewToolPickRadius = 20;
+  /** Distance in screen inches the cursor must move before a drag operation begins. */
+  public static startDragDistanceInches = 0.15;
+  /** Radius in screen inches to search for elements that anchor viewing operations. */
+  public static viewToolPickRadiusInches = 0.20;
   /** Camera angle enforced for walk tool. */
   public static walkCameraAngle = Angle.createDegrees(75.6);
   /** Whether the walk tool enforces worldZ be aligned with screenY */
@@ -126,6 +128,9 @@ export class CurrentInputState {
   public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
   public touchMotionTime: number = 0;
   public lastMotion = new Point2d();
+  public lastTouchStart?: BeTouchEvent;
+  public touchTapTimer?: number;
+  public touchTapCount?: number;
 
   public get rawPoint() { return this._rawPoint; }
   public set rawPoint(pt: Point3d) { this._rawPoint.setFrom(pt); }
@@ -205,7 +210,7 @@ export class CurrentInputState {
     viewPt.z = center.z;
 
     const now = Date.now();
-    const isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds) && (viewPt.distance(this.viewPoint) < ToolSettings.doubleClickTolerance);
+    const isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds) && (viewPt.distance(this.viewPoint) < this.viewport!.pixelsFromInches(ToolSettings.doubleClickToleranceInches));
 
     this.button[button].init(this.uorPoint, this.rawPoint, now, true, isDoubleClick, false, this.inputSource);
     this.lastButton = button;
@@ -299,7 +304,7 @@ export class CurrentInputState {
     const deltaX = Math.abs(this._viewPoint.x - viewPt.x);
     const deltaY = Math.abs(this._viewPoint.y - viewPt.y);
 
-    return ((deltaX + deltaY) > ToolSettings.startDragDistance);
+    return ((deltaX + deltaY) > this.viewport!.pixelsFromInches(ToolSettings.startDragDistanceInches));
   }
 
   public ignoreTouchMotion(numberTouches: number, touches: XAndY[]) {
@@ -459,64 +464,6 @@ export class ToolAdmin {
     return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
   }
 
-  /*   private async onClick(event: ToolEvent): Promise<EventHandled> {
-      const mouseEv = event.ev as MouseEvent;
-      const vp = event.vp!;
-
-      if (this.filterViewport(vp))
-        return EventHandled.No;
-
-      vp.removeAnimator();
-      const pos = this.getMousePosition(event);
-      const button = this.getMouseButton(mouseEv.button);
-      const current = this.currentInputState;
-
-      const ev = new BeButtonEvent();
-
-      current.setKeyQualifiers(mouseEv);
-      current.fromButton(vp, pos, InputSource.Mouse, true);
-      current.onButtonDown(button);
-      current.toEvent(ev, true);
-      current.updateDownPoint(ev);
-      ev.isDoubleClick = true;
-
-      const tool = this.activeTool;
-
-      if (undefined === tool || EventHandled.Yes !== await tool.onClick(ev))
-        await this.idleTool.onClick(ev);
-
-      return EventHandled.Yes;
-    }
-
-    private async onDoubleClick(event: ToolEvent): Promise<EventHandled> {
-      const mouseEv = event.ev as MouseEvent;
-      const vp = event.vp!;
-
-      if (this.filterViewport(vp))
-        return EventHandled.No;
-
-      vp.removeAnimator();
-      const pos = this.getMousePosition(event);
-      const button = this.getMouseButton(mouseEv.button);
-      const current = this.currentInputState;
-
-      const ev = new BeButtonEvent();
-
-      current.setKeyQualifiers(mouseEv);
-      current.fromButton(vp, pos, InputSource.Mouse, true);
-      current.onButtonDown(button);
-      current.toEvent(ev, true);
-      current.updateDownPoint(ev);
-      ev.isDoubleClick = true;
-
-      const tool = this.activeTool;
-
-      if (undefined === tool || EventHandled.Yes !== await tool.onDoubleClick(ev))
-        await this.idleTool.onDoubleClick(ev);
-
-      return EventHandled.Yes;
-    } */
-
   private async onWheel(event: ToolEvent): Promise<EventHandled> {
     const ev = event.ev as WheelEvent;
     const current = this.currentInputState;
@@ -562,35 +509,103 @@ export class ToolAdmin {
       return EventHandled.No;
 
     vp.removeAnimator();
-    const rawEv = new BeTouchEvent(touchEv);
+    const ev = new BeTouchEvent(touchEv);
     const current = this.currentInputState;
-    const pos = (0 !== touchEv.targetTouches.length ? BeTouchEvent.getTouchPosition(touchEv.targetTouches[0], vp) : Point2d.createZero());
+    const pos = (0 !== touchEv.targetTouches.length ? BeTouchEvent.getTouchPosition(touchEv.targetTouches[0], vp) : (0 !== touchEv.changedTouches.length ? BeTouchEvent.getTouchPosition(touchEv.changedTouches[0], vp) : Point2d.createZero()));
 
     current.fromButton(vp, pos, InputSource.Touch, true);
-    current.toEvent(rawEv, false);
-
+    current.toEvent(ev, false);
     const tool = this.activeTool;
+
+    console.log(">>> " + touchEv.type + " changed: " + touchEv.changedTouches.length + " target: " + touchEv.targetTouches.length + " touches: " + touchEv.touches.length);
 
     switch (touchEv.type) {
       case "touchstart": {
-        if (undefined === tool || EventHandled.Yes !== await tool.onTouchStart(rawEv))
-          return this.idleTool.onTouchStart(rawEv);
-        return EventHandled.Yes;
+        current.lastTouchStart = ev;
+        if (undefined !== tool && EventHandled.Yes === await tool.onTouchStart(ev))
+          return EventHandled.Yes;
+        return EventHandled.No;
       }
+
       case "touchend": {
-        if (undefined === tool || EventHandled.Yes !== await tool.onTouchEnd(rawEv))
-          return this.idleTool.onTouchEnd(rawEv);
+        if (undefined !== tool && EventHandled.Yes === await tool.onTouchEnd(ev))
+          return EventHandled.Yes;
+
+        if (undefined === current.lastTouchStart)
+          return EventHandled.No;
+
+        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp > ToolSettings.startDragDelay.milliseconds)
+          return EventHandled.No;
+
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < ev.touchInfo.changedTouches.length; i++) {
+          const currTouch = ev.touchInfo.changedTouches[i];
+          const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchInfo.targetTouches, currTouch.identifier);
+
+          if (undefined !== startTouch) {
+            const currPt = BeTouchEvent.getTouchPosition(currTouch, vp);
+            const startPt = BeTouchEvent.getTouchPosition(startTouch, vp);
+
+            if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
+              continue; // Hasn't moved appreciably....DecoratorPickCallerick
+          }
+
+          current.lastTouchStart = undefined; // Not a tap...
+          return EventHandled.No;
+        }
+
+        if (0 !== ev.touchInfo.targetTouches.length || undefined === current.lastTouchStart)
+          return EventHandled.No;
+
+        // All fingers off, defer processing tap until we've waited long enough to detect double tap...
+        if (undefined === current.touchTapTimer) {
+          current.touchTapTimer = Date.now();
+          current.touchTapCount = 1;
+        } else if (undefined !== current.touchTapCount) {
+          current.touchTapCount++;
+        }
         return EventHandled.Yes;
       }
+
       case "touchcancel": {
-        if (undefined === tool || EventHandled.Yes !== await tool.onTouchCancel(rawEv))
-          return this.idleTool.onTouchCancel(rawEv);
-        return EventHandled.Yes;
+        current.lastTouchStart = undefined;
+        if (undefined !== tool && EventHandled.Yes === await tool.onTouchCancel(ev))
+          return EventHandled.Yes;
+        return EventHandled.No;
       }
+
       case "touchmove": {
-        if (undefined === tool || EventHandled.Yes !== await tool.onTouchMove(rawEv))
-          return this.idleTool.onTouchMove(rawEv);
-        return EventHandled.Yes;
+        if (undefined !== tool && EventHandled.Yes === await tool.onTouchMove(ev))
+          return EventHandled.Yes;
+
+        if (undefined === current.lastTouchStart)
+          return EventHandled.No;
+
+        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp < ToolSettings.startDragDelay.milliseconds)
+          return EventHandled.No;
+
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < ev.touchInfo.changedTouches.length; i++) {
+          const currTouch = ev.touchInfo.changedTouches[i];
+          const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchInfo.targetTouches, currTouch.identifier);
+
+          if (undefined === startTouch)
+            continue;
+
+          const currPt = BeTouchEvent.getTouchPosition(currTouch, vp);
+          const startPt = BeTouchEvent.getTouchPosition(startTouch, vp);
+
+          if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
+            continue; // Hasn't moved appreciably....
+
+          if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, current.lastTouchStart, current.lastTouchStart.touchInfo.targetTouches.length)) {
+            if (EventHandled.Yes !== await this.idleTool.onTouchMoveStart(ev, current.lastTouchStart, current.lastTouchStart.touchInfo.targetTouches.length))
+              return EventHandled.No;
+          }
+          current.lastTouchStart = undefined;
+          return EventHandled.Yes;
+        }
+        return EventHandled.No;
       }
     }
 
@@ -603,16 +618,12 @@ export class ToolAdmin {
     if (undefined === event)
       return; // nothing in queue
 
-    console.log(">>> " + event.ev.type);
-
     switch (event.ev.type) {
       case "mousedown": return this.onMouseButton(event, true);
       case "mouseup": return this.onMouseButton(event, false);
-      case "mousemove": return this.onMouseMotion(event);
+      case "mousemove": return this.onMouseMove(event);
       case "mouseenter": return this.onMouseEnter(event.vp!);
       case "mouseleave": return this.onMouseLeave(event.vp!);
-      //      case "click": return this.onClick(event);
-      //      case "dblclick": return this.onDoubleClick(event);
       case "wheel": return this.onWheel(event);
       case "keydown": return this.onKeyTransition(event, true);
       case "keyup": return this.onKeyTransition(event, false);
@@ -753,6 +764,23 @@ export class ToolAdmin {
       return;
     }
 
+    if (undefined !== current.touchTapTimer) {
+      const now = Date.now();
+      if ((now - current.touchTapTimer) >= ToolSettings.doubleTapTimeout.milliseconds) {
+        const touchEv = current.lastTouchStart;
+        const numTouches = (undefined !== current.lastTouchStart ? current.lastTouchStart.touchInfo.targetTouches.length : 0);
+        const numTaps = (undefined !== current.touchTapCount ? current.touchTapCount : 0);
+
+        current.touchTapTimer = current.touchTapCount = current.lastTouchStart = undefined;
+
+        if (undefined !== touchEv && numTouches > 0 && numTaps > 0) {
+          if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv, numTouches, numTaps)) ||
+            EventHandled.Yes === await this.idleTool.onTouchTap(touchEv, numTouches, numTaps))
+            return;
+        }
+      }
+    }
+
     const ev = new BeButtonEvent();
     current.toEvent(ev, true);
 
@@ -795,9 +823,7 @@ export class ToolAdmin {
       return this.idleTool.onModelEndDrag(ev);
   }
 
-  private async onMouseMotion(event: ToolEvent): Promise<any> {
-    const vp = event.vp!;
-    const pt2d = this.getMousePosition(event);
+  public async onMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -806,14 +832,13 @@ export class ToolAdmin {
       return;
     }
 
-    const rawEvent = new BeButtonEvent();
-    current.fromPoint(vp, pt2d, InputSource.Mouse);
-    current.toEvent(rawEvent, false);
-
-    await IModelApp.accuSnap.onMotion(rawEvent); // wait for AccuSnap before calling FromButton
-
     const ev = new BeButtonEvent();
-    current.fromButton(vp, pt2d, InputSource.Mouse, true);
+    current.fromPoint(vp, pt2d, inputSource);
+    current.toEvent(ev, false);
+
+    await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
+
+    current.fromButton(vp, pt2d, inputSource, true);
     current.toEvent(ev, true);
 
     IModelApp.accuDraw.onMotion(ev);
@@ -843,6 +868,13 @@ export class ToolAdmin {
 
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
+  }
+
+  private async onMouseMove(event: ToolEvent): Promise<any> {
+    const vp = event.vp!;
+    const pos = this.getMousePosition(event);
+
+    return this.onMotion(vp, pos, InputSource.Mouse);
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
@@ -1372,8 +1404,8 @@ export class ToolAdmin {
     const vp = ev.viewport!;
     if (0 === ev.gestureInfo!.previousNumberTouches)
       this.onButtonDown(vp, ev.getDisplayPoint(), BeButton.Data, InputSource.Touch);
-    //    else
-    //      this.onMouseMotion(vp, ev.getDisplayPoint(), InputSource.Touch);
+    else
+      this.onMotion(vp, ev.getDisplayPoint(), InputSource.Touch);
   }
 
   public convertGestureEndToButtonUp(ev: BeGestureEvent) {
@@ -1503,7 +1535,7 @@ export class WheelEventProcessor {
           vp.worldToNpc(lastEvent.point, newTarget);
           targetNpc.z = newTarget.z;
           lastEventWasValid = true;
-        } else if (undefined !== vp.pickNearestVisibleGeometry(target, ToolSettings.viewToolPickRadius, newTarget)) {
+        } else if (undefined !== vp.pickNearestVisibleGeometry(target, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches), newTarget)) {
           vp.worldToNpc(newTarget, newTarget);
           targetNpc.z = newTarget.z;
         } else {
