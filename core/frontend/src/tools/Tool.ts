@@ -303,31 +303,31 @@ export abstract class InteractiveTool extends Tool {
   public decorateSuspended(_context: DecorateContext): void { }
 
   /** Invoked when the reset button is pressed.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    * @note To support right-press menus, a tool should put its reset event processing in onResetButtonUp instead of onResetButtonDown.
    */
   public async onResetButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the reset button is released.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the data button is pressed.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return ENo by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the data button is released.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the middle mouse button is pressed.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onMiddleButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the middle mouse button is released.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
@@ -339,16 +339,17 @@ export abstract class InteractiveTool extends Tool {
   public async onModelMotionStopped(_ev: BeButtonEvent): Promise<void> { }
 
   /** Invoked when the cursor begins moving while a button is depressed.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onModelStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the button is released after onModelStartDrag.
    * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
 
   /** Invoked when the mouse wheel moves.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onMouseWheel(_ev: BeWheelEvent): Promise<EventHandled> { return EventHandled.No; }
 
@@ -368,13 +369,31 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
+  /** Called when user adds a touch point by placing a finger or stylus on the surface. */
   public async onTouchStart(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when user removes a touch point by lifting a finger or stylus from the surface. */
   public async onTouchEnd(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when the last touch point is removed from the surface completing the current gesture. This is a convenience event sent following onTouchEnd when no target touch points remain on the surface. */
   public async onTouchComplete(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when a touch point is interrupted in some way and needs to be dropped from the list of target touches. */
   public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when a touch point moves along the surface. */
   public async onTouchMove(_ev: BeTouchEvent): Promise<void> { }
 
+  /** Called after at least one touch point has moved for an appreciable time and distance along the surface to not be considered a tap.
+   * @param _ev The event that caused this call
+   * @param _startEv The event from the last call to onTouchStart
+   * @param _touchCount The number of target touch points for this event
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public async onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent, _touchCount: number): Promise<EventHandled> { return EventHandled.No; }
+
+  /** Called when touch point(s) are added and removed from a surface within a small time window without any touch point moving.
+   * @param _ev The event that caused this call
+   * @param _touchCount The number of target touch points for this event
+   * @param _tapCount The number of times the set of touch points was added and removed from the surface within the allotted time window. A value of 1 is a tap, 2 a double tap, etc.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public async onTouchTap(_ev: BeTouchEvent, _touchCount: number, _tapCount: number): Promise<EventHandled> { return EventHandled.No; }
 
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
