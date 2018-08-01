@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import * as deepAssign from "deep-assign";
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
@@ -8,8 +10,8 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { isBriefcaseIdValid, AggregateResponseError, Query } from "./index";
-import { IModelHubRequestError, IModelHubError } from "./Errors";
+import { AggregateResponseError, Query } from "./index";
+import { IModelHubError, ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
 import { WsgRequestOptions } from "../WsgClient";
 
@@ -180,8 +182,12 @@ export class LockQuery extends Query {
    * Query Locks by Briefcase id.
    * @param briefcaseId Id of the Briefcase.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
+   * or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or it
+   * contains not valid [[Briefcase]] id value.
    */
   public byBriefcaseId(briefcaseId: number) {
+    ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
     this.addFilter(`BriefcaseId+eq+${briefcaseId}`);
     return this;
   }
@@ -210,8 +216,11 @@ export class LockQuery extends Query {
    * Query Locks by ObjectId.
    * @param objectId Id of the object.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
+   * if objectId is undefined.
    */
   public byObjectId(objectId: string) {
+    ArgumentCheck.defined("objectId", objectId);
     this._isMultiLockQuery = false;
     this.addFilter(`ObjectId+eq+'${objectId}'`);
     return this;
@@ -221,8 +230,12 @@ export class LockQuery extends Query {
    * Query Locks by ReleasedWithChangeSet.
    * @param changesetId Id of the changeSet.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
+   * or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or
+   * empty, or it contains not valid [[ChangeSet]] id value.
    */
   public byReleasedWithChangeSet(changeSetId: string) {
+    ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
     this.addFilter(`ReleasedWithChangeSet+eq+'${changeSetId}'`);
     return this;
   }
@@ -231,8 +244,11 @@ export class LockQuery extends Query {
    * Query Locks by ReleasedWithChangeSetIndex.
    * @param changeSetIndex Index of the changeSet.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
+   * if changeSetIndex is undefined.
    */
-  public byReleasedWithChangeSetIndex(changeSetIndex: string) {
+  public byReleasedWithChangeSetIndex(changeSetIndex: number) {
+    ArgumentCheck.definedNumber("changeSetIndex", changeSetIndex);
     this.addFilter(`ReleasedWithChangeSetIndex+eq+${changeSetIndex}`);
     return this;
   }
@@ -241,23 +257,22 @@ export class LockQuery extends Query {
    * Query Locks by their instance ids.
    * @param locks Locks to query. They must have their BriefcaseId, LockType and ObjectId set.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
+   * or [IModelHubStatus.InvalidArgumentError]($bentley) if locks array is undefined or
+   * empty, or it contains not valid [[Lock]] values.
    */
   public byLocks(locks: Lock[]) {
-    if (locks.length < 1) {
-      throw IModelHubRequestError.invalidArgument("locks");
-    }
+    ArgumentCheck.nonEmptyArray("locks", locks);
 
     let filter = "$id+in+[";
 
-    let first = true;
+    let index = 0;
     for (const lock of locks) {
       const id = getLockInstanceId(lock);
+      ArgumentCheck.valid(`locks[${index}]`, id);
 
-      if (!id) {
-        throw IModelHubRequestError.invalidArgument("locks");
-      }
-
-      first ? first = false : filter += ",";
+      if (0 !== index++)
+        filter += ",";
       filter += `'${id}'`;
     }
 
@@ -283,8 +298,11 @@ export class LockQuery extends Query {
    * @param briefcaseId Id of the briefcase.
    * @param lastChangeSetIndex Index of the last changeSet.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the values is undefined or briefcaseId is not in valid [[Briefcase.id]] range.
    */
   public unavailableLocks(briefcaseId: number, lastChangeSetIndex: string) {
+    ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
+    ArgumentCheck.defined("lastChangeSetIndex", lastChangeSetIndex);
     let filter = `BriefcaseId+ne+${briefcaseId}`;
     filter += `+and+(LockLevel+gt+0+or+ReleasedWithChangeSetIndex+gt+${lastChangeSetIndex})`;
     this.addFilter(filter);
@@ -302,6 +320,7 @@ export class LockHandler {
   /**
    * Constructor for LockHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
+   * @hidden
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
@@ -396,6 +415,9 @@ export class LockHandler {
     return LockHandler.convertMultiLocksToLocks(result);
   }
 
+  // iModelHubOperationFailedException duplicates
+  // InvalidBriefcaseException multiple briefcases
+
   /**
    * Updates multiple locks.
    * @param token Delegation token of the authorized user.
@@ -404,9 +426,18 @@ export class LockHandler {
    * to just check if a lock is available.
    * @param updateOptions Options for the update request.
    * @returns The lock that was just obtained from the server.
+   * @throws [[ConflictingLocksError]] when [[LockUpdateOptions.deniedLocks]] is set and conflicts occured. See [Handling Conflicts]($docs/learning/iModelHub/Locks/#handling-conflicts) section for more information.
+   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occured.
+   * @throws [[IModelHubError]] with status indicating a conflict. See [Handling Conflicts]($docs/learning/iModelHub/Locks/#handling-conflicts) section for more information.
+   * @throws [[IModelHubError]] with [IModelHubStatus.InvalidBriefcase]($bentley) when including locks with different briefcaseId values in the request.
+   * @throws [[IModelHubError]] with [IModelHubStatus.IModelHubOperationFailed]($bentley) when including multiple identical locks in the request.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     Logger.logInfo(loggingCategory, `Requesting locks for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.nonEmptyArray("locks", locks);
 
     updateOptions = updateOptions || {};
     this.setupOptionDefaults(updateOptions);
@@ -457,9 +488,12 @@ export class LockHandler {
    * @param imodelId Id of the iModel
    * @param query Object used to modify results of this query.
    * @returns Resolves to an array of locks.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: LockQuery = new LockQuery()): Promise<Lock[]> {
     Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     let locks: Lock[];
     if (query.isMultiLockQuery()) {
@@ -484,17 +518,22 @@ export class LockHandler {
     return locks;
   }
 
+  // BriefcaseDoesNotExistException
+  // UserDoesNotHavePermissionException ManageResources
   /**
    * Deletes all locks owned by the specified briefcase
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel
    * @param briefcaseId Id of the briefcacase
+   * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExistException]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a briefcase id yet, or briefcase with that id was already deleted.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermissionException]($bentley) if [[Briefcase]] belongs to another user and user sending the request doesn't have ManageResources permission.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async deleteAll(token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
-
-    if (!isBriefcaseIdValid(briefcaseId))
-      return Promise.reject(IModelHubRequestError.invalidArgument("briefcaseId"));
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
     await this._handler.delete(token, this.getRelativeUrl(imodelId, false, `DeleteAll-${briefcaseId}`));
 

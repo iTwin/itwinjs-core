@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { ECJsonTypeMap } from "./../ECJsonTypeMap";
 import { UserInfo } from "./Users";
-import { InstanceIdQuery, IModelHubRequestError } from "./index";
+import { InstanceIdQuery } from "./index";
 import { AccessToken } from "..";
 import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck } from "./Errors";
 import { Logger } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -45,14 +48,14 @@ export class UserStatisticsQuery extends InstanceIdQuery {
    * Query User Statistics by ids.
    * @param ids Ids of the users.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains not valid Guid values.
    */
   public byIds(ids: string[]) {
-    if (ids.length < 1) {
-      throw IModelHubRequestError.invalidArgument("ids");
-    }
+    ArgumentCheck.nonEmptyArray("ids", ids);
 
     let filter = "$id+in+[";
     ids.forEach((id, index) => {
+      ArgumentCheck.validGuid(`ids[${index}]`, id);
       if (index > 0)
         filter += ",";
       filter += `'${id}'`;
@@ -89,7 +92,10 @@ export class UserStatisticsQuery extends InstanceIdQuery {
     return this.addSelect(`${this.statisticsPrefix}.LastChangeSetPushDate`);
   }
 
-  /** Returns whether was object queried by ids or no */
+  /**
+   * Returns whether was object queried by ids or no
+   * @hidden
+   */
   public isQueriedByIds() {
     return this.queriedByIds;
   }
@@ -117,12 +123,15 @@ export class UserStatisticsHandler {
   /**
    * Gets users statistics.
    * @param token Delegation token of the authorized user.
-   * @param iModelId Id of the iModel.
+   * @param imodelId Id of the iModel.
    * @param query Object used to modify results of this query.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, iModelId: string,
+  public async get(token: AccessToken, imodelId: string,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
-    Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${iModelId}`);
+    Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     // if there are no specific selects defined, select all statistics
     if (query.getQueryOptions().$select === "*") {
@@ -132,13 +141,13 @@ export class UserStatisticsHandler {
     let userStatistics: UserStatistics[];
     if (query.isQueriedByIds()) {
       userStatistics = await this._handler.postQuery<UserStatistics>(UserStatistics, token,
-        this.getRelativeUrl(iModelId), query.getQueryOptions());
+        this.getRelativeUrl(imodelId), query.getQueryOptions());
     } else {
       userStatistics = await this._handler.getInstances<UserStatistics>(UserStatistics, token,
-        this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
+        this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     }
 
-    Logger.logTrace(loggingCategory, `Queried ${userStatistics.length} user statistics for iModel ${iModelId}`);
+    Logger.logTrace(loggingCategory, `Queried ${userStatistics.length} user statistics for iModel ${imodelId}`);
     return userStatistics;
   }
 }

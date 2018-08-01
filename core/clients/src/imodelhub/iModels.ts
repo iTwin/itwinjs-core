@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubRequestError, IModelHubError } from "./Errors";
+import { IModelHubClientError, IModelHubError, ArgumentCheck } from "./Errors";
 import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
@@ -42,7 +44,10 @@ export enum SeedFileInitState {
   SeedFileIsBriefcase = 6,
 }
 
-/** SeedFile */
+/**
+ * SeedFile
+ * @hidden
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SeedFile", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SeedFile extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileName")
@@ -88,6 +93,7 @@ export class SeedFile extends WsgInstance {
 /**
  * Query object for getting SeedFiles. You can use this to modify the query.
  * @see SeedFileHandler.get()
+ * @hidden
  */
 class SeedFileQuery extends InstanceIdQuery {
   /**
@@ -111,6 +117,7 @@ class SeedFileQuery extends InstanceIdQuery {
 
 /**
  * Handler for all methods related to @see SeedFile instances.
+ * @hidden
  */
 class SeedFileHandler {
   private _handler: IModelBaseHandler;
@@ -159,7 +166,6 @@ class SeedFileHandler {
    * @param seedFile Information of the SeedFile to be uploaded.
    * @param seedPathname Pathname of the SeedFile to be uploaded.
    * @param progressCallback Callback for tracking progress.
-   * @throws [[Error]] if the upload fails.
    */
   public async uploadSeedFile(token: AccessToken, imodelId: string, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
     Logger.logInfo(loggingCategory, `Uploading seed file to iModel ${imodelId}`);
@@ -195,8 +201,10 @@ export class IModelQuery extends InstanceIdQuery {
    * Query iModel by its name.
    * @param name Name of the iModel.
    * @returns This query.
+   * @throws [IModelRequestError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
    */
   public byName(name: string) {
+    ArgumentCheck.defined("name", name);
     this.addFilter(`Name+eq+'${name}'`);
     return this;
   }
@@ -214,6 +222,7 @@ export class IModelHandler {
    * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
+   * @hidden
    */
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
@@ -236,9 +245,13 @@ export class IModelHandler {
    * @param projectId Id of the connect project.
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found iModel. Rejects if no iModels, or more than one iModel is found.
+   * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an [[IModel]] with the specified id could not be found.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, projectId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
     Logger.logInfo(loggingCategory, `Querying iModels in project ${projectId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("projectId", projectId);
 
     const imodels = await this._handler.getInstances<IModelRepository>(IModelRepository, token, this.getRelativeUrl(projectId, query.getId()), query.getQueryOptions());
 
@@ -253,9 +266,15 @@ export class IModelHandler {
    * @param projectId Id of the connect project.
    * @param imodelId Id of the iModel to be deleted.
    * @returns Resolves if the iModels have been successfully deleted.
+   * @throws [[IModelHubError]] with [IModelHubStatus.IModelDoesNotExists]$(bentley) if [[IModel]] with specified id does not exist.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async delete(token: AccessToken, projectId: string, imodelId: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting iModel with id ${imodelId} from project ${projectId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("projectId", projectId);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     if (this._handler.getCustomRequestOptions().isSet()) {
       // In order to add custom request options, request with body is needed.
@@ -329,20 +348,26 @@ export class IModelHandler {
    * @param description Description of the iModel on the Hub.
    * @param progressCallback Callback for tracking progress.
    * @param timeOutInMiliseconds Time to wait for iModel initialization.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(token: AccessToken, projectId: string, name: string, pathName: string,
     description?: string, progressCallback?: (progress: ProgressInfo) => void,
     timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModelRepository> {
     Logger.logInfo(loggingCategory, `Creating iModel in project ${projectId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("projectId", projectId);
+    ArgumentCheck.defined("name", name);
+    ArgumentCheck.defined("pathName", pathName);
 
     if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
+      return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubRequestError.fileHandler());
+      return Promise.reject(IModelHubClientError.fileHandler());
 
     if (!this._fileHandler.exists(pathName) || this._fileHandler.isDirectory(pathName))
-      return Promise.reject(IModelHubRequestError.fileNotFound());
+      return Promise.reject(IModelHubClientError.fileNotFound());
 
     const iModel = await this.createIModelInstance(token, projectId, name, description);
 
@@ -386,22 +411,26 @@ export class IModelHandler {
 
   /**
    * Method to download the seed file for iModel.
-   * @param accessToken Delegation token of the authorized user.
+   * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel.
    * @param downloadToPathname Directory where the seed file should be downloaded.
    * @param progressCallback Callback for tracking progress.
    * @returns Resolves when the seed file is successfully downloaded.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async download(accessToken: AccessToken, imodelId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(token: AccessToken, imodelId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
     if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
+      return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubRequestError.fileHandler());
+      return Promise.reject(IModelHubClientError.fileHandler());
 
-    const seedFiles: SeedFile[] = await this._seedFileHandler.get(accessToken, imodelId, new SeedFileQuery().selectDownloadUrl().latest());
+    const seedFiles: SeedFile[] = await this._seedFileHandler.get(token, imodelId, new SeedFileQuery().selectDownloadUrl().latest());
 
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
       return Promise.reject(IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file."));

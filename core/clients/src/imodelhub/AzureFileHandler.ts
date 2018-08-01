@@ -1,9 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { request, RequestOptions, ProgressInfo, ResponseError } from "../Request";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FileHandler } from "../FileHandler";
+import { ArgumentCheck } from "./Errors";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
@@ -96,12 +99,14 @@ export class AzureFileHandler implements FileHandler {
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
-   * @throws [[backend.ConcurrencyControl.RequestError]] if the file cannot be downloaded.
-   * @throws [[IModelHubRequestError]] if this method is used incorrectly.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
+   * @throws [[ResponseError]] if the file cannot be downloaded.
    */
   public async downloadFile(downloadUrl: string, downloadToPathname: string, fileSize?: number,
     progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading file from ${downloadUrl}`);
+    ArgumentCheck.defined("downloadUrl", downloadUrl);
+    ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
@@ -184,10 +189,13 @@ export class AzureFileHandler implements FileHandler {
    * @param uploadUrl URL to upload the fille to.
    * @param uploadFromPathname Pathname to upload the file from.
    * @param progressCallback Callback for tracking progress.
-   * @throws [[IModelHubRequestError]] if this method is used incorrectly.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
+   * @throws [[ResponseError]] if the file cannot be uploaded.
    */
   public async uploadFile(uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logTrace(loggingCategory, `Uploading file to ${uploadUrlString}`);
+    ArgumentCheck.defined("uploadUrlString", uploadUrlString);
+    ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 
     const fileSize = this.getFileSize(uploadFromPathname);
     const file = fs.openSync(uploadFromPathname, "r");

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Utils */
 /** Information on the host used for REST queries. */
 export class Host {
   constructor(
@@ -10,7 +11,7 @@ export class Host {
     public deviceId: string,
     public description: string,
     public relyingPartyUri: string,
-  ) {}
+  ) { }
 }
 
 export enum RuntimeEnv {

@@ -283,6 +283,7 @@ export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, quer
 
   let i = 1;
   changeSets.forEach((value) => {
+    value.wsgId = value.id!;
     if (getDownloadUrl) {
       value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
       value.fileSize = getMockFileSize();

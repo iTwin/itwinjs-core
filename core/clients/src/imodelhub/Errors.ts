@@ -1,10 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import * as deepAssign from "deep-assign";
 import { ResponseError } from "./../Request";
 import { WsgError } from "./../WsgClient";
-import { Logger, LogFunction, HttpStatus, WSStatus, IModelHubStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
+import {
+  Logger, LogFunction, HttpStatus, WSStatus, IModelHubStatus, GetMetaDataFunction, Guid,
+} from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -155,15 +159,15 @@ export class IModelHubError extends WsgError {
 /**
  * Errors for incorrect iModel Hub requests.
  */
-export class IModelHubRequestError extends IModelHubError {
+export class IModelHubClientError extends IModelHubError {
   /**
-   * Creates IModelHubRequestError from id.
+   * Creates IModelHubClientError from id.
    * @param id Id of the error.
    * @param message Message for the error.
    * @returns Created error.
    */
-  public static fromId(id: IModelHubStatus, message: string): IModelHubRequestError {
-    const error = new IModelHubRequestError(id, message);
+  public static fromId(id: IModelHubStatus, message: string): IModelHubClientError {
+    const error = new IModelHubClientError(id, message);
     error.log();
     return error;
   }
@@ -173,7 +177,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @param argumentName Undefined argument name
    * @returns Created error.
    */
-  public static undefinedArgument(argumentName: string): IModelHubRequestError {
+  public static undefinedArgument(argumentName: string): IModelHubClientError {
     return this.fromId(IModelHubStatus.UndefinedArgumentError, `Argument ${argumentName} is null or undefined`);
   }
 
@@ -182,7 +186,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @param argumentName Invalid argument name
    * @returns Created error.
    */
-  public static invalidArgument(argumentName: string): IModelHubRequestError {
+  public static invalidArgument(argumentName: string): IModelHubClientError {
     return this.fromId(IModelHubStatus.InvalidArgumentError, `Argument ${argumentName} has an invalid value.`);
   }
 
@@ -191,7 +195,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @param argumentName Argument name
    * @returns Created error.
    */
-  public static missingDownloadUrl(argumentName: string): IModelHubRequestError {
+  public static missingDownloadUrl(argumentName: string): IModelHubClientError {
     return this.fromId(IModelHubStatus.MissingDownloadUrlError,
       `Supplied ${argumentName} must include download URL. Use selectDownloadUrl() when getting ${argumentName}.`);
   }
@@ -200,7 +204,7 @@ export class IModelHubRequestError extends IModelHubError {
    * Create error for incompatible operation being used in browser.
    * @returns Created error.
    */
-  public static browser(): IModelHubRequestError {
+  public static browser(): IModelHubClientError {
     return this.fromId(IModelHubStatus.NotSupportedInBrowser, "Operation is not supported in browser.");
   }
 
@@ -208,7 +212,7 @@ export class IModelHubRequestError extends IModelHubError {
    * Create error for incompatible operation being used in browser.
    * @returns Created error.
    */
-  public static fileHandler(): IModelHubRequestError {
+  public static fileHandler(): IModelHubClientError {
     return this.fromId(IModelHubStatus.FileHandlerNotSet, "File handler is required to be set for file download / upload.");
   }
 
@@ -216,8 +220,70 @@ export class IModelHubRequestError extends IModelHubError {
    * Create error for a missing file.
    * @returns Created error.
    */
-  public static fileNotFound(): IModelHubRequestError {
+  public static fileNotFound(): IModelHubClientError {
     return this.fromId(IModelHubStatus.FileNotFound, "Could not find the file to upload.");
+  }
+}
+
+/** @hidden */
+export class ArgumentCheck {
+  public static defined(argumentName: string, argument?: any) {
+    if (!argument)
+      throw IModelHubClientError.undefinedArgument(argumentName);
+  }
+
+  public static definedNumber(argumentName: string, argument?: number) {
+    if (typeof argument !== "number")
+      throw IModelHubClientError.undefinedArgument(argumentName);
+  }
+
+  public static valid(argumentName: string, argument?: any) {
+    if (!argument)
+      throw IModelHubClientError.invalidArgument(argumentName);
+  }
+
+  public static validGuid(argumentName: string, argument?: string) {
+    this.defined(argumentName, argument);
+    if (!Guid.isGuid(argument!))
+      throw IModelHubClientError.invalidArgument(argumentName);
+  }
+
+  /** @hidden */
+  public static nonEmptyArray(argumentName: string, argument?: any[]) {
+    this.defined(argumentName, argument);
+    if (argument!.length < 1)
+      throw IModelHubClientError.invalidArgument(argumentName);
+  }
+
+  /**
+   * Check if Briefcase Id is valid.
+   * @hidden
+   */
+  private static isBriefcaseIdValid(briefcaseId: number): boolean {
+    return briefcaseId > 1 && briefcaseId < 16 * 1024 * 1024;
+  }
+
+  /**
+   * Check if Briefcase Id argument is valid.
+   * @hidden
+   */
+  public static validBriefcaseId(argumentName: string, argument?: number) {
+    this.definedNumber(argumentName, argument);
+    if (!this.isBriefcaseIdValid(argument!))
+      throw IModelHubClientError.invalidArgument(argumentName);
+  }
+
+  /** @hidden */
+  private static isValidChangeSetId(changeSetId: string) {
+    const pattern = new RegExp("^[0-9A-Fa-f]+$");
+    return changeSetId.length === 40 && pattern.test(changeSetId);
+  }
+
+  /** @hidden */
+  public static validChangeSetId(argumentName: string, argument?: string) {
+    this.defined(argumentName, argument);
+    if (!this.isValidChangeSetId(argument!))
+      throw IModelHubClientError.invalidArgument(argumentName);
   }
 }
 

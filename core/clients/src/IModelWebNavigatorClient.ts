@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module OtherServices */
 
 import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
 
- /**
-  * Client wrapper to IModel Web Service
-  */
+/**
+ * Client wrapper to IModel Web Service
+ */
 export class IModelWebNavigatorClient extends Client {
   public static readonly searchKey: string = "iModelWeb.Url";
 

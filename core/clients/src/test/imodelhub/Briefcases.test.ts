@@ -9,7 +9,7 @@ import { AccessToken } from "../../";
 
 import { IModelClient } from "../../";
 import {
-  IModelHubClient, Briefcase, IModelHubRequestError, BriefcaseQuery,
+  IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
 } from "../../";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { TestConfig } from "../TestConfig";
@@ -128,7 +128,7 @@ describe("iModelHub BriefcaseHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error).to.be.instanceof(IModelHubRequestError);
+    chai.expect(error).to.be.instanceof(IModelHubClientError);
     chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
@@ -148,7 +148,7 @@ describe("iModelHub BriefcaseHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error).to.be.instanceof(IModelHubRequestError);
+    chai.expect(error).to.be.instanceof(IModelHubClientError);
     chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
@@ -229,12 +229,12 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should fail downloading briefcase with no file handler", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
     try {
       await invalidClient.Briefcases().download(new Briefcase(), utils.workDir);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -242,11 +242,11 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should fail downloading briefcase with no file url", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.Briefcases().download(new Briefcase(), utils.workDir);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);

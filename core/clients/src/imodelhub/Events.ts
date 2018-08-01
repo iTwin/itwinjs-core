@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHubEvents */
+
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
 import { CodeState } from "./Codes";
@@ -8,6 +10,7 @@ import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck } from "./Errors";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -192,6 +195,7 @@ function ConstructorFromEventType(type: EventType): EventConstructor {
 
 /**
  * Parse @see IModelHubEvent from response object.
+ * @hidden
  * @param response Response object to parse.
  * @returns Appropriate event object.
  */
@@ -243,9 +247,13 @@ export class EventSubscriptionHandler {
    * @param imodelId Id of the iModel
    * @param events Array of EventTypes to subscribe to.
    * @return Created EventSubscription instance.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(token: AccessToken, imodelId: string, events: EventType[]) {
     Logger.logInfo(loggingCategory, `Creating event subscription on iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.nonEmptyArray("events", events);
 
     let subscription = new EventSubscription();
     subscription.eventTypes = events;
@@ -263,9 +271,16 @@ export class EventSubscriptionHandler {
    * @param imodelId Id of the iModel
    * @param subscription Updated events subscription.
    * @return Updated EventSubscription instance.
+   * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley)
+   * if [[EventSubscription]] does not exist with the specified subscription.wsgId.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(token: AccessToken, imodelId: string, subscription: EventSubscription): Promise<EventSubscription> {
     Logger.logInfo(loggingCategory, `Updating event subscription on iModel ${subscription.wsgId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.defined("subscription", subscription);
+    ArgumentCheck.validGuid("subscription.wsgId", subscription.wsgId);
 
     const updatedSubscription = await this._handler.postInstance<EventSubscription>(EventSubscription, token, this.getRelativeUrl(imodelId, subscription.wsgId), subscription);
 
@@ -280,9 +295,15 @@ export class EventSubscriptionHandler {
    * @param imodelId Id of the iModel
    * @param eventSubscriptionId Id of the event subscription.
    * @returns Resolves if the EventSubscription has been successfully deleted.
+   * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley)
+   * if [[EventSubscription]] does not exist with the specified subscription.wsgId.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async delete(token: AccessToken, imodelId: string, eventSubscriptionId: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("eventSubscriptionId", eventSubscriptionId);
 
     await this._handler.delete(token, this.getRelativeUrl(imodelId, eventSubscriptionId));
 
@@ -329,9 +350,12 @@ export class EventHandler extends EventBaseHandler {
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel
    * @return SAS Token to connect to the topic.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async getSASToken(token: AccessToken, imodelId: string): Promise<EventSAS> {
     Logger.logInfo(loggingCategory, `Getting event SAS token from iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     const eventSAS = await this._handler.postInstance<EventSAS>(EventSAS, token, this.getEventSASRelativeUrl(imodelId), new EventSAS());
 
@@ -363,9 +387,14 @@ export class EventHandler extends EventBaseHandler {
    * @param subscriptionId Id of the subscription to the topic.
    * @param timeout Optional timeout duration in seconds for request, when using long polling.
    * @return Event if it exists, undefined otherwise.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
+   * @throws [[ResponseError]] if request has failed.
    */
   public async getEvent(sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined> {
     Logger.logInfo(loggingCategory, `Getting event from subscription ${subscriptionId}`);
+    ArgumentCheck.defined("sasToken", sasToken);
+    ArgumentCheck.defined("baseAddress", baseAddress);
+    ArgumentCheck.validGuid("subscriptionId", subscriptionId);
 
     const options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
 
@@ -389,8 +418,13 @@ export class EventHandler extends EventBaseHandler {
    * @param imodelId Id of the iModel.
    * @param listener Callback that is called when an event is received.
    * @returns Function that deletes the listener.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
   public createListener(authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: string, listener: (event: IModelHubEvent) => void): () => void {
+    ArgumentCheck.defined("authenticationCallback", authenticationCallback);
+    ArgumentCheck.validGuid("subscriptionId", subscriptionId);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
     subscription.getEvent = (sasToken: string, baseAddress: string, id: string, timeout?: number) =>

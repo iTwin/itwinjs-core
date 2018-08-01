@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { request, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
+import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
 
@@ -39,8 +42,10 @@ export class ThumbnailQuery extends InstanceIdQuery {
    * Query thumbnails by version id.
    * @param versionId Id of the version.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if versionId is undefined or it is not a valid [Guid]($bentley) value.
    */
   public byVersionId(versionId: string) {
+    ArgumentCheck.validGuid("versionId", versionId);
     this.addFilter(`HasThumbnail-backward-Version.Id+eq+'${versionId}'`);
     return this;
   }
@@ -123,6 +128,9 @@ export class ThumbnailHandler {
    */
   private async downloadTipThumbnail(token: AccessToken, projectId: string, imodelId: string, size: ThumbnailSize): Promise<string> {
     Logger.logInfo(loggingCategory, `Downloading tip ${size}Thumbnail for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("projectId", projectId);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     const url: string = await this._handler.getUrl() + this.getRelativeProjectUrl(projectId, imodelId, size);
     const pngImage = await this.downloadThumbnail(token, url);
@@ -139,9 +147,12 @@ export class ThumbnailHandler {
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @param query Optional query object to filter the queried thumbnails.
    * @return Resolves to array of thumbnails.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
     Logger.logInfo(loggingCategory, `Querying iModel ${imodelId} thumbnails`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     let thumbnails = [];
     if (size === "Small")
@@ -160,8 +171,13 @@ export class ThumbnailHandler {
    * @param imodelId Id of the iModel.
    * @param thumbnail Small, Large or Tip thumbnail. Use 'get' function to query thumbnails or create tip thumbnail object.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
+   * @throws Error if a successful server response contains no content.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
+   * @throws [[ResponseError]] if a client-side or network issue occurs.
    */
   public async download(token: AccessToken, imodelId: string, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     if (this.isTipThumbnail(thumbnail)) {
       return await this.downloadTipThumbnail(token, thumbnail.projectId, imodelId, thumbnail.size);

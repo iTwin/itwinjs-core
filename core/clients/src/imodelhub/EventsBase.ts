@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHubEvents */
 
 import { request, RequestOptions } from "../Request";
 import { Config } from "../Config";
@@ -95,8 +96,11 @@ export function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, 
 }
 
 export abstract class EventBaseHandler {
-  protected _handler: IModelBaseHandler;
-  /** Gets service bus parser depending on the environment. */
+  protected _handler: IModelBaseHandler; /** @hidden */
+  /**
+   * Gets service bus parser depending on the environment.
+   * @hidden
+   */
   protected setServiceBusOptions(options: RequestOptions) {
     const parse: (str: string) => any = (message: string) => {
       if (!message)
@@ -132,6 +136,7 @@ export abstract class EventBaseHandler {
    * @param sasToken Service Bus SAS Token.
    * @param requestTimeout Timeout for the request.
    * @return Event if it exists.
+   * @hidden
    */
   protected getEventRequestOptions(operation: GetEventOperationToRequestType, sasToken: string, requestTimeout?: number): RequestOptions {
     const options = getEventBaseOperationRequestOptions(this._handler, operation, sasToken, requestTimeout);
@@ -150,9 +155,11 @@ export class ListenerSubscription {
   public id: string;
 }
 
+/** @hidden */
 export class EventListener {
   private static subscriptions: Map<string, ListenerSubscription>;
 
+  /** @hidden */
   public static create(subscription: ListenerSubscription, listener: (event: IModelHubBaseEvent) => void): () => void {
     if (!this.subscriptions) {
       this.subscriptions = new Map<string, ListenerSubscription>();
