@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d, ColorDef } from "@bentley/imodeljs-common";
 import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator, StrokeOptions } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume, GraphicList } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -604,7 +604,7 @@ export class System extends RenderSystem {
     return sheetTilePolys;
   }
 
-  public createSheetTile(tile: RenderTexture, polyfaces: IndexedPolyface[]): GraphicList {
+  public createSheetTile(tile: RenderTexture, polyfaces: IndexedPolyface[], tileColor: ColorDef): GraphicList {
     const sheetTileGraphics: GraphicList = [];
 
     for (const polyface of polyfaces) {
@@ -646,6 +646,7 @@ export class System extends RenderSystem {
       meshArgs.texture = tile;
       meshArgs.material = undefined;
       meshArgs.isPlanar = true;
+      meshArgs.colors.initUniform(tileColor);
 
       const mesh = this.createTriMesh(meshArgs);
       if (mesh !== undefined) {

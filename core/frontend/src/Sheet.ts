@@ -241,11 +241,13 @@ export namespace Attachments {
   }
 
   class TileLoader3d extends AttachmentTileLoader {
+    private static _debugNoTile3dTextures = false; // set this to true to output color-coded polys instead of textures for debugging.
     private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
       renderMode: RenderMode.SmoothShade,
       noCameraLights: true,
       noSourceLights: true,
       noSolarLight: true,
+      noTexture: TileLoader3d._debugNoTile3dTextures,
     }));
 
     public get maxDepth() { return 32; }
@@ -498,7 +500,7 @@ export namespace Attachments {
             if (viewport.texture === undefined) {
               this.setNotFound();
             } else {
-              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces));
+              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this.rootAsTree3d.tileColor));
               this.setGraphic(system.createBatch(graphic, this.rootAsTree3d.featureTable, this.contentRange));
             }
 
@@ -637,9 +639,36 @@ export namespace Attachments {
     }
   }
 
+  class TileColorSequence {
+    private _index: number = 0;
+    private readonly _colors: number[] = [
+      0xff0000,
+      0x00ff00,
+      0x0000ff,
+      0x7fff00,
+      0x7f00ff,
+      0x007fff,
+      0xff7f00,
+      0xff007f,
+      0x00ff7f,
+    ];
+
+    public get next(): ColorDef {
+      if (this._index >= this._colors.length)
+        this._index = 0;
+
+      const color = new ColorDef(this._colors[this._index]);
+      color.setAlpha(0x7f);
+      this._index++;
+      return color;
+    }
+  }
+
+  const tileColorSequence = new TileColorSequence();
+
   /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
   export class Tree3d extends Tree {
-    public static readonly tileColor: ColorDef = ColorDef.red;
+    public readonly tileColor: ColorDef;
     public readonly biasDistance: number; // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
     public readonly viewport: AttachmentViewport;
     public readonly sheetView: SheetViewState;
@@ -649,6 +678,7 @@ export namespace Attachments {
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
       super(new TileLoader3d(), new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel), attachment);   // Pass along a null Model3dState
 
+      this.tileColor = tileColorSequence.next;
       this.featureTable = new FeatureTable(1);
       this.featureTable.insert(new Feature(attachment.id));
 
