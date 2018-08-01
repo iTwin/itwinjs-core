@@ -528,6 +528,34 @@ export namespace Attachments {
       }
       return this._children.length === 0 ? undefined : this._children;
     }
+
+    private static _drawDebugGraphics = false;
+    public drawGraphics(args: Tile.DrawArgs) {
+      if (!Tile3d._drawDebugGraphics) {
+        super.drawGraphics(args);
+        return;
+      }
+
+      const polys = this._tilePolyfaces;
+      if (0 === polys.length)
+        return;
+
+      const fillColor = this.rootAsTree3d.tileColor;
+      const lineColor = fillColor.clone();
+      lineColor.setAlpha(0xff);
+      const builder = args.context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      builder.setSymbology(lineColor, fillColor, 2);
+      for (const poly of polys) {
+        const lineString: Point3d[] = [];
+        for (const index of poly.data.pointIndex)
+          lineString.push(poly.data.point.getPoint3dAt(index));
+
+        builder.addShape(lineString);
+        builder.addLineString(lineString);
+      }
+
+      args.graphics.add(builder.finish()!);
+    }
   }
 
   /** An extension of TileTree specific to rendering attachments. */
