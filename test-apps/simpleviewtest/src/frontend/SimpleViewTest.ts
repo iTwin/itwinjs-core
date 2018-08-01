@@ -764,7 +764,7 @@ async function main() {
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcManager.isMobile) {
-    Object.assign(configuration, { standalone: true, iModelName: "assets/sample_documents/04_Plant.i.ibim" });
+    Object.assign(configuration, { standalone: true, iModelName: "assets/sample_documents/PhotoRealisticRendering.ibim" });
     rpcConfiguration = MobileRpcManager.initializeMobile([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);

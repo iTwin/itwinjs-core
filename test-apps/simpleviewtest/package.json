@@ -34,7 +34,6 @@
     "@bentley/imodeljs-frontend": "0.107.0",
     "@bentley/imodeljs-backend": "0.107.0",
     "electron-devtools-installer": "^2.2.4",
-    "reconnecting-websocket": "^4.0.0-rc5",
     "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
