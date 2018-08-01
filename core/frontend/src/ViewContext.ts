@@ -466,6 +466,7 @@ export class DecorateContext extends RenderContext {
 
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
+  public readonly terrain: RenderGraphic[] = [];
   public readonly requests: TileRequests;
 
   public constructor(vp: Viewport, requests: TileRequests) {
@@ -474,4 +475,5 @@ export class SceneContext extends RenderContext {
   }
 
   public outputGraphic(graphic: RenderGraphic): void { this.graphics.push(graphic); }
+  public outputTerrain(graphic: RenderGraphic): void { this.terrain.push(graphic); }
 }

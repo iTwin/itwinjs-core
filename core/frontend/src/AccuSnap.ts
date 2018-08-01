@@ -53,7 +53,7 @@ export class AccuSnap {
   public onInitialized() { }
   private doLocateTesting() { return this.isLocateEnabled(); }
   private getSearchDistance() { return this.doLocateTesting() ? 1.0 : this.settings.searchDistance; }
-  private getHotDistanceInches() { return IModelApp.locateManager.getApertureInches() * this.settings.hotDistanceFactor; }
+  private getHotDistanceInches() { return IModelApp.locateManager.apertureInches * this.settings.hotDistanceFactor; }
   public isLocateEnabled() { return this.toolState.locate; }
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
   private needsFlash(view: Viewport): boolean { return (this.needFlash.has(view)); }
@@ -186,16 +186,14 @@ export class AccuSnap {
   }
 
   private setNeedsFlashView(view: Viewport) {
-    if (this.isFlashed(view) || this.needsFlash(view))
-      return;
-    this.setNeedsFlash(view);
+    if (!this.isFlashed(view) && !this.needsFlash(view))
+      this.setNeedsFlash(view);
   }
 
   /** flash a hit in its view. */
   private setFlashHit(hit?: HitDetail): void {
-    if (!hit || !this.hitShouldBeHilited(hit))
-      return;
-    this.setNeedsFlashView(hit.viewport!);
+    if (hit !== undefined && this.hitShouldBeHilited(hit))
+      this.setNeedsFlashView(hit.viewport!);
   }
 
   public erase(): void {
@@ -203,9 +201,11 @@ export class AccuSnap {
     this.clearSprites(); // remove all sprites from the screen
   }
 
-  public showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): void {
-    if (IModelApp.viewManager.doesHostHaveFocus())
-      IModelApp.toolAdmin.getToolTip(hit).then((msg) => this.showLocateMessage(viewPt, vp, msg));
+  public async showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): Promise<void> {
+    if (IModelApp.viewManager.doesHostHaveFocus()) {
+      const msg = await IModelApp.toolAdmin.getToolTip(hit);
+      this.showLocateMessage(viewPt, vp, msg);
+    }
   }
 
   private showLocateMessage(viewPt: XAndY, vp: Viewport, msg: string) {
@@ -213,7 +213,7 @@ export class AccuSnap {
       IModelApp.notifications.showToolTip(vp.canvas, msg, viewPt);
   }
 
-  public displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d): void {
+  public async displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d) {
     // if the tooltip is already displayed, or if user doesn't want it, quit.
     if (IModelApp.notifications.isToolTipOpen() || !this.settings.toolTip)
       return;
@@ -232,10 +232,10 @@ export class AccuSnap {
     if (tpHit) {
       // when the tentative button is first pressed, we pass nullptr for uorPt so that we show the tooltip immediately
       if (uorPt) {
-        const aperture = (this.settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+        const aperture = (this.settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
 
         // see if he came back somewhere near the currently snapped element
-        if (!IModelApp.locateManager.getElementPicker().testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
+        if (!IModelApp.locateManager.picker.testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
           return;
 
         timeout = 3;
@@ -261,8 +261,7 @@ export class AccuSnap {
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
     if (!this.errorIcon.isActive && theHit) {
-      this.showElemInfo(viewPt, vp, theHit);
-      return;
+      return this.showElemInfo(viewPt, vp, theHit);
     }
 
     // If we have an error explanation...use it as is!
@@ -390,17 +389,8 @@ export class AccuSnap {
     pt.setFrom(currSnap.adjustedPoint);
   }
 
-  private onEnabledStateChange(isEnabled: boolean, wasEnabled: boolean) {
-    if (isEnabled === wasEnabled) {
-      IModelApp.toolAdmin.onAccuSnapSyncUI(); // still need to sync AccuSnap global setting even if we are not changing the actual state for the current tool.
-      return;
-    }
-
-    if (isEnabled)
-      IModelApp.toolAdmin.onAccuSnapEnabled();
-    else
-      IModelApp.toolAdmin.onAccuSnapDisabled();
-  }
+  /** Implemented by sub-classes to update ui to show current enabled state. */
+  public onEnabledStateChange(_isEnabled: boolean, _wasEnabled: boolean) { }
 
   public getHitAndList(holder: HitListHolder): HitDetail | undefined {
     const hit = this.currHit;
@@ -519,13 +509,13 @@ export class AccuSnap {
 
     const testPoint = this.isLocateEnabled() ? ev.point : ev.rawPoint;
     const vp = ev.viewport!;
-    const picker = IModelApp.locateManager.getElementPicker();
+    const picker = IModelApp.locateManager.picker;
     const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
 
     // NOTE: Since TestHit will use the same HitSource as the input hit we only need to sets this for DoPick...
     options.hitSource = this.isSnapEnabled() ? HitSource.AccuSnap : HitSource.MotionLocate;
 
-    let aperture = (vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+    let aperture = (vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
     this.initializeForCheckMotion();
     aperture *= this.getSearchDistance();
 
@@ -754,8 +744,6 @@ export class AccuSnap {
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
 
-    await ev.viewport!.iModel.cancelSnap(); // if there is an outstanding snap, cancel it.
-
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
@@ -779,9 +767,9 @@ export class AccuSnap {
 
   public onMotionStopped(_ev: BeButtonEvent): void { }
 
-  public onNoMotion(ev: BeButtonEvent): void {
+  public async onNoMotion(ev: BeButtonEvent) {
     this.noMotionCount++;
-    this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
+    return this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
   }
 
   private flashElements(context: DecorateContext): void {
@@ -838,11 +826,11 @@ export class AccuSnap {
    * This is useful of an application changes the snap mode and wants AccuSnap to choose it immediately, without
    * requiring the user to move the mouse.
    */
-  public reEvaluate() {
+  public async reEvaluate() {
     if (this.getCurrSnapDetail()) {
       const ev = new BeButtonEvent();
       IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-      this.onMotion(ev);
+      return this.onMotion(ev);
     }
   }
 }

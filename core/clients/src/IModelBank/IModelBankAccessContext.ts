@@ -1,10 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelBank */
+
 import { IModelBankClient } from "./IModelBankClient";
 import { IModelClient } from "../IModelClient";
 import { IModelAccessContext } from "../IModelAccessContext";
 import { DeploymentEnv } from "../Client";
+import { FileHandler } from "../FileHandler";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
@@ -14,10 +17,10 @@ export class IModelBankAccessContext extends IModelAccessContext {
   private _url: string;
   private _env: DeploymentEnv;
 
-  constructor(iModelId: string, url: string, env: DeploymentEnv) {
+  constructor(iModelId: string, url: string, env: DeploymentEnv, handler: FileHandler | undefined) {
     super();
     this._iModelId = iModelId;
-    this._client = new IModelBankClient(url, env);
+    this._client = new IModelBankClient(url, env, handler);
     this._url = url;
     this._env = env;
   }
@@ -34,9 +37,9 @@ export class IModelBankAccessContext extends IModelAccessContext {
     };
   }
 
-  private static fromJson(obj: any): IModelBankAccessContext | undefined {
+  private static fromJson(obj: any, handler: FileHandler): IModelBankAccessContext | undefined {
     const props = obj.imodeljsCoreClientsIModelBankAccessContext;
-    return new IModelBankAccessContext(props.iModelId, props.url, props.env);
+    return new IModelBankAccessContext(props.iModelId, props.url, props.env, handler);
   }
 
   /** Store the definition of this context as a string that can be used as the contextId property of an IModelToken */
@@ -44,11 +47,11 @@ export class IModelBankAccessContext extends IModelAccessContext {
     return JSON.stringify(this.toJson());
   }
 
-  /** Create a IModelBankAccessContext from the contextId property of an IModelToken. BriefcaseManager should call this. */
-  public static fromIModelTokenContextId(contextStr: string): IModelBankAccessContext | undefined {
+  /** Create a IModelBankAccessContext from the contextId property of an IModelToken. This is a backend-only method. BriefcaseManager should call this. */
+  public static fromIModelTokenContextId(contextStr: string, handler: FileHandler): IModelBankAccessContext | undefined {
     if (!contextStr.startsWith("{\"imodeljsCoreClientsIModelBankAccessContext\":"))
       return undefined;
-    return this.fromJson(JSON.parse(contextStr));
+    return this.fromJson(JSON.parse(contextStr), handler);
   }
 
 }

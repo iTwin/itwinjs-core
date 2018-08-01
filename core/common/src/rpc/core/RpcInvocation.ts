@@ -9,7 +9,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
-import { RpcRequestStatus } from "./RpcRequest";
+import { RpcRequestStatus, RpcResponseType } from "./RpcRequest";
 import { RpcProtocol, RpcProtocolEvent, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling } from "./RpcMarshaling";
@@ -102,8 +102,8 @@ export class RpcInvocation {
   private resolve(): Promise<any> {
     const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
-    const op = this.lookupOperationFunction(impl);
     (impl as any)[CURRENT_INVOCATION] = this;
+    const op = this.lookupOperationFunction(impl);
     return Promise.resolve(op.call(impl, ...parameters));
   }
 
@@ -117,8 +117,12 @@ export class RpcInvocation {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
 
-    const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
-    return this.fulfill(result);
+    if (value instanceof ArrayBuffer) {
+      return this.fulfill(value, RpcResponseType.Binary);
+    } else {
+      const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
+      return this.fulfill(result, RpcResponseType.Text);
+    }
   }
 
   private fulfillRejected(reason: any): RpcRequestFulfillment {
@@ -140,15 +144,16 @@ export class RpcInvocation {
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
     }
 
-    return this.fulfill(result);
+    return this.fulfill(result, RpcResponseType.Text);
   }
 
-  private fulfill(result: string): RpcRequestFulfillment {
+  private fulfill(result: string | ArrayBuffer, type: RpcResponseType): RpcRequestFulfillment {
     const fulfillment = {
       result,
       status: this.protocol.getCode(this.status),
       id: this.request.id,
       interfaceName: this.operation.interfaceDefinition.name,
+      type,
     };
 
     return fulfillment;

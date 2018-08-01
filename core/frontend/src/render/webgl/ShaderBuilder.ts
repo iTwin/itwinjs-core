@@ -268,7 +268,7 @@ export class SourceBuilder {
  * plus a set of code snippets which can be concatenated together to form the shader source.
  */
 export class ShaderBuilder extends ShaderVariables {
-  public readonly _components: string[] = new Array<string>();
+  public readonly _components = new Array<string | undefined>();
   public readonly _functions: string[] = new Array<string>();
   public readonly _extensions: string[] = new Array<string>();
   public headerComment: string = "";
@@ -283,6 +283,10 @@ export class ShaderBuilder extends ShaderVariables {
 
     // assume if caller is replacing an existing component, they know what they're doing...
     this._components[index] = component;
+  }
+  protected removeComponent(index: number) {
+    assert(index < this._components.length);
+    this._components[index] = undefined;
   }
 
   protected getComponent(index: number): string | undefined {
@@ -432,8 +436,9 @@ export class VertexShaderBuilder extends ShaderBuilder {
     addPosition(this, positionFromLUT);
   }
 
-  public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
+  public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
+  public unset(id: VertexShaderComponent) { this.removeComponent(id); }
 
   public addInitializer(initializer: string): void { this._initializers.push(initializer); }
   public addComputedVarying(name: string, type: VariableType, computation: string): void {
@@ -556,8 +561,9 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     super(FragmentShaderComponent.COUNT);
   }
 
-  public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
+  public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
+  public unset(id: FragmentShaderComponent) { this.removeComponent(id); }
 
   public addDrawBuffersExtension(): void {
     assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");

@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RpcRequest, RpcRequestFulfillment, RpcProtocol, RpcProtocolEvent, RpcConfiguration, RpcInterfaceDefinition, SerializedRpcRequest } from "@bentley/imodeljs-common/lib/common";
-import ReconnectingWebSocket from "reconnecting-websocket";
+import { RpcRequest, RpcRequestFulfillment, RpcProtocol, RpcProtocolEvent, RpcConfiguration, RpcInterfaceDefinition, SerializedRpcRequest, RpcResponseType } from "@bentley/imodeljs-common/lib/common";
 declare var bentley: any;
 
 /** Holds configuration for the RpcInterfaces used by the application. */
@@ -20,11 +19,35 @@ export class MobileRpcManager {
 
     class MobileRequest extends RpcRequest {
       public readonly protocol: MobileProtocol = this.client.configuration.protocol as any;
-      public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "" };
+      public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "", type: RpcResponseType.Unknown };
       protected initializeChannel(): void { }
       protected setHeader(_name: string, _value: string): void { }
       public getResponseStatusCode(): number { return this.fulfillment.status; }
-      public getResponseText(): string { return this.fulfillment.result || ""; }
+
+      /** Supplies response text. */
+      public getResponseText(): string {
+        const result = this.fulfillment.result;
+        if (typeof (result) === "string") {
+          return result;
+        } else {
+          return super.getResponseText();
+        }
+      }
+
+      /** Supplies response bytes. */
+      public getResponseBytes(): ArrayBuffer {
+        const result = this.fulfillment.result;
+        if (typeof (result) !== "string") {
+          return result;
+        } else {
+          return super.getResponseBytes();
+        }
+      }
+
+      /** Supplies response type. */
+      public getResponseType(): RpcResponseType {
+        return this.fulfillment.type;
+      }
 
       protected send(): void {
         this.protocol.map.set(this.id, this);
@@ -37,7 +60,7 @@ export class MobileRpcManager {
     }
 
     class MobileProtocol extends RpcProtocol {
-      public socket: ReconnectingWebSocket = (undefined as any);
+      public socket: WebSocket = (undefined as any);
       public map: Map<string, MobileRequest> = new Map();
       public pending: string[] = [];
       public readonly requestType = MobileRequest;
@@ -46,7 +69,7 @@ export class MobileRpcManager {
         super(configuration);
 
         if (typeof (WebSocket) !== "undefined") {
-          this.socket = new ReconnectingWebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
+          this.socket = new WebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
 
           this.socket.addEventListener("message", (event) => {
             const response: MobileResponse = JSON.parse(event.data);

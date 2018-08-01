@@ -4,7 +4,7 @@
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 
 import { AccessToken, IModelClient } from "../../";
 import {
@@ -158,7 +158,7 @@ describe("iModelHub EventHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error.status).to.be.equal(404);
+    chai.expect(error.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should return undefined when no event is available", async () => {

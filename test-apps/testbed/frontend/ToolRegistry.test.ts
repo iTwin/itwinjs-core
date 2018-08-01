@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { IModelApp, Tool, FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { TestbedConfig } from "../common/TestbedConfig";
 import { MaybeRenderApp } from "./WebGLTestContext";
 
 // these are later set by executing the TestImmediate tool.
@@ -30,7 +31,7 @@ class TestCommandApp extends MaybeRenderApp {
     TestImmediate.register(this.testNamespace);
   }
 
-  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: `${TestbedConfig.localServerUrlPrefix}/locales/{{lng}}/{{ns}}.json` }; }
 }
 
 async function setupToolRegistryTests() {
@@ -149,8 +150,10 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
 
 function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
   (class extends Tool {
-    public static toolId = id; protected static _keyin = keyin;
-    public run(): boolean { lastCommand = this.keyin; return true; }
+    public static toolId = id;
+    public run(): boolean { lastCommand = keyin; return true; }
+    public static get keyin(): string { return keyin; }
+
   }).register(ns);
 }
 

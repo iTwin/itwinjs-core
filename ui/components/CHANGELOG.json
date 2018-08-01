@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.108.0",
+      "tag": "@bentley/ui-components_v0.108.0",
+      "date": "Wed, 01 Aug 2018 14:24:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to use TypeScript 2.9"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.107.0",
+      "tag": "@bentley/ui-components_v0.107.0",
+      "date": "Tue, 31 Jul 2018 16:29:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.106.0",
+      "tag": "@bentley/ui-components_v0.106.0",
+      "date": "Tue, 31 Jul 2018 13:01:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.105.0",
+      "tag": "@bentley/ui-components_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.104.1",
       "tag": "@bentley/ui-components_v0.104.1",
       "date": "Thu, 26 Jul 2018 21:35:07 GMT",

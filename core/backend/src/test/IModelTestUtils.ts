@@ -245,8 +245,8 @@ export class IModelTestUtils {
     const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     const newModelId = testImodel.models.insertModel(newModel);
 
-    assert.isTrue(newModelId.isValid());
-    assert.isTrue(newModel.id.isValid());
+    assert.isTrue(newModelId.isValid);
+    assert.isTrue(newModel.id.isValid);
     assert.deepEqual(newModelId, newModel.id);
 
     return newModelId;

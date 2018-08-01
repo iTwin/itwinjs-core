@@ -31,7 +31,7 @@ export class EntityState implements EntityProps {
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
-    if (this.id.isValid())
+    if (this.id.isValid)
       val.id = this.id;
     if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
@@ -78,7 +78,7 @@ export class ElementState extends EntityState implements ElementProps {
 
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (this.code.spec.isValid())
+    if (this.code.spec.isValid)
       val.code = this.code;
     val.model = this.model;
     val.parent = this.parent;

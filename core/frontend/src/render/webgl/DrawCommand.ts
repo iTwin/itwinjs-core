@@ -192,7 +192,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], [], []];
+  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], [], [], []];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -238,6 +238,13 @@ export class RenderCommands {
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
     scene.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    this._forcedRenderPass = RenderPass.None;
+  }
+
+  /** Add terrain graphics to their own render pass. */
+  public addTerrain(terrain: GraphicList): void {
+    this._forcedRenderPass = RenderPass.Terrain;
+    terrain.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -345,7 +352,7 @@ export class RenderCommands {
         // Want these items to draw in general opaque pass so they are not in pick data.
         if (FeatureIndexType.Empty === command.featureIndexType)
           pass = RenderPass.OpaqueGeneral;
-        /* falls through */
+      /* falls through */
       case RenderPass.OpaqueGeneral:
         if (this._translucentOverrides && haveFeatureOverrides && !this._addTranslucentAsOpaque)
           this.getCommands(RenderPass.Translucent).push(command);
@@ -421,7 +428,7 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
-  public init(scene: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -429,12 +436,13 @@ export class RenderCommands {
       this._addTranslucentAsOpaque = true;
       // Add the scene graphics.
       this.addGraphics(scene);
-      // TODO: also may want to add pickable decorations.
+      // TODO: also add any pickable decorations.
       this._addTranslucentAsOpaque = false;
       return;
     }
 
     this.addGraphics(scene);
+    this.addTerrain(terrain);
 
     if (undefined !== dynamics && 0 < dynamics.list.length) {
       this.addDecorations(dynamics);
@@ -497,7 +505,7 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes) {
+    if (undefined !== this._frustumPlanes && !batch.range.isNull()) {
       let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
       frustum = frustum.transformBy(this.target.currentTransform, frustum);
       if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {

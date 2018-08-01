@@ -2,6 +2,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Authentication */
 
 /** Profile of the authenticated user. */
 export class UserProfile {
@@ -11,6 +12,8 @@ export class UserProfile {
     public email: string,
     public userId: string,
     public organization: string,
+    public ultimateId: string,
+    public usageCountryIso: string,
   ) { }
 
 }

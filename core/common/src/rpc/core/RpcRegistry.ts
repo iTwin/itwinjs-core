@@ -9,6 +9,7 @@ import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 import { RpcControlChannel } from "./RpcControl";
 import { IModelError, ServerError } from "../../IModelError";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { RpcConfiguration } from "../../common";
 
 // tslint:disable:ban-types
 
@@ -29,6 +30,9 @@ export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/RpcRequest/_
 
 /** @hidden @internal */
 export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/RpcInvocation/__current__");
+
+/** @hidden @internal */
+export const builtins: string[] = [];
 
 /** @hidden @internal */
 export class RpcRegistry {
@@ -155,9 +159,14 @@ export class RpcRegistry {
     if (definition.prototype.configurationSupplier)
       registeredImplementation.prototype.configurationSupplier = definition.prototype.configurationSupplier;
 
-    const implementation = this.suppliedImplementations.get(definition.name) || new registeredImplementation();
+    const supplied = this.suppliedImplementations.get(definition.name);
+    const implementation = supplied || new registeredImplementation();
     if (!(implementation instanceof registeredImplementation))
       throw new IModelError(BentleyStatus.ERROR, `Invalid RPC interface implementation.`);
+
+    if (supplied) {
+      (supplied.configuration as any) = RpcConfiguration.supply(supplied);
+    }
 
     this.implementations.set(definition.name, implementation);
     implementation.configuration.onRpcImplInitialized(definition, implementation);
@@ -171,7 +180,7 @@ export class RpcRegistry {
     this.proxies.set(definition.name, proxy);
 
     Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
-      if (operationName === "constructor")
+      if (operationName === "constructor" || operationName === "configurationSupplier")
         return;
 
       (proxy as any)[operationName] = (proxy as any)[operationName].bind(proxy, operationName);
@@ -187,14 +196,24 @@ export class RpcRegistry {
   }
 
   private configureOperations<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
+    const proto = (definition.prototype as any);
+
+    for (const builtin of builtins) {
+      const propertyName = Symbol.for(builtin);
+      if (!proto[propertyName]) {
+        proto[propertyName] = { [OPERATION]: new RpcOperation(definition, builtin, new RpcOperationPolicy()) };
+      }
+    }
+
     Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
-      if (operationName === "constructor")
+      if (operationName === "constructor" || operationName === "configurationSupplier")
         return;
 
-      const proto = (definition.prototype as any);
-      if (!proto[operationName][OPERATION]) {
+      const propertyName = RpcOperation.computeOperationName(operationName);
+
+      if (!proto[propertyName][OPERATION]) {
         const policy = (definition as any)[POLICY] || new RpcOperationPolicy();
-        proto[operationName][OPERATION] = new RpcOperation(definition, operationName, policy);
+        proto[propertyName][OPERATION] = new RpcOperation(definition, propertyName, policy);
       }
     });
   }

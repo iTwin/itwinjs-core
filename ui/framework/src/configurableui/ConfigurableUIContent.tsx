@@ -8,6 +8,7 @@ import { CSSProperties } from "react";
 import { connect } from "react-redux";
 import { ModalDialogRenderer } from "./ModalDialogManager";
 import { FrontstageComposer } from "./FrontstageComposer";
+import { ElementTooltip } from "./ElementTooltip";
 
 /** Props for [[ConfigurableUIContent]] */
 export interface ConfigurableUIProps {
@@ -46,6 +47,7 @@ class ConfigurableUIContentClass extends React.Component<ConfigurableUIProps> {
           {this.props.appBackstage}
           <FrontstageComposer style={{ position: "relative", height: "100%" }} />
           <ModalDialogRenderer />
+          <ElementTooltip />
         </div>
       </div>
     );

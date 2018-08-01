@@ -268,6 +268,7 @@ describe("RpcInterface", () => {
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
     const controlInterface = (controlChannel as any).channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.name;
+    const controlPolicy = RpcOperation.lookup(controlInterface, "describeEndpoints").policy;
 
     const simulateIncompatible = () => {
       const interfaces: string[] = [];
@@ -284,22 +285,32 @@ describe("RpcInterface", () => {
     assert(typeof (endpoints[0].interfaceVersion) === "string");
     assert.isTrue(endpoints[0].compatible);
 
-    RpcOperation.lookup(controlInterface, "describeEndpoints").policy.requestCallback = () => Object.defineProperty(controlInterface, "name", { value: simulateIncompatible() });
+    controlPolicy.sentCallback = () => Object.defineProperty(controlInterface, "name", { value: simulateIncompatible() });
     assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.SET_INCOMPATIBLE_INTERFACE_VERSION, value: undefined }));
 
     const endpointsMismatch = await RpcManager.describeAvailableEndpoints();
     assert.isFalse(endpointsMismatch[0].compatible);
 
+    controlPolicy.sentCallback = () => { };
     Object.defineProperty(controlInterface, "name", { value: originalName });
     assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.RESTORE_COMPATIBLE_INTERFACE_VERSION, value: undefined }));
 
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);
 
-    const controlPolicy = RpcOperation.lookup(controlInterface, "describeEndpoints").policy;
     RpcOperation.fallbackToken = new IModelToken("test", "test", "test", "test");
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
     RpcOperation.fallbackToken = undefined;
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "none");
+  });
+
+  it("should support retrieving binary resources from the backend", async () => {
+    const data = await TestRpcInterface.getClient().op12();
+    assert.equal(data.byteLength, 4);
+    const view = new Uint8Array(data);
+    assert.equal(view[0], 1);
+    assert.equal(view[1], 2);
+    assert.equal(view[2], 3);
+    assert.equal(view[3], 4);
   });
 });

@@ -142,6 +142,7 @@ export class PerformanceMetrics {
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
+  private _terrain: GraphicList = [];
   private _decorations?: Decorations;
   private _dynamics?: DecorationList;
   private _worldDecorations?: WorldDecorations;
@@ -362,6 +363,9 @@ export abstract class Target extends RenderTarget {
   public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
     this._scene = scene;
     this._activeClipVolume = _activeVolume;
+  }
+  public changeTerrain(terrain: GraphicList) {
+    this._terrain = terrain;
   }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
@@ -633,19 +637,45 @@ export abstract class Target extends RenderTarget {
     const rect = this.viewRect;
     gl.viewport(0, 0, rect.width, rect.height);
 
-    this.setFrameTime();
-    this._renderCommands.init(this._scene, this._decorations, this._dynamics);
+    // Set this to true to visualize the output of readPixels()...useful for debugging pick.
+    const drawForReadPixels = false;
+    if (drawForReadPixels) {
+      const vf = this.currentViewFlags.clone(this._scratchViewFlags);
+      vf.transparency = false;
+      vf.textures = false;
+      vf.sourceLights = false;
+      vf.cameraLights = false;
+      vf.solarLight = false;
+      vf.shadows = false;
+      vf.noGeometryMap = true;
+      vf.acsTriad = false;
+      vf.grid = false;
+      vf.monochrome = false;
+      vf.materials = false;
 
-    this.setFrameTime();
-    this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
+      const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
+      this.pushState(state);
 
-    this.setFrameTime();
-    this._stack.pushState(this.decorationState);
-    this.drawPass(RenderPass.WorldOverlay);
-    this.drawPass(RenderPass.ViewOverlay);
-    this._stack.pop();
+      this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
+      this.compositor.drawForReadPixels(this._renderCommands);
 
-    this.setFrameTime();
+      this._stack.pop();
+    } else {
+      this.setFrameTime();
+      this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
+
+      this.setFrameTime();
+      this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
+
+      this.setFrameTime();
+      this._stack.pushState(this.decorationState);
+      this.drawPass(RenderPass.WorldOverlay);
+      this.drawPass(RenderPass.ViewOverlay);
+      this._stack.pop();
+
+      this.setFrameTime();
+    }
+
     this._endPaint();
 
     if (this.performanceMetrics) {
@@ -772,7 +802,7 @@ export abstract class Target extends RenderTarget {
     // ###TODO: Handle pickable decorations.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
-    this._renderCommands.init(this._scene, this._decorations, this._dynamics, true);
+    this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
 
     // Don't bother rendering + reading if we know there's nothing to draw.
@@ -880,13 +910,14 @@ export abstract class Target extends RenderTarget {
     let isEmptyImage = true;
     for (let i = 3; i < image.data.length; i += 4) {
       const a = image.data[i];
-      if (!preserveBGAlpha || 0 < a || true) {
+      if (!preserveBGAlpha || 0 < a) {
         image.data[i] = 0xff;
         isEmptyImage = false;
       }
     }
     if (isEmptyImage)
       return undefined;
+
     return image;
   }
 

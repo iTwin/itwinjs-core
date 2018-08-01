@@ -13,7 +13,8 @@ import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } 
 import { TextStringProps, TextString } from "./TextString";
 import { LineStyle } from "./LineStyle";
 import { AreaPattern } from "./AreaPattern";
-import { GeometricElement3dProps, GeometricElement2dProps, GeometryPartProps, IModelError } from "../common";
+import { GeometricElement3dProps, GeometricElement2dProps, GeometryPartProps } from "../ElementProps";
+import { IModelError } from "../IModelError";
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
  *  GeometryAppearanceProps always signifies a reset to the subCategory appearance for all values without an override.
@@ -381,7 +382,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   /** Create a new GeometryStream iterator for a GeometryPart.
    * To iterate a part's GeometryStream in the context of a part instance found for a GeometricElement, provide the optional GeometryParams and Transform from the GeometricElement's GeometryStreamIterator.
    * Supply the GeometryParams to return appearance information as inherited from the GeometricElement.
-   * Supply the partToWorld transform to return the part geometry in world coordintates.
+   * Supply the partToWorld transform to return the part geometry in world coordinates.
    * Supply the partToLocal transform to return the part geometry relative to the GeometricElement's placement.
    * @throws [[IModelError]] if geomPart.geom is undefined.
    */

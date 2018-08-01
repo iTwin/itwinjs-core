@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { IModelApp, Tool, AccuDraw, IdleTool, RotateTool, PanTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { TestbedConfig } from "../common/TestbedConfig";
 import { MaybeRenderApp } from "./WebGLTestContext";
 
 /** class to simulate overriding the default AccuDraw */
@@ -59,7 +60,7 @@ class TestApp extends MaybeRenderApp {
     IModelApp.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
   }
 
-  protected static supplyI18NOptions() { return { urlTemplate: "http://localhost:3000/locales/{{lng}}/{{ns}}.json" }; }
+  protected static supplyI18NOptions() { return { urlTemplate: `${TestbedConfig.localServerUrlPrefix}/locales/{{lng}}/{{ns}}.json` }; }
 }
 
 describe("IModelApp", () => {
@@ -74,7 +75,7 @@ describe("IModelApp", () => {
     assert.equal(testVal2, "test2", "arg2 was correct");
     assert.isFalse(IModelApp.tools.run("Not.Found"), "toolId is not registered");
     assert.isTrue(IModelApp.tools.run("View.Pan"), "run view pan");
-    assert.instanceOf(IModelApp.toolAdmin.activeViewTool, PanTool, "pan tool is active");
+    assert.instanceOf(IModelApp.toolAdmin.viewTool, PanTool, "pan tool is active");
 
     assert.isUndefined(IModelApp.features.check("feature1.test1"));
     assert.isTrue(IModelApp.features.check("feature2.a"));

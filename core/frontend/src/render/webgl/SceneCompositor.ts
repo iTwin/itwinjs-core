@@ -383,6 +383,10 @@ abstract class Compositor extends SceneCompositor {
     this.renderSkyBox(commands, needComposite);
     this._target.setFrameTime();
 
+    // Render the terrain
+    this.renderTerrain(commands, needComposite);
+    this._target.setFrameTime();
+
     // Enable clipping
     this._target.pushActiveVolume();
     this._target.setFrameTime();
@@ -468,6 +472,20 @@ abstract class Compositor extends SceneCompositor {
       return this._textures.init(this._width, this._height) && this._fbos.init(this._textures, this._depth) && this._geometry.init(this._textures);
     }
     return false;
+  }
+
+  private renderTerrain(commands: RenderCommands, needComposite: boolean) {
+    const cmds = commands.getCommands(RenderPass.Terrain);
+    if (0 === cmds.length) {
+      return;
+    }
+
+    const fbStack = System.instance.frameBufferStack;
+    const fbo = this.getBackgroundFbo(needComposite);
+    fbStack.execute(fbo, true, () => {
+      System.instance.applyRenderState(this.getRenderState(RenderPass.Terrain));
+      this._target.techniques.execute(this._target, cmds, RenderPass.Terrain);
+    });
   }
 
   private renderSkyBox(commands: RenderCommands, needComposite: boolean) {

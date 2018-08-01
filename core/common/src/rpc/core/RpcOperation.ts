@@ -7,7 +7,7 @@ import { IModelError } from "../../IModelError";
 import { IModelToken } from "../../IModel";
 import { BentleyStatus, Guid } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcRegistry, OPERATION, POLICY } from "./RpcRegistry";
+import { RpcRegistry, OPERATION, POLICY, builtins } from "./RpcRegistry";
 import { RpcRequestTokenSupplier_T, RpcRequestIdSupplier_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestCallback_T } from "./RpcRequest";
 import { RpcInvocationCallback_T } from "./RpcInvocation";
 
@@ -25,8 +25,11 @@ export class RpcOperationPolicy {
   /** Whether an operation request must be acknowledged. */
   public requiresAcknowledgement: boolean = false;
 
-  /** Called for every operation request on the frontend. */
+  /** Called before every operation request on the frontend is sent. */
   public requestCallback: RpcRequestCallback_T = (_request) => { };
+
+  /** Called after every operation request on the frontend is sent. */
+  public sentCallback: RpcRequestCallback_T = (_request) => { };
 
   /** Called for every operation invocation on the backend. */
   public invocationCallback: RpcInvocationCallback_T = (_invocation) => { };
@@ -41,11 +44,19 @@ export class RpcOperation {
   public static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation {
     const definition = typeof (target) === "string" ? RpcRegistry.instance.lookupInterfaceDefinition(target) : target;
 
+    let propertyName: string | symbol = RpcOperation.computeOperationName(operationName);
+    for (const builtin of builtins) {
+      if (builtin === propertyName) {
+        propertyName = Symbol.for(builtin);
+        break;
+      }
+    }
+
     const proto = (definition.prototype as any);
-    if (!proto.hasOwnProperty(operationName))
+    if (!proto.hasOwnProperty(propertyName))
       throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${definition.name}" does not does not declare operation "${operationName}"`);
 
-    return proto[operationName][OPERATION];
+    return proto[propertyName][OPERATION];
   }
 
   /** Iterates the operations of an RPC interface definition. */
@@ -54,7 +65,14 @@ export class RpcOperation {
       if (operationName === "constructor" || operationName === "configurationSupplier")
         return;
 
-      callback((definition.prototype as any)[operationName][OPERATION]);
+      const propertyName = RpcOperation.computeOperationName(operationName);
+      callback((definition.prototype as any)[propertyName][OPERATION]);
+    });
+
+    Object.getOwnPropertySymbols(definition.prototype).forEach((builtinSymbol) => {
+      const builtin = (definition.prototype as any)[builtinSymbol][OPERATION];
+      if (builtin)
+        callback(builtin);
     });
   }
 
@@ -75,6 +93,15 @@ export class RpcOperation {
     this.interfaceDefinition = definition;
     this.operationName = operation;
     this.policy = policy;
+  }
+
+  /** @hidden @internal */
+  public static computeOperationName(identifier: string): string {
+    const c = identifier.indexOf(":");
+    if (c === -1)
+      return identifier;
+
+    return identifier.substring(0, c + 1);
   }
 }
 
