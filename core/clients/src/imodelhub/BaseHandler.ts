@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { UrlDescriptor, DeploymentEnv } from "../Client";
 import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
 import { RequestOptions, RequestQueryOptions } from "../Request";
@@ -44,6 +46,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Creates an instance of IModelBaseHandler.
+   * @hidden
    * @param deploymentEnv Deployment environment.
    */
   public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {

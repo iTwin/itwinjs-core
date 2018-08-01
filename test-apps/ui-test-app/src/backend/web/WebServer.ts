@@ -1,51 +1,33 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+// tslint:disable:no-console
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelTileRpcInterface, IModelReadRpcInterface, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { RpcInterfaceDefinition, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 
-// FIXME: I have to use require here because no type definitions are being published for this module:
-// tslint:disable-next-line:no-var-requires
-// const { GatewayRegistry } = require("@bentley/imodeljs-common/lib/gateway/core/GatewayRegistry");
+/**
+ * Initializes Web Server backend
+ */
+export default function initialize(rpcs: RpcInterfaceDefinition[]) {
+  // tell BentleyCloudRpcManager which RPC interfaces to handle
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "ui-test-app", version: "v1.0" } }, rpcs);
 
-declare namespace global {
-  const webpackDevServer: express.Application | undefined;
-}
-
-export function setupWebServer(app: express.Application) {
-
-  const gatewaysConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "protogist", version: "v1.0" } },
-    [IModelTileRpcInterface, IModelReadRpcInterface]);
-
+  // create a basic express web server
+  const app = express();
   app.use(bodyParser.text());
 
-  // Enable CORS for all apis
+  // enable CORS for all apis
   app.all("/*", (_req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
     next();
   });
 
-  // ---------------------------------------------
-  // Routes
-  // ---------------------------------------------
-  app.get("/v3/swagger.json", (req, res) => gatewaysConfig.protocol.handleOpenApiDescriptionRequest(req, res));
-  app.post("*", async (req, res) => gatewaysConfig.protocol.handleOperationPostRequest(req, res));
-}
+  // routes
+  app.get("/v3/swagger.json", (req, res) => rpcConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+  app.post("*", async (req, res) => rpcConfig.protocol.handleOperationPostRequest(req, res));
 
-if (global.webpackDevServer) {
-  setupWebServer(global.webpackDevServer);
-} else {
-  const app = express();
-  setupWebServer(app);
-
-  app.use(express.static(__dirname));
-
-  // ---------------------------------------------
-  // Run the server...
-  // ---------------------------------------------
-  app.set("port", process.env.PORT || 3000);
-  // tslint:disable-next-line:no-console
-  app.listen(app.get("port"), () => console.log("Serving static resources for Protogist on port " + app.get("port")));
+  app.set("port", process.env.PORT || 5000);
+  app.listen(app.get("port"), () => console.log("Web backend for ui-test-app listening on port " + app.get("port")));
 }

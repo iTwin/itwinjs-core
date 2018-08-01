@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Utils */
 import { ProgressInfo } from "./Request";
 import { FileHandler } from "./FileHandler";
 import * as fs from "fs-extra";

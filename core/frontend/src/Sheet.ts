@@ -5,11 +5,27 @@
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
-import { ColorDef, Gradient, GraphicParams, Placement2d, ElementAlignedBox2d, ViewAttachmentProps, ElementAlignedBox3d, RenderTexture, ImageBuffer } from "@bentley/imodeljs-common";
+import {
+  ColorDef,
+  Gradient,
+  GraphicParams,
+  Placement2d,
+  ElementAlignedBox2d,
+  ViewAttachmentProps,
+  ElementAlignedBox3d,
+  RenderTexture,
+  ImageBuffer,
+  TileProps,
+  ViewFlag,
+  ViewFlags,
+  RenderMode,
+  Feature,
+  FeatureTable,
+} from "@bentley/imodeljs-common";
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
-import { TileTree, Tile, TileRequests, IModelTileLoader } from "./tile/TileTree";
+import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
@@ -203,14 +219,39 @@ export namespace Attachments {
 
   const QUERY_SHEET_TILE_PIXELS: number = 512;
 
-  /**
-   * @hidden - Override of IModelTileLoader that ensures tiles are marked as needing to be loaded regardless of the presence of a geometry member.
-   * The tiles create their own geometry/graphics.
-   */
-  class AttachmentTileLoader extends IModelTileLoader {
-    public tileRequiresLoading(_params: Tile.Params): boolean {
-      return true;  // always true
+  abstract class AttachmentTileLoader extends TileLoader {
+    public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
+    public async getTileProps(_ids: string[]): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
+    public async loadTileContents(_missing: MissingNodes): Promise<void> {
+      // ###TODO: This doesn't appear to be needed, yet it gets invoked?
+      return Promise.resolve();
     }
+  }
+
+  class TileLoader2d extends AttachmentTileLoader {
+    private readonly _viewFlagOverrides: ViewFlag.Overrides;
+
+    public constructor(view: ViewState) {
+      super();
+      this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
+    }
+
+    public get maxDepth() { return 1; }
+    public get viewFlagOverrides() { return this._viewFlagOverrides; }
+  }
+
+  class TileLoader3d extends AttachmentTileLoader {
+    private static _debugNoTile3dTextures = false; // set this to true to output color-coded polys instead of textures for debugging.
+    private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
+      renderMode: RenderMode.SmoothShade,
+      noCameraLights: true,
+      noSourceLights: true,
+      noSolarLight: true,
+      noTexture: TileLoader3d._debugNoTile3dTextures,
+    }));
+
+    public get maxDepth() { return 32; }
+    public get viewFlagOverrides() { return TileLoader3d._viewFlagOverrides; }
   }
 
   /** An extension of Tile specific to rendering 2d attachments. */
@@ -222,23 +263,20 @@ export namespace Attachments {
         new ElementAlignedBox3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
         512,  // does not matter... have no children
         [],
-      ), new AttachmentTileLoader(root.view.iModel, new Id64()));
+      ));
     }
 
-    // override
     public get hasChildren(): boolean { return false; }
-    // override
     public get hasGraphics(): boolean { return true; }
 
-    // override
     public drawGraphics(args: Tile.DrawArgs) {
       const myRoot = this.root as Tree2d;
       const viewRoot = myRoot.viewRoot;
 
       const drawArgs = viewRoot.createDrawArgs(args.context);
       drawArgs.location.setFrom(myRoot.drawingToAttachment);
-      // drawArgs.viewFlagOverrides = new ViewFlag.Overrides(myRoot.view.viewFlags);
       drawArgs.clip = myRoot.graphicsClip;
+      drawArgs.graphics.setViewFlagOverrides(this.root.viewFlagOverrides);
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
       myRoot.view.createSceneFromDrawArgs(drawArgs);
@@ -261,7 +299,7 @@ export namespace Attachments {
         undefined,
         undefined,
         undefined,
-      ), new AttachmentTileLoader(root.sheetView.iModel, new Id64()));
+      ));
 
       this._placement = placement;
       const tree = this.rootAsTree3d;
@@ -459,10 +497,12 @@ export namespace Attachments {
             viewport.setupViewFromFrustum(frust);
 
             viewport.renderTexture();
-            if (viewport.texture === undefined)
+            if (viewport.texture === undefined) {
               this.setNotFound();
-            else
-              this.setGraphic(system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces)));
+            } else {
+              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this.rootAsTree3d.tileColor));
+              this.setGraphic(system.createBatch(graphic, this.rootAsTree3d.featureTable, this.contentRange));
+            }
 
             // restore frustum
             viewport.setupViewFromFrustum(frustumToRestore);
@@ -488,16 +528,44 @@ export namespace Attachments {
       }
       return this._children.length === 0 ? undefined : this._children;
     }
+
+    private static _drawDebugGraphics = false;
+    public drawGraphics(args: Tile.DrawArgs) {
+      if (!Tile3d._drawDebugGraphics) {
+        super.drawGraphics(args);
+        return;
+      }
+
+      const polys = this._tilePolyfaces;
+      if (0 === polys.length)
+        return;
+
+      const fillColor = this.rootAsTree3d.tileColor;
+      const lineColor = fillColor.clone();
+      lineColor.setAlpha(0xff);
+      const builder = args.context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      builder.setSymbology(lineColor, fillColor, 2);
+      for (const poly of polys) {
+        const lineString: Point3d[] = [];
+        for (const index of poly.data.pointIndex)
+          lineString.push(poly.data.point.getPoint3dAt(index));
+
+        builder.addShape(lineString);
+        builder.addLineString(lineString);
+      }
+
+      args.graphics.add(builder.finish()!);
+    }
   }
 
   /** An extension of TileTree specific to rendering attachments. */
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(model: GeometricModelState) {
+    public constructor(loader: TileLoader, model: GeometricModelState, attachment: Attachment) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
-        new Id64(),
+        attachment.id,
         {
           id: { treeId: "", tileId: "" },
           range: {
@@ -508,16 +576,14 @@ export namespace Attachments {
           childIds: [],
         },
         model,
-        new IModelTileLoader(model.iModel, new Id64()),
+        loader,
         Transform.createIdentity(),
         undefined,
-        undefined,    // ClipVector build in child class constructors
+        undefined,
       ));
     }
 
-    // override (don't depend on viewed model)
     public get is2d(): boolean { return true; }
-    // override (don't depend on viewed model)
     public get is3d(): boolean { return false; }
   }
 
@@ -529,7 +595,7 @@ export namespace Attachments {
     public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
     private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-      super(model);
+      super(new TileLoader2d(view), model, attachment);
 
       this.view = view;
       this.viewRoot = viewRoot;
@@ -601,18 +667,48 @@ export namespace Attachments {
     }
   }
 
+  class TileColorSequence {
+    private _index: number = 0;
+    private readonly _colors: number[] = [
+      0xff0000,
+      0x00ff00,
+      0x0000ff,
+      0x7fff00,
+      0x7f00ff,
+      0x007fff,
+      0xff7f00,
+      0xff007f,
+      0x00ff7f,
+    ];
+
+    public get next(): ColorDef {
+      if (this._index >= this._colors.length)
+        this._index = 0;
+
+      const color = new ColorDef(this._colors[this._index]);
+      color.setAlpha(0x7f);
+      this._index++;
+      return color;
+    }
+  }
+
+  const tileColorSequence = new TileColorSequence();
+
   /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
   export class Tree3d extends Tree {
-    public static readonly tileColor: ColorDef = ColorDef.red;
+    public readonly tileColor: ColorDef;
     public readonly biasDistance: number; // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
     public readonly viewport: AttachmentViewport;
-    /** A reference to the SheetViewState that this attachment corresponds to. */
     public readonly sheetView: SheetViewState;
-    /** A reference to the attachment that owns this tile tree. */
     public readonly attachment: Attachment3d;
+    public readonly featureTable: FeatureTable;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-      super(new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel));   // Pass along a null Model3dState
+      super(new TileLoader3d(), new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel), attachment);   // Pass along a null Model3dState
+
+      this.tileColor = tileColorSequence.next;
+      this.featureTable = new FeatureTable(1);
+      this.featureTable.insert(new Feature(attachment.id));
 
       this.viewport = viewport;
       this.sheetView = sheetView;
@@ -641,7 +737,7 @@ export namespace Attachments {
       // Override the background color. This is to match v8, but there should probably be an option in the "Details" about whether to do this or not.
       const bgColor = sheetView.displayStyle.backgroundColor.clone();
       // Set fully-transparent so that we discard background pixels (probably no point to the above line any more...)
-      bgColor.setAlpha(0xff);
+      bgColor.setAlpha(0);
       style.backgroundColor.setFrom(bgColor);
 
       // turn off skybox and groundplane
@@ -659,7 +755,7 @@ export namespace Attachments {
       this.biasDistance = 0.5;
 
       range.getNpcToWorldRangeTransform(this.viewport.toParent);
-      this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1);
+      this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1, this.viewport.toParent.matrix);
 
       const fromParent = this.viewport.toParent.inverse();
       if (fromParent !== undefined)

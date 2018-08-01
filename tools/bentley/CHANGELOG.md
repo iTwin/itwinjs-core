@@ -1,6 +1,13 @@
 # Change Log - @bentley/bentleyjs-tools
 
-This log was last generated on Tue, 31 Jul 2018 16:29:14 GMT and should not be manually modified.
+This log was last generated on Wed, 01 Aug 2018 14:24:06 GMT and should not be manually modified.
+
+## 0.108.0
+Wed, 01 Aug 2018 14:24:06 GMT
+
+### Updates
+
+- Updated to use TypeScript 2.9
 
 ## 0.107.0
 Tue, 31 Jul 2018 16:29:14 GMT

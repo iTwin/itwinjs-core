@@ -167,7 +167,7 @@ export class UlasClient extends Client {
   }
 
   public async logFeature(token: AccessToken, entry: FeatureLogEntry): Promise<LogPostingResponse> {
-    const postUrl: string = await this.getUrl();
+    const postUrl: string = (await this.getUrl()) + "/featureLog";
     const entriesJson: any = FeatureEntryLogConverter.toJson(token, entry, this._policyIds);
 
     const options: RequestOptions = {
@@ -230,6 +230,11 @@ class FeatureEntryLogConverter {
     // version must be encoded into a single number where each version digit is padded out to 4 digits
     // Ex: 3.99.4 -> 300990004
     const lastVersionDigitIx: number = entry.productVersion.length - 1;
+    const productVersionDigits: number[] = [...entry.productVersion];
+    for (let i = 0; i < 4 - entry.productVersion.length; i++) {
+      productVersionDigits.push(0);
+    }
+
     let ver: number = 0;
     for (let i = lastVersionDigitIx; i >= 0; i--) {
       ver += entry.productVersion[i] * Math.pow(10000, lastVersionDigitIx - i);

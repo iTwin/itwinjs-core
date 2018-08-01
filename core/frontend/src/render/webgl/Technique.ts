@@ -19,7 +19,7 @@ import { createCompositeProgram } from "./glsl/Composite";
 import { createClipMaskProgram } from "./glsl/ClipMask";
 import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
-import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
+import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDiscardByAlpha } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeUniformElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
@@ -170,7 +170,6 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
   private static readonly kHilite = numFeatureVariants(SurfaceTechnique.kFeature);
-  // private static readonly kClip = SurfaceTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -183,7 +182,10 @@ class SurfaceTechnique extends VariedTechnique {
       addMonochrome(builder.frag);
       addMaterial(builder.frag);
 
+      addSurfaceDiscardByAlpha(builder.frag);
       this.addShader(builder, flags, gl);
+
+      builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
       this.addTranslucentShader(builder, flags, gl);
     }
   }
@@ -207,7 +209,6 @@ class PolylineTechnique extends VariedTechnique {
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
   private static readonly kHilite = numFeatureVariants(PolylineTechnique.kFeature);
-  // private static readonly kClip = PolylineTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -254,7 +255,6 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
-  // private static readonly kClip = numFeatureVariants(EdgeTechnique.kFeature);
   private readonly _isSilhouette: boolean;
 
   public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
@@ -298,7 +298,6 @@ class PointStringTechnique extends VariedTechnique {
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
   private static readonly kHilite = numFeatureVariants(PointStringTechnique.kFeature);
-  // private static readonly kClip = PointStringTechnique.kHilite + 1;
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));

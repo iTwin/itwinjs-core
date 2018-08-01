@@ -8,7 +8,7 @@ import { AccessToken, IModelClient } from "../../";
 
 import {
   CodeState, Code, AggregateResponseError, ConflictingCodesError, CodeQuery,
-  IModelHubRequestError,
+  IModelHubClientError,
 } from "../../";
 
 import { ResponseBuilder } from "../ResponseBuilder";
@@ -283,11 +283,11 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should not create a query by codes with empty array", () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       new CodeQuery().byCodes([]);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -295,11 +295,11 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should not create a query by codes with invalid codes", () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       new CodeQuery().byCodes([new Code()]);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -307,11 +307,11 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should fail deleting all codes with invalid briefcase id", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.Codes().deleteAll(accessToken, iModelId, 0);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);

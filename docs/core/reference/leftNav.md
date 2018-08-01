@@ -55,6 +55,22 @@
 - [Feature Gates]($common:FeatureGates)
 - [All]($common:All)
 
+---
+
+### ($clients)
+
+- [Authentication]($clients:Authentication)
+- [Base Clients]($clients:BaseClients)
+- [Connect Services]($clients:ConnectServices)
+- [iModel Bank]($clients:iModelBank)
+- [iModel Hub]($clients:iModelHub)
+- [iModel Hub Events]($clients:iModelHubEvents)
+- [iModel Hub Global Events]($clients:iModelHubGlobalEvents)
+- [iModels]($clients:iModels)
+- [Other Services]($clients:OtherServices)
+- [Utils]($clients:Utils)
+- [All]($clients:All)
+
 &nbsp;
 ## Support Packages
 ---

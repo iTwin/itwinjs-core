@@ -70,6 +70,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "electron-chromedriver",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "fs-extra",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
@@ -128,6 +132,10 @@
     {
       "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-test-renderer",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "reconnecting-websocket",

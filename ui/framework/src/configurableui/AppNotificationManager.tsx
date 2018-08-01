@@ -13,12 +13,16 @@ import {
   MessageBoxIconType,
   ActivityMessageDetails,
   ActivityMessageEndReason,
+  ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
+
+import { XAndY } from "@bentley/geometry-core";
 
 import { ModalDialogManager } from "./ModalDialogManager";
 import { StandardMessageBox } from "./StandardMessageBox";
 import { MessageManager } from "./MessageManager";
 import { UiFramework } from "../UiFramework";
+import { ElementTooltip } from "./ElementTooltip";
 
 class MessageBoxCallbacks {
   constructor(
@@ -109,4 +113,26 @@ export class AppNotificationManager extends NotificationManager {
   public endActivityMessage(_reason: ActivityMessageEndReason): boolean {
     return false;
   }
+
+  /** Return true if the ToolTip is current open. */
+  public isToolTipOpen(): boolean {
+    return ElementTooltip.isTooltipVisible;
+  }
+
+  /** Clear the ToolTip if it is current open. If not open, does nothing. */
+  public clearToolTip(): void {
+    if (this.isToolTipOpen())
+      ElementTooltip.hideTooltip();
+  }
+
+  /** Show a ToolTip window.
+   * @param _el      The HTMLElement that that anchors the toolTip.
+   * @param message  The message to display inside the ToolTip
+   * @param _pt      An optional location, relative to the origin of el, for the ToolTip. If undefined, center of el.
+   * @param _options Options that supply additional information about how the ToolTip should function.
+   */
+  public showToolTip(_el: HTMLElement, message: string, _pt?: XAndY, _options?: ToolTipOptions): void {
+    ElementTooltip.showTooltip(message);
+  }
+
 }

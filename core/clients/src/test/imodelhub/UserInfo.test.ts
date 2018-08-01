@@ -9,7 +9,7 @@ import { AccessToken } from "../../Token";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { TestUsers } from "../TestConfig";
-import { UserInfoQuery, UserInfo, UserProfile, IModelHubRequestError, IModelClient } from "../..";
+import { UserInfoQuery, UserInfo, UserProfile, IModelHubClientError, IModelClient } from "../..";
 import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 function mockGetUserInfo(iModelId: string, userInfo: UserInfo[], query?: string) {
@@ -41,22 +41,23 @@ function generateUserInfo(userProfiles: UserProfile[]): UserInfo[] {
 }
 
 describe("iModelHubClient UserInfoHandler", () => {
-  let accessToken: AccessToken;
-  let accessToken2: AccessToken;
+  const accessTokens: AccessToken[] = [];
   let iModelId: string;
 
   const imodelName = "imodeljs-clients UserInfo test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    accessToken = await utils.login();
-    accessToken2 = await utils.login(TestUsers.regular);
-    await utils.createIModel(accessToken, imodelName);
-    iModelId = await utils.getIModelId(accessToken, imodelName);
+    accessTokens.push(await utils.login());
+    accessTokens.push(await utils.login(TestUsers.manager));
+
+    accessTokens.sort((a: AccessToken, b: AccessToken) => a.getUserProfile()!.userId.localeCompare(b.getUserProfile()!.userId));
+    await utils.createIModel(accessTokens[0], imodelName);
+    iModelId = await utils.getIModelId(accessTokens[0], imodelName);
 
     if (!TestConfig.enableMocks) {
-      await utils.getBriefcases(accessToken, iModelId, 1);
-      await utils.getBriefcases(accessToken2, iModelId, 1);
+      await utils.getBriefcases(accessTokens[0], iModelId, 1);
+      await utils.getBriefcases(accessTokens[1], iModelId, 1);
     }
   });
 
@@ -66,45 +67,45 @@ describe("iModelHubClient UserInfoHandler", () => {
 
   it("should get one user info", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
-      const mockedUserInfo = generateUserInfo([accessToken.getUserProfile()!]);
+      const mockedUserInfo = generateUserInfo([accessTokens[0].getUserProfile()!]);
       mockGetUserInfo(iModelId, mockedUserInfo, `${mockedUserInfo[0].id}`);
     }
 
-    const query = new UserInfoQuery().byId(accessToken.getUserProfile()!.userId);
-    const userInfo = (await imodelHubClient.Users().get(accessToken, iModelId, query));
+    const query = new UserInfoQuery().byId(accessTokens[0].getUserProfile()!.userId);
+    const userInfo = (await imodelHubClient.Users().get(accessTokens[0], iModelId, query));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(1);
-    chai.expect(userInfo[0].id).to.be.equal(accessToken.getUserProfile()!.userId);
-    chai.expect(userInfo[0].firstName).to.be.equal(accessToken.getUserProfile()!.firstName);
-    chai.expect(userInfo[0].lastName).to.be.equal(accessToken.getUserProfile()!.lastName);
+    chai.expect(userInfo[0].id).to.be.equal(accessTokens[0].getUserProfile()!.userId);
+    chai.expect(userInfo[0].firstName).to.be.equal(accessTokens[0].getUserProfile()!.firstName);
+    chai.expect(userInfo[0].lastName).to.be.equal(accessTokens[0].getUserProfile()!.lastName);
   });
 
   it("should get several users info", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
-      const mockedUsersInfo = generateUserInfo([accessToken.getUserProfile()!, accessToken2.getUserProfile()!]);
+      const mockedUsersInfo = generateUserInfo([accessTokens[0].getUserProfile()!, accessTokens[1].getUserProfile()!]);
       mockGetUserInfo(iModelId, mockedUsersInfo);
     }
 
     const query = new UserInfoQuery().byIds(
-      [accessToken.getUserProfile()!.userId,
-      accessToken2.getUserProfile()!.userId]);
-    const userInfo = (await imodelHubClient.Users().get(accessToken, iModelId, query));
+      [accessTokens[0].getUserProfile()!.userId,
+      accessTokens[1].getUserProfile()!.userId]);
+    const userInfo = (await imodelHubClient.Users().get(accessTokens[0], iModelId, query));
+    userInfo.sort((a: UserInfo, b: UserInfo) => a.id!.localeCompare(b.id!));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(2);
-    chai.expect(userInfo[0].id).to.be.equal(accessToken2.getUserProfile()!.userId);
-    chai.expect(userInfo[0].firstName).to.be.equal(accessToken2.getUserProfile()!.firstName);
-    chai.expect(userInfo[0].lastName).to.be.equal(accessToken2.getUserProfile()!.lastName);
-    chai.expect(userInfo[1].id).to.be.equal(accessToken.getUserProfile()!.userId);
-    chai.expect(userInfo[1].firstName).to.be.equal(accessToken.getUserProfile()!.firstName);
-    chai.expect(userInfo[1].lastName).to.be.equal(accessToken.getUserProfile()!.lastName);
+    for (let i = 0; i < 2; ++i) {
+      chai.expect(userInfo[i].id).to.be.equal(accessTokens[i].getUserProfile()!.userId);
+      chai.expect(userInfo[i].firstName).to.be.equal(accessTokens[i].getUserProfile()!.firstName);
+      chai.expect(userInfo[i].lastName).to.be.equal(accessTokens[i].getUserProfile()!.lastName);
+    }
   });
 
   it("should fail to get users without ids", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
-      await imodelHubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byIds([]));
+      await imodelHubClient.Users().get(accessTokens[0], iModelId, new UserInfoQuery().byIds([]));
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Authentication */
+
 import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
 import { UserProfile } from "./UserProfile";
