@@ -91,21 +91,18 @@ export class FeatureStartedLogEntry extends FeatureLogEntry {
 
 /**
  * Data to log the end of a Feature usage with the ULAS Posting Service.
- * Must have logged an [FeatureStartedLogEntry]($imodeljs-clients) before.
+ * Must have logged a [FeatureStartedLogEntry]($imodeljs-clients) before.
  * See [UlasClient]$(imodeljs-clients)
  */
 export class FeatureEndedLogEntry extends FeatureLogEntry {
+  /* Id of the corresponding [FeatureStartedLogEntry]($imodeljs-clients).
+   * See [FeatureStartedLogEntry.entryId]($imodeljs-clients)
+   */
   public readonly startEntryId: Guid;
 
-  public constructor(startEntry: FeatureStartedLogEntry) {
-    super(startEntry.featureId, startEntry.productId);
-    this.productVersion = startEntry.productVersion;
-    this.usageData = startEntry.usageData;
-    this.hostName = startEntry.hostName;
-    this.hostUserName = startEntry.hostUserName;
-    this.logPostingSource = startEntry.logPostingSource;
-    this.usageType = startEntry.usageType;
-    this.startEntryId = startEntry.entryId;
+  public constructor(featureId: GuidProps, productId: number, startEntryId: Guid) {
+    super(featureId, productId);
+    this.startEntryId = startEntryId;
   }
 }
 
@@ -170,7 +167,7 @@ export class UlasClient extends Client {
   }
 
   public async logFeature(token: AccessToken, entry: FeatureLogEntry): Promise<LogPostingResponse> {
-    const postUrl: string = await this.getUrl();
+    const postUrl: string = (await this.getUrl()) + "/featureLog";
     const entriesJson: any = FeatureEntryLogConverter.toJson(token, entry, this._policyIds);
 
     const options: RequestOptions = {
@@ -182,11 +179,11 @@ export class UlasClient extends Client {
     await this.setupOptionDefaults(options);
 
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, "Sending Feature Log REST request...", () => ({ url: postUrl, request: options }));
+      Logger.logTrace(loggingCategory, "Sending Feature Log REST request...", () => ({ url: postUrl, body: entriesJson }));
 
     const resp: Response = await request(postUrl, options);
 
-    const requestDetails = { url: postUrl, request: options, response: resp };
+    const requestDetails = { url: postUrl, body: entriesJson, response: resp };
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
       Logger.logTrace(loggingCategory, "Sent Feature Log REST request.", () => requestDetails);
 
@@ -233,6 +230,11 @@ class FeatureEntryLogConverter {
     // version must be encoded into a single number where each version digit is padded out to 4 digits
     // Ex: 3.99.4 -> 300990004
     const lastVersionDigitIx: number = entry.productVersion.length - 1;
+    const productVersionDigits: number[] = [...entry.productVersion];
+    for (let i = 0; i < 4 - entry.productVersion.length; i++) {
+      productVersionDigits.push(0);
+    }
+
     let ver: number = 0;
     for (let i = lastVersionDigitIx; i >= 0; i--) {
       ver += entry.productVersion[i] * Math.pow(10000, lastVersionDigitIx - i);

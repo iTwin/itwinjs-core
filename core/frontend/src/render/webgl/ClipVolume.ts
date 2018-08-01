@@ -132,7 +132,7 @@ export class ClipPlanesVolume extends RenderClipVolume {
     let writer: PlanesWriter;
     const useFloatIfAvailable = false; // ###TODO if floating point textures supported...
     if (useFloatIfAvailable && System.instance.capabilities.supportsTextureFloat)
-       writer = new FloatPlanesWriter(bytes);
+      writer = new FloatPlanesWriter(bytes);
     else
       writer = new PackedPlanesWriter(bytes);
 
@@ -203,7 +203,7 @@ export class ClipMaskVolume implements RenderClipVolume {
     ];
 
     // Clip the polygon into smaller polygons inside the clipping region
-    const clippedPolygonInsides = ClipUtilities.clipPolygonToClipVector(pts, clipVec);
+    const clippedPolygonInsides = ClipUtilities.clipPolygonToClipShape(pts, clipVec.clips[0]);  // ### TODO: Currently assume that there is only one shape...
     const indices: number[] = [];
     const vertices = QPoint3dList.createFrom([], QParams3d.fromRange(range));
     let indexOffset = 0;

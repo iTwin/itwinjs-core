@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module OtherServices */
 
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { DeploymentEnv, UrlDescriptor } from "./Client";
@@ -10,7 +11,7 @@ import { IModelWebNavigatorClient } from "./IModelWebNavigatorClient";
 import { RequestQueryOptions } from "./Request";
 
 /** Job */
-@ECJsonTypeMap.classToJson("wsg", "TilePublisher.Job", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "TilePublisher.Job", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Job extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContextId")
   public contextId?: string;
@@ -47,9 +48,9 @@ export class Job extends WsgInstance {
   public versionId?: string;
 }
 
- /**
-  * Client API to query for Tile Jobs.
-  */
+/**
+ * Client API to query for Tile Jobs.
+ */
 export class TilesGeneratorClient extends WsgClient {
   public static readonly searchKey: string = "3dTilesGenerator.URL";
 

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import * as deepAssign from "deep-assign";
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
@@ -9,9 +11,10 @@ import { WsgRequestOptions } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { ArgumentCheck } from "./Errors";
 import { Query } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
-import { IModelHubRequestError, isBriefcaseIdValid, AggregateResponseError, IModelHubError } from "./index";
+import { IModelHubClientError, AggregateResponseError, IModelHubError } from "./index";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -160,6 +163,7 @@ export class ConflictingCodesError extends IModelHubError {
   /**
    * Amends this error instance with conflicting codes from another IModelHubError.
    * @param error Error to get additional conflicting codes from.
+   * @hidden
    */
   public addCodes(error: IModelHubError) {
     if (!error.data || !error.data.ConflictingCodes) {
@@ -196,8 +200,10 @@ export class CodeQuery extends Query {
    * Query Codes by Briefcase id.
    * @param briefcaseId Id of the Briefcase.
    * @returns This query.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or has an invalid [[Briefcase]] id value.
    */
   public byBriefcaseId(briefcaseId: number) {
+    ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
     this.addFilter(`BriefcaseId+eq+${briefcaseId}`);
     return this;
   }
@@ -206,8 +212,10 @@ export class CodeQuery extends Query {
    * Query Codes by CodeSpec id.
    * @param codeSpecId Id of the CodeSpec.
    * @returns This query.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if codeSpecId is undefined or empty.
    */
   public byCodeSpecId(codeSpecId: string) {
+    ArgumentCheck.defined("codeSpecId", codeSpecId);
     this.addFilter(`CodeSpecId+eq+'${codeSpecId}'`);
     return this;
   }
@@ -216,8 +224,10 @@ export class CodeQuery extends Query {
    * Query Codes by Code Scope.
    * @param codeScope Scope of the Code.
    * @returns This query.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if codeScope is undefined or empty.
    */
   public byCodeScope(codeScope: string) {
+    ArgumentCheck.defined("codeScope", codeScope);
     this.addFilter(`CodeScope+eq+'${codeScope}'`);
     return this;
   }
@@ -226,24 +236,25 @@ export class CodeQuery extends Query {
    * Query Codes by their instance ids.
    * @param codes Codes to query. They must have their CodeSpec, Scope and Value set.
    * @returns This query.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if codes array is undefined, empty or it
+   * contains not valid [[Code]] values.
    */
   public byCodes(codes: Code[]) {
+    ArgumentCheck.nonEmptyArray("codes", codes);
     this._isMultiCodeQuery = false;
     if (codes.length < 1) {
-      throw IModelHubRequestError.invalidArgument("codes");
+      throw IModelHubClientError.invalidArgument("codes");
     }
 
     let filter = "$id+in+[";
 
-    let first = true;
+    let index = 0;
     for (const code of codes) {
       const id = getCodeInstanceId(code);
+      ArgumentCheck.valid(`codes[${index}]`, id);
 
-      if (!id) {
-        throw IModelHubRequestError.invalidArgument("codes");
-      }
-
-      first ? first = false : filter += ",";
+      if (0 !== index++)
+        filter += ",";
       filter += id;
     }
 
@@ -268,8 +279,10 @@ export class CodeQuery extends Query {
    * Query unavailable Codes.
    * @param briefcaseId Id of the briefcase.
    * @returns This query.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or has an invalid [[Briefcase]] id value.
    */
   public unavailableCodes(briefcaseId: number) {
+    ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
     const filter = `BriefcaseId+ne+${briefcaseId}`;
     this.addFilter(filter);
     return this;
@@ -376,6 +389,8 @@ export class CodeHandler {
     return CodeHandler.convertMultiCodesToCodes(result);
   }
 
+  // CodeReservedByAnotherBriefcaseException, CodeStateInvalidException, CodeDoesNotExistException, iModelHubOperationFailedException
+
   /**
    * Updates multiple codes.
    * @param token Delegation token of the authorized user.
@@ -384,9 +399,13 @@ export class CodeHandler {
    * to just check if a code can be reserved.
    * @param updateOptions Options for the update request.
    * @returns The code that was just obtained from the server.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
     Logger.logInfo(loggingCategory, `Requesting codes for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.nonEmptyArray("codes", codes);
 
     updateOptions = updateOptions || {};
     this.setupOptionDefaults(updateOptions);
@@ -438,9 +457,12 @@ export class CodeHandler {
    * @param imodelId Id of the iModel
    * @param query Object used to modify results of this query.
    * @returns Resolves to an array of codes.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<Code[]> {
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     let codes: Code[];
     if (query.isMultiCodeQuery()) {
@@ -460,12 +482,13 @@ export class CodeHandler {
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel
    * @param briefcaseId Id of the briefcacase
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async deleteAll(token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);
-
-    if (!isBriefcaseIdValid(briefcaseId))
-      return Promise.reject(IModelHubRequestError.invalidArgument("briefcaseId"));
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
     await this._handler.delete(token, this.getRelativeUrl(imodelId, false, `DiscardReservedCodes-${briefcaseId}`));
 

@@ -4,11 +4,8 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { DictionaryModel } from "../Model";
-import { SpatialCategory } from "../Category";
+import { DictionaryModel, SpatialCategory, Element, IModelDb } from "../backend";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { Element } from "../Element";
-import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { Point3d, Arc3d } from "@bentley/geometry-core";

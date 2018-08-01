@@ -639,7 +639,7 @@ export namespace ViewFlag {
       return result;
     }
     public copyFrom(other: Overrides): void {
-      this.values.clone(other.values);
+      other.values.clone(this.values);
       this.present = other.present;
     }
 

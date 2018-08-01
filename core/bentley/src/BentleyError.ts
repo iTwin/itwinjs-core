@@ -273,6 +273,7 @@ export enum IModelHubStatus {
   QueryIdsNotSpecified = IMODELHUBERROR_BASE + 41,
   ConflictsAggregate = IMODELHUBERROR_BASE + 42,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 43,
+  DatabaseOperationFailed = IMODELHUBERROR_BASE + 44,
 
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
@@ -567,6 +568,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.MaximumNumberOfBriefcasesPerUser: return "Limit of briefcases per user was reached";
       case IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute: return "Limit of briefcases per user per minute was reached";
       case IModelHubStatus.DatabaseTemporarilyLocked: return "Database is temporarily locked";
+      case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
       case IModelHubStatus.iModelAlreadyExists: return "iModel already exists";
       case IModelHubStatus.iModelDoesNotExist: return "iModel does not exist";
       case IModelHubStatus.LockDoesNotExist: return "Lock does not exist";

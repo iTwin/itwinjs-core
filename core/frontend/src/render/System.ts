@@ -409,7 +409,7 @@ export abstract class RenderSystem implements IDisposable {
   public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
 
   /** Create a sheet tile primitive from polyfaces. */
-  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[]): GraphicList { return []; }
+  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }

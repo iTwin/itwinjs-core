@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelBank */
+
 import { IModelBankHandler } from "./IModelBankHandler";
 import { IModelClient } from "../IModelClient";
 import { DeploymentEnv } from "..";

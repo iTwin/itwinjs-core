@@ -35,7 +35,7 @@ const rpcInterfaces = [IModelTileRpcInterface, IModelReadRpcInterface];
 if (ElectronRpcConfiguration.isElectron)
   rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
 else
-  rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "sampleApp", version: "v1.0" } }, rpcInterfaces);
+  rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" } }, rpcInterfaces);
 
 // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
 for (const definition of rpcConfiguration.interfaces())

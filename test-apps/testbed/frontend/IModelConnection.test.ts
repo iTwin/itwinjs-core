@@ -226,7 +226,7 @@ describe("IModelConnection (#integration)", () => {
     const testIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, OpenMode.ReadWrite);
     try {
       await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken);
-      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.iModelToken, { currentChangeSetOnly: true });
+      await TestRpcInterface.getClient().extractChangeSummaries(TestData.accessToken, testIModel.iModelToken, { currentChangeSetOnly: true });
       await testIModel.attachChangeCache();
 
       const changeSummaryRows: any[] = await testIModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");

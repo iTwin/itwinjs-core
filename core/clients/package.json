@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "0.105.0",
+  "version": "0.108.0",
   "description": "Clients for various Bentley Services used by iModelJs",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -35,15 +35,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.105.0"
+    "@bentley/bentleyjs-core": "0.108.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.105.0",
-    "@bentley/bentleyjs-tools": "0.105.0",
+    "@bentley/bentleyjs-core": "0.108.0",
+    "@bentley/bentleyjs-tools": "0.108.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
@@ -62,7 +62,7 @@
     "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.8.2",
+    "typescript": "~2.9.1",
     "webpack": "^4.16.1"
   },
   "dependencies": {
