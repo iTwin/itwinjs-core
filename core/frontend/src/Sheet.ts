@@ -679,7 +679,7 @@ export namespace Attachments {
       // Override the background color. This is to match v8, but there should probably be an option in the "Details" about whether to do this or not.
       const bgColor = sheetView.displayStyle.backgroundColor.clone();
       // Set fully-transparent so that we discard background pixels (probably no point to the above line any more...)
-      bgColor.setAlpha(0xff);
+      bgColor.setAlpha(0);
       style.backgroundColor.setFrom(bgColor);
 
       // turn off skybox and groundplane
