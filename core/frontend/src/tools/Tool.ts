@@ -1,10 +1,9 @@
-
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
+import { Point3d, Point2d } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
@@ -33,25 +32,6 @@ export enum BeCursor {
   Text = "text",
   Busy = "wait",
   Dynamics = "move",
-}
-
-/** The *type* of a gesture. */
-export const enum GestureId {
-  None = 0,
-  /** Two or more fingers dragging */
-  MultiFingerMove = 1,
-  /** A single finger dragging */
-  SingleFingerMove = 2,
-  /** tap with two fingers */
-  TwoFingerTap = 3,
-  /** long press followed by a tap */
-  PressAndTap = 4,
-  /** One finger down and up; implies no LongPress active */
-  SingleTap = 5,
-  /** One finger down and up, twice; implies no LongPress active */
-  DoubleTap = 6,
-  /** One finger held down for more than some threshold */
-  LongPress = 7,
 }
 
 /** The *source* that generated an event. */
@@ -160,77 +140,6 @@ export class BeButtonEvent {
   }
   public clone(result?: BeButtonEvent): BeButtonEvent {
     result = result ? result : new BeButtonEvent();
-    result.setFrom(this);
-    return result;
-  }
-}
-
-/** Describes a "gesture" input originating from a touch-input device. */
-export class GestureInfo {
-  public gestureId = GestureId.None;
-  public numberTouches = 0;
-  public previousNumberTouches = 0;    // Only meaningful for GestureId::SingleFingerMove and GestureId::MultiFingerMove
-  public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
-  public ptsLocation: Point2d = new Point2d();    // Location of centroid
-  public distance = 0;                 // Only meaningful on motion with multiple touches
-  public isEndGesture = false;
-  public isFromMouse = false;
-
-  public getViewPoint(vp: Viewport) {
-    const screenRect = vp.viewRect;
-    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.top, 0.0);
-  }
-
-  public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: XAndY[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {
-    this.gestureId = gestureId;
-    this.numberTouches = Math.min(touchPoints.length, 3);
-    this.previousNumberTouches = prevNumTouches;
-    this.isEndGesture = isEnding;
-    this.isFromMouse = isFromMouse;
-
-    this.ptsLocation.x = Math.floor(centerX);
-    this.ptsLocation.y = Math.floor(centerY);
-    this.distance = distance;
-
-    for (let i = 0; i < this.numberTouches; ++i) {
-      this.touches[i].x = Math.floor(touchPoints[i].x);
-      this.touches[i].y = Math.floor(touchPoints[i].y);
-    }
-  }
-
-  public copyFrom(src: GestureInfo) {
-    this.gestureId = src.gestureId;
-    this.numberTouches = src.numberTouches;
-    this.previousNumberTouches = src.previousNumberTouches;
-    this.isEndGesture = src.isEndGesture;
-
-    this.ptsLocation.x = src.ptsLocation.x;
-    this.ptsLocation.y = src.ptsLocation.y;
-    this.distance = src.distance;
-
-    for (let i = 0; i < this.numberTouches; ++i) {
-      this.touches[i].x = src.touches[i].x;
-      this.touches[i].y = src.touches[i].y;
-    }
-
-    this.isFromMouse = src.isFromMouse;
-  }
-  public clone(result?: GestureInfo) {
-    result = result ? result : new GestureInfo();
-    result.copyFrom(this);
-    return result;
-  }
-}
-
-/** Specialization of ButtonEvent describing a gesture event originating from touch input. */
-export class BeGestureEvent extends BeButtonEvent {
-  public gestureInfo?: GestureInfo;
-  public setFrom(src: BeGestureEvent) {
-    super.setFrom(src);
-    this.gestureInfo = src.gestureInfo;
-  }
-  public clone(result?: BeGestureEvent): BeGestureEvent {
-    result = result ? result : new BeGestureEvent();
     result.setFrom(this);
     return result;
   }
@@ -459,20 +368,11 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onMultiFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onTwoFingerTap(_ev: BeGestureEvent): boolean { return false; }
-  public onPressAndTap(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onLongPress(_ev: BeGestureEvent): boolean { return false; }
-  public onTouchMotionPaused(): boolean { return false; }
-
-  public async onTouchStart(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
-  public async onTouchEnd(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
-  public async onTouchCancel(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
-  public async onTouchMove(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
+  public async onTouchStart(_ev: BeTouchEvent): Promise<void> { }
+  public async onTouchEnd(_ev: BeTouchEvent): Promise<void> { }
+  public async onTouchComplete(_ev: BeTouchEvent): Promise<void> { }
+  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { }
+  public async onTouchMove(_ev: BeTouchEvent): Promise<void> { }
 
   public async onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent, _touchCount: number): Promise<EventHandled> { return EventHandled.No; }
   public async onTouchTap(_ev: BeTouchEvent, _touchCount: number, _tapCount: number): Promise<EventHandled> { return EventHandled.No; }
