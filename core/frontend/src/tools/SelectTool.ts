@@ -8,7 +8,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKeys, EventHandled } from "./Tool";
+import { BeButtonEvent, BeButton, BeCursor, BeModifierKeys, EventHandled } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -330,37 +330,38 @@ export class SelectionTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onSingleTap(_ev: BeGestureEvent): boolean {
-    // ### TODO Touch events...
-    //    if (undefined !== this.manipulator)
-    //      return this.manipulator.onGestureEvent(ev);
-    return false; // Let idle tool send data button down/up events if not handled by manipulator
-  }
+  // public onSingleTap(_ev: BeGestureEvent): boolean {
+  // ### TODO Touch events...
+  //    if (undefined !== this.manipulator)
+  //      return this.manipulator.onGestureEvent(ev);
+  // return false;
+  // Let idle tool send data button down/up events if not handled by manipulator
+  // }
 
-  public onSingleFingerMove(ev: BeGestureEvent): boolean {
-    if (this.isSelectByPoints) {
-      IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
-      return true;
-    }
-    if (0 !== ev.gestureInfo!.previousNumberTouches)
-      return false; // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool
+  // public onSingleFingerMove(ev: BeGestureEvent): boolean {
+  //    if (this.isSelectByPoints) {
+  //      IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
+  //      return true;
+  //    }
+  //    if (0 !== ev.gestureInfo!.previousNumberTouches)
+  //      return false; // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool
 
-    // ### TODO Touch events...
-    //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
-    return false;
-  }
+  // ### TODO Touch events...
+  //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+  //    return false;
+  //  }
 
-  public onEndGesture(ev: BeGestureEvent): boolean {
-    if (GestureId.SingleFingerMove !== ev.gestureInfo!.gestureId)
-      return false;
+  //  public onEndGesture(ev: BeGestureEvent): boolean {
+  //    if (GestureId.SingleFingerMove !== ev.gestureInfo!.gestureId)
+  //      return false;
 
-    if (this.isSelectByPoints)
-      return this.selectByPointsEnd(ev);
+  // if (this.isSelectByPoints)
+  //      return this.selectByPointsEnd(ev);
 
-    // ### TODO Touch events...
-    //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
-    return false;
-  }
+  // ### TODO Touch events...
+  //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+  //    return false;
+  //  }
 
   public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 
