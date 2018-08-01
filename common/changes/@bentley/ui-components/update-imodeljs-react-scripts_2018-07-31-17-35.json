@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated to use TypeScript 2.9",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Bill.Goehrig@bentley.com"
+}

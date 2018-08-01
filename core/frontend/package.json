@@ -49,7 +49,7 @@
     "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.8.2"
+    "typescript": "~2.9.1"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
