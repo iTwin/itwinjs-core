@@ -49,8 +49,12 @@ export class ToolSettings {
   public static noMotionTimeout = BeDuration.fromMilliseconds(50);
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
+  /** Delay with a touch on the surface before a move operation begins. */
+  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
   /** Delay with the mouse down before a drag operation begins. */
   public static startDragDelay = BeDuration.fromMilliseconds(110);
+  /** Distance in screen inches a touch point must move before being considered motion. */
+  public static touchMoveDistanceInches = 0.15;
   /** Distance in screen inches the cursor must move before a drag operation begins. */
   public static startDragDistanceInches = 0.15;
   /** Radius in screen inches to search for elements that anchor viewing operations. */
@@ -148,7 +152,7 @@ export class CurrentInputState {
   private isAnyDragging() { return this.button.some((button) => button.isDragging); }
   private setKeyQualifier(qual: BeModifierKeys, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
 
-  public setKeyQualifiers(ev: MouseEvent | KeyboardEvent): void {
+  public setKeyQualifiers(ev: MouseEvent | KeyboardEvent | TouchEvent): void {
     this.setKeyQualifier(BeModifierKeys.Shift, ev.shiftKey);
     this.setKeyQualifier(BeModifierKeys.Control, ev.ctrlKey);
     this.setKeyQualifier(BeModifierKeys.Alt, ev.altKey);
@@ -452,6 +456,13 @@ export class ToolAdmin {
     const current = this.currentInputState;
     const pos = (0 !== touchEv.targetTouches.length ? BeTouchEvent.getTouchPosition(touchEv.targetTouches[0], vp) : (0 !== touchEv.changedTouches.length ? BeTouchEvent.getTouchPosition(touchEv.changedTouches[0], vp) : Point2d.createZero()));
 
+    switch (touchEv.type) {
+      case "touchstart":
+      case "touchend":
+        current.setKeyQualifiers(touchEv);
+        break;
+    }
+
     current.fromButton(vp, pos, InputSource.Touch, true);
     current.toEvent(ev, false);
     const tool = this.activeTool;
@@ -467,14 +478,11 @@ export class ToolAdmin {
       case "touchend": {
         if (undefined !== tool) {
           await tool.onTouchEnd(ev);
-          if (0 === ev.touchInfo.targetTouches.length)
+          if (0 === ev.touchCount)
             await tool.onTouchComplete(ev);
         }
 
         if (undefined === current.lastTouchStart)
-          return;
-
-        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp > ToolSettings.startDragDelay.milliseconds)
           return;
 
         // tslint:disable-next-line:prefer-for-of
@@ -486,7 +494,7 @@ export class ToolAdmin {
             const currPt = BeTouchEvent.getTouchPosition(currTouch, vp);
             const startPt = BeTouchEvent.getTouchPosition(startTouch, vp);
 
-            if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
+            if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.touchMoveDistanceInches))
               continue; // Hasn't moved appreciably....
           }
 
@@ -494,7 +502,7 @@ export class ToolAdmin {
           return;
         }
 
-        if (0 !== ev.touchInfo.targetTouches.length || undefined === current.lastTouchStart)
+        if (0 !== ev.touchCount || undefined === current.lastTouchStart)
           return;
 
         // All fingers off, defer processing tap until we've waited long enough to detect double tap...
@@ -521,7 +529,7 @@ export class ToolAdmin {
         if (undefined === current.lastTouchStart)
           return;
 
-        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp < ToolSettings.startDragDelay.milliseconds)
+        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp < ToolSettings.touchMoveDelay.milliseconds)
           return;
 
         // tslint:disable-next-line:prefer-for-of
@@ -535,14 +543,14 @@ export class ToolAdmin {
           const currPt = BeTouchEvent.getTouchPosition(currTouch, vp);
           const startPt = BeTouchEvent.getTouchPosition(startTouch, vp);
 
-          if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
+          if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.touchMoveDistanceInches))
             continue; // Hasn't moved appreciably....
 
           const touchStart = current.lastTouchStart;
           current.lastTouchStart = undefined;
 
-          if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart, touchStart.touchInfo.targetTouches.length))
-            this.idleTool.onTouchMoveStart(ev, touchStart, touchStart.touchInfo.targetTouches.length);
+          if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart))
+            this.idleTool.onTouchMoveStart(ev, touchStart);
           return;
         }
         return;
@@ -687,14 +695,15 @@ export class ToolAdmin {
       const now = Date.now();
       if ((now - current.touchTapTimer) >= ToolSettings.doubleTapTimeout.milliseconds) {
         const touchEv = current.lastTouchStart;
-        const numTouches = (undefined !== current.lastTouchStart ? current.lastTouchStart.touchInfo.targetTouches.length : 0);
+        const numTouches = (undefined !== current.lastTouchStart ? current.lastTouchStart.touchCount : 0);
         const numTaps = (undefined !== current.touchTapCount ? current.touchTapCount : 0);
 
         current.touchTapTimer = current.touchTapCount = current.lastTouchStart = undefined;
 
         if (undefined !== touchEv && numTouches > 0 && numTaps > 0) {
-          if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv, numTouches, numTaps)) ||
-            EventHandled.Yes === await this.idleTool.onTouchTap(touchEv, numTouches, numTaps))
+          touchEv.tapCount = numTaps;
+          if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) ||
+            EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))
             return;
         }
       }
@@ -706,7 +715,7 @@ export class ToolAdmin {
     const wasMotion = current.wasMotion;
     if (!wasMotion) {
       if (tool)
-        await tool.onModelNoMotion(ev);
+        await tool.onMouseNoMotion(ev);
 
       if (InputSource.Mouse === current.inputSource) {
         await IModelApp.accuSnap.onNoMotion(ev);
@@ -716,7 +725,7 @@ export class ToolAdmin {
 
     if (current.hasMotionStopped) {
       if (tool)
-        await tool.onModelMotionStopped(ev);
+        await tool.onMouseMotionStopped(ev);
       if (InputSource.Mouse === current.inputSource) {
         IModelApp.accuSnap.onMotionStopped(ev);
       }
@@ -738,8 +747,8 @@ export class ToolAdmin {
     }
 
     // Don't send tool end drag event if it didn't get the start drag event
-    if (undefined === tool || EventHandled.Yes !== await tool.onModelEndDrag(ev))
-      return this.idleTool.onModelEndDrag(ev);
+    if (undefined === tool || EventHandled.Yes !== await tool.onMouseEndDrag(ev))
+      return this.idleTool.onMouseEndDrag(ev);
   }
 
   public async onMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
@@ -775,13 +784,13 @@ export class ToolAdmin {
         tool.receivedDownEvent = true;
 
       // Pass start drag event to idle tool if active tool doesn't explicitly handle it
-      if (undefined === tool || !isValidLocation || EventHandled.Yes !== await tool.onModelStartDrag(ev))
-        return this.idleTool.onModelStartDrag(ev);
+      if (undefined === tool || !isValidLocation || EventHandled.Yes !== await tool.onMouseStartDrag(ev))
+        return this.idleTool.onMouseStartDrag(ev);
       return;
     }
 
     if (tool) {
-      tool.onModelMotion(ev);
+      tool.onMouseMotion(ev);
       this.updateDynamics(ev);
     }
 
@@ -1216,40 +1225,34 @@ export class ToolAdmin {
   public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
   public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }
 
-  /*
-  public convertGestureSingleTapToButtonDownAndUp(ev: BeGestureEvent) {
-    this.touchBridgeMode = true;
-    const displayPoint = ev.getDisplayPoint();
-    const vp = ev.viewport!;
-    this.onButtonDown(vp, displayPoint, BeButton.Data, InputSource.Touch);
-    this.onButtonUp(vp, displayPoint, BeButton.Data, InputSource.Touch);
-    this.touchBridgeMode = false;
+  /** Can be called by tools that wish to emmulate mouse button down/up events for onTouchTap. */
+  public async convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
+    const pt2d = ev.getDisplayPoint();
+    await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
+    this.onButtonUp(ev.viewport!, pt2d, button, InputSource.Touch);
   }
 
-  public convertGestureToResetButtonDownAndUp(ev: BeGestureEvent) {
-    this.touchBridgeMode = true;
-
-    const displayPoint = ev.getDisplayPoint();
-    const vp = ev.viewport!;
-    this.onButtonDown(vp, displayPoint, BeButton.Reset, InputSource.Touch);
-    this.onButtonUp(vp, displayPoint, BeButton.Reset, InputSource.Touch);
-    this.touchBridgeMode = false;
+  /** Can be called by tools that wish to emmulate moving the mouse with a button depressed for onTouchMoveStart. */
+  public async convertTouchMoveStartToButtonDownAndMotion(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
+    const pt2d = ev.getDisplayPoint();
+    await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
+    this.onMotion(ev.viewport!, pt2d, InputSource.Touch);
   }
 
-  public convertGestureMoveToButtonDownAndMotion(ev: BeGestureEvent) {
-    this.touchBridgeMode = true;
-    const vp = ev.viewport!;
-    if (0 === ev.gestureInfo!.previousNumberTouches)
-      this.onButtonDown(vp, ev.getDisplayPoint(), BeButton.Data, InputSource.Touch);
-    else
-      this.onMotion(vp, ev.getDisplayPoint(), InputSource.Touch);
+  /** Can be called by tools that wish to emmulate pressing the mouse button for onTouchStart or onTouchMoveStart. */
+  public async convertTouchStartToButtonDown(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
+    this.onButtonDown(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
   }
 
-  public convertGestureEndToButtonUp(ev: BeGestureEvent) {
-    this.onButtonUp(ev.viewport!, ev.getDisplayPoint(), BeButton.Data, InputSource.Touch);
-    this.touchBridgeMode = false;
+  /** Can be called by tools that wish to emmulate releasing the mouse button for onTouchEnd or onTouchComplete. */
+  public async convertTouchEndToButtonUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
+    this.onButtonUp(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
   }
-  */
+
+  /** Can be called by tools that wish to emmulate a mouse motion event for onTouchMove. */
+  public async convertTouchMoveToMotion(ev: BeTouchEvent): Promise<void> {
+    this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
+  }
 
   public setIncompatibleViewportCursor(restore: boolean) {
     if (restore) {

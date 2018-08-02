@@ -301,7 +301,7 @@ export abstract class ViewManip extends ViewTool {
     return EventHandled.Yes;
   }
 
-  public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     switch (ev.button) {
       case BeButton.Reset:
         return EventHandled.No;
@@ -312,7 +312,7 @@ export abstract class ViewManip extends ViewTool {
     return this.startHandleDrag(ev);
   }
 
-  public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     // NOTE: To support startHandleDrag being called by IdleTool for middle button drag, check isDragging and not the button type...
     if (!this.isDragging)
       return EventHandled.No;
@@ -325,7 +325,7 @@ export abstract class ViewManip extends ViewTool {
     return this.onDataButtonDown(ev);
   }
 
-  public async onModelMotion(ev: BeButtonEvent) {
+  public async onMouseMotion(ev: BeButtonEvent) {
     this.stoppedOverHandle = false;
     if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
       this.viewHandles.focusHitHandle();
@@ -336,7 +336,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.motion(ev);
   }
 
-  public async onModelMotionStopped(ev: BeButtonEvent) {
+  public async onMouseMotionStopped(ev: BeButtonEvent) {
     if (ev.viewport !== this.viewport)
       return;
 
@@ -351,7 +351,7 @@ export abstract class ViewManip extends ViewTool {
     }
   }
 
-  public async onModelNoMotion(ev: BeButtonEvent) {
+  public async onMouseNoMotion(ev: BeButtonEvent) {
     if (0 === this.nPts || !ev.viewport)
       return;
 
@@ -1402,13 +1402,12 @@ export class WindowAreaTool extends ViewTool {
     return EventHandled.Yes;
   }
 
-  public async onModelMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
+  public async onMouseMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
 
-  public async onTouchTap(_ev: BeTouchEvent, touchCount: number, tapCount: number): Promise<EventHandled> { return (1 === touchCount && 1 === tapCount) ? EventHandled.Yes : EventHandled.No; } // ignore one touch, single tap...
-  public async onTouchMoveStart(_ev: BeTouchEvent, startEv: BeTouchEvent, touchCount: number): Promise<EventHandled> { if (1 === touchCount) return this.onDataButtonDown(startEv); this.onReinitialize(); return EventHandled.No; }
-
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) this.onModelMotion(ev); }
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) this.onDataButtonDown(ev); }
+  public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
+  public async onTouchMoveStart(_ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this.haveFirstPoint && startEv.isSingleTouch) IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv); return this.haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
   public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) this.exitTool(); }
 
   private computeWindowCorners(): Point3d[] | undefined {
