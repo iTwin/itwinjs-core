@@ -147,10 +147,18 @@ export class BeButtonEvent {
 
 /** Specialization of ButtonEvent for touch input. */
 export class BeTouchEvent extends BeButtonEvent {
+  public get touchCount(): number { return this.touchInfo.targetTouches.length; }
+  public get isSingleTouch(): boolean { return 1 === this.touchCount; }
+  public get isTwoFingerTouch(): boolean { return 2 === this.touchCount; }
+  public tapCount: number = 0;
+  public get isSingleTap(): boolean { return 1 === this.tapCount && 1 === this.touchCount; }
+  public get isDoubleTap(): boolean { return 2 === this.tapCount && 1 === this.touchCount; }
+  public get isTwoFingerTap(): boolean { return 1 === this.tapCount && 2 === this.touchCount; }
   public constructor(public touchInfo: TouchEvent) { super(); }
   public setFrom(src: BeTouchEvent) {
     super.setFrom(src);
     this.touchInfo = src.touchInfo;
+    this.tapCount = src.tapCount;
   }
   public clone(result?: BeTouchEvent): BeTouchEvent {
     result = result ? result : new BeTouchEvent(this.touchInfo);
@@ -332,21 +340,21 @@ export abstract class InteractiveTool extends Tool {
   public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the cursor is moving */
-  public async onModelMotion(_ev: BeButtonEvent): Promise<void> { }
+  public async onMouseMotion(_ev: BeButtonEvent): Promise<void> { }
   /** Invoked when the cursor is not moving */
-  public async onModelNoMotion(_ev: BeButtonEvent): Promise<void> { }
+  public async onMouseNoMotion(_ev: BeButtonEvent): Promise<void> { }
   /** Invoked when the cursor was previously moving, and has stopped moving. */
-  public async onModelMotionStopped(_ev: BeButtonEvent): Promise<void> { }
+  public async onMouseMotionStopped(_ev: BeButtonEvent): Promise<void> { }
 
   /** Invoked when the cursor begins moving while a button is depressed.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onModelStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
-  /** Invoked when the button is released after onModelStartDrag.
+  public async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+  /** Invoked when the button is released after onMouseStartDrag.
    * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
+  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
 
   /** Invoked when the mouse wheel moves.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
@@ -383,18 +391,16 @@ export abstract class InteractiveTool extends Tool {
   /** Called after at least one touch point has moved for an appreciable time and distance along the surface to not be considered a tap.
    * @param _ev The event that caused this call
    * @param _startEv The event from the last call to onTouchStart
-   * @param _touchCount The number of target touch points for this event
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent, _touchCount: number): Promise<EventHandled> { return EventHandled.No; }
+  public async onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Called when touch point(s) are added and removed from a surface within a small time window without any touch point moving.
    * @param _ev The event that caused this call
-   * @param _touchCount The number of target touch points for this event
-   * @param _tapCount The number of times the set of touch points was added and removed from the surface within the allotted time window. A value of 1 is a tap, 2 a double tap, etc.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @note A double or triple tap event will not be preceded by a single tap event.
    */
-  public async onTouchTap(_ev: BeTouchEvent, _touchCount: number, _tapCount: number): Promise<EventHandled> { return EventHandled.No; }
+  public async onTouchTap(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
   public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
