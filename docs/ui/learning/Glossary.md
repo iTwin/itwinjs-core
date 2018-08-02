@@ -12,7 +12,7 @@ tableRowAnchors: true
 |**Content View**|A representation of an iModel's data.
 |**Dialog**| A small temporary window of options presented to the user.
 |**Frontstage**|A full-screen configuration designed to enable the user to accomplish a task.
-|**Navigation Aid**|A user interface control that moves the users perspective around within a specific Content View.
+|**Navigation Aid**|A user interface control that moves the user's perspective around within a specific Content View.
 |**Status Bar**|The Widget that gives the user feedback about the state of an application.
 |**Status Field**|An area of the Status Widget assigned to display specific feedback about the active application.
 |**Task**|A specific piece of work to accomplish.
