@@ -70,11 +70,11 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   public getDistinctValues(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): Promise<string[]> { return this.forward.apply(this, arguments); }
 
   /** See [[IRulesetManager.get]] */
-  public getRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string): Promise<Ruleset | undefined> { return this.forward.apply(this, arguments); }
+  public getRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string): Promise<[Ruleset, string] | undefined> { return this.forward.apply(this, arguments); }
   /** See [[IRulesetManager.add]] */
-  public addRuleset(_options: RulesetRpcRequestOptions, _ruleset: Ruleset): Promise<void> { return this.forward.apply(this, arguments); }
+  public addRuleset(_options: RulesetRpcRequestOptions, _ruleset: Ruleset): Promise<string> { return this.forward.apply(this, arguments); }
   /** See [[IRulesetManager.remove]] */
-  public removeRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string): Promise<void> { return this.forward.apply(this, arguments); }
+  public removeRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string, _hash: string): Promise<boolean> { return this.forward.apply(this, arguments); }
   /** See [[IRulesetManager.clear]] */
   public clearRulesets(_options: RulesetRpcRequestOptions): Promise<void> { return this.forward.apply(this, arguments); }
 

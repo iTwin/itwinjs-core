@@ -111,25 +111,29 @@ describe("default NativePlatform", () => {
 
   it("calls addon's getRulesets", async () => {
     const ruleset = { id: "", rules: [] };
-    const serializedRuleset = JSON.stringify(ruleset);
-    addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: serializedRuleset })).verifiable();
+    const hash = faker.random.uuid();
+    const serializedResult = JSON.stringify([{ ruleset, hash }]);
+    addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: serializedResult })).verifiable();
     const result = await nativePlatform.getRulesets(ruleset.id);
-    expect(result).to.eq(serializedRuleset);
+    expect(result).to.eq(serializedResult);
     addonMock.verifyAll();
   });
 
   it("calls addon's addRuleset", async () => {
     const ruleset = { id: "", rules: [] };
+    const hash = faker.random.uuid();
     const serializedRuleset = JSON.stringify(ruleset);
-    addonMock.setup((x) => x.addRuleset(serializedRuleset)).returns(() => ({})).verifiable();
-    await nativePlatform.addRuleset(serializedRuleset);
+    addonMock.setup((x) => x.addRuleset(serializedRuleset)).returns(() => ({ result: hash })).verifiable();
+    const result = await nativePlatform.addRuleset(serializedRuleset);
     addonMock.verifyAll();
+    expect(result).to.eq(hash);
   });
 
   it("calls addon's removeRuleset", async () => {
-    addonMock.setup((x) => x.removeRuleset("test id")).returns(() => ({})).verifiable();
-    await nativePlatform.removeRuleset("test id");
+    addonMock.setup((x) => x.removeRuleset("test id", "test hash")).returns(() => ({ result: true })).verifiable();
+    const result = await nativePlatform.removeRuleset("test id", "test hash");
     addonMock.verifyAll();
+    expect(result).to.be.true;
   });
 
   it("calls addon's clearRulesets", async () => {

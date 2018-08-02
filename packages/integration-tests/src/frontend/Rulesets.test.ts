@@ -37,19 +37,28 @@ describe("Rulesets", async () => {
       const rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: ruleset.id });
       expect(rootNodes.length).to.be.equal(1);
       expect(rootNodes[0].label).to.be.equal(spec.label);
-      expect(rootNodes[0].imageId).to.be.equal(spec.imageId);
-      expect(rootNodes[0].description).to.be.equal(spec.description);
     });
   });
 
   it("removes ruleset", async () => {
-    await ECPresentation.presentation.rulesets().add(ruleset);
+    const registeredRuleset = await ECPresentation.presentation.rulesets().add(ruleset);
     let rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: ruleset.id });
     expect(rootNodes.length).to.be.equal(1);
 
-    await ECPresentation.presentation.rulesets().remove(ruleset);
+    expect(await ECPresentation.presentation.rulesets().remove(registeredRuleset)).to.be.true;
     rootNodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: ruleset.id });
     expect(rootNodes.length).to.be.equal(0);
+
+    expect(await ECPresentation.presentation.rulesets().remove(registeredRuleset)).to.be.false;
+  });
+
+  it("overwrites ruleset", async () => {
+    const otherRuleset: Ruleset = require("../../test-rulesets/Rulesets/other");
+    otherRuleset.id = ruleset.id;
+    const registeredRuleset1 = await ECPresentation.presentation.rulesets().add(ruleset);
+    const registeredRuleset2 = await ECPresentation.presentation.rulesets().add(otherRuleset);
+    expect(await ECPresentation.presentation.rulesets().remove(registeredRuleset1)).to.be.false;
+    expect(await ECPresentation.presentation.rulesets().remove(registeredRuleset2)).to.be.true;
   });
 
   it("clears rulesets from frontend", async () => {

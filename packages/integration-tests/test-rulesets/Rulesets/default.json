@@ -5,10 +5,8 @@
     "ruleType": "RootNodes",
     "specifications": [{
       "specType": "CustomNode",
-      "type": "nodeType",
-      "label": "label",
-      "description": "description",
-      "imageId": "imageId"
+      "type": "type",
+      "label": "label"
     }]
   }]
 }

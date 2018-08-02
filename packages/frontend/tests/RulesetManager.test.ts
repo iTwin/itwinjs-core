@@ -36,10 +36,12 @@ describe("RulesetManager", () => {
 
     it("calls getRuleset through proxy", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
-      interfaceMock.setup((x) => x.getRuleset(requestOptions(), ruleset.id)).returns(async () => ruleset).verifiable();
+      const hash = faker.random.uuid();
+      interfaceMock.setup((x) => x.getRuleset(requestOptions(), ruleset.id)).returns(async () => [ruleset, hash]).verifiable();
       const result = await manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
       expect(result!.toJSON()).to.deep.eq(ruleset);
+      expect(result!.hash).to.eq(hash);
       interfaceMock.verifyAll();
     });
 
@@ -57,29 +59,34 @@ describe("RulesetManager", () => {
 
     it("calls addRuleset through proxy", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
-      const registeredRuleset = new RegisteredRuleset(manager, ruleset);
-      interfaceMock.setup((x) => x.addRuleset(requestOptions(), ruleset)).verifiable();
+      const hash = faker.random.uuid();
+      const registeredRuleset = new RegisteredRuleset(manager, ruleset, hash);
+      interfaceMock.setup((x) => x.addRuleset(requestOptions(), ruleset)).returns(async () => hash).verifiable();
       const result = await manager.add(ruleset);
-      expect(result).to.deep.equal(registeredRuleset);
       interfaceMock.verifyAll();
+      expect(result).to.deep.equal(registeredRuleset);
     });
 
   });
 
   describe("remove", () => {
 
-    it("calls removeRuleSet through proxy with id argument", async () => {
+    it("calls removeRuleset through proxy with [rulesetId, hash] argument", async () => {
       const rulesetId = faker.random.uuid();
-      interfaceMock.setup((x) => x.removeRuleset(requestOptions(), rulesetId)).verifiable();
-      await manager.remove(rulesetId);
+      const hash = faker.random.uuid();
+      interfaceMock.setup((x) => x.removeRuleset(requestOptions(), rulesetId, hash)).returns(async () => true).verifiable();
+      const result = await manager.remove([rulesetId, hash]);
       interfaceMock.verifyAll();
+      expect(result).to.be.true;
     });
 
-    it("calls removeRuleSet through proxy with ruleset argument", async () => {
+    it("calls removeRuleset through proxy with RegisteredRuleset argument", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
-      interfaceMock.setup((x) => x.removeRuleset(requestOptions(), ruleset.id)).verifiable();
-      await manager.remove(ruleset);
+      const hash = faker.random.uuid();
+      interfaceMock.setup((x) => x.removeRuleset(requestOptions(), ruleset.id, hash)).returns(async () => true).verifiable();
+      const result = await manager.remove(new RegisteredRuleset(manager, ruleset, hash));
       interfaceMock.verifyAll();
+      expect(result).to.be.true;
     });
 
   });

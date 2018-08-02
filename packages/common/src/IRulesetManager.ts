@@ -12,13 +12,16 @@ import { Ruleset, Rule, VariablesGroup, SupplementationInfo, SchemasSpecificatio
 export class RegisteredRuleset implements IDisposable, Ruleset {
   private _manager: IRulesetManager;
   private _ruleset: Ruleset;
-  public constructor(manager: IRulesetManager, ruleset: Ruleset) {
+  private _hash: string;
+  public constructor(manager: IRulesetManager, ruleset: Ruleset, hash: string) {
     this._manager = manager;
     this._ruleset = ruleset;
+    this._hash = hash;
   }
   public dispose() {
     this._manager.remove(this);
   }
+  public get hash(): string { return this._hash; }
   public get id(): string { return this._ruleset.id; }
   public get supportedSchemas(): SchemasSpecification | undefined { return this._ruleset.supportedSchemas; }
   public get supplementationInfo(): SupplementationInfo | undefined { return this._ruleset.supplementationInfo; }
@@ -44,10 +47,10 @@ export interface IRulesetManager {
   /**
    * Unregister the supplied ruleset
    */
-  remove(remove: Ruleset | string): Promise<void>;
+  remove(remove: RegisteredRuleset | [string, string]): Promise<boolean>;
 
   /**
-   * Removes all rulesets registered in this session.
+   * Remove all rulesets registered in this session.
    */
   clear(): Promise<void>;
 }

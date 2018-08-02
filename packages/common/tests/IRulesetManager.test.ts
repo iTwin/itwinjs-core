@@ -17,6 +17,7 @@ describe("RegisteredRuleset", () => {
   describe("Ruleset implementation", () => {
 
     let ruleset: Ruleset;
+    let hash: string;
     let registered: RegisteredRuleset;
     beforeEach(() => {
       ruleset = {
@@ -34,10 +35,12 @@ describe("RegisteredRuleset", () => {
           vars: [],
         }],
       };
-      registered = new RegisteredRuleset(managerMock.object, ruleset);
+      hash = faker.random.uuid();
+      registered = new RegisteredRuleset(managerMock.object, ruleset, hash);
     });
 
     it("returns wrapper ruleset properties", () => {
+      expect(registered.hash).to.eq(hash);
       expect(registered.id).to.deep.equal(ruleset.id);
       expect(registered.supportedSchemas).to.deep.equal(ruleset.supportedSchemas);
       expect(registered.supplementationInfo).to.deep.equal(ruleset.supplementationInfo);
@@ -55,7 +58,8 @@ describe("RegisteredRuleset", () => {
         id: faker.random.uuid(),
         rules: [],
       };
-      const registered = new RegisteredRuleset(managerMock.object, ruleset);
+      const hash = faker.random.uuid();
+      const registered = new RegisteredRuleset(managerMock.object, ruleset, hash);
       registered.dispose();
       managerMock.verify((x) => x.remove(registered), moq.Times.once());
     });

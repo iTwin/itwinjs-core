@@ -144,23 +144,30 @@ describe("ECPresentationRpcInterface", () => {
     it("forwards getRuleset call", async () => {
       const options = { clientId: faker.random.uuid() };
       const ruleset = { id: "", rules: [] };
-      mock.setup((x) => x(options as any, ruleset.id)).returns(async () => ruleset).verifiable(moq.Times.once());
-      const result = await rpcInterface.getRuleset(options, ruleset.id);
+      const hash = faker.random.uuid();
+      mock.setup((x) => x(options as any, ruleset.id)).returns(async () => [ruleset, hash]).verifiable(moq.Times.once());
+      const resultTuple = await rpcInterface.getRuleset(options, ruleset.id);
       mock.verifyAll();
-      expect(result).to.deep.eq(ruleset);
+      expect(resultTuple![0]).to.deep.eq(ruleset);
+      expect(resultTuple![1]).to.deep.eq(hash);
     });
 
     it("forwards addRuleset call", async () => {
       const options = { clientId: faker.random.uuid() };
       const ruleset = { id: "", rules: [] };
-      await rpcInterface.addRuleset(options, ruleset);
-      mock.verify((x) => x(options as any, ruleset), moq.Times.once());
+      const hash = faker.random.uuid();
+      mock.setup((x) => x(options as any, ruleset)).returns(async () => hash).verifiable(moq.Times.once());
+      const resultHash = await rpcInterface.addRuleset(options, ruleset);
+      mock.verifyAll();
+      expect(resultHash).to.eq(hash);
     });
 
     it("forwards removeRuleset call", async () => {
       const options = { clientId: faker.random.uuid() };
-      await rpcInterface.removeRuleset(options, "test id");
-      mock.verify((x) => x(options as any, "test id"), moq.Times.once());
+      mock.setup((x) => x(options as any, "test id", "hash")).returns(async () => true).verifiable(moq.Times.once());
+      const result = await rpcInterface.removeRuleset(options, "test id", "hash");
+      mock.verifyAll();
+      expect(result).to.be.true;
     });
 
     it("forwards clearRulesets call", async () => {

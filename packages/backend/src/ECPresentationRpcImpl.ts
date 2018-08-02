@@ -99,19 +99,19 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return await this.getManager().getDistinctValues(this.toIModelDbOptions(requestOptions), descriptor, keys, fieldName, maximumValueCount);
   }
 
-  public async getRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string): Promise<Ruleset | undefined> {
+  public async getRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string): Promise<[Ruleset, string] | undefined> {
     const ruleset = await this.getManager().rulesets(requestOptions.clientId).get(rulesetId);
     if (ruleset)
-      return ruleset.toJSON();
+      return [ruleset.toJSON(), ruleset.hash];
     return undefined;
   }
 
-  public async addRuleset(requestOptions: RulesetRpcRequestOptions, ruleset: Ruleset): Promise<void> {
-    await this.getManager().rulesets(requestOptions.clientId).add(ruleset);
+  public async addRuleset(requestOptions: RulesetRpcRequestOptions, ruleset: Ruleset): Promise<string> {
+    return (await this.getManager().rulesets(requestOptions.clientId).add(ruleset)).hash;
   }
 
-  public async removeRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string): Promise<void> {
-    return await this.getManager().rulesets(requestOptions.clientId).remove(rulesetId);
+  public async removeRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string, hash: string): Promise<boolean> {
+    return await this.getManager().rulesets(requestOptions.clientId).remove([rulesetId, hash]);
   }
 
   public async clearRulesets(requestOptions: RulesetRpcRequestOptions): Promise<void> {

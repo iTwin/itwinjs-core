@@ -28,8 +28,8 @@ export interface NativePlatformDefinition extends IDisposable {
   setupLocaleDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
   getRulesets(rulesetId: string): string;
-  addRuleset(serializedRulesetJson: string): void;
-  removeRuleset(rulesetId: string): void;
+  addRuleset(serializedRulesetJson: string): string;
+  removeRuleset(rulesetId: string, hash: string): boolean;
   clearRulesets(): void;
   handleRequest(db: any, options: string): Promise<string>;
   getUserSetting(rulesetId: string, settingId: string, settingType: string): any;
@@ -80,11 +80,11 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     public getRulesets(rulesetId: string): string {
       return this.handleResult(this._nativeAddon.getRulesets(rulesetId));
     }
-    public addRuleset(serializedRulesetJson: string): void {
-      this.handleVoidResult(this._nativeAddon.addRuleset(serializedRulesetJson));
+    public addRuleset(serializedRulesetJson: string): string {
+      return this.handleResult(this._nativeAddon.addRuleset(serializedRulesetJson));
     }
-    public removeRuleset(rulesetId: string): void {
-      this.handleVoidResult(this._nativeAddon.removeRuleset(rulesetId));
+    public removeRuleset(rulesetId: string, hash: string): boolean {
+      return this.handleResult(this._nativeAddon.removeRuleset(rulesetId, hash));
     }
     public clearRulesets(): void {
       this.handleVoidResult(this._nativeAddon.clearRulesets());

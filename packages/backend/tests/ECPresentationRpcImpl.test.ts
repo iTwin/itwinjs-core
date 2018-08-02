@@ -297,19 +297,21 @@ describe("ECPresentationRpcImpl", () => {
       it("calls manager", async () => {
         const requestOptions = { clientId: faker.random.uuid() };
         const rulesetDefinition = { id: "", rules: [] };
-        rulesetsMock.setup((x) => x.get(rulesetDefinition.id)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition)).verifiable();
-        const result = await impl.getRuleset(requestOptions, rulesetDefinition.id);
+        const hash = faker.random.uuid();
+        rulesetsMock.setup((x) => x.get(rulesetDefinition.id)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition, hash)).verifiable();
+        const resultTuple = await impl.getRuleset(requestOptions, rulesetDefinition.id);
         presentationManagerMock.verifyAll();
-        expect(result).to.deep.eq(rulesetDefinition);
+        expect(resultTuple![0]).to.deep.eq(rulesetDefinition);
+        expect(resultTuple![1]).to.eq(hash);
       });
 
       it("handles undefined response", async () => {
         const requestOptions = { clientId: faker.random.uuid() };
         const rulesetId = faker.random.uuid();
         rulesetsMock.setup((x) => x.get(rulesetId)).returns(async () => undefined).verifiable();
-        const result = await impl.getRuleset(requestOptions, rulesetId);
+        const resultsTuple = await impl.getRuleset(requestOptions, rulesetId);
         presentationManagerMock.verifyAll();
-        expect(result).to.be.undefined;
+        expect(resultsTuple).to.be.undefined;
       });
 
     });
@@ -319,9 +321,11 @@ describe("ECPresentationRpcImpl", () => {
       it("calls manager", async () => {
         const requestOptions = { clientId: faker.random.uuid() };
         const rulesetDefinition = { id: "", rules: [] };
-        rulesetsMock.setup((x) => x.add(rulesetDefinition)).verifiable();
-        await impl.addRuleset(requestOptions, rulesetDefinition);
+        const hash = faker.random.uuid();
+        rulesetsMock.setup((x) => x.add(rulesetDefinition)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition, hash)).verifiable();
+        const resultHash = await impl.addRuleset(requestOptions, rulesetDefinition);
         presentationManagerMock.verifyAll();
+        expect(resultHash).to.eq(hash);
       });
 
     });
@@ -330,9 +334,12 @@ describe("ECPresentationRpcImpl", () => {
 
       it("calls manager", async () => {
         const requestOptions = { clientId: faker.random.uuid() };
-        rulesetsMock.setup((x) => x.remove(moq.It.isAny())).verifiable();
-        await impl.removeRuleset(requestOptions, "");
+        const rulesetId = faker.random.uuid();
+        const hash = faker.random.uuid();
+        rulesetsMock.setup((x) => x.remove([rulesetId, hash])).returns(async () => true).verifiable();
+        const result = await impl.removeRuleset(requestOptions, rulesetId, hash);
         presentationManagerMock.verifyAll();
+        expect(result).to.be.true;
       });
 
     });

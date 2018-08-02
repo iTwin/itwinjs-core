@@ -25,20 +25,23 @@ export default class RulesetManager implements IRulesetManager {
   }
 
   public async get(id: string): Promise<RegisteredRuleset | undefined> {
-    const ruleset = await ECPresentationRpcInterface.getClient().getRuleset(this.createRequestOptions(), id);
-    if (ruleset)
-      return new RegisteredRuleset(this, ruleset);
+    const tuple = await ECPresentationRpcInterface.getClient().getRuleset(this.createRequestOptions(), id);
+    if (tuple) {
+      const [ruleset, hash] = tuple;
+      return new RegisteredRuleset(this, ruleset, hash);
+    }
     return undefined;
   }
 
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    await ECPresentationRpcInterface.getClient().addRuleset(this.createRequestOptions(), ruleset);
-    return new RegisteredRuleset(this, ruleset);
+    const hash = await ECPresentationRpcInterface.getClient().addRuleset(this.createRequestOptions(), ruleset);
+    return new RegisteredRuleset(this, ruleset, hash);
   }
 
-  public async remove(remove: Ruleset | string): Promise<void> {
-    const rulesetId = (typeof remove === "string") ? remove : remove.id;
-    return await ECPresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), rulesetId);
+  public async remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean> {
+    if (Array.isArray(ruleset))
+      return await ECPresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset[0], ruleset[1]);
+    return await ECPresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset.id, ruleset.hash);
   }
 
   public async clear(): Promise<void> {
