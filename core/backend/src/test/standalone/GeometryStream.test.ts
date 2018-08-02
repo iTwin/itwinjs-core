@@ -45,7 +45,7 @@ describe("GeometryStream", () => {
     // make sure we found existing styles and didn't create a second set
     assert.isTrue(8 === lsStyles.length && lsStyles.length === lsStylesExist.length);
     for (let iStyle = 0; iStyle < lsStyles.length; ++iStyle) {
-      assert.isTrue(0 === iStyle || lsStyles[iStyle].isValid());
+      assert.isTrue(0 === iStyle || lsStyles[iStyle].isValid);
       assert.isTrue(lsStylesExist[iStyle].equals(lsStyles[iStyle]));
     }
 
@@ -56,7 +56,7 @@ describe("GeometryStream", () => {
     const pointE = Point3d.create(5, 0, 0);
 
     lsStyles.forEach((styleId) => {
-      params.styleInfo = styleId.isValid() ? new LineStyle.Info(styleId) : undefined;
+      params.styleInfo = styleId.isValid ? new LineStyle.Info(styleId) : undefined;
       builder.appendGeometryParamsChange(params);
       builder.appendGeometry(LineSegment3d.create(pointS, pointE));
       pointS.y += 0.5; pointE.y += 0.5;
@@ -73,7 +73,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid());
+    assert.isTrue(newId.isValid);
     imodel.saveChanges();
 
     // Extract and test value returned...
@@ -113,19 +113,19 @@ describe("GeometryStream", () => {
 
     // create special "internal default" continuous style for drawing curves using width overrides
     const styleId = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
-    assert.isTrue(styleId.isValid());
+    assert.isTrue(styleId.isValid);
 
     // make sure we found existing style and didn't create a new one
     const styleIdExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
-    assert.isTrue(styleIdExists.isValid() && styleIdExists.equals(styleId));
+    assert.isTrue(styleIdExists.isValid && styleIdExists.equals(styleId));
 
     // create continuous style with pre-defined constant width
     const styleIdWidth = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
-    assert.isTrue(styleIdWidth.isValid());
+    assert.isTrue(styleIdWidth.isValid);
 
     // make sure we found existing style and didn't create a new one
     const styleIdWidthExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
-    assert.isTrue(styleIdWidthExists.isValid() && styleIdWidthExists.equals(styleIdWidth));
+    assert.isTrue(styleIdWidthExists.isValid && styleIdWidthExists.equals(styleIdWidth));
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -164,7 +164,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid());
+    assert.isTrue(newId.isValid);
     imodel.saveChanges();
 
     // Extract and test value returned...
@@ -211,7 +211,7 @@ describe("GeometryStream", () => {
     };
 
     const partId = imodel.elements.insertElement(partProps);
-    assert.isTrue(partId.isValid());
+    assert.isTrue(partId.isValid);
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
@@ -224,7 +224,7 @@ describe("GeometryStream", () => {
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestArrowStyle", compoundData!);
-    assert.isTrue(styleId.isValid());
+    assert.isTrue(styleId.isValid);
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -244,7 +244,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid());
+    assert.isTrue(newId.isValid);
     imodel.saveChanges();
   });
 
@@ -277,7 +277,7 @@ describe("GeometryStream", () => {
     };
 
     const partId = imodel.elements.insertElement(partProps);
-    assert.isTrue(partId.isValid());
+    assert.isTrue(partId.isValid);
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
@@ -297,7 +297,7 @@ describe("GeometryStream", () => {
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData!);
-    assert.isTrue(styleId.isValid());
+    assert.isTrue(styleId.isValid);
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -317,7 +317,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid());
+    assert.isTrue(newId.isValid);
     imodel.saveChanges();
   });
 
@@ -402,7 +402,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid());
+    assert.isTrue(newId.isValid);
     imodel.saveChanges();
 
     // Extract and test value returned...
@@ -496,7 +496,7 @@ describe("GeometryStream", () => {
     };
 
     const partId = imodel.elements.insertElement(partProps);
-    assert.isTrue(partId.isValid());
+    assert.isTrue(partId.isValid);
 
     // Area pattern w/o overrides
     params.pattern = new AreaPattern.Params();
@@ -547,7 +547,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid());
+    assert.isTrue(newId.isValid);
     imodel.saveChanges();
 
     // Extract and test value returned...

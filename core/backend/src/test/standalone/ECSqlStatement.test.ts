@@ -906,7 +906,7 @@ describe("ECSqlStatement", () => {
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(res.id);
           id1 = res.id!;
-          assert.isTrue(id1.isValid());
+          assert.isTrue(id1.isValid);
         });
 
         // *** test withstatement cache
@@ -919,7 +919,7 @@ describe("ECSqlStatement", () => {
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(res.id);
           id2 = res.id!;
-          assert.isTrue(id2.isValid());
+          assert.isTrue(id2.isValid);
         });
 
         using(ecdb.prepareStatement("SELECT ECInstanceId,ECClassId,Name,Age,Location FROM test.Person ORDER BY ECInstanceId"), (stmt: ECSqlStatement) => {
@@ -1126,7 +1126,7 @@ describe("ECSqlStatement", () => {
             assert.equal(row["parent.id"], parentId.value);
             assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
             assert.equal(row.myParentid, parentId.value);
-            assert.isTrue(new Id64(row.myParentRelClassId).isValid());
+            assert.isTrue(new Id64(row.myParentRelClassId).isValid);
           }
           assert.equal(rowCount, 2);
         });
@@ -1150,11 +1150,11 @@ describe("ECSqlStatement", () => {
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
           const row = stmt.getRow();
           assert.equal(row.myId, childId.value);
-          assert.isTrue(new Id64(row.myClassId).isValid());
+          assert.isTrue(new Id64(row.myClassId).isValid);
           assert.equal(row.mySourceId, parentId.value);
-          assert.isTrue(new Id64(row.mySourceClassId).isValid());
+          assert.isTrue(new Id64(row.mySourceClassId).isValid);
           assert.equal(row.myTargetId, childId.value);
-          assert.isTrue(new Id64(row.myTargetClassId).isValid());
+          assert.isTrue(new Id64(row.myTargetClassId).isValid);
         });
       });
 

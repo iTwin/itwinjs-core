@@ -10,7 +10,7 @@ import { TestConfig } from "../TestConfig";
 
 import { AccessToken, IModelClient } from "../../";
 import {
-  IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubRequestError, Version,
+  IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubClientError, Version,
 } from "../../";
 
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -197,11 +197,11 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail getting a ChangeSet by invalid id", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId("InvalidId"));
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -209,12 +209,16 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail downloading ChangeSets with no file handler", async () => {
-    let error: IModelHubRequestError | undefined;
+    const mockChangeSets = utils.getMockChangeSets(briefcase);
+    utils.mockGetChangeSet(iModelId, false, "?$orderby=Index+desc&$top=1", mockChangeSets[2]);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().latest().top(1));
+
+    let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
     try {
-      await invalidClient.ChangeSets().download([], utils.workDir);
+      await invalidClient.ChangeSets().download(changeSets, utils.workDir);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -222,11 +226,11 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail downloading ChangeSets with no file url", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.ChangeSets().download([new ChangeSet()], utils.workDir);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -234,12 +238,12 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail creating a ChangeSet with no file handler", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
     try {
       await invalidClient.ChangeSets().create(accessToken, iModelId, new ChangeSet(), utils.workDir);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -247,11 +251,11 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail creating a ChangeSet with no file", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.ChangeSets().create(accessToken, iModelId, new ChangeSet(), utils.workDir + "InvalidChangeSet.cs");
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -259,11 +263,11 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail creating a ChangeSet with directory path", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.ChangeSets().create(accessToken, iModelId, new ChangeSet(), utils.workDir);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);

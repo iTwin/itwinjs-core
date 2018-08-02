@@ -68,7 +68,6 @@ export class Tile implements IDisposable {
   public readonly center: Point3d;
   public readonly radius: number;
   public readonly zoomFactor?: number;
-  public readonly yAxisUp: boolean;
   protected readonly _childIds: string[];
   protected _childrenLastUsed: BeTimePoint;
   protected _childrenLoadStatus: TileTree.LoadStatus;
@@ -77,7 +76,7 @@ export class Tile implements IDisposable {
   protected _graphic?: RenderGraphic;
   protected _rangeGraphic?: RenderGraphic;
 
-  public constructor(props: Tile.Params, loader: TileLoader) {
+  public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
@@ -88,13 +87,12 @@ export class Tile implements IDisposable {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
-    this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
 
-    if (!loader.tileRequiresLoading(props)) {
+    if (!this.root.loader.tileRequiresLoading(props)) {
       this.setIsReady();    // If no contents, this node is for structure only and no content loading is required.
     } else {
       if (undefined !== props.geometry)
-        loader.loadGraphics(this, props.geometry);
+        this.root.loader.loadGraphics(this, props.geometry);
     }
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
@@ -103,7 +101,7 @@ export class Tile implements IDisposable {
     if (undefined === this.maximumSize)
       this.maximumSize = this.hasGraphics ? 512 : 0;
 
-    this._childrenLoadStatus = this.hasChildren && this.depth < loader.maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
+    this._childrenLoadStatus = this.hasChildren && this.depth < this.root.loader.maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
   public dispose() {
@@ -161,6 +159,7 @@ export class Tile implements IDisposable {
   public get hasZoomFactor(): boolean { return undefined !== this.zoomFactor; }
   public get children(): Tile[] | undefined { return this._children; }
   public get iModel(): IModelConnection { return this.root.iModel; }
+  public get yAxisUp(): boolean { return this.root.yAxisUp; }
 
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
@@ -355,7 +354,7 @@ export class Tile implements IDisposable {
           const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
           for (const prop of props) {
             // ###TODO if child is empty don't bother adding it to list...
-            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this), this.root.loader);
+            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
               parentRange.extendRange(child.contentRange);
@@ -440,7 +439,10 @@ export namespace Tile {
 
       const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
       const branch = this.context.createBranch(this.graphics, this.location, clipVolume);
-      this.context.outputGraphic(branch);
+      if (this.root.isTerrain)
+        this.context.outputTerrain(branch);
+      else
+        this.context.outputGraphic(branch);
     }
 
     public insertMissing(tile: Tile): void { this.missing.insert(tile); }
@@ -454,7 +456,6 @@ export namespace Tile {
       public readonly range: ElementAlignedBox3d,
       public readonly maximumSize: number,
       public readonly childIds: string[],
-      public readonly yAxisUp?: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
       public readonly zoomFactor?: number,
@@ -464,7 +465,7 @@ export namespace Tile {
       // ###TODO: We should be requesting the geometry separately, when needed
       // ###TODO: Transmit as binary, not base-64
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, props.yAxisUp, parent, contentRange, props.zoomFactor, props.geometry);
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, props.geometry);
     }
   }
 }
@@ -479,6 +480,8 @@ export class TileTree implements IDisposable {
   public clipVector?: ClipVector;
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
+  public readonly isTerrain: boolean;
+  public readonly yAxisUp: boolean;
 
   public constructor(props: TileTree.Params) {
     this.model = props.model;
@@ -487,9 +490,11 @@ export class TileTree implements IDisposable {
     this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
     this.clipVector = props.clipVector;
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this), props.loader); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.loader = props.loader;
+    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
+    this.isTerrain = props.isTerrain ? props.isTerrain : false;
+    this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
   }
 
   public get rootTile(): Tile { return this._rootTile; }
@@ -609,7 +614,7 @@ export class IModelTileLoader extends TileLoader {
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return undefined !== params.geometry; }
 
-  private static _viewFlagOverrides = new ViewFlag.Overrides();
+  protected static _viewFlagOverrides = new ViewFlag.Overrides();
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {
@@ -631,10 +636,12 @@ export namespace TileTree {
       public readonly loader: TileLoader,
       public readonly location: Transform,
       public readonly maxTilesToSkip?: number,
+      public readonly yAxisUp?: boolean,
+      public readonly isTerrain?: boolean,
       public readonly clipVector?: ClipVector) { }
 
     public static fromJSON(props: TileTreeProps, model: GeometricModelState, loader: TileLoader) {
-      return new Params(Id64.fromJSON(props.id), props.rootTile, model, loader, Transform.fromJSON(props.location), props.maxTilesToSkip);
+      return new Params(Id64.fromJSON(props.id), props.rootTile, model, loader, Transform.fromJSON(props.location), props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
     }
   }
 

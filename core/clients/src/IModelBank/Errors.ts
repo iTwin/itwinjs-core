@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelBank */
+
 import * as deepAssign from "deep-assign";
 import { ResponseError } from "./../Request";
 import { WsgError } from "./../WsgClient";
@@ -150,78 +152,4 @@ export class IModelBankError extends WsgError {
   public log(): void {
     (this.getLogLevel())(loggingCategory, this.logMessage(), this.getMetaData());
   }
-}
-
-/**
- * Errors for incorrect iModel Hub requests.
- */
-export class IModelHubRequestError extends IModelBankError {
-  /**
-   * Creates IModelHubRequestError from id.
-   * @param id Id of the error.
-   * @param message Message for the error.
-   * @returns Created error.
-   */
-  public static fromId(id: IModelHubStatus, message: string): IModelHubRequestError {
-    const error = new IModelHubRequestError(id, message);
-    error.log();
-    return error;
-  }
-
-  /**
-   * Create error for undefined arguments being passed.
-   * @param argumentName Undefined argument name
-   * @returns Created error.
-   */
-  public static undefinedArgument(argumentName: string): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.UndefinedArgumentError, `Argument ${argumentName} is null or undefined`);
-  }
-
-  /**
-   * Create error for invalid arguments being passed.
-   * @param argumentName Invalid argument name
-   * @returns Created error.
-   */
-  public static invalidArgument(argumentName: string): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.InvalidArgumentError, `Argument ${argumentName} has an invalid value.`);
-  }
-
-  /**
-   * Create error for arguments being passed that are missing download URL.
-   * @param argumentName Argument name
-   * @returns Created error.
-   */
-  public static missingDownloadUrl(argumentName: string): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.MissingDownloadUrlError,
-      `Supplied ${argumentName} must include download URL. Use selectDownloadUrl() when getting ${argumentName}.`);
-  }
-
-  /**
-   * Create error for incompatible operation being used in browser.
-   * @returns Created error.
-   */
-  public static browser(): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.NotSupportedInBrowser, "Operation is not supported in browser.");
-  }
-
-  /**
-   * Create error for incompatible operation being used in browser.
-   * @returns Created error.
-   */
-  public static fileHandler(): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.FileHandlerNotSet, "File handler is required to be set for file download / upload.");
-  }
-
-  /**
-   * Create error for a missing file.
-   * @returns Created error.
-   */
-  public static fileNotFound(): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.FileNotFound, "Could not find the file to upload.");
-  }
-}
-
-/** Class for aggregating multiple errors from multiple requests */
-export class AggregateResponseError extends Error {
-  public errors: ResponseError[] = [];
 }

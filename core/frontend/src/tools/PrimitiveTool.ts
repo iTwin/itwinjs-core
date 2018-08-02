@@ -4,9 +4,8 @@
 /** @module Tools */
 
 import { CoordinateLockOverrides } from "./ToolAdmin";
-import { BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
+import { BeButtonEvent, BeCursor, InteractiveTool, BeButton } from "./Tool";
 import { Viewport } from "../Viewport";
-import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -35,16 +34,13 @@ export const enum ModifyElementSource {
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
-  public targetModelId = new Id64();
+  public targetModelId?: string;
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
-  public toolStateId: string = "";  // Tool State Id can be used to determine prompts and control UI control state.
 
   /** Get the iModel the tool is operating against. */
   public get iModel(): IModelConnection { return this.targetView!.view!.iModel as IModelConnection; }
 
   /**
-   * ( was DgnPrimitiveTool::_InstallToolImplementation )
-   * can be directly called ( instead of the code that would execute when installTool is called )
    * Establish this tool as the active PrimitiveTool.
    * @return SUCCESS if this tool is now the active PrimitiveTool.
    * @see InteractiveTool.onInstall
@@ -56,7 +52,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return false;
 
     toolAdmin.startPrimitiveTool(this);
-    toolAdmin.setPrimitiveTool(this);
 
     // The tool may exit in _OnPostInstall causing "this" to be
     // deleted so _InstallToolImplementation must not call any
@@ -100,7 +95,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true; // Any type of model/view is still ok and target is still free to change.
     }
 
-    if (this.targetModelId.isValid() && !view.viewsModel(this.targetModelId))
+    if (this.targetModelId && !view.viewsModel(this.targetModelId))
       return false; // Only allow view where target is being viewed.
 
     if (this.requireWriteableTarget()) {
@@ -125,6 +120,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     if (undefined === vp)
       return false;
+
+    if (isButtonEvent && BeButton.Data !== ev.button)
+      return true;
 
     const view = vp.view;
     const iModel = view.iModel;
@@ -201,11 +199,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public onReinitialize(): void { this.onRestartTool(); }
 
-  public exitTool(): void {
-    const { toolAdmin } = IModelApp;
-    toolAdmin.activeToolChanged.raiseEvent(this);
-    toolAdmin.startDefaultTool();
-  }
+  public exitTool(): void { IModelApp.toolAdmin.startDefaultTool(); }
 
   /**
    * Called to revert to a previous tool state (ex. undo last data button).
@@ -227,7 +221,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.
    */
-  public saveChanges(): Promise<void> { return this.iModel.saveChanges(this.toolId); }
+  public async saveChanges(): Promise<void> { return this.iModel.saveChanges(this.toolId); }
 
   // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
   // //! Default implementation invokes _PopulateRequest() and forwards request to server.

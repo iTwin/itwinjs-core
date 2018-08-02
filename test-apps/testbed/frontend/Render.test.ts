@@ -8,13 +8,13 @@ import { Feature, GeometryClass, PolylineFlags } from "@bentley/imodeljs-common"
 describe("Feature", () => {
   it("constructor works as expected", () => {
     const a = new Feature(new Id64(), new Id64());
-    assert.isTrue(a.elementId.value === "0", "elementId is correct - 1");
-    assert.isTrue(a.subCategoryId.value === "0", "subCategoryId is correct - 1");
+    assert.isTrue(a.elementId === "0", "elementId is correct - 1");
+    assert.isTrue(a.subCategoryId === "0", "subCategoryId is correct - 1");
     assert.isTrue(a.geometryClass === GeometryClass.Primary, "geometryClass is correct - 1");
 
     const b = new Feature(new Id64("0x800"), new Id64("0x800"), GeometryClass.Dimension);
-    assert.isTrue(b.elementId.value === "0x800", "elementId is correct - 2");
-    assert.isTrue(b.subCategoryId.value === "0x800", "subCategoryId is correct - 2");
+    assert.isTrue(b.elementId === "0x800", "elementId is correct - 2");
+    assert.isTrue(b.subCategoryId === "0x800", "subCategoryId is correct - 2");
     assert.isTrue(b.geometryClass === GeometryClass.Dimension, "geometryClass is correct - 2");
   });
   it("isDefined/isUndefined works as expected", () => {

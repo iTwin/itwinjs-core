@@ -7,7 +7,7 @@ import { AccessToken, IModelClient } from "../../";
 import {
   Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
   AggregateResponseError, ConflictingLocksError,
-  IModelHubRequestError,
+  IModelHubClientError,
 } from "../../";
 
 import { TestConfig } from "../TestConfig";
@@ -164,7 +164,7 @@ describe("iModelHubClient LockHandler", () => {
     utils.mockGetLocks(iModelId, filter, mockedLocks[0]);
 
     const allLocks = await imodelHubClient.Locks().get(accessToken, iModelId);
-    const query = new LockQuery().byReleasedWithChangeSetIndex(changeSet.index!);
+    const query = new LockQuery().byReleasedWithChangeSetIndex(Number.parseInt(changeSet.index!, 10));
     const locks = await imodelHubClient.Locks().get(accessToken, iModelId, query);
     chai.assert(locks);
     chai.expect(locks).length.to.be.greaterThan(0);
@@ -336,11 +336,11 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should not create a query by locks with empty array", () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       new LockQuery().byLocks([]);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -348,13 +348,13 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should not create a query by locks with no object id", () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       const lock = new Lock();
       lock.briefcaseId = 0; lock.lockType = LockType.Model;
       new LockQuery().byLocks([lock]);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
@@ -362,11 +362,11 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should fail deleting all locks with invalid briefcase id", async () => {
-    let error: IModelHubRequestError | undefined;
+    let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.Locks().deleteAll(accessToken, iModelId, 0);
     } catch (err) {
-      if (err instanceof IModelHubRequestError)
+      if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);

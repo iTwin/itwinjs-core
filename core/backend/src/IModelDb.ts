@@ -873,7 +873,7 @@ export class IModelDb extends IModel {
         if (ret.error !== undefined)
           reject(new Error(ret.error.message));
         else
-          return resolve(ret.result);
+          resolve(ret.result);
       });
     });
   }
@@ -1057,7 +1057,7 @@ export namespace IModelDb {
      * @throws IModelError if the code is invalid
      */
     public queryElementIdByCode(code: Code): Id64 | undefined {
-      if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);
+      if (!code.spec.isValid) throw new IModelError(IModelStatus.InvalidCodeSpec);
       if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode);
 
       return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {

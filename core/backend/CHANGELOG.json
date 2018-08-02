@@ -2,6 +2,66 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.110.0",
+      "tag": "@bentley/imodeljs-backend_v0.110.0",
+      "date": "Thu, 02 Aug 2018 14:48:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.109.0",
+      "tag": "@bentley/imodeljs-backend_v0.109.0",
+      "date": "Thu, 02 Aug 2018 09:07:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.108.0",
+      "tag": "@bentley/imodeljs-backend_v0.108.0",
+      "date": "Wed, 01 Aug 2018 14:24:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to use TypeScript 2.9"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.107.0",
+      "tag": "@bentley/imodeljs-backend_v0.107.0",
+      "date": "Tue, 31 Jul 2018 16:29:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.106.0",
+      "tag": "@bentley/imodeljs-backend_v0.106.0",
+      "date": "Tue, 31 Jul 2018 13:01:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ChangeSummaryManager.extractChangeSummaries now takes an AccessToken."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.105.0",
+      "tag": "@bentley/imodeljs-backend_v0.105.0",
+      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "rename getLocatMessage to getToolTip"
+          },
+          {
+            "comment": "imodeljs-clients is now safe for browser-specific code to import - hide file handler dependencies"
+          },
+          {
+            "comment": "TFS#923316 - JsInterop::InsertLinkTableRelationship should not ignore relationship instance properties supplied by the caller"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.104.1",
       "tag": "@bentley/imodeljs-backend_v0.104.1",
       "date": "Thu, 26 Jul 2018 21:35:07 GMT",

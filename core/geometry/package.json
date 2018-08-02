@@ -1,13 +1,13 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.104.1",
+  "version": "0.110.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
   "repository": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.104.1",
+    "@bentley/bentleyjs-tools": "0.110.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
@@ -22,7 +22,7 @@
     "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.8.2"
+    "typescript": "~2.9.1"
   },
   "scripts": {
     "build": "tsc 1>&2",

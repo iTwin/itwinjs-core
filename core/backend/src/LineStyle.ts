@@ -6,7 +6,7 @@
 import { Id64Props, DbResult, Id64, IModelStatus } from "@bentley/bentleyjs-core";
 import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
-import { LineStyle } from "./backend";
+import { LineStyle } from "./Element";
 
 /** A line style definition is a uniquely named pattern that repeats as it is displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:
@@ -234,7 +234,7 @@ export namespace LineStyleDefinition {
     symbols: Symbols;
   }
 
-  /** Raster component defintion [[LineStyleDefinition.ComponentType.RasterImage]].
+  /** Raster component definition [[LineStyleDefinition.ComponentType.RasterImage]].
    * A raster component identifies a texture for a line style.
    */
   export interface RasterImageProps {
@@ -277,7 +277,7 @@ export namespace LineStyleDefinition {
     None = 0x00,
     /** Only snap to center line and not individual strokes and symbols of line style */
     NoSnap = 0x04,
-    /** Style represents a continous line with width (determined by looking at components if not set) */
+    /** Style represents a continuous line with width (determined by looking at components if not set) */
     Continuous = 0x08,
     /** Style represents physical geometry and should be scaled as such */
     Physical = 0x80,

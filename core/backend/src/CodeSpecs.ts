@@ -34,7 +34,7 @@ export class CodeSpecs {
    * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
    */
   public getById(codeSpecId: Id64): CodeSpec {
-    if (!codeSpecId.isValid())
+    if (!codeSpecId.isValid)
       throw new IModelError(IModelStatus.InvalidId);
 
     // good chance it is already loaded - check there before running a query
@@ -88,7 +88,7 @@ export class CodeSpecs {
    * @param id  The persistent Id of the CodeSpec to load
    */
   public load(id: Id64): CodeSpec {
-    if (!id.isValid()) {
+    if (!id.isValid) {
       throw new IModelError(IModelStatus.InvalidId);
     }
 

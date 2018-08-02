@@ -63,9 +63,9 @@ export class SubCategoryAppearance {
     if (this.dontSnap) val.dontSnap = true;
     if (this.dontLocate) val.dontLocate = true;
     if (0 !== this.weight) val.weight = this.weight;
-    if (this.styleId.isValid()) val.style = this.styleId;
+    if (this.styleId.isValid) val.style = this.styleId;
     if (0 !== this.priority) val.priority = this.priority;
-    if (this.materialId.isValid()) val.material = this.materialId;
+    if (this.materialId.isValid) val.material = this.materialId;
     if (0.0 !== this.transparency) val.transp = this.transparency;
     return val;
   }

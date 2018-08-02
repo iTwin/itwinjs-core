@@ -15,6 +15,8 @@ import { PolygonOps } from "../PointHelpers";
 import { Matrix4d } from "../numerics/Geometry4d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
+import { Triangulator } from "../topology/Triangulation";
+import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
 
 /**
  * Bit mask type for easily keeping track of defined vs undefined values and which parts of a clipping shape
@@ -547,14 +549,15 @@ export class ClipShape extends ClipPrimitive {
 
     const direction = PolygonOps.testXYPolygonTurningDirections(points);
     if (0 !== direction) {
-      this.parseConvexPolygonPlanes(set, direction);
+      this.parseConvexPolygonPlanes(set, this._polygon, direction);
       return true;
     } else {
-      // TODO: HANDLE CONCAVE POLYGONS
+      this.parseConcavePolygonPlanes(set, this._polygon);
       return false;
     }
   }
 
+  /** Given a start and end point, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region of linear planes. Returns true if successful. */
   private parseLinearPlanes(set: UnionOfConvexClipPlaneSets, start: Point3d, end: Point3d, cameraFocalLength?: number): boolean {
     // Handles the degenerate case of 2 distinct points (used by select by line).
     const normal = start.vectorTo(end);
@@ -594,14 +597,13 @@ export class ClipShape extends ClipPrimitive {
     return true;
   }
 
-  private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, direction: number, cameraFocalLength?: number): boolean {
+  /** Given a convex polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
+  private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], direction: number, cameraFocalLength?: number): boolean {
     const samePointTolerance = 1.0e-8;    // This could possibly be replaced with more widely used constants
     const edges: PolyEdge[] = [];
     const reverse = (direction < 0) !== this._isMask;
-    const polygon = this._polygon;
-    const numVerts = this._polygon.length;
 
-    for (let i = 0; i < numVerts - 1; i++) {
+    for (let i = 0; i < polygon.length - 1; i++) {
       const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
       const dir = Vector2d.createFrom((polygon[i + 1].minus(polygon[i])));
       const magnitude = dir.magnitude();
@@ -660,6 +662,28 @@ export class ClipShape extends ClipPrimitive {
       set.addConvexSet(convexSet);
     }
 
+    return true;
+  }
+
+  /** Given a concave polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
+  private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], cameraFocalLength?: number): boolean {
+    const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
+    Triangulator.cleanupTriangulation(triangulatedPolygon);
+    triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {   // For every facet in the triangulated polygon....
+
+      if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
+        const convexFacetPoints = edge.collectAroundFace((node: HalfEdge): any => {  // For every vertex in the facet...
+          if (!node.isMaskSet(HalfEdgeMask.EXTERIOR))
+            return Point3d.create(node.x, node.y, 0);
+        });
+        // parseConvexPolygonPlanes expects a closed loop (pushing the reference doesn't matter)
+        convexFacetPoints.push(convexFacetPoints[0]);
+
+        const direction = PolygonOps.testXYPolygonTurningDirections(convexFacetPoints);   // ###TODO: Can we expect a direction coming out of graph facet?
+        this.parseConvexPolygonPlanes(set, convexFacetPoints, direction, cameraFocalLength);
+      }
+      return true;
+    });
     return true;
   }
 

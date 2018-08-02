@@ -4,11 +4,8 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { DictionaryModel } from "../Model";
-import { SpatialCategory } from "../Category";
+import { DictionaryModel, SpatialCategory, Element, IModelDb } from "../backend";
 import { ECSqlStatement } from "../ECSqlStatement";
-import { Element } from "../Element";
-import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { Point3d, Arc3d } from "@bentley/geometry-core";
@@ -135,7 +132,7 @@ describe("PerformanceElementsTests", () => {
             const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
             const geomElement = seedIModel.elements.createElement(elementProps);
             const id = seedIModel.elements.insertElement(geomElement);
-            assert.isTrue(id.isValid(), "insert worked");
+            assert.isTrue(id.isValid, "insert worked");
           }
 
           seedIModel.saveChanges();
@@ -167,7 +164,7 @@ describe("PerformanceElementsTests", () => {
             const geomElement = perfimodel.elements.createElement(elementProps);
             const startTime = new Date().getTime();
             const id = perfimodel.elements.insertElement(geomElement);
-            assert.isTrue(id.isValid(), "insert worked");
+            assert.isTrue(id.isValid, "insert worked");
             const endTime = new Date().getTime();
             const elapsedTime = (endTime - startTime) / 1000.0;
             totalTime = totalTime + elapsedTime;

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-tools",
-  "version": "0.104.1",
+  "version": "0.110.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {},
@@ -36,7 +36,7 @@
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.10.1",
     "typedoc": "^0.11.1",
-    "typescript": "~2.8.2",
+    "typescript": "~2.9.1",
     "yargs": "^11.0.0",
     "obj-traverse": "^1.0.0"
   },

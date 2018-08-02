@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubRequestError } from "./Errors";
+import { IModelHubClientError, ArgumentCheck } from "./Errors";
 
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -83,11 +85,23 @@ export class ChangeSetQuery extends InstanceIdQuery {
   }
 
   /**
+   * Query ChangeSet by its id.
+   * @param id Id of a ChangeSet.
+   * @returns This query.
+   */
+  public byId(id: string) {
+    ArgumentCheck.validChangeSetId("id", id);
+    this._byId = id;
+    return this;
+  }
+
+  /**
    * Query all ChangeSets that are after given ChangeSet id (does not include the specified change set)
    * @param id Id of a ChangeSet.
    * @returns This query.
    */
   public fromId(id: string) {
+    ArgumentCheck.validChangeSetId("id", id);
     this._query.$filter = `FollowingChangeSet-backward-ChangeSet.Id+eq+'${id}'`;
     return this;
   }
@@ -108,6 +122,9 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @returns This query.
    */
   public betweenChangeSets(firstChangeSetId: string, secondChangeSetId?: string) {
+    ArgumentCheck.validChangeSetId("firstChangeSetId", firstChangeSetId);
+    if (secondChangeSetId)
+      ArgumentCheck.validChangeSetId("secondChangeSetId", secondChangeSetId);
     let query: string;
     if (!secondChangeSetId) {
       query = `CumulativeChangeSet-backward-ChangeSet.Id+eq+'${firstChangeSetId}'`;
@@ -128,6 +145,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @returns This query.
    */
   public getVersionChangeSets(versionId: string) {
+    ArgumentCheck.validGuid("versionId", versionId);
     this.addFilter(`CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'`);
     return this;
   }
@@ -138,6 +156,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @returns This query.
    */
   public afterVersion(versionId: string) {
+    ArgumentCheck.validGuid("versionId", versionId);
     this.addFilter(`FollowingChangeSet-backward-Version.Id+eq+'${versionId}'`);
     return this;
   }
@@ -149,6 +168,8 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @returns This query.
    */
   public betweenVersions(sourceVersionId: string, destinationVersionId: string) {
+    ArgumentCheck.validGuid("sourceVersionId", sourceVersionId);
+    ArgumentCheck.validGuid("destinationVersionId", destinationVersionId);
     let query: string;
     query = `(FollowingChangeSet-backward-Version.Id+eq+'${sourceVersionId}'`;
     query += `+and+CumulativeChangeSet-backward-Version.Id+eq+'${destinationVersionId}')`;
@@ -166,6 +187,8 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @returns This query.
    */
   public betweenVersionAndChangeSet(versionId: string, changeSetId: string) {
+    ArgumentCheck.validGuid("versionId", versionId);
+    ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
     let query: string;
     query = `(CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'+and+FollowingChangeSet-backward-ChangeSet.Id+eq+'${changeSetId}')`;
     query += `+or+`;
@@ -181,6 +204,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @returns This query.
    */
   public bySeedFileId(seedFileId: string) {
+    ArgumentCheck.validGuid("seedFileId", seedFileId);
     this.addFilter(`SeedFileId+eq+'${seedFileId}'`);
     return this;
   }
@@ -212,26 +236,21 @@ export class ChangeSetHandler {
     return `/Repositories/iModel--${imodelId}/iModelScope/ChangeSet/${changeSetId || ""}`;
   }
 
-  /** Check if ChangeSet Id is valid. */
-  private isValid(changesetId: string) {
-    return changesetId.length === 40;
-  }
-
   /**
    * Gets ChangeSets.
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel
    * @param query Object to modify this methods results.
    * @returns Resolves to an array of change sets.
+   * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
     Logger.logInfo(loggingCategory, `Querying changesets for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     const id = query.getId();
-
-    if (id && !this.isValid(id))
-      return Promise.reject(IModelHubRequestError.invalidArgument("changeSetId"));
-
     const changeSets = await this._handler.getInstances<ChangeSet>(ChangeSet, token, this.getRelativeUrl(imodelId, id), query.getQueryOptions());
 
     Logger.logTrace(loggingCategory, `Queried ${changeSets.length} changesets for iModel ${imodelId}`);
@@ -245,20 +264,24 @@ export class ChangeSetHandler {
    * If there is an error in downloading some ChangeSet, throws an error and any incomplete ChangeSet is deleted from disk.
    * @param changeSets Change sets to download. These need to include a download link. @see ChangeSetQuery.selectDownloadUrl().
    * @param downloadToPath Directory where the ChangeSets should be downloaded.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the required arguments is undefined or empty.
    * @param progressCallback Callback for tracking progress.
+   * @throws [[ResponseError]] if the download fails.
    */
   public async download(changeSets: ChangeSet[], downloadToPath: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading ${changeSets.length} changesets`);
+    ArgumentCheck.nonEmptyArray("changeSets", changeSets);
+    ArgumentCheck.defined("downloadToPath", downloadToPath);
 
     if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
+      return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubRequestError.fileHandler());
+      return Promise.reject(IModelHubClientError.fileHandler());
 
     changeSets.forEach((changeSet) => {
       if (!changeSet.downloadUrl)
-        throw IModelHubRequestError.missingDownloadUrl("changeSets");
+        throw IModelHubClientError.missingDownloadUrl("changeSets");
     });
 
     const promises = new Array<Promise<void>>();
@@ -290,19 +313,28 @@ export class ChangeSetHandler {
    * @param changeSet Information of the ChangeSet to be uploaded.
    * @param changeSetPathname Pathname of the ChangeSet to be uploaded.
    * @param progressCallback Callback for tracking progress.
-   * @throws [[ResponseError]] if the upload fails.
+   * @throws [IModelHubStatus.BriefcaseDoesNotBelongToUser]($bentley) if [[Briefcase]] specified by changeSet.briefcaseId belongs to another user.
+   * @throws [IModelHubStatus.AnotherUserPushing]($bentley) if another user is currently uploading a [[ChangeSet]].
+   * @throws [IModelHubStatus.PullIsRequired]($bentley) if there are newer [[ChangeSet]]s on iModel Hub, that need to be downloaded and merged, before upload is possible.
+   * @throws [IModelHubStatus.ChangeSetAlreadyExists]($bentley) if a [[ChangeSet]] with this id already exists. This usually happens if previous upload attempt has succeeded.
+   * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId isn't set to the correct file id. That file id should match to the value written to the [[Briefcase]] file.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(token: AccessToken, imodelId: string, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.defined("changeSet", changeSet);
+    ArgumentCheck.defined("changeSetPathname", changeSetPathname);
 
     if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
+      return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubRequestError.fileHandler());
+      return Promise.reject(IModelHubClientError.fileHandler());
 
     if (!this._fileHandler.exists(changeSetPathname) || this._fileHandler.isDirectory(changeSetPathname))
-      return Promise.reject(IModelHubRequestError.fileNotFound());
+      return Promise.reject(IModelHubClientError.fileNotFound());
 
     const postChangeSet = await this._handler.postInstance<ChangeSet>(ChangeSet, token, this.getRelativeUrl(imodelId), changeSet);
 
