@@ -963,21 +963,29 @@ export declare class NativeECPresentationManager implements IDisposable {
    * @param settingType Type of the setting..
    */
   public getUserSetting(ruleSetId: string, settingId: string, settingType: string): ErrorStatusOrResult<NativeECPresentationStatus, any>;
-
+  /**
+   * Get serialized JSON string of available rulesets array
+   * @param rulesetId Id of the lookup rulesets
+   * @return Serialized JSON array of tuples [ruleset, hash]
+   */
+  public getRulesets(rulesetId: string): ErrorStatusOrResult<NativeECPresentationStatus, string>;
   /**
    * Adds ruleset that can be used by NativeECPresentationManager
-   * @param ruleSetJson Serialized JSON string of a ruleset to be added
+   * @param serializedRuleset Serialized JSON string of a ruleset to be added
+   * @return Hash of the ruleset
    */
-  public addRuleSet(ruleSetJson: string): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public addRuleset(serializedRuleset: string): ErrorStatusOrResult<NativeECPresentationStatus, string>;
   /**
    * Removes a ruleset
-   * @param ruleSetId Id of a ruleset to be removed
+   * @param rulesetId Id of a ruleset to be removed
+   * @param hash Hash of the ruleset to be removed
+   * @return True if removal was successful
    */
-  public removeRuleSet(ruleSetId: string): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public removeRuleset(rulesetId: string, hash: string): ErrorStatusOrResult<NativeECPresentationStatus, boolean>;
   /**
    * Removes all rulesets
    */
-  public clearRuleSets(): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public clearRulesets(): ErrorStatusOrResult<NativeECPresentationStatus, void>;
   /**
    * Handles an ECPresentation manager request
    * @param db The db to run the request on
