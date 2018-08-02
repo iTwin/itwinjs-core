@@ -6,7 +6,7 @@
 import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
-import { SceneContext } from "../ViewContext";
+import { SceneContext, ViewContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { GraphicType } from "../render/GraphicBuilder";
@@ -17,6 +17,7 @@ import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
 import { PntsTileIO } from "./PntsTileIO";
 import { IModelTileIO } from "./IModelTileIO";
+import { ViewFrustum } from "../Viewport";
 
 function debugPrint(_str: string): void {
   // console.log(_str); // tslint:disable-line:no-console
@@ -204,7 +205,7 @@ export class Tile implements IDisposable {
     const radius = args.getTileRadius(this); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = args.getTileCenter(this);
 
-    const pixelSizeAtPt = args.context.getPixelSizeAtPoint(center);
+    const pixelSizeAtPt = args.getPixelSizeAtPoint(center);
     const pixelSize = 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
 
     if (pixelSize > this.maximumSize * args.tileSizeModifier)
@@ -337,7 +338,7 @@ export class Tile implements IDisposable {
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
     const box = Frustum.fromRange(range, Tile.scratchRootFrustum);
     const worldBox = box.transformBy(args.location, Tile.scratchWorldFrustum);
-    const isOutside = FrustumPlanes.Containment.Outside === args.context.frustumPlanes.computeFrustumContainment(worldBox);
+    const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
     const isCulled = isOutside || isClipped;
     return isCulled;
@@ -402,12 +403,22 @@ export namespace Tile {
     public readonly root: TileTree;
     public clip?: ClipVector;
     public readonly context: SceneContext;
+    public viewFrustum?: ViewFrustum;
     public readonly graphics: GraphicBranch = new GraphicBranch();
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
     public readonly missing: MissingNodes;
+    private readonly _frustumPlanes?: FrustumPlanes;
 
-    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
+    public getPixelSizeAtPoint(inPoint?: Point3d): number {
+      return this.viewFrustum !== undefined ? ViewContext.getPixelSizeAtPointForFrustum(this.viewFrustum, inPoint) : this.context.getPixelSizeAtPoint();
+    }
+
+    public get frustumPlanes(): FrustumPlanes {
+      return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
+    }
+
+    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector, viewFrustum?: ViewFrustum) {
       this.location = location;
       this.root = root;
       this.clip = clip;
@@ -416,6 +427,9 @@ export namespace Tile {
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
       this.missing = context.requests.getMissing(root);
+      this.viewFrustum = viewFrustum !== undefined ? viewFrustum : context.viewport.viewFrustum;
+      if (this.viewFrustum !== undefined)
+        this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
     }
 
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
@@ -537,7 +551,10 @@ export class TileTree implements IDisposable {
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
-    return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector);
+    const vf = this.isTerrain ? ViewFrustum.createFromWidenedViewport(context.viewport) : undefined;
+    if (this.isTerrain)
+      console.log("Creating new WebMercator tree draw args"); // tslint:disable-line:no-console
+    return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector, vf);
   }
 
   public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }

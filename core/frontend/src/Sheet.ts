@@ -161,7 +161,7 @@ export namespace Attachments {
 
     public renderImage(): ImageBuffer | undefined {
       if (!this.sync.isValidRenderPlan) {
-        this.target.changeRenderPlan(new RenderPlan(this));
+        this.target.changeRenderPlan(RenderPlan.createFromViewport(this));
         this.sync.setValidRenderPlan();
       }
 
@@ -492,7 +492,7 @@ export namespace Attachments {
             const frust = viewport.getFrustum(CoordSystem.Npc);
             frust.initFromRange(this.range);  // use unclipped range of tile to change the frustum (this is what we're looking at)
 
-            const rootToNpc = viewport.worldToNpcMap;
+            const rootToNpc = viewport.viewFrustum.worldToNpcMap;
             rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frust.points);
             viewport.setupViewFromFrustum(frust);
 

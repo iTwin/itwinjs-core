@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Viewport } from "./Viewport";
+import { Viewport, ViewFrustum } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
@@ -29,11 +29,14 @@ export class ViewContext {
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
 
-  public getPixelSizeAtPoint(inPoint?: Point3d): number {
-    const vp = this.viewport;
-    const viewPt = !!inPoint ? vp.worldToView(inPoint) : vp.npcToView(new Point3d(0.5, 0.5, 0.5));
+  public static getPixelSizeAtPointForFrustum(vf: ViewFrustum, inPoint?: Point3d) {
+    const viewPt = !!inPoint ? vf.worldToView(inPoint) : vf.npcToView(new Point3d(0.5, 0.5, 0.5));
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
-    return vp.viewToWorld(viewPt).distance(vp.viewToWorld(viewPt2));
+    return vf.viewToWorld(viewPt).distance(vf.viewToWorld(viewPt2));
+  }
+
+  public getPixelSizeAtPoint(inPoint?: Point3d): number {
+    return ViewContext.getPixelSizeAtPointForFrustum(this.viewport.viewFrustum, inPoint);
   }
 }
 

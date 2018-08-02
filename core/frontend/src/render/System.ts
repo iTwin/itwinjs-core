@@ -26,7 +26,7 @@ import {
   ImageSource,
   ImageSourceFormat,
 } from "@bentley/imodeljs-common";
-import { Viewport, ViewRect } from "../Viewport";
+import { Viewport, ViewRect, ViewFrustum } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -41,8 +41,8 @@ import { IModelApp } from "../IModelApp";
 export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
-  public readonly frustum: Frustum;
-  public readonly fraction: number;
+  public readonly viewFrustum: ViewFrustum;
+  public readonly terrainFrustum: ViewFrustum;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -51,25 +51,44 @@ export class RenderPlan {
   public readonly activeVolume?: RenderClipVolume;
   public readonly hline?: HiddenLine.Params;
   public readonly lights?: SceneLights;
+  private _curFrustum: ViewFrustum;
 
-  public constructor(vp: Viewport) {
+  public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
+  public get fraction(): number { return this._curFrustum.frustFraction; }
+
+  public selectTerrainFrustum() { this._curFrustum = this.terrainFrustum; }
+  public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
+
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum, activeVolume?: RenderClipVolume, hline?: HiddenLine.Params, lights?: SceneLights) {
+    this.is3d = is3d;
+    this.viewFlags = viewFlags;
+    this.bgColor = bgColor;
+    this.monoColor = monoColor;
+    this.hiliteSettings = hiliteSettings;
+    this.aaLines = aaLines;
+    this.aaText = aaText;
+    this.activeVolume = activeVolume;
+    this.hline = hline;
+    this.lights = lights;
+    this._curFrustum = this.viewFrustum = viewFrustum;
+    this.terrainFrustum = terrainFrustum;
+  }
+
+  public static createFromViewport(vp: Viewport): RenderPlan {
     const view = vp.view;
     const style = view.displayStyle;
 
-    this.is3d = view.is3d();
-    this.viewFlags = style.viewFlags;
-    this.frustum = vp.getFrustum()!;
-    this.fraction = vp.frustFraction;
-    this.bgColor = view.backgroundColor;
-    this.monoColor = style.getMonochromeColor();
-    this.hiliteSettings = vp.hilite;
-    this.aaLines = vp.wantAntiAliasLines;
-    this.aaText = vp.wantAntiAliasText;
-    this.hline = style.is3d() ? style.getHiddenLineParams() : undefined;
-    this.lights = undefined; // view.is3d() ? view.getLights() : undefined
-
+    const hline = style.is3d() ? style.getHiddenLineParams() : undefined;
+    const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
-    this.activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
+    const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
+
+    const terrainFrustum = ViewFrustum.createFromWidenedViewport(vp);
+    assert(terrainFrustum !== undefined);
+
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.getMonochromeColor(), vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights);
+
+    return rp;
   }
 }
 
