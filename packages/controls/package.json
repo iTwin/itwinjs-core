@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-controls",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Frontend controls based on ECPresentation library",
   "keywords": [
     "Bentley",
@@ -45,8 +45,8 @@
     "@bentley/imodeljs-i18n": "~0.109.0",
     "@bentley/imodeljs-common": "~0.109.0",
     "@bentley/imodeljs-frontend": "~0.109.0",
-    "@bentley/ecpresentation-common": "^0.5.0",
-    "@bentley/ecpresentation-frontend": "^0.5.0",
+    "@bentley/ecpresentation-common": "^0.5.1",
+    "@bentley/ecpresentation-frontend": "^0.5.1",
     "@bentley/ui-core": "~0.109.0",
     "@bentley/ui-components": "~0.109.0"
   },
@@ -56,8 +56,8 @@
     "@bentley/imodeljs-i18n": "~0.109.0",
     "@bentley/imodeljs-common": "~0.109.0",
     "@bentley/imodeljs-frontend": "~0.109.0",
-    "@bentley/ecpresentation-common": "^0.5.0",
-    "@bentley/ecpresentation-frontend": "^0.5.0",
+    "@bentley/ecpresentation-common": "^0.5.1",
+    "@bentley/ecpresentation-frontend": "^0.5.1",
     "@bentley/ui-core": "~0.109.0",
     "@bentley/ui-components": "~0.109.0",
     "@types/chai": "^4.0.10",

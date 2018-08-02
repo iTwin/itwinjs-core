@@ -1,6 +1,15 @@
 # Change Log - @bentley/ecpresentation-controls
 
-This log was last generated on Tue, 24 Jul 2018 13:20:35 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Aug 2018 17:56:36 GMT and should not be manually modified.
+
+## 0.5.1
+Thu, 02 Aug 2018 17:56:36 GMT
+
+### Patches
+
+- Update imodeljs-core dependency versions to 0.109.0
+- Specify `main` and `typings` in package.json
+- Exclude .scss files from npmignore
 
 ## 0.5.0
 Tue, 24 Jul 2018 13:20:35 GMT
@@ -102,4 +111,3 @@ Fri, 20 Apr 2018 13:57:47 GMT
 
 - Created a new package for ecpresentation-driven controls (moved from @bentley/ecpresentation-frontend)
 - Updated package dependencies
-
