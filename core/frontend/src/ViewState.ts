@@ -5,12 +5,12 @@
 import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
+  GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -20,7 +20,6 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert, Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
@@ -1355,101 +1354,12 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    const useOldSkyBox: boolean = false;
-    if (useOldSkyBox)
-      this.drawSkyBox(context);
-    else
-      this.drawRealSkyBox(context);
-
+    this.drawSkyBox(context);
     this.drawGroundPlane(context);
   }
 
-  /** Attempt to extract the eyepoint if the camera is on. Otherwise, compute the eye point from the given frustum. */
-  private computeEyePoint(frustum: Frustum): Point3d {
-    if (this.cameraOn)
-      return this.camera.eye;
-
-    const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront));
-
-    const pseudoCameraHalfAngle = 22.5;
-    const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
-    const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Constant.radiansPerDegree));
-
-    return Point3d.add3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, focalLength / delta.magnitude());
-  }
-
-  /** Calculate a UV coordinate from a vector direction, its rotation, and offset along the z axis. */
-  private static getUVForDirection(direction: Vector3d, rotation: number, zOffset: number): Point2d {
-    const radius = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
-    const zValue = direction.z - radius * zOffset;
-    const azimuth = (Math.atan2(direction.y, direction.x) + rotation) / (Math.PI * 2);
-    const altitude = Math.atan2(zValue, radius);
-
-    return Point2d.create(0.5 - altitude / (Math.PI * 2), 0.25 - azimuth);
-  }
-
-  /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
-  private drawBackgroundMesh(builder: GraphicBuilder, viewport: Viewport, rotation: number, zOffset: number) {
-    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
-    // we will use a PolyfaceBuilder here to add simple quads in the grid with manually calculated UV params, claim the polyface when finished,
-    // and then send that over to the GraphicBuilder
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.needParams = true;
-    strokeOptions.needNormals = true;
-    strokeOptions.shouldTriangulate = false;
-    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-    polyfaceBuilder.toggleReversedFacetFlag();
-
-    const meshDimension = 10;
-    const delta = 1 / (meshDimension - 1);
-
-    const frustum = viewport.getFrustum();
-    const cameraPos = this.computeEyePoint(frustum);
-
-    const points = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
-    const params = [Point2d.create(), Point2d.create(), Point2d.create(), Point2d.create()];
-
-    for (let row = 1; row < meshDimension; ++row) {
-      for (let col = 1; col < meshDimension; ++col) {
-        const low = Point2d.create((row - 1) * delta, (col - 1) * delta);
-        const high = Point2d.create(row * delta, col * delta);
-
-        const npcZ = .5;
-        Point3d.create(low.x, low.y, npcZ, points[0]);
-        Point3d.create(high.x, low.y, npcZ, points[1]);
-        Point3d.create(high.x, high.y, npcZ, points[2]);
-        Point3d.create(low.x, high.y, npcZ, points[3]);
-
-        viewport.npcToWorldArray(points);
-        for (let i = 0; i < 4; i++) {
-          const direction = Vector3d.createStartEnd(cameraPos, points[i]);
-          params[i].setFrom(ViewState3d.getUVForDirection(direction, rotation, zOffset));
-        }
-
-        // Avoid seam discontinuities by eliminating cycles
-        const paramRange = Range2d.createArray(params);
-        if ((paramRange.high.x - paramRange.low.x) > .5) {
-          for (let i = 0; i < 4; i++)
-            while (params[i].x < .5)
-              params[i].x += 1;
-        }
-        if ((paramRange.high.y - paramRange.low.y) > .5) {
-          for (let i = 0; i < 4; i++)
-            while (params[i].y < .5)
-              params[i].y += 1;
-        }
-
-        viewport.worldToViewArray(points);
-        polyfaceBuilder.addQuadFacet(points, params, undefined);
-      }
-    }
-
-    const polyface = polyfaceBuilder.claimPolyface(false);
-    builder.addPolyface(polyface, true);
-  }
-
   /** @hidden */
-  protected drawRealSkyBox(context: DecorateContext): void {
+  protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
     if (!style3d.getEnvironment().sky.display)
       return;
@@ -1462,45 +1372,6 @@ export abstract class ViewState3d extends ViewState {
       context.setSkyBox(skyBoxGraphic!);
     } else {
       // ###TODO: Skybox textures failed to load. Resort to drawing 'fake' version
-    }
-  }
-
-  /** @hidden */
-  protected drawSkyBox(context: DecorateContext): void {
-    const style3d = this.getDisplayStyle3d();
-    if (!style3d.getEnvironment().sky.display)
-      return;
-
-    const vp = context.viewport;
-    style3d.loadSkyBoxMaterial(vp.target.renderSystem);
-
-    if (style3d.skyboxMaterial !== undefined) {
-      // Create a graphic for the skybox, and assign it the sky material
-      const skyGraphic = context.createViewBackground();
-      const params = new GraphicParams();
-      params.material = style3d.skyboxMaterial;
-      skyGraphic.activateGraphicParams(params);
-
-      // create a 10x10 mesh on the backplane with the sky material mapped to its UV coordinates
-      this.drawBackgroundMesh(skyGraphic, vp, 0.0, this.iModel.globalOrigin.z);
-      context.setViewBackground(skyGraphic.finish());
-    } else {
-      // Skybox material failed to load. Resort to drawing 'fake' version
-      const rect = context.viewport.viewRect;
-      const points = [new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height)];
-      const args = new MeshArgs();
-      args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
-      for (const point of points)
-        args.points.add(point);
-
-      args.vertIndices = [3, 2, 0, 2, 1, 0];
-
-      const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
-      args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
-
-      const gf = IModelApp.renderSystem.createTriMesh(args);
-      if (undefined !== gf)
-        context.setViewBackground(gf);
     }
   }
 

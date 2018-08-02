@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping, Gradient, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, RenderMaterial, Gradient, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
@@ -139,29 +139,57 @@ export class GroundPlane {
   }
 }
 
+export const enum SkyBoxImageType {
+  None,
+  Spherical,
+  Cylindrical,
+}
+
+export class SkyBoxImage {
+  public type: SkyBoxImageType;
+  public textureId: Id64;
+
+  public constructor(json: any) {
+    if (undefined !== json) {
+      this.type = JsonUtils.asInt(json.type, SkyBoxImageType.None);
+      this.textureId = new Id64(JsonUtils.asString(json.texture));
+    } else {
+      this.type = SkyBoxImageType.None;
+      this.textureId = Id64.invalidId;
+    }
+  }
+
+  public toJSON(): any {
+    return {
+      type: this.type,
+      texture: this.textureId.toString(),
+    };
+  }
+}
+
 /** The SkyBox is a grid drawn in the background of spatial views to provide context. */
 export class SkyBox {
   public display: boolean = false;
-  public twoColor: boolean = false;
-  public jpegFile: string;              // the name of a jpeg file with a spherical skybox
-  public zenithColor: ColorDef;         // if no jpeg file, the color of the zenith part of the sky gradient (shown when looking straight up.)
-  public nadirColor: ColorDef;          // if no jpeg file, the color of the nadir part of the ground gradient (shown when looking straight down.)
-  public groundColor: ColorDef;         // if no jpeg file, the color of the ground part of the ground gradient
-  public skyColor: ColorDef;            // if no jpeg file, the color of the sky part of the sky gradient
-  public groundExponent: number = 4.0;  // if no jpeg file, the cutoff between ground and nadir
-  public skyExponent: number = 4.0;     // if no jpeg file, the cutoff between sky and zenith
+  public readonly twoColor: boolean = false;
+  public readonly image: SkyBoxImage;
+  public readonly zenithColor: ColorDef;         // if no image, the color of the zenith part of the sky gradient (shown when looking straight up.)
+  public readonly nadirColor: ColorDef;          // if no image, the color of the nadir part of the ground gradient (shown when looking straight down.)
+  public readonly groundColor: ColorDef;         // if no image, the color of the ground part of the ground gradient
+  public readonly skyColor: ColorDef;            // if no image, the color of the sky part of the sky gradient
+  public readonly groundExponent: number = 4.0;  // if no image, the cutoff between ground and nadir
+  public readonly skyExponent: number = 4.0;     // if no image, the cutoff between sky and zenith
 
   public constructor(sky: any) {
     sky = sky ? sky : {};
     this.display = JsonUtils.asBool(sky.display, false);
     this.twoColor = JsonUtils.asBool(sky.twoColor, false);
-    this.jpegFile = JsonUtils.asString(sky.file);
     this.groundExponent = JsonUtils.asDouble(sky.groundExponent, 4.0);
     this.skyExponent = JsonUtils.asDouble(sky.skyExponent, 4.0);
     this.groundColor = (undefined !== sky.groundColor) ? ColorDef.fromJSON(sky.groundColor) : ColorDef.from(120, 143, 125);
     this.zenithColor = (undefined !== sky.zenithColor) ? ColorDef.fromJSON(sky.zenithColor) : ColorDef.from(54, 117, 255);
     this.nadirColor = (undefined !== sky.nadirColor) ? ColorDef.fromJSON(sky.nadirColor) : ColorDef.from(40, 15, 0);
     this.skyColor = (undefined !== sky.skyColor) ? ColorDef.fromJSON(sky.skyColor) : ColorDef.from(143, 205, 255);
+    this.image = new SkyBoxImage(sky.image);
   }
 
   public toJSON(): any {
@@ -170,8 +198,6 @@ export class SkyBox {
       val.display = true;
     if (this.twoColor)
       val.twoColor = true;
-    if (this.jpegFile !== "")
-      val.jpegFile = this.jpegFile;
     if (this.groundExponent !== 4.0)
       val.groundExponent = this.groundExponent;
     if (this.skyExponent !== 4.0)
@@ -181,6 +207,8 @@ export class SkyBox {
     val.zenithColor = this.zenithColor;
     val.nadirColor = this.nadirColor;
     val.skyColor = this.skyColor;
+    val.image = this.image.toJSON();
+
     return val;
   }
 }
@@ -306,14 +334,15 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public loadSphericalSkyBoxParams(sky: SkyBox, system: RenderSystem): boolean {
     // sky.jpegFile = "texturify_pano-1-13SMall.jpg"; // SphericalChurch.jpg";
-    if (undefined !== sky.jpegFile && "" !== sky.jpegFile) {
+    const skyJpegFile: string | undefined = undefined;
+    if (undefined !== skyJpegFile && "" !== skyJpegFile) {
       if (this._loadingImages)
         return true;
 
       this._loadingImages = true;
 
       const promises: Array<Promise<HTMLImageElement>> = [];
-      const url = "./skyboxes/" + sky.jpegFile;
+      const url = "./skyboxes/" + skyJpegFile;
       const promise = new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
         const image = new Image();
         image.onload = () => resolve(image);
@@ -333,78 +362,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
     else
       this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient4Color, this.iModel.globalOrigin.z, sky.zenithColor, sky.nadirColor, sky.skyColor, sky.groundColor, sky.skyExponent, sky.groundExponent);
 
-    return true;
-  }
-
-  /** Attempts to create a texture and material for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
-  public loadSkyBoxMaterial(system: RenderSystem): boolean {
-    if (this.skyboxMaterial !== undefined)
-      return true;  // material has already been loaded
-
-    const env = this.getEnvironment();
-    let texture: RenderTexture | undefined;
-
-    // ### TODO
-    // if (env.sky.jpegFile.length !== 0)
-    // Read jpeg data from file
-
-    // we didn't get a jpeg sky, just create a gradient
-    if (!texture) {
-      const gradientPixelCount = 1024;
-      const sizeOfColorDef = 4;
-
-      const buffer = new Uint8Array(gradientPixelCount * sizeOfColorDef);
-      let currentBufferIdx = 0;
-      let color1: ColorDef;
-      let color2: ColorDef;
-
-      // set up the 4 color gradient
-      for (let i = 0; i < gradientPixelCount; i++ , currentBufferIdx += 4) {
-        let frac = i / gradientPixelCount;
-
-        if (env.sky.twoColor) {
-          color1 = env.sky.zenithColor;
-          color2 = env.sky.nadirColor;
-        } else if (frac > 0.5) {
-          color1 = env.sky.nadirColor;
-          color2 = env.sky.groundColor;
-          frac = 1.0 - (2.0 * (frac - 0.5));
-          frac = Math.pow(frac, env.sky.groundExponent);
-        } else {
-          color1 = env.sky.zenithColor;
-          color2 = env.sky.skyColor;
-          frac = 2.0 * frac;
-          frac = Math.pow(frac, env.sky.skyExponent);
-        }
-
-        color1.lerp(color2, frac, color1);
-        color1.setAlpha(color1.getAlpha() + frac * (color2.getAlpha() - color1.getAlpha()));
-        buffer[currentBufferIdx] = color1.colors.r;
-        buffer[currentBufferIdx + 1] = color1.colors.g;
-        buffer[currentBufferIdx + 2] = color1.colors.b;
-        buffer[currentBufferIdx + 3] = color1.getAlpha();
-      }
-      const image = ImageBuffer.create(buffer, ImageBufferFormat.Rgba, 1);
-      if (!image)
-        return false;
-      texture = system.createTextureFromImageBuffer(image, this.iModel, RenderTexture.Params.defaults);
-      if (!texture)
-        return false;
-    }
-
-    const matParams = new RenderMaterial.Params();
-    matParams.diffuseColor = ColorDef.white;
-    matParams.shadows = false;
-    matParams.ambient = 1;
-    matParams.diffuse = 0;
-
-    const mapParams = new TextureMapping.Params();
-    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
-    mapParams.textureMatrix = transform;
-    mapParams.textureMatrix.setTransform();
-    matParams.textureMapping = new TextureMapping(texture, mapParams);
-
-    this.skyboxMaterial = system.createMaterial(matParams, this.iModel);
     return true;
   }
 }
