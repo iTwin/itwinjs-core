@@ -42,7 +42,7 @@ describe("TableDataProvider", async () => {
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new ECPresentationTableDataProvider(imodel, "SimpleContent");
+    provider = new ECPresentationTableDataProvider(imodel, "SimpleContent", 10);
   });
   after(async () => {
     await imodel.closeStandalone();
@@ -73,10 +73,10 @@ describe("TableDataProvider", async () => {
     });
 
     it("returns total number of instances when more than page size", async () => {
-      const keys = await imodel.elements.queryProps({ from: "functional.FunctionalElement", limit: 99 });
+      const keys = await imodel.elements.queryProps({ from: "functional.FunctionalElement", limit: 20 });
       provider.keys = new KeySet(keys);
       const count = await provider.getRowsCount();
-      expect(count).to.eq(99);
+      expect(count).to.eq(20);
     });
 
   });
