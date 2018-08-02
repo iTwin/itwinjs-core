@@ -16,6 +16,8 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "main": "lib/index.js",
+  "typings": "lib/index",
   "scripts": {
     "build": "tsc -p ./src && npm run build:assets && npm run build:scss",
     "build:scss": "cpx ./src/**/*.scss ./lib",
