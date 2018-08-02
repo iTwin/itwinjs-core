@@ -5,7 +5,8 @@
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, StrokeOptions, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume, GraphicList } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList } from "../System";
+import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -414,11 +415,12 @@ export class System extends RenderSystem {
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
-  public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
-    if (params.isTexturedCube) {
-      const cachedGeom = SkyBoxQuadsGeometry.create(params);
+  public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
+    if (undefined !== params.cube) {
+      const cachedGeom = SkyBoxQuadsGeometry.create(params.cube);
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     } else {
+      assert(undefined !== params.sphere || undefined !== params.gradient);
       const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
       return cachedGeom !== undefined ? new SkySpherePrimitive(cachedGeom) : undefined;
     }

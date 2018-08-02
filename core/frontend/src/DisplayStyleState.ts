@@ -8,7 +8,6 @@ import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64Props, Id64 } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem } from "./rendering";
-import { SkyBoxCreateParams, SkyboxSphereType } from "./render/System";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -174,43 +173,73 @@ export interface EnvironmentProps {
   sky?: SkyBoxProps;
 }
 
-export class SkyBoxImage implements SkyBoxImageProps {
-  public type: SkyBoxImageType;
-  public textureId: Id64;
+/** The SkyBox is an environment drawn in the background of spatial views to provide context. */
+export abstract class SkyBox implements SkyBoxProps {
+  public display: boolean = false;
 
-  public constructor(json?: SkyBoxImageProps) {
-    if (undefined !== json) {
-      this.type = JsonUtils.asInt(json.type, SkyBoxImageType.None);
-      this.textureId = new Id64(json.texture);
-    } else {
-      this.type = SkyBoxImageType.None;
-      this.textureId = Id64.invalidId;
+  protected constructor(sky?: SkyBoxProps) {
+    this.display = undefined !== sky && JsonUtils.asBool(sky.display, false);
+  }
+
+  public toJSON(): SkyBoxProps {
+    return { display: this.display };
+  }
+
+  public static fromJSON(json?: SkyBoxProps): SkyBox {
+    let imageType = SkyBoxImageType.None;
+    if (undefined !== json && undefined !== json.image && undefined !== json.image.type)
+      imageType = json.image.type;
+
+    switch (imageType) {
+      case SkyBoxImageType.Spherical:
+        return new SkySphere(json!); // imageType obtained from json.image.type => json not undefined...
+      case SkyBoxImageType.Cylindrical: // ###TODO...
+      case SkyBoxImageType.None:
+      default:
+        return new SkyGradient(json);
     }
   }
 
-  public toJSON(): SkyBoxImageProps {
-    return {
-      type: this.type,
-      texture: this.textureId.toString(),
-    };
+  public abstract async loadParams(_system: RenderSystem, _iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
+}
+
+export namespace SkyBox {
+  export class SphereParams {
+    public constructor(public readonly texture: RenderTexture, public readonly rotation: number) { }
+  }
+
+  export class CreateParams {
+    public readonly gradient?: SkyGradient;
+    public readonly sphere?: SphereParams;
+    public readonly cube?: RenderTexture;
+    public readonly zOffset: number;
+
+    private constructor(zOffset: number, gradient?: SkyGradient, sphere?: SphereParams, cube?: RenderTexture) {
+      this.gradient = gradient;
+      this.sphere = sphere;
+      this.cube = cube;
+      this.zOffset = zOffset;
+    }
+
+    public static createForGradient(gradient: SkyGradient, zOffset: number) { return new CreateParams(zOffset, gradient); }
+    public static createForSphere(sphere: SphereParams, zOffset: number) { return new CreateParams(zOffset, undefined, sphere); }
+    public static createForCube(cube: RenderTexture) { return new CreateParams(0.0, undefined, undefined, cube); }
   }
 }
 
-/** The SkyBox is an environment drawn in the background of spatial views to provide context. */
-export class SkyBox implements SkyBoxProps {
-  public display: boolean = false;
+export class SkyGradient extends SkyBox {
   public readonly twoColor: boolean = false;
-  public readonly image: SkyBoxImage;
-  public readonly zenithColor: ColorDef;         // if no image, the color of the zenith part of the sky gradient (shown when looking straight up.)
-  public readonly nadirColor: ColorDef;          // if no image, the color of the nadir part of the ground gradient (shown when looking straight down.)
-  public readonly groundColor: ColorDef;         // if no image, the color of the ground part of the ground gradient
-  public readonly skyColor: ColorDef;            // if no image, the color of the sky part of the sky gradient
-  public readonly groundExponent: number = 4.0;  // if no image, the cutoff between ground and nadir
-  public readonly skyExponent: number = 4.0;     // if no image, the cutoff between sky and zenith
+  public readonly zenithColor: ColorDef;         // the color of the zenith part of the sky gradient (shown when looking straight up.)
+  public readonly nadirColor: ColorDef;          // the color of the nadir part of the ground gradient (shown when looking straight down.)
+  public readonly groundColor: ColorDef;         // the color of the ground part of the ground gradient
+  public readonly skyColor: ColorDef;            // the color of the sky part of the sky gradient
+  public readonly groundExponent: number = 4.0;  // the cutoff between ground and nadir
+  public readonly skyExponent: number = 4.0;     // the cutoff between sky and zenith
 
   public constructor(sky?: SkyBoxProps) {
+    super(sky);
+
     sky = sky ? sky : {};
-    this.display = JsonUtils.asBool(sky.display, false);
     this.twoColor = JsonUtils.asBool(sky.twoColor, false);
     this.groundExponent = JsonUtils.asDouble(sky.groundExponent, 4.0);
     this.skyExponent = JsonUtils.asDouble(sky.skyExponent, 4.0);
@@ -218,12 +247,11 @@ export class SkyBox implements SkyBoxProps {
     this.zenithColor = (undefined !== sky.zenithColor) ? ColorDef.fromJSON(sky.zenithColor) : ColorDef.from(54, 117, 255);
     this.nadirColor = (undefined !== sky.nadirColor) ? ColorDef.fromJSON(sky.nadirColor) : ColorDef.from(40, 15, 0);
     this.skyColor = (undefined !== sky.skyColor) ? ColorDef.fromJSON(sky.skyColor) : ColorDef.from(143, 205, 255);
-    this.image = new SkyBoxImage(sky.image);
   }
 
   public toJSON(): SkyBoxProps {
-    const val: any = {};
-    val.display = this.display ? true : undefined;
+    const val = super.toJSON();
+
     val.twoColor = this.twoColor ? true : undefined;
     val.groundExponent = this.groundExponent !== 4.0 ? this.groundExponent : undefined;
     val.skyExponent = this.skyExponent !== 4.0 ? this.skyExponent : undefined;
@@ -233,18 +261,44 @@ export class SkyBox implements SkyBoxProps {
     val.nadirColor = this.nadirColor.toJSON();
     val.skyColor = this.skyColor.toJSON();
 
-    val.image = this.image.toJSON();
-
     return val;
   }
+
+  public async loadParams(_system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams> {
+    return Promise.resolve(SkyBox.CreateParams.createForGradient(this, iModel.globalOrigin.z));
+  }
 }
+
+export class SkySphere extends SkyBox {
+  public textureId: Id64;
+
+  public constructor(json: SkyBoxProps) {
+    super(json);
+    this.textureId = new Id64(undefined !== json.image ? json.image.texture : undefined);
+  }
+
+  public toJSON(): SkyBoxProps {
+    const val = super.toJSON();
+    val.image = {
+      type: SkyBoxImageType.Spherical,
+      texture: this.textureId.value,
+    };
+    return val;
+  }
+
+  public async loadParams(_system: RenderSystem, _iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
+    return Promise.resolve(undefined); // ###TODO
+  }
+}
+
+// ###TODO: export class SkyCube extends SkyBox { ... }
 
 /** The skyBox, groundPlane, etc. for a 3d view  */
 export class Environment implements EnvironmentProps {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;
   public constructor(json?: EnvironmentProps) {
-    this.sky = new SkyBox(undefined !== json ? json.sky : undefined);
+    this.sky = SkyBox.fromJSON(undefined !== json ? json.sky : undefined);
     this.ground = new GroundPlane(undefined !== json ? json.ground : undefined);
   }
 
@@ -259,7 +313,8 @@ export class Environment implements EnvironmentProps {
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3dState extends DisplayStyleState {
   public skyboxMaterial: RenderMaterial | undefined;
-  public skyBoxParams?: SkyBoxCreateParams;
+  private _skyBoxParams?: SkyBox.CreateParams;
+  private _skyBoxParamsLoaded?: boolean;
   public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
@@ -304,97 +359,17 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
-  private _useSkyBoxImages: boolean = false;
-  private _skyBoxImagePrefix: string = "Teide/";
-  private _skyBoxImageSuffix: string = "jpg";
-
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
-  public loadSkyBoxParams(system: RenderSystem): boolean {
-    if (this.skyBoxParams !== undefined)
-      return true;  // skybox params have already been loaded
-
-    const skybox = this.getEnvironment().sky;
-    // ###TODO: Need something in Skybox to tell us whether to use gradient, spherical texture, or cube texture.
-    const useSpherical = true;
-    if (useSpherical)
-      return this.loadSphericalSkyBoxParams(skybox, system);
-
-    if (this._useSkyBoxImages)
-      return this.loadImageSkyBoxParams(system);
-
-    // const env = this.getEnvironment();
-    // ###TODO - Use actual textures - just defining our own textures for now (different colors to distinguish them); can key off env.sky.jpegFile (needs more than one file though!)
-    // ###TODO - If possible, use a cubemap texture to store all six images in one fell swoop (better use of GPU resources)
-    // ###TODO - if any image buffer or texture fails to load, bail out.
-    return true;
-  }
-
-  // ###TODO: This is all temporary...
-  private _loadingImages: boolean = false;
-  private loadImageSkyBoxParams(system: RenderSystem): boolean {
-    if (this._loadingImages)
-      return true;
-
-    this._loadingImages = true;
-
-    const promises: Array<Promise<HTMLImageElement>> = [];
-    const prefix = this._skyBoxImagePrefix;
-    const ext = this._skyBoxImageSuffix;
-    const suffixes = ["posx", "negx", "posy", "negy", "posz", "negz"];
-    for (let i = 0; i < suffixes.length; i++) {
-      const suffix = suffixes[i];
-      const url = "./skyboxes/" + prefix + suffix + "." + ext;
-      const promise = new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = url;
-        (image as any).faceIndex = i;
-      });
-
-      promises.push(promise);
+  public loadSkyBoxParams(system: RenderSystem): SkyBox.CreateParams | undefined {
+    if (undefined === this._skyBoxParams && undefined === this._skyBoxParamsLoaded) {
+      this._skyBoxParamsLoaded = false;
+      const skybox = this.getEnvironment().sky;
+      skybox.loadParams(system, this.iModel).then((params?: SkyBox.CreateParams) => {
+        this._skyBoxParams = params;
+        this._skyBoxParamsLoaded = true;
+        }).catch((_err) => this._skyBoxParamsLoaded = true);
     }
 
-    Promise.all(promises).then((images: HTMLImageElement[]) => {
-      const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
-      const texture = system.createTextureFromCubeImages(images[0], images[1], images[2], images[3], images[4], images[5], this.iModel, params);
-      this.skyBoxParams = SkyBoxCreateParams.createForTexturedCube(texture!);
-      this._loadingImages = false;
-    });
-
-    return true;
-  }
-
-  public loadSphericalSkyBoxParams(sky: SkyBox, system: RenderSystem): boolean {
-    // sky.jpegFile = "texturify_pano-1-13SMall.jpg"; // SphericalChurch.jpg";
-    const skyJpegFile: string | undefined = undefined;
-    if (undefined !== skyJpegFile && "" !== skyJpegFile) {
-      if (this._loadingImages)
-        return true;
-
-      this._loadingImages = true;
-
-      const promises: Array<Promise<HTMLImageElement>> = [];
-      const url = "./skyboxes/" + skyJpegFile;
-      const promise = new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = url;
-      });
-      promises.push(promise);
-
-      Promise.all(promises).then((images: HTMLImageElement[]) => {
-        const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
-        const texture = system.createTextureFromImage(images[0], false, this.iModel, params);
-        this.skyBoxParams = SkyBoxCreateParams.createForTexturedSphere(texture!, this.iModel.globalOrigin.z, 0.0); // ###TODO: where do we get rotation from?
-        this._loadingImages = false;
-      });
-    } else if (sky.twoColor)
-      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient2Color, this.iModel.globalOrigin.z, sky.zenithColor, sky.nadirColor);
-    else
-      this.skyBoxParams = SkyBoxCreateParams.createForGradientSphere(SkyboxSphereType.Gradient4Color, this.iModel.globalOrigin.z, sky.zenithColor, sky.nadirColor, sky.skyColor, sky.groundColor, sky.skyExponent, sky.groundExponent);
-
-    return true;
+    return this._skyBoxParams;
   }
 }

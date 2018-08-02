@@ -33,6 +33,7 @@ import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
+import { SkyBox } from "../DisplayStyleState";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
@@ -303,65 +304,6 @@ export abstract class RenderTarget implements IDisposable {
   public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
-export enum SkyboxSphereType {
-  Gradient2Color,
-  Gradient4Color,
-  Texture,
-}
-
-export class SkyBoxCreateParams {
-  private _isSphere: boolean;
-
-  public readonly texture?: RenderTexture;
-  public readonly sphereType?: SkyboxSphereType;
-  public readonly zOffset?: number;
-  public readonly rotation?: number;
-  public readonly zenithColor?: ColorDef;
-  public readonly skyColor?: ColorDef;
-  public readonly groundColor?: ColorDef;
-  public readonly nadirColor?: ColorDef;
-  public readonly skyExponent?: number;
-  public readonly groundExponent?: number;
-
-  public get isTexturedCube() { return !this._isSphere; }
-  public get isSphere() { return this._isSphere; }
-
-  private constructor(_isSphere: boolean, texture?: RenderTexture, sphereType?: SkyboxSphereType, zOffset?: number, rotation?: number, zenithColor?: ColorDef, nadirColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
-    this._isSphere = _isSphere;
-    this.texture = texture;
-    this.sphereType = sphereType;
-    this.zOffset = zOffset;
-    this.rotation = rotation;
-    this.zenithColor = zenithColor;
-    this.skyColor = skyColor;
-    this.groundColor = groundColor;
-    this.nadirColor = nadirColor;
-    this.skyExponent = skyExponent;
-    this.groundExponent = groundExponent;
-  }
-
-  public static createForTexturedCube(cube: RenderTexture) {
-    return new SkyBoxCreateParams(false, cube);
-  }
-
-  public static createForGradientSphere(sphereType: SkyboxSphereType, zOffset: number, zenithColor: ColorDef, nadirColor: ColorDef,
-    skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
-    // Check arguments.
-    assert(SkyboxSphereType.Texture !== sphereType);
-    if (SkyboxSphereType.Gradient4Color !== sphereType) {
-      assert(undefined !== skyColor);
-      assert(undefined !== groundColor);
-      assert(undefined !== skyExponent);
-      assert(undefined !== groundExponent);
-    }
-    return new SkyBoxCreateParams(true, undefined, sphereType, zOffset, 0, zenithColor, nadirColor, skyColor, groundColor, skyExponent, groundExponent);
-  }
-
-  public static createForTexturedSphere(texture: RenderTexture, zOffset: number, rotation: number) {
-    return new SkyBoxCreateParams(true, texture, SkyboxSphereType.Texture, zOffset, rotation);
-  }
-}
-
 /**
  * A RenderSystem is the renderer-specific factory for creating RenderGraphics, RenderTexture, and RenderMaterials.
  */
@@ -438,8 +380,8 @@ export abstract class RenderSystem implements IDisposable {
     return this.createTriMesh(rasterTile);
   }
 
-  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBoxCreateParams. */
-  public createSkyBox(_params: SkyBoxCreateParams): RenderGraphic | undefined { return undefined; }
+  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams. */
+  public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
