@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added separate ToolSettings for touch move distance and delay.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

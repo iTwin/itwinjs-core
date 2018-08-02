@@ -49,8 +49,12 @@ export class ToolSettings {
   public static noMotionTimeout = BeDuration.fromMilliseconds(50);
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
+  /** Delay with a touch on the surface before a move operation begins. */
+  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
   /** Delay with the mouse down before a drag operation begins. */
   public static startDragDelay = BeDuration.fromMilliseconds(110);
+  /** Distance in screen inches a touch point must move before being considered motion. */
+  public static touchMoveDistanceInches = 0.15;
   /** Distance in screen inches the cursor must move before a drag operation begins. */
   public static startDragDistanceInches = 0.15;
   /** Radius in screen inches to search for elements that anchor viewing operations. */
@@ -481,9 +485,6 @@ export class ToolAdmin {
         if (undefined === current.lastTouchStart)
           return;
 
-        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp > ToolSettings.startDragDelay.milliseconds)
-          return;
-
         // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < ev.touchInfo.changedTouches.length; i++) {
           const currTouch = ev.touchInfo.changedTouches[i];
@@ -493,7 +494,7 @@ export class ToolAdmin {
             const currPt = BeTouchEvent.getTouchPosition(currTouch, vp);
             const startPt = BeTouchEvent.getTouchPosition(startTouch, vp);
 
-            if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
+            if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.touchMoveDistanceInches))
               continue; // Hasn't moved appreciably....
           }
 
@@ -528,7 +529,7 @@ export class ToolAdmin {
         if (undefined === current.lastTouchStart)
           return;
 
-        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp < ToolSettings.startDragDelay.milliseconds)
+        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp < ToolSettings.touchMoveDelay.milliseconds)
           return;
 
         // tslint:disable-next-line:prefer-for-of
@@ -542,7 +543,7 @@ export class ToolAdmin {
           const currPt = BeTouchEvent.getTouchPosition(currTouch, vp);
           const startPt = BeTouchEvent.getTouchPosition(startTouch, vp);
 
-          if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
+          if (currPt.distance(startPt) < vp.pixelsFromInches(ToolSettings.touchMoveDistanceInches))
             continue; // Hasn't moved appreciably....
 
           const touchStart = current.lastTouchStart;
