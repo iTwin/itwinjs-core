@@ -2,7 +2,20 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDefProps, ColorDef, ColorByName, ElementProps, RenderTexture, RenderMaterial, Gradient, SubCategoryOverride } from "@bentley/imodeljs-common";
+import {
+  Light,
+  LightType,
+  ViewFlags,
+  HiddenLine,
+  ColorDefProps,
+  ColorDef,
+  ColorByName,
+  ElementProps,
+  RenderTexture,
+  RenderMaterial,
+  Gradient,
+  SubCategoryOverride,
+} from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64Props, Id64 } from "@bentley/bentleyjs-core";
@@ -286,8 +299,16 @@ export class SkySphere extends SkyBox {
     return val;
   }
 
-  public async loadParams(_system: RenderSystem, _iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
-    return Promise.resolve(undefined); // ###TODO
+  public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
+    if (!this.textureId.isValid)
+      return undefined;
+
+    const texture = await system.loadTexture(this.textureId, iModel);
+    if (undefined === texture)
+      return undefined;
+
+    const rotation = 0.0; // ###TODO: from where do we obtain rotation?
+    return SkyBox.CreateParams.createForSphere(new SkyBox.SphereParams(texture, rotation), iModel.globalOrigin.z);
   }
 }
 

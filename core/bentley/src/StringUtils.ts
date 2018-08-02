@@ -112,15 +112,21 @@ namespace Utf8ToString {
   }
 }
 
-/** Utility functions for working with strings. */
-export namespace StringUtils {
-  /** Given an array of bytes containing a utf-8 string, convert to a string.
-   * @param utf8: An array of utf-8 characters as a byte array
-   * @returns An equivalent string, or undefined if the array does not contain a valid utf-8 string.
-   */
-  export function utf8ToString(utf8: Uint8Array): string | undefined {
-    // ###TODO: if available: const decoder = new TextDecoder("utf-8");
-    // ###TODO: if available: return decoder.decode(utf8);
-    return Utf8ToString.decodeWithFromCharCode(utf8);
-  }
+/** Given an array of bytes containing a utf-8 string, convert to a string.
+ * @param utf8: An array of utf-8 characters as a byte array
+ * @returns An equivalent string, or undefined if the array does not contain a valid utf-8 string.
+ */
+export function utf8ToString(utf8: Uint8Array): string | undefined {
+  // ###TODO: if available: const decoder = new TextDecoder("utf-8");
+  // ###TODO: if available: return decoder.decode(utf8);
+  return Utf8ToString.decodeWithFromCharCode(utf8);
+}
+
+/** Given a base-64-encoded string, decode it into an array of bytes.
+ * @param base64 The base-64-encoded string.
+ * @returns the decoded byte array.
+ * @throws DOMException if the length of the input string is not a multiple of 4.
+ */
+export function base64StringToUint8Array(base64: string): Uint8Array {
+  return new Uint8Array(atob(base64).split("").map((c) => c.charCodeAt(0)));
 }

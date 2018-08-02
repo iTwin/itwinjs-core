@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
-import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, IDisposable, dispose, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -24,6 +24,7 @@ import {
   QPoint3dList,
   ImageSource,
   ImageSourceFormat,
+  isValidImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -395,8 +396,39 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of batched Features. */
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
-  /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
+  /** Locate a previously-created Texture given its key. */
   public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+
+  /** Find or create a texture from a texture element. */
+  public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
+    let texture = this.findTexture(id.toString(), iModel);
+    if (undefined !== texture)
+      return texture;
+
+    // ###TODO: We need a way in our callbacks to determine if the iModel has been closed...
+    const elemProps = await iModel.elements.getProps(id);
+    if (1 !== elemProps.length)
+      return undefined;
+
+    // Did somebody else load the texture while we were awaiting the element props?
+    texture = this.findTexture(id.toString(), iModel);
+    if (undefined !== texture)
+      return texture;
+
+    const textureProps = elemProps[0];
+    if (undefined === textureProps.data || "string" !== typeof(textureProps.data) || undefined === textureProps.format || "number" !== typeof(textureProps.format))
+      return undefined;
+
+    const format = textureProps.format as ImageSourceFormat;
+    if (!isValidImageSourceFormat(format))
+      return undefined;
+
+    const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
+    const image = await ImageUtil.extractImage(imageSource);
+
+    // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
+    return this.createTextureFromImage(image, ImageSourceFormat.Png === format, iModel, new RenderTexture.Params(id.toString()));
+  }
 
   /** Create a new Texture from gradient symbology. */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
