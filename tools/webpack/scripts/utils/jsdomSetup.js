@@ -1,6 +1,6 @@
 // This is all required to simulate a browser environment in React tests.
 const jsdom = require("jsdom");
-const document = new jsdom.JSDOM("");
+const document = new jsdom.JSDOM("", { url: "http://localhost/" });
 const window = document.window;
 
 global.document = window.document
