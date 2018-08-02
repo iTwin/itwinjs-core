@@ -750,6 +750,12 @@ export class ViewFrustum {
     }
     return box;
   }
+
+  public getPixelSizeAtPoint(inPoint?: Point3d) {
+    const viewPt = !!inPoint ? this.worldToView(inPoint) : this.npcToView(new Point3d(0.5, 0.5, 0.5));
+    const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
+    return this.viewToWorld(viewPt).distance(this.viewToWorld(viewPt2));
+  }
 }
 
 /**

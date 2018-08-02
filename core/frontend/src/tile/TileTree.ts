@@ -6,7 +6,7 @@
 import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
-import { SceneContext, ViewContext } from "../ViewContext";
+import { SceneContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { GraphicType } from "../render/GraphicBuilder";
@@ -411,7 +411,7 @@ export namespace Tile {
     private readonly _frustumPlanes?: FrustumPlanes;
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
-      return this.viewFrustum !== undefined ? ViewContext.getPixelSizeAtPointForFrustum(this.viewFrustum, inPoint) : this.context.getPixelSizeAtPoint();
+      return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();
     }
 
     public get frustumPlanes(): FrustumPlanes {
