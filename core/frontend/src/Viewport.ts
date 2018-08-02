@@ -378,6 +378,7 @@ export class ViewFrustum {
 
   /** The ViewState for this Viewport */
   public get view(): ViewState { return this._view; }
+  public set view(view: ViewState) { this._view = view; }
 
   private readonly _viewRange: ViewRect = new ViewRect();
 
@@ -522,7 +523,7 @@ export class ViewFrustum {
   }
 
   private constructor(view: ViewState, clientWidth: number, clientHeight: number, isTerrainFrustum?: boolean) {
-    this._view = view.clone();
+    this._view = view;
     this._clientWidth = clientWidth;
     this._clientHeight = clientHeight;
     this._isTerrainFrustum = isTerrainFrustum !== undefined ? isTerrainFrustum : false;
@@ -611,13 +612,13 @@ export class ViewFrustum {
     this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
   }
 
-  public static createFromViewport(vp: Viewport): ViewFrustum | undefined {
-    const vf = new ViewFrustum(vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight);
+  public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
+    const vf = new ViewFrustum(view !== undefined ? view : vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight);
     return vf.invalidFrustum ? undefined : vf;
   }
 
-  public static createFromWidenedViewport(vp: Viewport): ViewFrustum | undefined {
-    const vf = new ViewFrustum(vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight, true);
+  public static createFromWidenedViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
+    const vf = new ViewFrustum(view !== undefined ? view : vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight, true);
     return vf.invalidFrustum ? undefined : vf;
   }
 
@@ -784,7 +785,6 @@ export class Viewport {
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
   private _evController?: EventController;
-  private _view!: ViewState;
   private _addFeatureOverrides?: AddFeatureOverrides;
   private _wantTileBoundingBoxes: boolean = false;
   private _viewFrustum!: ViewFrustum;
@@ -859,7 +859,7 @@ export class Viewport {
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
   /** The ViewState for this Viewport */
-  public get view(): ViewState { return this._view; }
+  public get view(): ViewState { return this._viewFrustum.view; }
   /** @hidden */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
@@ -924,8 +924,7 @@ export class Viewport {
    */
   public changeView(view: ViewState) {
     this.clearUndo();
-    this._view = view;
-    this.setupFromView();
+    this.doSetupFromView(view);
     this.saveViewUndo();
 
     this.invalidateScene();
@@ -1042,13 +1041,8 @@ export class Viewport {
     this.setupFromView();
   }
 
-  /** Establish the parameters of this Viewport from the current information in its ViewState */
-  public setupFromView(): ViewStatus {
-    const view = this.view;
-    if (!view)
-      return ViewStatus.InvalidViewport;
-
-    const vf = ViewFrustum.createFromViewport(this);
+  private doSetupFromView(view: ViewState) {
+    const vf = ViewFrustum.createFromViewport(this, view);
     if (undefined === vf)
       return ViewStatus.InvalidViewport;
     this._viewFrustum = vf;
@@ -1060,12 +1054,17 @@ export class Viewport {
     return ViewStatus.Success;
   }
 
+  /** Establish the parameters of this Viewport from the current information in its ViewState */
+  public setupFromView(): ViewStatus {
+    return this.doSetupFromView(this.view);
+  }
+
   /**
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
    * If so, save a *copy* of the **previous** state in the view undo stack for future View Undo.
    */
   public saveViewUndo(): void {
-    if (!this._view)
+    if (!this.view)
       return;
 
     // the first time we're called we need to establish the baseline
@@ -1385,7 +1384,7 @@ export class Viewport {
   /** @hidden */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
-    this._view = val.clone<ViewState>();
+    this._viewFrustum.view = val.clone<ViewState>();
     this.synchWithView(false);
     if (animationTime)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
