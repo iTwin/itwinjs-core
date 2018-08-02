@@ -238,6 +238,7 @@ Array [
               "isSelectable": true,
               "key": Object {
                 "className": "BisCore:PhysicalPartition",
+                "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
                   "94538635b383e874b14e0449bdc1a93b",
                   "1641bb9d728fdab781e4078a366bfeff",
@@ -308,6 +309,7 @@ Array [
               "isSelectable": true,
               "key": Object {
                 "className": "BisCore:LinkPartition",
+                "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
                   "94538635b383e874b14e0449bdc1a93b",
                   "1641bb9d728fdab781e4078a366bfeff",

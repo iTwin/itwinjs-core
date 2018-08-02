@@ -33,16 +33,16 @@
     "watch": "npm test -- --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.98.0-4",
-    "@bentley/imodeljs-common": "0.98.0-4",
-    "@bentley/imodeljs-backend": "0.98.0-4",
+    "@bentley/bentleyjs-core": "~0.109.0",
+    "@bentley/imodeljs-common": "~0.109.0",
+    "@bentley/imodeljs-backend": "~0.109.0",
     "@bentley/ecpresentation-common": "^0.5.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.98.0-4",
-    "@bentley/bentleyjs-tools": "0.98.0-4",
-    "@bentley/imodeljs-common": "0.98.0-4",
-    "@bentley/imodeljs-backend": "0.98.0-4",
+    "@bentley/bentleyjs-core": "~0.109.0",
+    "@bentley/bentleyjs-tools": "~0.109.0",
+    "@bentley/imodeljs-common": "~0.109.0",
+    "@bentley/imodeljs-backend": "~0.109.0",
     "@bentley/ecpresentation-common": "^0.5.0",
     "@types/chai": "^4.0.10",
     "@types/chai-as-promised": "^7",
