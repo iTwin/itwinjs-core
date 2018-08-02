@@ -2,10 +2,10 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, RenderMaterial, Gradient, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDefProps, ColorDef, ColorByName, ElementProps, RenderTexture, RenderMaterial, Gradient, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64Props, Id64 } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem } from "./rendering";
 import { SkyBoxCreateParams, SkyboxSphereType } from "./render/System";
@@ -80,8 +80,15 @@ export class DisplayStyle2dState extends DisplayStyleState {
   constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
+export interface GroundPlaneProps {
+  display?: boolean;
+  elevation?: number;
+  aboveColor?: ColorDefProps;
+  belowColor?: ColorDefProps;
+}
+
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents */
-export class GroundPlane {
+export class GroundPlane implements GroundPlaneProps {
   public display: boolean = false;
   public elevation: number = 0.0;  // the Z height to draw the ground plane
   public aboveColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from above
@@ -89,7 +96,7 @@ export class GroundPlane {
   private aboveSymb?: Gradient.Symb; // symbology for ground plane when view is from above
   private belowSymb?: Gradient.Symb; // symbology for ground plane when view is from below
 
-  public constructor(ground: any) {
+  public constructor(ground?: GroundPlaneProps) {
     ground = ground ? ground : {};
     this.display = JsonUtils.asBool(ground.display, false);
     this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
@@ -145,21 +152,43 @@ export const enum SkyBoxImageType {
   Cylindrical,
 }
 
-export class SkyBoxImage {
+export interface SkyBoxImageProps {
+  type?: SkyBoxImageType;
+  texture?: Id64Props;
+}
+
+export interface SkyBoxProps {
+  display?: boolean;
+  twoColor?: boolean;
+  groundExponent?: number;
+  skyExponent?: number;
+  groundColor?: ColorDefProps;
+  zenithColor?: ColorDefProps;
+  nadirColor?: ColorDefProps;
+  skyColor?: ColorDefProps;
+  image?: SkyBoxImageProps;
+}
+
+export interface EnvironmentProps {
+  ground?: GroundPlaneProps;
+  sky?: SkyBoxProps;
+}
+
+export class SkyBoxImage implements SkyBoxImageProps {
   public type: SkyBoxImageType;
   public textureId: Id64;
 
-  public constructor(json: any) {
+  public constructor(json?: SkyBoxImageProps) {
     if (undefined !== json) {
       this.type = JsonUtils.asInt(json.type, SkyBoxImageType.None);
-      this.textureId = new Id64(JsonUtils.asString(json.texture));
+      this.textureId = new Id64(json.texture);
     } else {
       this.type = SkyBoxImageType.None;
       this.textureId = Id64.invalidId;
     }
   }
 
-  public toJSON(): any {
+  public toJSON(): SkyBoxImageProps {
     return {
       type: this.type,
       texture: this.textureId.toString(),
@@ -167,8 +196,8 @@ export class SkyBoxImage {
   }
 }
 
-/** The SkyBox is a grid drawn in the background of spatial views to provide context. */
-export class SkyBox {
+/** The SkyBox is an environment drawn in the background of spatial views to provide context. */
+export class SkyBox implements SkyBoxProps {
   public display: boolean = false;
   public readonly twoColor: boolean = false;
   public readonly image: SkyBoxImage;
@@ -179,7 +208,7 @@ export class SkyBox {
   public readonly groundExponent: number = 4.0;  // if no image, the cutoff between ground and nadir
   public readonly skyExponent: number = 4.0;     // if no image, the cutoff between sky and zenith
 
-  public constructor(sky: any) {
+  public constructor(sky?: SkyBoxProps) {
     sky = sky ? sky : {};
     this.display = JsonUtils.asBool(sky.display, false);
     this.twoColor = JsonUtils.asBool(sky.twoColor, false);
@@ -192,21 +221,18 @@ export class SkyBox {
     this.image = new SkyBoxImage(sky.image);
   }
 
-  public toJSON(): any {
+  public toJSON(): SkyBoxProps {
     const val: any = {};
-    if (this.display)
-      val.display = true;
-    if (this.twoColor)
-      val.twoColor = true;
-    if (this.groundExponent !== 4.0)
-      val.groundExponent = this.groundExponent;
-    if (this.skyExponent !== 4.0)
-      val.skyExponent = this.groundExponent;
+    val.display = this.display ? true : undefined;
+    val.twoColor = this.twoColor ? true : undefined;
+    val.groundExponent = this.groundExponent !== 4.0 ? this.groundExponent : undefined;
+    val.skyExponent = this.skyExponent !== 4.0 ? this.skyExponent : undefined;
 
-    val.groundColor = this.groundColor;
-    val.zenithColor = this.zenithColor;
-    val.nadirColor = this.nadirColor;
-    val.skyColor = this.skyColor;
+    val.groundColor = this.groundColor.toJSON();
+    val.zenithColor = this.zenithColor.toJSON();
+    val.nadirColor = this.nadirColor.toJSON();
+    val.skyColor = this.skyColor.toJSON();
+
     val.image = this.image.toJSON();
 
     return val;
@@ -214,12 +240,19 @@ export class SkyBox {
 }
 
 /** The skyBox, groundPlane, etc. for a 3d view  */
-export class Environment {
+export class Environment implements EnvironmentProps {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;
-  public constructor(json: any) {
-    this.sky = new SkyBox(json.sky);
-    this.ground = new GroundPlane(json.ground);
+  public constructor(json?: EnvironmentProps) {
+    this.sky = new SkyBox(undefined !== json ? json.sky : undefined);
+    this.ground = new GroundPlane(undefined !== json ? json.ground : undefined);
+  }
+
+  public toJSON(): EnvironmentProps {
+    return {
+      sky: this.sky.toJSON(),
+      ground: this.ground, // ###TODO GroundPlane.toJSON missing...but lots of JSON inconsistencies associated with DisplayStyle...fix them all up later?
+    };
   }
 }
 
