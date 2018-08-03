@@ -24,9 +24,9 @@ import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Manage
 // Zone React Components
 // -----------------------------------------------------------------------------
 
-/** Props for the Zone Component.
+/** Props for the FrameworkZone Component.
  */
-export interface ZoneWithDefProps {
+export interface FrameworkZoneProps {
   zoneState: NZ_ZoneState;
   targetedBounds: RectangleProps | undefined;
   widgetChangeHandler: WidgetChangeHandler;
@@ -35,18 +35,19 @@ export interface ZoneWithDefProps {
   zoneDefProvider: ZoneDefProvider;
 }
 
-interface ZoneWithDefState {
+interface FrameworkZoneState {
   updatedWidgetDef: WidgetDef | undefined;
 }
 
 /** ConfigurableUI Zone React Component.
  */
-export class ZoneWithDef extends React.Component<ZoneWithDefProps, ZoneWithDefState> {
-  constructor(props: ZoneWithDefProps) {
+export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
+  constructor(props: FrameworkZoneProps) {
     super(props);
   }
 
-  public readonly state: Readonly<ZoneWithDefState> = {
+  /** hidden */
+  public readonly state: Readonly<FrameworkZoneState> = {
     updatedWidgetDef: undefined,
   };
 

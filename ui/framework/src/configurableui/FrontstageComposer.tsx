@@ -8,7 +8,7 @@ import * as ReactDOM from "react-dom";
 
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageStackChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
-import { FrontstageWithDef } from "./FrontstageWithDef";
+import { FrameworkFrontstage } from "./FrameworkFrontstage";
 import { ZoneDef } from "./ZoneDef";
 import { ModalFrontstage } from "./ModalFrontstage";
 
@@ -64,6 +64,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   private _frontstageDef: FrontstageDef | undefined;
 
+  /** hidden */
   public readonly state: Readonly<FrontstageComposerState>;
 
   constructor(props: FrontstageComposerProps, context?: any) {
@@ -140,7 +141,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
       <>
         {this.renderModalFrontstage()}
 
-        <FrontstageWithDef
+        <FrameworkFrontstage
           frontstageDef={this._frontstageDef}
           nineZone={this.state.nineZone}
           widgetChangeHandler={this}

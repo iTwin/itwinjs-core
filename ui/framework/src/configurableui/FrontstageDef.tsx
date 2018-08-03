@@ -238,7 +238,7 @@ export class FrontstageDef {
     const zones = [1, 2, 3, 4, 6, 7, 8, 9];
     const zoneDefs: ZoneDef[] = [];
 
-    zones.map((zoneId) => {
+    zones.forEach((zoneId) => {
       const zoneDef = this.getZoneDef(zoneId);
       if (zoneDef)
         zoneDefs.push(zoneDef);

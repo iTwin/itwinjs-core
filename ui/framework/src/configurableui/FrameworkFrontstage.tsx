@@ -19,7 +19,9 @@ import NineZone from "@bentley/ui-ninezone/lib/zones/state/NineZone";
 // Frontstage React component
 // -----------------------------------------------------------------------------
 
-export interface FrontStageWithDefProps {
+/** Props for the FrameworkFrontstage component.
+ */
+export interface FrameworkFrontstageProps {
   frontstageDef: FrontstageDef;
   nineZone: NineZone;
   widgetChangeHandler: WidgetChangeHandler;
@@ -28,17 +30,18 @@ export interface FrontStageWithDefProps {
   ghostOutlineProvider: GhostOutlineProvider;
 }
 
-/** State for the FrontstageComposer component.
+/** State for the FrameworkFrontstage component.
  */
-export interface FrontStateWithDefState {
+export interface FrameworkFrontstageState {
   toolId: string;
 }
 
 /** Frontstage React component with a FrontstageDef.
  */
-export class FrontstageWithDef extends React.Component<FrontStageWithDefProps, FrontStateWithDefState> {
+export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProps, FrameworkFrontstageState> {
 
-  public readonly state: Readonly<FrontStateWithDefState> = {
+  /** hidden */
+  public readonly state: Readonly<FrameworkFrontstageState> = {
     toolId: "",
   };
 
