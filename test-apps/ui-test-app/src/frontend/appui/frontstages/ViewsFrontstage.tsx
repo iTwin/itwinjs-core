@@ -7,7 +7,7 @@ import { Id64Props } from "@bentley/bentleyjs-core";
 
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
-import { FrontstageProps, FrontstageManager, WidgetDef } from "@bentley/ui-framework";
+import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
 import { ToolButton, ToolItemDef } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
@@ -180,6 +180,30 @@ export class ViewsFrontstage {
     IModelApp.tools.run("View.Rotate", ViewportManager.getActiveViewport());
   }
 
+  private tool1 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControl.setWidgetState(WidgetState.Open);
+      }
+    }
+  }
+
+  private tool2 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControl.setWidgetState(WidgetState.Off);
+      }
+    }
+  }
+
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
    */
   private getToolWidget(): React.ReactNode {
@@ -210,8 +234,8 @@ export class ViewsFrontstage {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this.tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this.tool2} />
             <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"

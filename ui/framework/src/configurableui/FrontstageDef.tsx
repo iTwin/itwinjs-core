@@ -13,6 +13,7 @@ import { ContentControl } from "./ContentControl";
 import { ItemMap } from "./ItemFactory";
 import { ContentGroup } from "./ContentGroup";
 import { ContentGroupManager } from "./ContentGroup";
+import { WidgetDef } from "./WidgetDef";
 
 // -----------------------------------------------------------------------------
 // FrontstageProps and associated enums
@@ -244,6 +245,15 @@ export class FrontstageDef {
     });
 
     return zoneDefs;
+  }
+
+  public findWidgetDef(id: string): WidgetDef | undefined {
+    for (const zoneDef of this.zoneDefs) {
+      const widgetDef = zoneDef.findWidgetDef(id);
+      if (widgetDef)
+        return widgetDef;
+    }
+    return undefined;
   }
 
 }

@@ -40,7 +40,7 @@ export interface StackedWidgetProps {
 
 /** Stacked Widget React component.
  */
-export default class StackedWidget extends React.Component<StackedWidgetProps> {
+export class StackedWidget extends React.Component<StackedWidgetProps> {
 
   public render(): React.ReactNode {
     let tabs: JSX.Element[] = new Array<JSX.Element>();
@@ -103,3 +103,5 @@ export default class StackedWidget extends React.Component<StackedWidgetProps> {
     this.props.widgetChangeHandler.handleWidgetTabDrag(dragged as Point);
   }
 }
+
+export default StackedWidget;

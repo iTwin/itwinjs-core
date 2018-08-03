@@ -15,7 +15,7 @@ import {
 
 import { MessageSeverity } from "@bentley/ui-core";
 
-import { FrontstageProps } from "@bentley/ui-framework";
+import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
 import { ToolButton, ToolItemDef, CommandButton, CommandItemDef } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
@@ -139,6 +139,26 @@ export class Frontstage4 {
     return frontstageProps;
   }
 
+  private tool1 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        widgetDef.setWidgetState(WidgetState.Open);
+      }
+    }
+  }
+
+  private tool2 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        widgetDef.setWidgetState(WidgetState.Off);
+      }
+    }
+  }
+
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
    */
   private getToolWidget(): React.ReactNode {
@@ -198,8 +218,8 @@ export class Frontstage4 {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this.tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this.tool2} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconClass="icon-placeholder"

@@ -6,8 +6,6 @@
 import { AnyWidgetProps, WidgetDef } from "./WidgetDef";
 import { WidgetDefFactory } from "./WidgetFactory";
 
-// import NZ_ZoneState from "@bentley/ui-ninezone/lib/zones/state/Zone";
-
 // -----------------------------------------------------------------------------
 // ZoneProps
 // -----------------------------------------------------------------------------
@@ -89,6 +87,10 @@ export class ZoneDef {
       return this._widgetDefs[0];
     }
     return undefined;
+  }
+
+  public findWidgetDef(id: string): WidgetDef | undefined {
+    return this.widgetDefs.find((element) => element.id === id);
   }
 
   public get isToolSettings(): boolean {

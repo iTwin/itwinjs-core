@@ -7,7 +7,7 @@ import * as React from "react";
 
 import { WidgetType, WidgetDef } from "./WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
-import StackedWidget, { EachWidgetProps } from "./StackedWidget";
+import { StackedWidget, EachWidgetProps } from "./StackedWidget";
 import ZoneTargets from "./ZoneTargets";
 import { ZoneTargetProvider } from "./FrontstageZone";
 import { StatusBar } from "./StatusBar";
@@ -121,7 +121,7 @@ export class ZoneWithDef extends React.Component<ZoneWithDefProps, ZoneWithDefSt
           let isActive = false;
           if (!activeWidgetDef) {
             if (!widgetDef.defaultOpenUsed) {
-              if (zoneDef.isDefaultOpen && widgetDef.isDefaultOpen) {
+              if ((zoneDef.isDefaultOpen || widgetDef === this.state.updatedWidgetDef) && widgetDef.isDefaultOpen) {
                 isActive = true;
               }
               widgetDef.defaultOpenUsed = true;

@@ -40,7 +40,6 @@ export * from "./ToolWidget";
 export * from "./WidgetControl";
 export * from "./WidgetDef";
 export * from "./WidgetFactory";
-export * from "./WidgetWithDef";
 export * from "./Workflow";
 export * from "./ZoneDef";
 export * from "./ZoneTargets";
