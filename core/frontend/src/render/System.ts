@@ -305,6 +305,11 @@ export abstract class RenderTarget implements IDisposable {
   public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
+export interface TextureImage {
+  image: HTMLImageElement | undefined;
+  format: ImageSourceFormat | undefined;
+}
+
 /**
  * A RenderSystem is the renderer-specific factory for creating RenderGraphics, RenderTexture, and RenderMaterials.
  */
@@ -402,18 +407,22 @@ export abstract class RenderSystem implements IDisposable {
   /** Find or create a texture from a texture element. */
   public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
     let texture = this.findTexture(id.toString(), iModel);
-    if (undefined !== texture)
-      return texture;
+    if (undefined === texture) {
+      const image = await this.loadTextureImage(id, iModel);
+      if (undefined !== image) {
+        // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
+        texture = this.createTextureFromImage(image.image!, ImageSourceFormat.Png === image.format!, iModel, new RenderTexture.Params(id.toString()));
+      }
+    }
 
+    return texture;
+  }
+
+  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
     // ###TODO: We need a way in our callbacks to determine if the iModel has been closed...
     const elemProps = await iModel.elements.getProps(id);
     if (1 !== elemProps.length)
       return undefined;
-
-    // Did somebody else load the texture while we were awaiting the element props?
-    texture = this.findTexture(id.toString(), iModel);
-    if (undefined !== texture)
-      return texture;
 
     const textureProps = elemProps[0];
     if (undefined === textureProps.data || "string" !== typeof(textureProps.data) || undefined === textureProps.format || "number" !== typeof(textureProps.format))
@@ -424,10 +433,8 @@ export abstract class RenderSystem implements IDisposable {
       return undefined;
 
     const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
-    const image = await ImageUtil.extractImage(imageSource);
-
-    // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
-    return this.createTextureFromImage(image, ImageSourceFormat.Png === format, iModel, new RenderTexture.Params(id.toString()));
+    const imagePromise = ImageUtil.extractImage(imageSource);
+    return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
   }
 
   /** Create a new Texture from gradient symbology. */

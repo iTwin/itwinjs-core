@@ -20,7 +20,7 @@ import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64Props, Id64 } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
-import { RenderSystem } from "./rendering";
+import { RenderSystem, TextureImage } from "./render/System";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -162,11 +162,22 @@ export const enum SkyBoxImageType {
   None,
   Spherical,
   Cylindrical,
+  Cube,
+}
+
+export interface SkyCubeProps {
+  front?: Id64Props;
+  back?: Id64Props;
+  top?: Id64Props;
+  bottom?: Id64Props;
+  right?: Id64Props;
+  left?: Id64Props;
 }
 
 export interface SkyBoxImageProps {
   type?: SkyBoxImageType;
   texture?: Id64Props;
+  textures?: SkyCubeProps;
 }
 
 export interface SkyBoxProps {
@@ -198,19 +209,24 @@ export abstract class SkyBox implements SkyBoxProps {
     return { display: this.display };
   }
 
-  public static fromJSON(json?: SkyBoxProps): SkyBox {
+  public static createFromJSON(json?: SkyBoxProps): SkyBox {
     let imageType = SkyBoxImageType.None;
     if (undefined !== json && undefined !== json.image && undefined !== json.image.type)
       imageType = json.image.type;
 
+    let skybox: SkyBox | undefined;
     switch (imageType) {
       case SkyBoxImageType.Spherical:
-        return new SkySphere(json!); // imageType obtained from json.image.type => json not undefined...
+        skybox = SkySphere.fromJSON(json!);
+        break;
+      case SkyBoxImageType.Cube:
+        skybox = SkyCube.fromJSON(json!);
+        break;
       case SkyBoxImageType.Cylindrical: // ###TODO...
-      case SkyBoxImageType.None:
-      default:
-        return new SkyGradient(json);
+        break;
     }
+
+    return undefined !== skybox ? skybox : new SkyGradient(json);
   }
 
   public abstract async loadParams(_system: RenderSystem, _iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
@@ -285,9 +301,14 @@ export class SkyGradient extends SkyBox {
 export class SkySphere extends SkyBox {
   public textureId: Id64;
 
-  public constructor(json: SkyBoxProps) {
-    super(json);
-    this.textureId = new Id64(undefined !== json.image ? json.image.texture : undefined);
+  private constructor(textureId: Id64, display?: boolean) {
+    super({ display });
+    this.textureId = textureId;
+  }
+
+  public static fromJSON(json: SkyBoxProps): SkySphere | undefined {
+    const textureId = new Id64(undefined !== json.image ? json.image.texture : undefined);
+    return undefined !== textureId && textureId.isValid ? new SkySphere(textureId, json.display) : undefined;
   }
 
   public toJSON(): SkyBoxProps {
@@ -300,9 +321,6 @@ export class SkySphere extends SkyBox {
   }
 
   public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
-    if (!this.textureId.isValid)
-      return undefined;
-
     const texture = await system.loadTexture(this.textureId, iModel);
     if (undefined === texture)
       return undefined;
@@ -312,14 +330,98 @@ export class SkySphere extends SkyBox {
   }
 }
 
-// ###TODO: export class SkyCube extends SkyBox { ... }
+export class SkyCube extends SkyBox implements SkyCubeProps {
+  public readonly front: Id64;
+  public readonly back: Id64;
+  public readonly top: Id64;
+  public readonly bottom: Id64;
+  public readonly right: Id64;
+  public readonly left: Id64;
+
+  private constructor(front: Id64, back: Id64, top: Id64, bottom: Id64, right: Id64, left: Id64, display?: boolean) {
+    super({ display });
+
+    this.front = front;
+    this.back = back;
+    this.top = top;
+    this.bottom = bottom;
+    this.right = right;
+    this.left = left;
+  }
+
+  public static fromJSON(skyboxJson: SkyBoxProps): SkyCube | undefined {
+    const image = skyboxJson.image;
+    const json = (undefined !== image && image.type === SkyBoxImageType.Cube ? image.textures : undefined) as SkyCubeProps;
+    if (undefined === json)
+      return undefined;
+
+    return this.create(Id64.fromJSON(json.front), Id64.fromJSON(json.back), Id64.fromJSON(json.top), Id64.fromJSON(json.bottom), Id64.fromJSON(json.right), Id64.fromJSON(json.left), skyboxJson.display);
+  }
+
+  public toJSON(): SkyBoxProps {
+    const val = super.toJSON();
+    val.image = {
+      type: SkyBoxImageType.Cube,
+      textures: {
+        front: this.front.value,
+        back: this.back.value,
+        top: this.top.value,
+        bottom: this.bottom.value,
+        right: this.right.value,
+        left: this.left.value,
+      },
+    };
+    return val;
+  }
+
+  public static create(front: Id64, back: Id64, top: Id64, bottom: Id64, right: Id64, left: Id64, display?: boolean): SkyCube | undefined {
+    if (!front.isValid || !back.isValid || !top.isValid || !bottom.isValid || !right.isValid || !left.isValid)
+      return undefined;
+    else
+      return new SkyCube(front, back, top, bottom, right, left, display);
+  }
+
+  public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
+    // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
+    const textureIds = new Set<string>([ this.front.value, this.back.value, this.top.value, this.bottom.value, this.right.value, this.left.value]);
+    const promises = new Array<Promise<TextureImage | undefined>>();
+    for (const textureId of textureIds)
+      promises.push(system.loadTextureImage(textureId, iModel));
+
+    try {
+      const images = await Promise.all(promises);
+
+      // ###TODO there's gotta be a simpler way to map the unique images back to their texture IDs...
+      const idToImage = new Map<string, HTMLImageElement>();
+      let index = 0;
+      for (const textureId of textureIds) {
+        const image = images[index++];
+        if (undefined === image || undefined === image.image)
+          return undefined;
+        else
+          idToImage.set(textureId, image.image);
+      }
+
+      const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
+      const textureImages = [
+        idToImage.get(this.front.value)!, idToImage.get(this.back.value)!, idToImage.get(this.top.value)!,
+        idToImage.get(this.bottom.value)!, idToImage.get(this.right.value)!, idToImage.get(this.left.value)!,
+      ];
+
+      const texture = system.createTextureFromCubeImages(textureImages[0], textureImages[1], textureImages[2], textureImages[3], textureImages[4], textureImages[5], iModel, params);
+      return undefined !== texture ? SkyBox.CreateParams.createForCube(texture) : undefined;
+    } catch (_err) {
+      return undefined;
+    }
+  }
+}
 
 /** The skyBox, groundPlane, etc. for a 3d view  */
 export class Environment implements EnvironmentProps {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;
   public constructor(json?: EnvironmentProps) {
-    this.sky = SkyBox.fromJSON(undefined !== json ? json.sky : undefined);
+    this.sky = SkyBox.createFromJSON(undefined !== json ? json.sky : undefined);
     this.ground = new GroundPlane(undefined !== json ? json.ground : undefined);
   }
 
