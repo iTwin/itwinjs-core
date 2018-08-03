@@ -43,6 +43,8 @@ export class ZoneDef {
   public allowsMerging: boolean;
   public applicationData?: any;
 
+  public isDefaultOpen: boolean = false;
+
   private _widgetDefs: WidgetDef[] = new Array<WidgetDef>();
 
   // public zoneIndex: number;
@@ -60,6 +62,11 @@ export class ZoneDef {
         const widgetDef = WidgetDefFactory.Create(widgetProps);
         if (widgetDef) {
           this.addWidgetDef(widgetDef);
+
+          if (!this.isDefaultOpen && this.defaultState === ZoneState.Open) {
+            if (widgetDef.isDefaultOpen)
+              this.isDefaultOpen = true;
+          }
         }
       });
     }
@@ -94,6 +101,12 @@ export class ZoneDef {
     if (this.widgetCount === 1)
       return this._widgetDefs[0].isStatusBar;
     return false;
+  }
+
+  public clearDefaultOpenUsed(): void {
+    this.widgetDefs.map((widgetDef: WidgetDef) => {
+      widgetDef.defaultOpenUsed = false;
+    });
   }
 }
 

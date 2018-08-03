@@ -48,7 +48,7 @@
     "@types/react-redux": "^5.0.15",
     "@types/three": "^0.92.0",
     "cpx": "^1.5.0",
-    "electron": "2.0.1",
+    "electron": "2.0.2",
     "electron-builder": "^20.13.3",
     "electron-chromedriver": "^2.0.0",
     "react-test-renderer": "^16.4.1",

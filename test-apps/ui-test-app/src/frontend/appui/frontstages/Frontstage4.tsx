@@ -90,7 +90,7 @@ export class Frontstage4 {
         ],
       },
       centerRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
@@ -116,10 +116,11 @@ export class Frontstage4 {
         ],
       },
       bottomRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
+            id: "VerticalPropertyGrid",
             classId: "VerticalPropertyGridDemoWidget",
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
@@ -127,12 +128,6 @@ export class Frontstage4 {
           },
           {
             classId: "HorizontalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
-            classId: "NavigationTreeWidget",
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",

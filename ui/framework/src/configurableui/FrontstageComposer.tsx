@@ -218,35 +218,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     if (!this._frontstageDef)
       throw new Error();
 
-    let zoneDef;
-    switch (zoneId) {
-      case 1:
-        zoneDef = this._frontstageDef.topLeft;
-        break;
-      case 2:
-        zoneDef = this._frontstageDef.topCenter;
-        break;
-      case 3:
-        zoneDef = this._frontstageDef.topRight;
-        break;
-      case 4:
-        zoneDef = this._frontstageDef.centerLeft;
-        break;
-      case 6:
-        zoneDef = this._frontstageDef.centerRight;
-        break;
-      case 7:
-        zoneDef = this._frontstageDef.bottomLeft;
-        break;
-      case 8:
-        zoneDef = this._frontstageDef.bottomCenter;
-        break;
-      case 9:
-        zoneDef = this._frontstageDef.bottomRight;
-        break;
-      default:
-        throw new RangeError();
-    }
+    const zoneDef = this._frontstageDef.getZoneDef(zoneId);
 
     // Zones can be undefined in a Frontstage
 

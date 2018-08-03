@@ -136,7 +136,7 @@ export class Frontstage3 {
         ],
       },
       bottomRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {

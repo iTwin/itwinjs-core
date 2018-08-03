@@ -7,7 +7,7 @@ import { Id64Props } from "@bentley/bentleyjs-core";
 
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
-import { FrontstageProps } from "@bentley/ui-framework";
+import { FrontstageProps, FrontstageManager, WidgetDef } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
 import { ToolButton, ToolItemDef } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
@@ -137,24 +137,19 @@ export class ViewsFrontstage {
         ],
       },
       bottomRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "NavigationTreeWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
+            id: "VerticalPropertyGrid",
             classId: "VerticalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
+            defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
             classId: "HorizontalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
+            defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },

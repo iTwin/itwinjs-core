@@ -186,9 +186,64 @@ export class FrontstageDef {
     }
 
     FrontstageManager.ContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
+
+    this.zoneDefs.map((zoneDef: ZoneDef) => {
+      zoneDef.clearDefaultOpenUsed();
+    });
   }
 
-  public SetActiveView(newContent: ContentControl): void {
+  public setActiveView(newContent: ContentControl): void {
     FrontstageManager.ContentControlActivatedEvent.emit({ contentControl: newContent });
   }
+
+  public getZoneDef(zoneId: number): ZoneDef | undefined {
+    let zoneDef;
+
+    switch (zoneId) {
+      case 1:
+        zoneDef = this.topLeft;
+        break;
+      case 2:
+        zoneDef = this.topCenter;
+        break;
+      case 3:
+        zoneDef = this.topRight;
+        break;
+      case 4:
+        zoneDef = this.centerLeft;
+        break;
+      case 6:
+        zoneDef = this.centerRight;
+        break;
+      case 7:
+        zoneDef = this.bottomLeft;
+        break;
+      case 8:
+        zoneDef = this.bottomCenter;
+        break;
+      case 9:
+        zoneDef = this.bottomRight;
+        break;
+      default:
+        throw new RangeError();
+    }
+
+    // Zones can be undefined in a Frontstage
+
+    return zoneDef;
+  }
+
+  public get zoneDefs(): ZoneDef[] {
+    const zones = [1, 2, 3, 4, 6, 7, 8, 9];
+    const zoneDefs: ZoneDef[] = [];
+
+    zones.map((zoneId) => {
+      const zoneDef = this.getZoneDef(zoneId);
+      if (zoneDef)
+        zoneDefs.push(zoneDef);
+    });
+
+    return zoneDefs;
+  }
+
 }

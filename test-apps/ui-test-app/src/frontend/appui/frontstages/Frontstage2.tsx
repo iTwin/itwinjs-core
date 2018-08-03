@@ -60,7 +60,7 @@ export class Frontstage2 {
         ],
       },
       centerRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
