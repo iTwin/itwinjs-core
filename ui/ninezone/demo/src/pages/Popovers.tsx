@@ -44,86 +44,87 @@ export default class PopoversExample extends React.Component<Props> {
       <div style={root}>
         <div style={container}>
           Left
-          <Popover
-            direction={Direction.Left}
-            isOpen={this.props.isPopoverOpen}
-          >
-            <div style={contentCss} />
-          </Popover>
+          {!this.props.isPopoverOpen ? undefined :
+            <Popover
+              direction={Direction.Left}
+            >
+              <div style={contentCss} />
+            </Popover>
+          }
         </div>
-
         <div style={container}>
           Top
-          <Popover
-            direction={Direction.Top}
-            isOpen={this.props.isPopoverOpen}
-          >
-            <div style={contentCss} />
-          </Popover>
+          {!this.props.isPopoverOpen ? undefined :
+            <Popover
+              direction={Direction.Top}
+            >
+              <div style={contentCss} />
+            </Popover>
+          }
         </div>
-
         <div style={container}>
           Right
-          <Popover
-            direction={Direction.Right}
-            isOpen={this.props.isPopoverOpen}
-          >
-            <div style={contentCss} />
-          </Popover>
+          {!this.props.isPopoverOpen ? undefined :
+            <Popover
+              direction={Direction.Right}
+            >
+              <div style={contentCss} />
+            </Popover>
+          }
         </div>
-
         <div style={container}>
           Bottom
           <Popover
             direction={Direction.Bottom}
-            isOpen={this.props.isPopoverOpen}
           >
-            <div style={contentCss} />
+            {!this.props.isPopoverOpen ? undefined :
+              <div style={contentCss} />
+            }
           </Popover>
         </div>
-
         <div style={containerRow2}>
           Left
-          <TrianglePopover
-            direction={Direction.Left}
-            isOpen={this.props.isPopoverOpen}
-            content={
-              <div style={contentCss} />
-            }
-          />
+          {!this.props.isPopoverOpen ? undefined :
+            <TrianglePopover
+              direction={Direction.Left}
+              content={
+                <div style={contentCss} />
+              }
+            />
+          }
         </div>
-
         <div style={containerRow2}>
           Top
-          <TrianglePopover
-            direction={Direction.Top}
-            isOpen={this.props.isPopoverOpen}
-            content={
-              <div style={contentCss} />
-            }
-          />
+          {!this.props.isPopoverOpen ? undefined :
+            <TrianglePopover
+              direction={Direction.Top}
+              content={
+                <div style={contentCss} />
+              }
+            />
+          }
         </div>
-
         <div style={containerRow2}>
           Right
-          <TrianglePopover
-            direction={Direction.Right}
-            isOpen={this.props.isPopoverOpen}
-            content={
-              <div style={contentCss} />
-            }
-          />
+          {!this.props.isPopoverOpen ? undefined :
+            <TrianglePopover
+              direction={Direction.Right}
+              content={
+                <div style={contentCss} />
+              }
+            />
+          }
         </div>
-
         <div style={containerRow2}>
           Bottom
-          <TrianglePopover
-            direction={Direction.Bottom}
-            isOpen={this.props.isPopoverOpen}
-            content={
-              <div style={contentCss} />
-            }
-          />
+          {!this.props.isPopoverOpen ? undefined :
+            <TrianglePopover
+              direction={Direction.Bottom}
+              content={
+                <div style={contentCss} />
+              }
+            />
+          }
         </div>
       </div>
     );

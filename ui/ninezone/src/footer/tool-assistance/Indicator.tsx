@@ -8,14 +8,21 @@ import * as React from "react";
 import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import "./Indicator.scss";
 
+/** Properties of [[ToolAssistanceIndicator]] component. */
 export interface ToolAssistanceIndicatorProps extends CommonProps, NoChildrenProps {
+  /** Dialog that is opened when indicator is clicked. See [[ToolAssistanceDialog]] */
   dialog?: React.ReactNode;
+  /** Indicator icons. */
   icons?: React.ReactNode;
+  /** Describes if the step string is visible. */
   isStepStringVisible?: boolean;
-  onIndicatorClick?: () => void;
+  /** Function called when indicator is clicked. */
+  onClick?: () => void;
+  /** Step string. */
   stepString?: string;
 }
 
+/** One of [[Footer]] indicators. */
 export default class ToolAssistanceIndicator extends React.Component<ToolAssistanceIndicatorProps> {
   public render() {
     const className = classnames(
@@ -48,6 +55,6 @@ export default class ToolAssistanceIndicator extends React.Component<ToolAssista
   }
 
   private handleOnIndicatorClick = () => {
-    this.props.onIndicatorClick && this.props.onIndicatorClick();
+    this.props.onClick && this.props.onClick();
   }
 }

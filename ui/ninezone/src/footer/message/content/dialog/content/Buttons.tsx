@@ -5,15 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../../../utilities/Props";
 import "./Buttons.scss";
 
-export interface ButtonsProps extends CommonProps {
-  children?: React.ReactNode;
+/** Properties of [[Buttons]] component. */
+export interface ButtonsProps extends CommonProps, NoChildrenProps {
+  /** Actual buttons. */
+  buttons?: React.ReactNode;
+  /** Actual content. I.e.: [[DialogContent]], [[ScrollableContent]] */
   content?: React.ReactNode;
 }
 
+/** Content with buttons. Used in [[Dialog]] component. */
 // tslint:disable-next-line:variable-name
 export const Buttons: React.StatelessComponent<ButtonsProps> = (props) => {
   const className = classnames(
@@ -25,11 +28,11 @@ export const Buttons: React.StatelessComponent<ButtonsProps> = (props) => {
       className={className}
       style={props.style}
     >
-      <div>
+      <div className="nz-content">
         {props.content}
       </div>
       <div className="nz-buttons">
-        {props.children}
+        {props.buttons}
       </div>
     </div>
   );

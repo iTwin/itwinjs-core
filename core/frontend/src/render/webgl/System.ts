@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d, ColorDef } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator, StrokeOptions } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume, GraphicList } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -31,6 +31,7 @@ import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "@bentley/geometry-core/lib/topology/Graph";
 
 export const enum ContextState {
   Uninitialized,
@@ -552,14 +553,16 @@ export class System extends RenderSystem {
     else
       clippedPolygons = [corners];
 
-    // The result of clipping will be several polygons, which may lie next to each other, or be detached, and can be of any length
-    for (const polygon of clippedPolygons) {
-      const strokeOptions = new StrokeOptions();
-      strokeOptions.needParams = true;
-      strokeOptions.shouldTriangulate = true;
-      const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    if (clippedPolygons.length === 0)
+      return sheetTilePolys;    // return empty
 
-      let polyface: IndexedPolyface;
+    // The result of clipping will be several polygons, which may lie next to each other, or be detached, and can be of any length. Let's stitch these into a single polyface.
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    strokeOptions.shouldTriangulate = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+
+    for (const polygon of clippedPolygons) {
       if (polygon.length < 3)
         continue;
       else if (polygon.length === 3) {
@@ -569,7 +572,6 @@ export class System extends RenderSystem {
           params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
         }
         polyfaceBuilder.addTriangleFacet(polygon, params);
-        polyface = polyfaceBuilder.claimPolyface();
 
       } else if (polygon.length === 4) {
         const params: Point2d[] = [];
@@ -578,29 +580,34 @@ export class System extends RenderSystem {
           params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
         }
         polyfaceBuilder.addQuadFacet(polygon, params);
-        polyface = polyfaceBuilder.claimPolyface();
 
       } else {
         // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
         const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
-        polyfaceBuilder.addGraph(triangulatedPolygon, true);
-        polyface = polyfaceBuilder.claimPolyface();
 
-        const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
-        while (visitor.moveToNextFacet()) {
-          for (let i = 0; i < 3; i++) {
-            const point = visitor.getParam(i);  // this is a reference
-            point.minus(sheetTileOrigin);
-            point.x *= sheetTileScale;
-            point.y *= sheetTileScale;
+        triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+          if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
+            const trianglePoints: Point3d[] = [];
+            const params: Point2d[] = [];
+
+            edge.collectAroundFace((node: HalfEdge) => {
+              const point = Point3d.create(node.x, node.y, 0.5);
+              trianglePoints.push(point);
+              const paramUnscaled = point.minus(sheetTileOrigin);
+              params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
+            });
+
+            assert(trianglePoints.length === 3);
+            polyfaceBuilder.addTriangleFacet(trianglePoints, params);
           }
-        }
+          return true;
+        });
       }
-
-      sheetTilePolys.push(polyfaceBuilder.claimPolyface());
     }
+
+    sheetTilePolys.push(polyfaceBuilder.claimPolyface());
     return sheetTilePolys;
   }
 
@@ -649,10 +656,8 @@ export class System extends RenderSystem {
       meshArgs.colors.initUniform(tileColor);
 
       const mesh = this.createTriMesh(meshArgs);
-      if (mesh !== undefined) {
-        (mesh as any)._primitives[0].cachedGeometry.DEBUG = true;
+      if (mesh !== undefined)
         sheetTileGraphics.push(mesh);
-      }
     }
 
     return sheetTileGraphics;

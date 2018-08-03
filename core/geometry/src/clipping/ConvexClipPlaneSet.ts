@@ -13,7 +13,7 @@ import { Geometry, Angle } from "../Geometry";
 import { PolygonOps } from "../PointHelpers";
 import { GrowableFloat64Array } from "../GrowableArray";
 import { Arc3d } from "../curve/Arc3d";
-import {ClipPlane} from "./ClipPlane";
+import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 
@@ -469,7 +469,7 @@ export class ConvexClipPlaneSet implements Clipper {
 
   /**
    * Returns range if result does not cover a space of infinity, otherwise undefined.
-   * Note: If given a range for output, overwrites it, rather than extending it.
+   * Note: If given a range for output, this will overwrite it, NOT extend it.
    */
   public getRangeOfAlignedPlanes(transform?: Transform, result?: Range3d): Range3d | undefined {
     const idMatrix: RotMatrix = RotMatrix.createIdentity();

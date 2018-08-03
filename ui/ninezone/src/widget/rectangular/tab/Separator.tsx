@@ -5,10 +5,15 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Props from "../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../utilities/Props";
 import "./Separator.scss";
 
-export default class TabSeparator extends React.Component<Props> {
+/** Properties of [[TabSeparator]] component. */
+export interface TabSeparatorProps extends CommonProps, NoChildrenProps {
+}
+
+/** Rectangular widget tab separator. Used in [[Stacked]] component. */
+export default class TabSeparator extends React.Component<TabSeparatorProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-separator",
@@ -18,9 +23,7 @@ export default class TabSeparator extends React.Component<Props> {
       <div
         className={className}
         style={this.props.style}
-      >
-        {this.props.children}
-      </div>
+      />
     );
   }
 }

@@ -5,74 +5,87 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import Direction, { DirectionHelpers } from "../../../../utilities/Direction";
-import CommonProps from "../../../../utilities/Props";
-
+import CommonProps, { NoChildrenProps, FlattenChildren } from "../../../../utilities/Props";
 import "./Tray.scss";
 
-export interface Entry<TItem> {
-  key: string;
+/** Key to identify history item. */
+export type HistoryKey = number | string;
+
+/** A single entry in items history. */
+export interface HistoryEntry<TItem> {
+  /** Entry key. */
+  key: HistoryKey;
+  /** Entry item. */
   item: TItem;
 }
 
-export interface HistoryProps<TItem> extends Array<Entry<TItem>> {
+/** History defines actual structure of history items. */
+export type History<TItem> = Array<HistoryEntry<TItem>>;
+
+/** Helper to manage history entries. */
+export class HistoryManager {
+  public constructor(public readonly maxItemCount: number) {
+  }
+
+  /**
+   * Adds specified item to history and returns a new state of history.
+   * @note Immutable operation.
+   */
+  public addItem<TItem extends {}>(key: HistoryKey, item: TItem, history: History<TItem>): History<TItem> {
+    const itemToRemove = history.findIndex((entry) => {
+      return entry.key === key;
+    });
+    const newHistory = itemToRemove < 0 ? [...history] :
+      [
+        ...history.slice(0, itemToRemove),
+        ...history.slice(itemToRemove + 1),
+      ];
+
+    if (newHistory.unshift({ key, item }) > this.maxItemCount)
+      newHistory.pop();
+
+    return newHistory;
+  }
 }
 
-export const MAX_ITEM_CNT = 4;
+/** History manager as defined by 9-Zone UI specification. */
+// tslint:disable-next-line:variable-name
+export const DefaultHistoryManager = new HistoryManager(4);
 
-export const addItem = <TItem extends {}>(key: string, item: TItem, props: HistoryProps<TItem>): HistoryProps<TItem> => {
-  const itemToRemove = props.findIndex((entry) => {
-    return entry.key === key;
-  });
-  if (itemToRemove > -1)
-    props.splice(itemToRemove, 1);
-
-  if (props.unshift({ key, item }) > MAX_ITEM_CNT)
-    props.pop();
-
-  return props;
-};
-
-export interface TrayProps extends CommonProps {
+/** Properties of [[Tray]] component. */
+export interface TrayProps extends CommonProps, NoChildrenProps {
+  /** Extend direction of tray. */
   direction?: Direction;
-  isExpanded?: boolean;
-  onIsExpandedChange?: (isExpanded: boolean) => void;
+  /** Describes if the tray is extended. If this is false, at most 1 item is visible. */
+  isExtended?: boolean;
+  /** Items of tray component. I.e. [[HistoryItem]], [[Icon]] */
+  items?: React.ReactNode;
 }
 
+/** History tray used in [[ExpandableItem]] component. */
 export default class Tray extends React.Component<TrayProps> {
   public render() {
-    const count = React.Children.count(this.props.children);
-    const tabVisible = count > 1 && !this.props.isExpanded;
+    const items = FlattenChildren(this.props.items);
+    const count = React.Children.count(items);
+    const isExtendIndicatorVisible = count > 1 && !this.props.isExtended;
     const className = classnames(
       "nz-toolbar-item-expandable-history-tray",
       DirectionHelpers.getCssClassName(this.props.direction || Direction.Left),
-      tabVisible && "nz-tab-is-visible",
-      this.props.isExpanded && "nz-is-extended",
+      isExtendIndicatorVisible && "nz-extend-is-visible",
+      this.props.isExtended && "nz-is-extended",
       this.props.className);
 
     return (
       <div
         className={className}
         style={this.props.style}
-        onMouseEnter={this.handleOnMouseEnter}
-        onMouseLeave={this.handleOnMouseLeave}
       >
         <div className="nz-items">
-          {this.props.children}
+          {this.props.items}
         </div>
-        <div className="nz-tab">
-          <div className="nz-triangle" />
-        </div>
+        <div className="nz-extend-indicator" />
       </div>
     );
-  }
-
-  private handleOnMouseEnter = () => {
-    this.props.onIsExpandedChange && this.props.onIsExpandedChange(true);
-  }
-
-  private handleOnMouseLeave = () => {
-    this.props.onIsExpandedChange && this.props.onIsExpandedChange(false);
   }
 }

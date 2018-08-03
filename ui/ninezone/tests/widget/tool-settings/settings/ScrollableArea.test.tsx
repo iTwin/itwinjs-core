@@ -4,14 +4,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Overflow from "@src/widget/tool-settings/settings/popover/Overflow";
+import ScrollableArea from "@src/widget/tool-settings/settings/ScrollableArea";
 
-describe("<Overflow />", () => {
+describe("<ScrollableArea />", () => {
   it("should render", () => {
-    mount(<Overflow />);
+    mount(<ScrollableArea />);
   });
 
   it("renders correctly", () => {
-    shallow(<Overflow />).should.matchSnapshot();
+    shallow(<ScrollableArea />).should.matchSnapshot();
   });
 });

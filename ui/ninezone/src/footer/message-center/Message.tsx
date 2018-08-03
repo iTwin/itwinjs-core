@@ -5,15 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import "./Message.scss";
 
+/** Properties of [[Message]] component. */
 export interface MessageProps extends CommonProps, NoChildrenProps {
+  /** Icon of message entry. */
   icon?: React.ReactNode;
+  /** Actual message. */
   content?: React.ReactNode;
 }
 
+/** Message entry in [[MessageCenter]] component. */
 // tslint:disable-next-line:variable-name
 export const Message: React.StatelessComponent<MessageProps> = (props) => {
   const className = classnames(
@@ -26,12 +29,12 @@ export const Message: React.StatelessComponent<MessageProps> = (props) => {
       style={props.style}
     >
       {props.icon &&
-        <div>
+        <div className="nz-icon">
           {props.icon}
         </div>
       }
       {props.content &&
-        <div>
+        <div className="nz-content">
           {props.content}
         </div>
       }

@@ -19,7 +19,6 @@ exports[`<Content /> renders correctly 1`] = `
 exports[`<Content /> renders correctly 2`] = `
 <div
   className="nz-widget-rectangular-content"
-  onClick={[Function]}
 >
   <div />
 </div>

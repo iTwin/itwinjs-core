@@ -6,15 +6,18 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import BackButton from "../../../toolbar/button/Back";  // todo: should not use this
-import CommonProps from "../../../utilities/Props";
-import Settings from "./Settings";
+import Settings, { SettingsProps } from "./Settings";
 import "./Nested.scss";
 
-export interface NestedProps extends CommonProps {
+/** Properties of [[Nested]] component. */
+export interface NestedProps extends SettingsProps {
+  /** Nested settings label. */
   label?: string;
+  /** Function called when back button is clicked. */
   onBackButtonClick?: () => void;
 }
 
+/** Nested tool settings component. Used as content of [[ToolSettings]]. */
 export default class Nested extends React.Component<NestedProps> {
   public render() {
     const className = classnames(

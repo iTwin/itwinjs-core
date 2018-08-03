@@ -717,7 +717,7 @@ export class Viewport {
   /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
    *  modifies the point and vector given
    */
-  private adjustAspectRatio(origin: Point3d, delta: Vector3d) {
+  protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
     const windowAspect = this.viewRect.aspect * this.view.getAspectRatioSkew();
     const viewAspect = delta.x / delta.y;
 

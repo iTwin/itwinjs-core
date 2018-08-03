@@ -5,17 +5,19 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import { Anchor } from "../Stacked";
-
 import "./Content.scss";
 
-export interface WidgetContentProps extends CommonProps {
+/** Properties of [[WidgetContent]] component. */
+export interface WidgetContentProps extends CommonProps, NoChildrenProps {
+  /** Describes to which side the widget of this content is anchored. */
   anchor?: Anchor;
-  onClick?: () => void;
+  /** Actual content. */
+  content?: React.ReactNode;
 }
 
+/** Scrollable widget content. Used by [[Stacked]] component. */
 export default class WidgetContent extends React.Component<WidgetContentProps> {
   public render() {
     const className = classnames(
@@ -27,16 +29,11 @@ export default class WidgetContent extends React.Component<WidgetContentProps> {
       <div
         className={className}
         style={this.props.style}
-        onClick={this.handleOnClick}
       >
         <div>
-          {this.props.children}
+          {this.props.content}
         </div>
       </div>
     );
-  }
-
-  private handleOnClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

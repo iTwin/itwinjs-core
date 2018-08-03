@@ -6,21 +6,24 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import Direction from "../../utilities/Direction";
-import Popover, { TriangleProps } from "../../popup/popover/Triangle";
-export { TriangleProps as DialogProps } from "../../popup/popover/Triangle";
-
+import { Omit } from "../../utilities/Props";
+import Popover, { TrianglePopoverProps } from "../../popup/popover/Triangle";
 import "./Dialog.scss";
 
-export default class IndicatorDialog extends React.Component<TriangleProps> {
+/** Properties of [[ToolAssistanceDialog]] component. */
+export interface ToolAssistanceDialogProps extends Omit<TrianglePopoverProps, "direction"> {
+}
+
+/** Common dialog used by footer indicators. */
+export default class ToolAssistanceDialog extends React.Component<ToolAssistanceDialogProps> {
   public render() {
-    const { children, ...props } = this.props;
     const className = classnames(
-      "nz-footer-indicatorDialog-dialog",
+      "nz-footer-toolAssistance-dialog",
       this.props.className);
 
     return (
       <Popover
-        {...props}
+        {...this.props}
         className={className}
         direction={Direction.Top}
       />

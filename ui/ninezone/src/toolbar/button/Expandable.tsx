@@ -5,14 +5,16 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import ExpandableComponent, { ExpandableProps as ExpandableComponentProps } from "../../base/Expandable";
 import "./Expandable.scss";
 
+/** Properties of [[ExpandableButton]] component. */
 export interface ExpandableButtonProps extends ExpandableComponentProps {
+  /** One of toolbar buttons. I.e.: [[ToolbarIcon]] */
   button?: React.ReactNode;
 }
 
+/** Expandable toolbar button. Used in [[Toolbar]] component. */
 export default class ExpandableButton extends React.Component<ExpandableButtonProps> {
   public render() {
     const { className, ...props } = this.props;

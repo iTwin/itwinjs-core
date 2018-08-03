@@ -14,7 +14,11 @@ exports[`<Dialog /> renders correctly 1`] = `
       titleBar={
         <Unknown
           buttons={undefined}
-          title={<Unknown />}
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
         />
       }
     />

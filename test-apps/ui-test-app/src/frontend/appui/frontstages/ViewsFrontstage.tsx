@@ -191,27 +191,37 @@ export class ViewsFrontstage {
     });
 
     const horizontalToolbar =
-      <Toolbar>
-        <ToolButton toolId="Select" iconClass="icon-zoom" />
-        <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this.fitToViewCommand} />
-        <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this.windowAreaCommand} />
-        <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this.toggleCameraCommand} />
-        <ToolButton toolId="walk" iconClass="icon-walk" execute={this.walkCommand} />
-        <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this.rotateCommand} />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="Select" iconClass="icon-zoom" />
+            <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this.fitToViewCommand} />
+            <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this.windowAreaCommand} />
+            <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this.toggleCameraCommand} />
+            <ToolButton toolId="walk" iconClass="icon-walk" execute={this.walkCommand} />
+            <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this.rotateCommand} />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Right}>
-        <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-        <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
-        <GroupButton
-          labelKey="SampleApp:buttons.anotherGroup"
-          iconClass="icon-placeholder"
-          items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
-          direction={Direction.Right}
-        />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+            <GroupButton
+              labelKey="SampleApp:buttons.anotherGroup"
+              iconClass="icon-placeholder"
+              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+              direction={Direction.Right}
+            />
+          </>
+        }
+      />;
 
     return (
       <ToolWidget
@@ -233,16 +243,26 @@ export class ViewsFrontstage {
    */
   private getNavigationWidget(): React.ReactNode {
     const horizontalToolbar =
-      <Toolbar>
-        <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
-        <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
+            <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Right}>
-        <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-        <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
-      </Toolbar >;
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+            <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+          </>
+        }
+      />;
 
     return (
       <NavigationWidget
