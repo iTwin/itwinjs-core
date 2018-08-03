@@ -8,10 +8,16 @@ import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../clip
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { Point3d } from "../PointVector";
+import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Transform, RotMatrix } from "../Transform";
 import { Geometry } from "../Geometry";
+import { ClipUtilities } from "../clipping/ClipUtils";
+import { Triangulator } from "../topology/Triangulation";
+import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
+import { IndexedPolyface } from "../polyface/Polyface";
+
+// tslint:disable:no-console
 
 /** Returns true if the range given does not contain any values extending to +/- infinity. */
 function isFiniteRange(range: Range3d): boolean {
@@ -117,11 +123,228 @@ export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean 
   return true;
 }
 
+/** Function for sorting planes in order of increasing x, increasing y. */
+function compareXYSector1(a: ClipPlane, b: ClipPlane): number {
+  if (a.inwardNormalRef.x < b.inwardNormalRef.x)
+    return -1;
+  else if (a.inwardNormalRef.x > b.inwardNormalRef.x)
+    return 1;
+  else
+    if (a.inwardNormalRef.y < a.inwardNormalRef.y)
+      return -1;
+    else if (a.inwardNormalRef.y > b.inwardNormalRef.y)
+      return 1;
+  return 0;
+}
+
+/** Function for sorting planes in order of decreasing x, increasing y. */
+function compareXYSector2(a: ClipPlane, b: ClipPlane): number {
+  if (a.inwardNormalRef.x > b.inwardNormalRef.x)
+    return -1;
+  else if (a.inwardNormalRef.x < b.inwardNormalRef.x)
+    return 1;
+  else
+    if (a.inwardNormalRef.y < a.inwardNormalRef.y)
+      return -1;
+    else if (a.inwardNormalRef.y > b.inwardNormalRef.y)
+      return 1;
+  return 0;
+}
+
+/** Function for sorting planes in order of decreasing x, decreasing y. */
+function compareXYSector3(a: ClipPlane, b: ClipPlane): number {
+  if (a.inwardNormalRef.x > b.inwardNormalRef.x)
+    return -1;
+  else if (a.inwardNormalRef.x < b.inwardNormalRef.x)
+    return 1;
+  else
+    if (a.inwardNormalRef.y > a.inwardNormalRef.y)
+      return -1;
+    else if (a.inwardNormalRef.y < b.inwardNormalRef.y)
+      return 1;
+  return 0;
+}
+
+/** Function for sorting planes in order of increasing x, decreasing y. */
+function compareXYSector4(a: ClipPlane, b: ClipPlane): number {
+  if (a.inwardNormalRef.x < b.inwardNormalRef.x)
+    return -1;
+  else if (a.inwardNormalRef.x > b.inwardNormalRef.x)
+    return 1;
+  else
+    if (a.inwardNormalRef.y > a.inwardNormalRef.y)
+      return -1;
+    else if (a.inwardNormalRef.y < b.inwardNormalRef.y)
+      return 1;
+  return 0;
+}
+
+/** Given a convex set of clipping planes that clip a region of 2d space, modify the convex set array such that the planes are in a counter-clockwise order around the boundary. */
+function sortConvexSetPlanesToBoundary(convexSet: ConvexClipPlaneSet) {
+  const planes = convexSet.planes;
+  const newPlanes: ClipPlane[] = [];
+
+  // 1 - Get x=0, y- plane
+  let planeFound: ClipPlane | undefined;
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x === 0 && plane.inwardNormalRef.y < 0) {
+      planeFound = plane;
+      break;
+    }
+  }
+  if (planeFound !== undefined)
+    newPlanes.push(planeFound);
+
+  // 2 - Get x+, y-
+  const tempSortedPlanes: ClipPlane[] = [];
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x > 0 && plane.inwardNormalRef.y < 0)
+      tempSortedPlanes.push(plane);
+  }
+  tempSortedPlanes.sort(compareXYSector1);
+  for (const plane of tempSortedPlanes)
+    newPlanes.push(plane);
+
+  // 3 - Get x+, y=0 plane
+  planeFound = undefined;
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x > 0 && plane.inwardNormalRef.y === 0) {
+      planeFound = plane;
+      break;
+    }
+  }
+  if (planeFound !== undefined)
+    newPlanes.push(planeFound);
+
+  // 4 - Get x+, y+
+  tempSortedPlanes.length = 0;
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x > 0 && plane.inwardNormalRef.y > 0)
+      tempSortedPlanes.push(plane);
+  }
+  tempSortedPlanes.sort(compareXYSector2);
+  for (const plane of tempSortedPlanes)
+    newPlanes.push(plane);
+
+  // 5 - Get x=0, y+ plane
+  planeFound = undefined;
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x === 0 && plane.inwardNormalRef.y > 0) {
+      planeFound = plane;
+      break;
+    }
+  }
+  if (planeFound !== undefined)
+    newPlanes.push(planeFound);
+
+  // 6 - Get x-, y+
+  tempSortedPlanes.length = 0;
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x < 0 && plane.inwardNormalRef.y > 0)
+      tempSortedPlanes.push(plane);
+  }
+  tempSortedPlanes.sort(compareXYSector3);  // more negative values less than others
+  for (const plane of tempSortedPlanes)
+    newPlanes.push(plane);
+
+  // 7 - Get x-, y=0 plane
+  planeFound = undefined;
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x < 0 && plane.inwardNormalRef.y === 0) {
+      planeFound = plane;
+      break;
+    }
+  }
+  if (planeFound !== undefined)
+    newPlanes.push(planeFound);
+
+  // 8 - Get x-, y-
+  tempSortedPlanes.length = 0;
+  for (const plane of planes) {
+    if (plane.inwardNormalRef.x < 0 && plane.inwardNormalRef.y < 0)
+      tempSortedPlanes.push(plane);
+  }
+  tempSortedPlanes.sort(compareXYSector4);  // more negative values less than others
+  for (const plane of tempSortedPlanes)
+    newPlanes.push(plane);
+
+  expect(newPlanes.length).equals(planes.length);
+  convexSet.planes.length = 0;
+  for (const plane of newPlanes)
+    convexSet.planes.push(plane);
+}
+
+/** Given a convex set of clipping planes, return the points at which the planes intersect. */
+function getPointIntersectionsOfConvexSetPlanes(convexSet: ConvexClipPlaneSet, ck: Checker): Point3d[] {
+  sortConvexSetPlanesToBoundary(convexSet);
+  const intersections: Point3d[] = [];
+
+  for (let i = 0; i < convexSet.planes.length - 1; i++) {
+    const planei0 = convexSet.planes[i];
+    const planei1 = convexSet.planes[i + 1];
+
+    // Intersection of plane 0 with plane 1
+    const planeMatrix = RotMatrix.createRowValues(
+      planei0.inwardNormalRef.x, planei0.inwardNormalRef.y, planei0.inwardNormalRef.z,
+      planei1.inwardNormalRef.x, planei1.inwardNormalRef.y, planei1.inwardNormalRef.z,
+      0, 0, 1,
+    ).inverse()!;
+    ck.testTrue(planeMatrix !== undefined);
+    const planeDistanceVec = Vector3d.create(planei0.distance, planei1.distance, 0);
+    intersections.push(Point3d.createFrom(planeMatrix.multiplyVector(planeDistanceVec)));
+  }
+
+  // We must get the intersection of the first and last planes as well
+  const plane0 = convexSet.planes[0];
+  const plane1 = convexSet.planes[convexSet.planes.length - 1];
+
+  // Intersection of plane 0 with plane 1
+  const plane01Matrix = RotMatrix.createRowValues(
+    plane0.inwardNormalRef.x, plane0.inwardNormalRef.y, plane0.inwardNormalRef.z,
+    plane1.inwardNormalRef.x, plane1.inwardNormalRef.y, plane1.inwardNormalRef.z,
+    0, 0, 1,
+  ).inverse()!;
+  ck.testTrue(plane01Matrix !== undefined);
+  const plane01DistanceVec = Vector3d.create(plane0.distance, plane1.distance, 0);
+  intersections.push(Point3d.createFrom(plane01Matrix.multiplyVector(plane01DistanceVec)));
+
+  return intersections;
+}
+
+/** Simple 2D area of triangle calculation given three points. This does not take into account values along the z-axis. */
+function triangleArea(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
+  const a = pointA.x * (pointB.y - pointC.y);
+  const b = pointB.x * (pointC.y - pointA.y);
+  const c = pointC.x * (pointA.y - pointB.y);
+
+  return Math.abs((a + b + c) / 2);
+}
+
+/** Returns true only if all of the points given in arrayA exist in arrayB. */
+function pointArrayIsSubsetOfOther(arrayA: Point3d[], arrayB: Point3d[]): boolean {
+  for (const pointA of arrayA) {
+    let pointFound = false;
+    for (const pointB of arrayB) {
+      if (pointA.isAlmostEqual(pointB, 1.0e-10)) {
+        pointFound = true;
+        break;
+      }
+    }
+    if (!pointFound)
+      return false;
+  }
+  return true;
+}
+
 describe("ClipPrimitive", () => {
   const ck = new Checker();
   const min2D = Point3d.create(-54, 18);  // Bottom left point of the octogon formed from octogonalPoints
   const max2D = Point3d.create(-42, 42);  // Top right point of the octogon formed from octogonalPoints
   let octogonalPoints: Point3d[];         // Points array representing an octogon in quadrant II
+  let clipPointsA: Point3d[];
+  let polygonA: Point3d[];
+  let clipPointsB: Point3d[];
+  let polygonB: Point3d[];
 
   before(() => {
     octogonalPoints = [
@@ -133,6 +356,35 @@ describe("ClipPrimitive", () => {
       Point3d.create(min2D.x, max2D.y),
       Point3d.create(min2D.x - 5, max2D.y - 5),
       Point3d.create(min2D.x - 5, min2D.y + 5),
+    ];
+    clipPointsA = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(100, 0, 0),
+      Point3d.create(70, 50, 0),
+      Point3d.create(100, 100, 0),
+      Point3d.create(0, 100, 0),
+      Point3d.create(30, 50, 0),
+    ];
+    polygonA = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(100, 0, 0),
+      Point3d.create(100, 100, 0),
+      Point3d.create(0, 100, 0),
+    ];
+    clipPointsB = [
+      Point3d.create(-50, 50, 0),
+      Point3d.create(50, 10, 0),
+      Point3d.create(150, 50, 0),
+      Point3d.create(50, 100, 0),
+      Point3d.create(50, 50, 0),
+    ];
+    polygonB = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(50, 25, 0),
+      Point3d.create(100, 0, 0),
+      Point3d.create(100, 100, 0),
+      Point3d.create(50, 75, 0),
+      Point3d.create(0, 100, 0),
     ];
   });
 
@@ -326,6 +578,196 @@ describe("ClipPrimitive", () => {
     // Test clone method
     const clipPrimitive2 = clipPrimitive1Copy!.clone();
     ck.testTrue(clipShapesAreEqual(clipPrimitive2, clipPrimitive1!), "clone method produces a copy of ClipShape");
+
+    ck.checkpoint();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClipShape plane parsing for simple concave polygon", () => {
+    const clipShape = ClipShape.createShape(clipPointsA)!;
+    ck.testTrue(clipShape !== undefined);
+
+    const originalRange = Range3d.createArray(clipShape.polygon);
+    const areaRestriction = (originalRange.high.x - originalRange.low.x) * (originalRange.high.y - originalRange.low.y);
+
+    const convexSetUnion = clipShape.fetchClipPlanesRef();
+
+    // Let us check the area and range of these convex sets put together
+    const unionRange = Range3d.create();
+    let unionArea = 0;
+    for (const convexSet of convexSetUnion.convexSets) {
+      const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
+      unionRange.extendArray(trianglePoints);
+      ck.testTrue(pointArrayIsSubsetOfOther(trianglePoints, clipShape.polygon), "All points of triangulated convex area of polygon should fall on boundary");
+      unionArea += triangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+    }
+    ck.testRange3d(originalRange, unionRange, "Range extended by all convex regions should match range of entire concave region.");
+    ck.testTrue(unionArea <= areaRestriction, "Total area of unioned convex triangles should be less than or equal to area of entire range.");
+
+    ck.checkpoint();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClipShape with simple concave area clips simple polygon", () => {
+    const clipShape = ClipShape.createShape(clipPointsA)!;
+    const convexSetUnion = clipShape.fetchClipPlanesRef();
+
+    // Get total area of clipshape convex regions generated
+    let clipShapeArea = 0;
+    for (const convexSet of convexSetUnion.convexSets) {
+      const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
+      clipShapeArea += triangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+    }
+
+    const clippedPolygons = ClipUtilities.clipPolygonToClipShape(polygonA, clipShape);
+
+    // Triangulate any resulting smaller polygons that have a vertex length of greater than 3 and find total area of clipped result
+    let clippedPolygonArea = 0;
+    for (const polygon of clippedPolygons) {
+      if (polygon.length <= 3) {
+        clippedPolygonArea += triangleArea(polygon[0], polygon[1], polygon[2]);
+        continue;
+      }
+
+      const polygonGraph = Triangulator.earcutFromPoints(polygon);
+      Triangulator.cleanupTriangulation(polygonGraph);
+
+      polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+        if (!edge.getMask(HalfEdgeMask.EXTERIOR)) {
+          const subTrianglePoints: Point3d[] = [];
+          edge.collectAroundFace((node: HalfEdge) => {
+            subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
+          });
+          ck.testExactNumber(3, subTrianglePoints.length, "Length clipped polygon piece after further triangulation must be 3");
+          clippedPolygonArea += triangleArea(subTrianglePoints[0], subTrianglePoints[1], subTrianglePoints[2]);
+        }
+        return true;
+      });
+    }
+    ck.testCoordinate(clippedPolygonArea, clipShapeArea, "Polygon that completely encompasses clipshape should have same area as clipshape after clipping.");
+
+    ck.checkpoint();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClipShape with complex concave area clips polygon", () => {
+    const clipShape = ClipShape.createShape(clipPointsB)!;
+    ck.testTrue(clipShape !== undefined);
+
+    clipShape.fetchClipPlanesRef();
+    const clippedPolygons = ClipUtilities.clipPolygonToClipShape(polygonB, clipShape);
+
+    for (const polygon of clippedPolygons) {
+      const polygonGraph = Triangulator.earcutFromPoints(polygon);
+      Triangulator.cleanupTriangulation(polygonGraph);
+
+      polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+        if (!edge.getMask(HalfEdgeMask.EXTERIOR)) {
+          const subTrianglePoints: Point3d[] = [];
+          edge.collectAroundFace((node: HalfEdge) => {
+            subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
+          });
+          console.log(subTrianglePoints);
+        }
+        return true;
+      });
+    }
+
+    ck.checkpoint();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("TEMP", () => {
+    const corners = [
+      Point3d.create(0, 0.375, 0.5),
+      Point3d.create(0.0625, 0.375, 0.5),
+      Point3d.create(0.0625, 0.4375, 0.5),
+      Point3d.create(0, 0.4375, 0.5),
+    ];
+    const clipShape = ClipShape.createShape([
+      Point3d.create(-32730165.424192525, 72492876.88582012),
+      Point3d.create(-32730512.927757926, 72492918.61437191),
+      Point3d.create(-32730751.37662525, 72490932.87971246),
+      Point3d.create(-32730403.873059846, 72490891.15116069),
+      Point3d.create(-32730056.369494457, 72490849.4226089),
+      Point3d.create(-32729708.865929063, 72490807.69405712),
+      Point3d.create(-32729361.362363663, 72490765.96550535),
+      Point3d.create(-32729007.62384324, 72490723.77726965),
+      Point3d.create(-32728634.002719615, 72490686.10150538),
+      Point3d.create(-32728259.541700356, 72490657.97407557),
+      Point3d.create(-32727884.484764554, 72490639.41330658),
+      Point3d.create(-32727509.0762795, 72490630.43129162),
+      Point3d.create(-32727133.560841583, 72490631.03388293),
+      Point3d.create(-32726758.183116812, 72490641.22068784),
+      Point3d.create(-32726383.18768154, 72490660.98506922),
+      Point3d.create(-32726008.818863016, 72490690.31414959),
+      Point3d.create(-32725658.84062531, 72490722.73647982),
+      Point3d.create(-32725310.334412348, 72490755.0384848),
+      Point3d.create(-32724961.828199383, 72490787.34048979),
+      Point3d.create(-32724613.32198642, 72490819.64249478),
+      Point3d.create(-32724264.81577346, 72490851.94449976),
+      Point3d.create(-32723916.309560493, 72490884.24650474),
+      Point3d.create(-32723567.803347528, 72490916.54850973),
+      Point3d.create(-32723752.386233155, 72492908.01258379),
+      Point3d.create(-32724100.892446116, 72492875.71057881),
+      Point3d.create(-32724449.39865908, 72492843.40857384),
+      Point3d.create(-32724797.904872045, 72492811.10656884),
+      Point3d.create(-32725146.41108501, 72492778.80456385),
+      Point3d.create(-32725494.917297963, 72492746.50255887),
+      Point3d.create(-32725843.423510935, 72492714.2005539),
+      Point3d.create(-32726190.460444693, 72492682.04865392),
+      Point3d.create(-32726513.93436301, 72492656.70681967),
+      Point3d.create(-32726837.949710444, 72492639.6293774),
+      Point3d.create(-32727162.295375653, 72492630.82745391),
+      Point3d.create(-32727486.76003214, 72492630.30678403),
+      Point3d.create(-32727811.132275824, 72492638.06770702),
+      Point3d.create(-32728135.200762875, 72492654.10516627),
+      Point3d.create(-32728458.75434737, 72492678.40871263),
+      Point3d.create(-32728781.582218844, 72492710.96251117),
+      Point3d.create(-32729122.913496338, 72492751.70016478),
+      Point3d.create(-32729470.41706174, 72492793.42871657),
+      Point3d.create(-32729817.920627132, 72492835.15726835),
+      Point3d.create(-32730165.424192525, 72492876.88582012),
+    ], undefined, undefined, Transform.createOriginAndMatrix(
+      Point3d.create(670.2948694161164, -1483.8975588452274, 0.5),
+      RotMatrix.createRowValues(
+        0.000020475076296013798, 0, 0,
+        0, 0.000020475076296002844, 0,
+        0, 0, 0.00005,
+      ),
+      ))!;
+
+    ck.testTrue(clipShape !== undefined);
+    const clipPlaneSet = clipShape.fetchClipPlanesRef();
+    ck.testExactNumber(clipPlaneSet.convexSets.length, 40);
+
+    const tileBeforeClipPolyface = IndexedPolyface.create(false, false);
+    for (const point of corners) {
+      const idx = tileBeforeClipPolyface.addPoint(point);
+      tileBeforeClipPolyface.addPointIndex(idx);
+    }
+    tileBeforeClipPolyface.terminateFacet();
+
+    const clipRegionPolyface = IndexedPolyface.create(false, false);
+    for (const convexSet of clipPlaneSet.convexSets) {
+      const planeIntersections = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
+      for (const intersection of planeIntersections) {
+        const idx = clipRegionPolyface.addPoint(intersection);
+        clipRegionPolyface.addPointIndex(idx);
+      }
+      clipRegionPolyface.terminateFacet();
+    }
+
+    const transformedClipPoints = clipShape.polygon;
+    clipShape.transformFromClip!.multiplyPoint3dArrayInPlace(transformedClipPoints);
+    console.log(transformedClipPoints);
+
+    /*
+    const jsonWriter = new IModelJson.Writer();
+    console.log(JSON.stringify(tileBeforeClipPolyface.dispatchToGeometryHandler(jsonWriter)));
+    console.log("============================================================================");
+    console.log(JSON.stringify(clipRegionPolyface.dispatchToGeometryHandler(jsonWriter)));
+    */
 
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);

@@ -1798,6 +1798,11 @@ export class DrawingViewState extends ViewState2d {
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
+  // DEBUG ONLY -------------------------------------------------------------------------------
+  /** A list of attachment Ids that are the only ones that should be loaded. If this member is undefined, all attachments will be loaded. */
+  private static attachmentIdsToShow?: Id64Array = ["0x15b0"];
+  // ------------------------------------------------------------------------------------------
+
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
@@ -1838,6 +1843,16 @@ export class SheetViewState extends ViewState2d {
       return;
 
     this._attachments.clear();
+
+    // DEBUG ONLY --------------------------------------
+    const newAttachmentIds: Id64Array = [];
+    for (const id of this._attachmentIds)
+      if (SheetViewState.attachmentIdsToShow === undefined)
+        newAttachmentIds.push(id);
+      else if (SheetViewState.attachmentIdsToShow.indexOf(id) !== -1)
+        newAttachmentIds.push(id);
+    this._attachmentIds = newAttachmentIds;
+    // -------------------------------------------------
 
     // Query the attachments using the id list, and grab all of their corresponding view ids
     const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
@@ -1884,19 +1899,18 @@ export class SheetViewState extends ViewState2d {
       }
     }
 
-    /*
-    DEBUG ONLY
-    for (const attachment of this._attachments.list)
-      attachment.drawDebugBorder();
-    */
+    // DEBUG ONLY
+    // for (const attachment of this._attachments.list)
+    //  attachment.drawDebugBorder(context);
 
     // Draw all attachments that have a status of ready
-    for (const attachment of this._attachments.list)
+    for (const attachment of this._attachments.list) {
       if (attachment.state === Attachments.State.Ready) {
         if (attachment.is2d)
           assert(attachment.tree !== undefined);  // 2d attachments must have fully-loaded tile tree before being drawn
         attachment.tree!.drawScene(context);
       }
+    }
   }
 
   /** Create a sheet border decoration graphic. */

@@ -75,7 +75,7 @@
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "fuse.js",

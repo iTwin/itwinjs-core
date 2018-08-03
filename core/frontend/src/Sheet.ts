@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -198,6 +198,9 @@ export namespace Attachments {
         this.setRect(new ViewRect(0, 0, dim, dim), true);
       }
     }
+
+    // override
+    protected adjustAspectRatio(_origin: Point3d, _delta: Vector3d) { }
   }
 
   /** Describes the location of a tile within the range of a quad subdivided in four parts. */
@@ -285,6 +288,7 @@ export namespace Attachments {
 
   /** An extension of Tile specific to rendering 3d attachments. */
   export class Tile3d extends Tile {
+    private static DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;  // set this to true to draw the inner edges of the tile polyfaces generated
     private _tilePolyfaces: IndexedPolyface[] = [];
     private _placement: Tile3dPlacement;
 
@@ -496,6 +500,13 @@ export namespace Attachments {
             rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frust.points);
             viewport.setupViewFromFrustum(frust);
 
+            {
+              if (this._tilePolyfaces.length > 0) {
+                const points = this._tilePolyfaces[0].data.point.getPoint3dArray();
+                const range = Range3d.createArray(points);
+                console.log(JSON.stringify(range.toJSON()));  // tslint:disable-line
+              }
+            }
             viewport.renderTexture();
             if (viewport.texture === undefined) {
               this.setNotFound();
@@ -529,32 +540,35 @@ export namespace Attachments {
       return this._children.length === 0 ? undefined : this._children;
     }
 
-    private static _drawDebugGraphics = false;
     public drawGraphics(args: Tile.DrawArgs) {
-      if (!Tile3d._drawDebugGraphics) {
-        super.drawGraphics(args);
+      super.drawGraphics(args);
+      if (!Tile3d.DRAW_DEBUG_POLYFACE_GRAPHICS) {
         return;
       }
 
       const polys = this._tilePolyfaces;
-      if (0 === polys.length)
+      if (polys.length === 0)
         return;
 
-      const fillColor = this.rootAsTree3d.tileColor;
-      const lineColor = fillColor.clone();
+      const lineColor = ColorDef.blue.clone();
+      const fillColor = ColorDef.green.clone();
+      fillColor.setAlpha(0x88);
       lineColor.setAlpha(0xff);
       const builder = args.context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
       builder.setSymbology(lineColor, fillColor, 2);
       for (const poly of polys) {
-        const lineString: Point3d[] = [];
-        for (const index of poly.data.pointIndex)
-          lineString.push(poly.data.point.getPoint3dAt(index));
-
-        builder.addShape(lineString);
-        builder.addLineString(lineString);
+        const polyVisitor = IndexedPolyfaceVisitor.create(poly, 0);
+        while (polyVisitor.moveToNextFacet()) {
+          const lineString: Point3d[] = [];
+          for (let i = 0; i < 3; i++)
+            lineString.push(polyVisitor.getPoint(i));
+          if (lineString.length > 0)
+            lineString.push(lineString[0].clone()); // close the loop
+          builder.addLineString(lineString);
+        }
       }
 
-      args.graphics.add(builder.finish()!);
+      args.graphics.add(builder.finish());
     }
   }
 

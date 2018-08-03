@@ -179,7 +179,8 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     for (const convexSet of this._convexSets) {
       const convexSetOutput: Point3d[] = [];
       convexSet.polygonClip(input, convexSetOutput, []);
-      output.push(convexSetOutput);
+      if (convexSetOutput.length !== 0)
+        output.push(convexSetOutput);
     }
   }
 
