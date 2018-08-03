@@ -7,6 +7,7 @@ import { IDisposable } from "@bentley/bentleyjs-core";
 import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
+import { VariableValueJSON, VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
 
 /** @hidden */
 export enum NativePlatformRequestTypes {
@@ -32,8 +33,8 @@ export interface NativePlatformDefinition extends IDisposable {
   removeRuleset(rulesetId: string, hash: string): boolean;
   clearRulesets(): void;
   handleRequest(db: any, options: string): Promise<string>;
-  getUserSetting(rulesetId: string, settingId: string, settingType: string): any;
-  setUserSetting(rulesetId: string, settingId: string, settingValue: string): void;
+  getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
+  setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
 }
 
 /** @hidden */
@@ -100,11 +101,11 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
         });
       });
     }
-    public getUserSetting(rulesetId: string, settingId: string, settingType: string): any {
-      return this.handleResult(this._nativeAddon.getUserSetting(rulesetId, settingId, settingType));
+    public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON {
+      return this.handleResult(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));
     }
-    public setUserSetting(rulesetId: string, settingId: string, settingValue: string): void {
-      this.handleVoidResult(this._nativeAddon.setUserSetting(rulesetId, settingId, settingValue));
+    public setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void {
+      this.handleVoidResult(this._nativeAddon.setRulesetVariableValue(rulesetId, variableId, type, value));
     }
   };
 };

@@ -12,7 +12,7 @@ export * from "./hierarchy";
 export * from "./IECPresentationManager";
 export { default as ECPresentationRpcInterface } from "./ECPresentationRpcInterface";
 export * from "./rules";
-export * from "./IUserSettingsManager";
+export { IRulesetVariablesManager } from "./IRulesetVariablesManager";
 export * from "./IRulesetManager";
 export * from "./Logging";
 export * from "./Utils";

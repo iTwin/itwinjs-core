@@ -6,10 +6,14 @@ import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { PageOptions, KeySet, SettingValueTypes, ECPresentationError, InstanceKey, Paged, HierarchyRequestOptions, ContentRequestOptions, IRulesetManager, RegisteredRuleset } from "@common/index";
-import { Node } from "@common/hierarchy";
-import { Descriptor, Content } from "@common/content";
-import { IUserSettingsManager } from "@common/IUserSettingsManager";
+import {
+  PageOptions, KeySet, ECPresentationError, InstanceKey,
+  Paged, HierarchyRequestOptions, ContentRequestOptions,
+  IRulesetManager, RegisteredRuleset,
+} from "@bentley/ecpresentation-common";
+import { Node } from "@bentley/ecpresentation-common/lib/hierarchy";
+import { Descriptor, Content } from "@bentley/ecpresentation-common/lib/content";
+import { VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
@@ -17,6 +21,7 @@ import {
 } from "@helpers/random";
 import IBackendECPresentationManager from "@src/IBackendECPresentationManager";
 import MultiClientECPresentationManager from "@src/MultiClientECPresentationManager";
+import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import ECPresentationRpcImpl from "@src/ECPresentationRpcImpl";
 import ECPresentation from "@src/ECPresentation";
 import "./IModeHostSetup";
@@ -39,13 +44,13 @@ describe("ECPresentationRpcImpl", () => {
     const impl = new ECPresentationRpcImpl();
     const presentationManagerMock = moq.Mock.ofType<IBackendECPresentationManager>();
     const rulesetsMock = moq.Mock.ofType<IRulesetManager>();
-    const settingsMock = moq.Mock.ofType<IUserSettingsManager>();
+    const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();
 
     beforeEach(() => {
       rulesetsMock.reset();
-      settingsMock.reset();
+      variablesMock.reset();
       presentationManagerMock.reset();
-      presentationManagerMock.setup((x) => x.settings(moq.It.isAnyString(), moq.It.isAny())).returns(() => settingsMock.object);
+      presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString(), moq.It.isAny())).returns(() => variablesMock.object);
       presentationManagerMock.setup((x) => x.rulesets(moq.It.isAny())).returns(() => rulesetsMock.object);
       ECPresentation.setManager(presentationManagerMock.object);
       testData = {
@@ -355,40 +360,36 @@ describe("ECPresentationRpcImpl", () => {
 
     });
 
-    describe("setUserSettingValue", () => {
+    describe("setRulesetVariableValue", () => {
 
-      it("calls settings manager", async () => {
+      it("calls variables manager", async () => {
         const options = {
           rulesetId: faker.random.word(),
-          settingId: faker.random.word(),
+          variableId: faker.random.word(),
         };
         const value = faker.random.word();
-
-        settingsMock.setup((x) => x.setValue(options.settingId, { value, type: SettingValueTypes.String }))
-          .verifiable();
-
-        await impl.setUserSettingValue(options, { value, type: SettingValueTypes.String });
-        settingsMock.verifyAll();
+        await impl.setRulesetVariableValue(options, VariableValueTypes.String, value);
+        variablesMock.verify((x) => x.setValue(options.variableId, VariableValueTypes.String, value), moq.Times.once());
       });
 
     });
 
-    describe("getUserSettingValue", () => {
+    describe("getRulesetVariableValue", () => {
 
-      it("calls settings manager", async () => {
+      it("calls variables manager", async () => {
         const options = {
           rulesetId: faker.random.word(),
-          settingId: faker.random.word(),
+          variableId: faker.random.word(),
         };
         const value = faker.random.word();
 
-        settingsMock.setup((x) => x.getValue(options.settingId, SettingValueTypes.String))
+        variablesMock.setup((x) => x.getValue(options.variableId, VariableValueTypes.String))
           .returns(async () => value)
           .verifiable();
 
-        const result = await impl.getUserSettingValue(options, SettingValueTypes.String);
-        expect(result).to.be.equal(value);
-        settingsMock.verifyAll();
+        const result = await impl.getRulesetVariableValue(options, VariableValueTypes.String);
+        variablesMock.verifyAll();
+        expect(result).to.equal(value);
       });
 
     });

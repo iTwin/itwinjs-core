@@ -10,7 +10,7 @@ import { Node, NodeKey, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IECPresentationManager";
 import KeySet from "./KeySet";
-import { SettingValue, SettingValueTypes } from "./IUserSettingsManager";
+import { VariableValueJSON, VariableValueTypes } from "./IRulesetVariablesManager";
 import { InstanceKey } from "./EC";
 
 export type HierarchyRpcRequestOptions = HierarchyRequestOptions<IModelToken>;
@@ -18,9 +18,9 @@ export type ContentRpcRequestOptions = ContentRequestOptions<IModelToken>;
 export interface RulesetRpcRequestOptions {
   clientId?: string;
 }
-export interface UserSettingsRpcRequestOptions {
+export interface RulesetVariableRpcRequestOptions {
   rulesetId: string;
-  settingId: string;
+  variableId: string;
   clientId?: string;
 }
 
@@ -78,8 +78,8 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   /** See [[IRulesetManager.clear]] */
   public clearRulesets(_options: RulesetRpcRequestOptions): Promise<void> { return this.forward.apply(this, arguments); }
 
-  /** Sets user setting value */
-  public setUserSettingValue(_options: UserSettingsRpcRequestOptions, _value: SettingValue): Promise<void> { return this.forward.apply(this, arguments); }
-  /** Retrieves setting value. Returns default value if setting does not exist or does not convert to specified type. */
-  public getUserSettingValue(_options: UserSettingsRpcRequestOptions, _settingType: SettingValueTypes): Promise<any> { return this.forward.apply(this, arguments); }
+  /** Sets ruleset variable value */
+  public setRulesetVariableValue(_options: RulesetVariableRpcRequestOptions, _type: VariableValueTypes, _value: VariableValueJSON): Promise<void> { return this.forward.apply(this, arguments); }
+  /** Retrieves ruleset variable value */
+  public getRulesetVariableValue(_options: RulesetVariableRpcRequestOptions, _type: VariableValueTypes): Promise<VariableValueJSON> { return this.forward.apply(this, arguments); }
 }

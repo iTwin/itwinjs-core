@@ -9,7 +9,6 @@ import {
   ECPresentationRpcInterface,
   Node, NodeKey, NodePathElement,
   Content, Descriptor, SelectionInfo,
-  SettingValue, SettingValueTypes,
   ECPresentationError, ECPresentationStatus,
   Paged, RequestOptions, InstanceKey, KeySet, Ruleset,
 } from "@bentley/ecpresentation-common";
@@ -17,10 +16,12 @@ import {
   HierarchyRpcRequestOptions,
   ContentRpcRequestOptions,
   RulesetRpcRequestOptions,
-  UserSettingsRpcRequestOptions,
+  RulesetVariableRpcRequestOptions,
 } from "@bentley/ecpresentation-common/lib/ECPresentationRpcInterface";
+import { VariableValueJSON, VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
 import ECPresentation from "./ECPresentation";
 import IBackendECPresentationManager from "./IBackendECPresentationManager";
+import RulesetVariablesManager from "./RulesetVariablesManager";
 
 /**
  * The backend implementation of ECPresentationRpcInterface. All it's basically
@@ -118,11 +119,13 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return await this.getManager().rulesets(requestOptions.clientId).clear();
   }
 
-  public async setUserSettingValue(requestOptions: UserSettingsRpcRequestOptions, value: SettingValue): Promise<void> {
-    return await this.getManager().settings(requestOptions.rulesetId, requestOptions.clientId).setValue(requestOptions.settingId, value);
+  public async setRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, type: VariableValueTypes, value: VariableValueJSON): Promise<void> {
+    const vars = this.getManager().vars(requestOptions.rulesetId, requestOptions.clientId) as RulesetVariablesManager;
+    return await vars.setValue(requestOptions.variableId, type, value);
   }
 
-  public async getUserSettingValue(requestOptions: UserSettingsRpcRequestOptions, settingType: SettingValueTypes): Promise<any> {
-    return await this.getManager().settings(requestOptions.rulesetId, requestOptions.clientId).getValue(requestOptions.settingId, settingType);
+  public async getRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, type: VariableValueTypes): Promise<VariableValueJSON> {
+    const vars = this.getManager().vars(requestOptions.rulesetId, requestOptions.clientId) as RulesetVariablesManager;
+    return await vars.getValue(requestOptions.variableId, type);
   }
 }

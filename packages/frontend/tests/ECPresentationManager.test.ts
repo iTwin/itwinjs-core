@@ -9,7 +9,7 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, Content, Descriptor, ECPresentationRpcInterface, HierarchyRequestOptions, Paged, ContentRequestOptions, RequestOptions } from "@common/index";
 import ECPresentationManager from "@src/ECPresentationManager";
-import UserSettingsManager from "@src/UserSettingsManager";
+import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import RulesetManager from "@srcRulesetManager";
 import {
   createRandomDescriptor,
@@ -112,11 +112,11 @@ describe("ECPresentationManager", () => {
 
   });
 
-  describe("settings", () => {
+  describe("vars", () => {
 
-    it("returns settings manager", () => {
-      const settings = manager.settings(testData.rulesetId);
-      expect(settings).to.be.instanceOf(UserSettingsManager);
+    it("returns ruleset variables manager", () => {
+      const vars = manager.vars(testData.rulesetId);
+      expect(vars).to.be.instanceOf(RulesetVariablesManager);
     });
 
   });

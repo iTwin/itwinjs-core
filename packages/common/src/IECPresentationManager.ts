@@ -8,7 +8,7 @@ import { SelectionInfo, Descriptor, Content } from "./content";
 import { IModel } from "@bentley/imodeljs-common";
 import { InstanceKey } from "./EC";
 import KeySet from "./KeySet";
-import { IUserSettingsManager } from "./IUserSettingsManager";
+import { IRulesetVariablesManager } from "./IRulesetVariablesManager";
 import { IRulesetManager } from "./IRulesetManager";
 
 /** A generic request options type used for both hierarchy and content requests */
@@ -63,10 +63,10 @@ export interface IECPresentationManager<TIModel extends IModel> {
   rulesets(): IRulesetManager;
 
   /**
-   * Get settings manager for specific ruleset
-   * @param rulesetId Id of the ruleset to get settings manager for
+   * Get ruleset variables manager for specific ruleset
+   * @param rulesetId Id of the ruleset to get the vars manager for
    */
-  settings(rulesetId: string): IUserSettingsManager;
+  vars(rulesetId: string): IRulesetVariablesManager;
 
   /**
    * Retrieves root nodes.

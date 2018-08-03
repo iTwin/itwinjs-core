@@ -5,7 +5,7 @@
 
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
-  IRulesetManager, IUserSettingsManager,
+  IRulesetManager, IRulesetVariablesManager,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   RequestOptions, Paged, KeySet, InstanceKey,
@@ -36,7 +36,7 @@ export interface Props extends IBackendECPresentationManagerProps {
 /**
  * Backend ECPresentation manager which creates a separate presentation manager
  * for every client. This allows clients to configure managers independently, e.g.
- * have separate rulesets with same ids, user settings, etc.
+ * have separate rulesets with same ids, ruleset vars, etc.
  *
  * @hidden
  */
@@ -111,11 +111,11 @@ export default class MultiClientECPresentationManager implements IBackendECPrese
   }
 
   /**
-   * Get settings manager for specific ruleset and client
-   * @param rulesetId Id of the ruleset to get settings manager for
+   * Get ruleset variables manager for specific ruleset and client
+   * @param rulesetId Id of the ruleset to get variables manager for
    */
-  public settings(rulesetId: string, clientId?: string): IUserSettingsManager {
-    return this.getClientManager(this.getClientId(clientId)).settings(rulesetId);
+  public vars(rulesetId: string, clientId?: string): IRulesetVariablesManager {
+    return this.getClientManager(this.getClientId(clientId)).vars(rulesetId);
   }
 
   public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb>>): Promise<ReadonlyArray<Readonly<Node>>> {

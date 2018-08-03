@@ -23,7 +23,7 @@ export const enum LoggingNamespaces {
   ECPresentation_RulesEngine_Navigation_Cache = "ECPresentation.RulesEngine.Navigation.Cache",
   ECPresentation_RulesEngine_Threads = "ECPresentation.RulesEngine.Threads",
   ECPresentation_RulesEngine_Update = "ECPresentation.RulesEngine.Update",
-  ECPresentation_RulesEngine_UserSettings = "ECPresentation.RulesEngine.UserSettings",
+  ECPresentation_RulesEngine_RulesetVariables = "ECPresentation.RulesEngine.RulesetVariables",
 }
 
 // tslint:enable:naming-convention

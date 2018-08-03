@@ -9,10 +9,10 @@ import {
   IECPresentationManager, ECPresentationRpcInterface,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  IUserSettingsManager, IRulesetManager,
+  IRulesetVariablesManager, IRulesetManager,
   Paged, RequestOptions, KeySet, InstanceKey,
 } from "@bentley/ecpresentation-common";
-import UserSettingsManager from "./UserSettingsManager";
+import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
 
 /**
@@ -59,8 +59,8 @@ export default class ECPresentationManager implements IECPresentationManager<IMo
       return new RulesetManager(this._clientId);
   }
 
-  public settings(rulesetId: string): IUserSettingsManager {
-    return new UserSettingsManager(this._clientId, rulesetId);
+  public vars(rulesetId: string): IRulesetVariablesManager {
+    return new RulesetVariablesManager(this._clientId, rulesetId);
   }
 
   private toIModelTokenOptions<TOptions extends RequestOptions<IModelConnection>>(options: TOptions) {

@@ -11,8 +11,8 @@ import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-
 import { PageOptions, SelectionInfo, KeySet, ECPresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@common/index";
 import ECPresentationManager from "@src/SingleClientECPresentationManager";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "@src/NativePlatform";
-import UserSettingsManager from "@src/UserSettingsManager";
 import RulesetManager from "@src/RulesetManager";
+import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import {
   createRandomNodePathElementJSON, createRandomECInstanceNodeKey,
   createRandomECInstanceNodeKeyJSON,
@@ -135,14 +135,14 @@ describe("SingleClientECPresentationManager", () => {
 
   });
 
-  describe("settings", () => {
+  describe("vars", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
     const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
 
-    it("returns settings manager", () => {
-      const settings = manager.settings(faker.random.word());
-      expect(settings).to.be.instanceOf(UserSettingsManager);
+    it("returns variables manager", () => {
+      const vars = manager.vars(faker.random.word());
+      expect(vars).to.be.instanceOf(RulesetVariablesManager);
     });
 
   });

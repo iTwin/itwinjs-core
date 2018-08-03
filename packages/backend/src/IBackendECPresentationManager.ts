@@ -5,7 +5,7 @@
 
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { IECPresentationManager, IUserSettingsManager, IRulesetManager } from "@bentley/ecpresentation-common";
+import { IECPresentationManager, IRulesetVariablesManager, IRulesetManager } from "@bentley/ecpresentation-common";
 
 /**
  * Properties that can be used to configure [[IBackendECPresentationManager]]
@@ -41,9 +41,9 @@ export default interface IBackendECPresentationManager extends IECPresentationMa
   rulesets(clientId?: string): IRulesetManager;
 
   /**
-   * Get settings manager for specific ruleset
-   * @param rulesetId Id of the ruleset to get settings manager for
-   * @param clientId Id of the client requesting user settings
+   * Get ruleset variables manager for specific ruleset
+   * @param rulesetId Id of the ruleset to get variables manager for
+   * @param clientId Id of the client requesting variables manager
    */
-  settings(rulesetId: string, clientId?: string): IUserSettingsManager;
+  vars(rulesetId: string, clientId?: string): IRulesetVariablesManager;
 }
