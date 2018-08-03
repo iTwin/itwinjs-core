@@ -36,6 +36,8 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-tools": "0.110.0",
+    "@bentley/bwc": "^6.0.1",
+    "@bentley/icons-webfont": "^6.5.0",
     "@bentley/ui-core": "0.110.0",
     "@bentley/svg-icons": "^6.4.0",
     "@types/chai": "^4.1.4",
@@ -88,8 +90,6 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/bwc": "^6.0.1",
-    "@bentley/icons-webfont": "^6.5.0",
     "classnames": "^2.2.5",
     "react": "^16.4.1",
     "react-dom": "^16.4.1"

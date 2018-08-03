@@ -68,9 +68,8 @@ export class ToolbarWidgetDefBase extends WidgetDef {
       return (
         <Toolbar
           expandsTo={this.horizontalDirection}
-        >
-          {this.renderToolbarItems(this.horizontalItems)}
-        </Toolbar>
+          items={this.renderToolbarItems(this.horizontalItems)}
+        />
       );
     }
 
@@ -82,9 +81,8 @@ export class ToolbarWidgetDefBase extends WidgetDef {
       return (
         <Toolbar
           expandsTo={this.verticalDirection}
-        >
-          {this.renderToolbarItems(this.verticalItems)}
-        </Toolbar>
+          items={this.renderToolbarItems(this.verticalItems)}
+        />
       );
     }
 

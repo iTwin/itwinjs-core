@@ -199,30 +199,40 @@ export class Frontstage4 {
     });
 
     const horizontalToolbar =
-      <Toolbar>
-        <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-        <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-placeholder"
-          items={[myToolItem1, "tool2", infoMessageCommand, warningMessageCommand, errorMessageCommand, "item6", "item7", "item8"]}
-          direction={Direction.Bottom}
-          itemsInColumn={4}
-        />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <GroupButton
+              labelKey="SampleApp:buttons.toolGroup"
+              iconClass="icon-placeholder"
+              items={[myToolItem1, "tool2", infoMessageCommand, warningMessageCommand, errorMessageCommand, "item6", "item7", "item8"]}
+              direction={Direction.Bottom}
+              itemsInColumn={4}
+            />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Right}>
-        <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-        <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        <GroupButton
-          labelKey="SampleApp:buttons.anotherGroup"
-          iconClass="icon-placeholder"
-          items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
-          direction={Direction.Right}
-        />
-        <CommandButton commandId="addMessage" iconClass="icon-placeholder" commandHandler={commandHandler1} />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <GroupButton
+              labelKey="SampleApp:buttons.anotherGroup"
+              iconClass="icon-placeholder"
+              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+              direction={Direction.Right}
+            />
+            <CommandButton commandId="addMessage" iconClass="icon-placeholder" commandHandler={commandHandler1} />
+          </>
+        }
+      />;
 
     return (
       <ToolWidget
@@ -263,12 +273,17 @@ export class Frontstage4 {
   private getNavigationWidget(): React.ReactNode {
 
     const horizontalToolbar =
-      <Toolbar>
-        <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-        <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
-        <ToolButton toolId="openDialog" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
-        <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
+            <ToolButton toolId="openDialog" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
+            <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+          </>
+        }
+      />;
 
     const errorMessageCommand = new CommandItemDef({
       commandId: "errorMessage",
@@ -341,17 +356,22 @@ export class Frontstage4 {
     });
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Left}>
-        <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
-        <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-placeholder"
-          items={[successMessageCommand, informationMessageCommand, questionMessageCommand, warningMessageCommand, errorMessageCommand, openMessageBoxCommand, openMessageBoxCommand2]}
-          direction={Direction.Left}
-          itemsInColumn={7}
-        />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Left}
+        items={
+          <>
+            <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+            <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+            <GroupButton
+              labelKey="SampleApp:buttons.toolGroup"
+              iconClass="icon-placeholder"
+              items={[successMessageCommand, informationMessageCommand, questionMessageCommand, warningMessageCommand, errorMessageCommand, openMessageBoxCommand, openMessageBoxCommand2]}
+              direction={Direction.Left}
+              itemsInColumn={7}
+            />
+          </>
+        }
+      />;
 
     return (
       <NavigationWidget

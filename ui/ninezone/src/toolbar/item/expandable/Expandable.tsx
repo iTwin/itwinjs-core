@@ -5,34 +5,41 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
+import * as ReactDOM from "react-dom";
 import CommonProps from "../../../utilities/Props";
 import "./Expandable.scss";
-import * as ReactDOM from "react-dom";
 
+/** Properties of [[ExpandableItem]] component. */
 export interface ExpandableItemProps extends CommonProps {
-  panel?: React.ReactNode;
+  /** Actual history tray. I.e. [[Tray]] */
   history?: React.ReactNode;
+  /** Describes if item is active. */
   isActive?: boolean;
-  onIsHistoryExpandedChange?: (isExpanded: boolean) => void;
-  renderPanel?: (element: HTMLElement) => void;
-  renderHistory?: (element: HTMLElement) => void;
+  /** Function called when history tray should be extended or shrank. */
+  onIsHistoryExtendedChange?: (isExtended: boolean) => void;
+  /** Actual panel. I.e. [[Group]], [[NestedGroup]], [[Panel]] */
+  panel?: React.ReactNode;
+  /** Function called to determine where the history tray should be rendered. Injected by [[Toolbar]] */
+  renderHistoryTo?: () => HTMLElement;
+  /** Function called to determine where the panel should be rendered. Injected by [[Toolbar]] */
+  renderPanelTo?: () => HTMLElement;
 }
 
+/** Expandable toolbar item. */
 export default class ExpandableItem extends React.Component<ExpandableItemProps> {
-  private _panel: HTMLDivElement;
-  private _history: HTMLDivElement;
+  private _panel = document.createElement("div");
+  private _history = document.createElement("div");
 
-  public constructor(props: ExpandableItemProps) {
-    super(props);
+  public componentDidMount() {
+    if (this.props.renderPanelTo) {
+      const renderPanelTo = this.props.renderPanelTo();
+      renderPanelTo.appendChild(this._panel);
+    }
 
-    this._panel = document.createElement("div");
-    this._history = document.createElement("div");
-  }
-
-  public componentDidMount(): void {
-    this.props.renderPanel && this.props.renderPanel(this._panel);
-    this.props.renderHistory && this.props.renderHistory(this._history);
+    if (this.props.renderHistoryTo) {
+      const renderHistoryTo = this.props.renderHistoryTo();
+      renderHistoryTo.appendChild(this._history);
+    }
   }
 
   public render() {
@@ -59,10 +66,10 @@ export default class ExpandableItem extends React.Component<ExpandableItemProps>
   }
 
   private handleOnMouseEnter = () => {
-    this.props.onIsHistoryExpandedChange && this.props.onIsHistoryExpandedChange(true);
+    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true);
   }
 
   private handleOnMouseLeave = () => {
-    this.props.onIsHistoryExpandedChange && this.props.onIsHistoryExpandedChange(false);
+    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false);
   }
 }

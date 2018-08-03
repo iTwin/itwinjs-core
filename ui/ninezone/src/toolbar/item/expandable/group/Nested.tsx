@@ -5,20 +5,21 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import Panel, { PanelProps } from "./Panel";
+import withContainIn, { WithContainInProps } from "../../../../base/WithContainIn";
+import Panel from "./Panel";
+import { GroupProps } from "./Group";
 import Columns from "./Columns";
 import Title from "./Title";
 import BackArrow from "./BackArrow";
-
 import "./Nested.scss";
-import withContainIn, { WithContainInProps } from "../../../../base/WithContainIn";
 
-export interface NestedGroupProps extends PanelProps {
-  title?: string;
+/** Properties of [[NestedGroup]] component. */
+export interface NestedGroupProps extends GroupProps {
+  /** Function called when the back arrow is clicked. */
   onBack?: () => void;
 }
 
+/** Nested tool group component. Used in [[ExpandableItem]] component. */
 export default class NestedGroup extends React.Component<NestedGroupProps> {
   public render() {
     const className = classnames(
@@ -37,7 +38,7 @@ export default class NestedGroup extends React.Component<NestedGroupProps> {
           {this.props.title}
         </Title>
         <Columns>
-          {this.props.children}
+          {this.props.columns}
         </Columns>
       </Panel>
     );

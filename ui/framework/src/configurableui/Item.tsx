@@ -63,9 +63,13 @@ export class MessageItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 }
@@ -101,9 +105,13 @@ export class PageItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 }
@@ -152,9 +160,14 @@ export class ToolItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon isActive={FrontstageManager.activeToolId === this.toolId} key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        isActive={FrontstageManager.activeToolId === this.toolId}
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 
@@ -202,9 +215,13 @@ export class CommandItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 }

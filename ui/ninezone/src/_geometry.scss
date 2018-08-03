@@ -1,4 +1,4 @@
-@mixin triangle-common () {
+@mixin triangle-common {
   width: 0;
   height: 0;
   border-style: solid;
@@ -9,7 +9,7 @@
 }
 
 @mixin triangle-left($height: $width, $width: $height, $color: black) {
-  border-width: $height/2 $width $height/2 0;
+  border-width: ($height / 2) $width ($height / 2) 0;
 
   @include triangle-common;
   @include triangle-left-color($color);
@@ -20,7 +20,7 @@
 }
 
 @mixin triangle-top($height: $width, $width: $height, $color: black) {
-  border-width: 0 $width/2 $height $width/2;
+  border-width: 0 ($width / 2) $height ($width / 2);
 
   @include triangle-common;
   @include triangle-top-color($color);
@@ -31,7 +31,7 @@
 }
 
 @mixin triangle-right($height: $width, $width: $height, $color: black) {
-  border-width: $height/2 0 $height/2 $width;
+  border-width: ($height / 2) 0 ($height / 2) $width;
 
   @include triangle-common;
   @include triangle-right-color($color);
@@ -42,7 +42,7 @@
 }
 
 @mixin triangle-bottom($height: $width, $width: $height, $color: black) {
-  border-width: $height $width/2 0 $width/2;
+  border-width: $height ($width / 2) 0 ($width / 2);
 
   @include triangle-common;
   @include triangle-bottom-color($color);

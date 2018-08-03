@@ -5,21 +5,29 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Popover from "../../../../popup/popover/Triangle";
-import Direction from "../../../../utilities/Direction";
-import CommonProps from "../../../../utilities/Props";
+import Popover from "../../../popup/popover/Triangle";
+import Direction from "../../../utilities/Direction";
+import CommonProps, { NoChildrenProps } from "../../../utilities/Props";
 import "./Toggle.scss";
 
-export interface ToggleProps extends CommonProps {
-  isOpen?: boolean;
-  onIsOpenChange?: (isOpen: boolean) => void;
+/** Properties of [[Toggle]] component. */
+export interface ToggleProps extends CommonProps, NoChildrenProps {
+  /** Content of the toggle. */
+  content?: React.ReactNode;
+  /** Function called when the toggle is clicked. */
+  onClick?: () => void;
+  /** Content of the popover. */
   popoverContent?: React.ReactChild;
 }
 
+/**
+ * Tool settings toggle component.
+ * @note Used as content in [[Settings]] and [[Nested]] components
+ */
 export default class Toggle extends React.Component<ToggleProps> {
   public render() {
     const className = classnames(
-      "nz-widget-toolSettings-settings-popover-toggle",
+      "nz-widget-toolSettings-settings-toggle",
       this.props.className);
 
     return (
@@ -32,13 +40,12 @@ export default class Toggle extends React.Component<ToggleProps> {
           onClick={this.handleOnClick}
         >
           <div className="nz-content">
-            {this.props.children}
+            {this.props.content}
           </div>
           <div className="nz-triangle" />
         </div>
         <Popover
           className="nz-popover"
-          isOpen={this.props.isOpen}
           direction={Direction.Bottom}
           content={this.props.popoverContent}
         />
@@ -47,6 +54,6 @@ export default class Toggle extends React.Component<ToggleProps> {
   }
 
   private handleOnClick = () => {
-    this.props.onIsOpenChange && this.props.onIsOpenChange(!this.props.isOpen);
+    this.props.onClick && this.props.onClick();
   }
 }

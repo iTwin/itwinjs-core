@@ -6,17 +6,25 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import CommonProps from "../../../../../utilities/Props";
-
 import "./Tool.scss";
 
+/** Properties of [[Tool]] component. */
 export interface ToolProps extends CommonProps {
-  isActive?: boolean;
-  isFocused?: boolean;
-  onClick?: () => void;
+  /** Additional content, besides icon and label. */
+  children?: React.ReactNode;
+  /** Tool icon. */
   icon?: React.ReactNode;
+  /** Describes if the item is active. */
+  isActive?: boolean;
+  /** Describes if the item is focused. */
+  isFocused?: boolean;
+  /** Tool label. */
   label?: string;
+  /** Function called when the item is clicked. */
+  onClick?: () => void;
 }
 
+/** Tool entry of tool group panel. Used in [[Column]]. */
 export default class Tool extends React.Component<ToolProps> {
   public render() {
     const itemClassName = classnames(

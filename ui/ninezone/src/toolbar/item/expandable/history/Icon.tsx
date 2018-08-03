@@ -5,10 +5,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import "./Icon.scss";
 import Item, { HistoryItemProps } from "./Item";
+import "./Icon.scss";
 
+/**
+ * History item with icon. Used in [[Tray]] component.
+ * @note See [[HistoryItem]] for basic history item.
+ */
 export class Icon extends React.Component<HistoryItemProps> {
   public render() {
     const className = classnames(
@@ -20,7 +23,6 @@ export class Icon extends React.Component<HistoryItemProps> {
         className={className}
         style={this.props.style}
         isActive={this.props.isActive}
-        isDisabled={this.props.isDisabled}
         onClick={this.props.onClick}
       >
         {this.props.children}

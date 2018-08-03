@@ -12,7 +12,7 @@ import { ItemList, ItemMap } from "./ItemFactory";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
-import HistoryTray, { HistoryProps, addItem } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
+import HistoryTray, { History, DefaultHistoryManager } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
 import HistoryIcon from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Icon";
 import ExpandableItem from "@bentley/ui-ninezone/lib/toolbar/item/expandable/Expandable";
 import GroupColumn from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
@@ -141,8 +141,8 @@ interface State {
   trayId: string;
   backTrays: ReadonlyArray<string>;
   trays: Map<string, ToolGroupTray>;
-  history: HistoryProps<HistoryItem>;
-  isExpanded: boolean;
+  history: History<HistoryItem>;
+  isExtended: boolean;
   isToolGroupOpen: boolean;
 }
 
@@ -188,7 +188,7 @@ class GroupItem extends React.Component<Props, State> {
     const state = {
       groupItemDef,
       history: [],
-      isExpanded: false,
+      isExtended: false,
       isToolGroupOpen: false,
       trayId,
       backTrays: [],
@@ -219,15 +219,16 @@ class GroupItem extends React.Component<Props, State> {
       <ExpandableItem
         {...this.props}
         key={this.state.groupItemDef.id}
-        onIsHistoryExpandedChange={(isExpanded) => this.handleOnIsHistoryExpandedChange(isExpanded)}
+        onIsHistoryExtendedChange={(isExtended) => this.handleOnIsHistoryExtendedChange(isExtended)}
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
         <ToolbarIcon
           onClick={() => this.toggleIsToolGroupOpen()}
-        >
-          <Icon iconInfo={this.state.groupItemDef.iconInfo} />
-        </ToolbarIcon>
+          icon={
+            <Icon iconInfo={this.state.groupItemDef.iconInfo} />
+          }
+        />
       </ExpandableItem>
     );
   }
@@ -235,12 +236,13 @@ class GroupItem extends React.Component<Props, State> {
   private toggleIsToolGroupOpen = () => {
     this.setState((_prevState) => ({
       ..._prevState,
+      isExtended: false,
       isToolGroupOpen: !_prevState.isToolGroupOpen,
     }));
   }
 
-  private handleOnIsHistoryExpandedChange = (isExpanded: boolean) => {
-    this.setState((_prevState) => ({ isExpanded }));
+  private handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+    this.setState((_prevState) => ({ isExtended }));
   }
 
   private handleToolGroupItemClicked(trayKey: string, columnIndex: number, itemKey: string) {
@@ -252,7 +254,7 @@ class GroupItem extends React.Component<Props, State> {
           ...prevState,
           isExpanded: false,
           isToolGroupOpen: false,
-          history: addItem(key, item, prevState.history),
+          history: DefaultHistoryManager.addItem(key, item, prevState.history),
         };
       },
       () => {
@@ -269,7 +271,7 @@ class GroupItem extends React.Component<Props, State> {
         return {
           ...prevState,
           isExpanded: false,
-          history: addItem(item.columnIndex + "-" + item.itemKey, item, prevState.history),
+          history: DefaultHistoryManager.addItem(item.columnIndex + "-" + item.itemKey, item, prevState.history),
         };
       },
       () => {
@@ -289,9 +291,8 @@ class GroupItem extends React.Component<Props, State> {
     return (
       <HistoryTray
         direction={this.state.groupItemDef.direction}
-        isExpanded={this.state.isExpanded}
-      >
-        {
+        isExtended={this.state.isExtended}
+        items={
           this.state.history.map((entry) => {
             const tray = this.state.trays.get(entry.item.trayKey)!;
             const column = tray.columns.get(entry.item.columnIndex)!;
@@ -306,7 +307,7 @@ class GroupItem extends React.Component<Props, State> {
             );
           })
         }
-      </HistoryTray>
+      />
     );
   }
 
@@ -374,17 +375,15 @@ class GroupItem extends React.Component<Props, State> {
               backTrays,
             };
           })}
-        >
-          {columns}
-        </NestedToolGroup>
+          columns={columns}
+        />
       );
 
     return (
       <ToolGroupComponent
         title={tray.title}
-      >
-        {columns}
-      </ToolGroupComponent>
+        columns={columns}
+      />
     );
   }
 }

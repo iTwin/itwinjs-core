@@ -175,30 +175,40 @@ export class Frontstage3 {
     });
 
     const horizontalToolbar =
-      <Toolbar>
-        <PageButton pageId="my-page" iconClass="icon-placeholder" />
-        <MessageButton messageId="my-message" iconClass="icon-placeholder" direction={MessageDirection.UI} />
-        <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-        <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-placeholder"
-          items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8", "tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
-          direction={Direction.Bottom}
-          itemsInColumn={7}
-        />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <PageButton pageId="my-page" iconClass="icon-placeholder" />
+            <MessageButton messageId="my-message" iconClass="icon-placeholder" direction={MessageDirection.UI} />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <GroupButton
+              labelKey="SampleApp:buttons.toolGroup"
+              iconClass="icon-placeholder"
+              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8", "tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+              direction={Direction.Bottom}
+              itemsInColumn={7}
+            />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Right}>
-        <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-        <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        <GroupButton
-          labelKey="SampleApp:buttons.anotherGroup"
-          iconClass="icon-placeholder"
-          items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
-        />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <GroupButton
+              labelKey="SampleApp:buttons.anotherGroup"
+              iconClass="icon-placeholder"
+              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            />
+          </>
+        }
+      />;
 
     return (
       <ToolWidget
@@ -242,24 +252,33 @@ export class Frontstage3 {
     });
 
     const horizontalToolbar =
-      <Toolbar>
-        <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
-        <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-        <GroupButton
-          labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-attach"
-          items={[infoMessageCommand, warningMessageCommand, errorMessageCommand]}
-          direction={Direction.Bottom}
-          itemsInColumn={4}
-        />
-
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
+            <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+            <GroupButton
+              labelKey="SampleApp:buttons.toolGroup"
+              iconClass="icon-attach"
+              items={[infoMessageCommand, warningMessageCommand, errorMessageCommand]}
+              direction={Direction.Bottom}
+              itemsInColumn={4}
+            />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Right}>
-        <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-        <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
-      </Toolbar >;
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+            <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+          </>
+        }
+      />;
 
     return (
       <NavigationWidget

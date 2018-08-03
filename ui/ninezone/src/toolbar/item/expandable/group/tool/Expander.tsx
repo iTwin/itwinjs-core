@@ -5,19 +5,15 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../../utilities/Props";
-
-import Tool from "./Tool";
-
+import { Omit, NoChildrenProps } from "../../../../../utilities/Props";
+import Tool, { ToolProps } from "./Tool";
 import "./Expander.scss";
 
-export interface ExpanderProps extends CommonProps {
-  isFocused?: boolean;
-  onClick?: () => void;
-  icon?: React.ReactNode;
-  label?: string;
+/** Properties of [[Expander]] component. */
+export interface ExpanderProps extends Omit<ToolProps, "isActive" | "children">, NoChildrenProps {
 }
 
+/** Expandable entry of tool group panel. Used in [[Column]] hosted in [[NestedGroup]] component. */
 export default class Expander extends React.Component<ExpanderProps> {
   public render() {
     const { className, style, ...props } = this.props;

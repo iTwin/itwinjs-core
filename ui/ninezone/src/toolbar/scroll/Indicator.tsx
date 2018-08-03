@@ -5,33 +5,26 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../utilities/Props";
-import Direction, { DirectionHelpers } from "../../utilities/Direction";
+import { DirectionHelpers } from "../../utilities/Direction";
+import Chevron, { ChevronProps } from "./Chevron";
 import "./Indicator.scss";
-import Arrow from "./Arrow";
 
-export interface IndicatorProps extends CommonProps {
-  direction?: Direction;
-  onScroll?: () => void;
-}
-
-export default class Indicator extends React.Component<IndicatorProps> {
+/** Scroll indicator component. Used in [[Scrollable]] */
+export default class Indicator extends React.Component<ChevronProps> {
   public render() {
-    const className = classnames(
+    const { className, style, ...props } = this.props;
+    const indicatorClassName = classnames(
       "nz-toolbar-scroll-indicator",
-      DirectionHelpers.getCssClassName(this.props.direction || Direction.Left),
-      this.props.className);
+      DirectionHelpers.getCssClassName(this.props.direction),
+      className);
 
     return (
       <div
-        className={className}
-        style={this.props.style}
+        className={indicatorClassName}
+        style={style}
       >
-        <Arrow
-          className={"nz-indicator"}
-          onClick={this.props.onScroll}
-          direction={this.props.direction}
+        <Chevron
+          {...props}
         />
       </div>
     );

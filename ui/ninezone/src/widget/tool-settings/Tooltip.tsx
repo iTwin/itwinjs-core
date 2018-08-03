@@ -13,21 +13,47 @@ import "./Tooltip.scss";
 // tslint:disable-next-line:variable-name
 const DivWithTimeout = withTimeout(Div);
 
+/**
+ * Properties of [[ToolSettingsTooltip]] component.
+ * @note Component defaults [[ToolSettingsTooltipProps]]
+ */
 export interface ToolSettingsTooltipProps extends CommonProps {
+  /** Describes if the tooltip is visible. */
   isVisible?: boolean;
+  /** Function called when visibility of tooltip changes. */
   onIsVisibleChange?: (isVisible: boolean) => void;
+  /** Tooltip content. */
   stepString?: string;
+  /** Timeout (in ms) after which the tooltip is hidden. */
   timeout?: number;
 }
 
+/** Defaults of [[ToolSettingsTooltipProps]]. */
+export interface ToolSettingsTooltipDefaultProps extends ToolSettingsTooltipProps {
+  /** Defaults to 5000. */
+  timeout: number;
+}
+
+/** Tool settings tooltip. Displays the step string and is hidden after certain timeout. */
 export default class ToolSettingsTooltip extends React.Component<ToolSettingsTooltipProps> {
-  private static readonly DEFAULT_TIMEOUT = 5000;
+  public static readonly defaultProps: ToolSettingsTooltipDefaultProps = {
+    timeout: 5000,
+  };
+
+  public isWithDefaultProps(): this is { props: ToolSettingsTooltipDefaultProps } {
+    if (this.props.timeout === undefined)
+      return false;
+    return true;
+  }
 
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-tooltip",
       this.props.isVisible && "nz-is-visible",
       this.props.className);
+
+    if (!this.isWithDefaultProps())
+      return;
 
     return (
       <PopupTooltip
@@ -37,7 +63,7 @@ export default class ToolSettingsTooltip extends React.Component<ToolSettingsToo
         <DivWithTimeout
           className="nz-tool-icon"
           startTimeout={this.props.isVisible}
-          timeout={this.props.timeout || ToolSettingsTooltip.DEFAULT_TIMEOUT}
+          timeout={this.props.timeout}
           onTimeout={this.handleTimeout}
         >
           {this.props.children}

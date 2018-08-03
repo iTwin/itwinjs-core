@@ -5,25 +5,22 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import Props from "../../utilities/Props";
-
-import Activity from "./Activity";
+import Activity, { ActivityProps } from "./Activity";
 import "./Sticky.scss";
 
+/** Sticky message as defined in 9-Zone UI spec. Used in [[Footer]] component. */
 // tslint:disable-next-line:variable-name
-export const Sticky: React.StatelessComponent<Props> = (props) => {
-  const className = classnames(
-    "nz-footer-message-sticky",
-    props.className);
+export const Sticky: React.StatelessComponent<ActivityProps> = (props) => {
+  const { className, ...other } = props;
 
   return (
     <Activity
-      className={className}
-      style={props.style}
-    >
-      {props.children}
-    </Activity>
+      {...other}
+      className={classnames(
+        "nz-footer-message-sticky",
+        className,
+      )}
+    />
   );
 };
 

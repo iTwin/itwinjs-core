@@ -18,8 +18,4 @@ describe("<Item />", () => {
   it("renders active", () => {
     shallow(<Item isActive />).should.matchSnapshot();
   });
-
-  it("renders disabled", () => {
-    shallow(<Item isDisabled />).should.matchSnapshot();
-  });
 });

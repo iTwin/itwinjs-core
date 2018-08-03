@@ -41,12 +41,6 @@ exports[`<Item /> renders correctly 4`] = `
 />
 `;
 
-exports[`<Item /> renders disabled 1`] = `
-<div
-  className="nz-toolbar-item-expandable-history-item nz-is-disabled"
-/>
-`;
-
 exports[`<Item /> should apply style 1`] = `
 <div
   className="nz-backstage-item"

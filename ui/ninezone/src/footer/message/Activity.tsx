@@ -5,12 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import Props from "../../utilities/Props";
+import CommonProps from "../../utilities/Props";
 import "./Activity.scss";
 
+/** Properties of [[Activity]] component. */
+export interface ActivityProps extends CommonProps {
+  /** Message content. */
+  children?: React.ReactNode;
+}
+
+/** Activity message as defined in 9-Zone UI spec. Used in [[Footer]] component. */
 // tslint:disable-next-line:variable-name
-export const Activity: React.StatelessComponent<Props> = (props) => {
+export const Activity: React.StatelessComponent<ActivityProps> = (props) => {
   const className = classnames(
     "nz-footer-message-activity",
     props.className);
