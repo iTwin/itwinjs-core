@@ -1931,10 +1931,9 @@ export class ViewChangeRenderModeTool extends ViewTool {
     if (this.viewport.view.is3d()) {
       const view = this.viewport.view as ViewState3d;
       const displayStyle = view.getDisplayStyle3d();
-      const env = displayStyle.getEnvironment();
+      const env = displayStyle.environment;
       env.ground.display = this.renderOptions.get("groundplane")!; // Changes directly within displaystyle
       env.sky.display = this.renderOptions.get("skybox")!;  // Changes directly within displaystyle
-      displayStyle.setEnvironment(env);
     }
 
     this.viewport.view.viewFlags = viewflags;
