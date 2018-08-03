@@ -15,7 +15,6 @@ import { Geometry } from "../Geometry";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Triangulator } from "../topology/Triangulation";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
-import { IndexedPolyface } from "../polyface/Polyface";
 
 // tslint:disable:no-console
 
@@ -597,6 +596,7 @@ describe("ClipPrimitive", () => {
     let unionArea = 0;
     for (const convexSet of convexSetUnion.convexSets) {
       const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
+      ck.testExactNumber(trianglePoints.length, 3);
       unionRange.extendArray(trianglePoints);
       ck.testTrue(pointArrayIsSubsetOfOther(trianglePoints, clipShape.polygon), "All points of triangulated convex area of polygon should fall on boundary");
       unionArea += triangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
@@ -667,107 +667,10 @@ describe("ClipPrimitive", () => {
           edge.collectAroundFace((node: HalfEdge) => {
             subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
           });
-          console.log(subTrianglePoints);
         }
         return true;
       });
     }
-
-    ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  it.only("TEMP", () => {
-    const corners = [
-      Point3d.create(0, 0.375, 0.5),
-      Point3d.create(0.0625, 0.375, 0.5),
-      Point3d.create(0.0625, 0.4375, 0.5),
-      Point3d.create(0, 0.4375, 0.5),
-    ];
-    const clipShape = ClipShape.createShape([
-      Point3d.create(-32730165.424192525, 72492876.88582012),
-      Point3d.create(-32730512.927757926, 72492918.61437191),
-      Point3d.create(-32730751.37662525, 72490932.87971246),
-      Point3d.create(-32730403.873059846, 72490891.15116069),
-      Point3d.create(-32730056.369494457, 72490849.4226089),
-      Point3d.create(-32729708.865929063, 72490807.69405712),
-      Point3d.create(-32729361.362363663, 72490765.96550535),
-      Point3d.create(-32729007.62384324, 72490723.77726965),
-      Point3d.create(-32728634.002719615, 72490686.10150538),
-      Point3d.create(-32728259.541700356, 72490657.97407557),
-      Point3d.create(-32727884.484764554, 72490639.41330658),
-      Point3d.create(-32727509.0762795, 72490630.43129162),
-      Point3d.create(-32727133.560841583, 72490631.03388293),
-      Point3d.create(-32726758.183116812, 72490641.22068784),
-      Point3d.create(-32726383.18768154, 72490660.98506922),
-      Point3d.create(-32726008.818863016, 72490690.31414959),
-      Point3d.create(-32725658.84062531, 72490722.73647982),
-      Point3d.create(-32725310.334412348, 72490755.0384848),
-      Point3d.create(-32724961.828199383, 72490787.34048979),
-      Point3d.create(-32724613.32198642, 72490819.64249478),
-      Point3d.create(-32724264.81577346, 72490851.94449976),
-      Point3d.create(-32723916.309560493, 72490884.24650474),
-      Point3d.create(-32723567.803347528, 72490916.54850973),
-      Point3d.create(-32723752.386233155, 72492908.01258379),
-      Point3d.create(-32724100.892446116, 72492875.71057881),
-      Point3d.create(-32724449.39865908, 72492843.40857384),
-      Point3d.create(-32724797.904872045, 72492811.10656884),
-      Point3d.create(-32725146.41108501, 72492778.80456385),
-      Point3d.create(-32725494.917297963, 72492746.50255887),
-      Point3d.create(-32725843.423510935, 72492714.2005539),
-      Point3d.create(-32726190.460444693, 72492682.04865392),
-      Point3d.create(-32726513.93436301, 72492656.70681967),
-      Point3d.create(-32726837.949710444, 72492639.6293774),
-      Point3d.create(-32727162.295375653, 72492630.82745391),
-      Point3d.create(-32727486.76003214, 72492630.30678403),
-      Point3d.create(-32727811.132275824, 72492638.06770702),
-      Point3d.create(-32728135.200762875, 72492654.10516627),
-      Point3d.create(-32728458.75434737, 72492678.40871263),
-      Point3d.create(-32728781.582218844, 72492710.96251117),
-      Point3d.create(-32729122.913496338, 72492751.70016478),
-      Point3d.create(-32729470.41706174, 72492793.42871657),
-      Point3d.create(-32729817.920627132, 72492835.15726835),
-      Point3d.create(-32730165.424192525, 72492876.88582012),
-    ], undefined, undefined, Transform.createOriginAndMatrix(
-      Point3d.create(670.2948694161164, -1483.8975588452274, 0.5),
-      RotMatrix.createRowValues(
-        0.000020475076296013798, 0, 0,
-        0, 0.000020475076296002844, 0,
-        0, 0, 0.00005,
-      ),
-      ))!;
-
-    ck.testTrue(clipShape !== undefined);
-    const clipPlaneSet = clipShape.fetchClipPlanesRef();
-    ck.testExactNumber(clipPlaneSet.convexSets.length, 40);
-
-    const tileBeforeClipPolyface = IndexedPolyface.create(false, false);
-    for (const point of corners) {
-      const idx = tileBeforeClipPolyface.addPoint(point);
-      tileBeforeClipPolyface.addPointIndex(idx);
-    }
-    tileBeforeClipPolyface.terminateFacet();
-
-    const clipRegionPolyface = IndexedPolyface.create(false, false);
-    for (const convexSet of clipPlaneSet.convexSets) {
-      const planeIntersections = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
-      for (const intersection of planeIntersections) {
-        const idx = clipRegionPolyface.addPoint(intersection);
-        clipRegionPolyface.addPointIndex(idx);
-      }
-      clipRegionPolyface.terminateFacet();
-    }
-
-    const transformedClipPoints = clipShape.polygon;
-    clipShape.transformFromClip!.multiplyPoint3dArrayInPlace(transformedClipPoints);
-    console.log(transformedClipPoints);
-
-    /*
-    const jsonWriter = new IModelJson.Writer();
-    console.log(JSON.stringify(tileBeforeClipPolyface.dispatchToGeometryHandler(jsonWriter)));
-    console.log("============================================================================");
-    console.log(JSON.stringify(clipRegionPolyface.dispatchToGeometryHandler(jsonWriter)));
-    */
 
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
