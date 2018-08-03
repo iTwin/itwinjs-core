@@ -28,7 +28,7 @@ import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
-import { MobileRpcManager } from "../common/MobileRpcManager";
+import { MobileRpcManager, MobileRpcConfiguration } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import * as ttjs from "tooltip.js";
 
 type Tooltip = ttjs.default;
@@ -751,7 +751,7 @@ const docReady = new Promise((resolve) => {
 
 // main entry point.
 async function main() {
-  if (!MobileRpcManager.isMobile) {
+  if (!MobileRpcConfiguration.isMobileFrontend) {
     // retrieve, set, and output the global configuration variable
     await retrieveConfiguration(); // (does a fetch)
     console.log("Configuration", JSON.stringify(configuration));
@@ -763,9 +763,9 @@ async function main() {
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-  } else if (MobileRpcManager.isMobile) {
-    Object.assign(configuration, { standalone: true, iModelName: "assets/sample_documents/PhotoRealisticRendering.ibim" });
-    rpcConfiguration = MobileRpcManager.initializeMobile([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  } else if (MobileRpcConfiguration.isMobileFrontend) {
+    Object.assign(configuration, { standalone: true, iModelName: "sample_documents/04_Plant.i.ibim" });
+    rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     Config.devCorsProxyServer = "https://localhost:3001";
