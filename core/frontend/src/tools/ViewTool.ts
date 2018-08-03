@@ -71,6 +71,7 @@ export abstract class ViewTool extends InteractiveTool {
   public exitTool(): void { IModelApp.toolAdmin.exitViewTool(); }
 }
 
+/** @hidden */
 export abstract class ViewingToolHandle {
   constructor(public viewTool: ViewManip) { }
   public onReinitialize(): void { }
@@ -87,6 +88,7 @@ export abstract class ViewingToolHandle {
   public drawHandle(_context: DecorateContext, _hasFocus: boolean): void { }
 }
 
+/** @hidden */
 export class ViewHandleArray {
   public handles: ViewingToolHandle[] = [];
   public focus = -1;
@@ -195,7 +197,7 @@ export class ViewHandleArray {
   public hasHandle(handleType: ViewHandleType): boolean { return this.handles.some((handle) => handle.handleType === handleType); }
 }
 
-/** Base class for tools that manipulate the viewing frustum of a Viewport */
+/** Base class for tools that manipulate the frustum of a Viewport. */
 export abstract class ViewManip extends ViewTool {
   public viewport?: Viewport = undefined;
   public viewHandles: ViewHandleArray;
@@ -1931,10 +1933,9 @@ export class ViewChangeRenderModeTool extends ViewTool {
     if (this.viewport.view.is3d()) {
       const view = this.viewport.view as ViewState3d;
       const displayStyle = view.getDisplayStyle3d();
-      const env = displayStyle.getEnvironment();
+      const env = displayStyle.environment;
       env.ground.display = this.renderOptions.get("groundplane")!; // Changes directly within displaystyle
       env.sky.display = this.renderOptions.get("skybox")!;  // Changes directly within displaystyle
-      displayStyle.setEnvironment(env);
     }
 
     this.viewport.view.viewFlags = viewflags;

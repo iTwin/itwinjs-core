@@ -107,7 +107,9 @@ export namespace CodeScopeSpec {
  * A CodeSpec can identify an external system that maintains and/or assigns Codes.
  */
 export class CodeSpec {
+  /** The iModel holding this CodeSpec. */
   public iModel: IModel;
+  /** The id of this CodeSpec. */
   public id: Id64;
   public name: string;
   public specScopeType: CodeScopeSpec.Type;

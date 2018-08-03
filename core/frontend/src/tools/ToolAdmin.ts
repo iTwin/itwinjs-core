@@ -610,9 +610,10 @@ export class ToolAdmin {
     requestAnimationFrame(ToolAdmin.eventLoop);
   }
 
+  /** The idleTool handles events that are not otherwise processed. */
   public get idleTool(): IdleTool { return this._idleTool!; }
 
-  /** return true to filter (ignore) events to the given viewport */
+  /** Return true to filter (ignore) events to the given viewport */
   protected filterViewport(vp: Viewport) {
     if (undefined === vp)
       return true;
@@ -684,9 +685,7 @@ export class ToolAdmin {
     this.activeTool.onDynamicFrame(ev, context);
   }
 
-  /**
-   * This is invoked on each frame to update current input state and forward model motion events to tools.
-   */
+  /** This is invoked on a timer to update  input state and forward events to tools. */
   private async onTimerEvent(): Promise<void> {
     const tool = this.activeTool;
     const current = this.currentInputState;
@@ -988,6 +987,7 @@ export class ToolAdmin {
     return this.sendButtonEvent(ev);
   }
 
+  /** Called when any *modifier* (Shift, Alt, or Control) key is pressed or released. */
   private async onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<void> {
     if (wentDown === this.modifierKeyWentDown && modifier === this.modifierKey)
       return;
@@ -1225,31 +1225,31 @@ export class ToolAdmin {
   public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
   public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }
 
-  /** Can be called by tools that wish to emmulate mouse button down/up events for onTouchTap. */
+  /** Can be called by tools that wish to emulate mouse button down/up events for onTouchTap. */
   public async convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
     const pt2d = ev.getDisplayPoint();
     await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
     this.onButtonUp(ev.viewport!, pt2d, button, InputSource.Touch);
   }
 
-  /** Can be called by tools that wish to emmulate moving the mouse with a button depressed for onTouchMoveStart. */
+  /** Can be called by tools that wish to emulate moving the mouse with a button depressed for onTouchMoveStart. */
   public async convertTouchMoveStartToButtonDownAndMotion(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
     const pt2d = ev.getDisplayPoint();
     await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
     this.onMotion(ev.viewport!, pt2d, InputSource.Touch);
   }
 
-  /** Can be called by tools that wish to emmulate pressing the mouse button for onTouchStart or onTouchMoveStart. */
+  /** Can be called by tools that wish to emulate pressing the mouse button for onTouchStart or onTouchMoveStart. */
   public async convertTouchStartToButtonDown(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
     this.onButtonDown(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
   }
 
-  /** Can be called by tools that wish to emmulate releasing the mouse button for onTouchEnd or onTouchComplete. */
+  /** Can be called by tools that wish to emulate releasing the mouse button for onTouchEnd or onTouchComplete. */
   public async convertTouchEndToButtonUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
     this.onButtonUp(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
   }
 
-  /** Can be called by tools that wish to emmulate a mouse motion event for onTouchMove. */
+  /** Can be called by tools that wish to emulate a mouse motion event for onTouchMove. */
   public async convertTouchMoveToMotion(ev: BeTouchEvent): Promise<void> {
     this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
   }

@@ -951,18 +951,19 @@ export declare class NativeECPresentationManager implements IDisposable {
   public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<NativeECPresentationStatus, void>;
   /**
    * Set user setting value.
-   * @param ruleSetId Id of the ruleset setting is associated with.
-   * @param settingId Id of the setting.
-   * @param jsonValue Value and type of setting in json format.
+   * @param rulesetId Id of the ruleset variable is associated with
+   * @param variableId Id of the variable
+   * @param type Type of the variable
+   * @param value Variable value
    */
-  public setUserSetting(ruleSetId: string, settingId: string, jsonValue: string): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<NativeECPresentationStatus, void>;
   /**
-   * Set user setting value.
-   * @param ruleSetId Id of the ruleset setting is associated with.
-   * @param settingId Id of the setting.
-   * @param settingType Type of the setting..
+   * Set ruleset variable value
+   * @param rulesetId Id of the ruleset variable is associated with
+   * @param variableId Id of the variable
+   * @param type Type of the variable
    */
-  public getUserSetting(ruleSetId: string, settingId: string, settingType: string): ErrorStatusOrResult<NativeECPresentationStatus, any>;
+  public getRulesetVariableValue(rulesetId: string, variableId: string, type: string): ErrorStatusOrResult<NativeECPresentationStatus, any>;
   /**
    * Get serialized JSON string of available rulesets array
    * @param rulesetId Id of the lookup rulesets

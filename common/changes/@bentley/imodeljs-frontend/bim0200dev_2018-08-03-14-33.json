@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support cubemap skybox images.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

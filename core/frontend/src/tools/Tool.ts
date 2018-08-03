@@ -341,8 +341,10 @@ export abstract class InteractiveTool extends Tool {
 
   /** Invoked when the cursor is moving */
   public async onMouseMotion(_ev: BeButtonEvent): Promise<void> { }
+
   /** Invoked when the cursor is not moving */
   public async onMouseNoMotion(_ev: BeButtonEvent): Promise<void> { }
+
   /** Invoked when the cursor was previously moving, and has stopped moving. */
   public async onMouseMotionStopped(_ev: BeButtonEvent): Promise<void> { }
 
