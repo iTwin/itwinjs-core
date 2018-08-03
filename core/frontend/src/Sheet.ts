@@ -647,10 +647,9 @@ export namespace Attachments {
       // turn off skybox and groundplane
       if (view.isSpatialView()) {
         const spatial = view as SpatialViewState;
-        const env = spatial.getDisplayStyle3d().getEnvironment();
+        const env = spatial.getDisplayStyle3d().environment;
         env.ground.display = false;
         env.sky.display = false;
-        spatial.getDisplayStyle3d().setEnvironment(env);
       }
 
       const range = attachment.placement.calculateRange();

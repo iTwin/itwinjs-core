@@ -388,7 +388,7 @@ function updateRenderModeOptionsMap() {
   let groundplane = false;
   if (theViewport!.view.is3d()) {
     const view = theViewport!.view as ViewState3d;
-    const env = view.getDisplayStyle3d().getEnvironment();
+    const env = view.getDisplayStyle3d().environment;
     skybox = env.sky.display;
     groundplane = env.ground.display;
   }

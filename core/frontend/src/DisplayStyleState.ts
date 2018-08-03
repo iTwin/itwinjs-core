@@ -438,6 +438,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public skyboxMaterial: RenderMaterial | undefined;
   private _skyBoxParams?: SkyBox.CreateParams;
   private _skyBoxParamsLoaded?: boolean;
+  private _environment?: Environment;
+
   public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
@@ -476,8 +478,16 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.setStyle("sceneLights", sceneLights);
   }
 
-  public getEnvironment() { return new Environment(this.getStyle("environment")); }
-  public setEnvironment(env: Environment) { this.setStyle("environment", env); }
+  public get environment(): Environment {
+    if (undefined === this._environment)
+      this._environment = new Environment(this.getStyle("environment"));
+
+    return this._environment;
+  }
+  public set environment(env: Environment) {
+    this.setStyle("environment", env.toJSON());
+    this._environment = undefined;
+  }
 
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
@@ -486,7 +496,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public loadSkyBoxParams(system: RenderSystem): SkyBox.CreateParams | undefined {
     if (undefined === this._skyBoxParams && undefined === this._skyBoxParamsLoaded) {
       this._skyBoxParamsLoaded = false;
-      const skybox = this.getEnvironment().sky;
+      const skybox = this.environment.sky;
       skybox.loadParams(system, this.iModel).then((params?: SkyBox.CreateParams) => {
         this._skyBoxParams = params;
         this._skyBoxParamsLoaded = true;

@@ -1361,7 +1361,7 @@ export abstract class ViewState3d extends ViewState {
   /** @hidden */
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
-    if (!style3d.getEnvironment().sky.display)
+    if (!style3d.environment.sky.display)
       return;
 
     const vp = context.viewport;
@@ -1374,7 +1374,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
   public getGroundElevation(): number {
-    const env = this.getDisplayStyle3d().getEnvironment();
+    const env = this.getDisplayStyle3d().environment;
     return env.ground.elevation + this.iModel.globalOrigin.z;
   }
 
@@ -1382,7 +1382,7 @@ export abstract class ViewState3d extends ViewState {
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (undefined !== vp && !displayStyle.getEnvironment().ground.display)
+    if (undefined !== vp && !displayStyle.environment.ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
@@ -1423,7 +1423,7 @@ export abstract class ViewState3d extends ViewState {
       return;
     }
 
-    const ground = this.getDisplayStyle3d().getEnvironment().ground;
+    const ground = this.getDisplayStyle3d().environment.ground;
     if (!ground.display)
       return;
 
