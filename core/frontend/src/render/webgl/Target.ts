@@ -904,18 +904,12 @@ export abstract class Target extends RenderTarget {
     // They indicate this by supplying a background color with full transparency
     // Any other pixels are treated as fully-opaque as alpha has already been blended
     // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
-    /*
     const preserveBGAlpha = 0x00 === this.bgColor.getAlpha();
 
     // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
     let isEmptyImage = true;
     for (let i = 3; i < image.data.length; i += 4) {
-      const r = image.data[i - 3];
-      const g = image.data[i - 2];
-      const b = image.data[i - 1];
       const a = image.data[i];
-      if (r !== 255 || g !== 255 || b !== 255)
-        imageData[i] = 0xff; // tslint:disable-line
       if (!preserveBGAlpha || 0 < a) {
         image.data[i] = 0xff;
         isEmptyImage = false;
@@ -923,7 +917,6 @@ export abstract class Target extends RenderTarget {
     }
     if (isEmptyImage)
       return undefined;
-      */
     return image;
   }
 

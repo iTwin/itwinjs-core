@@ -1798,9 +1798,8 @@ export class DrawingViewState extends ViewState2d {
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  // DEBUG ONLY -------------------------------------------------------------------------------
-  /** A list of attachment Ids that are the only ones that should be loaded. If this member is undefined, all attachments will be loaded. */
-  private static attachmentIdsToShow?: Id64Array = ["0x15b0"];
+  /** DEBUG ONLY - A list of attachment Ids that are the only ones that should be loaded. If this member is undefined, all attachments will be loaded. */
+  private static DEBUG_FILTER_ATTACHMENTS?: Id64Array;
   // ------------------------------------------------------------------------------------------
 
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
@@ -1845,13 +1844,7 @@ export class SheetViewState extends ViewState2d {
     this._attachments.clear();
 
     // DEBUG ONLY --------------------------------------
-    const newAttachmentIds: Id64Array = [];
-    for (const id of this._attachmentIds)
-      if (SheetViewState.attachmentIdsToShow === undefined)
-        newAttachmentIds.push(id);
-      else if (SheetViewState.attachmentIdsToShow.indexOf(id) !== -1)
-        newAttachmentIds.push(id);
-    this._attachmentIds = newAttachmentIds;
+    this.debugFilterAttachments();
     // -------------------------------------------------
 
     // Query the attachments using the id list, and grab all of their corresponding view ids
@@ -1873,6 +1866,20 @@ export class SheetViewState extends ViewState2d {
       else
         this._attachments.add(new Attachments.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
     }
+  }
+
+  /**
+   * DEBUG ONLY - Filter the attachments such that only attachments with ids in the DEBUG_FILTER_ATTACHMENTS list will be loaded.
+   * If the static array is undefined, all attachments will be loaded.
+   */
+  private debugFilterAttachments() {
+    const newAttachmentIds: Id64Array = [];
+    for (const id of this._attachmentIds)
+      if (SheetViewState.DEBUG_FILTER_ATTACHMENTS === undefined)
+        newAttachmentIds.push(id);
+      else if (SheetViewState.DEBUG_FILTER_ATTACHMENTS.indexOf(id) !== -1)
+        newAttachmentIds.push(id);
+    this._attachmentIds = newAttachmentIds;
   }
 
   /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
@@ -1898,10 +1905,6 @@ export class SheetViewState extends ViewState2d {
           i++;
       }
     }
-
-    // DEBUG ONLY
-    // for (const attachment of this._attachments.list)
-    //  attachment.drawDebugBorder(context);
 
     // Draw all attachments that have a status of ready
     for (const attachment of this._attachments.list) {

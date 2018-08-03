@@ -244,13 +244,15 @@ export namespace Attachments {
   }
 
   class TileLoader3d extends AttachmentTileLoader {
-    private static _debugNoTile3dTextures = false; // set this to true to output color-coded polys instead of textures for debugging.
+    /** DEBUG ONLY - Setting this to true will result in only sheet tile polys being drawn, and not the textures they contain. */
+    private static DEBUG_NO_TEXTURES = false;
+    // ----------------------------------------------------------------------------------
     private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
       renderMode: RenderMode.SmoothShade,
       noCameraLights: true,
       noSourceLights: true,
       noSolarLight: true,
-      noTexture: TileLoader3d._debugNoTile3dTextures,
+      noTexture: TileLoader3d.DEBUG_NO_TEXTURES,
     }));
 
     public get maxDepth() { return 32; }
@@ -288,7 +290,9 @@ export namespace Attachments {
 
   /** An extension of Tile specific to rendering 3d attachments. */
   export class Tile3d extends Tile {
-    private static DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;  // set this to true to draw the inner edges of the tile polyfaces generated
+    /** DEBUG ONLY - This member will cause the sheet tile polyfaces to draw along with the underlying textures. */
+    private static DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
+    // ------------------------------------------------------------------------------------------
     private _tilePolyfaces: IndexedPolyface[] = [];
     private _placement: Tile3dPlacement;
 
@@ -500,13 +504,6 @@ export namespace Attachments {
             rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frust.points);
             viewport.setupViewFromFrustum(frust);
 
-            {
-              if (this._tilePolyfaces.length > 0) {
-                const points = this._tilePolyfaces[0].data.point.getPoint3dArray();
-                const range = Range3d.createArray(points);
-                console.log(JSON.stringify(range.toJSON()));  // tslint:disable-line
-              }
-            }
             viewport.renderTexture();
             if (viewport.texture === undefined) {
               this.setNotFound();
@@ -814,6 +811,9 @@ export namespace Attachments {
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies its view and its position on the sheet. */
   export abstract class Attachment {
+    /** DEBUG ONLY - The color of the attachment bounding box if drawn. */
+    public static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef = ColorDef.red;
+    // ---------------------------------------------------
     public id: Id64;
     public readonly view: ViewState;
     public scale: number;
@@ -821,7 +821,6 @@ export namespace Attachments {
     public clip: ClipVector;
     public displayPriority: number;
     protected _tree?: Tree;
-    public static readonly boundingBoxColor: ColorDef = ColorDef.red;   // ***DEBUG
 
     protected constructor(props: ViewAttachmentProps, view: ViewState) {
       this.id = new Id64(props.id);
@@ -916,8 +915,8 @@ export namespace Attachments {
       return clipReturn;
     }
 
-    // DEBUG ONLY
-    public drawDebugBorder(context: SceneContext) {
+    /** DEBUG ONLY - Draw a border around this attachment using its placement. */
+    public debugDrawBorder(context: SceneContext) {
       const origin = this.placement.origin;
       const bbox = this.placement.bbox;
       const rect: Point2d[] = [
@@ -928,7 +927,7 @@ export namespace Attachments {
         Point2d.create(origin.x, origin.y)];
 
       const builder = context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
-      builder.setSymbology(Attachment.boundingBoxColor, Attachment.boundingBoxColor, 2);
+      builder.setSymbology(Attachment.DEBUG_BOUNDING_BOX_COLOR, Attachment.DEBUG_BOUNDING_BOX_COLOR, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();
       context.outputGraphic(attachmentBorder);
