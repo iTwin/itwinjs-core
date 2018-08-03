@@ -6,7 +6,7 @@ import { spy } from "@helpers/Spies";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { ECPresentationError } from "@common/Error";
+import { ECPresentationError } from "@bentley/ecpresentation-common";
 import ECPresentation from "@src/ECPresentation";
 import SingleClientECPresentationManager from "@src/SingleClientECPresentationManager";
 import MultiClientECPresentationManager from "@src/MultiClientECPresentationManager";

@@ -7,7 +7,7 @@ const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, Content, Descriptor, ECPresentationRpcInterface, HierarchyRequestOptions, Paged, ContentRequestOptions, RequestOptions } from "@common/index";
+import { KeySet, Content, Descriptor, ECPresentationRpcInterface, HierarchyRequestOptions, Paged, ContentRequestOptions, RequestOptions } from "@bentley/ecpresentation-common";
 import ECPresentationManager from "@src/ECPresentationManager";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import RulesetManager from "@srcRulesetManager";

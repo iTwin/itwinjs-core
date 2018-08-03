@@ -8,7 +8,7 @@ import { spy } from "@helpers/Spies";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { ECPresentationRpcInterface, ECPresentationError } from "@common/index";
+import { ECPresentationRpcInterface, ECPresentationError } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@src/index";
 import { SelectionManager } from "@src/selection";
 import ECPresentationManager from "@src/ECPresentationManager";

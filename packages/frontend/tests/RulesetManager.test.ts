@@ -5,8 +5,7 @@ import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
-import { RegisteredRuleset } from "@common/index";
-import { ECPresentationRpcInterface } from "@common/index";
+import { RegisteredRuleset, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import RulesetManager from "@src/RulesetManager";
 
 describe("RulesetManager", () => {
