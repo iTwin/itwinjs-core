@@ -117,7 +117,7 @@ export class RpcInvocation {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
 
-    if (value instanceof ArrayBuffer) {
+    if (value instanceof Uint8Array) {
       return this.fulfill(value, RpcResponseType.Binary);
     } else {
       const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
@@ -147,7 +147,7 @@ export class RpcInvocation {
     return this.fulfill(result, RpcResponseType.Text);
   }
 
-  private fulfill(result: string | ArrayBuffer, type: RpcResponseType): RpcRequestFulfillment {
+  private fulfill(result: string | Uint8Array, type: RpcResponseType): RpcRequestFulfillment {
     const fulfillment = {
       result,
       status: this.protocol.getCode(this.status),

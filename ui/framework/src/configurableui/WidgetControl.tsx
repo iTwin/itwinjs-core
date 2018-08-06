@@ -4,7 +4,7 @@
 /** @module Widget */
 
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "./ConfigurableUiControl";
-import { WidgetDef } from "./WidgetDef";
+import { WidgetDef, WidgetState } from "./WidgetDef";
 
 // -----------------------------------------------------------------------------
 // Configurable Ui Widget Control
@@ -33,6 +33,10 @@ export class WidgetControl extends ConfigurableUiControl {
   public set widgetDef(w: WidgetDef) { this._widgetDef = w; }
 
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Widget; }
+
+  public setWidgetState(state: WidgetState): void {
+    this.widgetDef.setWidgetState(state);
+  }
 }
 
 export default WidgetControl;

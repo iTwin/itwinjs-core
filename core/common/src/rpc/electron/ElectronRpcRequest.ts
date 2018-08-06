@@ -40,7 +40,7 @@ export class ElectronRpcRequest extends RpcRequest {
   }
 
   /** Supplies response bytes. */
-  public getResponseBytes(): ArrayBuffer {
+  public getResponseBytes(): Uint8Array {
     const result = this.fulfillment.result;
     if (typeof (result) !== "string") {
       return result;

@@ -95,7 +95,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     }
   }
 
-  public async op12(): Promise<ArrayBuffer> {
+  public async op12(): Promise<Uint8Array> {
     return testInterfaceResource();
   }
 }

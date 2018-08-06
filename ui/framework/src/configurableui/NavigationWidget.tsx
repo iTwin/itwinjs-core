@@ -82,6 +82,7 @@ export interface NavigationWidgetState {
  */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
 
+  /** hidden */
   public readonly state: Readonly<NavigationWidgetState>;
 
   constructor(props: NavigationWidgetPropsEx, context?: any) {

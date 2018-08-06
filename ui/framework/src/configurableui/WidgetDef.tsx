@@ -8,7 +8,8 @@ import * as React from "react";
 import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
-import { WidgetWithDef } from "./WidgetWithDef";
+import { FrontstageManager } from "./FrontstageManager";
+
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 // -----------------------------------------------------------------------------
@@ -102,6 +103,8 @@ export class WidgetDef {
   public isFloatingStateWindowResizable: boolean = true;
   public isToolSettings: boolean = false;
   public isStatusBar: boolean = false;
+  public isDefaultOpen: boolean = false;
+  public defaultOpenUsed: boolean = false;
 
   public widgetType: WidgetType;
 
@@ -148,6 +151,9 @@ export class WidgetDef {
 
     if (widgetProps.reactElement !== undefined)
       this._widgetReactNode = widgetProps.reactElement;
+
+    if (this.defaultState === WidgetState.Open)
+      this.isDefaultOpen = true;
   }
 
   public get label(): string { return this._iconLabelSupport.label; }
@@ -167,9 +173,20 @@ export class WidgetDef {
   }
 
   public get reactElement(): React.ReactNode {
-    if (!this._widgetReactNode)
-      this._widgetReactNode = <WidgetWithDef widgetDef={this} />;
+    if (!this._widgetReactNode) {
+      const widgetControl = this.widgetControl;
+
+      if (widgetControl && widgetControl.reactElement)
+        this._widgetReactNode = widgetControl.reactElement;
+    }
 
     return this._widgetReactNode;
+  }
+
+  public setWidgetState(state: WidgetState): void {
+    this.isDefaultOpen = (state === WidgetState.Open);
+    this.defaultOpenUsed = false;
+
+    FrontstageManager.WidgetStateChangedEvent.emit({ widgetDef: this, widgetState: state });
   }
 }
