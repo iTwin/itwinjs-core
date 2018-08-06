@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 02 Aug 2018 14:48:42 GMT and should not be manually modified.
+This log was last generated on Mon, 06 Aug 2018 19:25:38 GMT and should not be manually modified.
+
+## 0.111.0
+Mon, 06 Aug 2018 19:25:38 GMT
+
+*Version update only*
 
 ## 0.110.0
 Thu, 02 Aug 2018 14:48:42 GMT
