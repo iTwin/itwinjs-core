@@ -276,7 +276,7 @@ export class Tile implements IDisposable {
 
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     const children = canSkipThisTile ? this.children : undefined;
-    if (!canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus)
+    if (canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus)
       args.markChildrenLoading();
 
     if (undefined !== children) {
