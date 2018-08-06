@@ -1930,4 +1930,12 @@ export class SheetViewState extends ViewState2d {
       context.setViewBackground(border);
     }
   }
+
+  public computeFitRange(): Range3d {
+    const size = this.sheetSize;
+    if (0 >= size.x || 0 >= size.y)
+      return super.computeFitRange();
+    else
+      return new Range3d(0, 0, -1, size.x, size.y, 1);
+  }
 }
