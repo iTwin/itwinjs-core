@@ -5,11 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import "./Icon.scss";
+import { NoChildrenProps, OmitChildrenProp } from "../../utilities/Props";
 import Item, { ItemProps } from "./Item";
+import "./Icon.scss";
 
-export default class Icon extends React.Component<ItemProps> {
+/** Properties of [[Icon]] component. */
+export interface IconProps extends OmitChildrenProp<ItemProps>, NoChildrenProps {
+  /** Actual icon of this toolbar item. */
+  icon?: React.ReactNode;
+}
+
+/** Toolbar item component that displays icon. Used in [[Toolbar]] */
+export default class Icon extends React.Component<IconProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-icon",
@@ -21,7 +28,7 @@ export default class Icon extends React.Component<ItemProps> {
         className={className}
       >
         <div className="nz-icon">
-          {this.props.children}
+          {this.props.icon}
         </div>
       </Item>
     );

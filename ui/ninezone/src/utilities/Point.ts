@@ -3,16 +3,20 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
+/** Describes [[Point]]. */
 export interface PointProps {
   readonly x: number;
   readonly y: number;
 }
 
+/** Describes and provides methods to work with 2d points. */
 export default class Point implements PointProps {
+  /** Creates point from [[PointProps]]. */
   public static create(pointProps: PointProps) {
     return new Point(pointProps.x, pointProps.y);
   }
 
+  /** Creates a new point. */
   public constructor(public readonly x = 0, public readonly y = 0) {
   }
 
@@ -27,22 +31,22 @@ export default class Point implements PointProps {
     return new Point(other.x - this.x, other.y - this.y);
   }
 
-  /** Offsets the point along the X and Y axes. */
+  /** @returns New [[Point]] that is offset along the X and Y axes. */
   public offset(offset: PointProps) {
     return new Point(this.x + offset.x, this.y + offset.y);
   }
 
-  /** Offsets the point along the X axis. */
+  /** @returns New [[Point]] that is offset along the X axis. */
   public offsetX(offset: number) {
     return new Point(this.x + offset, this.y);
   }
 
-  /** Offsets the point along the Y axis. */
+  /** @returns New [[Point]] that is offset along the Y axis. */
   public offsetY(offset: number) {
     return new Point(this.x, this.y + offset);
   }
 
-  /** Returns true if two points match. */
+  /** @returns True if position of this and other points are equal. */
   public equals(other: PointProps) {
     return other.x === this.x && other.y === this.y;
   }

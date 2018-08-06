@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -198,6 +198,9 @@ export namespace Attachments {
         this.setRect(new ViewRect(0, 0, dim, dim), true);
       }
     }
+
+    // override
+    protected adjustAspectRatio(_origin: Point3d, _delta: Vector3d) { }
   }
 
   /** Describes the location of a tile within the range of a quad subdivided in four parts. */
@@ -241,13 +244,15 @@ export namespace Attachments {
   }
 
   class TileLoader3d extends AttachmentTileLoader {
-    private static _debugNoTile3dTextures = false; // set this to true to output color-coded polys instead of textures for debugging.
+    /** DEBUG ONLY - Setting this to true will result in only sheet tile polys being drawn, and not the textures they contain. */
+    private static DEBUG_NO_TEXTURES = false;
+    // ----------------------------------------------------------------------------------
     private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
       renderMode: RenderMode.SmoothShade,
       noCameraLights: true,
       noSourceLights: true,
       noSolarLight: true,
-      noTexture: TileLoader3d._debugNoTile3dTextures,
+      noTexture: TileLoader3d.DEBUG_NO_TEXTURES,
     }));
 
     public get maxDepth() { return 32; }
@@ -285,6 +290,9 @@ export namespace Attachments {
 
   /** An extension of Tile specific to rendering 3d attachments. */
   export class Tile3d extends Tile {
+    /** DEBUG ONLY - This member will cause the sheet tile polyfaces to draw along with the underlying textures. */
+    private static DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
+    // ------------------------------------------------------------------------------------------
     private _tilePolyfaces: IndexedPolyface[] = [];
     private _placement: Tile3dPlacement;
 
@@ -529,32 +537,35 @@ export namespace Attachments {
       return this._children.length === 0 ? undefined : this._children;
     }
 
-    private static _drawDebugGraphics = false;
     public drawGraphics(args: Tile.DrawArgs) {
-      if (!Tile3d._drawDebugGraphics) {
-        super.drawGraphics(args);
+      super.drawGraphics(args);
+      if (!Tile3d.DRAW_DEBUG_POLYFACE_GRAPHICS) {
         return;
       }
 
       const polys = this._tilePolyfaces;
-      if (0 === polys.length)
+      if (polys.length === 0)
         return;
 
-      const fillColor = this.rootAsTree3d.tileColor;
-      const lineColor = fillColor.clone();
+      const lineColor = ColorDef.blue.clone();
+      const fillColor = ColorDef.green.clone();
+      fillColor.setAlpha(0x88);
       lineColor.setAlpha(0xff);
       const builder = args.context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
       builder.setSymbology(lineColor, fillColor, 2);
       for (const poly of polys) {
-        const lineString: Point3d[] = [];
-        for (const index of poly.data.pointIndex)
-          lineString.push(poly.data.point.getPoint3dAt(index));
-
-        builder.addShape(lineString);
-        builder.addLineString(lineString);
+        const polyVisitor = IndexedPolyfaceVisitor.create(poly, 0);
+        while (polyVisitor.moveToNextFacet()) {
+          const lineString: Point3d[] = [];
+          for (let i = 0; i < 3; i++)
+            lineString.push(polyVisitor.getPoint(i));
+          if (lineString.length > 0)
+            lineString.push(lineString[0].clone()); // close the loop
+          builder.addLineString(lineString);
+        }
       }
 
-      args.graphics.add(builder.finish()!);
+      args.graphics.add(builder.finish());
     }
   }
 
@@ -799,6 +810,9 @@ export namespace Attachments {
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies its view and its position on the sheet. */
   export abstract class Attachment {
+    /** DEBUG ONLY - The color of the attachment bounding box if drawn. */
+    public static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef = ColorDef.red;
+    // ---------------------------------------------------
     public id: Id64;
     public readonly view: ViewState;
     public scale: number;
@@ -806,7 +820,6 @@ export namespace Attachments {
     public clip: ClipVector;
     public displayPriority: number;
     protected _tree?: Tree;
-    public static readonly boundingBoxColor: ColorDef = ColorDef.red;   // ***DEBUG
 
     protected constructor(props: ViewAttachmentProps, view: ViewState) {
       this.id = new Id64(props.id);
@@ -901,8 +914,8 @@ export namespace Attachments {
       return clipReturn;
     }
 
-    // DEBUG ONLY
-    public drawDebugBorder(context: SceneContext) {
+    /** DEBUG ONLY - Draw a border around this attachment using its placement. */
+    public debugDrawBorder(context: SceneContext) {
       const origin = this.placement.origin;
       const bbox = this.placement.bbox;
       const rect: Point2d[] = [
@@ -913,7 +926,7 @@ export namespace Attachments {
         Point2d.create(origin.x, origin.y)];
 
       const builder = context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
-      builder.setSymbology(Attachment.boundingBoxColor, Attachment.boundingBoxColor, 2);
+      builder.setSymbology(Attachment.DEBUG_BOUNDING_BOX_COLOR, Attachment.DEBUG_BOUNDING_BOX_COLOR, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();
       context.outputGraphic(attachmentBorder);

@@ -53,8 +53,8 @@ exports[`<Indicator /> renders correctly 3`] = `
 <div
   className="nz-toolbar-scroll-indicator nz-direction-left"
 >
-  <Arrow
-    className="nz-indicator"
+  <Chevron
+    direction={0}
   />
 </div>
 `;

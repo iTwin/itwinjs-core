@@ -911,7 +911,6 @@ export abstract class Target extends RenderTarget {
     }
     if (isEmptyImage)
       return undefined;
-
     return image;
   }
 

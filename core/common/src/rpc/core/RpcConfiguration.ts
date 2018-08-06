@@ -116,7 +116,7 @@ export class RpcDirectRequest extends RpcRequest {
     this.protocol.fulfill(request).then((fulfillment) => {
       const result = fulfillment.result;
       this.fulfillment = JSON.parse(JSON.stringify(fulfillment));
-      if (result instanceof ArrayBuffer) {
+      if (result instanceof Uint8Array) {
         this.fulfillment.result = result;
       }
 
@@ -141,7 +141,7 @@ export class RpcDirectRequest extends RpcRequest {
     }
   }
 
-  public getResponseBytes(): ArrayBuffer {
+  public getResponseBytes(): Uint8Array {
     const result = this.fulfillment.result;
     if (typeof (result) !== "string") {
       return result;

@@ -5,18 +5,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import PointerCaptor from "../../../base/PointerCaptor";
 import Point, { PointProps } from "../../../utilities/Point";
-
-import "./Draggable.scss";
 import Tab, { TabProps } from "./Tab";
+import "./Draggable.scss";
 
+/** Properties of [[Draggable]] component. */
 export interface DraggableProps extends TabProps {
+  /** Function called when drag behavior changes. */
   onDragBehaviorChanged?: (isDragging: boolean) => void;
+  /** Function called when tab is dragged. */
   onDrag?: (dragged: PointProps) => void;
 }
 
+/** Draggable tab of rectangular widget. Used in [[Stacked]] component. */
 export default class Draggable extends React.Component<DraggableProps> {
   private _isDragging = false;
   private _isMouseDown = false;

@@ -7,37 +7,56 @@ import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Timer } from "@bentley/ui-core";
-
-import CommonProps from "../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import Rectangle from "../../utilities/Rectangle";
+import Css from "../../utilities/Css";
 import Activity from "./Activity";
 import "./Toast.scss";
-import Css from "../../utilities/Css";
-import Rectangle from "../../utilities/Rectangle";
 
-export interface ToastProps extends CommonProps {
+/** Properties of [[Toast]] component. */
+export interface ToastProps extends CommonProps, NoChildrenProps {
+  /** Element to which the toast will animate out to. */
   animateOutTo?: React.ReactInstance;
+  /** Message content. */
+  content?: React.ReactNode;
+  /** Function called when stage of the toast changes. */
   onStageChange?: (state: Stage) => void;
+  /** Function called when toast finishes to animate out. */
   onAnimatedOut?: () => void;
+  /** Describes current toast stage. */
   stage: Stage;
+  /** Describes timeout after which the toast starts to animate out (in ms). */
   timeout?: number;
 }
 
+/** Default properties of [[ToastProps]] used in [[Toast]] component. */
+export interface ToastDefaultProps extends Partial<ToastProps> {
+  /** Defaults to 2000. */
+  timeout: number;
+}
+
+/** Footer message that animates out to specified element after some timeout. Used in [[Footer]] component. */
 export default class Toast extends React.Component<ToastProps> {
-  private static readonly DEFAULT_TIMEOUT = 2000;
+  public static readonly defaultProps: ToastDefaultProps = {
+    timeout: 2000,
+  };
 
-  private _timer: Timer = new Timer(Toast.DEFAULT_TIMEOUT);
-  private _toast: React.RefObject<HTMLDivElement>;
+  private _timer = new Timer(Toast.defaultProps.timeout);
+  private _toast = React.createRef<HTMLDivElement>();
 
-  public constructor(props: ToastProps) {
-    super(props);
-
-    this._toast = React.createRef();
+  private isWithDefaultProps(): this is { props: ToastDefaultProps } {
+    if (this.props.timeout === undefined)
+      return false;
+    return true;
   }
 
   public componentDidMount(): void {
+    if (!this.isWithDefaultProps())
+      return;
+
     this._timer.setOnExecute(() => this.setStage(Stage.AnimatingOut));
 
-    this._timer.delay = this.props.timeout || Toast.DEFAULT_TIMEOUT;
+    this._timer.delay = this.props.timeout;
     this._timer.start();
   }
 
@@ -46,10 +65,13 @@ export default class Toast extends React.Component<ToastProps> {
   }
 
   public componentWillReceiveProps(nextProps: Readonly<ToastProps>): void {
+    if (!this.isWithDefaultProps())
+      return;
+
     if (nextProps.stage === Stage.AnimatingOut && this.props.stage !== Stage.AnimatingOut)
       this.animateOut();
     else if (nextProps.stage === Stage.Visible && this.props.stage !== Stage.Visible) {
-      this._timer.delay = this.props.timeout || Toast.DEFAULT_TIMEOUT;
+      this._timer.delay = this.props.timeout;
       this._timer.start();
       this.resetCss();
     }
@@ -71,7 +93,7 @@ export default class Toast extends React.Component<ToastProps> {
           ref={this._toast}
           onTransitionEnd={this.handleTransitionEnd}
         >
-          {this.props.children}
+          {this.props.content}
         </div>
       </Activity>
     );

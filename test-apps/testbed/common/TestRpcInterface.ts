@@ -104,7 +104,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward.apply(this, arguments);
   }
 
-  public op12(): Promise<ArrayBuffer> {
+  public op12(): Promise<Uint8Array> {
     return this.forward.apply(this, arguments);
   }
 }

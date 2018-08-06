@@ -2,7 +2,7 @@
 
 exports[`<Dialog /> renders correctly 1`] = `
 <Component
-  className="nz-footer-indicatorDialog-dialog"
+  className="nz-footer-toolAssistance-dialog"
   direction={1}
 />
 `;

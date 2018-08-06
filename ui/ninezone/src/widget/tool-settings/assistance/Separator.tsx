@@ -5,14 +5,16 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps from "../../../utilities/Props";
 import "./Separator.scss";
 
+/** Properties of [[Separator]] component. */
 export interface SeparatorProps extends CommonProps {
+  /** Label of separator. */
   label?: string;
 }
 
+/** Assistance item separator. Used in [[Assistance]] component. */
 export default class Separator extends React.Component<SeparatorProps> {
   public render() {
     const className = classnames(

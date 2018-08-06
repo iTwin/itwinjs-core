@@ -3,6 +3,21 @@
 exports[`<Triangle /> renders correctly 1`] = `
 <Component
   className="nz-popup-popover-triangle"
+  direction={0}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Triangle /> should set direction class 1`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={3}
 >
   <div
     className="nz-content"

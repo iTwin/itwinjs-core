@@ -6,6 +6,7 @@
 import Point, { PointProps } from "./Point";
 import Size, { SizeProps } from "./Size";
 
+/** Describes [[Rectangle]]. */
 export interface RectangleProps {
   readonly left: number;
   readonly top: number;
@@ -13,6 +14,7 @@ export interface RectangleProps {
   readonly bottom: number;
 }
 
+/** Available corners of [[Rectangle]]. */
 export enum Corner {
   TopLeft,
   TopRight,
@@ -20,6 +22,7 @@ export enum Corner {
   BottomLeft,
 }
 
+/** Available edges of [[Rectangle]]. */
 export enum Edge {
   Left,
   Top,
@@ -27,33 +30,41 @@ export enum Edge {
   Bottom,
 }
 
+/** Describes and provides methods to work with 2d bounds. */
 export default class Rectangle implements RectangleProps {
+  /** Creates rectangle from [[RectangleProps]]. */
   public static create(props: RectangleProps) {
     return new Rectangle(props.left, props.top, props.right, props.bottom);
   }
 
+  /** Creates rectangle from [[SizeProps]]. */
   public static createFromSize(size: SizeProps) {
     return new Rectangle(0, 0, size.width, size.height);
   }
 
+  /** Creates rectangle with specified bounds. */
   public constructor(public readonly left = 0, public readonly top = 0, public readonly right = 0, public readonly bottom = 0) {
   }
 
+  /** @returns Size of this rectangle. */
   public getSize() {
     const width = this.getWidth();
     const height = this.getHeight();
     return new Size(width, height);
   }
 
+  /** @returns Width of this rectangle. */
   public getWidth() {
     return this.right - this.left;
   }
 
+  /** @returns Height of this rectangle. */
   public getHeight() {
     return this.bottom - this.top;
   }
 
-  public getCorner(corner: Corner) {
+  /** @returns Position of specified corner. */
+  public getCorner(corner: Corner): Point {
     switch (corner) {
       case Corner.TopLeft: {
         return this.topLeft();
@@ -70,36 +81,61 @@ export default class Rectangle implements RectangleProps {
     }
   }
 
+  /**
+   * Inset the bounds of this rectangle.
+   * @note Negative arguments will increase the size of rectangle.
+   * @returns New [[Rectangle]] with modified bounds.
+   */
   public inset(left: number, top: number, right: number, bottom: number) {
     return new Rectangle(this.left + left, this.top + top, this.right - right, this.bottom - bottom);
   }
 
-  /** Offsets the rectangle along the X and Y axes. */
+  /**
+   * Offsets the rectangle along the X and Y axes.
+   * @returns New [[Rectangle]] with modified position.
+   */
   public offset(offset: PointProps) {
     return new Rectangle(this.left + offset.x, this.top + offset.y, this.right + offset.x, this.bottom + offset.y);
   }
 
-  /** Offsets the rectangle along the X axis. */
+  /**
+   * Offsets the rectangle along the X axis.
+   * @returns New [[Rectangle]] with modified position along X axis.
+   */
   public offsetX(offset: number) {
     return new Rectangle(this.left + offset, this.top, this.right + offset, this.bottom);
   }
 
-  /** Offsets the rectangle along the Y axis. */
+  /**
+   * Offsets the rectangle along the Y axis.
+   * @returns New [[Rectangle]] with modified position along Y axis.
+   */
   public offsetY(offset: number) {
     return new Rectangle(this.left, this.top + offset, this.right, this.bottom + offset);
   }
 
-  /** Moves the top left corner of rectangle to specified point. */
+  /**
+   * Moves the top left corner of rectangle to specified point.
+   * @returns New [[Rectangle]] with modified position.
+   */
   public setPosition(position: PointProps) {
     return new Rectangle(position.x, position.y, position.x + this.getWidth(), position.y + this.getHeight());
   }
 
-  /** Sets the height of the rectangle. */
+  /**
+   * Sets the height of the rectangle.
+   * @note Only [[Edge.Bottom]] is subject to change.
+   * @returns New [[Rectangle]] with modified height.
+   */
   public setHeight(height: number) {
     return new Rectangle(this.left, this.top, this.right, this.top + height);
   }
 
-  /** Sets the width of the rectangle. */
+  /**
+   * Sets the width of the rectangle.
+   * @note Only [[Edge.Right]] is subject to change.
+   * @returns New [[Rectangle]] with modified width.
+   */
   public setWidth(width: number) {
     return new Rectangle(this.left, this.top, this.left + width, this.bottom);
   }
@@ -115,24 +151,30 @@ export default class Rectangle implements RectangleProps {
     return false;
   }
 
-  /** Checks if point is within bounds of the rectangle. */
+  /**
+   * Checks if point is within bounds of the rectangle.
+   * @note Inclusive.
+   */
   public containsPoint(point: PointProps) {
     return point.x >= this.left && point.x <= this.right && point.y >= this.top && point.y <= this.bottom;
   }
 
-  /** Checks if rectangle is within bounds of other rectangle. */
+  /**
+   * Checks if rectangle is within bounds of other rectangle.
+   * @note Inclusive.
+   */
   public containsRectangle(other: RectangleProps) {
     return other.left >= this.left && other.right <= this.right && other.top >= this.top && other.bottom <= this.bottom;
   }
 
-  /** Contains this rectangle within other rectangle. Returns bounds of contained rectangle. */
+  /** @returns New [[Rectangle]] which is contained in other rectangle. */
   public containIn(other: RectangleProps): Rectangle {
     let contained: Rectangle = this.containVerticallyIn(other);
     contained = contained.containHorizontallyIn(other);
     return contained;
   }
 
-  /** Vertically contains this rectangle within other rectangle. Returns bounds of contained rectangle. */
+  /** @returns New [[Rectangle]] which is vertically contained in other rectangle. */
   public containVerticallyIn(other: RectangleProps): Rectangle {
     let contained: Rectangle = this;
     if (contained.bottom > other.bottom)
@@ -142,7 +184,7 @@ export default class Rectangle implements RectangleProps {
     return contained;
   }
 
-  /** Horizontally contains this rectangle within other rectangle. Returns bounds of contained rectangle. */
+  /** @returns New [[Rectangle]] which is horizontally contained in other rectangle. */
   public containHorizontallyIn(other: RectangleProps): Rectangle {
     let contained: Rectangle = this;
     if (contained.right > other.right)
@@ -152,25 +194,28 @@ export default class Rectangle implements RectangleProps {
     return contained;
   }
 
-  /** Returns top left point of the rectangle. */
+  /** @returns [[Corner.TopLeft]] position of this rectangle. */
   public topLeft(): Point {
     return new Point(this.left, this.top);
   }
 
-  /** Returns center point of the rectangle */
+  /** @returns Center point position of this rectangle. */
   public center(): Point {
     const x = this.left + (this.right - this.left) / 2;
     const y = this.top + (this.bottom - this.top) / 2;
     return new Point(x, y);
   }
 
-  /** Returns true if rectangle intersects other rectangle. */
+  /** @returns true if this rectangle intersects other rectangle. */
   public intersects(other: RectangleProps) {
     return this.left < other.right && this.right > other.left &&
       this.top < other.bottom && this.bottom > other.top;
   }
 
-  /** Merges two rectangles by the outer edges. */
+  /**
+   * Merges outer edges of this and other rectangles.
+   * @returns New [[Rectangle]] with merged bounds.
+   */
   public outerMergeWith(other: RectangleProps) {
     let left = this.left;
     let top = this.top;

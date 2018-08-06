@@ -3,7 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Theme */
 
+/** Describes theme of 9-Zone UI. */
 export default interface Theme {
+  /** Theme name. This will be injected to themed component class name as nz-theme-themeName  */
   name: string;
 }
 
@@ -25,11 +27,14 @@ class Dark implements Theme {
   }
 }
 
+/** Primary (default) theme of 9-Zone UI. */
 // tslint:disable-next-line:variable-name
 export const PrimaryTheme: Theme = new Primary();
 
+/** Light theme. */
 // tslint:disable-next-line:variable-name
 export const LightTheme: Theme = new Light();
 
+/** Dark theme. */
 // tslint:disable-next-line:variable-name
 export const DarkTheme: Theme = new Dark();

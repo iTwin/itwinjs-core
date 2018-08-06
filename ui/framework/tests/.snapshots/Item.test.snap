@@ -2,18 +2,19 @@
 
 exports[`CommandButton <CommandButton /> renders correctly 1`] = `
 <Icon
+  icon={
+    <Icon
+      iconInfo={
+        Object {
+          "iconClass": "icon-placeholder",
+          "iconSrc": undefined,
+        }
+      }
+    />
+  }
   key="addMessage"
   onClick={[Function]}
->
-  <Icon
-    iconInfo={
-      Object {
-        "iconClass": "icon-placeholder",
-        "iconSrc": undefined,
-      }
-    }
-  />
-</Icon>
+/>
 `;
 
 exports[`GroupButton <GroupButton /> renders correctly 1`] = `
@@ -66,17 +67,18 @@ exports[`GroupButton <GroupButton /> renders correctly 1`] = `
 
 exports[`ToolButton <ToolButton /> renders correctly 1`] = `
 <Icon
+  icon={
+    <Icon
+      iconInfo={
+        Object {
+          "iconClass": "icon-placeholder",
+          "iconSrc": undefined,
+        }
+      }
+    />
+  }
   isActive={false}
   key="tool1"
   onClick={[Function]}
->
-  <Icon
-    iconInfo={
-      Object {
-        "iconClass": "icon-placeholder",
-        "iconSrc": undefined,
-      }
-    }
-  />
-</Icon>
+/>
 `;
