@@ -77,6 +77,12 @@ export class RpcInvocation {
     try {
       try {
         this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
+
+        const backend = this.operation.interfaceVersion;
+        const frontend = this.request.operation.interfaceVersion;
+        if (backend !== frontend) {
+          throw new IModelError(BentleyStatus.ERROR, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
+        }
       } catch (error) {
         if (this.handleUnknownOperation(error)) {
           this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
