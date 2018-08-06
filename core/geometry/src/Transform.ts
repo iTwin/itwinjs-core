@@ -1728,9 +1728,7 @@ export class Transform implements BeJSONFunctions {
   public static get identity(): Transform {
     if (undefined === this._identity) {
       this._identity = Transform.createIdentity();
-      Object.freeze(this._identity);
-      Object.freeze(this._identity._origin);
-      Object.freeze(this._identity._matrix);
+      this._identity.freeze();
     }
 
     return this._identity;
