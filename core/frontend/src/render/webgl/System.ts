@@ -350,8 +350,6 @@ export class System extends RenderSystem {
   private _lineCodeTexture?: TextureHandle;
   private _techniques?: Techniques;
 
-  public static identityTransform = Transform.createIdentity();
-
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public get lineCodeTexture() { return this._lineCodeTexture; }
@@ -584,7 +582,7 @@ export class System extends RenderSystem {
         polyfaceBuilder.addQuadFacet(polygon, params);
 
       } else {
-        // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
+        // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
         const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
@@ -665,5 +663,3 @@ export class System extends RenderSystem {
     return sheetTileGraphics;
   }
 }
-
-Object.freeze(System.identityTransform);
