@@ -299,7 +299,7 @@ export class Tile implements IDisposable {
       return Tile.SelectParent.No;
     }
 
-    if (!this.isReady)
+    if (!this.isReady || (vis === Tile.Visibility.TooCoarse && this._children === undefined))
       args.insertMissing(this);
 
     return this.isParentDisplayable ? Tile.SelectParent.Yes : Tile.SelectParent.No;
