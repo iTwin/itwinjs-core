@@ -1724,6 +1724,7 @@ export class Transform implements BeJSONFunctions {
   // Constructor accepts and uses POINTER to content .. no copy here.
   private constructor(origin: XYZ, matrix: RotMatrix) { this._origin = origin; this._matrix = matrix; }
 
+  public static readonly identity = Transform.createIdentity();
   public freeze() { Object.freeze(this); Object.freeze(this._origin); this._matrix.freeze(); }
   public setFrom(other: Transform) { this._origin.setFrom(other._origin), this._matrix.setFrom(other._matrix); }
   /** Set this Transform to be an identity. */
@@ -2126,5 +2127,7 @@ export class Transform implements BeJSONFunctions {
       Transform.createOriginAndMatrix(origin, rMatrix, globalToNpc);
     }
   }
+}
 
-} // endClass Transform
+Transform.identity.freeze();
+RotMatrix.identity.freeze();
