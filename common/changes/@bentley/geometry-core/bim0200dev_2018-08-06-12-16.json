@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added Transform.identity",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "keith.bentley@bentley.com"
+}

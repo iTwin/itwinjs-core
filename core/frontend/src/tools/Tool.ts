@@ -202,13 +202,13 @@ export class Tool {
   public static hidden = false;
   /** The unique string that identifies this tool. This must be overridden in every subclass. */
   public static toolId = "";
-  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool */
+  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
-  private static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
-  private static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
-  private static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
   public constructor(..._args: any[]) { }
 
+  private static _keyin?: string;
+  private static _flyover?: string;
+  private static _description?: string;
   private static get localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
   private static get keyinKey() { return this.localizeBase + ".keyin"; }
   private static get flyoverKey() { return this.localizeBase + ".flyover"; }
