@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
-import "@helpers/Snapshots";
 import { OpenMode, Id64, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, Ruleset } from "@bentley/ecpresentation-common";

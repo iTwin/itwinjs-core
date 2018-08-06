@@ -4,7 +4,6 @@
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import "@helpers/Snapshots";
 import { NodePathElement } from "@bentley/ecpresentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";

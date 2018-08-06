@@ -14,7 +14,6 @@ import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresen
 import { PageOptions } from "@bentley/ui-components";
 import { TreeNodeItem } from "@bentley/ui-components";
 import ECPresentationTreeDataProvider from "@src/tree/DataProvider";
-import "@helpers/Snapshots";
 import { pageOptionsUiToPresentation } from "@src/tree/Utils";
 
 describe("TreeDataProvider", () => {

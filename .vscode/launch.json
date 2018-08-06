@@ -25,84 +25,128 @@
       "request": "launch",
       "name": "Tests: Common",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "program": "${workspaceFolder}/packages/common/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/packages/common",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
       "args": [
-        "--noTimeouts",
-        "--testsDir",
-        "./tests"
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
       ],
-      "runtimeArgs": [
-        "--inspect",
-        "--nolazy"
-      ]
+      "console": "integratedTerminal"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Backend",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "program": "${workspaceFolder}/packages/backend/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/packages/backend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
       "args": [
-        "--noTimeouts",
-        "--testsDir",
-        "./tests"
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
       ],
-      "runtimeArgs": [
-        "--inspect",
-        "--nolazy"
-      ]
+      "console": "integratedTerminal"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Frontend",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "program": "${workspaceFolder}/packages/frontend/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/packages/frontend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
       "args": [
-        "--noTimeouts",
-        "--testsDir",
-        "./tests"
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
       ],
-      "runtimeArgs": [
-        "--inspect",
-        "--nolazy"
-      ]
+      "console": "integratedTerminal"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Controls",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "program": "${workspaceFolder}/packages/controls/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/packages/controls",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
       "args": [
-        "--noTimeouts",
-        "--testsDir",
-        "./tests",
-        "--react"
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "-r",
+        "ignore-styles",
+        "-r",
+        "jsdom-global/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
       ],
-      "runtimeArgs": [
-        "--inspect",
-        "--nolazy"
-      ]
+      "console": "integratedTerminal"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Integration",
-      "protocol": "inspector",
-      "program": "${workspaceFolder}/scripts/run-tests.js",
-      "cwd": "${workspaceFolder}/packages/integration-tests",
+      "program": "${workspaceFolder}/packages/common/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/packages/common",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
       "args": [
-        "--noTimeouts"
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
       ],
-      "runtimeArgs": [
-        "--inspect",
-        "--nolazy"
-      ]
+      "console": "integratedTerminal"
     },
     {
       "type": "node",

@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import * as moq from "@helpers/Mocks";
-import * as spies from "@helpers/Spies";
 import * as faker from "faker";
 import { SortDirection } from "@bentley/ui-core";
 import { TableDataChangeEvent } from "@bentley/ui-components";
@@ -17,7 +16,6 @@ import ECPresentationTableDataProvider from "@src/table/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor, createRandomECInstanceKey } from "@helpers/random";
 import { PromiseContainer } from "@helpers/Promises";
-import "@helpers/Snapshots";
 
 /**
  * This is just a helper class to provide public access to
@@ -50,9 +48,9 @@ describe("TableDataProvider", () => {
   });
 
   const resetMemoizedCacheSpies = () => {
-    spies.restore();
+    (spy as any).restore();
     memoizedCacheSpies = {
-      getColumns: spies.spy.on(provider.getColumns.cache, "clear"),
+      getColumns: spy.on(provider.getColumns.cache, "clear"),
     };
   };
 
@@ -89,7 +87,7 @@ describe("TableDataProvider", () => {
   describe("invalidateCache", () => {
 
     it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", () => {
-      const onColumnsChangedSpy = spies.spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onColumnsChangedSpy = spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor());
 
@@ -104,7 +102,7 @@ describe("TableDataProvider", () => {
     });
 
     it("resets memoized columns and raises onColumnsChanged event when 'descriptorConfiguration' flag is set", () => {
-      const onColumnsChangedSpy = spies.spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onColumnsChangedSpy = spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
 
       provider.invalidateCache({ descriptorConfiguration: true });
 
@@ -113,7 +111,7 @@ describe("TableDataProvider", () => {
     });
 
     it("resets cached pages and raises onRowsChanged event when 'size' flag is set", async () => {
-      const onRowsChangedSpy = spies.spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onRowsChangedSpy = spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
 
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       getContentMock.setup((x) => x(moq.It.isAny())).returns(async () => createSingleRecordContent());
@@ -129,7 +127,7 @@ describe("TableDataProvider", () => {
     });
 
     it("resets cached pages and raises onRowsChanged event when 'content' flag is set", async () => {
-      const onRowsChangedSpy = spies.spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onRowsChangedSpy = spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
 
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       getContentMock.setup((x) => x(moq.It.isAny())).returns(async () => createSingleRecordContent());

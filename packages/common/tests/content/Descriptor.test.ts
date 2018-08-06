@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import "@helpers/Snapshots";
 import { createRandomDescriptorJson, createRandomDescriptor } from "@helpers/random";
 import { Descriptor, Field } from "@src/content";
 import { DescriptorJSON } from "@src/content/Descriptor";

@@ -3,11 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
 import * as React from "react";
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
-import * as spies from "@helpers/Spies";
 import {
   createRandomId,
   createRandomECInstanceKey,
@@ -15,7 +14,6 @@ import {
   createRandomDescriptor,
 } from "@helpers/random";
 import { PromiseContainer } from "@helpers/Promises";
-import "@helpers/Snapshots";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
@@ -256,7 +254,7 @@ describe("ViewportSelectionHandler", () => {
         origReplace.apply(imodelMock.object.selectionSet, arguments);
         replaceCalled.resolve();
       };
-      replaceSpy = spies.spy.on(imodelMock.object.selectionSet, SelectionSet.prototype.replace.name);
+      replaceSpy = spy.on(imodelMock.object.selectionSet, SelectionSet.prototype.replace.name);
     });
 
     it("ignores selection changes to other imodels", async () => {
@@ -477,17 +475,17 @@ describe("ViewportSelectionHandler", () => {
 
     it("ignores unified selection changes while reacting to viewport selection changes", async () => {
       const selectionSetSpies = [
-        spies.spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.add.name),
-        spies.spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.addAndRemove.name),
-        spies.spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.emptyAll.name),
-        spies.spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.invert.name),
-        spies.spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.remove.name),
-        spies.spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.replace.name),
+        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.add.name),
+        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.addAndRemove.name),
+        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.emptyAll.name),
+        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.invert.name),
+        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.remove.name),
+        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.replace.name),
       ];
       const ids = [createRandomId()];
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Add, new Set(ids));
       await selectionManagerCalled.promise;
-      selectionSetSpies.forEach((spy) => expect(spy).to.not.be.called());
+      selectionSetSpies.forEach((s) => expect(s).to.not.be.called());
     });
 
   });

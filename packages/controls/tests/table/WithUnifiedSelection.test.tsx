@@ -3,10 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
 import * as React from "react";
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
-import * as spies from "@helpers/Spies";
 import * as moq from "@helpers/Mocks";
 import { createRandomECInstanceKey } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -230,19 +229,19 @@ describe("Table withUnifiedSelection", () => {
       it("calls props callback and returns its result", () => {
         const row = createRandomRowItem();
         const result = faker.random.boolean();
-        const spy = moq.Mock.ofType<(row: RowItem) => boolean>();
-        spy.setup((x) => x(row)).returns(() => result).verifiable();
+        const callback = moq.Mock.ofType<(row: RowItem) => boolean>();
+        callback.setup((x) => x(row)).returns(() => result).verifiable();
 
         const table = shallow(<ECPresentationTable
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          isRowSelected={spy.object}
+          isRowSelected={callback.object}
         />);
 
         const propCallback = table.find(Table).prop("isRowSelected") as ((row: RowItem) => boolean);
         const actualResult = propCallback(row);
 
-        spy.verifyAll();
+        callback.verifyAll();
         expect(actualResult).to.eq(result);
       });
 
@@ -286,38 +285,38 @@ describe("Table withUnifiedSelection", () => {
 
       it("calls props callback and aborts when it returns false", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const spy = moq.Mock.ofType<(nodes: RowItem[], replace: boolean) => boolean>();
-        spy.setup((x) => x(rows, true)).returns(() => false).verifiable();
+        const callback = moq.Mock.ofType<(nodes: RowItem[], replace: boolean) => boolean>();
+        callback.setup((x) => x(rows, true)).returns(() => false).verifiable();
 
         const table = shallow(<ECPresentationTable
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onRowsSelected={spy.object}
+          onRowsSelected={callback.object}
         />);
 
         table.find(Table).prop("onRowsSelected")!(rows, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("calls props callback and adds row keys to selection manager when callback returns true", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const spy = moq.Mock.ofType<(nodes: RowItem[], replace: boolean) => boolean>();
-        spy.setup((x) => x(rows, false)).returns(() => true).verifiable();
+        const callback = moq.Mock.ofType<(nodes: RowItem[], replace: boolean) => boolean>();
+        callback.setup((x) => x(rows, false)).returns(() => true).verifiable();
 
         const table = shallow(<ECPresentationTable
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onRowsSelected={spy.object}
+          onRowsSelected={callback.object}
         />);
 
         table.find(Table).prop("onRowsSelected")!(rows, false);
 
         selectionHandlerMock.verify((x) => x.addToSelection(rows.map((r) => r.key), 1), moq.Times.once());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("replaces keys in selection manager", () => {
@@ -358,36 +357,36 @@ describe("Table withUnifiedSelection", () => {
 
       it("calls props callback and removes row keys from selection manager when callback returns true", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const spy = moq.Mock.ofType<(nodes: RowItem[]) => boolean>();
-        spy.setup((x) => x(rows)).returns(() => true).verifiable();
+        const callback = moq.Mock.ofType<(nodes: RowItem[]) => boolean>();
+        callback.setup((x) => x(rows)).returns(() => true).verifiable();
 
         const table = shallow(<ECPresentationTable
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onRowsDeselected={spy.object}
+          onRowsDeselected={callback.object}
         />);
 
         table.find(Table).prop("onRowsDeselected")!(rows);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(rows.map((r) => r.key), 1), moq.Times.once());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("calls props callback and aborts when it returns false", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const spy = moq.Mock.ofType<(nodes: RowItem[]) => boolean>();
-        spy.setup((x) => x(rows)).returns(() => false).verifiable();
+        const callback = moq.Mock.ofType<(nodes: RowItem[]) => boolean>();
+        callback.setup((x) => x(rows)).returns(() => false).verifiable();
 
         const table = shallow(<ECPresentationTable
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onRowsDeselected={spy.object}
+          onRowsDeselected={callback.object}
         />);
 
         table.find(Table).prop("onRowsDeselected")!(rows);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("does nothing when there's no selection handler", () => {
@@ -470,9 +469,9 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         const base = table.dive().instance() as Table;
-        const spy = spies.spy.on(base, Table.prototype.updateSelectedRows.name);
+        const s = spy.on(base, Table.prototype.updateSelectedRows.name);
         triggerSelectionChange(new KeySet(), 2);
-        expect(spy).to.not.be.called;
+        expect(s).to.not.be.called;
       });
 
       it("ignores selection changes with selection level higher then table's boundary level", () => {
@@ -483,9 +482,9 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         const base = table.dive().instance() as Table;
-        const spy = spies.spy.on(base, Table.prototype.updateSelectedRows.name);
+        const s = spy.on(base, Table.prototype.updateSelectedRows.name);
         triggerSelectionChange(new KeySet(), 3);
-        expect(spy).to.not.be.called;
+        expect(s).to.not.be.called;
       });
 
       it("calls updateSelectedRows on base Table on selection changes with selection level equal to table's boundary level", () => {
@@ -495,9 +494,9 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         const base = table.find(Table).instance() as Table;
-        const spy = spies.spy.on(base, Table.prototype.updateSelectedRows.name);
+        const s = spy.on(base, Table.prototype.updateSelectedRows.name);
         triggerSelectionChange(new KeySet(), 2);
-        expect(spy).to.be.called.once;
+        expect(s).to.be.called.once;
       });
 
     });

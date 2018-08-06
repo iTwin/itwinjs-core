@@ -11,13 +11,11 @@
   "scripts": {
     "build": "",
     "clean": "rimraf lib",
-    "//cover": "nyc npm test -- --coverage",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../out/docs/extract",
     "lint": "tslint ./",
-    "test": "node ../../scripts/run-tests.js --testsDir ./",
-    "//test-cover": "nyc npm test -- --coverage --report",
-    "test-cover": "npm test -- --report",
-    "watch": "npm test -- --watch"
+    "test": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --no-timeouts --file ./src/index.test.ts ./src/**/*.ts",
+    "test-cover": "npm run test",
+    "watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "~0.112.0",
@@ -58,6 +56,7 @@
   "devDependencies": {
     "@bentley/bentleyjs-tools": "~0.112.0",
     "cache-require-paths": "^0.3.0",
+    "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",
     "ts-node": "^3.3.0",
@@ -65,20 +64,5 @@
     "tslint": "^5.9.0",
     "tslint-consistent-codestyle": "^1.11.0",
     "typescript": "^2.8.3"
-  },
-  "nyc": {
-    "nycrc-path": "../../.nycrc",
-    "report-dir": "../../out/reports/coverage/integration",
-    "temp-directory": "../../out/reports/coverage/integration/.nyc_output",
-    "include": [
-      "../common/lib/**/*.js",
-      "../backend/lib/**/*.js",
-      "../frontend/lib/**/*.js",
-      "../controls/lib/**/*.js"
-    ],
-    "extension": [
-      ".js"
-    ],
-    "all": false
   }
 }

@@ -30,7 +30,6 @@ import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley
 import { KindOfQuantityInfo } from "@bentley/ecpresentation-common";
 import { PropertyJSON } from "@bentley/ecpresentation-common/lib/content/Property";
 import { ItemJSON } from "@bentley/ecpresentation-common/lib/content/Item";
-import "@helpers/Snapshots";
 import "@helpers/Promises";
 import "./IModeHostSetup";
 

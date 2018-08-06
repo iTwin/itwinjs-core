@@ -3,11 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
 import * as React from "react";
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
-import * as spies from "@helpers/Spies";
 import { createRandomECInstanceNodeKey } from "@helpers/random";
 import { createRandomTreeNodeItem } from "@helpers/UiComponents";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -179,19 +178,19 @@ describe("Tree withUnifiedSelection", () => {
       it("calls props callback and returns its result", () => {
         const node = createRandomTreeNodeItem();
         const result = faker.random.boolean();
-        const spy = moq.Mock.ofType<(node: TreeNodeItem) => boolean>();
-        spy.setup((x) => x(node)).returns(() => result).verifiable();
+        const callback = moq.Mock.ofType<(node: TreeNodeItem) => boolean>();
+        callback.setup((x) => x(node)).returns(() => result).verifiable();
 
         const tree = shallow(<ECPresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          selectedNodes={spy.object}
+          selectedNodes={callback.object}
         />);
 
         const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
         const actualResult = propCallback(node);
 
-        spy.verifyAll();
+        callback.verifyAll();
         expect(actualResult).to.eq(result);
       });
 
@@ -266,38 +265,38 @@ describe("Tree withUnifiedSelection", () => {
 
       it("calls props callback and adds node keys to selection manager when callback returns true", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
-        const spy = moq.Mock.ofType<(nodes: TreeNodeItem[], replace: boolean) => boolean>();
-        spy.setup((x) => x(nodes, false)).returns(() => true).verifiable();
+        const callback = moq.Mock.ofType<(nodes: TreeNodeItem[], replace: boolean) => boolean>();
+        callback.setup((x) => x(nodes, false)).returns(() => true).verifiable();
 
         const tree = shallow(<ECPresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onNodesSelected={spy.object}
+          onNodesSelected={callback.object}
         />);
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, false);
 
         selectionHandlerMock.verify((x) => x.addToSelection(nodes.map((n) => n.extendedData.key)), moq.Times.once());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny()), moq.Times.never());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("calls props callback and aborts when it returns false", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
-        const spy = moq.Mock.ofType<(nodes: TreeNodeItem[], replace: boolean) => boolean>();
-        spy.setup((x) => x(nodes, true)).returns(() => false).verifiable();
+        const callback = moq.Mock.ofType<(nodes: TreeNodeItem[], replace: boolean) => boolean>();
+        callback.setup((x) => x(nodes, true)).returns(() => false).verifiable();
 
         const tree = shallow(<ECPresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onNodesSelected={spy.object}
+          onNodesSelected={callback.object}
         />);
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny()), moq.Times.never());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny()), moq.Times.never());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("returns false when there's no selection handler", () => {
@@ -339,36 +338,36 @@ describe("Tree withUnifiedSelection", () => {
 
       it("calls props callback and removes node keys from selection manager when callback returns true", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
-        const spy = moq.Mock.ofType<(nodes: TreeNodeItem[]) => boolean>();
-        spy.setup((x) => x(nodes)).returns(() => true).verifiable();
+        const callback = moq.Mock.ofType<(nodes: TreeNodeItem[]) => boolean>();
+        callback.setup((x) => x(nodes)).returns(() => true).verifiable();
 
         const tree = shallow(<ECPresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onNodesDeselected={spy.object}
+          onNodesDeselected={callback.object}
         />);
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(nodes.map((n) => n.extendedData.key)), moq.Times.once());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("calls props callback and aborts when it returns false", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
-        const spy = moq.Mock.ofType<(nodes: TreeNodeItem[]) => boolean>();
-        spy.setup((x) => x(nodes)).returns(() => false).verifiable();
+        const callback = moq.Mock.ofType<(nodes: TreeNodeItem[]) => boolean>();
+        callback.setup((x) => x(nodes)).returns(() => false).verifiable();
 
         const tree = shallow(<ECPresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          onNodesDeselected={spy.object}
+          onNodesDeselected={callback.object}
         />);
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(moq.It.isAny()), moq.Times.never());
-        spy.verifyAll();
+        callback.verifyAll();
       });
 
       it("returns false when there's no selection handler", () => {
@@ -425,9 +424,9 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
-        const spy = spies.spy.on(tree.instance(), Tree.prototype.render.name);
+        const s = spy.on(tree.instance(), Tree.prototype.render.name);
         triggerSelectionChange(0);
-        expect(spy).to.be.called();
+        expect(s).to.be.called();
       });
 
       it("doesn't re-render tree on selection changes when selection level is not 0", () => {
@@ -435,9 +434,9 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
-        const spy = spies.spy.on(tree.instance(), Tree.prototype.render.name);
+        const s = spy.on(tree.instance(), Tree.prototype.render.name);
         triggerSelectionChange(1);
-        expect(spy).to.not.be.called();
+        expect(s).to.not.be.called();
       });
 
     });

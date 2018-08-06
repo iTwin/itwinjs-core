@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import * as lolex from "lolex";
 import * as moq from "@helpers/Mocks";
-import * as spies from "@helpers/Spies";
 import { using } from "@bentley/bentleyjs-core";
 import TemporaryStorage from "@src/TemporaryStorage";
 
@@ -21,23 +20,23 @@ describe("TemporaryStorage", () => {
   describe("constructor", () => {
 
     it("doesn't set up timer callback when interval is not set", () => {
-      const spy = spies.spy.on(clock, clock.setInterval.name);
+      const s = spy.on(clock, clock.setInterval.name);
       using(new TemporaryStorage<string>({ factory: () => "" }), () => {
-        expect(spy).to.not.be.called;
+        expect(s).to.not.be.called;
       });
     });
 
     it("doesn't set up timer callback when interval is set to 0", () => {
-      const spy = spies.spy.on(clock, clock.setInterval.name);
+      const s = spy.on(clock, clock.setInterval.name);
       using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 0 }), () => {
-        expect(spy).to.not.be.called;
+        expect(s).to.not.be.called;
       });
     });
 
     it("sets up timer callback when interval is set to more than 0", () => {
-      const spy = spies.spy.on(clock, clock.setInterval.name);
+      const s = spy.on(clock, clock.setInterval.name);
       using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 1 }), () => {
-        expect(spy).to.be.called.once;
+        expect(s).to.be.called.once;
       });
     });
 
@@ -46,10 +45,10 @@ describe("TemporaryStorage", () => {
   describe("dispose", () => {
 
     it("stops automatic cleanup when cleanup interval is set", () => {
-      const spy = spies.spy.on(clock, clock.clearInterval.name);
+      const s = spy.on(clock, clock.clearInterval.name);
       const storage = new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 1 });
       storage.dispose();
-      expect(spy).to.be.called.once;
+      expect(s).to.be.called.once;
     });
 
     it("calls cleanup handler for every value", () => {

@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { spy } from "@helpers/Spies";
+import { expect, spy } from "chai";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";

@@ -9,7 +9,6 @@ import {
   createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomECClassInfo, createRandomECInstanceKey, createRandomRelationshipPath,
 } from "@helpers/random";
-import "@helpers/Snapshots";
 import ContentBuilder from "@src/common/ContentBuilder";
 
 describe("ContentBuilder", () => {

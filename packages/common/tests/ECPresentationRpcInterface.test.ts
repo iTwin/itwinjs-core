@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
 import {
   ECPresentationRpcInterface,
   KeySet, Paged,
@@ -17,6 +17,10 @@ import { initializeRpcInterface } from "@helpers/RpcHelper";
 describe("ECPresentationRpcInterface", () => {
 
   describe("getClient", () => {
+
+    beforeEach(() => {
+      RpcManager.terminateInterface(ECPresentationRpcInterface);
+    });
 
     it("throws when not registered", () => {
       expect(() => ECPresentationRpcInterface.getClient()).to.throw();

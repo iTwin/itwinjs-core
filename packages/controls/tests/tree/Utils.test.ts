@@ -4,7 +4,6 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { createRandomECInstanceNode } from "@helpers/random";
-import "@helpers/Snapshots";
 import { createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation } from "@src/tree/Utils";
 import { PageOptions } from "@bentley/ui-components";
 

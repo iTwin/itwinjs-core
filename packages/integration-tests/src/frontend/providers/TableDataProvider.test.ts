@@ -9,7 +9,6 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import ECPresentationTableDataProvider from "@bentley/ecpresentation-controls/lib/table/DataProvider";
 import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
-import "@helpers/Snapshots";
 
 before(() => {
   initialize();

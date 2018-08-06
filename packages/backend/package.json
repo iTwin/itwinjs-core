@@ -20,7 +20,7 @@
     "build": "tsc -p ./src && npm run build:assets",
     "build:assets": "cpx ./assets/**/* ./lib/assets && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
-    "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
+    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name ecpresentation-backend",
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/ecpresentation-backend/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
@@ -28,9 +28,9 @@
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
-    "test": "node ../../scripts/run-tests.js --testsDir ./tests",
-    "test-cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
-    "watch": "npm test -- --watch"
+    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --file ./tests/index.test.ts tests/**/*.ts",
+    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.backend.xml",
+    "watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "~0.112.0",

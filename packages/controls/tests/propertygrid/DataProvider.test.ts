@@ -3,9 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
 import * as path from "path";
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import * as moq from "@helpers/Mocks";
-import * as spies from "@helpers/Spies";
 import * as faker from "faker";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { PropertyRecord } from "@bentley/ui-components";
@@ -20,7 +19,6 @@ import {
   createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath,
 } from "@helpers/random";
-import "@helpers/Snapshots";
 
 const favoritesCategoryName = "Favorite";
 
@@ -63,9 +61,8 @@ describe("PropertyDataProvider", () => {
   });
 
   const resetMemoizedCacheSpies = () => {
-    spies.restore();
     memoizedCacheSpies = {
-      getData: spies.spy.on(provider.getData.cache, "clear"),
+      getData: spy.on(provider.getData.cache, "clear"),
     };
   };
 
@@ -85,9 +82,9 @@ describe("PropertyDataProvider", () => {
     });
 
     it("raises onDataChanged event", () => {
-      const spy = spies.spy.on(provider.onDataChanged, provider.onDataChanged.raiseEvent.name);
+      const s = spy.on(provider.onDataChanged, provider.onDataChanged.raiseEvent.name);
       provider.invalidateCache({});
-      expect(spy).to.be.called();
+      expect(s).to.be.called();
     });
 
   });

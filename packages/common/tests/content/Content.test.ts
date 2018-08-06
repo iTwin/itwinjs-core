@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import "@helpers/Snapshots";
 import { createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJson } from "@helpers/random";
 import { Content } from "@src/content";
 import { ContentJSON } from "@src/content/Content";

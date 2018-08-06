@@ -10,7 +10,6 @@ import {
   createRandomECInstanceKey, createRandomECInstanceId,
   createRandomEntityProps,
 } from "@helpers/random";
-import "@helpers/Snapshots";
 
 describe("KeySet", () => {
 

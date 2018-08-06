@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { spy } from "@helpers/Spies";
+import { expect, spy } from "chai";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey } from "@bentley/ecpresentation-common";

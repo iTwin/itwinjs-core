@@ -23,7 +23,7 @@
     "build:scss": "cpx ./src/**/*.scss ./lib",
     "build:assets": "cpx ./public/**/* ./lib/public && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
-    "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
+    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name ecpresentation-controls",
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/ecpresentation-controls/file.json --onlyJson %TYPEDOC_THEME%",
@@ -31,9 +31,9 @@
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
-    "test": "node ../../scripts/run-tests.js --testsDir ./tests --react",
-    "test-cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
-    "watch": "npm test -- --watch"
+    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register -r ignore-styles -r jsdom-global/register --check-leaks --full-trace --file ./tests/index.test.ts tests/**/*.{ts,tsx}",
+    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.controls.xml",
+    "watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
     "lodash": "^4.14.0",
@@ -95,6 +95,13 @@
   "nyc": {
     "nycrc-path": "../../.nycrc",
     "temp-directory": "../../out/reports/coverage/controls/.nyc_output",
-    "report-dir": "../../out/reports/coverage/controls"
+    "report-dir": "../../out/reports/coverage/controls",
+    "require": [
+      "source-map-support/register",
+      "ts-node/register",
+      "tsconfig-paths/register",
+      "ignore-styles",
+      "jsdom-global/register"
+    ]
   }
 }

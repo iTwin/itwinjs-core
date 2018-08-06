@@ -1,23 +1,27 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import faker = require("faker");
-import { mapSourcePosition } from "source-map-support";
-
-// tslint:disable-next-line:no-var-requires
+const faker = require("faker");
+const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
 const chaiJestSnapshot = require("chai-jest-snapshot");
+const spies = require("chai-spies");
+const sms = require("source-map-support");
 
 faker.seed(1);
-chai.use(chaiJestSnapshot);
 
-// tslint:disable-next-line:only-arrow-functions
-before(function() {
+// setup chai
+chai.use(chaiAsPromised);
+chai.use(chaiJestSnapshot);
+chai.use(spies);
+
+before(function () {
   chaiJestSnapshot.resetSnapshotRegistry();
 });
-
-// tslint:disable-next-line:only-arrow-functions
-beforeEach(function() {
+after(function () {
+  delete require.cache[__filename];
+});
+beforeEach(function () {
   const currentTest = this.currentTest;
 
   // we want snapshot tests to use the same random data between runs
@@ -27,17 +31,16 @@ beforeEach(function() {
   faker.seed(seed);
 
   // set up snapshot name
-  const testFilePath: string = (currentTest as any).file;
-  const sourceFilePath = getSourceFilePath(testFilePath);
+  const testFilePath = currentTest.file;
+  const sourceFilePath = sms.mapSourcePosition({
+    source: testFilePath,
+    line: 3,
+    column: 1,
+  }).source;
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
 });
-
-const getSourceFilePath = (executedFilePath: string): string => {
-  return mapSourcePosition({
-    source: executedFilePath,
-    line: 3,
-    column: 1,
-  }).source;
-};
+beforeEach(() => {
+  chai.spy.restore();
+});

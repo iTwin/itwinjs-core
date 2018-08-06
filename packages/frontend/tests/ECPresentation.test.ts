@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import * as moq from "@helpers/Mocks";
-import { spy } from "@helpers/Spies";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";

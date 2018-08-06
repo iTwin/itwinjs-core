@@ -8,7 +8,6 @@ import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import ECPresentationPropertyDataProvider from "@bentley/ecpresentation-controls/lib/propertygrid/DataProvider";
-import "@helpers/Snapshots";
 
 before(() => {
   initialize();

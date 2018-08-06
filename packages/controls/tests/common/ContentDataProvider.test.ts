@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import * as moq from "@helpers/Mocks";
-import * as spies from "@helpers/Spies";
 import * as faker from "faker";
 import { PromiseContainer } from "@helpers/Promises";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -67,20 +66,20 @@ describe("ContentDataProvider", () => {
   });
 
   const verifyMemoizedCachesCleared = (expectCleared: boolean = true) => {
-    Object.values(memoizedCacheSpies).forEach((spy) => {
+    Object.values(memoizedCacheSpies).forEach((s) => {
       if (expectCleared)
-        expect(spy).to.be.called();
+        expect(s).to.be.called();
       else
-        expect(spy).to.not.be.called();
+        expect(s).to.not.be.called();
     });
   };
   const resetMemoizedCacheSpies = () => {
-    spies.restore();
+    (spy as any).restore();
     memoizedCacheSpies = {
-      defaultDescriptor: spies.spy.on((provider as any).getDefaultContentDescriptor.cache, "clear"),
-      descriptor: spies.spy.on(provider.publicGetContentDescriptor.cache, "clear"),
-      size: spies.spy.on(provider.publicGetContentSetSize.cache, "clear"),
-      content: spies.spy.on(provider.publicGetContent.cache, "clear"),
+      defaultDescriptor: spy.on((provider as any).getDefaultContentDescriptor.cache, "clear"),
+      descriptor: spy.on(provider.publicGetContentDescriptor.cache, "clear"),
+      size: spy.on(provider.publicGetContentSetSize.cache, "clear"),
+      content: spy.on(provider.publicGetContent.cache, "clear"),
     };
   };
 
@@ -233,7 +232,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("configures copy of descriptor returned by presentation manager", async () => {
-      const configureSpy = spies.spy.on(provider, Provider.prototype.configureContentDescriptor.name);
+      const configureSpy = spy.on(provider, Provider.prototype.configureContentDescriptor.name);
       const result = createRandomDescriptor(displayType);
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => result);

@@ -2,9 +2,7 @@
   "require": [
     "source-map-support/register",
     "ts-node/register",
-    "tsconfig-paths/register",
-    "jsdom-global/register",
-    "ignore-styles"
+    "tsconfig-paths/register"
   ],
   "include": [
     "**/*.ts",
@@ -15,9 +13,9 @@
     "**/*.test.tsx",
     "**/*.d.ts",
     "**/*.d.tsx",
-    "tests",
-    "lib",
-    "node_modules"
+    "tests/**/*",
+    "lib/**/*",
+    "node_modules/**/*"
   ],
   "extension": [
     ".ts",
@@ -28,5 +26,10 @@
     "html",
     "json"
   ],
-  "all": true
+  "all": true,
+  "check-coverage": true,
+  "statements": 100,
+  "functions": 100,
+  "branches": 100,
+  "lines": 100
 }
