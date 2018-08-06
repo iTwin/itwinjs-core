@@ -292,7 +292,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public onSuspend(): void { }
 
-  /** Notification of a vViewTool or InputCollector exiting and this tool is being unsuspended.
+  /** Notification of a ViewTool or InputCollector exiting and this tool is being unsuspended.
    *  @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
   public onUnsuspend(): void { }
@@ -321,7 +321,7 @@ export abstract class InteractiveTool extends Tool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the data button is pressed.
-   * @return ENo by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the data button is released.
@@ -367,9 +367,9 @@ export abstract class InteractiveTool extends Tool {
    * @param _wentDown up or down key event
    * @param _modifier The modifier key mask
    * @param _event The event that caused this call
-   * @return true to refresh view decorations or update dynamics.
+   * @return Yes to refresh view decorations or update dynamics.
    */
-  public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> { return false; }
+  public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Called when any key is pressed or released.
    * @param _wentDown up or down key event

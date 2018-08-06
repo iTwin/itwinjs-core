@@ -156,7 +156,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMethod.Box === method) {
       const outline = overlap ? undefined : new Set<string>();
       const offset = range.clone();
-      offset.expandInPlace(-2); // NEEDWORK: Why doesn't -1 work?!?
+      offset.expandInPlace(-2); // NEEDSWORK: Why doesn't -1 work?!?
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
@@ -365,8 +365,8 @@ export class SelectionTool extends PrimitiveTool {
 
   public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 
-  public async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> {
-    return modifier === BeModifierKeys.Shift && this.isSelectByPoints;
+  public async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> {
+    return (modifier === BeModifierKeys.Shift && this.isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onPostLocate(hit: HitDetail, _out?: LocateResponse): boolean {

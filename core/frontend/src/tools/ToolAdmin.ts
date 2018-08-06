@@ -993,16 +993,15 @@ export class ToolAdmin {
       return;
 
     const activeTool = this.activeTool;
-    const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, modifier, event) : false;
+    const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, modifier, event) : EventHandled.No;
 
     this.modifierKey = modifier;
     this.modifierKeyWentDown = wentDown;
 
-    if (!changed)
-      return;
-
-    IModelApp.viewManager.invalidateDecorationsAllViews();
-    this.updateDynamics();
+    if (changed === EventHandled.Yes) {
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+      this.updateDynamics();
+    }
   }
 
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
@@ -1022,11 +1021,9 @@ export class ToolAdmin {
 
     const keyEvent = event.ev as KeyboardEvent;
     this.currentInputState.setKeyQualifiers(keyEvent);
-    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
-    if (BeModifierKeys.None !== modifierKey)
-      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
 
-    return activeTool.onKeyTransition(wentDown, keyEvent);
+    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+    return (BeModifierKeys.None !== modifierKey) ? this.onModifierKeyTransition(wentDown, modifierKey, keyEvent) : activeTool.onKeyTransition(wentDown, keyEvent);
   }
 
   private onUnsuspendTool() {
