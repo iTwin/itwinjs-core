@@ -274,9 +274,12 @@ export abstract class RenderTarget implements IDisposable {
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
   public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
-  public static get displayPriorityFactor(): number { return this.frustumDepth2d / (this.maxDisplayPriority + 1); }
+  public static get minDisplayPriority(): number { return -this.maxDisplayPriority; }
 
-  public static depthFromDisplayPriority(priority: number): number { return this.displayPriorityFactor * priority; }
+  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d. */
+  public static depthFromDisplayPriority(priority: number): number {
+    return (priority - this.minDisplayPriority) / (this.maxDisplayPriority - this.minDisplayPriority) * this.frustumDepth2d;
+  }
 
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
