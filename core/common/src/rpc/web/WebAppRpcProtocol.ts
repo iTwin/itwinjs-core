@@ -48,7 +48,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
       res.status(fulfillment.status).send(response);
     } else if (fulfillment.type === RpcResponseType.Binary) {
-      const response = Buffer.from((fulfillment.result as ArrayBuffer));
+      const response = Buffer.from(fulfillment.result as Uint8Array);
       res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
       res.status(fulfillment.status).send(response);
     } else {
