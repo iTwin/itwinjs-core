@@ -2,6 +2,12 @@
   "name": "@bentley/imodeljs-i18n",
   "entries": [
     {
+      "version": "0.111.0",
+      "tag": "@bentley/imodeljs-i18n_v0.111.0",
+      "date": "Mon, 06 Aug 2018 19:25:38 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.110.0",
       "tag": "@bentley/imodeljs-i18n_v0.110.0",
       "date": "Thu, 02 Aug 2018 14:48:42 GMT",
