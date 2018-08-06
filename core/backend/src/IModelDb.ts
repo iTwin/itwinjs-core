@@ -890,10 +890,9 @@ export class IModelDb extends IModel {
   /** Load a file from the *Assets* directory of imodeljs-native
    * @param assetName The asset file name with path relative to the *Assets* directory.
    */
-  public static loadNativeAsset(assetName: string): string {
+  public static loadNativeAsset(assetName: string): Uint8Array {
     const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
-    const fileData = IModelJsFs.readFileSync(fileName) as Buffer;
-    return fileData.toString("base64");
+    return IModelJsFs.readFileSync(fileName) as Buffer;
   }
 
   /** Execute a test from native code

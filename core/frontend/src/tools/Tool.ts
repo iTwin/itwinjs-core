@@ -363,7 +363,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onMouseWheel(_ev: BeWheelEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
+  /** Called when Control, Shift, or Alt modifier keys are pressed or released.
    * @param _wentDown up or down key event
    * @param _modifier The modifier key mask
    * @param _event The event that caused this call
@@ -371,11 +371,11 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> { return false; }
 
-  /** Called when keys are pressed or released.
+  /** Called when any key is pressed or released.
    * @param _wentDown up or down key event
    * @param _keyEvent The KeyboardEvent
    * @return Yes to prevent further processing of this event
-   * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
+   * @see [[onModifierKeyTransition]]
    */
   public async onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 

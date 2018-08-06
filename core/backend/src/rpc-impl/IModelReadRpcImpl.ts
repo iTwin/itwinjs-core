@@ -165,7 +165,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
   public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> { return IModelDb.find(iModelToken).requestSnap(connectionId, props); }
   public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> { return IModelDb.find(iModelToken).cancelSnap(connectionId); }
-  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<string> { return IModelDb.loadNativeAsset(assetName); }
+  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<Uint8Array> { return IModelDb.loadNativeAsset(assetName); }
   public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
     const el = IModelDb.find(iModelToken).elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();

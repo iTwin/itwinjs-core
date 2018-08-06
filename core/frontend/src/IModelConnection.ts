@@ -250,10 +250,7 @@ export class IModelConnection extends IModel {
   /** Load a file from the native asset directory of the backend.
    * @param assetName Name of the asset file, with path relative to the *Assets* directory
    */
-  public async loadNativeAsset(assetName: string): Promise<Uint8Array> {
-    const val = await IModelReadRpcInterface.getClient().loadNativeAsset(this.iModelToken, assetName);
-    return new Uint8Array(atob(val).split("").map((c) => c.charCodeAt(0)));
-  }
+  public async loadNativeAsset(assetName: string): Promise<Uint8Array> { return IModelReadRpcInterface.getClient().loadNativeAsset(this.iModelToken, assetName); }
 
   /**
    * Execute an ECSQL query against the iModel.
