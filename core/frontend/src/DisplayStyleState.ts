@@ -120,31 +120,21 @@ export class GroundPlane implements GroundPlaneProps {
    * Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
    * Will store the ground colors used in the optional ColorDef array provided.
    */
-  public getGroundPlaneTextureSymb(aboveGround: boolean, groundColors?: ColorDef[]): Gradient.Symb {
-    if (aboveGround) {
-      if (this.aboveSymb) {
-        return this.aboveSymb;
-      }
-    } else {
-      if (this.belowSymb)
-        return this.belowSymb;
-    }
+  public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
+    let gradient = aboveGround ? this.aboveSymb : this.belowSymb;
+    if (undefined !== gradient)
+      return gradient;
 
     const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
     const color = aboveGround ? this.aboveColor : this.belowColor;
-    groundColors = groundColors !== undefined ? groundColors : [];
-    groundColors.length = 0;
-    groundColors.push(color.clone());
-    groundColors.push(color.clone());
-    groundColors.push(color.clone());
-
     const alpha = aboveGround ? 0x80 : 0x85;
+    const groundColors = [ color.clone(), color.clone(), color.clone() ];
     groundColors[0].setTransparency(0xff);
     groundColors[1].setTransparency(alpha);
     groundColors[2].setTransparency(alpha);
 
     // Get the possibly cached gradient from the system, specific to whether or not we want ground from above or below.
-    const gradient = new Gradient.Symb();
+    gradient = new Gradient.Symb();
     gradient.mode = Gradient.Mode.Spherical;
     gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
 
