@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Symbology */
 
-/** the type of a font. */
+/** The type of a font. */
 export const enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
-/** the properties of a Font. This includes a iModel local id, the font type, and the font name. */
+/** The properties of a Font. This includes a iModel local id, the font type, and the font name. */
 export interface FontProps { id: number; type: FontType; name: string; }
-/** the properties of a FontMap */
+/** The properties of a FontMap */
 export interface FontMapProps { fonts: FontProps[]; }
 
 /**

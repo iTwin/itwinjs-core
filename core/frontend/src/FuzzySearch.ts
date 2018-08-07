@@ -45,7 +45,7 @@ export class FuzzySearch<T> {
     if (!pattern || pattern.length < 2)
       return new FuzzySearchResults<T>(undefined);
 
-    // it is a multiword pattern if there's a space other than at the end of the pattern.
+    // it is a multi-word pattern if there's a space other than at the end of the pattern.
     const spaceIndex: number = pattern.indexOf(" ");
     const multiWord: boolean = (-1 !== spaceIndex) && (spaceIndex !== (pattern.length - 1));
     const options: Fuse.FuseOptions = multiWord ? this.onGetMultiWordSearchOptions() : this.onGetSingleWordSearchOptions();
@@ -120,16 +120,16 @@ export interface FuzzySearchResult<T> {
   getBoldMask(): boolean[];
 }
 
-// this function is added to each result to support the FuzzySearchResult interface.
+/** Added to each result to support the FuzzySearchResult interface. */
 function getResult(this: any) { return this.item; }
 
-// this function is added to each result to support the FuzzySearchResult interface.
+/** Added to each result to support the FuzzySearchResult interface. */
 function getMatchedKey(this: any): string { return (this.matches.length > 0) ? this.matches[0].key : this.matchedKey; }
 
-// this function is added to each result to support the FuzzySearchResult interface.
+/** Added to each result to support the FuzzySearchResult interface. */
 function getMatchedValue(this: any): string { return (this.matches.length > 0) ? this.matches[0].value : this.matchedValue; }
 
-// this function is added to each result to support the FuzzySearchResult interface.
+/** this function is added to each result to support the FuzzySearchResult interface. */
 function getBoldMask(this: any): boolean[] | undefined {
   if (this.boldMask)
     return this.boldMask;
@@ -156,7 +156,8 @@ function getBoldMask(this: any): boolean[] | undefined {
   return this.boldMask = boldMask;
 }
 
-/** This class is used to return the results of FuzzySearch.search. It is iterable, with each iteration
+/**
+ * This class is used to return the results of FuzzySearch.search. It is iterable, with each iteration
  * returning an object implementing the FuzzySearchResult interface.
  */
 export class FuzzySearchResults<T> implements Iterable<T> {

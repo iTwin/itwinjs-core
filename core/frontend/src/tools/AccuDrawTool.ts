@@ -1096,7 +1096,7 @@ class AccuDrawShortcutsTool extends InputCollector {
   public onPostInstall(): void { super.onPostInstall(); this.shortcut.doManipulationStart(); }
   public onCleanup(): void { this.shortcut.doManipulationStop(this.cancel); }
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this.shortcut.doManipulation(ev, false)) { this.cancel = false; this.exitTool(); } return EventHandled.No; }
-  public async onModelMotion(ev: BeButtonEvent) { this.shortcut.doManipulation(ev, true); }
+  public async onMouseMotion(ev: BeButtonEvent) { this.shortcut.doManipulation(ev, true); }
   public decorate(context: DecorateContext) { this.shortcut.onDecorate(context); }
   public exitTool() { super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
   public constructor(shortcut: AccuDrawTool) { super(); this.shortcut = shortcut; this.cancel = true; }

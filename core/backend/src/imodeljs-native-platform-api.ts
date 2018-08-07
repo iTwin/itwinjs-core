@@ -241,9 +241,16 @@ export declare class NativeDgnDb {
   /**
    * Get the properties of a Model
    * @param opts Identifies the model
-   * @param In case of success, the result property of the returned object will be the model's properties in stringified JSON format.
+   * @returns In case of success, the result property of the returned object will be the model's properties in stringified JSON format.
    */
   public getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;
+
+  /**
+   * Query for the extents of a GeometricModel.
+   * @param options Identifies the model
+   * @returns In case of success, the result property of the returned object will be the model's extents (AxisAlignedBox3d) in stringified JSON format.
+   */
+  public queryModelExtents(options: string): ErrorStatusOrResult<IModelStatus, string>;
 
   /**
    * Get the properties of a tile tree
@@ -944,33 +951,42 @@ export declare class NativeECPresentationManager implements IDisposable {
   public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<NativeECPresentationStatus, void>;
   /**
    * Set user setting value.
-   * @param ruleSetId Id of the ruleset setting is associated with.
-   * @param settingId Id of the setting.
-   * @param jsonValue Value and type of setting in json format.
+   * @param rulesetId Id of the ruleset variable is associated with
+   * @param variableId Id of the variable
+   * @param type Type of the variable
+   * @param value Variable value
    */
-  public setUserSetting(ruleSetId: string, settingId: string, jsonValue: string): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<NativeECPresentationStatus, void>;
   /**
-   * Set user setting value.
-   * @param ruleSetId Id of the ruleset setting is associated with.
-   * @param settingId Id of the setting.
-   * @param settingType Type of the setting..
+   * Set ruleset variable value
+   * @param rulesetId Id of the ruleset variable is associated with
+   * @param variableId Id of the variable
+   * @param type Type of the variable
    */
-  public getUserSetting(ruleSetId: string, settingId: string, settingType: string): ErrorStatusOrResult<NativeECPresentationStatus, any>;
-
+  public getRulesetVariableValue(rulesetId: string, variableId: string, type: string): ErrorStatusOrResult<NativeECPresentationStatus, any>;
+  /**
+   * Get serialized JSON string of available rulesets array
+   * @param rulesetId Id of the lookup rulesets
+   * @return Serialized JSON array of tuples [ruleset, hash]
+   */
+  public getRulesets(rulesetId: string): ErrorStatusOrResult<NativeECPresentationStatus, string>;
   /**
    * Adds ruleset that can be used by NativeECPresentationManager
-   * @param ruleSetJson Serialized JSON string of a ruleset to be added
+   * @param serializedRuleset Serialized JSON string of a ruleset to be added
+   * @return Hash of the ruleset
    */
-  public addRuleSet(ruleSetJson: string): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public addRuleset(serializedRuleset: string): ErrorStatusOrResult<NativeECPresentationStatus, string>;
   /**
    * Removes a ruleset
-   * @param ruleSetId Id of a ruleset to be removed
+   * @param rulesetId Id of a ruleset to be removed
+   * @param hash Hash of the ruleset to be removed
+   * @return True if removal was successful
    */
-  public removeRuleSet(ruleSetId: string): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public removeRuleset(rulesetId: string, hash: string): ErrorStatusOrResult<NativeECPresentationStatus, boolean>;
   /**
    * Removes all rulesets
    */
-  public clearRuleSets(): ErrorStatusOrResult<NativeECPresentationStatus, void>;
+  public clearRulesets(): ErrorStatusOrResult<NativeECPresentationStatus, void>;
   /**
    * Handles an ECPresentation manager request
    * @param db The db to run the request on
