@@ -1629,6 +1629,7 @@ export class Viewport {
 export class OffScreenViewport extends Viewport {
   public constructor(viewState: ViewState) {
     super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+    this.sync.setValidDecorations();  // decorations are not incorporated offscreen
   }
 
   public get viewRect(): ViewRect { return this.target.viewRect; }
