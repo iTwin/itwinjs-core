@@ -5,7 +5,6 @@ import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SettingValueTypes } from "@bentley/ecpresentation-common";
 import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 
 before(() => {
@@ -18,7 +17,7 @@ after(() => {
 
 describe("Multiple frontends for one backend", async () => {
 
-  describe("User Settings", () => {
+  describe("Ruleset Variables", () => {
 
     let imodel: IModelConnection;
     let frontends: ECPresentationManager[];
@@ -35,10 +34,10 @@ describe("Multiple frontends for one backend", async () => {
       await imodel.closeStandalone();
     });
 
-    it("Handles multiple simultaneous requests from different frontends with user settings", async () => {
-      const rulesetId = "UserSettings";
+    it("Handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
+      const rulesetId = "RulesetVariables";
       for (let i = 0; i < 100; ++i) {
-        frontends.forEach((f, fi) => f.settings(rulesetId).setValue("setting_id", { type: SettingValueTypes.String, value: `${i}_${fi}` }));
+        frontends.forEach((f, fi) => f.vars(rulesetId).setString("variable_id", `${i}_${fi}`));
         const nodes = await Promise.all(frontends.map((f) => f.getRootNodes({ imodel, rulesetId })));
         frontends.forEach((_f, fi) => {
           expect(nodes[fi][0].label).to.eq(`${i}_${fi}`);

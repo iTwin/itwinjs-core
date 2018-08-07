@@ -6,7 +6,8 @@ import * as moq from "typemoq";
 import * as faker from "faker";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
-import { ECPresentationError, SettingValueTypes } from "@common/index";
+import { ECPresentationError } from "@bentley/ecpresentation-common/lib";
+import { VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
 import "@helpers/Snapshots";
 import "@helpers/Promises";
 import "./IModeHostSetup";
@@ -109,47 +110,60 @@ describe("default NativePlatform", () => {
     expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(ECPresentationError, "test");
   });
 
-  it("calls addon's addRuleSet", async () => {
-    const ruleset = { ruleSetId: "" };
+  it("calls addon's getRulesets", async () => {
+    const ruleset = { id: "", rules: [] };
+    const hash = faker.random.uuid();
+    const serializedResult = JSON.stringify([{ ruleset, hash }]);
+    addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: serializedResult })).verifiable();
+    const result = await nativePlatform.getRulesets(ruleset.id);
+    expect(result).to.eq(serializedResult);
+    addonMock.verifyAll();
+  });
+
+  it("calls addon's addRuleset", async () => {
+    const ruleset = { id: "", rules: [] };
+    const hash = faker.random.uuid();
     const serializedRuleset = JSON.stringify(ruleset);
-    addonMock.setup((x) => x.addRuleSet(serializedRuleset)).returns(() => ({})).verifiable();
-    await nativePlatform.addRuleSet(serializedRuleset);
+    addonMock.setup((x) => x.addRuleset(serializedRuleset)).returns(() => ({ result: hash })).verifiable();
+    const result = await nativePlatform.addRuleset(serializedRuleset);
+    addonMock.verifyAll();
+    expect(result).to.eq(hash);
+  });
+
+  it("calls addon's removeRuleset", async () => {
+    addonMock.setup((x) => x.removeRuleset("test id", "test hash")).returns(() => ({ result: true })).verifiable();
+    const result = await nativePlatform.removeRuleset("test id", "test hash");
+    addonMock.verifyAll();
+    expect(result).to.be.true;
+  });
+
+  it("calls addon's clearRulesets", async () => {
+    addonMock.setup((x) => x.clearRulesets()).returns(() => ({})).verifiable();
+    await nativePlatform.clearRulesets();
     addonMock.verifyAll();
   });
 
-  it("calls addon's removeRuleSet", async () => {
-    addonMock.setup((x) => x.removeRuleSet("test id")).returns(() => ({})).verifiable();
-    await nativePlatform.removeRuleSet("test id");
-    addonMock.verifyAll();
-  });
-
-  it("calls addon's clearRuleSets", async () => {
-    addonMock.setup((x) => x.clearRuleSets()).returns(() => ({})).verifiable();
-    await nativePlatform.clearRuleSets();
-    addonMock.verifyAll();
-  });
-
-  it("calls addon's setUserSetting", async () => {
+  it("calls addon's setRulesetVariableValue", async () => {
     const rulesetId = faker.random.word();
-    const settingId = faker.random.word();
-    const value = JSON.stringify({ value: faker.random.word(), type: SettingValueTypes.String });
-    addonMock.setup((x) => x.setUserSetting(rulesetId, settingId, value))
+    const variableId = faker.random.word();
+    const value = faker.random.word();
+    addonMock.setup((x) => x.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value))
       .returns(() => ({}))
       .verifiable();
-    await nativePlatform.setUserSetting(rulesetId, settingId, value);
+    await nativePlatform.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value);
     addonMock.verifyAll();
   });
 
-  it("calls addon's getUserSetting", async () => {
+  it("calls addon's getRulesetVariableValue", async () => {
     const rulesetId = faker.random.word();
-    const settingId = faker.random.word();
+    const variableId = faker.random.word();
     const value = faker.random.word();
-    addonMock.setup((x) => x.getUserSetting(rulesetId, settingId, SettingValueTypes.String))
+    addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String))
       .returns(() => ({ result: value }))
       .verifiable();
-    const result = await nativePlatform.getUserSetting(rulesetId, settingId, SettingValueTypes.String);
-    expect(result).to.be.equal(value);
+    const result = await nativePlatform.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String);
     addonMock.verifyAll();
+    expect(result).to.equal(value);
   });
 
   it("returns imodel addon from IModelDb", () => {

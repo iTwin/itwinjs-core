@@ -3,14 +3,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { NavigationRule } from "./NavigationRule";
-import { PresentationRuleTypes } from "../PresentationRule";
+import { NavigationRuleBase } from "./NavigationRule";
+import { RuleTypes } from "../Rule";
 
-/** Root node rules define the nodes that are displayed at the root hierarchy level. */
-export interface RootNodeRule extends NavigationRule {
+/**
+ * Root node rules define the nodes that are displayed
+ * at the root hierarchy level.
+ */
+export interface RootNodeRule extends NavigationRuleBase {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.RootNodeRule;
+  ruleType: RuleTypes.RootNodes;
 
-  /** If this flag is set, nodes created by this rule will be automatically expanded. By default is set to false. */
+  /** Automatically expand nodes created by this rule. */
   autoExpand?: boolean;
 }

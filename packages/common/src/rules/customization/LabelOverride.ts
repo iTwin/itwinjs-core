@@ -3,28 +3,36 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ConditionalCustomizationRuleBase } from "./CustomizationRule";
-import { PresentationRuleTypes } from "../PresentationRule";
+import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 
 /**
- * LabelOverride is a rule that allows to override default label and description (tooltip) and dynamically define them
- * for a particular node based on the context.
+ * Rule to override labels and descriptions of nodes which pass rule's
+ * condition.
+ *
+ * **Important:** Prefer [[InstanceLabelOverride]] over this rule when possible as it
+ * has better performance.
  */
-export interface LabelOverride extends ConditionalCustomizationRuleBase {
+export interface LabelOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.LabelOverride;
+  ruleType: RuleTypes.LabelOverride;
 
   /**
-   * Defines the label that should be used for nodes that meet the condition. This is an ECExpression, so label can be
-   * defined/formatted dynamically based on the context - for example ECInstance property value. May be
-   * [localized]($docs/learning/Localization.md).
+   * Defines the label that should be used for node. This is
+   * an [ECExpression]($docs/learning/customization/ECExpressions.md), so label
+   * can be defined/formatted dynamically based on the context - for example
+   * ECInstance property value. May be [localized]($docs/learning/Localization.md).
+   *
+   * @minLength 1
    */
   label?: string;
 
   /**
-   * Defines the description (tooltip) that should be used for nodes that meet the condition. This is an ECExpression,
-   * so description can be defined/formatted dynamically based on the context - for example
+   * Defines the description that should be used for node. This is
+   * an [ECExpression]($docs/learning/customization/ECExpressions.md), so
+   * description can be defined/formatted dynamically based on the context - for example
    * ECInstance property value. May be [localized]($docs/learning/Localization.md).
+   *
+   * @minLength 1
    */
   description?: string;
 }

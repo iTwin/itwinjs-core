@@ -3,145 +3,175 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ConditionalCustomizationRuleBase } from "./CustomizationRule";
-import { PresentationRuleTypes } from "../PresentationRule";
+import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
+import { SingleSchemaClassSpecification } from "../ClassSpecifications";
 
 /**
  * Grouping rule is an advanced way to configure node grouping.
  *
  * It allows to define these types of groupings:
  * - Group by base class.
- * - Group by any property of the instance by common value as well as grouping by range of values.
+ * - Group by any property of the instance by a common value or a range of values.
  * - Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these
  * instances represent the same object for the user.
  *
- * GroupingRule works in conjunction with other grouping options available in navigation specifications [[ChildNodeSpecification]]:
- * GroupByClass and GroupByLabel. The grouping hierarchy looks like this:
+ * The rule works in conjunction with other grouping options available in navigation specifications [[ChildNodeSpecification]]:
+ * `groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:
  * - Base ECClass grouping node (specified by base class grouping specification [[ClassGroup]])
- *   - ECClass grouping node (specified by GroupByClass property)
- *     - ECProperty grouping node 1 (specified by 1nd property grouping specification [[PropertyGroup]])
- *       - ECProperty grouping node 2 (specified by 2nd property grouping specification [[PropertyGroup]])
- *         - ECProperty grouping node n (specified by n-th property grouping specification [[PropertyGroup]])
- *           - Display label grouping node (specified by groupByLabel property)
- *             - ECInstance nodes (may be grouped under a single node by same label
- *               instance group specification [[SameLabelInstanceGroupSpecification]])
+ *   - ECClass grouping node (specified by `groupByClass` property)
+ *     - ECProperty grouping node 1 (specified by 1st [[PropertyGroup]])
+ *       - ECProperty grouping node 2 (specified by 2nd [[PropertyGroup]])
+ *         - ECProperty grouping node n (specified by n-th [[PropertyGroup]])
+ *           - Display label grouping node (specified by `groupByLabel` property)
+ *             - ECInstance nodes (may be grouped under a single node by [[SameLabelInstanceGroup]])
  */
-export interface GroupingRule extends ConditionalCustomizationRuleBase {
+export interface GroupingRule extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.GroupingRule;
+  ruleType: RuleTypes.Grouping;
 
-  /** Schema name of the class which should be grouped using this grouping rule. */
-  schemaName: string;
+  /** Specification of ECClass which should be grouped using this rule */
+  class: SingleSchemaClassSpecification;
 
-  /** Class name which should be grouped using this grouping rule. */
-  className: string;
-
-  groups?: GroupSpecification[];
+  /** Specifications of grouping which should be applied to maching ECInstances */
+  groups: GroupingSpecification[];
 }
 
 /** Grouping rule specifications */
-export declare type GroupSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
+export declare type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
-/** Used for serializing array of [[GroupSpecification]] to JSON */
-export enum GroupSpecificationTypes {
-  ClassGroup = "Class",
-  PropertyGroup = "Property",
-  SameLabelInstanceGroup = "SameLabelInstance",
+/** Used for serializing [[GroupSpecification]] to JSON */
+export const enum GroupingSpecificationTypes {
+  Class = "Class",
+  Property = "Property",
+  SameLabelInstance = "SameLabelInstance",
 }
 
-/** Base interface for group specifications [[GroupSpecification]] */
-export interface GroupSpecificationBase {
+/** Base interface for all [[GroupingSpecification]] implementations */
+export interface GroupingSpecificationBase {
   /** Type of the subclass */
-  type: GroupSpecificationTypes;
+  specType: GroupingSpecificationTypes;
 }
 
-/** This specification allows grouping ECInstance nodes by their base class. */
-export interface ClassGroup extends GroupSpecificationBase {
+/** Allows grouping ECInstance nodes by their base class. */
+export interface ClassGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
-  type: GroupSpecificationTypes.ClassGroup;
+  specType: GroupingSpecificationTypes.Class;
 
-  /** Should the grouping node be created if there is only one item in that group. By default is set to false. */
+  /** Should the grouping node be created if there is only one item in that group. */
   createGroupForSingleItem?: boolean;
 
-  /** Schema name of the base ECClass. By default is set to rule's schema name. */
-  schemaName?: string;
-
-  /** Base ECClass name. By default is set to rule's class name. */
-  baseClassName?: string;
+  /** Specification of the base ECClass to group by. Defaults to rule's class. */
+  baseClass?: SingleSchemaClassSpecification;
 }
 
 /**
- * This specification allows grouping multiple instances with the same label into one ECInstance node.
+ * Allows grouping multiple instances with the same label into one ECInstance node.
  * It can be used in cases when these instances represent the same object for the user.
+ *
+ * When multiple instances are grouped, an ECInstance node is created instead of a
+ * grouping node and the ECInstance key for the node is assigned to key of one of grouped
+ * instances.
  */
-export interface SameLabelInstanceGroup extends GroupSpecificationBase {
+export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
-  type: GroupSpecificationTypes.SameLabelInstanceGroup;
+  specType: GroupingSpecificationTypes.SameLabelInstance;
 }
 
 /**
- * This specification allows grouping by any property of the instance
- * by common value as well as grouping by range of values.
+ * Allows grouping by property of the instance
+ * by a common value or by range of values.
  */
-export interface PropertyGroup extends GroupSpecificationBase {
+export interface PropertyGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
-  type: GroupSpecificationTypes.PropertyGroup;
+  specType: GroupingSpecificationTypes.Property;
 
-  /** ImageId to use for the grouping node. By default is set to ECProperty configured ImageId */
+  /**
+   * Name of the ECProperty which is used for grouping.
+   *
+   * @minLength 1
+   */
+  propertyName: string;
+
+  /**
+   * ID of an image to use for the grouping node
+   *
+   * @minLength 1
+   */
   imageId?: string;
 
-  /* Should the grouping node be created if there is only one item in that group. By default is set to false */
+  /** Should the grouping node be created if there is only one item in that group */
   createGroupForSingleItem?: boolean;
 
-  /** Should a separate grouping node be created for nodes whose grouping value is not set. By default is set to true */
+  /** Should a separate grouping node be created for nodes whose grouping value is not set. Defaults to `true`. */
   createGroupForUnspecifiedValues?: boolean;
 
-  /** Should the instances be grouped on display label (default) or the grouping property value.
-   * Grouping by property value is necessary if the display label is overridden to display grouped instances count.
-   * By default is set to `DisplayLabel`.
+  /**
+   * Should the instances be grouped on display label or the grouping property value.
+   * Defaults to [[PropertyGroupingValue.DisplayLabel]].
+   *
+   * **Note:** Grouping by property value is required if the display label is
+   * overridden to display grouped instances count.
+   *
+   * **Warning:** Grouping by label and sorting by property value is not possible.
    */
   groupingValue?: PropertyGroupingValue;
 
-  /** Should the nodes be sorted by display label (default) or the grouping property value. In most cases the result is
-   * the same, unless [[LabelOverride]] rule is used to change the display label.
-   * By default is set to `DisplayLabel`.
+  /**
+   * Should the nodes be sorted by display label or the grouping property value. In most
+   * cases the result is the same, unless [[LabelOverride]] rule is used to change the display label.
+   * Defaults to [[PropertyGroupingValue.DisplayLabel]].
    *
-   * **Note:**
-   * Sorting by property value only makes sense when instances are grouped by property value as well.
-   * So grouping by label and sorting by property value is not possible.
+   * **Note:** Sorting by property value only makes sense when instances are grouped by
+   * property value as well.
+   *
+   * **Warning:** Grouping by label and sorting by property value is not possible.
    */
   sortingValue?: PropertyGroupingValue;
-
-  /** Name of the ECProperty which is used for grouping. */
-  propertyName: string;
 
   /** Ranges into which the grouping values are divided */
   ranges?: PropertyRangeGroupSpecification[];
 }
 
-/** Used in [[PropertyGroup]] to specify groupingValue and sortingValue. */
-export enum PropertyGroupingValue {
-  /** By property value. */
+/**
+ * Used in [[PropertyGroup]] to specify the type of value to use
+ * for grouping and sorting
+ */
+export const enum PropertyGroupingValue {
+  /** By property value */
   PropertyValue = "PropertyValue",
 
-  /** By display label. */
+  /** By display label */
   DisplayLabel = "DisplayLabel",
 }
 
-/** Creates value range grouping. */
+/** Describes a grouping range */
 export interface PropertyRangeGroupSpecification {
-  /** ImageId to use for the grouping node. By default is set to imageId specified in the PropertyGroup specification. */
+  /**
+   * ID of an image to use for the grouping node. Defaults to [[PropertyGroup.imageId]] specified in [[PropertyGroup]].
+   *
+   * @minLength 1
+   */
   imageId?: string;
 
   /**
    * Grouping node label. May be [localized]($docs/learning/Localization.md).
-   * By default is set to "[[fromValue]] - [[toValue]]"
+   * Defaults to `{from value} - {to value}`
+   *
+   * @minLength 1
    */
   label?: string;
 
-  /** Value that defines the range start (inclusive) */
+  /**
+   * Value that defines the range start (inclusive)
+   *
+   * @minLength 1
+   */
   fromValue: string;
 
-  /** Value that defines the range end (inclusive) */
+  /**
+   * Value that defines the range end (inclusive)
+   *
+   * @minLength 1
+   */
   toValue: string;
 }

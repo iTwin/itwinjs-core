@@ -1,13 +1,12 @@
 {
-  "ruleSetId": "default",
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "default",
   "rules": [{
-    "type": "RootNode",
+    "ruleType": "RootNodes",
     "specifications": [{
-      "type": "CustomNode",
-      "nodeType": "nodeType",
-      "label": "label",
-      "description": "description",
-      "imageId": "imageId"
+      "specType": "CustomNode",
+      "type": "type",
+      "label": "label"
     }]
   }]
 }

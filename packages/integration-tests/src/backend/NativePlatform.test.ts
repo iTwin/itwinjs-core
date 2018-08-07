@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/ecpresentation-backend/lib/NativePlatform";
-import { ECPresentationError } from "@common/index";
+import { ECPresentationError } from "@bentley/ecpresentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 
 before(() => {

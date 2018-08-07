@@ -1,39 +1,40 @@
 {
-  "ruleSetId": "getFilteredNodePaths",
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "getFilteredNodePaths",
   "rules": [{
-    "type": "RootNode",
+    "ruleType": "RootNodes",
     "specifications": [{
-      "type": "CustomNode",
+      "specType": "CustomNode",
       "label": "filter r1",
-      "nodeType": "nodeType",
+      "type": "nodeType",
       "imageId": "imageId",
       "description": "description",
       "nestedRules": [{
-        "type": "ChildNode",
+        "ruleType": "ChildNodes",
         "specifications": [{
-          "type": "CustomNode",
+          "specType": "CustomNode",
           "label": "filter ch1",
-          "nodeType": "nodeType",
+          "type": "nodeType",
           "imageId": "imageId",
           "description": "description"
-          },{
-          "type": "CustomNode",
+          }, {
+          "specType": "CustomNode",
           "label": "other ch2",
-          "nodeType": "nodeType",
+          "type": "nodeType",
           "imageId": "imageId",
           "description": "description"
-          },{
-          "type": "CustomNode",
+          }, {
+          "specType": "CustomNode",
           "label": "other ch3",
-          "nodeType": "nodeType",
+          "type": "nodeType",
           "imageId": "imageId",
           "description": "description",
           "nestedRules": [{
-            "type": "ChildNode",
+            "ruleType": "ChildNodes",
             "specifications": [{
-              "type": "CustomNode",
+              "specType": "CustomNode",
               "label": "filter ch4",
-              "nodeType": "nodeType",
+              "type": "nodeType",
               "imageId": "imageId",
               "description": "description"
             }]
@@ -42,29 +43,29 @@
       }]
     },
     {
-      "type": "CustomNode",
+      "specType": "CustomNode",
       "label": "other r2",
-      "nodeType": "nodeType",
+      "type": "nodeType",
       "imageId": "imageId",
       "description": "description"
     },{
-      "type": "CustomNode",
+      "specType": "CustomNode",
       "label": "other r3",
-      "nodeType": "nodeType",
+      "type": "nodeType",
       "imageId": "imageId",
       "description": "description",
       "nestedRules": [{
-        "type": "ChildNodeRule",
+        "ruleType": "ChildNodes",
         "specifications": [{
-          "type": "CustomNode",
+          "specType": "CustomNode",
           "label": "other ch5",
-          "nodeType": "nodeType",
+          "type": "nodeType",
           "imageId": "imageId",
           "description": "description"
         },{
-          "type": "CustomNode",
+          "specType": "CustomNode",
           "label": "filter ch6",
-          "nodeType": "nodeType",
+          "type": "nodeType",
           "imageId": "imageId",
           "description": "description"
         }]

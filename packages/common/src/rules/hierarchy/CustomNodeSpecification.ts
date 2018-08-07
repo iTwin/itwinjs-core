@@ -4,22 +4,23 @@
 /** @module PresentationRules */
 
 import { ChildNodeSpecificationBase } from "./ChildNodeSpecification";
-import { PresentationRuleSpecificationTypes } from "../PresentationRuleSpecification";
+import { RuleSpecificationTypes } from "../RuleSpecification";
 
 /** Returns a custom-defined node. */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   /** Used for serializing to JSON. */
-  type: PresentationRuleSpecificationTypes.CustomNodeSpecification;
+  specType: RuleSpecificationTypes.CustomNode;
 
-  /** Type of the node. Check against this type in your ECExpression. */
-  nodeType?: string;
-
-  /** Label of the node. May be [localized]($docs/learning/Localization.md). */
-  label?: string;
+  /** Type of the node. */
+  type: string;
 
   /**
-   * Description of the node (used as a tooltip). May be [localized]($docs/learning/Localization.md).
-   * Default is set to empty string.
+   * Label of the node. May be [localized]($docs/learning/Localization.md).
+   */
+  label: string;
+
+  /**
+   * Description of the node. May be [localized]($docs/learning/Localization.md).
    */
   description?: string;
 

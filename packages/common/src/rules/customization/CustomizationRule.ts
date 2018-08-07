@@ -3,7 +3,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { PresentationRuleBase } from "../PresentationRule";
 import { CheckBoxRule } from "./CheckBoxRule";
 import { GroupingRule } from "./GroupingRule";
 import { ImageIdOverride } from "./ImageIdOverride";
@@ -12,17 +11,6 @@ import { LabelOverride } from "./LabelOverride";
 import { SortingRule } from "./SortingRule";
 import { StyleOverride } from "./StyleOverride";
 
-/** Base interface for customization rules [[CustomizationRule]] */
-// tslint:disable-next-line:no-empty-interface
-export interface CustomizationRuleBase extends PresentationRuleBase {
-}
-
-/** Base interface for conditional customization rules. */
-export interface ConditionalCustomizationRuleBase extends CustomizationRuleBase {
-  /** Condition which must be met in order to execute the rule. */
-  condition?: string;
-}
-
 /**
  * Customization rules allow customizing each node or content item separately.
  * Most of the rules have a `condition` property which uses [ECExpressions]($docs/learning/customization/ECExpressions.md)
@@ -30,8 +18,9 @@ export interface ConditionalCustomizationRuleBase extends CustomizationRuleBase 
  *
  * **Nested customization rules:**
  *
- * All customization rules can also be nested in navigation rules.
- * This means that they're applied only for nodes created by those rules.
+ * Customization rules may be specified at ruleset level, in which case they're
+ * applied to all content produced by the ruleset, or nested under navigation rules,
+ * in which case they're applied only for nodes created by those rules.
  *
  * **Customization rule priorities:**
  *

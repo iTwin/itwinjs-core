@@ -55,24 +55,33 @@ Symbol                              | Type    | Value
 
 ## Symbols in Global Context
 
-### User Settings
+### Ruleset Variables (User Settings)
 
-User settings symbols allow accessing user setting values through
-ECExpressions.
+**Note:** *User Settings* is a deprecated name of *Ruleset Variables* concept.
 
-Symbol                              | Type    | Value
-------------------------------------|---------|----------
-`GetSettingValue("setting_id")`     | string  | Get value of a setting with the specified ID
-`GetSettingIntValue("setting_id")`  | number  | Get value of a setting with the specified ID
-`GetSettingIntValues("setting_id")` | number[]| Get value of a setting with the specified ID
-`GetSettingBoolValue("setting_id")` | bool    | Get value of a setting with the specified ID
-`HasSetting("setting_id")`          | bool    | Does setting with the specified ID exist
+Ruleset variable access symbols allow accessing variable values through ECExpressions.
+
+Symbol                            | Deprecated Symbol               | Type    | Value
+----------------------------------| --------------------------------|---------|----------
+`GetVariableStringValue("var_id")`| `GetSettingValue("var_id")`     | string  | Get string value of a variable with the specified ID
+`GetVariableBoolValue("var_id")`  | `GetSettingBoolValue("var_id")` | bool    | Get boolean value of a variable with the specified ID
+`GetVariableIntValue("var_id")`   | `GetSettingIntValue("var_id")`  | number  | Get int value of a variable with the specified ID
+`GetVariableIntValues("var_id")`  | `GetSettingIntValues("var_id")` | number[]| Get int [value list](#value-lists) of a variable with the specified ID
+`HasVariable("var_id")`           | `HasSetting("var_id")`          | bool    | Does variable with the specified ID exist
+
+### Other symbols
+
+Symbol                                | Type     | Value
+--------------------------------------|----------|----------
+`Set(number1, number2, ..., numberN)` | number[] | Create a [value list](#value-lists) of the supplied numbers.
+
+## Value Lists
 
 Value lists in ECExpressions can be handled with lambdas. Currently the
 presentation rules engine supports only a single simple lambda for
-`GetSettingIntValues` function:
+value lists:
 ```
-GetSettingIntValues("setting_id").AnyMatch(x => x = this.PropertyValue)
+value_list.AnyMatch(x => x = this.PropertyValue)
 ```
-The above expression returns `true` if `GetSettingIntValues("setting_id")`
-contains the value of `this.PropertyValue`.
+The above expression returns `true` if `value_list` contains the value
+of `this.PropertyValue`.

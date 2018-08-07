@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { PresentationRuleSpecification } from "../PresentationRuleSpecification";
+import { RuleSpecification } from "../RuleSpecification";
 import { ContentInstancesOfSpecificClassesSpecification } from "./ContentInstancesOfSpecificClassesSpecification";
 import { ContentRelatedInstancesSpecification } from "./ContentRelatedInstancesSpecification";
 import { SelectedNodeInstancesSpecification } from "./SelectedNodeInstancesSpecification";
@@ -13,23 +13,30 @@ import { RelatedPropertiesSpecification } from "./modifiers/RelatedPropertiesSpe
 import { CalculatedPropertiesSpecification } from "./modifiers/CalculatedPropertiesSpecification";
 import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
 
-/** Base interface for content rule specifications [[ContentSpecification]]. */
-export interface ContentSpecificationBase extends PresentationRuleSpecification {
+/** Base interface for all [[ContentSpecification]] implementations. */
+export interface ContentSpecificationBase extends RuleSpecification {
+  /** Should each content record be assigned an image id */
   showImages?: boolean;
-  relatedPropertiesSpecification?: RelatedPropertiesSpecification[];
-  propertiesDisplaySpecification?: PropertiesDisplaySpecification[];
-  calculatedPropertiesSpecification?: CalculatedPropertiesSpecification[];
-  propertyEditorsSpecification?: PropertyEditorsSpecification[];
-  relatedInstancesSpecification?: RelatedInstanceSpecification[];
+
+  /** Specifications for including properties of related instances */
+  relatedProperties?: RelatedPropertiesSpecification[];
+
+  /** Specifications for including calculated properties */
+  calculatedProperties?: CalculatedPropertiesSpecification[];
+
+  /** Specifications for customizing property display by hiding / showing them */
+  propertiesDisplay?: PropertiesDisplaySpecification[];
+
+  /** Specifications for assigning property editors */
+  propertyEditors?: PropertyEditorsSpecification[];
+
+  /** Specifications for joining related instances */
+  relatedInstances?: RelatedInstanceSpecification[];
 }
 
 /**
- * Content rule specifications.  each type of content specification supports the following sub-specifications:
- * - [[RelatedPropertiesSpecification]]
- * - [[PropertiesDisplaySpecification]]
- * - [[CalculatedPropertiesSpecification]]
- * - [[PropertyEditorsSpecification]]
- * - [[RelatedInstanceSpecification]]
+ * Content rule specifications which define what content is returned
+ * when rule is used.
  */
 export declare type ContentSpecification = ContentInstancesOfSpecificClassesSpecification
   | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification;

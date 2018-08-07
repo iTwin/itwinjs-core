@@ -1,28 +1,29 @@
 {
-  "ruleSetId": "getNodePaths",
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "getNodePaths",
   "rules": [{
-    "type": "RootNode",
+    "ruleType": "RootNodes",
     "specifications": [{
-      "type": "InstanceNodesOfSpecificClasses",
-      "classNames": "BisCore:RepositoryModel",
+      "specType": "InstanceNodesOfSpecificClasses",
+      "classes": [{"schemaName": "BisCore", "classNames": ["RepositoryModel"]}],
       "groupByClass": false,
       "nestedRules": [{
-        "type": "ChildNode",
+        "ruleType": "ChildNodes",
         "specifications": [{
-          "relatedClassNames": "BisCore:Subject",
-          "relationshipClassNames": "BisCore:ModelContainsElements",
+          "specType": "RelatedInstanceNodes",
+          "relatedClasses": {"schemaName": "BisCore", "classNames": ["Subject"]},
+          "relationships": {"schemaName": "BisCore", "classNames": ["ModelContainsElements"]},
           "requiredDirection": "Forward",
           "groupByClass": false,
-          "groupByLabels": false,
-          "type": "RelatedInstanceNodes",
+          "groupByLabel": false,
           "nestedRules": [{
-            "type": "ChildNode",
+            "ruleType": "ChildNodes",
             "specifications": [{
-              "relationshipClassNames": "BisCore:ElementOwnsChildElements",
+              "specType": "RelatedInstanceNodes",
+              "relationships": {"schemaName": "BisCore", "classNames": ["ElementOwnsChildElements"]},
               "requiredDirection": "Forward",
               "groupByClass": true,
-              "groupByLabels": false,
-              "type": "RelatedInstanceNodes"
+              "groupByLabel": false
             }]
           }]
         }]

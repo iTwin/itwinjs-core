@@ -9,13 +9,13 @@ import {
   ECPresentationError, ECPresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
-  IUserSettingsManager, IRulesetManager,
+  IRulesetVariablesManager, IRulesetManager,
   RequestOptions, Paged, KeySet, InstanceKey,
 } from "@bentley/ecpresentation-common";
 import { listReviver as nodesListReviver } from "@bentley/ecpresentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/ecpresentation-common/lib/hierarchy/NodePathElement";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
-import UserSettingsManager from "./UserSettingsManager";
+import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
 import IBackendECPresentationManager, { Props as IBackendECPresentationManagerProps } from "./IBackendECPresentationManager";
 
@@ -75,11 +75,11 @@ export default class SingleClientECPresentationManager implements IBackendECPres
   public rulesets(): IRulesetManager { return this._rulesets; }
 
   /**
-   * Get settings manager for specific ruleset
-   * @param rulesetId Id of the ruleset to get settings manager for
+   * Get ruleset variables manager for specific ruleset
+   * @param rulesetId Id of the ruleset to get variables manager for
    */
-  public settings(rulesetId: string): IUserSettingsManager {
-    return new UserSettingsManager(this.getNativePlatform, rulesetId);
+  public vars(rulesetId: string): IRulesetVariablesManager {
+    return new RulesetVariablesManager(this.getNativePlatform, rulesetId);
   }
 
   /** @hidden */

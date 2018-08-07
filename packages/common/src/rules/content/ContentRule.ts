@@ -3,18 +3,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ConditionalPresentationRuleBase } from "../ConditionalPresentationRule";
+import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 import { ContentSpecification } from "./ContentSpecification";
-import { PresentationRuleTypes } from "../PresentationRule";
 
 /**
- * Content rules define the content that's displayed in content controls (Table view, Property Pane) and the content
- * that's selected in [unified selection]($docs/learning/unified-selection/index.md) controls
+ * Defines content that's displayed in content controls (table view,
+ * property pane, etc.) and the content that's selected in
+ * [unified selection]($docs/learning/unified-selection/index.md) controls
  */
-export interface ContentRule extends ConditionalPresentationRuleBase {
+export interface ContentRule extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.ContentRule;
+  ruleType: RuleTypes.Content;
 
-  /** Rule specifications define what content the rule results in. */
-  specifications?: ContentSpecification[];
+  /** Specifications that define content returned by the rule */
+  specifications: ContentSpecification[];
 }

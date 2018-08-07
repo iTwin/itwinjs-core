@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationRuleSet, PresentationRuleTypes, PresentationRuleSpecificationTypes } from "@bentley/ecpresentation-common";
+import { Ruleset, RuleTypes, RuleSpecificationTypes } from "@bentley/ecpresentation-common";
 import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 
 before(() => {
@@ -36,14 +36,14 @@ describe("Multiple frontends for one backend", async () => {
     });
 
     it("Handles multiple simultaneous requests from different frontends with different rulesets with same id", async () => {
-      const rulesets: PresentationRuleSet[] = [];
+      const rulesets: Ruleset[] = [];
       rulesets[0] = {
-        ruleSetId: "test",
+        id: "test",
         rules: [{
-          type: PresentationRuleTypes.RootNodeRule,
+          ruleType: RuleTypes.RootNodes,
           specifications: [{
-            type: PresentationRuleSpecificationTypes.CustomNodeSpecification,
-            nodeType: "test",
+            specType: RuleSpecificationTypes.CustomNode,
+            type: "test",
             label: "label 0",
             description: "description 0",
             imageId: "image 0",
@@ -51,12 +51,12 @@ describe("Multiple frontends for one backend", async () => {
         }],
       };
       rulesets[1] = {
-        ruleSetId: "test",
+        id: "test",
         rules: [{
-          type: PresentationRuleTypes.RootNodeRule,
+          ruleType: RuleTypes.RootNodes,
           specifications: [{
-            type: PresentationRuleSpecificationTypes.CustomNodeSpecification,
-            nodeType: "test",
+            specType: RuleSpecificationTypes.CustomNode,
+            type: "test",
             label: "label 1",
             description: "description 1",
             imageId: "image 1",

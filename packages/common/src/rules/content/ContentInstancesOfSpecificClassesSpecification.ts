@@ -4,34 +4,33 @@
 /** @module PresentationRules */
 
 import { ContentSpecificationBase } from "./ContentSpecification";
-import { PresentationRuleSpecificationTypes } from "../PresentationRuleSpecification";
+import { RuleSpecificationTypes } from "../RuleSpecification";
+import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 
 /**
  * Returns ECInstance(s) of specified classes.
  *
- * **Note**: This specification doesn't rely on selected node. It always returns instances for any selected node, so
- * pre-filtering should be done in [[ContentRule]] condition.
+ * **Note**: this specification doesn't rely on selection. It always returns instances no matter
+ * what the selection is, so pre-filtering should be done in [[ContentRule]] condition and [[instanceFilter]].
  */
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  type: PresentationRuleSpecificationTypes.ContentInstancesOfSpecificClassesSpecification;
+  specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses;
+
+  /**
+   * List of ECClass specifications whose ECInstances should be selected.
+   */
+  classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
+   * Should all [[classes]] be treated polymorphically.
+   */
+  arePolymorphic?: boolean;
 
   /**
    * Condition for filtering instances of defined classes.
    *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/content/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions available in instance filter]($docs/learning/content/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
-
-  /**
-   * Comma separated names of ECClasses whose ECInstances should be selected.
-   * Format: `SchemaName1:ClassName11,ClassName12;SchemaName2:ClassName21,ClassName22`
-   */
-  classNames: string;
-
-  /**
-   * If this option is set to true, all classes specified by classNames will be marked as polymorphic in the query.
-   * By default is set to false.
-   */
-  arePolymorphic?: boolean;
 }

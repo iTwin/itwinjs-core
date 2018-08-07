@@ -3,20 +3,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ConditionalCustomizationRuleBase } from "./CustomizationRule";
-import { PresentationRuleTypes } from "../PresentationRule";
+import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 
 /**
- * ImageIdOverride is a rule that allows to override default icon and dynamically define an icon for a particular
- * node based on the context.
+ * Rule that allows overriding default icon and dynamically define an icon
+ * for a particular node based on the context.
  */
-export interface ImageIdOverride extends ConditionalCustomizationRuleBase {
+export interface ImageIdOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
-  type: PresentationRuleTypes.ImageIdOverride;
+  ruleType: RuleTypes.ImageIdOverride;
 
   /**
-   * Defines an ImageId that should be used for nodes that met the condition. This is an ECExpression,
-   * so imageId can be defined/formated dynamically based on the context - for example ECInstance property value.
+   * Defines an image ID that should be used for nodes that meet rule condition. This is
+   * an [ECExpression]($docs/learning/customization/ECExpressions.md), so ID can be
+   * defined/formatted dynamically based on the context - for example ECInstance property value.
+   *
+   * @minLength 1
    */
-  imageIdExpression?: string;
+  imageIdExpression: string;
 }

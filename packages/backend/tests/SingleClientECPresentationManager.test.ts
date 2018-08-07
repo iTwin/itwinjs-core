@@ -8,11 +8,11 @@ import * as path from "path";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import { using } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
-import { PageOptions, SelectionInfo, KeySet, ECPresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@common/index";
+import { PageOptions, SelectionInfo, KeySet, ECPresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/ecpresentation-common";
 import ECPresentationManager from "@src/SingleClientECPresentationManager";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "@src/NativePlatform";
-import UserSettingsManager from "@src/UserSettingsManager";
 import RulesetManager from "@src/RulesetManager";
+import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import {
   createRandomNodePathElementJSON, createRandomECInstanceNodeKey,
   createRandomECInstanceNodeKeyJSON,
@@ -23,13 +23,13 @@ import {
 import { instanceKeyFromJSON } from "@bentley/ecpresentation-common/lib/EC";
 import { NodeJSON } from "@bentley/ecpresentation-common/lib/hierarchy/Node";
 import { ECInstanceNodeKeyJSON, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "@bentley/ecpresentation-common/lib/hierarchy/Key";
-import { ContentJSON } from "@common/content/Content";
-import { DescriptorJSON, SelectClassInfoJSON } from "@common/content/Descriptor";
-import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@common/index";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@common/content/Fields";
-import { KindOfQuantityInfo } from "@common/index";
-import { PropertyJSON } from "@common/content/Property";
-import { ItemJSON } from "@common/content/Item";
+import { ContentJSON } from "@bentley/ecpresentation-common/lib/content/Content";
+import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/ecpresentation-common/lib/content/Descriptor";
+import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@bentley/ecpresentation-common";
+import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/ecpresentation-common/lib/content/Fields";
+import { KindOfQuantityInfo } from "@bentley/ecpresentation-common";
+import { PropertyJSON } from "@bentley/ecpresentation-common/lib/content/Property";
+import { ItemJSON } from "@bentley/ecpresentation-common/lib/content/Item";
 import "@helpers/Snapshots";
 import "@helpers/Promises";
 import "./IModeHostSetup";
@@ -135,14 +135,14 @@ describe("SingleClientECPresentationManager", () => {
 
   });
 
-  describe("settings", () => {
+  describe("vars", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
     const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
 
-    it("returns settings manager", () => {
-      const settings = manager.settings(faker.random.word());
-      expect(settings).to.be.instanceOf(UserSettingsManager);
+    it("returns variables manager", () => {
+      const vars = manager.vars(faker.random.word());
+      expect(vars).to.be.instanceOf(RulesetVariablesManager);
     });
 
   });

@@ -118,25 +118,25 @@ describe("MultiClientECPresentationManager", () => {
 
   });
 
-  describe("settings", () => {
+  describe("vars", () => {
 
-    it("creates settings manager for each different client", async () => {
+    it("creates RulesetVariablesManager for each different client", async () => {
       const rulesetId = faker.random.word();
 
-      // verify settings object gets created
+      // verify variables object gets created
       let clientId = faker.random.uuid();
-      manager.settings(rulesetId, clientId);
+      manager.vars(rulesetId, clientId);
       expect(createdClientManagerMocks.size).to.eq(1);
       expect(createdClientManagerMocks.has(clientId)).to.be.true;
 
-      // verify a new settings object doesn't get created for the same client
-      manager.settings(faker.random.word(), clientId);
+      // verify a new variables object doesn't get created for the same client
+      manager.vars(faker.random.word(), clientId);
       expect(createdClientManagerMocks.size).to.eq(1);
       expect(createdClientManagerMocks.has(clientId)).to.be.true;
 
-      // verify a new settings object does get created for a different client
+      // verify a new variables object does get created for a different client
       clientId = faker.random.uuid();
-      manager.settings(rulesetId, clientId);
+      manager.vars(rulesetId, clientId);
       expect(createdClientManagerMocks.size).to.eq(2);
       expect(createdClientManagerMocks.has(clientId)).to.be.true;
     });

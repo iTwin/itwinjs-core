@@ -3,24 +3,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-/** This is a sub-specification that allows including additional calculated properties into the content.
- *
- * They are defined as child elements to [[ContentSpecification]]
- * or [[ContentModifier]].
+/**
+ * Sub-specification to include additional calculated properties into the content.
  */
 export interface CalculatedPropertiesSpecification {
-  /** Label of the property. May be [[localized]]. */
+  /** Label of the calculated property. May be [localized]($docs/learning/Localization.md). */
   label: string;
 
-  /** Priority of the property. Determines the position of this property in content controls.
-   * By default is set to `1000`.
-   */
-  priority?: number;
-
   /**
-   * ECExpression used to calculate the value. The following symbol sets are available:
-   * - [ECInstance ECExpression Context]($docs/learning/ECExpressions.md#ecinstance)
-   * - [User Settings Symbols]($docs/learning/ECExpressions.md#user-settings)
+   * [ECExpression]($docs/learning/ECExpressions.md) used to calculate the value. The
+   * following symbol sets are available:
+   * - [ECInstance ECExpression context]($docs/learning/ECExpressions.md#ecinstance)
+   * - [Ruleset variables]($docs/learning/ECExpressions.md#ruleset-variables-user-settings)
    */
   value: string;
+
+  /**
+   * Priority of the property. Determines the position of this property in UI
+   * components - higher priority means the property should be more visible.
+   * Defaults to `1000`.
+   *
+   * @type integer
+   */
+  priority?: number;
 }

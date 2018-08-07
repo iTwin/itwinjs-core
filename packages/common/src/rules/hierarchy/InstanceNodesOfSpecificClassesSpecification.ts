@@ -3,37 +3,29 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ChildNodeSpecificationBase } from "./ChildNodeSpecification";
-import { PresentationRuleSpecificationTypes } from "../PresentationRuleSpecification";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import { RuleSpecificationTypes } from "../RuleSpecification";
+import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 
 /** Returns all instance nodes of specified ECClasses. */
-export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase {
+export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
-  type: PresentationRuleSpecificationTypes.InstanceNodesOfSpecificClassesSpecification;
-
-  /** Groups instances by ECClass. By default is set to true. */
-  groupByClass?: boolean;
-
-  /** Groups instances by display label. By default is set to true. */
-  groupByLabel?: boolean;
+  specType: RuleSpecificationTypes.InstanceNodesOfSpecificClasses;
 
   /**
-   * If this option is set to true, all classes specified by [[classNames]] will be marked as polymorphic in the query.
-   * By default is set to false.
+   * Specifications of ECClasses whose instances should be returned.
+   */
+  classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
+   * Should all [[classes]] be handled polymorphically.
    */
   arePolymorphic?: boolean;
 
   /**
    * Condition for filtering instances of defined classes.
    *
-   * **See:**
-   * [ECExpressions Available in InstanceFilter]($docs/learning/hierarchies/ECExpressions.md#instance-filter).
+   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/hierarchies/ECExpressions.md#instance-filter).
    */
   instanceFilter?: string;
-
-  /**
-   * Names of ECClasses separated by comma.
-   * Format: `SchemaName1:ClassName11,ClassName12;SchemaName2:ClassName21,ClassName22`
-   */
-  classNames: string;
 }

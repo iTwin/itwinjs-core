@@ -4,53 +4,49 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
-import { IRulesetManager, RegisteredRuleSet } from "@src/IRulesetManager";
-import { PresentationRuleSet, PresentationRuleTypes } from "@src/rules";
+import { IRulesetManager, RegisteredRuleset } from "@src/IRulesetManager";
+import { Ruleset, RuleTypes } from "@src/rules";
 
-describe("RegisteredRuleSet", () => {
+describe("RegisteredRuleset", () => {
 
   const managerMock = moq.Mock.ofType<IRulesetManager>();
   beforeEach(() => {
     managerMock.reset();
   });
 
-  describe("PresentationRuleSet implementation", () => {
+  describe("Ruleset implementation", () => {
 
-    let ruleset: PresentationRuleSet;
-    let registered: RegisteredRuleSet;
+    let ruleset: Ruleset;
+    let hash: string;
+    let registered: RegisteredRuleset;
     beforeEach(() => {
       ruleset = {
-        ruleSetId: faker.random.uuid(),
-        supportedSchemas: faker.random.words(),
-        isSupplemental: faker.random.boolean(),
-        supplementalPurpose: faker.random.words(),
-        versionMajor: faker.random.number(),
-        versionMinor: faker.random.number(),
+        id: faker.random.uuid(),
+        supportedSchemas: { schemaNames: [faker.random.word()] },
+        supplementationInfo: {
+          supplementationPurpose: faker.random.words(),
+        },
         rules: [{
-          type: PresentationRuleTypes.RootNodeRule,
+          ruleType: RuleTypes.RootNodes,
           autoExpand: faker.random.boolean(),
         }],
-        contentModifiers: [{
-          schemaName: faker.random.word(),
-          className: faker.random.word(),
-        }],
-        userSettings: [{
-          categoryLabel: faker.random.words(),
+        vars: [{
+          label: faker.random.words(),
+          vars: [],
         }],
       };
-      registered = new RegisteredRuleSet(managerMock.object, ruleset);
+      hash = faker.random.uuid();
+      registered = new RegisteredRuleset(managerMock.object, ruleset, hash);
     });
 
     it("returns wrapper ruleset properties", () => {
-      expect(registered.ruleSetId).to.deep.equal(ruleset.ruleSetId);
+      expect(registered.hash).to.eq(hash);
+      expect(registered.id).to.deep.equal(ruleset.id);
       expect(registered.supportedSchemas).to.deep.equal(ruleset.supportedSchemas);
-      expect(registered.isSupplemental).to.deep.equal(ruleset.isSupplemental);
-      expect(registered.supplementalPurpose).to.deep.equal(ruleset.supplementalPurpose);
-      expect(registered.versionMajor).to.deep.equal(ruleset.versionMajor);
-      expect(registered.versionMinor).to.deep.equal(ruleset.versionMinor);
+      expect(registered.supplementationInfo).to.deep.equal(ruleset.supplementationInfo);
       expect(registered.rules).to.deep.equal(ruleset.rules);
-      expect(registered.contentModifiers).to.deep.equal(ruleset.contentModifiers);
-      expect(registered.userSettings).to.deep.equal(ruleset.userSettings);
+      expect(registered.vars).to.deep.equal(ruleset.vars);
+      expect(registered.toJSON()).to.deep.equal(ruleset);
     });
 
   });
@@ -58,10 +54,12 @@ describe("RegisteredRuleSet", () => {
   describe("dispose", () => {
 
     it("unregisters ruleset from IRulesetManager", () => {
-      const ruleset: PresentationRuleSet = {
-        ruleSetId: faker.random.uuid(),
+      const ruleset: Ruleset = {
+        id: faker.random.uuid(),
+        rules: [],
       };
-      const registered = new RegisteredRuleSet(managerMock.object, ruleset);
+      const hash = faker.random.uuid();
+      const registered = new RegisteredRuleset(managerMock.object, ruleset, hash);
       registered.dispose();
       managerMock.verify((x) => x.remove(registered), moq.Times.once());
     });
