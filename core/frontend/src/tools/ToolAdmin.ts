@@ -454,7 +454,7 @@ export class ToolAdmin {
     vp.removeAnimator();
     const ev = new BeTouchEvent(touchEv);
     const current = this.currentInputState;
-    const pos = (0 !== touchEv.targetTouches.length ? BeTouchEvent.getTouchPosition(touchEv.targetTouches[0], vp) : (0 !== touchEv.changedTouches.length ? BeTouchEvent.getTouchPosition(touchEv.changedTouches[0], vp) : Point2d.createZero()));
+    const pos = BeTouchEvent.getTouchListCentroid(0 !== touchEv.targetTouches.length ? touchEv.targetTouches : touchEv.changedTouches, vp);
 
     switch (touchEv.type) {
       case "touchstart":
@@ -463,7 +463,7 @@ export class ToolAdmin {
         break;
     }
 
-    current.fromButton(vp, pos, InputSource.Touch, true);
+    current.fromButton(vp, undefined !== pos ? pos : Point2d.createZero(), InputSource.Touch, true);
     current.toEvent(ev, false);
     const tool = this.activeTool;
 

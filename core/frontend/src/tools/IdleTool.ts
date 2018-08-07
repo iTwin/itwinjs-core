@@ -119,8 +119,8 @@ export class IdleTool extends InteractiveTool {
 
   public async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
 
-  public async onTouchMoveStart(_ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
-    const tool = new DefaultViewTouchTool(startEv, true);
+  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
+    const tool = new DefaultViewTouchTool(startEv, ev);
     return (tool.run() ? EventHandled.Yes : EventHandled.No);
   }
 
