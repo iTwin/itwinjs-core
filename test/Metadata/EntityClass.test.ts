@@ -121,10 +121,10 @@ describe("EntityClass", () => {
       });
 
       const ecschema = await Schema.fromJson(schemaJson);
-      const testClass = await ecschema.getClass<ECClass>("TestEntityClass");
+      const testClass = await ecschema.getItem<ECClass>("TestEntityClass");
       assert.isDefined(testClass);
 
-      const testEntity = await ecschema.getClass<EntityClass>("TestEntityClass");
+      const testEntity = await ecschema.getItem<EntityClass>("TestEntityClass");
       assert.isDefined(testEntity);
 
       expect(testEntity!.name).equal("TestEntityClass");
@@ -148,12 +148,12 @@ describe("EntityClass", () => {
       const ecschema = await Schema.fromJson(schemaJson);
       assert.isDefined(ecschema);
 
-      const testClass = await ecschema.getClass("testClass");
+      const testClass = await ecschema.getItem("testClass");
       assert.isDefined(testClass);
       assert.isTrue(testClass instanceof EntityClass);
       const entityClass = testClass as EntityClass;
 
-      const mixinClass = await ecschema.getClass<Mixin>("testMixin");
+      const mixinClass = await ecschema.getItem<Mixin>("testMixin");
       assert.isDefined(mixinClass);
 
       assert.isDefined(entityClass.mixins);
@@ -222,10 +222,10 @@ describe("EntityClass", () => {
       const ecSchema = await Schema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
-      const testEntity = await ecSchema.getClass<EntityClass>("testClass");
+      const testEntity = await ecSchema.getItem<EntityClass>("testClass");
       assert.isDefined(testEntity);
 
-      const testBaseEntity = await ecSchema.getClass<EntityClass>("baseClass");
+      const testBaseEntity = await ecSchema.getItem<EntityClass>("baseClass");
       assert.isDefined(testBaseEntity);
 
       assert.isDefined(await testEntity!.baseClass);
@@ -248,10 +248,10 @@ describe("EntityClass", () => {
       const ecSchema = Schema.fromJsonSync(schemaJson);
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getClassSync<EntityClass>("testClass");
+      const testEntity = ecSchema.getItemSync<EntityClass>("testClass");
       assert.isDefined(testEntity);
 
-      const testBaseEntity = ecSchema.getClassSync<EntityClass>("baseClass");
+      const testBaseEntity = ecSchema.getItemSync<EntityClass>("baseClass");
       assert.isDefined(testBaseEntity);
 
       const baseClass = testEntity!.getBaseClassSync();
@@ -276,13 +276,13 @@ describe("EntityClass", () => {
       const schema = await Schema.fromJson(schemaJson);
       assert.isDefined(schema);
 
-      const entityClass = await schema.getClass<EntityClass>("TestEntityClass");
+      const entityClass = await schema.getItem<EntityClass>("TestEntityClass");
       assert.isDefined(entityClass);
 
       const navProp = await entityClass!.getProperty("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = await schema.getClass<RelationshipClass>("NavPropRelationship");
+        const relClass = await schema.getItem<RelationshipClass>("NavPropRelationship");
         assert.isTrue(await navProp.relationshipClass === relClass);
       } else {
         assert.fail();
@@ -304,13 +304,13 @@ describe("EntityClass", () => {
       const schema = Schema.fromJsonSync(schemaJson);
       assert.isDefined(schema);
 
-      const entityClass = schema.getClassSync<EntityClass>("TestEntityClass");
+      const entityClass = schema.getItemSync<EntityClass>("TestEntityClass");
       assert.isDefined(entityClass);
 
       const navProp = entityClass!.getPropertySync("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = schema.getClassSync<RelationshipClass>("NavPropRelationship");
+        const relClass = schema.getItemSync<RelationshipClass>("NavPropRelationship");
         assert.isTrue(navProp.getRelationshipClassSync() === relClass);
       } else {
         assert.fail();

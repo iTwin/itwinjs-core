@@ -35,7 +35,7 @@ export default class EntityClass extends ECClass {
       return function *(): Iterable<Mixin> {}(); // empty iterable
 
     for (const mixin of this._mixins) {
-      const mObj = this.getReferencedClassSync<Mixin>(mixin);
+      const mObj = this.schema.lookupItemSync<Mixin>(mixin);
       if (mObj) {
         yield mObj;
       }
@@ -86,7 +86,7 @@ export default class EntityClass extends ECClass {
     }
 
     for (const mixin of this._mixins) {
-      const mObj = this.getReferencedClassSync(mixin);
+      const mObj = this.schema.lookupItemSync<ECClass>(mixin);
       if (mObj) {
         const result = mObj.getPropertySync(name, true);
         if (result) {
@@ -185,7 +185,7 @@ export default class EntityClass extends ECClass {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
         this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
           async () => {
-            const mixin = await this.schema.getItem<Mixin>(mixinSchemaItemKey.name);
+            const mixin = await this.schema.lookupItem<Mixin>(mixinSchemaItemKey);
             if (undefined === mixin)
               throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
             return mixin;
@@ -210,9 +210,9 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
-  if (typeof(relationship) === "string")
-    resolvedRelationship = await ecClass.schema.getItem<RelationshipClass>(relationship, true);
-  else
+  if (typeof(relationship) === "string") {
+    resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(relationship);
+  } else
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
@@ -235,9 +235,9 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
-  if (typeof(relationship) === "string")
-    resolvedRelationship = ecClass.schema.getItemSync<RelationshipClass>(relationship, true);
-  else
+  if (typeof(relationship) === "string") {
+    resolvedRelationship = ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
+  } else
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)

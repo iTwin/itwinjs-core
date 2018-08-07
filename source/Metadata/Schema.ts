@@ -31,7 +31,7 @@ const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecsche
  *
  */
 export default class Schema implements CustomAttributeContainerProps {
-  private _context?: SchemaContext;
+  // private _context?: SchemaContext; unused currently, but in the future we may use it for item lookup
   protected _schemaKey?: SchemaKey;
   protected _alias?: string;
   protected _label?: string;
@@ -61,9 +61,9 @@ export default class Schema implements CustomAttributeContainerProps {
    * @hidden
    */
   constructor();
-  constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, otherCtx?: SchemaContext) {
+  constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, _otherCtx?: SchemaContext) {
     this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
-    this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
+    // this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
     this.references = [];
     this._items = [];
   }
@@ -280,7 +280,7 @@ export default class Schema implements CustomAttributeContainerProps {
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
   private createClass<T extends ECClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
     const item = new type(this, name, modifier);
-    this.addItem(item);
+    this.addItemSync(item);
     return item;
   }
 
@@ -291,65 +291,74 @@ export default class Schema implements CustomAttributeContainerProps {
     return item;
   }
 
-  private getLocalItem(name: string): SchemaItem| undefined {
+  /**
+   * Gets an item from within this schema. To get by full name use lookupItem instead.
+   * @param key the local (unqualified) name, lookup is case-insensitive
+   */
+  public async getItem<T extends SchemaItem>(name: string): Promise<T | undefined> {
+    // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
+    return this.getItemSync(name);
+  }
+
+  /**
+   * Gets an item from within this schema. To get by full name use lookupItem instead.
+   * @param key the local (unqualified) name, lookup is case-insensitive
+   */
+  public getItemSync<T extends SchemaItem>(name: string): T | undefined {
     // Case-insensitive search
-    return this._items.find((item) => item.name.toLowerCase() === name.toLowerCase());
+    return this._items.find((item) => item.name.toUpperCase() === name.toUpperCase()) as T;
   }
 
   /**
-   * Attempts to find a schema item with a name matching, case-insensitive, the provided name. It will look for the schema item in the context of this schema.
-   * If the name is a full name, it will search in the reference schema matching the name.
-   * @param name The name of the schema item to search for.
+   * Attempts to find a schema item within this schema or a (directly) referenced schema
+   * @param key The full name or a SchemaItemKey identifying the desired item.
    */
-  public async getItem<T extends SchemaItem>(name: string, includeReference?: boolean): Promise<T | undefined> {
-    const [schemaName, itemName] = SchemaItem.parseFullName(name);
-
-    let foundItem;
-    if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
-      // Case-insensitive search
-      foundItem = this.getLocalItem(itemName);
-      if (!foundItem && this._context) {
-        // this._context.
-      }
-
-    } else if (includeReference) {
-      const refSchema = await this.getReference(schemaName);
-      if (!refSchema)
-        return undefined;
-
-      // Since we are only passing the itemName to the reference schema it will not check its own referenced schemas.
-      foundItem = refSchema.getItem<T>(itemName, includeReference);
+  public async lookupItem<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): Promise<T | undefined> {
+    let schemaName, itemName: string;
+    if (typeof(key) === "string") {
+      [schemaName, itemName] = SchemaItem.parseFullName(key);
+    } else {
+      itemName = key.name;
+      schemaName = key.schemaName;
     }
 
-    return Promise.resolve(foundItem ? foundItem as T : foundItem);
+    if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
+      return await this.getItem<T>(itemName);
+      // this._context.
+    }
+
+    const refSchema = await this.getReference(schemaName);
+    if (!refSchema)
+      return undefined;
+
+    // TODO: use the context and not get the full schema here
+    return await refSchema.getItem<T>(itemName);
   }
 
   /**
-   * Attempts to find a schema item with a name matching, case-insensitive, the provided name. It will look for the schema item in the context of this schema.
-   * If the name is a full name, it will search in the reference schema matching the name.
-   * @param name The name of the schema item to search for.
+   * Attempts to find a schema item within this schema or a (directly) referenced schema
+   * @param key The full name or a SchemaItemKey identifying the desired item.
    */
-  public getItemSync<T extends SchemaItem>(name: string, includeReference?: boolean): T | undefined {
-    const [schemaName, itemName] = SchemaItem.parseFullName(name);
-
-    let foundItem;
-    if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
-      // Case-insensitive search
-      foundItem = this.getLocalItem(itemName);
-      if (!foundItem && this._context) {
-        // this._context.
-      }
-
-    } else if (includeReference) {
-      const refSchema = this.getReferenceSync(schemaName);
-      if (!refSchema)
-        return undefined;
-
-      // Since we are only passing the itemName to the reference schema it will not check its own referenced schemas.
-      foundItem = refSchema.getItemSync<T>(itemName, includeReference);
+  public lookupItemSync<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): T | undefined {
+    let schemaName, itemName: string;
+    if (typeof(key) === "string") {
+      [schemaName, itemName] = SchemaItem.parseFullName(key);
+    } else {
+      itemName = key.name;
+      schemaName = key.schemaName;
     }
 
-    return foundItem ? foundItem as T : foundItem;
+    if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
+      return this.getItemSync<T>(itemName);
+      // this._context.
+    }
+
+    const refSchema = this.getReferenceSync(schemaName);
+    if (!refSchema)
+      return undefined;
+
+    // TODO: use the context and not get the full schema here
+    return refSchema.getItemSync<T>(itemName);
   }
 
   /**
@@ -357,35 +366,16 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param item
    */
   protected async addItem<T extends SchemaItem>(item: T): Promise<void> {
-    if (undefined !== this.getLocalItem(item.name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
-
-    this._items.push(item);
-    return Promise.resolve();
+    this.addItemSync(item);
   }
 
   protected addItemSync<T extends SchemaItem>(item: T): void {
-    if (undefined !== this.getLocalItem(item.name))
+    if (undefined !== this.getItemSync(item.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
 
     this._items.push(item);
   }
 
-  /**
-   * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
-   * @param name The name of the class to return.
-   */
-  public getClass<T extends ECClass>(name: string): Promise<T | undefined> { return this.getItem<T>(name); }
-
-  /**
-   * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
-   * @param name The name of the class to return.
-   */
-  public getClassSync<T extends ECClass>(name: string): T | undefined { return this.getItemSync<T>(name); }
-
-  /**
-   *
-   */
   public getItems<T extends SchemaItem>(): T[] {
     if (!this._items)
       return [];
@@ -393,9 +383,6 @@ export default class Schema implements CustomAttributeContainerProps {
     return this._items as T[];
   }
 
-  /**
-   *
-   */
   public getClasses(): ECClass[] {
     if (!this._items)
       return [];

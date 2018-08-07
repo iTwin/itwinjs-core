@@ -4,9 +4,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.9.0]  -  2018-08-07
 ### Changed
 - Removed Composite from Format and merged the properties into the Format class
 - Added basic Custom Attribute deserialization support
+- Split the current GetItem, on Schema, functionality into two separate methods, LookupItem and GetItem
+  - The new GetItem will only search within the current Schema by an unqualified name.
+  - LookupItem will take a full name, or SchemaItemKey, and search the current Schema and all of its direct references.
 
 ### Fixed
 - Loading KindOfQuantity and PropertyCategory from referenced schemas on a property now resolves correctly

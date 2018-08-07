@@ -81,7 +81,7 @@ export default class Format extends SchemaItem {
       if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // no duplicate names- take unit name after "."
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
     }
-    newUnit = this.schema.getItemSync<Unit | InvertedUnit>(name, true);
+    newUnit = this.schema.lookupItemSync<Unit | InvertedUnit>(name);
     if (!newUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     this.units!.push([newUnit, label]);
@@ -96,7 +96,7 @@ export default class Format extends SchemaItem {
       if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // duplicate names are not allowed- take unit name after "."
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
     }
-    newUnit = await this.schema.getItem<Unit | InvertedUnit>(name, true);
+    newUnit = await this.schema.lookupItem<Unit | InvertedUnit>(name);
     if (!newUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     this.units!.push([newUnit, label]);

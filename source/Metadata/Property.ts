@@ -2,12 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedRelationshipClass, LazyLoadedSchemaItem } from "../Interfaces";
+import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedRelationshipClass } from "../Interfaces";
 import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
 import ECClass, { StructClass } from "./Class";
-import SchemaItem from "./SchemaItem";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
@@ -63,11 +62,17 @@ export abstract class Property {
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   public getCategorySync(): PropertyCategory | undefined {
-    return getReferencedSchemaItemSync(this.class, this._category);
+    if (!this._category)
+      return undefined;
+
+    return this.class.schema.lookupItemSync(this._category);
   }
 
   public getKindOfQuantitySync(): KindOfQuantity | undefined {
-    return getReferencedSchemaItemSync(this.class, this._kindOfQuantity);
+    if (!this._kindOfQuantity)
+      return undefined;
+
+    return this.class.schema.lookupItemSync(this._kindOfQuantity);
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -116,7 +121,7 @@ export abstract class Property {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
       this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey,
         async () => {
-          const category = await getReferencedSchemaItem<PropertyCategory>(this.class, propertyCategorySchemaItemKey);
+          const category = await this.class.schema.lookupItem<PropertyCategory>(propertyCategorySchemaItemKey);
           if (undefined === category)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
           return category;
@@ -132,7 +137,7 @@ export abstract class Property {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
       this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey,
           async () => {
-            const koq = await getReferencedSchemaItem<KindOfQuantity>(this.class, koqSchemaItemKey);
+            const koq = await this.class.schema.lookupItem<KindOfQuantity>(koqSchemaItemKey);
             if (undefined === koq)
               throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
             return koq;
@@ -287,7 +292,10 @@ export class NavigationProperty extends Property {
   get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
 
   public getRelationshipClassSync(): RelationshipClass | undefined {
-    return getReferencedSchemaItemSync(this.class, this._relationshipClass);
+    if (!this._relationshipClass)
+      return undefined;
+
+    return this.class.schema.lookupItemSync(this._relationshipClass);
   }
 
   get direction() { return this._direction; }
@@ -380,39 +388,3 @@ export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
 export type AnyStructProperty = StructProperty | StructArrayProperty;
 export type AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty;
-
-async function getReferencedSchemaItem<T extends SchemaItem>(parentClass?: ECClass, key?: SchemaItemKey): Promise<T | undefined> {
-  if (!key || !parentClass)
-    return undefined;
-
-  const schema = parentClass.schema;
-
-  const isInThisSchema = (schema.name.toUpperCase() === key.schemaName.toUpperCase());
-
-  if (isInThisSchema)
-    return await schema.getItem<T>(key.name);
-
-  const reference = await schema.getReference(key.schemaName);
-  if (reference)
-    return await reference.getItem<T>(key.name);
-
-  return undefined;
-}
-
-function getReferencedSchemaItemSync<T extends SchemaItem>(parentClass?: ECClass, key?: LazyLoadedSchemaItem<T>): T | undefined {
-  if (!key || !parentClass)
-    return undefined;
-
-  const schema = parentClass.schema;
-
-  const isInThisSchema = (schema.name.toUpperCase() === key.schemaName.toUpperCase());
-
-  if (isInThisSchema)
-    return schema.getItemSync<T>(key.name);
-
-  const reference = schema.getReferenceSync(key.schemaName);
-  if (reference)
-    return reference.getItemSync<T>(key.name);
-
-  return undefined;
-}

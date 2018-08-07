@@ -59,7 +59,7 @@ export default class Mixin extends ECClass {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${jsonObj.appliesTo}.`);
     this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey,
       async () => {
-        const appliesTo = await this.schema.getItem<EntityClass>(entityClassSchemaItemKey.name);
+        const appliesTo = await this.schema.lookupItem<EntityClass>(entityClassSchemaItemKey);
         if (undefined === appliesTo)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${jsonObj.appliesTo}.`);
         return appliesTo;

@@ -70,7 +70,7 @@ export default class SchemaReadHelper {
       for (const itemName in this._itemToRead.items) {
         // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
         // which would be found when adding to the context.
-        if (await schema.getItem(itemName, false) !== undefined)
+        if (await schema.getItem(itemName) !== undefined)
           continue;
 
         const loadedItem = await this.loadSchemaItem(schema, this._itemToRead.items[itemName], itemName);
@@ -121,7 +121,7 @@ export default class SchemaReadHelper {
       for (const itemName in this._itemToRead.items) {
         // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
         // which would be found when adding to the context.
-        if (schema.getItemSync(itemName, false) !== undefined)
+        if (schema.getItemSync(itemName) !== undefined)
           continue;
 
         const loadedItem = this.loadSchemaItemSync(schema, this._itemToRead.items[itemName], itemName);
@@ -377,7 +377,7 @@ export default class SchemaReadHelper {
     const [schemaName, itemName] = SchemaItem.parseFullName(fullName);
     const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
 
-    if (isInThisSchema && undefined === await this._schema!.getItem(itemName, false)) {
+    if (isInThisSchema && undefined === await this._schema!.getItem(itemName)) {
       const schemaItem = await this.loadSchemaItem(this._schema!, this._itemToRead.items[itemName], itemName);
       if (!skipVisitor && schemaItem && this._visitor) {
         await schemaItem.accept(this._visitor);
@@ -588,7 +588,7 @@ export default class SchemaReadHelper {
     const [schemaName, itemName] = SchemaItem.parseFullName(fullName);
     const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
 
-    if (isInThisSchema && undefined === this._schema!.getItemSync(itemName, false)) {
+    if (isInThisSchema && undefined === this._schema!.getItemSync(itemName)) {
       const schemaItem = this.loadSchemaItemSync(this._schema!, this._itemToRead.items[itemName], itemName);
       if (!skipVisitor && schemaItem && this._visitor) {
         schemaItem.accept(this._visitor);

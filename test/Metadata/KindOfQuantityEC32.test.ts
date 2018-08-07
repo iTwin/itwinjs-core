@@ -90,13 +90,13 @@ describe("KindOfQuantity EC3.2", () => {
       expect(koq.precision).equal(5);
 
       assert.isDefined(koq.persistenceUnit);
-      const schemaPersistenceUnit = await ecSchema.getItem<Unit>("Formats.IN", true);
+      const schemaPersistenceUnit = await ecSchema.lookupItem<Unit>("Formats.IN");
       assert.equal(schemaPersistenceUnit, await koq.persistenceUnit);
 
       assert.isDefined(koq.presentationUnits);
       expect(koq.presentationUnits!.length).to.eql(1);
       for (const lazyFormat of koq.presentationUnits!) {
-        const schemaFormat = await ecSchema.getItem<Format>("Formats.DefaultReal", true);
+        const schemaFormat = await ecSchema.lookupItem<Format>("Formats.DefaultReal");
         const koqFormat = await lazyFormat;
         assert.isTrue(schemaFormat === koqFormat);
       }
@@ -113,8 +113,8 @@ describe("KindOfQuantity EC3.2", () => {
       expect(koq.precision).equal(5);
 
       assert.isDefined(koq.persistenceUnit);
-      const schemaPersistenceUnit = ecSchema.getItemSync<Unit>("Formats.IN", true);
-      assert.equal(schemaPersistenceUnit, ecSchema.getItemSync<Unit>(koq.persistenceUnit!.schemaName + "." + koq.persistenceUnit!.name, true));
+      const schemaPersistenceUnit = ecSchema.lookupItemSync<Unit>("Formats.IN");
+      assert.equal(schemaPersistenceUnit, ecSchema.lookupItemSync<Unit>(koq.persistenceUnit!.schemaName + "." + koq.persistenceUnit!.name));
 
       assert.isDefined(koq.presentationUnits);
       expect(koq.presentationUnits!.length).to.eql(1);
@@ -196,7 +196,7 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.notEqual(defaultFormat, await schema.getItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, await schema.lookupItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
 
         expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
 
@@ -212,7 +212,7 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.notEqual(defaultFormat, schema.getItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
 
         expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
 
@@ -237,12 +237,12 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = await testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.notEqual(defaultFormat, await schema.getItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, await schema.lookupItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
 
         assert.isDefined(defaultFormat!.units);
         expect(defaultFormat!.units!.length).to.eql(1);
         const unitOverride = defaultFormat!.units![0];
-        const unitFromSchema = await schema.getItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
+        const unitFromSchema = await schema.lookupItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
         assert.equal(await unitOverride[0], unitFromSchema);
         assert.isUndefined(unitOverride[1]);
       });
@@ -255,12 +255,12 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.notEqual(defaultFormat, schema.getItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name, true), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
 
         assert.isDefined(defaultFormat!.units);
         expect(defaultFormat!.units!.length).to.eql(1);
         const unitOverride = defaultFormat!.units![0];
-        const unitFromSchema = schema.getItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
+        const unitFromSchema = schema.lookupItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
         assert.equal(unitOverride[0], unitFromSchema);
         assert.isUndefined(unitOverride[1]);
       });
@@ -285,7 +285,7 @@ describe("KindOfQuantity EC3.2", () => {
         assert.isDefined(defaultFormat!.units);
         expect(defaultFormat!.units!.length).to.eql(1);
         const unitOverride = defaultFormat!.units![0];
-        const unitFromSchema = await schema.getItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
+        const unitFromSchema = await schema.lookupItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
         assert.equal(await unitOverride[0], unitFromSchema);
         expect(unitOverride[1]).to.be.eql(" in");
       });
@@ -301,7 +301,7 @@ describe("KindOfQuantity EC3.2", () => {
         assert.isDefined(defaultFormat!.units);
         expect(defaultFormat!.units!.length).to.eql(1);
         const unitOverride = defaultFormat!.units![0];
-        const unitFromSchema = schema.getItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name, true);
+        const unitFromSchema = schema.lookupItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
         assert.equal(unitOverride[0], unitFromSchema);
         expect(unitOverride[1]).to.be.eql(" in");
       });

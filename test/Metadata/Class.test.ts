@@ -98,11 +98,11 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(schemaJson);
       assert.isDefined(schema);
 
-      const testClass = await schema.getClass<EntityClass>("testClass");
+      const testClass = await schema.getItem<EntityClass>("testClass");
       assert.isDefined(testClass);
       assert.isDefined(await testClass!.baseClass);
 
-      const baseClass = await schema.getClass<EntityClass>("testBaseClass");
+      const baseClass = await schema.getItem<EntityClass>("testBaseClass");
       assert.isDefined(baseClass);
       assert.isTrue(baseClass === await testClass!.baseClass);
     });
@@ -134,7 +134,7 @@ describe("ECClass", () => {
 
       schema = await Schema.fromJson(schemaJson, context);
 
-      const testClass = await schema.getClass<EntityClass>("testClass");
+      const testClass = await schema.getItem<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(await testClass!.baseClass);
@@ -161,7 +161,7 @@ describe("ECClass", () => {
 
       schema = await Schema.fromJson(oneCustomAttributeJson);
 
-      const testClass = await schema.getClass<EntityClass>("testClass");
+      const testClass = await schema.getItem<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
@@ -170,7 +170,7 @@ describe("ECClass", () => {
     it("sync - Deserialize One Custom Attribute", () => {
       schema = Schema.fromJsonSync(oneCustomAttributeJson);
 
-      const testClass = schema.getClassSync<EntityClass>("testClass");
+      const testClass = schema.getItemSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
@@ -198,7 +198,7 @@ describe("ECClass", () => {
 
       schema = await Schema.fromJson(twoCustomAttributesJson);
 
-      const testClass = await schema.getClass<EntityClass>("testClass");
+      const testClass = await schema.getItem<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
@@ -207,7 +207,7 @@ describe("ECClass", () => {
     it("sync - Deserialize Two Custom Attributes",  () => {
       schema = Schema.fromJsonSync(twoCustomAttributesJson);
 
-      const testClass = schema.getClassSync<EntityClass>("testClass");
+      const testClass = schema.getItemSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
@@ -257,7 +257,7 @@ describe("ECClass", () => {
       };
       schema = Schema.fromJsonSync(classJson);
 
-      const testClass = schema.getClassSync<EntityClass>("testClass");
+      const testClass = schema.getItemSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
@@ -310,7 +310,7 @@ describe("ECClass", () => {
       const ecSchema = await Schema.fromJson(schemaJson);
       assert.isDefined(ecSchema);
 
-      const testEntity = await ecSchema.getClass("testClass");
+      const testEntity = await ecSchema.getItem<EntityClass>("testClass");
       assert.isDefined(testEntity);
 
       const testPrimProp = await testEntity!.getProperty("testPrimProp");
@@ -344,11 +344,11 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(schemaJson);
       assert.isDefined(schema);
 
-      const testClass = schema.getClassSync<EntityClass>("testClass");
+      const testClass = schema.getItemSync<EntityClass>("testClass");
       assert.isDefined(testClass);
       assert.isDefined(testClass!.getBaseClassSync());
 
-      const baseClass = schema.getClassSync<EntityClass>("testBaseClass");
+      const baseClass = schema.getItemSync<EntityClass>("testBaseClass");
       assert.isDefined(baseClass);
       assert.isTrue(baseClass === testClass!.getBaseClassSync());
     });
@@ -380,7 +380,7 @@ describe("ECClass", () => {
 
       schema = Schema.fromJsonSync(schemaJson, context);
 
-      const testClass = schema.getClassSync<EntityClass>("testClass");
+      const testClass = schema.getItemSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.getBaseClassSync());
@@ -428,7 +428,7 @@ describe("ECClass", () => {
       const ecSchema = Schema.fromJsonSync(schemaJson);
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getClassSync("testClass");
+      const testEntity = ecSchema.getItemSync<EntityClass>("testClass");
       assert.isDefined(testEntity);
 
       const testPrimProp = testEntity!.getPropertySync("testPrimProp");
@@ -529,7 +529,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(testSchemaJson);
       expect(schema).to.exist;
 
-      const testClass = await schema.getClass("H");
+      const testClass = await schema.getItem<ECClass>("H");
       expect(testClass).to.exist;
       for await (const baseClass of testClass!.getAllBaseClasses()) {
         actualNames.push(baseClass.name);
@@ -541,7 +541,7 @@ describe("ECClass", () => {
     it("should correctly traverse a complex inheritance hierarchy synchronously", () => {
       schema = Schema.fromJsonSync(testSchemaJson);
       expect(schema).to.exist;
-      const testClass = schema.getClassSync("H");
+      const testClass = schema.getItemSync<ECClass>("H");
       expect(testClass).to.exist;
 
       const syncActualNames: string[] = [];

@@ -34,33 +34,33 @@ describe("Schema", () => {
       const testSchema = new Schema("TestSchema", 1, 1, 1);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
-      expect(await testSchema.getClass("TestEntity")).instanceof(ECClass);
-      expect(await testSchema.getClass<EntityClass>("TestEntity")).instanceof(EntityClass);
+      expect(await testSchema.getItem("TestEntity")).instanceof(ECClass);
+      expect(await testSchema.getItem<EntityClass>("TestEntity")).instanceof(EntityClass);
     });
 
     it("should succeed for mixin class", async () => {
       const testSchema = new Schema("TestSchema", 1, 2, 3);
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
 
-      expect(await testSchema.getClass("TestMixin")).instanceof(ECClass);
-      expect(await testSchema.getClass<Mixin>("TestMixin")).instanceof(Mixin);
+      expect(await testSchema.getItem("TestMixin")).instanceof(ECClass);
+      expect(await testSchema.getItem<Mixin>("TestMixin")).instanceof(Mixin);
     });
 
     it("should succeed for struct class", async () => {
       const testSchema = new Schema("TestSchema", 1, 2, 3);
       await (testSchema as MutableSchema).createStructClass("TestStruct");
 
-      expect(await testSchema.getClass("TestStruct")).instanceof(ECClass);
-      expect(await testSchema.getClass<StructClass>("TestStruct")).instanceof(StructClass);
+      expect(await testSchema.getItem("TestStruct")).instanceof(ECClass);
+      expect(await testSchema.getItem<StructClass>("TestStruct")).instanceof(StructClass);
     });
 
     it("should succeed with case-insensitive search", async () => {
       const testSchema = new Schema("TestSchema", 1, 0, 0);
       await (testSchema as MutableSchema).createEntityClass("testEntity");
 
-      expect(await testSchema.getClass("TESTENTITY")).not.undefined;
-      expect(await testSchema.getClass("TestEntity")).not.undefined;
-      expect(await testSchema.getClass("testEntity")).not.undefined;
+      expect(await testSchema.getItem("TESTENTITY")).not.undefined;
+      expect(await testSchema.getItem("TestEntity")).not.undefined;
+      expect(await testSchema.getItem("testEntity")).not.undefined;
     });
   });
 

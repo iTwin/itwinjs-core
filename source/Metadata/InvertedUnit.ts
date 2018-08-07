@@ -48,7 +48,7 @@ export default class InvertedUnit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${jsonObj.invertsUnit}.`);
     this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey,
       async () => {
-        const invertsUnit = await this.schema.getItem<Unit>(unitSchemaItemKey.name);
+        const invertsUnit = await this.schema.lookupItem<Unit>(unitSchemaItemKey);
         if (undefined === invertsUnit)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${jsonObj.invertsUnit}.`);
         return invertsUnit;
@@ -63,7 +63,7 @@ export default class InvertedUnit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
-        const unitSystem = await this.schema.getItem<UnitSystem>(unitSystemSchemaItemKey.name);
+        const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
         if (undefined === unitSystem)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
         return unitSystem;

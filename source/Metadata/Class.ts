@@ -10,7 +10,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
-import { AnyClass, LazyLoadedECClass, SchemaItemVisitor, LazyLoadedSchemaItem } from "../Interfaces";
+import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "../Interfaces";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -54,24 +54,12 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     return prop;
   }
 
-  protected getReferencedClassSync<T extends ECClass>(key?: LazyLoadedSchemaItem<T>): T | undefined {
-    if (!key)
-      return undefined;
-
-    const isInThisSchema = (this.schema.name.toLowerCase() === key.schemaName.toLowerCase());
-
-    if (isInThisSchema)
-      return this.schema.getClassSync<T>(key.name);
-
-    const reference = this.schema.getReferenceSync(key.schemaName);
-    if (reference)
-      return reference.getClassSync<T>(key.name);
-
-    return undefined;
-  }
-
   public getBaseClassSync(): ECClass | undefined {
-    return this.getReferencedClassSync(this.baseClass);
+    if (!this.baseClass) {
+      return undefined;
+    }
+
+    return this.schema.lookupItemSync(this.baseClass);
   }
 
   /**
@@ -263,9 +251,9 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
 
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
-    if (typeof(structType) === "string")
-      correctType = await schema.getItem<StructClass>(structType, true);
-    else
+    if (typeof(structType) === "string") {
+      correctType = await schema.lookupItem<StructClass>(structType);
+    } else
       correctType = structType as StructClass | undefined;
 
     if (!correctType)
@@ -276,9 +264,9 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
 
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
-    if (typeof(structType) === "string")
-      correctType = schema.getItemSync<StructClass>(structType, true);
-    else
+    if (typeof(structType) === "string") {
+      correctType = schema.lookupItemSync<StructClass>(structType);
+    } else
       correctType = structType as StructClass | undefined;
 
     if (!correctType)
@@ -292,7 +280,11 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       return PrimitiveType.Integer;
 
     if (typeof(primitiveType) === "string") {
-      const resolvedType = parsePrimitiveType(primitiveType) || await schema.getItem<Enumeration>(primitiveType, true);
+      let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
+      if (!resolvedType) {
+        resolvedType = await schema.lookupItem<Enumeration>(primitiveType);
+      }
+
       if (resolvedType === undefined)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
@@ -307,7 +299,11 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       return PrimitiveType.Integer;
 
     if (typeof(primitiveType) === "string") {
-      const resolvedType = parsePrimitiveType(primitiveType) || schema.getItemSync<Enumeration>(primitiveType, true);
+      let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
+      if (!resolvedType) {
+        resolvedType = schema.lookupItemSync<Enumeration>(primitiveType);
+      }
+
       if (resolvedType === undefined)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
@@ -351,7 +347,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${jsonObj.baseClass}.`);
       this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
         async () => {
-          const baseClass = await this.schema.getItem<ECClass>(jsonObj.baseClass, true);
+          const baseClass = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
           if (undefined === baseClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${jsonObj.baseClass}.`);
           return baseClass;

@@ -33,7 +33,7 @@ describe("CustomAttributeClass", () => {
 
       const ecschema = await Schema.fromJson(schemaJson);
 
-      const testCAClass = await ecschema.getClass<CustomAttributeClass>("TestCAClass");
+      const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
       expect(testCAClass).to.exist;
 
       expect(testCAClass!.name).to.equal("TestCAClass");

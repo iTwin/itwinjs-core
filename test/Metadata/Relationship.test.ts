@@ -106,16 +106,16 @@ describe("RelationshipClass", () => {
       const schema = await Schema.fromJson(schemaJson);
       assert.isDefined(schema);
 
-      const sourceBaseEntity = await schema.getClass<EntityClass>("SourceBaseEntity");
+      const sourceBaseEntity = await schema.getItem<EntityClass>("SourceBaseEntity");
       assert.isDefined(sourceBaseEntity);
-      const targetBaseEntity = await schema.getClass<EntityClass>("TargetBaseEntity");
+      const targetBaseEntity = await schema.getItem<EntityClass>("TargetBaseEntity");
       assert.isDefined(targetBaseEntity);
-      const sourceEntity = await schema.getClass<EntityClass>("TestSourceEntity");
+      const sourceEntity = await schema.getItem<EntityClass>("TestSourceEntity");
       assert.isDefined(sourceEntity);
-      const targetEntity = await schema.getClass<EntityClass>("TestTargetEntity");
+      const targetEntity = await schema.getItem<EntityClass>("TestTargetEntity");
       assert.isDefined(targetEntity);
 
-      const relClass = await schema.getClass<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
       assert.isDefined(relClass);
       expect(relClass!.strength).equal(StrengthType.Embedding);
       expect(relClass!.strengthDirection).equal(StrengthDirection.Backward);
@@ -157,7 +157,7 @@ describe("RelationshipClass", () => {
       const schema = await Schema.fromJson(json);
       assert.isDefined(schema);
 
-      const relClass = await schema.getClass<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
       assert.isDefined(relClass);
 
       const navProp = await relClass!.getProperty("testNavProp");
@@ -185,7 +185,7 @@ describe("RelationshipClass", () => {
       const schema = Schema.fromJsonSync(json);
       assert.isDefined(schema);
 
-      const relClass = schema.getClassSync<RelationshipClass>("TestRelationship");
+      const relClass = schema.getItemSync<RelationshipClass>("TestRelationship");
       assert.isDefined(relClass);
 
       const navProp = relClass!.getPropertySync("testNavProp");

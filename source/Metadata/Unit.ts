@@ -91,7 +91,7 @@ export default class Unit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
       async () => {
-        const phenom = await this.schema.getItem<Phenomenon>(phenomenonSchemaItemKey.name);
+        const phenom = await this.schema.lookupItem<Phenomenon>(phenomenonSchemaItemKey);
         if (undefined === phenom)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
         return phenom;
@@ -106,7 +106,7 @@ export default class Unit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
-        const unitSystem = await this.schema.getItem<UnitSystem>(unitSystemSchemaItemKey.name);
+        const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
         if (undefined === unitSystem)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
         return unitSystem;
