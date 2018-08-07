@@ -72,7 +72,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "nycrc-path": "../../.nycrc",
+    "nycrc-path": "../.nycrc",
     "report-dir": "../../out/reports/coverage/frontend",
     "temp-directory": "../../out/reports/coverage/frontend/.nyc_output"
   }

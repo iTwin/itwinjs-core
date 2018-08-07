@@ -73,7 +73,7 @@
     "typescript": "^2.8.3"
   },
   "nyc": {
-    "nycrc-path": "../../.nycrc",
+    "nycrc-path": "../.nycrc",
     "temp-directory": "../../out/reports/coverage/backend/.nyc_output",
     "report-dir": "../../out/reports/coverage/backend"
   }

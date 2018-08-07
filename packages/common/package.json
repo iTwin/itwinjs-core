@@ -70,7 +70,7 @@
     "typescript-json-schema": "^0.28.0"
   },
   "nyc": {
-    "nycrc-path": "../../.nycrc",
+    "nycrc-path": "../.nycrc",
     "temp-directory": "../../out/reports/coverage/common/.nyc_output",
     "report-dir": "../../out/reports/coverage/common"
   }
