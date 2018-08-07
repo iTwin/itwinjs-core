@@ -68,6 +68,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     return MessageStatus.Information;
   }
 
+  /** hidden */
   public readonly state: Readonly<StatusBarState> = {
     openWidget: null,
     visibleMessage: StatusBarMessageType.None,

@@ -2,7 +2,7 @@
 
 As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModelJs app is typically implemented in separate components, which run in different threads, processes, and/or machines. These components communicate through interfaces, which are called *RpcInterfaces* because they use remote procedure calls, or [RPC](../learning/Glossary.md#RPC).
 
-![SoftwareArchitecture-Rpc](./SoftwareArchitecture-Rpc1.png)
+![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC1.png)
 
 The diagram above shows an app frontend requesting operations from some backend. The frontend in this case is the client and the backend is the server. In general, the terms *client* and *server* specify the two *roles* in an RpcInterface:
 * *client* -- the code that uses an RpcInterface and calls its methods. A client could be the [frontend of an app](./App.md#app-frontend), the [backend of an app](./App.md#app-backend), a [service](./App.md#imodel-services), or an [agent](./App.md#imodel-agents). A client could be [frontend code](../learning/Glossary.md#frontend) or [backend code](../learning/Glossary.md#backend).
@@ -13,17 +13,17 @@ As shown, client and server work with the *RpcManager* to use an RpcInterface. R
 
 A typical app frontend will use more than one remote component. Likewise, a server can contain and expose more than one component. For example, the app frontend might need two interfaces, Interface 1 and Interface 2. In this example, both are implemented in Backend A.
 
-![SoftwareArchitecture-Rpc](./SoftwareArchitecture-Rpc2.png)
+![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC2.png)
 
 An app frontend can just as easily work with multiple backends to obtain the services that it needs. One of the configuration parameters for an RpcInterface is the identity of the backend that provides it. For example, suppose that the frontend also needs to use Interface 3, which is is served out by Backend B.
 
-![SoftwareArchitecture-Rpc](./SoftwareArchitecture-Rpc3.png)
+![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC3.png)
 
 The RPC transport configuration that the frontend uses for Backend B can be different from the configuration it uses for Backend A. In fact, that is the common case. If Backend A is the app's own backend and Backend B is a remote service, then the app will use an RPC configuration that matches its own configuration for A, while it uses a Web configuration for B.
 
 As noted above, the client of an RPC interface can be frontend or backend code. That means that backends can call on the services of other backends. In other words, a backend can be a server and a client at the same time. A backend configures the RpcInterfaces that it *implements* by calling the initializeImpl method on RpcManager, and it configures the RpcInterfaces that it *consumes* by calling initializeClient. For example, suppose Backend B needs the services of Backend C.
 
-![SoftwareArchitecture-Rpc](./SoftwareArchitecture-Rpc4.png)
+![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC4.png)
 
 ## RpcInterfaces are TypeScript Classes
 

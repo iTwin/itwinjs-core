@@ -312,4 +312,18 @@ describe("RpcInterface", () => {
     assert.equal(data[2], 3);
     assert.equal(data[3], 4);
   });
+
+  it("should reject a mismatched RPC interface request", async () => {
+    const realVersion = TestRpcInterface.version;
+    TestRpcInterface.version = "999.999.999";
+
+    try {
+      await TestRpcInterface.getClient().op1(new TestOp1Params(0, 0));
+      assert(false);
+    } catch (err) {
+      assert(true);
+    }
+
+    TestRpcInterface.version = realVersion;
+  });
 });

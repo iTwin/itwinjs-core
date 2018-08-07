@@ -149,6 +149,8 @@ interface State {
 /** Group Item React component.
  */
 class GroupItem extends React.Component<Props, State> {
+
+  /** hidden */
   public readonly state: Readonly<State>;
 
   constructor(props: Props, context?: any) {
@@ -398,6 +400,8 @@ export interface GroupItemState {
 /** Group Button React component.
  */
 export class GroupButton extends React.Component<GroupItemProps, GroupItemState> {
+
+  /** hidden */
   public readonly state: Readonly<GroupItemState>;
 
   constructor(props: GroupItemProps, context?: any) {

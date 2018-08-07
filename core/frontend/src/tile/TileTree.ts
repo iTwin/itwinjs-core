@@ -28,6 +28,8 @@ function compareMissingTiles(lhs: Tile, rhs: Tile): number {
 
 // ###TODO: TileRequests and MissingNodes are likely to change...
 export class MissingNodes extends SortedArray<Tile> {
+  public awaitingChildren: boolean = false;
+
   public constructor() { super(compareMissingTiles); }
 }
 
@@ -51,7 +53,7 @@ export class TileRequests {
   }
   public get hasMissingTiles(): boolean {
     for (const value of this._map.values())
-      if (value.length > 0)
+      if (value.length > 0 || value.awaitingChildren)
         return true;
     return false;
   }
@@ -272,8 +274,11 @@ export class Tile implements IDisposable {
       }
     }
 
-    this.loadChildren(); // NB: asynchronous
+    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     const children = canSkipThisTile ? this.children : undefined;
+    if (canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus)
+      args.markChildrenLoading();
+
     if (undefined !== children) {
       this._childrenLastUsed = args.now;
       let allChildrenDrawable = true;
@@ -365,7 +370,10 @@ export class Tile implements IDisposable {
         }
 
         IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; this._children = undefined; });
+      }).catch((_err) => {
+        this._childrenLoadStatus = TileTree.LoadStatus.NotFound;
+        this._children = undefined;
+      });
     }
 
     return this._childrenLoadStatus;
@@ -446,6 +454,7 @@ export namespace Tile {
     }
 
     public insertMissing(tile: Tile): void { this.missing.insert(tile); }
+    public markChildrenLoading(): void { this.missing.awaitingChildren = true; }
   }
 
   /** Parameters used to construct a Tile. */

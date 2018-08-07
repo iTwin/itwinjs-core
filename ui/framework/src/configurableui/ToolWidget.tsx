@@ -77,6 +77,7 @@ export interface ToolWidgetState {
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
 
+  /** hidden */
   public readonly state: Readonly<ToolWidgetState>;
 
   constructor(props: ToolWidgetPropsEx, context?: any) {
