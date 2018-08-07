@@ -9,7 +9,7 @@ import { Point4d } from "./numerics/Geometry4d";
 import { Range3d } from "./Range";
 import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
 import { XAndY, XYZ, RotMatrixProps, TransformProps } from "./PointVector";
-/* tslint:disable:variable-name jsdoc-format*/
+/* tslint:disable:jsdoc-format*/
 /** A RotMatrix is tagged indicating one of the following states:
  * * unknown: it is not know if the matrix is invertible.
  * * inverseStored: the matrix has its inverse stored
@@ -131,7 +131,17 @@ export class RotMatrix implements BeJSONFunctions {
   public coffs: Float64Array;
   public inverseCoffs: Float64Array | undefined;
   public inverseState: InverseMatrixState;
-  public static readonly identity = RotMatrix.createIdentity();
+  public static _identity: RotMatrix;
+
+  /** The identity RotMatrix. Value is frozen and cannot be modified. */
+  public static get identity(): RotMatrix {
+    if (undefined === this._identity) {
+      this._identity = RotMatrix.createIdentity();
+      this._identity.freeze();
+    }
+
+    return this._identity;
+  }
 
   /** Freeze this RotMatrix. */
   public freeze() { this.computeCachedInverse(true); Object.freeze(this); }
@@ -1725,6 +1735,7 @@ export class Transform implements BeJSONFunctions {
   private constructor(origin: XYZ, matrix: RotMatrix) { this._origin = origin; this._matrix = matrix; }
 
   private static _identity?: Transform;
+  /** The identity Transform. Value is frozen and cannot be modified. */
   public static get identity(): Transform {
     if (undefined === this._identity) {
       this._identity = Transform.createIdentity();
@@ -2137,5 +2148,3 @@ export class Transform implements BeJSONFunctions {
     }
   }
 }
-
-RotMatrix.identity.freeze();
