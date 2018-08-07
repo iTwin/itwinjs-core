@@ -32,11 +32,7 @@ export interface Ruleset {
    */
   supportedSchemas?: SchemasSpecification;
 
-  /**
-   * Supplementation-related information for supplemental rulesets. If this
-   * info is set, the ruleset is merged with primary rulesets that have the
-   * same [[id]].
-   */
+  /** Supplementation-related information for this ruleset */
   supplementationInfo?: SupplementationInfo;
 
   /** User-controllable variable definitions */
@@ -47,7 +43,8 @@ export interface Ruleset {
 }
 
 /**
- * Contains supplementation-related information for supplemental rulesets.
+ * Contains supplementation-related information for
+ * [supplemental rulesets]($docs/learning/RulesetSupplementation.md).
  */
 export interface SupplementationInfo {
   /**

@@ -1091,11 +1091,11 @@
       "description": "Specification for multiple ECClasses that belong to\nthe same ECSchema.",
       "properties": {
         "classNames": {
-          "description": "List of ECClass names",
+          "description": "List of ECClass names.\n\nEach class name may be prefixed with:\n- `E:` to exclude class from results\n- `PE:` to exclude class and all its sublasses from results\nSo generally the list may contain `[\"base_class_name\", \"PE:derived_class_name\"]` to\ninclude all instances of `base_class_name` except all polymorphic instances of\n`derived_class_name`.",
           "items": {
             "type": "string"
           },
-          "pattern": "^[\\w\\d]+$",
+          "pattern": "^(E:|PE:)?[\\w\\d]+$",
           "type": "array"
         },
         "schemaName": {
@@ -1529,7 +1529,7 @@
     },
     "RelatedInstanceSpecification": {
       "additionalProperties": false,
-      "description": "This sub-specification allows joining the primary node instance with any number of related instances and creating\nhierarchies based on a mix of those related instances.\n\nThe related instance property values can be accessed from `CustomizationRule` and also used in\ninstance filters.",
+      "description": "This sub-specification allows joining the primary node instance with any number of related instances and creating\nhierarchies based on a mix of those related instances.\n\nThe related instance property values can be accessed from multiple different places:\n- Instance filter\n- Customization rule value\n- Grouping rule\n\nExample:\n```JSON\n{\n   \"id\": \"related_instance_example\",\n   \"rules\": [{\n     \"ruleType\": \"LabelOverride\",\n     \"condition\": \"ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\\\"Model\\\", \\\"BisCore\\\")\",\n     \"label\": \"modeledElement.UserLabel\"\n   }, {\n     \"ruleType\": \"Grouping\",\n     \"condition\": \"ParentNode.IsNull\",\n     \"class\": {\n       \"schemaName\": \"BisCore\",\n       \"className\": \"Element\"\n     },\n     \"groups\": [{\n       \"specType\": \"Property\",\n       \"propertyName\": \"CodeValue\",\n       \"createGroupForSingleItem\": true\n     }]\n   }, {\n     \"ruleType\": \"RootNodes\",\n     \"specifications\": [{\n       \"specType\": \"InstanceNodesOfSpecificClasses\",\n       \"classes\": { \"schemaName\": \"BisCore\", \"classNames\": [\"GeometricModel\"] },\n       \"arePolymorphic\": true,\n       \"instanceFilter\": \"modeledElement.CodeNamespace = 1\",\n       \"relatedInstances\": [{\n         \"relationship\": { \"schemaName\": \"BisCore\", \"className\": \"ModelModelsElement\" },\n         \"requiredDirection\": \"Forward\",\n         \"class\": { \"schemaName\": \"BisCore\", \"className\": \"Element\" },\n         \"alias\": \"modeledElement\"\n       }]\n     }]\n   }]\n}\n```\nHere `BisCore:GeometricModel` instances are joined with `BisCore:Element` instances to create the hierarchy. This allows:\n- Related `BisCore:Element` properties to be accessed in `InstanceFilter` using `modeledElement` alias.\n- The `LabelOverride` rule to use `modeledElement` alias to access properties of the joined related instance.\n- The `GroupingRule` to be applied because it's grouping `BisCore:Element` which is now part of the generated nodes.",
       "properties": {
         "alias": {
           "description": "The alias to give for the joined related instance. Used to reference the related instance in\ninstance filter and customization rules.\n\n**The value must be unique per-specification!**",
@@ -2002,7 +2002,7 @@
     },
     "SupplementationInfo": {
       "additionalProperties": false,
-      "description": "Contains supplementation-related information for supplemental rulesets.",
+      "description": "Contains supplementation-related information for\nsupplemental rulesets.",
       "properties": {
         "supplementationPurpose": {
           "description": "Identifies why supplementation is done and uniquely identifies particular supplemental ruleset.\nThere can be only one supplemental rule set with the same `Ruleset.id` and `supplementationPurpose`.",
@@ -2130,7 +2130,7 @@
     },
     "supplementationInfo": {
       "$ref": "#/definitions/SupplementationInfo",
-      "description": "Supplementation-related information for supplemental rulesets. If this\ninfo is set, the ruleset is merged with primary rulesets that have the\nsame `id`."
+      "description": "Supplementation-related information for this ruleset"
     },
     "supportedSchemas": {
       "$ref": "#/definitions/SchemasSpecification",
