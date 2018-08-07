@@ -2,6 +2,36 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.112.0",
+      "tag": "@bentley/imodeljs-frontend_v0.112.0",
+      "date": "Tue, 07 Aug 2018 12:19:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support pickable decorations."
+          },
+          {
+            "comment": "Detect tap and double tap and provide tool methods to handle these events."
+          },
+          {
+            "comment": "Remove old gesture events. Added onTouchComplete event for when all fingers leave surface."
+          },
+          {
+            "comment": "Moved tapCount to BeTouchEvent. Added methods to convert touch event to mouse events. Rename onModelMotion to onMouseMotion."
+          },
+          {
+            "comment": "Added separate ToolSettings for touch move distance and delay."
+          },
+          {
+            "comment": "Support spherical skybox image projections."
+          },
+          {
+            "comment": "Support cubemap skybox images."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.111.0",
       "tag": "@bentley/imodeljs-frontend_v0.111.0",
       "date": "Mon, 06 Aug 2018 19:25:38 GMT",

@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Mon, 06 Aug 2018 19:25:38 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Aug 2018 12:19:22 GMT and should not be manually modified.
+
+## 0.112.0
+Tue, 07 Aug 2018 12:19:22 GMT
+
+*Version update only*
 
 ## 0.111.0
 Mon, 06 Aug 2018 19:25:38 GMT
