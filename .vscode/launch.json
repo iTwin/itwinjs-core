@@ -98,10 +98,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tests: Controls",
+      "name": "Tests: Components",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/packages/controls/node_modules/mocha/bin/_mocha",
-      "cwd": "${workspaceFolder}/packages/controls",
+      "program": "${workspaceFolder}/packages/components/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/packages/components",
       "env": {
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },

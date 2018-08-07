@@ -1,4 +1,4 @@
 - ($presentation-common)
 - ($presentation-backend)
 - ($presentation-frontend)
-- ($presentation-controls)
+- ($presentation-components)

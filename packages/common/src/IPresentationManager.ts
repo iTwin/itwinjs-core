@@ -49,7 +49,7 @@ export type Paged<TOptions extends {}> = TOptions & {
 
 /**
  * An interface of presentation manager which provides presentation services for
- * tree and content controls
+ * tree and content components
  */
 export interface IPresentationManager<TIModel extends IModel> {
   /**

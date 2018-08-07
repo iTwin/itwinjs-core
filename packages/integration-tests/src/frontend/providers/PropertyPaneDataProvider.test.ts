@@ -7,7 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
-import PresentationPropertyDataProvider from "@bentley/presentation-controls/lib/propertygrid/DataProvider";
+import PresentationPropertyDataProvider from "@bentley/presentation-components/lib/propertygrid/DataProvider";
 
 before(() => {
   initialize();

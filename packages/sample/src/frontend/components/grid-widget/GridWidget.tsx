@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTableDataProvider, withUnifiedSelection } from "@bentley/presentation-controls/lib/table";
+import { PresentationTableDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/table";
 import { Table } from "@bentley/ui-components";
 import "./GridWidget.css";
 

@@ -7,7 +7,7 @@ import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
-import PresentationTableDataProvider from "@bentley/presentation-controls/lib/table/DataProvider";
+import PresentationTableDataProvider from "@bentley/presentation-components/lib/table/DataProvider";
 import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
 
 before(() => {

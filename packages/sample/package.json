@@ -27,7 +27,7 @@
     "@bentley/presentation-common": "^0.5.1",
     "@bentley/presentation-backend": "^0.5.1",
     "@bentley/presentation-frontend": "^0.5.1",
-    "@bentley/presentation-controls": "^0.5.1",
+    "@bentley/presentation-components": "^0.5.1",
     "@bentley/ui-core": "~0.112.0",
     "@bentley/ui-components": "~0.112.0",
     "body-parser": "^1.18.1",

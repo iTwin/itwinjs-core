@@ -19,8 +19,8 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@bentley/presentation-controls",
-      "projectFolder": "packages/controls",
+      "packageName": "@bentley/presentation-components",
+      "projectFolder": "packages/components",
       "shouldPublish": true
     },
     {

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationPropertyDataProvider, withUnifiedSelection  } from "@bentley/presentation-controls/lib/propertygrid";
+import { PresentationPropertyDataProvider, withUnifiedSelection  } from "@bentley/presentation-components/lib/propertygrid";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid } from "@bentley/ui-components";
 import "./PropertiesWidget.css";

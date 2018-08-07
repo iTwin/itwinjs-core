@@ -7,7 +7,7 @@
     "paths": {
       "@src/*": ["../src/*"],
       "@common/*": ["@bentley/presentation-common/lib/*"],
-      "@helpers/*": ["../../common/tests/_helpers/*", "../../frontend/tests/_helpers/*", "../../controls/tests/_helpers/*"]
+      "@helpers/*": ["../../common/tests/_helpers/*", "../../frontend/tests/_helpers/*", "../../components/tests/_helpers/*"]
     },
     "jsx": "react"
   },

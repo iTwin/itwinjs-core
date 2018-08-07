@@ -1560,7 +1560,7 @@
     },
     "@rush-temp/integration-tests": {
       "version": "file:projects/integration-tests.tgz",
-      "integrity": "sha1-AG6TQwvOWR7iJCbWHR/b2f85P9E=",
+      "integrity": "sha1-Co3jtZ58RgniTz2CtEo0zWvLG/4=",
       "requires": {
         "@bentley/bentleyjs-core": "0.112.0",
         "@bentley/bentleyjs-tools": "0.112.0",
@@ -1675,9 +1675,9 @@
         "typescript-json-schema": "0.28.0"
       }
     },
-    "@rush-temp/presentation-controls": {
-      "version": "file:projects/presentation-controls.tgz",
-      "integrity": "sha1-HDhThUlFFNLRE7/pPWwZaCSzB0o=",
+    "@rush-temp/presentation-components": {
+      "version": "file:projects/presentation-components.tgz",
+      "integrity": "sha1-UXwuBi0k9w4QYCd9UqYvi7UMP9g=",
       "requires": {
         "@bentley/bentleyjs-core": "0.112.0",
         "@bentley/bentleyjs-tools": "0.112.0",
@@ -1761,7 +1761,7 @@
     },
     "@rush-temp/sample": {
       "version": "file:projects/sample.tgz",
-      "integrity": "sha1-1BqzX+kTagpcmWSBZdwfmNRE8UI=",
+      "integrity": "sha1-79gVOg1dqZnr+9JPztw5vz5sYes=",
       "requires": {
         "@bentley/bentleyjs-core": "0.112.0",
         "@bentley/bentleyjs-tools": "0.112.0",

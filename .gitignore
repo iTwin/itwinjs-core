@@ -1,20 +1,9 @@
 # dependencies
-/scripts/node_modules
-/packages/common/node_modules
-/packages/backend/node_modules
-/packages/frontend/node_modules
-/packages/controls/node_modules
-/packages/sample/node_modules
-/packages/integration-tests/node_modules
+**/node_modules/**
 
 # production
 /out
-/packages/common/lib
-/packages/backend/lib
-/packages/frontend/lib
-/packages/controls/lib
-/packages/sample/lib
-/packages/integration-tests/lib
+**/lib/**
 
 # rush-specific
 /common/temp

@@ -27,13 +27,13 @@ export const prioritySortFunction = (a: IPrioritized, b: IPrioritized): number =
 
 let localizationNamespace: I18NNamespace | undefined;
 /**
- * Translate a string with the specified id from `PresentationControls`
+ * Translate a string with the specified id from `PresentationComponents`
  * localization namespace. The `stringId` should not contain namespace - it's
  * prepended automatically.
  * @hidden
  */
 export const translate = async (stringId: string): Promise<string> => {
-  const localizationNamespaceName = "PresentationControls";
+  const localizationNamespaceName = "PresentationComponents";
   if (!localizationNamespace) {
     localizationNamespace = Presentation.i18n.registerNamespace(localizationNamespaceName);
   }

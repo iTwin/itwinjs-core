@@ -1,4 +1,4 @@
-# Change Log - @bentley/ecpresentation-controls
+# Change Log - @bentley/ecpresentation-components
 
 This log was last generated on Thu, 02 Aug 2018 17:56:36 GMT and should not be manually modified.
 

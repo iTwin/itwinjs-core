@@ -26,8 +26,8 @@ described below:
   - Controls the version number and package dependencies for **@bentley/presentation-backend**
 - `packages/frontend/package.json`
   - Controls the version number and package dependencies for **@bentley/presentation-frontend**
-- `packages/controls/package.json`
-  - Controls the version number and package dependencies for **@bentley/presentation-controls**
+- `packages/components/package.json`
+  - Controls the version number and package dependencies for **@bentley/presentation-components**
 - `packages/sample/package.json`
   - Private, not published
   - Sample application used for testing the library using read-world

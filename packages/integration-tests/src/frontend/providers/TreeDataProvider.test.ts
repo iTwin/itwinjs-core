@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import PresentationTreeDataProvider from "@bentley/presentation-controls/lib/tree/DataProvider";
+import PresentationTreeDataProvider from "@bentley/presentation-components/lib/tree/DataProvider";
 
 before(() => {
   initialize();

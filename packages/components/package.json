@@ -1,7 +1,7 @@
 {
-  "name": "@bentley/presentation-controls",
+  "name": "@bentley/presentation-components",
   "version": "0.5.1",
-  "description": "Frontend controls based on iModelJs Presentation library",
+  "description": "React components based on iModelJs Presentation library",
   "keywords": [
     "Bentley",
     "EC",
@@ -9,7 +9,7 @@
     "iModelJS",
     "Frontend",
     "React",
-    "Controls"
+    "Component"
   ],
   "license": "UNLICENSED",
   "author": {
@@ -25,14 +25,14 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name presentation-controls",
-    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/presentation-controls/file.json --onlyJson %TYPEDOC_THEME%",
+    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name presentation-components",
+    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/presentation-components/file.json --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register -r ignore-styles -r jsdom-global/register --check-leaks --full-trace --file ./tests/index.test.ts tests/**/*.{ts,tsx}",
-    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.controls.xml",
+    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.components.xml",
     "watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
@@ -94,8 +94,8 @@
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",
-    "temp-directory": "../../out/reports/coverage/controls/.nyc_output",
-    "report-dir": "../../out/reports/coverage/controls",
+    "temp-directory": "../../out/reports/coverage/components/.nyc_output",
+    "report-dir": "../../out/reports/coverage/components",
     "require": [
       "source-map-support/register",
       "ts-node/register",
