@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
-import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, IDisposable, dispose, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -18,13 +18,13 @@ import {
   ImageBuffer,
   RenderTexture,
   FeatureTable,
-  Feature,
   Gradient,
   ElementAlignedBox3d,
   QParams3d,
   QPoint3dList,
   ImageSource,
   ImageSourceFormat,
+  isValidImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -34,6 +34,7 @@ import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
+import { SkyBox } from "../DisplayStyleState";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
@@ -73,7 +74,7 @@ export class RenderPlan {
   }
 }
 
-/** A renderer-specific object that can be placed into a display list. */
+/** A renderer-specific object that can be placed into a display list. Must have a `dispose` method. */
 export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
@@ -121,9 +122,7 @@ export class DecorationList implements IDisposable {
     this.list.length = 0;
   }
 
-  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) {
-    this.list.push(new Decoration(graphic, ovrs));
-  }
+  public add(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) { this.list.push(new Decoration(graphic, ovr)); }
 }
 
 /**
@@ -307,63 +306,9 @@ export abstract class RenderTarget implements IDisposable {
   public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
-export enum SkyboxSphereType {
-  Gradient2Color,
-  Gradient4Color,
-  Texture,
-}
-
-export class SkyBoxCreateParams {
-  private _isSphere: boolean;
-
-  public readonly texture?: RenderTexture;
-  public readonly sphereType?: SkyboxSphereType;
-  public readonly zOffset?: number;
-  public readonly rotation?: number;
-  public readonly zenithColor?: ColorDef;
-  public readonly skyColor?: ColorDef;
-  public readonly groundColor?: ColorDef;
-  public readonly nadirColor?: ColorDef;
-  public readonly skyExponent?: number;
-  public readonly groundExponent?: number;
-
-  public get isTexturedCube() { return !this._isSphere; }
-  public get isSphere() { return this._isSphere; }
-
-  private constructor(_isSphere: boolean, texture?: RenderTexture, sphereType?: SkyboxSphereType, zOffset?: number, rotation?: number, zenithColor?: ColorDef, nadirColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
-    this._isSphere = _isSphere;
-    this.texture = texture;
-    this.sphereType = sphereType;
-    this.zOffset = zOffset;
-    this.rotation = rotation;
-    this.zenithColor = zenithColor;
-    this.skyColor = skyColor;
-    this.groundColor = groundColor;
-    this.nadirColor = nadirColor;
-    this.skyExponent = skyExponent;
-    this.groundExponent = groundExponent;
-  }
-
-  public static createForTexturedCube(cube: RenderTexture) {
-    return new SkyBoxCreateParams(false, cube);
-  }
-
-  public static createForGradientSphere(sphereType: SkyboxSphereType, zOffset: number, zenithColor: ColorDef, nadirColor: ColorDef,
-    skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
-    // Check arguments.
-    assert(SkyboxSphereType.Texture !== sphereType);
-    if (SkyboxSphereType.Gradient4Color !== sphereType) {
-      assert(undefined !== skyColor);
-      assert(undefined !== groundColor);
-      assert(undefined !== skyExponent);
-      assert(undefined !== groundExponent);
-    }
-    return new SkyBoxCreateParams(true, undefined, sphereType, zOffset, 0, zenithColor, nadirColor, skyColor, groundColor, skyExponent, groundExponent);
-  }
-
-  public static createForTexturedSphere(texture: RenderTexture, zOffset: number, rotation: number) {
-    return new SkyBoxCreateParams(true, texture, SkyboxSphereType.Texture, zOffset, rotation);
-  }
+export interface TextureImage {
+  image: HTMLImageElement | undefined;
+  format: ImageSourceFormat | undefined;
 }
 
 /**
@@ -442,8 +387,8 @@ export abstract class RenderSystem implements IDisposable {
     return this.createTriMesh(rasterTile);
   }
 
-  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBoxCreateParams. */
-  public createSkyBox(_params: SkyBoxCreateParams): RenderGraphic | undefined { return undefined; }
+  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams. */
+  public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
@@ -457,26 +402,41 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of batched Features. */
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
-  /**
-   * Create a pickable decoration. A pickable decoration is a decoration graphic which can be located by tools.
-   * @param graphic The graphics which will be rendered for the decoration. The graphic must be defined in world coordinates, so it cannot be a view overlay, but could be a world overlay.
-   * @param id Uniquely identifies the decoration, obtained from IModelConnection.transientIds.
-   * @param range Optionally describes the range of the graphic in world coordinates. Used for culling.
-   * @returns A RenderGraphic suitable for adding to a DecorateContext.
-   */
-  public createPickableDecoration(graphic: RenderGraphic, id: Id64, range?: ElementAlignedBox3d): RenderGraphic {
-    if (!id.isValid) {
-      assert(false, "Pickable decoration requires an ID");
-      return graphic;
+  /** Locate a previously-created Texture given its key. */
+  public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+
+  /** Find or create a texture from a texture element. */
+  public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
+    let texture = this.findTexture(id.toString(), iModel);
+    if (undefined === texture) {
+      const image = await this.loadTextureImage(id, iModel);
+      if (undefined !== image) {
+        // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
+        texture = this.createTextureFromImage(image.image!, ImageSourceFormat.Png === image.format!, iModel, new RenderTexture.Params(id.toString()));
+      }
     }
 
-    const features = new FeatureTable(1);
-    features.insert(new Feature(id));
-    return this.createBatch(graphic, features, undefined !== range ? range : new ElementAlignedBox3d());
+    return texture;
   }
 
-  /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
-  public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
+    // ###TODO: We need a way in our callbacks to determine if the iModel has been closed...
+    const elemProps = await iModel.elements.getProps(id);
+    if (1 !== elemProps.length)
+      return undefined;
+
+    const textureProps = elemProps[0];
+    if (undefined === textureProps.data || "string" !== typeof (textureProps.data) || undefined === textureProps.format || "number" !== typeof (textureProps.format))
+      return undefined;
+
+    const format = textureProps.format as ImageSourceFormat;
+    if (!isValidImageSourceFormat(format))
+      return undefined;
+
+    const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
+    const imagePromise = ImageUtil.extractImage(imageSource);
+    return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
+  }
 
   /** Create a new Texture from gradient symbology. */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }

@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "All 3d view attachments overlay correctly.",
+      "comment": "Fixed bugs in ClipMaskVolume constructor.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

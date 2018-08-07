@@ -9,7 +9,7 @@ import { Triangle } from "../render/primitives/Primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair, ElementAlignedBox3d, TextureMapping, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
+import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, RotMatrix, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
@@ -200,7 +200,7 @@ export namespace GltfTileIO {
       const binaryData = new Uint8Array(buffer.arrayBuffer, buffer.curPos + header.sceneStrLength);
 
       const sceneStrData = buffer.nextBytes(header.sceneStrLength);
-      const sceneStr = StringUtils.utf8ToString(sceneStrData);
+      const sceneStr = utf8ToString(sceneStrData);
       if (undefined === sceneStr)
         return undefined;
 

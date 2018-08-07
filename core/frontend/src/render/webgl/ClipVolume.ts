@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d, StrokeOptions } from "@bentley/geometry-core";
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
@@ -206,32 +206,40 @@ export class ClipMaskVolume implements RenderClipVolume {
     const clippedPolygonInsides = ClipUtilities.clipPolygonToClipShape(pts, clipVec.clips[0]);  // ### TODO: Currently assume that there is only one shape...
     const indices: number[] = [];
     const vertices = QPoint3dList.createFrom([], QParams3d.fromRange(range));
-    let indexOffset = 0;
 
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.shouldTriangulate = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
     for (const clippedPolygon of clippedPolygonInsides) {
-      // Triangulate the polygon and convert the result to a polyface
-      const triangulatedPolygonGraph = Triangulator.earcutFromPoints(clippedPolygon);
-      Triangulator.cleanupTriangulation(triangulatedPolygonGraph);
-      const polyfaceBuilder = PolyfaceBuilder.create();
-      polyfaceBuilder.addGraph(triangulatedPolygonGraph, false);
-      const polyface = polyfaceBuilder.claimPolyface();
+      if (clippedPolygon.length < 3) {
+        continue;
+      } else if (clippedPolygon.length === 3) {
+        polyfaceBuilder.addTriangleFacet(clippedPolygon);
 
-      const nPoints = polyface.pointCount;
-      const pPoints = polyface.data.point;
-      assert(nPoints !== 0);
+      } else if (clippedPolygon.length === 4) {
+        polyfaceBuilder.addQuadFacet(clippedPolygon);
 
-      for (let i = 0; i < nPoints; i++)
-        vertices.add(pPoints.getPoint3dAt(i));
-
-      const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
-      while (visitor.moveToNextFacet())
-        for (let i = 0; i < 3; i++)
-          indices.push(indexOffset + visitor.clientPointIndex(i));
-
-      assert(indices.length > 0);
-      indexOffset += indices.length;
+      } else if (clippedPolygon.length > 4) {
+        // Clipped polygon must be triangulated before appending
+        const triangulatedPolygonGraph = Triangulator.earcutFromPoints(clippedPolygon);
+        Triangulator.cleanupTriangulation(triangulatedPolygonGraph);
+        polyfaceBuilder.addGraph(triangulatedPolygonGraph, false);
+      }
     }
+    const polyface = polyfaceBuilder.claimPolyface();
+    const nPoints = polyface.pointCount;
+    const pPoints = polyface.data.point;
+    assert(nPoints !== 0);
 
+    for (let i = 0; i < nPoints; i++)
+      vertices.add(pPoints.getPoint3dAt(i));
+
+    const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
+    while (visitor.moveToNextFacet())
+      for (let i = 0; i < 3; i++)
+        indices.push(visitor.clientPointIndex(i));
+
+    assert(indices.length > 0);
     if (indices.length === 0 || vertices.length === 0)
       return undefined;
 

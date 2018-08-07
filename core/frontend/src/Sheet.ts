@@ -268,6 +268,7 @@ export namespace Attachments {
         512,  // does not matter... have no children
         [],
       ));
+      this.setIsReady();
     }
 
     public get hasChildren(): boolean { return false; }
@@ -283,7 +284,7 @@ export namespace Attachments {
       drawArgs.graphics.setViewFlagOverrides(this.root.viewFlagOverrides);
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
-      myRoot.view.createSceneFromDrawArgs(drawArgs);
+      viewRoot.draw(drawArgs);
     }
   }
 
@@ -749,10 +750,9 @@ export namespace Attachments {
       // turn off skybox and groundplane
       if (view.isSpatialView()) {
         const spatial = view as SpatialViewState;
-        const env = spatial.getDisplayStyle3d().getEnvironment();
+        const env = spatial.getDisplayStyle3d().environment;
         env.ground.display = false;
         env.sky.display = false;
-        spatial.getDisplayStyle3d().setEnvironment(env);
       }
 
       const range = attachment.placement.calculateRange();
