@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { Presentation } from "@bentley/presentation-frontend";
 
 /**
  * An interface of something that has a priority.
@@ -27,19 +27,19 @@ export const prioritySortFunction = (a: IPrioritized, b: IPrioritized): number =
 
 let localizationNamespace: I18NNamespace | undefined;
 /**
- * Translate a string with the specified id from `ECPresentationControls`
+ * Translate a string with the specified id from `PresentationControls`
  * localization namespace. The `stringId` should not contain namespace - it's
  * prepended automatically.
  * @hidden
  */
 export const translate = async (stringId: string): Promise<string> => {
-  const localizationNamespaceName = "ECPresentationControls";
+  const localizationNamespaceName = "PresentationControls";
   if (!localizationNamespace) {
-    localizationNamespace = ECPresentation.i18n.registerNamespace(localizationNamespaceName);
+    localizationNamespace = Presentation.i18n.registerNamespace(localizationNamespaceName);
   }
   await localizationNamespace.readFinished;
   stringId = `${localizationNamespaceName}:${stringId}`;
-  return ECPresentation.i18n.translate(stringId);
+  return Presentation.i18n.translate(stringId);
 };
 
 export const getDisplayName = <P>(component: React.ComponentType<P>): string => {

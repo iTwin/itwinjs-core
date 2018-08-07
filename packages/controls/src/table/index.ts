@@ -3,5 +3,5 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-export { default as ECPresentationTableDataProvider } from "./DataProvider";
+export { default as PresentationTableDataProvider } from "./DataProvider";
 export { default as withUnifiedSelection } from "./WithUnifiedSelection";

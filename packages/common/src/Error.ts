@@ -6,9 +6,9 @@
 import { BentleyError, LogFunction, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 
 /**
- * Status codes used by ECPresentation APIs.
+ * Status codes used by Presentation APIs.
  */
-export enum ECPresentationStatus {
+export enum PresentationStatus {
   Success = 0,
   Error = 0x10000,              /** Base error */
   NotInitialized = Error + 1,   /** Not initialized */
@@ -19,9 +19,9 @@ export enum ECPresentationStatus {
 }
 
 /**
- * An error type thrown by ECPresentation APIs.
+ * An error type thrown by Presentation APIs.
  */
-export class ECPresentationError extends BentleyError {
+export class PresentationError extends BentleyError {
 
   /**
    * Creates an instance of Error.
@@ -31,8 +31,8 @@ export class ECPresentationError extends BentleyError {
    * @param log Optional log function which logs the error.
    * @param getMetaData Optional function that returns meta-data related to an error.
    */
-  public constructor(errorNumber: ECPresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, "ECPresentation", getMetaData);
+  public constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, log, "Presentation", getMetaData);
   }
 
   /**
@@ -41,7 +41,7 @@ export class ECPresentationError extends BentleyError {
    */
   // tslint:disable-next-line:naming-convention
   protected _initName(): string {
-    let value = ECPresentationStatus[this.errorNumber];
+    let value = PresentationStatus[this.errorNumber];
     if (!value)
       value = `Unknown Error (${this.errorNumber})`;
     return value;

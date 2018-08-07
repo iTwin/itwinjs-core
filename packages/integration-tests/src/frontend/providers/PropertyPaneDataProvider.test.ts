@@ -6,8 +6,8 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/ecpresentation-common";
-import ECPresentationPropertyDataProvider from "@bentley/ecpresentation-controls/lib/propertygrid/DataProvider";
+import { KeySet } from "@bentley/presentation-common";
+import PresentationPropertyDataProvider from "@bentley/presentation-controls/lib/propertygrid/DataProvider";
 
 before(() => {
   initialize();
@@ -34,13 +34,13 @@ describe("PropertyDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
-  let provider: ECPresentationPropertyDataProvider;
+  let provider: PresentationPropertyDataProvider;
   before(async () => {
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new ECPresentationPropertyDataProvider(imodel, "SimpleContent");
+    provider = new PresentationPropertyDataProvider(imodel, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();

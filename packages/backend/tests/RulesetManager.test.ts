@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import { RegisteredRuleset } from "@bentley/ecpresentation-common";
+import { RegisteredRuleset } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "@src/NativePlatform";
 import RulesetManager from "@src/RulesetManager";
 

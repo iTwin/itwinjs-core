@@ -6,46 +6,46 @@
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
-  ECPresentationRpcInterface,
+  PresentationRpcInterface,
   Node, NodeKey, NodePathElement,
   Content, Descriptor, SelectionInfo,
-  ECPresentationError, ECPresentationStatus,
+  PresentationError, PresentationStatus,
   Paged, RequestOptions, InstanceKey, KeySet, Ruleset,
-} from "@bentley/ecpresentation-common";
+} from "@bentley/presentation-common";
 import {
   HierarchyRpcRequestOptions,
   ContentRpcRequestOptions,
   RulesetRpcRequestOptions,
   RulesetVariableRpcRequestOptions,
-} from "@bentley/ecpresentation-common/lib/ECPresentationRpcInterface";
-import { VariableValueJSON, VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
-import ECPresentation from "./ECPresentation";
-import IBackendECPresentationManager from "./IBackendECPresentationManager";
+} from "@bentley/presentation-common/lib/PresentationRpcInterface";
+import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import Presentation from "./Presentation";
 import RulesetVariablesManager from "./RulesetVariablesManager";
+import IBackendPresentationManager from "./IBackendPresentationManager";
 
 /**
- * The backend implementation of ECPresentationRpcInterface. All it's basically
- * responsible for is forwarding calls to [[ECPresentation.manager]].
+ * The backend implementation of PresentationRpcInterface. All it's basically
+ * responsible for is forwarding calls to [[Presentation.manager]].
  *
  * Consumers should not use this class. Instead, they should register
- * [ECPresentationRpcInterface]($ecpresentation-common):
+ * [PresentationRpcInterface]($presentation-common):
  * ``` ts
  * [[include:Backend.Initialization.RpcInterface]]
  * ```
  */
-export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
+export default class PresentationRpcImpl extends PresentationRpcInterface {
 
   /**
-   * Get the [[IBackendECPresentationManager]] used by this RPC impl.
+   * Get the [[IBackendPresentationManager]] used by this RPC impl.
    */
-  public getManager(): IBackendECPresentationManager {
-    return ECPresentation.manager;
+  public getManager(): IBackendPresentationManager {
+    return Presentation.manager;
   }
 
   private getIModel(token: IModelToken): IModelDb {
     const imodel = IModelDb.find(token);
     if (!imodel)
-      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "IModelToken doesn't point to any iModel");
+      throw new PresentationError(PresentationStatus.InvalidArgument, "IModelToken doesn't point to any iModel");
     return imodel;
   }
 

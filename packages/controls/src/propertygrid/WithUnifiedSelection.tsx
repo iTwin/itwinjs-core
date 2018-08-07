@@ -2,19 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { KeySet, Subtract } from "@bentley/ecpresentation-common";
-import { ECPresentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/ecpresentation-frontend";
+import { KeySet, Subtract } from "@bentley/presentation-common";
+import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import ECPresentationPropertyDataProvider from "./DataProvider";
+import PresentationPropertyDataProvider from "./DataProvider";
 
 /**
  * Props that are injected to the HOC component.
  */
 export interface Props {
   /** The data provider used by the property grid. */
-  dataProvider: ECPresentationPropertyDataProvider;
+  dataProvider: PresentationPropertyDataProvider;
 
   /** @hidden */
   selectionHandler?: SelectionHandler;
@@ -24,7 +24,7 @@ export interface Props {
  * A HOC component that adds unified selection functionality to the supplied
  * property grid component.
  *
- * **Note:** it is required for the property grid to use [[ECPresentationPropertyDataProvider]]
+ * **Note:** it is required for the property grid to use [[PresentationPropertyDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
 export default function withUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
@@ -52,7 +52,7 @@ export default function withUnifiedSelection<P extends PropertyGridProps>(Proper
       const imodel = this.props.dataProvider.connection;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new SelectionHandler(ECPresentation.selection, name, imodel, rulesetId);
+        ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
       this._selectionHandler!.onSelect = this.onSelectionChanged;
       this.setDataProviderSelection();
     }

@@ -5,8 +5,8 @@ import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Ruleset, RuleTypes, RuleSpecificationTypes } from "@bentley/ecpresentation-common";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+import { Ruleset, RuleTypes, RuleSpecificationTypes } from "@bentley/presentation-common";
+import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 
 before(() => {
   initialize();
@@ -21,14 +21,14 @@ describe("Multiple frontends for one backend", async () => {
   describe("Rulesets", () => {
 
     let imodel: IModelConnection;
-    let frontends: ECPresentationManager[];
+    let frontends: PresentationManager[];
 
     before(async () => {
       const testIModelName: string = "assets/datasets/1K.bim";
       imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
       expect(imodel).is.not.null;
 
-      frontends = [0, 1].map(() => ECPresentationManager.create());
+      frontends = [0, 1].map(() => PresentationManager.create());
     });
 
     after(async () => {

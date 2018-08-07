@@ -51,7 +51,7 @@ export type Paged<TOptions extends {}> = TOptions & {
  * An interface of presentation manager which provides presentation services for
  * tree and content controls
  */
-export interface IECPresentationManager<TIModel extends IModel> {
+export interface IPresentationManager<TIModel extends IModel> {
   /**
    * Get / set active locale used for localizing presentation data
    */

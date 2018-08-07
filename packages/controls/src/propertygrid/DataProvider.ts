@@ -13,8 +13,8 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   CategoryDescription, Descriptor, ContentFlags,
   Field, NestedContentField, DefaultContentDisplayTypes, Item,
-  ECPresentationError, ECPresentationStatus,
-} from "@bentley/ecpresentation-common";
+  PresentationError, PresentationStatus,
+} from "@bentley/presentation-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder from "../common/ContentBuilder";
 import { prioritySortFunction, translate } from "../common/Utils";
@@ -64,7 +64,7 @@ const isValueEmpty = (v: PropertyValue): boolean => {
       return 0 === Object.keys(v.members).length;
   }
   /* istanbul ignore next */
-  throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "Unknown property value format");
+  throw new PresentationError(PresentationStatus.InvalidArgument, "Unknown property value format");
 };
 
 class PropertyDataBuilder {
@@ -205,7 +205,7 @@ class PropertyDataBuilder {
 /**
  * Presentation Rules-driven property data provider implementation.
  */
-export default class ECPresentationPropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
+export default class PresentationPropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
   public onDataChanged = new PropertyDataChangeEvent();
 

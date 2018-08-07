@@ -6,7 +6,7 @@
     "baseUrl": "../node_modules/",
     "paths": {
       "@src/*": ["../src/*"],
-      "@common/*": ["@bentley/ecpresentation-common/lib/*"],
+      "@common/*": ["@bentley/presentation-common/lib/*"],
       "@helpers/*": ["../../common/tests/_helpers/*"]
     }
   },

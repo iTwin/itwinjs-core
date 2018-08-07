@@ -9,24 +9,24 @@ import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { createRandomECInstanceKey } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/ecpresentation-common";
+import { KeySet } from "@bentley/presentation-common";
 import {
-  ECPresentation,
+  Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider,
-} from "@bentley/ecpresentation-frontend";
+} from "@bentley/presentation-frontend";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
-import { ECPresentationPropertyDataProvider, withUnifiedSelection } from "@src/propertygrid";
+import { PresentationPropertyDataProvider, withUnifiedSelection } from "@src/propertygrid";
 
 // tslint:disable-next-line:variable-name naming-convention
-const ECPresentationPropertyGrid = withUnifiedSelection(PropertyGrid);
+const PresentationPropertyGrid = withUnifiedSelection(PropertyGrid);
 
 describe("PropertyGrid withUnifiedSelection", () => {
 
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType<ECPresentationPropertyDataProvider>();
+  const dataProviderMock = moq.Mock.ofType<PresentationPropertyDataProvider>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   beforeEach(() => {
     testRulesetId = faker.random.word();
@@ -36,7 +36,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
     setupDataProvider();
   });
 
-  const setupDataProvider = (providerMock?: moq.IMock<ECPresentationPropertyDataProvider>, imodel?: IModelConnection, rulesetId?: string, propertyData?: PropertyData) => {
+  const setupDataProvider = (providerMock?: moq.IMock<PresentationPropertyDataProvider>, imodel?: IModelConnection, rulesetId?: string, propertyData?: PropertyData) => {
     if (!providerMock)
       providerMock = dataProviderMock;
     if (!imodel)
@@ -59,14 +59,14 @@ describe("PropertyGrid withUnifiedSelection", () => {
   };
 
   it("mounts", () => {
-    mount(<ECPresentationPropertyGrid
+    mount(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object} />);
   });
 
   it("uses data provider's imodel and rulesetId", () => {
-    const component = shallow(<ECPresentationPropertyGrid
+    const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
@@ -81,9 +81,9 @@ describe("PropertyGrid withUnifiedSelection", () => {
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
-    ECPresentation.selection = selectionManagerMock.object;
+    Presentation.selection = selectionManagerMock.object;
 
-    const component = shallow(<ECPresentationPropertyGrid
+    const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Vertical}
       dataProvider={dataProviderMock.object} />).instance() as any as IUnifiedSelectionComponent;
 
@@ -94,7 +94,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
   });
 
   it("renders correctly", () => {
-    expect(shallow(<ECPresentationPropertyGrid
+    expect(shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
@@ -102,7 +102,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
   });
 
   it("disposes selection handler when unmounts", () => {
-    const component = mount(<ECPresentationPropertyGrid
+    const component = mount(<PresentationPropertyGrid
       orientation={Orientation.Vertical}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
@@ -112,7 +112,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
   });
 
   it("updates selection handler when data provider changes", () => {
-    const component = shallow<PropertyGridProps>(<ECPresentationPropertyGrid
+    const component = shallow<PropertyGridProps>(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
@@ -120,7 +120,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
 
     const imodelMock2 = moq.Mock.ofType<IModelConnection>();
     const rulesetId2 = faker.random.word();
-    const dataProviderMock2 = moq.Mock.ofType<ECPresentationPropertyDataProvider>();
+    const dataProviderMock2 = moq.Mock.ofType<PresentationPropertyDataProvider>();
     setupDataProvider(dataProviderMock2, imodelMock2.object, rulesetId2);
 
     component.setProps({
@@ -132,7 +132,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
   });
 
   it("handles missing selection handler when unmounts", () => {
-    const component = shallow(<ECPresentationPropertyGrid
+    const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
@@ -141,7 +141,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
   });
 
   it("handles missing selection handler when updates", () => {
-    const component = shallow(<ECPresentationPropertyGrid
+    const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
@@ -157,7 +157,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
       selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [1, 2]);
       selectionHandlerMock.setup((x) => x.getSelection(2)).returns(() => new KeySet());
       selectionHandlerMock.setup((x) => x.getSelection(1)).returns(() => keysOverall);
-      shallow(<ECPresentationPropertyGrid
+      shallow(<PresentationPropertyGrid
         orientation={Orientation.Vertical}
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
@@ -171,7 +171,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
       selectionHandlerMock.reset();
       selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
       selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => keysOverall);
-      shallow(<ECPresentationPropertyGrid
+      shallow(<PresentationPropertyGrid
         orientation={Orientation.Vertical}
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
@@ -192,7 +192,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
       const selectionProviderMock = moq.Mock.ofType<ISelectionProvider>();
       selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0))
         .returns(() => emptyKeySet);
-      shallow(<ECPresentationPropertyGrid
+      shallow(<PresentationPropertyGrid
         orientation={Orientation.Vertical}
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}

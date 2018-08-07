@@ -6,36 +6,36 @@
 import * as path from "path";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
-  ECPresentationError, ECPresentationStatus,
+  PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   IRulesetVariablesManager, IRulesetManager,
   RequestOptions, Paged, KeySet, InstanceKey,
-} from "@bentley/ecpresentation-common";
-import { listReviver as nodesListReviver } from "@bentley/ecpresentation-common/lib/hierarchy/Node";
-import { listReviver as nodePathElementReviver } from "@bentley/ecpresentation-common/lib/hierarchy/NodePathElement";
+} from "@bentley/presentation-common";
+import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
+import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
-import IBackendECPresentationManager, { Props as IBackendECPresentationManagerProps } from "./IBackendECPresentationManager";
+import IBackendPresentationManager, { Props as IBackendPresentationManagerProps } from "./IBackendPresentationManager";
 
 /**
- * Properties that can be used to configure [[SingleClientECPresentationManager]]
+ * Properties that can be used to configure [[SingleClientPresentationManager]]
  *
  * @hidden
  */
-export interface Props extends IBackendECPresentationManagerProps {
+export interface Props extends IBackendPresentationManagerProps {
   /** @hidden */
   addon?: NativePlatformDefinition;
 }
 
 /**
- * Backend ECPresentation manager which pulls the presentation data from
+ * Backend Presentation manager which pulls the presentation data from
  * an iModel using native platform.
  *
  * @hidden
  */
-export default class SingleClientECPresentationManager implements IBackendECPresentationManager {
+export default class SingleClientPresentationManager implements IBackendPresentationManager {
 
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
@@ -43,7 +43,7 @@ export default class SingleClientECPresentationManager implements IBackendECPres
   public activeLocale: string | undefined;
 
   /**
-   * Creates an instance of ECPresentationManager.
+   * Creates an instance of PresentationManager.
    * @param props Optional configuration properties.
    */
   constructor(props?: Props) {
@@ -85,7 +85,7 @@ export default class SingleClientECPresentationManager implements IBackendECPres
   /** @hidden */
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
-      throw new ECPresentationError(ECPresentationStatus.UseAfterDisposal, "Attempting to use ECPresentation manager after disposal");
+      throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
     if (!this._nativePlatform) {
       const nativePlatformImpl = createDefaultNativePlatform();
       this._nativePlatform = new nativePlatformImpl();
@@ -182,7 +182,7 @@ export default class SingleClientECPresentationManager implements IBackendECPres
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, params);
     if (!serializedResponse)
-      throw new ECPresentationError(ECPresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
+      throw new PresentationError(PresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
     return JSON.parse(serializedResponse, reviver);
   }
 

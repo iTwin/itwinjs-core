@@ -6,8 +6,8 @@ import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
 import { createRandomId } from "@helpers/random";
 import { Id64, using } from "@bentley/bentleyjs-core";
-import { Ruleset, IRulesetVariablesManager } from "@bentley/ecpresentation-common";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { Ruleset, IRulesetVariablesManager } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
 
 before(() => {
   initialize();
@@ -23,11 +23,11 @@ describe("Ruleset Variables", async () => {
   const ruleset: Ruleset = require("../../test-rulesets/RulesetVariables/default");
 
   beforeEach(() => {
-    variables = ECPresentation.presentation.vars(ruleset.id);
+    variables = Presentation.presentation.vars(ruleset.id);
   });
 
   it("get variable value added through ruleset", async () => {
-    await using(await ECPresentation.presentation.rulesets().add(ruleset), async () => {
+    await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const actualValue = await variables.getString(ruleset.vars![0].vars![0].id);
       expect(actualValue).to.be.equal(ruleset.vars![0].vars![0].defaultValue);
     });

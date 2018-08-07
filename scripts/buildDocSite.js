@@ -25,7 +25,7 @@ function generateDocs() {
   const destination = path.resolve("out/docs-public");
   const exe = path.resolve("node_modules", ".bin", "bmsWatch");
   childProcess.execSync(
-    `${exe} --source "${source}" --destination "${destination}" --siteTitle "ECPresentation Docs"`,
+    `${exe} --source "${source}" --destination "${destination}" --siteTitle "iModelJs Presentation Docs"`,
     { stdio: [0, 1, 2] }
   );
 }

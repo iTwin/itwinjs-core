@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Node } from "@bentley/ecpresentation-common";
+import { Node } from "@bentley/presentation-common";
 
 /** @hidden */
 export interface ColorMap {

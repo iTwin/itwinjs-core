@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { Presentation } from "@bentley/presentation-frontend";
 
 before(() => {
   initialize();
@@ -28,7 +28,7 @@ describe("Localization", async () => {
   });
 
   it("localizes using app/test supplied localized strings", async () => {
-    const nodes = await ECPresentation.presentation.getRootNodes({ imodel, rulesetId: "LocalizationTest" });
+    const nodes = await Presentation.presentation.getRootNodes({ imodel, rulesetId: "LocalizationTest" });
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label).to.eq("test value");
     expect(nodes[0].description).to.eq("test nested value");

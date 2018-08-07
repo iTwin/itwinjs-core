@@ -4,14 +4,14 @@
 /** @module Hierarchies */
 
 import * as React from "react";
-import { Keys, Subtract } from "@bentley/ecpresentation-common";
-import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/ecpresentation-common/lib/hierarchy/Key";
-import { ECPresentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
+import { Keys, Subtract } from "@bentley/presentation-common";
+import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common/lib/hierarchy/Key";
+import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import IECPresentationTreeDataProvider from "./IECPresentationTreeDataProvider";
+import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 
 /**
  * Possible options of what gets put into selection
@@ -35,7 +35,7 @@ export const enum SelectionTarget {
  */
 export interface Props {
   /** The data provider used by the tree. */
-  dataProvider: IECPresentationTreeDataProvider;
+  dataProvider: IPresentationTreeDataProvider;
 
   /** Defines what gets put into selection when a node is selected */
   selectionTarget?: SelectionTarget;
@@ -48,7 +48,7 @@ export interface Props {
  * A HOC component that adds unified selection functionality to the supplied
  * tree component.
  *
- * **Note:** it is required for the tree to use [[ECPresentationTreeDataProvider]]
+ * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
 export default function withUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
@@ -77,7 +77,7 @@ export default function withUnifiedSelection<P extends TreeProps>(TreeComponent:
       const imodel = this.props.dataProvider.connection;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new SelectionHandler(ECPresentation.selection, name, imodel, rulesetId);
+        ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
       this._selectionHandler!.onSelect = this.onSelectionChanged;
     }
 

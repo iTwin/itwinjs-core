@@ -10,8 +10,8 @@ import {
   ColumnDescription, RowItem, CellItem,
 } from "@bentley/ui-components/lib/table/TableDataProvider";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
-import * as content from "@bentley/ecpresentation-common/lib/content";
+import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import * as content from "@bentley/presentation-common/lib/content";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder from "../common/ContentBuilder";
 import PageContainer, { Page } from "../common/PageContainer";
@@ -24,7 +24,7 @@ interface PromisedPage<TItem> extends Page<TItem> {
 /**
  * Presentation Rules-driven table data provider.
  */
-export default class ECPresentationTableDataProvider extends ContentDataProvider implements ITableDataProvider {
+export default class PresentationTableDataProvider extends ContentDataProvider implements ITableDataProvider {
   private _sortColumnKey: string | undefined;
   private _sortDirection: SortDirection = SortDirection.NoSort;
   private _filterExpression: string | undefined;
@@ -81,7 +81,7 @@ export default class ECPresentationTableDataProvider extends ContentDataProvider
     const columns = await this.getColumns();
     const sortingColumn = columns[columnIndex];
     if (!sortingColumn)
-      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "Invalid column index");
+      throw new PresentationError(PresentationStatus.InvalidArgument, "Invalid column index");
     this._sortColumnKey = sortingColumn.key;
     this._sortDirection = sortDirection;
     this.invalidateCache({ descriptorConfiguration: true, content: true });
@@ -204,7 +204,7 @@ const createRows = (c: Readonly<content.Content> | undefined): RowItem[] => {
 const createRow = (descriptor: Readonly<content.Descriptor>, item: Readonly<content.Item>): RowItem => {
   if (item.primaryKeys.length !== 1) {
     // note: for table view we expect the record to always have only 1 primary key
-    throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "content");
+    throw new PresentationError(PresentationStatus.InvalidArgument, "content");
   }
   const row: RowItem = {
     key: item.primaryKeys[0],

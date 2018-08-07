@@ -17,18 +17,18 @@ import { PromiseContainer } from "@helpers/Promises";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
-import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/ecpresentation-common";
+import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/presentation-common";
 import {
-  ECPresentation,
+  Presentation,
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
-} from "@bentley/ecpresentation-frontend";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+} from "@bentley/presentation-frontend";
+import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 import { ViewportComponent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
 import { default as withUnifiedSelection, ViewportSelectionHandler } from "@src/viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
-const ECPresentationViewport = withUnifiedSelection(ViewportComponent);
+const PresentationViewport = withUnifiedSelection(ViewportComponent);
 
 describe("Viewport withUnifiedSelection", () => {
 
@@ -53,7 +53,7 @@ describe("Viewport withUnifiedSelection", () => {
   });
 
   it("mounts", () => {
-    mount(<ECPresentationViewport
+    mount(<PresentationViewport
       imodel={imodelMock.object}
       rulesetId={faker.random.word()}
       viewDefinitionId={viewDefinitionId}
@@ -63,7 +63,7 @@ describe("Viewport withUnifiedSelection", () => {
 
   it("uses data provider's imodel and rulesetId", () => {
     const rulesetId = faker.random.word();
-    const component = shallow(<ECPresentationViewport
+    const component = shallow(<PresentationViewport
       imodel={imodelMock.object}
       rulesetId={rulesetId}
       viewDefinitionId={viewDefinitionId}
@@ -75,7 +75,7 @@ describe("Viewport withUnifiedSelection", () => {
   });
 
   it("renders correctly", () => {
-    expect(shallow(<ECPresentationViewport
+    expect(shallow(<PresentationViewport
       imodel={imodelMock.object}
       rulesetId={faker.random.word()}
       viewDefinitionId={viewDefinitionId}
@@ -88,11 +88,11 @@ describe("Viewport withUnifiedSelection", () => {
     it("creates default implementation when not provided through props", () => {
       const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
-      ECPresentation.selection = selectionManagerMock.object;
+      Presentation.selection = selectionManagerMock.object;
 
       const rulesetId = faker.random.word();
 
-      const viewport = shallow(<ECPresentationViewport
+      const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
         rulesetId={rulesetId}
         viewDefinitionId={viewDefinitionId}
@@ -104,7 +104,7 @@ describe("Viewport withUnifiedSelection", () => {
     });
 
     it("disposes when component unmounts", () => {
-      const viewport = shallow(<ECPresentationViewport
+      const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
         rulesetId={faker.random.word()}
         viewDefinitionId={viewDefinitionId}
@@ -115,7 +115,7 @@ describe("Viewport withUnifiedSelection", () => {
     });
 
     it("updates handler when component's props change", () => {
-      const viewport = shallow(<ECPresentationViewport
+      const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
         rulesetId={faker.random.word()}
         viewDefinitionId={viewDefinitionId}
@@ -135,7 +135,7 @@ describe("Viewport withUnifiedSelection", () => {
     });
 
     it("returns undefined handler when not mounted", () => {
-      const viewport = shallow(<ECPresentationViewport
+      const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
         rulesetId={faker.random.word()}
         viewDefinitionId={viewDefinitionId}
@@ -145,7 +145,7 @@ describe("Viewport withUnifiedSelection", () => {
     });
 
     it("handles missing handler when unmounts", () => {
-      const viewport = shallow(<ECPresentationViewport
+      const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
         rulesetId={faker.random.word()}
         viewDefinitionId={viewDefinitionId}
@@ -155,7 +155,7 @@ describe("Viewport withUnifiedSelection", () => {
     });
 
     it("handles missing handler when updates", () => {
-      const viewport = shallow(<ECPresentationViewport
+      const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
         rulesetId={faker.random.word()}
         viewDefinitionId={viewDefinitionId}
@@ -172,15 +172,15 @@ describe("ViewportSelectionHandler", () => {
 
   let rulesetId: string;
   let handler: ViewportSelectionHandler;
-  const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
+  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(() => {
     NoRenderApp.startup();
     rulesetId = faker.random.word();
-    ECPresentation.presentation = presentationManagerMock.object;
-    ECPresentation.selection = selectionManagerMock.object;
+    Presentation.presentation = presentationManagerMock.object;
+    Presentation.selection = selectionManagerMock.object;
   });
   after(() => {
     NoRenderApp.shutdown();

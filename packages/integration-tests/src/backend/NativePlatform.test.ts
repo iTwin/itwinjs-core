@@ -4,8 +4,8 @@
 import { expect } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/ecpresentation-backend/lib/NativePlatform";
-import { ECPresentationError } from "@bentley/ecpresentation-common";
+import { PresentationError } from "@bentley/presentation-common";
+import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
 import { initialize, terminate } from "../IntegrationTests";
 
 before(() => {
@@ -38,22 +38,22 @@ describe("NativePlatform", () => {
 
   it("throws on closed imodel", async () => {
     imodel.closeStandalone();
-    expect(() => nativePlatform.getImodelAddon(imodel)).to.throw(ECPresentationError);
+    expect(() => nativePlatform.getImodelAddon(imodel)).to.throw(PresentationError);
   });
 
   it("throws on empty options", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(nativePlatform.handleRequest(db, "")).to.eventually.be.rejectedWith(ECPresentationError, "request");
+    await expect(nativePlatform.handleRequest(db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
   });
 
   it("throws on empty request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(ECPresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
   it("throws on not handled request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(ECPresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
 });

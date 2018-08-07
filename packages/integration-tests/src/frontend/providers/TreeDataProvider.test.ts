@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import ECPresentationTreeDataProvider from "@bentley/ecpresentation-controls/lib/tree/DataProvider";
+import PresentationTreeDataProvider from "@bentley/presentation-controls/lib/tree/DataProvider";
 
 before(() => {
   initialize();
@@ -18,12 +18,12 @@ after(() => {
 describe("TreeDataProvider", async () => {
 
   let imodel: IModelConnection;
-  let provider: ECPresentationTreeDataProvider;
+  let provider: PresentationTreeDataProvider;
   before(async () => {
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
-    provider = new ECPresentationTreeDataProvider(imodel, "SimpleHierarchy");
+    provider = new PresentationTreeDataProvider(imodel, "SimpleHierarchy");
   });
   after(async () => {
     await imodel.closeStandalone();

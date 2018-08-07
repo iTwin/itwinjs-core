@@ -4,8 +4,8 @@
 import * as React from "react";
 import { Id64Set, Id64, IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
-import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/ecpresentation-common";
-import { SelectionHandler, ECPresentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/ecpresentation-frontend";
+import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/presentation-common";
+import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
@@ -98,7 +98,7 @@ export class ViewportSelectionHandler implements IDisposable {
     this._rulesetId = rulesetId;
 
     // handles changing and listening to unified selection
-    this._selectionHandler = new SelectionHandler(ECPresentation.selection,
+    this._selectionHandler = new SelectionHandler(Presentation.selection,
       `Viewport_${counter++}`, imodel, rulesetId, this.onUnifiedSelectionChanged);
     this._disposables.add(this._selectionHandler);
 
@@ -174,7 +174,7 @@ export class ViewportSelectionHandler implements IDisposable {
       return;
     }
 
-    // we only have element ids, but ecpresentation requires instance keys (with
+    // we only have element ids, but the library requires instance keys (with
     // class names), so have to query
     const elementProps = ids ? await imodel.elements.getProps(ids) : [];
 

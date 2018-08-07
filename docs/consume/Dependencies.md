@@ -7,4 +7,4 @@ The primary dependencies of the library are the `imodeljs-core` packages:
 - imodeljs-frontend
 
 It's **crucial** that consumers use the same version of those packages as
-required by `ecpresentation` packages.
+required by `presentation` packages.

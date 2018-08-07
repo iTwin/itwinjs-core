@@ -6,8 +6,8 @@
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
-import { ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
-import { VariableValueJSON, VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
+import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 
 /** @hidden */
 export enum NativePlatformRequestTypes {
@@ -39,30 +39,30 @@ export interface NativePlatformDefinition extends IDisposable {
 
 /** @hidden */
 export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition; } => {
-  // note the implementation is constructed here to make ECPresentationManager
+  // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {
     private _nativeAddon: NativeECPresentationManager = new (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager();
-    private getStatus(responseStatus: NativeECPresentationStatus): ECPresentationStatus {
+    private getStatus(responseStatus: NativeECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
-        case NativeECPresentationStatus.InvalidArgument: return ECPresentationStatus.InvalidArgument;
-        default: return ECPresentationStatus.Error;
+        case NativeECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
+        default: return PresentationStatus.Error;
       }
     }
     private handleResult<T>(response: ErrorStatusOrResult<NativeECPresentationStatus, T>): T {
       if (!response)
-        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+        throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
-        throw new ECPresentationError(this.getStatus(response.error.status), response.error.message);
+        throw new PresentationError(this.getStatus(response.error.status), response.error.message);
       if (response.result === undefined)
-        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+        throw new PresentationError(PresentationStatus.InvalidResponse);
       return response.result;
     }
     private handleVoidResult(response: ErrorStatusOrResult<NativeECPresentationStatus, void>): void {
       if (!response)
-        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+        throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
-        throw new ECPresentationError(this.getStatus(response.error.status), response.error.message);
+        throw new PresentationError(this.getStatus(response.error.status), response.error.message);
     }
     public dispose() {
       this._nativeAddon.dispose();
@@ -75,7 +75,7 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     }
     public getImodelAddon(imodel: IModelDb): any {
       if (!imodel.briefcase || !imodel.nativeDb)
-        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "imodel");
+        throw new PresentationError(PresentationStatus.InvalidArgument, "imodel");
       return imodel.nativeDb;
     }
     public getRulesets(rulesetId: string): string {

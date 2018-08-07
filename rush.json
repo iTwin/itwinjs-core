@@ -4,22 +4,22 @@
   "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
   "projects": [
     {
-      "packageName": "@bentley/ecpresentation-common",
+      "packageName": "@bentley/presentation-common",
       "projectFolder": "packages/common",
       "shouldPublish": true
     },
     {
-      "packageName": "@bentley/ecpresentation-backend",
+      "packageName": "@bentley/presentation-backend",
       "projectFolder": "packages/backend",
       "shouldPublish": true
     },
     {
-      "packageName": "@bentley/ecpresentation-frontend",
+      "packageName": "@bentley/presentation-frontend",
       "projectFolder": "packages/frontend",
       "shouldPublish": true
     },
     {
-      "packageName": "@bentley/ecpresentation-controls",
+      "packageName": "@bentley/presentation-controls",
       "projectFolder": "packages/controls",
       "shouldPublish": true
     },

@@ -7,42 +7,42 @@ import * as faker from "faker";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
-  PageOptions, KeySet, ECPresentationError, InstanceKey,
+  PageOptions, KeySet, PresentationError, InstanceKey,
   Paged, HierarchyRequestOptions, ContentRequestOptions,
   IRulesetManager, RegisteredRuleset,
-} from "@bentley/ecpresentation-common";
-import { Node } from "@bentley/ecpresentation-common/lib/hierarchy";
-import { Descriptor, Content } from "@bentley/ecpresentation-common/lib/content";
-import { VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
+} from "@bentley/presentation-common";
+import { Node } from "@common/hierarchy";
+import { Descriptor, Content } from "@common/content";
+import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
   createRandomDescriptor,
 } from "@helpers/random";
-import IBackendECPresentationManager from "@src/IBackendECPresentationManager";
-import MultiClientECPresentationManager from "@src/MultiClientECPresentationManager";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
-import ECPresentationRpcImpl from "@src/ECPresentationRpcImpl";
-import ECPresentation from "@src/ECPresentation";
+import IBackendPresentationManager from "@src/IBackendPresentationManager";
+import MultiClientPresentationManager from "@src/MultiClientPresentationManager";
+import PresentationRpcImpl from "@src/PresentationRpcImpl";
+import Presentation from "@src/Presentation";
 import "./IModeHostSetup";
 
-describe("ECPresentationRpcImpl", () => {
+describe("PresentationRpcImpl", () => {
 
   afterEach(() => {
-    ECPresentation.terminate();
+    Presentation.terminate();
   });
 
-  it("uses default ECPresentationManager implementation if not overridden", () => {
-    ECPresentation.initialize();
-    const impl = new ECPresentationRpcImpl();
-    expect(impl.getManager()).is.instanceof(MultiClientECPresentationManager);
+  it("uses default PresentationManager implementation if not overridden", () => {
+    Presentation.initialize();
+    const impl = new PresentationRpcImpl();
+    expect(impl.getManager()).is.instanceof(MultiClientPresentationManager);
   });
 
   describe("calls forwarding", () => {
 
     let testData: any;
-    const impl = new ECPresentationRpcImpl();
-    const presentationManagerMock = moq.Mock.ofType<IBackendECPresentationManager>();
+    const impl = new PresentationRpcImpl();
+    const presentationManagerMock = moq.Mock.ofType<IBackendPresentationManager>();
     const rulesetsMock = moq.Mock.ofType<IRulesetManager>();
     const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();
 
@@ -52,7 +52,7 @@ describe("ECPresentationRpcImpl", () => {
       presentationManagerMock.reset();
       presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString(), moq.It.isAny())).returns(() => variablesMock.object);
       presentationManagerMock.setup((x) => x.rulesets(moq.It.isAny())).returns(() => rulesetsMock.object);
-      ECPresentation.setManager(presentationManagerMock.object);
+      Presentation.setManager(presentationManagerMock.object);
       testData = {
         imodelToken: new IModelToken(),
         imodelMock: moq.Mock.ofType<IModelDb>(),
@@ -72,7 +72,7 @@ describe("ECPresentationRpcImpl", () => {
         rulesetId: testData.rulesetId,
       };
       const request = impl.getRootNodes(options);
-      await expect(request).to.eventually.be.rejectedWith(ECPresentationError);
+      await expect(request).to.eventually.be.rejectedWith(PresentationError);
     });
 
     describe("getRootNodes", () => {

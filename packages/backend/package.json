@@ -1,7 +1,7 @@
 {
-  "name": "@bentley/ecpresentation-backend",
+  "name": "@bentley/presentation-backend",
   "version": "0.5.1",
-  "description": "Backend of ECPresentation library",
+  "description": "Backend of iModelJs Presentation library",
   "keywords": [
     "Bentley",
     "EC",
@@ -22,8 +22,8 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name ecpresentation-backend",
-    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/ecpresentation-backend/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name presentation-backend",
+    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/presentation-backend/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
@@ -36,14 +36,14 @@
     "@bentley/bentleyjs-core": "~0.112.0",
     "@bentley/imodeljs-common": "~0.112.0",
     "@bentley/imodeljs-backend": "~0.112.0",
-    "@bentley/ecpresentation-common": "^0.5.1"
+    "@bentley/presentation-common": "^0.5.1"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "~0.112.0",
     "@bentley/bentleyjs-tools": "~0.112.0",
     "@bentley/imodeljs-common": "~0.112.0",
     "@bentley/imodeljs-backend": "~0.112.0",
-    "@bentley/ecpresentation-common": "^0.5.1",
+    "@bentley/presentation-common": "^0.5.1",
     "@types/chai": "^4.0.10",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

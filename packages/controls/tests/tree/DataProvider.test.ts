@@ -8,27 +8,27 @@ import { PromiseContainer } from "@helpers/Promises";
 import * as faker from "faker";
 import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Node, NodeKey } from "@bentley/ecpresentation-common";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+import { Node, NodeKey } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 import { PageOptions } from "@bentley/ui-components";
 import { TreeNodeItem } from "@bentley/ui-components";
-import ECPresentationTreeDataProvider from "@src/tree/DataProvider";
+import PresentationTreeDataProvider from "@src/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "@src/tree/Utils";
 
 describe("TreeDataProvider", () => {
 
   let rulesetId: string;
-  let provider: ECPresentationTreeDataProvider;
-  const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
+  let provider: PresentationTreeDataProvider;
+  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
     rulesetId = faker.random.word();
-    ECPresentation.presentation = presentationManagerMock.object;
+    Presentation.presentation = presentationManagerMock.object;
   });
   beforeEach(() => {
     presentationManagerMock.reset();
-    provider = new ECPresentationTreeDataProvider(imodelMock.object, rulesetId);
+    provider = new PresentationTreeDataProvider(imodelMock.object, rulesetId);
   });
 
   const createTreeNodeItem = (key?: NodeKey, parentId?: string): TreeNodeItem => ({

@@ -14,7 +14,7 @@ export class MyAppFrontend {
 
   public static async openIModel(path: string): Promise<IModelConnection> {
     this.iModel = await IModelConnection.openStandalone(path, OpenMode.Readonly);
-    Logger.logInfo("ecpresentation", "Opened: " + this.iModel.name);
+    Logger.logInfo("presentation", "Opened: " + this.iModel.name);
     return this.iModel;
   }
 }

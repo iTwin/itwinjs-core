@@ -5,9 +5,9 @@
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PageOptions, SelectionInfo, ContentRequestOptions } from "@bentley/ecpresentation-common";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
-import * as content from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions, SelectionInfo, ContentRequestOptions } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+import * as content from "@bentley/presentation-common";
 
 /**
  * Properties for invalidating content cache.
@@ -52,7 +52,7 @@ namespace CacheInvalidationProps {
 }
 
 /**
- * Base class for all ecpresentation-driven content providers.
+ * Base class for all presentation-driven content providers.
  */
 export default abstract class ContentDataProvider {
   private _connection: IModelConnection;
@@ -163,7 +163,7 @@ export default abstract class ContentDataProvider {
 
   // tslint:disable-next-line:naming-convention
   private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
-    return await ECPresentation.presentation.getContentDescriptor(this.createRequestOptions(),
+    return await Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
       this._displayType, this.keys, this.selectionInfo);
   });
 
@@ -184,7 +184,7 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return 0;
-    return await ECPresentation.presentation.getContentSetSize(this.createRequestOptions(),
+    return await Presentation.presentation.getContentSetSize(this.createRequestOptions(),
       descriptor, this.keys);
   });
 
@@ -196,7 +196,7 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return undefined;
-    return await ECPresentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions },
+    return await Presentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions },
       descriptor, this.keys);
   }, createKeyForPageOptions);
 }

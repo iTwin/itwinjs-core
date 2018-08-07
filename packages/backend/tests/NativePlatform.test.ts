@@ -6,7 +6,8 @@ import * as moq from "typemoq";
 import * as faker from "faker";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
-import { ECPresentationError, VariableValueTypes } from "@bentley/ecpresentation-common";
+import { PresentationError } from "@bentley/presentation-common";
+import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import "@helpers/Promises";
 import "./IModeHostSetup";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@src/NativePlatform";
@@ -62,21 +63,21 @@ describe("default NativePlatform", () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb(undefined as any); });
-    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(ECPresentationError);
+    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
   it("throws on handleRequest error response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ error: { status: NativeECPresentationStatus.Error, message: "test" } }); });
-    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(ECPresentationError, "test");
+    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(PresentationError, "test");
   });
 
   it("throws on handleRequest success response without result", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ result: undefined }); });
-    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(ECPresentationError);
+    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
   it("calls addon's setupRulesetDirectories", async () => {
@@ -98,14 +99,14 @@ describe("default NativePlatform", () => {
     addonMock
       .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
       .returns(() => (undefined as any));
-    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(ECPresentationError);
+    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(PresentationError);
   });
 
   it("throws on void error response", async () => {
     addonMock
       .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
       .returns(() => ({ error: { status: NativeECPresentationStatus.InvalidArgument, message: "test" } }));
-    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(ECPresentationError, "test");
+    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(PresentationError, "test");
   });
 
   it("calls addon's getRulesets", async () => {
@@ -174,7 +175,7 @@ describe("default NativePlatform", () => {
   it("throws when fails to find imodel using IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
     mock.setup((x) => x.nativeDb).returns(() => (undefined as any)).verifiable(moq.Times.atLeastOnce());
-    expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(ECPresentationError);
+    expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(PresentationError);
     mock.verifyAll();
   });
 

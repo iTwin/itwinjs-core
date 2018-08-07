@@ -4,7 +4,7 @@
 import { expect, spy } from "chai";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey } from "@bentley/ecpresentation-common";
+import { InstanceKey } from "@bentley/presentation-common";
 import { SelectionManager } from "@src/selection";
 import { createRandomECInstanceKey } from "@helpers/random";
 

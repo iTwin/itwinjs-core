@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns child nodes 1`] = `
+exports[`SingleClientPresentationManager addon results conversion to Presentation objects returns child nodes 1`] = `
 Array [
   Object {
     "key": Object {
       "instanceKey": Object {
-        "className": "Future",
-        "id": "0x6e0a0000015652",
+        "className": "Small Soft Shoes",
+        "id": "0x1277d00000137b1",
       },
       "pathFromRoot": Array [
         "p1",
@@ -28,57 +28,57 @@ Array [
 ]
 `;
 
-exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns content 1`] = `
+exports[`SingleClientPresentationManager addon results conversion to Presentation objects returns content 1`] = `
 Content {
   "contentSet": Array [
     Item {
       "classInfo": Object {
-        "id": "0x5886000000bd6a",
-        "label": "overriding",
-        "name": "Awesome Rubber Hat",
+        "id": "0x9a00000000eb1f",
+        "label": "Global Indian Rupee Ngultrum Handcrafted Wooden Sausages",
+        "name": "Incredible Granite Mouse",
       },
       "displayValues": Object {
-        "circuit": "virtual",
+        "Chief": "seamless Dynamic SDD",
       },
-      "imageId": "4a177fa9-beb3-4b5f-97d2-5d76081a04a4",
-      "label": "calculating",
+      "imageId": "c048034f-eb92-42b1-9433-9ad744e4cb9f",
+      "label": "Buckinghamshire unleash Group",
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "needs-based",
-          "id": "0x540c000000735a",
+          "className": "user-facing",
+          "id": "0xae1e000000c8fa",
         },
       ],
       "values": Object {
-        "circuit": "generate synergistic",
+        "Chief": "ROI circuit",
       },
     },
   ],
   "descriptor": Descriptor {
     "contentFlags": 0,
-    "displayType": "qui et ullam",
+    "displayType": "vel sunt velit",
     "fields": Array [
       PropertiesField {
         "category": Object {
-          "description": "Eos in iure repudiandae.",
+          "description": "Voluptas quibusdam et eaque et eum.",
           "expand": false,
-          "label": "XML",
-          "name": "Manager",
-          "priority": 50538,
+          "label": "Future",
+          "name": "Executive",
+          "priority": 94352,
         },
         "isReadonly": true,
-        "label": "mint green",
-        "name": "circuit",
-        "priority": 23443,
+        "label": "Avon",
+        "name": "Chief",
+        "priority": 9199,
         "properties": Array [
           Object {
             "property": Object {
               "classInfo": Object {
-                "id": "0xb937000000803a",
-                "label": "robust Personal Loan Account Borders",
-                "name": "Lao People's Democratic Republic",
+                "id": "0x13a440000012051",
+                "label": "open architecture stable",
+                "name": "Cotton",
               },
-              "name": "morph",
+              "name": "zero administration",
               "type": "string",
             },
             "relatedClassPath": Array [],
@@ -96,9 +96,9 @@ Content {
         "pathToPrimaryClass": Array [],
         "relatedPropertyPaths": Array [],
         "selectClassInfo": Object {
-          "id": "0x14ceb0000004ca8",
-          "label": "Mauritius",
-          "name": "Incredible Frozen Cheese",
+          "id": "0x425e000000f0fd",
+          "label": "Developer driver infrastructure",
+          "name": "withdrawal",
         },
       },
     ],
@@ -106,53 +106,53 @@ Content {
 }
 `;
 
-exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns content descriptor 1`] = `
+exports[`SingleClientPresentationManager addon results conversion to Presentation objects returns content descriptor 1`] = `
 Descriptor {
-  "connectionId": "f4054dcf-de39-4e45-b637-a1a6a0a649d5",
+  "connectionId": "be18bdbf-5395-4cc9-b81c-73d4d84c24fe",
   "contentFlags": 0,
-  "contentOptions": "car",
-  "displayType": "frictionless",
+  "contentOptions": "bar",
+  "displayType": "leverage",
   "fields": Array [
     PropertiesField {
       "category": Object {
-        "description": "In possimus suscipit quod numquam accusamus labore consequatur dolore qui.",
+        "description": "Inventore illum optio voluptatem doloremque corrupti facere doloremque velit.",
         "expand": true,
-        "label": "convergence Gloves Keyboard",
-        "name": "Czech Republic",
-        "priority": 51915,
+        "label": "strategy Technician",
+        "name": "Investor",
+        "priority": 26294,
       },
       "editor": Object {
-        "name": "Money Market Account",
+        "name": "Metal",
         "params": Object {
-          "some_param": 37389,
+          "some_param": 49320,
         },
       },
       "isReadonly": false,
-      "label": "Investment Account Pants",
+      "label": "grey",
       "name": "Primitive property field with editor",
-      "priority": 43236,
+      "priority": 93919,
       "properties": Array [
         Object {
           "property": Object {
             "classInfo": Object {
-              "id": "0x195b000000c700",
-              "label": "Music Metal",
-              "name": "Norfolk Island",
+              "id": "0x175f0000000fe57",
+              "label": "Knoll",
+              "name": "Executive",
             },
             "enumerationInfo": Object {
               "choices": Array [
                 Object {
-                  "label": "Minnesota 3rd generation wireless",
-                  "value": "975d6648-4c46-46eb-a392-6dad758d74f0",
+                  "label": "ivory",
+                  "value": "73390ce7-3e55-4038-a8e7-fe72d44d6638",
                 },
                 Object {
-                  "label": "Borders methodologies SQL",
-                  "value": "1811b819-3d15-4d3d-9102-8d100f5e21a9",
+                  "label": "content-based Cambridgeshire Tactics",
+                  "value": "934f8977-ba27-499a-b652-f285837e6e74",
                 },
               ],
               "isStrict": false,
             },
-            "name": "Hong Kong Dollar",
+            "name": "synthesize",
             "type": "string",
           },
           "relatedClassPath": Array [],
@@ -165,31 +165,31 @@ Descriptor {
     },
     PropertiesField {
       "category": Object {
-        "description": "Voluptas sit dolore non consequuntur omnis consequatur temporibus a perspiciatis.",
-        "expand": false,
-        "label": "hack",
-        "name": "ubiquitous",
-        "priority": 48254,
+        "description": "Velit beatae perspiciatis necessitatibus quia debitis sunt aliquid.",
+        "expand": true,
+        "label": "Refined Branch",
+        "name": "Way",
+        "priority": 85483,
       },
       "isReadonly": false,
-      "label": "National Timor-Leste",
+      "label": "Soft deposit deposit",
       "name": "Complex array of structs property field",
-      "priority": 33544,
+      "priority": 87868,
       "properties": Array [
         Object {
           "property": Object {
             "classInfo": Object {
-              "id": "0x180cf00000017cf",
-              "label": "Coordinator calculating Kansas",
-              "name": "Generic Fresh Keyboard",
+              "id": "0x776b0000011827",
+              "label": "enhance",
+              "name": "capacitor",
             },
             "kindOfQuantity": Object {
-              "currentFusId": "3c57ae9f-46c6-409e-8d00-b8587db99fbe",
-              "label": "digital Bahamian Dollar",
-              "name": "initiatives",
-              "persistenceUnit": "generate",
+              "currentFusId": "00ad31bd-0be3-4f93-9a59-60e158871d62",
+              "label": "Circle responsive wireless",
+              "name": "mission-critical",
+              "persistenceUnit": "revolutionary",
             },
-            "name": "syndicate",
+            "name": "Gibraltar Pound",
             "type": "double",
           },
           "relatedClassPath": Array [],
@@ -199,16 +199,16 @@ Descriptor {
         "memberType": Object {
           "members": Array [
             Object {
-              "label": "Money Market Account",
-              "name": "Personal Loan Account",
+              "label": "synthesizing",
+              "name": "Concrete",
               "type": Object {
                 "typeName": "string",
                 "valueFormat": "Primitive",
               },
             },
             Object {
-              "label": "District",
-              "name": "Liechtenstein",
+              "label": "withdrawal Incredible",
+              "name": "invoice",
               "type": Object {
                 "memberType": Object {
                   "typeName": "string",
@@ -228,33 +228,33 @@ Descriptor {
     },
     NestedContentField {
       "category": Object {
-        "description": "Distinctio quas nobis aut.",
-        "expand": true,
-        "label": "Branding",
-        "name": "Identity",
-        "priority": 77581,
+        "description": "Dolores est quo quaerat.",
+        "expand": false,
+        "label": "USB Utah black",
+        "name": "Rhode Island",
+        "priority": 30795,
       },
       "contentClassInfo": Object {
-        "id": "0x1246e000000fb77",
-        "label": "PNG",
-        "name": "transform",
+        "id": "0xb7cf000000f6ac",
+        "label": "invoice Internal Planner",
+        "name": "European Unit of Account 17(E.U.A.-17)",
       },
       "isReadonly": true,
-      "label": "Future iterate Illinois",
+      "label": "orange Somali Shilling payment",
       "name": "Nested content field",
       "nestedFields": Array [
         Field {
           "category": Object {
-            "description": "Consequuntur non omnis enim ea non optio laboriosam adipisci ut.",
-            "expand": true,
-            "label": "Gorgeous microchip Soap",
-            "name": "e-business",
-            "priority": 75956,
+            "description": "Autem deleniti esse error sequi.",
+            "expand": false,
+            "label": "program",
+            "name": "Heard Island and McDonald Islands",
+            "priority": 27350,
           },
           "isReadonly": true,
-          "label": "mint green compressing",
+          "label": "Kenyan Shilling Computer payment",
           "name": "Simple property field",
-          "priority": 62951,
+          "priority": 89996,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -266,61 +266,61 @@ Descriptor {
           "isForwardRelationship": true,
           "isPolymorphicRelationship": true,
           "relationshipInfo": Object {
-            "id": "0xb6d6000000edf7",
-            "label": "index Tasty Rubber Bacon",
-            "name": "Toys",
+            "id": "0x415000000127eb",
+            "label": "Practical Frozen Car New Zealand Dollar",
+            "name": "Plastic",
           },
           "sourceClassInfo": Object {
-            "id": "0x477a00000045b8",
-            "label": "Monitored",
-            "name": "Swaziland",
+            "id": "0x17187000000cbe5",
+            "label": "capacitor",
+            "name": "bifurcated",
           },
           "targetClassInfo": Object {
-            "id": "0xd40600000106d7",
-            "label": "Forest indigo RAM",
-            "name": "USB",
+            "id": "0x209e000000981a",
+            "label": "Wooden",
+            "name": "New Hampshire",
           },
         },
       ],
-      "priority": 45922,
+      "priority": 83323,
       "type": Object {
         "members": Array [
           Object {
-            "label": "Outdoors",
-            "name": "Ball",
+            "label": "secondary platforms Data",
+            "name": "Interactions",
             "type": Object {
               "typeName": "string",
               "valueFormat": "Primitive",
             },
           },
         ],
-        "typeName": "Shoes",
+        "typeName": "Outdoors",
         "valueFormat": "Struct",
       },
     },
   ],
-  "inputKeysHash": "a5e90dfa-33bf-4888-b56d-5979fb2ca549",
+  "inputKeysHash": "b0e65557-f886-4b09-ba7d-c95c4308aedf",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": true,
       "pathToPrimaryClass": Array [
         Object {
-          "isForwardRelationship": true,
+          "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
           "relationshipInfo": Object {
-            "id": "0x11ac200000127f0",
-            "label": "Assistant impactful Bedfordshire",
-            "name": "grid-enabled",
+            "id": "0x78e0000000eb0e",
+            "label": "hierarchy bandwidth",
+            "name": "Pakistan",
           },
           "sourceClassInfo": Object {
-            "id": "0xa54a000000e882",
-            "label": "Crest Open-source Rufiyaa",
-            "name": "Down-sized",
+            "id": "0x10410000000a749",
+            "label": "deposit holistic parallelism",
+            "name": "Accountability",
           },
           "targetClassInfo": Object {
-            "id": "0x13dd5000001095e",
-            "label": "compress Small Frozen Mouse Steel",
-            "name": "Electronics",
+            "id": "0xa2c4000000cb78",
+            "label": "California Future-proofed Throughway",
+            "name": "efficient",
           },
         },
       ],
@@ -330,104 +330,102 @@ Descriptor {
             "isForwardRelationship": true,
             "isPolymorphicRelationship": false,
             "relationshipInfo": Object {
-              "id": "0x91f6000000c65c",
-              "label": "deposit",
-              "name": "Beauty",
+              "id": "0xbb1c0000009c13",
+              "label": "redundant Division",
+              "name": "back-end",
             },
             "sourceClassInfo": Object {
-              "id": "0x11366000001085b",
-              "label": "Gorgeous Fresh Shirt Gateway Sleek",
-              "name": "Investment Account",
+              "id": "0x157af000000cb19",
+              "label": "Identity hack lime",
+              "name": "Arkansas",
             },
             "targetClassInfo": Object {
-              "id": "0x9ca70000003456",
-              "label": "Soft Rustic Towels",
-              "name": "synergize",
+              "id": "0x1427f00000095cf",
+              "label": "cross-platform Concrete",
+              "name": "Legacy",
             },
           },
         ],
       ],
       "selectClassInfo": Object {
-        "id": "0x155bf000000a6bf",
-        "label": "Courts",
-        "name": "paradigms",
+        "id": "0xeb2c0000002865",
+        "label": "methodologies Money Market Account",
+        "name": "indexing",
       },
     },
   ],
 }
 `;
 
-exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns filtered node paths 1`] = `
+exports[`SingleClientPresentationManager addon results conversion to Presentation objects returns filtered node paths 1`] = `
 Array [
   Object {
     "children": Array [],
-    "index": 79,
-    "isMarked": false,
+    "index": 476,
+    "isMarked": true,
     "node": Object {
       "backColor": "rgb(
-    2,
-    67,
-    128
+    15,
+    148,
+    218
   )",
-      "description": "Illum nostrum sunt voluptatum aut magni ut perspiciatis incidunt blanditiis.",
-      "foreColor": "#D547B3",
-      "hasChildren": false,
+      "foreColor": "#7444AA",
+      "hasChildren": true,
       "isCheckboxEnabled": true,
       "isCheckboxVisible": true,
-      "isChecked": false,
-      "isEditable": false,
-      "isExpanded": false,
+      "isChecked": true,
+      "isEditable": true,
+      "isExpanded": true,
       "isSelectable": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "Kwacha",
-          "id": "0x3ab7000000de99",
+          "className": "Switchable",
+          "id": "0x3765000000f652",
         },
         "pathFromRoot": Array [
-          "2f1063bc-d79f-4ef7-830b-f0f612a06ee8",
-          "4fc62306-a623-4008-9379-37021a66417b",
+          "00acda35-77ce-4dc5-8aad-bf086235e7ed",
+          "971578c3-3533-443e-9c1b-23111385d057",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Interactions Hryvnia",
+      "label": "Centralized",
     },
   },
 ]
 `;
 
-exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns node paths 1`] = `
+exports[`SingleClientPresentationManager addon results conversion to Presentation objects returns node paths 1`] = `
 Array [
   Object {
     "children": Array [],
-    "index": 880,
+    "index": 755,
     "isMarked": false,
     "node": Object {
-      "foreColor": "#AEAF95",
-      "hasChildren": true,
+      "hasChildren": false,
       "isCheckboxEnabled": true,
       "isCheckboxVisible": false,
-      "isChecked": false,
-      "isEditable": false,
-      "isExpanded": false,
-      "isSelectable": false,
+      "isChecked": true,
+      "isEditable": true,
+      "isExpanded": true,
+      "isSelectable": true,
       "key": Object {
         "instanceKey": Object {
-          "className": "protocol",
-          "id": "0xf4980000008074",
+          "className": "back-end",
+          "id": "0x175610000013884",
         },
         "pathFromRoot": Array [
-          "b6ecb24e-50fa-4575-97cf-d9733b2c81bd",
-          "47cd6648-d3b1-46f0-b332-7c46acbfb7fc",
+          "15ff141a-890d-48b9-90d2-42948cce9db4",
+          "10ad4701-6603-44cc-9896-3c40aa38533b",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "red panel compress",
+      "label": "Inverse Manager wireless",
     },
   },
 ]
 `;
 
-exports[`SingleClientECPresentationManager addon results conversion to ECPresentation objects returns root nodes 1`] = `
+exports[`SingleClientPresentationManager addon results conversion to Presentation objects returns root nodes 1`] = `
 Array [
   Object {
     "backColor": "backColor1",
@@ -467,8 +465,8 @@ Array [
     "isSelectable": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "SQL",
-        "id": "0x156210000007adc",
+        "className": "Buckinghamshire",
+        "id": "0xc132000000d7a4",
       },
       "pathFromRoot": Array [
         "p1",

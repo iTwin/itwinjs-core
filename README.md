@@ -1,6 +1,6 @@
 # Introduction
 
-ECPresentation library helps retrieve presentation data from iModels and
+iModelJs Presentation library helps retrieve presentation data from iModels and
 takes care of unified selection.
 
 # Getting Started
@@ -19,15 +19,15 @@ described below:
   devDependencies). Many devDependencies are in common between backend and
   frontend, so consolidating them makes them easier to manage.
 - `packages/common/package.json`
-  - Controls the version number for **@bentley/ecpresentation-common**
+  - Controls the version number for **@bentley/presentation-common**
   - Controls the package dependencies for the source code in common to both the
   backend and frontend
 - `packages/backend/package.json`
-  - Controls the version number and package dependencies for **@bentley/ecpresentation-backend**
+  - Controls the version number and package dependencies for **@bentley/presentation-backend**
 - `packages/frontend/package.json`
-  - Controls the version number and package dependencies for **@bentley/ecpresentation-frontend**
+  - Controls the version number and package dependencies for **@bentley/presentation-frontend**
 - `packages/controls/package.json`
-  - Controls the version number and package dependencies for **@bentley/ecpresentation-controls**
+  - Controls the version number and package dependencies for **@bentley/presentation-controls**
 - `packages/sample/package.json`
   - Private, not published
   - Sample application used for testing the library using read-world

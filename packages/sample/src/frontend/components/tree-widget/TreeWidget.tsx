@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentationTreeDataProvider, withFilteringSupport, withUnifiedSelection } from "@bentley/ecpresentation-controls/lib/tree";
+import { PresentationTreeDataProvider, withFilteringSupport, withUnifiedSelection } from "@bentley/presentation-controls/lib/tree";
 import { Tree } from "@bentley/ui-components";
 import "./TreeWidget.css";
 
@@ -19,11 +19,11 @@ export interface State {
 }
 export default class TreeWidget extends React.Component<Props, State> {
   private _filterTextBox: React.RefObject<HTMLInputElement>;
-  private _dataProvider: ECPresentationTreeDataProvider;
+  private _dataProvider: PresentationTreeDataProvider;
 
   constructor(props: Props) {
     super(props);
-    this._dataProvider = new ECPresentationTreeDataProvider(props.imodel, props.rulesetId);
+    this._dataProvider = new PresentationTreeDataProvider(props.imodel, props.rulesetId);
     this.state = { filter: "", filtering: false, prevProps: props };
     this._filterTextBox = React.createRef();
   }
@@ -56,7 +56,7 @@ export default class TreeWidget extends React.Component<Props, State> {
 
   public render() {
     if (this.props.imodel !== this.state.prevProps.imodel || this.props.rulesetId !== this.state.prevProps.rulesetId)
-      this._dataProvider = new ECPresentationTreeDataProvider(this.props.imodel, this.props.rulesetId);
+      this._dataProvider = new PresentationTreeDataProvider(this.props.imodel, this.props.rulesetId);
 
     const loader = this.state.filtering === true ? <div className="treeWidgetLoader" /> : undefined;
     return (

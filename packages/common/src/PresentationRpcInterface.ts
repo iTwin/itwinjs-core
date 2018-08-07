@@ -8,7 +8,7 @@ import { RpcInterface, IModelToken, RpcManager } from "@bentley/imodeljs-common"
 import { Ruleset } from "./rules";
 import { Node, NodeKey, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
-import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IECPresentationManager";
+import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IPresentationManager";
 import KeySet from "./KeySet";
 import { VariableValueJSON, VariableValueTypes } from "./IRulesetVariablesManager";
 import { InstanceKey } from "./EC";
@@ -24,8 +24,8 @@ export interface RulesetVariableRpcRequestOptions {
   clientId?: string;
 }
 
-/** Interface used for communication between ECPresentation backend and frontend. */
-export default class ECPresentationRpcInterface extends RpcInterface {
+/** Interface used for communication between Presentation backend and frontend. */
+export default class PresentationRpcInterface extends RpcInterface {
   // developer note: It's called an interface but actually it's a real implemented
   // frontend-specific class. It's setup that way to keep consistency with imodeljs-core.
 
@@ -45,28 +45,28 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   ]
 
   /** Get the frontend client of this interface */
-  public static getClient(): ECPresentationRpcInterface { return RpcManager.getClientForInterface(ECPresentationRpcInterface); }
+  public static getClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
-  /** See [[ECPresentationManager.getRootNodes]] */
+  /** See [[PresentationManager.getRootNodes]] */
   public getRootNodes(_options: Paged<HierarchyRpcRequestOptions>): Promise<ReadonlyArray<Readonly<Node>>> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getRootNodesCount]] */
+  /** See [[PresentationManager.getRootNodesCount]] */
   public getRootNodesCount(_options: HierarchyRpcRequestOptions): Promise<number> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getChildren]] */
+  /** See [[PresentationManager.getChildren]] */
   public getChildren(_options: Paged<HierarchyRpcRequestOptions>, _parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getChildrenCount]] */
+  /** See [[PresentationManager.getChildrenCount]] */
   public getChildrenCount(_options: HierarchyRpcRequestOptions, _parentKey: Readonly<NodeKey>): Promise<number> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getNodePaths]] */
+  /** See [[PresentationManager.getNodePaths]] */
   public getNodePaths(_options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getFilteredNodePaths]] */
+  /** See [[PresentationManager.getFilteredNodePaths]] */
   public getFilteredNodePaths(_options: HierarchyRpcRequestOptions, _filterText: string): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
 
-  /** See [[ECPresentationManager.getContentDescriptor]] */
+  /** See [[PresentationManager.getContentDescriptor]] */
   public getContentDescriptor(_options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getContentSetSize]] */
+  /** See [[PresentationManager.getContentSetSize]] */
   public getContentSetSize(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<number> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getContent]] */
+  /** See [[PresentationManager.getContent]] */
   public getContent(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<Readonly<Content>> { return this.forward.apply(this, arguments); }
-  /** See [[ECPresentationManager.getDistinctValues]] */
+  /** See [[PresentationManager.getDistinctValues]] */
   public getDistinctValues(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): Promise<string[]> { return this.forward.apply(this, arguments); }
 
   /** See [[IRulesetManager.get]] */

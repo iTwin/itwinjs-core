@@ -4,11 +4,11 @@
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import { NodePathElement } from "@bentley/ecpresentation-common";
+import { NodePathElement } from "@bentley/presentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import FilteredECPresentationTreeDataProvider from "@src/tree/FilteredDataProvider";
-import IECPresentationTreeDataProvider from "@src/tree/IECPresentationTreeDataProvider";
+import FilteredPresentationTreeDataProvider from "@src/tree/FilteredDataProvider";
+import IPresentationTreeDataProvider from "@src/tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "@src/tree/Utils";
 import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random";
 import { createRandomTreeNodeItem } from "@helpers/UiComponents";
@@ -46,16 +46,16 @@ describe("FilteredTreeDataProvider", () => {
   nodePaths[1].children[1].children[0] = createRandomNodePathElement();
   nodePaths[1].children[1].children[0].node.label = "A-2-2-1";
 
-  let provider: FilteredECPresentationTreeDataProvider;
+  let provider: FilteredPresentationTreeDataProvider;
   let filter: string;
-  const parentProviderMock = moq.Mock.ofType<IECPresentationTreeDataProvider>();
+  const parentProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const pageOptions: PageOptions = { size: 0, start: 0 };
 
   beforeEach(() => {
     parentProviderMock.reset();
     filter = faker.random.word();
-    provider = new FilteredECPresentationTreeDataProvider(parentProviderMock.object, filter, nodePaths);
+    provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, filter, nodePaths);
   });
 
   describe("filter", () => {

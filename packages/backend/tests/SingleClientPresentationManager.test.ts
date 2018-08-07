@@ -8,8 +8,8 @@ import * as path from "path";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import { using } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
-import { PageOptions, SelectionInfo, KeySet, ECPresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/ecpresentation-common";
-import ECPresentationManager from "@src/SingleClientECPresentationManager";
+import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
+import PresentationManager from "@src/SingleClientPresentationManager";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "@src/NativePlatform";
 import RulesetManager from "@src/RulesetManager";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
@@ -20,20 +20,20 @@ import {
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
   createRandomDescriptor, createRandomCategory,
 } from "@helpers/random";
-import { instanceKeyFromJSON } from "@bentley/ecpresentation-common/lib/EC";
-import { NodeJSON } from "@bentley/ecpresentation-common/lib/hierarchy/Node";
-import { ECInstanceNodeKeyJSON, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "@bentley/ecpresentation-common/lib/hierarchy/Key";
-import { ContentJSON } from "@bentley/ecpresentation-common/lib/content/Content";
-import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/ecpresentation-common/lib/content/Descriptor";
-import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@bentley/ecpresentation-common";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/ecpresentation-common/lib/content/Fields";
-import { KindOfQuantityInfo } from "@bentley/ecpresentation-common";
-import { PropertyJSON } from "@bentley/ecpresentation-common/lib/content/Property";
-import { ItemJSON } from "@bentley/ecpresentation-common/lib/content/Item";
+import { instanceKeyFromJSON } from "@bentley/presentation-common/lib/EC";
+import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
+import { ECInstanceNodeKeyJSON, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
+import { ContentJSON } from "@bentley/presentation-common/lib/content/Content";
+import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/content/Descriptor";
+import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@bentley/presentation-common";
+import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/content/Fields";
+import { KindOfQuantityInfo } from "@bentley/presentation-common";
+import { PropertyJSON } from "@bentley/presentation-common/lib/content/Property";
+import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
 import "@helpers/Promises";
 import "./IModeHostSetup";
 
-describe("SingleClientECPresentationManager", () => {
+describe("SingleClientPresentationManager", () => {
 
   beforeEach(() => {
     IModelHost.shutdown();
@@ -53,14 +53,14 @@ describe("SingleClientECPresentationManager", () => {
   describe("constructor", () => {
 
     it("uses default native library implementation if not overridden", () => {
-      using(new ECPresentationManager(), (manager) => {
+      using(new PresentationManager(), (manager) => {
         expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
       });
     });
 
     it("uses addon implementation supplied through props", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      using(new ECPresentationManager({ addon: nativePlatformMock.object }), (manager) => {
+      using(new PresentationManager({ addon: nativePlatformMock.object }), (manager) => {
         expect(manager.getNativePlatform()).eq(nativePlatformMock.object);
       });
     });
@@ -75,7 +75,7 @@ describe("SingleClientECPresentationManager", () => {
       it("sets up ruleset directories if supplied", () => {
         const dirs = ["test1", "test2"];
         addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
-        using(new ECPresentationManager({ addon: addon.object, rulesetDirectories: dirs }), () => { });
+        using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), () => { });
         addon.verifyAll();
       });
 
@@ -83,13 +83,13 @@ describe("SingleClientECPresentationManager", () => {
         const suppliedDirs = ["test1", "test2", "test2"];
         const addonDirs = [path.resolve(__dirname, "../src/assets/locales"), "test1", "test2"];
         addon.setup((x) => x.setupLocaleDirectories(addonDirs)).verifiable();
-        using(new ECPresentationManager({ addon: addon.object, localeDirectories: suppliedDirs }), () => { });
+        using(new PresentationManager({ addon: addon.object, localeDirectories: suppliedDirs }), () => { });
         addon.verifyAll();
       });
 
       it("sets up active locale if supplied", () => {
         const locale = faker.random.locale();
-        using(new ECPresentationManager({ addon: addon.object, activeLocale: locale }), (manager) => {
+        using(new PresentationManager({ addon: addon.object, activeLocale: locale }), (manager) => {
           expect(manager.activeLocale).to.eq(locale);
         });
       });
@@ -109,7 +109,7 @@ describe("SingleClientECPresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const locale = faker.random.locale();
-      using(new ECPresentationManager({ addon: addonMock.object, activeLocale: locale }), async (manager) => {
+      using(new PresentationManager({ addon: addonMock.object, activeLocale: locale }), async (manager) => {
         await manager.getRootNodesCount({ imodel: imodelMock.object, rulesetId });
         addonMock.verify((x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
           const request = JSON.parse(serializedRequest);
@@ -122,7 +122,7 @@ describe("SingleClientECPresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const locale = faker.random.locale();
-      using(new ECPresentationManager({ addon: addonMock.object, activeLocale: faker.random.locale() }), async (manager) => {
+      using(new PresentationManager({ addon: addonMock.object, activeLocale: faker.random.locale() }), async (manager) => {
         expect(manager.activeLocale).to.not.eq(locale);
         await manager.getRootNodesCount({ imodel: imodelMock.object, rulesetId, locale });
         addonMock.verify((x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
@@ -137,7 +137,7 @@ describe("SingleClientECPresentationManager", () => {
   describe("vars", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
-    const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
+    const manager: PresentationManager = new PresentationManager({ addon: addon.object });
 
     it("returns variables manager", () => {
       const vars = manager.vars(faker.random.word());
@@ -149,7 +149,7 @@ describe("SingleClientECPresentationManager", () => {
   describe("rulesets", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
-    const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
+    const manager: PresentationManager = new PresentationManager({ addon: addon.object });
 
     it("returns rulesets manager", () => {
       expect(manager.rulesets()).to.be.instanceOf(RulesetManager);
@@ -161,7 +161,7 @@ describe("SingleClientECPresentationManager", () => {
 
     it("calls native platform dispose when manager is disposed", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new ECPresentationManager({ addon: nativePlatformMock.object });
+      const manager = new PresentationManager({ addon: nativePlatformMock.object });
       manager.dispose();
       manager.dispose();
       // note: verify native platform's `dispose` called only once
@@ -170,19 +170,19 @@ describe("SingleClientECPresentationManager", () => {
 
     it("throws when attempting to use native platform after disposal", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new ECPresentationManager({ addon: nativePlatformMock.object });
+      const manager = new PresentationManager({ addon: nativePlatformMock.object });
       manager.dispose();
-      expect(() => manager.getNativePlatform()).to.throw(ECPresentationError);
+      expect(() => manager.getNativePlatform()).to.throw(PresentationError);
     });
 
   });
 
-  describe("addon results conversion to ECPresentation objects", () => {
+  describe("addon results conversion to Presentation objects", () => {
 
     let testData: any;
     const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
-    let manager: ECPresentationManager;
+    let manager: PresentationManager;
     beforeEach(() => {
       testData = {
         rulesetId: faker.random.word(),
@@ -195,7 +195,7 @@ describe("SingleClientECPresentationManager", () => {
       };
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
-      manager = new ECPresentationManager({ addon: nativePlatformMock.object });
+      manager = new PresentationManager({ addon: nativePlatformMock.object });
     });
     afterEach(() => {
       manager.dispose();

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Hierarchies */
 
-export { default as ECPresentationTreeDataProvider } from "./DataProvider";
-export { default as IECPresentationTreeDataProvider } from "./IECPresentationTreeDataProvider";
+export { default as PresentationTreeDataProvider } from "./DataProvider";
+export { default as IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 export { default as withUnifiedSelection, SelectionTarget } from "./WithUnifiedSelection";
 export { default as withFilteringSupport } from "./WithFilteringSupport";

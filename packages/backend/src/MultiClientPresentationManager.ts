@@ -9,22 +9,22 @@ import {
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   RequestOptions, Paged, KeySet, InstanceKey,
-} from "@bentley/ecpresentation-common";
-import IBackendECPresentationManager, { Props as IBackendECPresentationManagerProps } from "./IBackendECPresentationManager";
-import SingleClientECPresentationManager from "./SingleClientECPresentationManager";
+} from "@bentley/presentation-common";
+import IBackendPresentationManager, { Props as IBackendPresentationManagerProps } from "./IBackendPresentationManager";
+import SingleClientPresentationManager from "./SingleClientPresentationManager";
 import TemporaryStorage from "./TemporaryStorage";
 
 /**
- * Properties that can be used to configure [[MultiClientECPresentationManager]]
+ * Properties that can be used to configure [[MultiClientPresentationManager]]
  *
  * @hidden
  */
-export interface Props extends IBackendECPresentationManagerProps {
+export interface Props extends IBackendPresentationManagerProps {
   /**
    * Factory method for creating separate managers for each client
    * @hidden
    */
-  clientManagerFactory?: (clientId: string, props: IBackendECPresentationManagerProps) => IBackendECPresentationManager;
+  clientManagerFactory?: (clientId: string, props: IBackendPresentationManagerProps) => IBackendPresentationManager;
 
   /**
    * How much time should an unused client manager be stored in memory
@@ -34,24 +34,24 @@ export interface Props extends IBackendECPresentationManagerProps {
 }
 
 /**
- * Backend ECPresentation manager which creates a separate presentation manager
+ * Backend Presentation manager which creates a separate presentation manager
  * for every client. This allows clients to configure managers independently, e.g.
  * have separate rulesets with same ids, ruleset vars, etc.
  *
  * @hidden
  */
-export default class MultiClientECPresentationManager implements IBackendECPresentationManager {
+export default class MultiClientPresentationManager implements IBackendPresentationManager {
 
-  private _clientsStorage: TemporaryStorage<IBackendECPresentationManager>;
+  private _clientsStorage: TemporaryStorage<IBackendPresentationManager>;
   private _props: Props;
 
   /**
-   * Creates an instance of [[MultiClientECPresentationManager]].
+   * Creates an instance of [[MultiClientPresentationManager]].
    * @param props Optional configuration properties.
    */
   constructor(props?: Props) {
     this._props = props || {};
-    this._clientsStorage = new TemporaryStorage<IBackendECPresentationManager>({
+    this._clientsStorage = new TemporaryStorage<IBackendPresentationManager>({
       factory: this.createClientManager,
       cleanupHandler: this.disposeClientManager,
       // cleanup unused managers every minute
@@ -69,23 +69,23 @@ export default class MultiClientECPresentationManager implements IBackendECPrese
   }
 
   // tslint:disable-next-line:naming-convention
-  private createClientManager = (clientId: string): IBackendECPresentationManager => {
-    const props: IBackendECPresentationManagerProps = {
+  private createClientManager = (clientId: string): IBackendPresentationManager => {
+    const props: IBackendPresentationManagerProps = {
       localeDirectories: this._props.localeDirectories,
       rulesetDirectories: this._props.rulesetDirectories,
       activeLocale: this._props.activeLocale,
     };
     if (this._props.clientManagerFactory)
       return this._props.clientManagerFactory(clientId, props);
-    return new SingleClientECPresentationManager(props);
+    return new SingleClientPresentationManager(props);
   }
 
   // tslint:disable-next-line:naming-convention
-  private disposeClientManager = (manager: IBackendECPresentationManager) => {
+  private disposeClientManager = (manager: IBackendPresentationManager) => {
     manager.dispose();
   }
 
-  private getClientManager(clientId: string): IBackendECPresentationManager {
+  private getClientManager(clientId: string): IBackendPresentationManager {
     return this._clientsStorage.getValue(clientId);
   }
 

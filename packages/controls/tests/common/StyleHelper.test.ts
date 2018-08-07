@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Node } from "@bentley/ecpresentation-common";
+import { Node } from "@bentley/presentation-common";
 import { createRandomECInstanceNodeKey } from "@helpers/random";
 import StyleHelper from "@src/common/StyleHelper";
 

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionHandler } from "@bentley/ecpresentation-frontend";
+import { SelectionHandler } from "@bentley/presentation-frontend";
 
 export default interface IUnifiedSelectionComponent {
   imodel: IModelConnection;

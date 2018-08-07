@@ -19,7 +19,7 @@ test / etc.
 
 2. Work on your changes and `git commit` when you're ready. You can make
 multiple commits if necessary. Please refer to [this link](./Commiting.md)
-for rules on making changes in ECPresentation library.
+for rules on making changes in iModelJs Presentation library.
 
 3. Push the new branch:
    ```batch

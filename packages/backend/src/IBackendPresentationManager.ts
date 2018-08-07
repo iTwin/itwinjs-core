@@ -5,10 +5,10 @@
 
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { IECPresentationManager, IRulesetVariablesManager, IRulesetManager } from "@bentley/ecpresentation-common";
+import { IPresentationManager, IRulesetVariablesManager, IRulesetManager } from "@bentley/presentation-common";
 
 /**
- * Properties that can be used to configure [[IBackendECPresentationManager]]
+ * Properties that can be used to configure [[IBackendPresentationManager]]
  */
 export interface Props {
   /**
@@ -24,16 +24,16 @@ export interface Props {
 
   /**
    * Sets the active locale to use when localizing presentation-related
-   * strings. It can later be changed through [[ECPresentationManager]].
+   * strings. It can later be changed through [[PresentationManager]].
    */
   activeLocale?: string;
 }
 
 /**
- * Backend ECPresentation manager which pulls the presentation data from
+ * Backend Presentation manager which pulls the presentation data from
  * an iModel.
  */
-export default interface IBackendECPresentationManager extends IECPresentationManager<IModelDb>, IDisposable {
+export default interface IBackendPresentationManager extends IPresentationManager<IModelDb>, IDisposable {
   /**
    * Get rulesets manager
    * @param clientId Id of the client requesting rulesets

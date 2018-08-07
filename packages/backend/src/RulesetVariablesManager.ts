@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { IRulesetVariablesManager } from "@bentley/ecpresentation-common";
-import { VariableValueJSON, VariableValueTypes } from "@bentley/ecpresentation-common/lib/IRulesetVariablesManager";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { IRulesetVariablesManager } from "@bentley/presentation-common";
+import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /** @hidden */

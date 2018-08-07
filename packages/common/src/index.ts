@@ -4,13 +4,13 @@
 /** @module Core */
 
 export * from "./EC";
-export { ECPresentationError, ECPresentationStatus } from "./Error";
+export { PresentationError, PresentationStatus } from "./Error";
 export { default as KeySet, Keys } from "./KeySet";
 export { default as PersistentKeysContainer } from "./PersistentKeysContainer";
 export * from "./content";
 export * from "./hierarchy";
-export * from "./IECPresentationManager";
-export { default as ECPresentationRpcInterface } from "./ECPresentationRpcInterface";
+export * from "./IPresentationManager";
+export { default as PresentationRpcInterface } from "./PresentationRpcInterface";
 export * from "./rules";
 export { IRulesetVariablesManager } from "./IRulesetVariablesManager";
 export * from "./IRulesetManager";

@@ -3,4 +3,4 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-export { default as ECPresentation } from "./ECPresentation";
+export { default as Presentation } from "./Presentation";

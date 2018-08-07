@@ -5,9 +5,9 @@
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 /**
- * ECPresentation data provider
+ * Presentation data provider
  */
-export default interface IECPresentationDataProvider {
+export default interface IPresentationDataProvider {
   /**
    * [[IModelConnection]] used by this data provider
    */

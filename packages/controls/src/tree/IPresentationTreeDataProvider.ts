@@ -4,13 +4,13 @@
 /** @module Hierarchies */
 
 import { TreeDataProvider, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
-import IECPresentationDataProvider from "../common/IECPresentationDataProvider";
-import { NodeKey, NodePathElement } from "@bentley/ecpresentation-common";
+import IPresentationDataProvider from "../common/IPresentationDataProvider";
+import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 
 /**
- * ECPresentation tree data provider.
+ * Presentation tree data provider.
  */
-export default interface IECPresentationTreeDataProvider extends TreeDataProvider, IECPresentationDataProvider {
+export default interface IPresentationTreeDataProvider extends TreeDataProvider, IPresentationDataProvider {
   /**
    * Returns a [[NodeKey]] from given [[TreeNodeItem]].
    */

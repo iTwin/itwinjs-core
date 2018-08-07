@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import KeySet, { KeySetJSON } from "@src/KeySet";
 import { InstanceKey } from "@src/EC";
-import { ECPresentationError } from "@src/Error";
+import { PresentationError } from "@src/Error";
 import {
   createRandomECInstanceNodeKey,
   createRandomECInstanceKey, createRandomECInstanceId,
@@ -277,11 +277,11 @@ describe("KeySet", () => {
 
     it("handles invalid values", () => {
       const set = new KeySet();
-      expect(() => (set as any).add(undefined)).to.throw(ECPresentationError);
+      expect(() => (set as any).add(undefined)).to.throw(PresentationError);
       expect(set.isEmpty).to.be.true;
-      expect(() => (set as any).add(null)).to.throw(ECPresentationError);
+      expect(() => (set as any).add(null)).to.throw(PresentationError);
       expect(set.isEmpty).to.be.true;
-      expect(() => (set as any).add({})).to.throw(ECPresentationError);
+      expect(() => (set as any).add({})).to.throw(PresentationError);
       expect(set.isEmpty).to.be.true;
     });
 
@@ -420,11 +420,11 @@ describe("KeySet", () => {
 
     it("handles invalid values", () => {
       const set = new KeySet([createRandomECInstanceNodeKey()]);
-      expect(() => (set as any).delete(undefined)).to.throw(ECPresentationError);
+      expect(() => (set as any).delete(undefined)).to.throw(PresentationError);
       expect(set.size).to.eq(1);
-      expect(() => (set as any).delete(null)).to.throw(ECPresentationError);
+      expect(() => (set as any).delete(null)).to.throw(PresentationError);
       expect(set.size).to.eq(1);
-      expect(() => (set as any).delete({})).to.throw(ECPresentationError);
+      expect(() => (set as any).delete({})).to.throw(PresentationError);
       expect(set.size).to.eq(1);
     });
 
@@ -434,9 +434,9 @@ describe("KeySet", () => {
 
     it("handles invalid values", () => {
       const set = new KeySet([createRandomECInstanceNodeKey()]);
-      expect(() => (set as any).has(undefined)).to.throw(ECPresentationError);
-      expect(() => (set as any).has(null)).to.throw(ECPresentationError);
-      expect(() => (set as any).has({})).to.throw(ECPresentationError);
+      expect(() => (set as any).has(undefined)).to.throw(PresentationError);
+      expect(() => (set as any).has(null)).to.throw(PresentationError);
+      expect(() => (set as any).has({})).to.throw(PresentationError);
     });
 
   });

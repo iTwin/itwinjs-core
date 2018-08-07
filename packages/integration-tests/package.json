@@ -1,7 +1,7 @@
 {
   "name": "integration-tests",
   "version": "0.0.0",
-  "description": "ECPresentation integration tests",
+  "description": "Integration tests",
   "license": "UNLICENSED",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -25,10 +25,10 @@
     "@bentley/imodeljs-common": "~0.112.0",
     "@bentley/imodeljs-backend": "~0.112.0",
     "@bentley/imodeljs-frontend": "~0.112.0",
-    "@bentley/ecpresentation-common": "^0.5.1",
-    "@bentley/ecpresentation-backend": "^0.5.1",
-    "@bentley/ecpresentation-frontend": "^0.5.1",
-    "@bentley/ecpresentation-controls": "^0.5.1",
+    "@bentley/presentation-common": "^0.5.1",
+    "@bentley/presentation-backend": "^0.5.1",
+    "@bentley/presentation-frontend": "^0.5.1",
+    "@bentley/presentation-controls": "^0.5.1",
     "@bentley/ui-core": "~0.112.0",
     "@bentley/ui-components": "~0.112.0",
     "@types/chai": "^4.0.10",

@@ -4,11 +4,11 @@
 import { expect } from "chai";
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { initialize, terminate } from "../IntegrationTests";
-import RulesetSchema from "@bentley/ecpresentation-common/Ruleset.schema.json";
 import { using } from "@bentley/bentleyjs-core";
-import { Ruleset, PropertyGroupingValue, Rule, RuleTypes } from "@bentley/ecpresentation-common";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/ecpresentation-backend/lib/NativePlatform";
-import RulesetManager from "@bentley/ecpresentation-backend/lib/RulesetManager";
+import RulesetSchema from "@bentley/presentation-common/Ruleset.schema.json";
+import { Ruleset, PropertyGroupingValue, Rule, RuleTypes } from "@bentley/presentation-common";
+import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
+import RulesetManager from "@bentley/presentation-backend/lib/RulesetManager";
 
 before(() => {
   initialize();

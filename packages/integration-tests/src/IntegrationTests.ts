@@ -10,12 +10,12 @@ import { I18NOptions } from "@bentley/imodeljs-i18n";
 import TestRpcManager from "@helpers/TestRpcManager";
 // backend includes
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { ECPresentation as ECPresentationBackend, ECPresentation } from "@bentley/ecpresentation-backend";
+import { Presentation as PresentationBackend, Presentation } from "@bentley/presentation-backend";
 // frontend includes
 import { StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
-import { ECPresentation as ECPresentationFrontend } from "@bentley/ecpresentation-frontend";
+import { Presentation as PresentationFrontend } from "@bentley/presentation-frontend";
 
 process.env.NODE_ENV = "development";
 let isInitialized = false;
@@ -62,17 +62,17 @@ export const initialize = () => {
 
   // init backend
   IModelHost.startup();
-  ECPresentationBackend.initialize({
+  PresentationBackend.initialize({
     rulesetDirectories: ["lib/assets/rulesets"],
     localeDirectories: ["lib/assets/locales"],
   });
 
   // set up rpc interfaces
-  TestRpcManager.initializeClient([StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface]);
+  TestRpcManager.initializeClient([StandaloneIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
 
   // init frontend
   IntegrationTestsApp.startup();
-  ECPresentationFrontend.initialize({
+  PresentationFrontend.initialize({
     activeLocale: IntegrationTestsApp.i18n.languageList()[0],
   });
 
@@ -84,11 +84,11 @@ export const terminate = () => {
     return;
 
   // terminate backend
-  ECPresentation.terminate();
+  Presentation.terminate();
   IModelHost.shutdown();
 
   // terminate frontend
-  ECPresentation.terminate();
+  Presentation.terminate();
   NoRenderApp.shutdown();
 
   isInitialized = false;

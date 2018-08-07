@@ -5,23 +5,23 @@ the below instructions are also split that way.
 
 ## Backend
 
-The backend dependency is `ecpresentation-backend`. It can simply be install with
+The backend dependency is `presentation-backend`. It can simply be installed with
 ```bash
-npm install ecpresentation-backend
+npm install presentation-backend
 ```
 
 **Important:** the version of `imodeljs-backend` used by the application must
-match its semver version range used by `ecpresentation-backend`.
+match its semver version range used by `presentation-backend`.
 
 ## Frontend
 
-The primary frontend dependency is `ecpresentation-frontend`. However,
-consumers typically also want to depend on `ecpresentation-controls` which
-contains various ECPresentation-driven data providers. The packages can be
-installed with
+The primary frontend dependency is `presentation-frontend`. However,
+consumers typically also want to depend on `presentation-controls` which
+contains various iModelJs Presentation-driven data providers and other components.
+The packages can be installed with
 ```bash
-npm install ecpresentation-frontend ecpresentation-controls
+npm install presentation-frontend presentation-controls
 ```
 
 **Important:** the version of `imodeljs-frontend` used by the application must
-match its semver version range used by `ecpresentation-frontend`.
+match its semver version range used by `presentation-frontend`.

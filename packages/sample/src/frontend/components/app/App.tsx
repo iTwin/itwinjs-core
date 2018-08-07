@@ -2,7 +2,7 @@ import * as React from "react";
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { Presentation } from "@bentley/presentation-frontend";
 import IModelSelector from "../imodel-selector/IModelSelector";
 import PropertiesWidget from "../properties-widget/PropertiesWidget";
 import GridWidget from "../grid-widget/GridWidget";
@@ -33,7 +33,7 @@ export default class App extends React.Component<{}, State> {
   // tslint:disable-next-line:naming-convention
   private onRulesetSelected = (rulesetId: string | undefined) => {
     if (this.state.imodel)
-      ECPresentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
+      Presentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
     this.setState({ ...this.state, currentRulesetId: rulesetId });
   }
 

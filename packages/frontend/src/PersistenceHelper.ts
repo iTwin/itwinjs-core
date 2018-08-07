@@ -4,13 +4,13 @@
 /** @module Core */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PersistentKeysContainer, KeySet } from "@bentley/ecpresentation-common";
+import { PersistentKeysContainer, KeySet } from "@bentley/presentation-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 
 /**
  * Static class which can be used to convert between
- * [KeySet]($ecpresentation-common) and
- * [PersistentKeysContainer]($ecpresentation-common).
+ * [KeySet]($presentation-common) and
+ * [PersistentKeysContainer]($presentation-common).
  */
 export default class PersistenceHelper {
 
@@ -18,7 +18,7 @@ export default class PersistenceHelper {
   private constructor() { }
 
   /**
-   * Create a [PersistentKeysContainer]($ecpresentation-common)
+   * Create a [PersistentKeysContainer]($presentation-common)
    * @param imodel iModel whose keys are contained in the `keyset`
    * @param keyset The keys to put into the persistent container
    */
@@ -54,7 +54,7 @@ export default class PersistenceHelper {
   }
 
   /**
-   * Create a [KeySet]($ecpresentation-common)
+   * Create a [KeySet]($presentation-common)
    * @param imodel iModel whose keys are contained in the `container`
    * @param container Container of keys to put into the KeySet
    */

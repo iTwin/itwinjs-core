@@ -8,8 +8,8 @@ format](https://www.i18next.com/misc/json-format#i-18-next-json-v3) - it
 only supports simple key-value pairs (including nesting) without plurals or
 interpolation.
 
-It's important to note that **ECPresentation localization happens on
-the backend**, so localization JSON file must be delivered with the backend.
+It's important to note that **localization happens on the backend**,
+so localization JSON file must be delivered with the backend.
 
 ## Localization in Presentation Rule Sets
 

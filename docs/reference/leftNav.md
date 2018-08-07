@@ -1,5 +1,5 @@
 ### Reference
-##### ($ecpresentation-common)
-##### ($ecpresentation-backend)
-##### ($ecpresentation-frontend)
-##### ($ecpresentation-controls)
+##### ($presentation-common)
+##### ($presentation-backend)
+##### ($presentation-frontend)
+##### ($presentation-controls)

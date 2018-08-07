@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { IRulesetManager, RegisteredRuleset, Ruleset } from "@bentley/ecpresentation-common";
+import { IRulesetManager, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /** @hidden */

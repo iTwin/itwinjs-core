@@ -42,7 +42,7 @@ Properties are considered similar if:
 
 ## Value Merging
 
-When content is requested with [ContentFlags.MergeResults]($ecpresentation-common)
+When content is requested with [ContentFlags.MergeResults]($presentation-common)
 flag and contains more than 1 result row, its values are merged
 into 1 record. This is generally used only for property pane use
 case where we may request content for multiple selected elements.

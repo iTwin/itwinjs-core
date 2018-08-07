@@ -6,28 +6,28 @@ import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { HierarchyRequestOptions, Paged, ContentRequestOptions, KeySet } from "@bentley/ecpresentation-common";
-import IBackendECPresentationManager, { Props } from "@src/IBackendECPresentationManager";
-import MultiClientECPresentationManager from "@src/MultiClientECPresentationManager";
-import SingleClientECPresentationManager from "@src/SingleClientECPresentationManager";
+import { HierarchyRequestOptions, Paged, ContentRequestOptions, KeySet } from "@bentley/presentation-common";
+import IBackendPresentationManager, { Props } from "@src/IBackendPresentationManager";
+import MultiClientPresentationManager from "@src/MultiClientPresentationManager";
+import SingleClientPresentationManager from "@src/SingleClientPresentationManager";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import TemporaryStorage from "@src/TemporaryStorage";
 
-describe("MultiClientECPresentationManager", () => {
+describe("MultiClientPresentationManager", () => {
 
-  const createdClientManagerMocks = new Map<string, moq.IMock<IBackendECPresentationManager>>();
-  const factoryMock = moq.Mock.ofType<(clientId: string, props: Props) => IBackendECPresentationManager>();
+  const createdClientManagerMocks = new Map<string, moq.IMock<IBackendPresentationManager>>();
+  const factoryMock = moq.Mock.ofType<(clientId: string, props: Props) => IBackendPresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelDb>();
-  let manager: MultiClientECPresentationManager;
+  let manager: MultiClientPresentationManager;
   beforeEach(() => {
-    manager = new MultiClientECPresentationManager({
+    manager = new MultiClientPresentationManager({
       clientManagerFactory: factoryMock.object,
     });
     factoryMock.reset();
     factoryMock.setup((x) => x(moq.It.isAnyString(), moq.It.isAny())).returns((clientId: string) => {
-      const mock = moq.Mock.ofType<IBackendECPresentationManager>();
+      const mock = moq.Mock.ofType<IBackendPresentationManager>();
       createdClientManagerMocks.set(clientId, mock);
       return mock.object;
     });
@@ -43,17 +43,17 @@ describe("MultiClientECPresentationManager", () => {
     expect(createdClientManagerMocks.has("")).to.be.true;
   });
 
-  it("by default creates SingleClientECPresentationManager as a client manager", async () => {
-    using(new MultiClientECPresentationManager(), (newManager) => {
+  it("by default creates SingleClientPresentationManager as a client manager", async () => {
+    using(new MultiClientPresentationManager(), (newManager) => {
       newManager.rulesets(undefined);
-      expect((newManager as any).getClientManager("")).to.be.instanceof(SingleClientECPresentationManager);
+      expect((newManager as any).getClientManager("")).to.be.instanceof(SingleClientPresentationManager);
     });
   });
 
   it("sets value lifetime for temporary storage", async () => {
     const unusedClientLifetime = faker.random.number();
-    using(new MultiClientECPresentationManager({ unusedClientLifetime }), (newManager) => {
-      const storage = (newManager as any)._clientsStorage as TemporaryStorage<IBackendECPresentationManager>;
+    using(new MultiClientPresentationManager({ unusedClientLifetime }), (newManager) => {
+      const storage = (newManager as any)._clientsStorage as TemporaryStorage<IBackendPresentationManager>;
       expect(storage.props.valueLifetime).to.eq(unusedClientLifetime);
     });
   });
@@ -77,7 +77,7 @@ describe("MultiClientECPresentationManager", () => {
 
     it("by default uses activeLocale set in props", () => {
       const locale = faker.random.locale();
-      using(new MultiClientECPresentationManager({ activeLocale: locale }), (newManager) => {
+      using(new MultiClientPresentationManager({ activeLocale: locale }), (newManager) => {
         expect(newManager.activeLocale).to.eq(locale);
       });
     });

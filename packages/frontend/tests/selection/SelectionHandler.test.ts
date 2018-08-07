@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/ecpresentation-common";
+import { KeySet } from "@bentley/presentation-common";
 import { SelectionManager, SelectionHandler, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider } from "@src/selection";
 
 describe("SelectionHandler", () => {

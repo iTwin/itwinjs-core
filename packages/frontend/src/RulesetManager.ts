@@ -4,10 +4,10 @@
 /** @module Core */
 
 import {
-  ECPresentationRpcInterface,
+  PresentationRpcInterface,
   IRulesetManager, RegisteredRuleset, Ruleset,
-} from "@bentley/ecpresentation-common";
-import { RulesetRpcRequestOptions } from "@bentley/ecpresentation-common/lib/ECPresentationRpcInterface";
+} from "@bentley/presentation-common";
+import { RulesetRpcRequestOptions } from "@bentley/presentation-common/lib/PresentationRpcInterface";
 
 /** @hidden */
 export default class RulesetManager implements IRulesetManager {
@@ -25,7 +25,7 @@ export default class RulesetManager implements IRulesetManager {
   }
 
   public async get(id: string): Promise<RegisteredRuleset | undefined> {
-    const tuple = await ECPresentationRpcInterface.getClient().getRuleset(this.createRequestOptions(), id);
+    const tuple = await PresentationRpcInterface.getClient().getRuleset(this.createRequestOptions(), id);
     if (tuple) {
       const [ruleset, hash] = tuple;
       return new RegisteredRuleset(this, ruleset, hash);
@@ -34,18 +34,18 @@ export default class RulesetManager implements IRulesetManager {
   }
 
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    const hash = await ECPresentationRpcInterface.getClient().addRuleset(this.createRequestOptions(), ruleset);
+    const hash = await PresentationRpcInterface.getClient().addRuleset(this.createRequestOptions(), ruleset);
     return new RegisteredRuleset(this, ruleset, hash);
   }
 
   public async remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean> {
     if (Array.isArray(ruleset))
-      return await ECPresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset[0], ruleset[1]);
-    return await ECPresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset.id, ruleset.hash);
+      return await PresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset[0], ruleset[1]);
+    return await PresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset.id, ruleset.hash);
   }
 
   public async clear(): Promise<void> {
-    return await ECPresentationRpcInterface.getClient().clearRulesets(this.createRequestOptions());
+    return await PresentationRpcInterface.getClient().clearRulesets(this.createRequestOptions());
   }
 
 }

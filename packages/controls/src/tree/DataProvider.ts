@@ -5,17 +5,17 @@
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/ecpresentation-common";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import { PageOptions } from "@bentley/ui-components/lib/common/PageOptions";
 import { createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
-import IECPresentationTreeDataProvider from "./IECPresentationTreeDataProvider";
+import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 
 /**
  * Presentation Rules-driven tree data provider.
  */
-export default class ECPresentationTreeDataProvider implements IECPresentationTreeDataProvider {
+export default class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
   private _rulesetId: string;
   private _connection: IModelConnection;
 
@@ -56,7 +56,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    * @param pageOptions Information about the requested page of data.
    */
   public getRootNodes = _.memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const nodes = await ECPresentation.presentation.getRootNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) });
+    const nodes = await Presentation.presentation.getRootNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) });
     return createTreeNodeItems(nodes);
   }, MemoizationHelpers.getRootNodesKeyResolver);
 
@@ -64,7 +64,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    * Returns the total number of root nodes.
    */
   public getRootNodesCount = _.memoize(async (): Promise<number> => {
-    return await ECPresentation.presentation.getRootNodesCount(this.createRequestOptions());
+    return await Presentation.presentation.getRootNodesCount(this.createRequestOptions());
   });
 
   /**
@@ -74,7 +74,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    */
   public getChildNodes = _.memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const parentKey = this.getNodeKey(parentNode);
-    const nodes = await ECPresentation.presentation.getChildren({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
+    const nodes = await Presentation.presentation.getChildren({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
     const items = createTreeNodeItems(nodes, parentNode.id);
     return items;
   }, MemoizationHelpers.getChildNodesKeyResolver);
@@ -84,7 +84,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    * @param filter Filter.
    */
   public getFilteredNodePaths = async (filter: string): Promise<ReadonlyArray<Readonly<NodePathElement>>> => {
-    return ECPresentation.presentation.getFilteredNodePaths(this.createRequestOptions(), filter);
+    return Presentation.presentation.getFilteredNodePaths(this.createRequestOptions(), filter);
   }
 
   /**
@@ -93,7 +93,7 @@ export default class ECPresentationTreeDataProvider implements IECPresentationTr
    */
   public getChildNodesCount = _.memoize(async (parentNode: TreeNodeItem): Promise<number> => {
     const parentKey = this.getNodeKey(parentNode);
-    return await ECPresentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
+    return await Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
   }, MemoizationHelpers.getChildNodesCountKeyResolver);
 }
 class MemoizationHelpers {

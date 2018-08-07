@@ -4,8 +4,8 @@
 /** @module Content */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ValuesDictionary, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
-import * as content from "@bentley/ecpresentation-common/lib/content";
+import { ValuesDictionary, PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import * as content from "@bentley/presentation-common/lib/content";
 import {
   PropertyDescription, PropertyRecord,
   PropertyValueFormat, PropertyEditorInfo, EnumerationChoicesInfo,
@@ -84,12 +84,12 @@ const createValue = (propertyDescription: PropertyDescription, typeDescription: 
   if (!isMerged) {
     if (typeDescription.valueFormat === content.PropertyValueFormat.Array) {
       if (!isArray(value) || !isArray(displayValue))
-        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "value and displayValue should both be arrays");
+        throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be arrays");
       return createArrayValue(propertyDescription, typeDescription, value, displayValue);
     }
     if (typeDescription.valueFormat === content.PropertyValueFormat.Struct) {
       if (!isMap(value) || !isMap(displayValue))
-        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "value and displayValue should both be of map type");
+        throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be of map type");
       return createStructValue(typeDescription, value, displayValue);
     }
   }
@@ -100,7 +100,7 @@ const createRecordDescription = (typeDescription: content.TypeDescription, displ
   if (content.PropertyValueFormat.Array === typeDescription.valueFormat || content.PropertyValueFormat.Struct === typeDescription.valueFormat)
     return undefined;
   if (content.PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
-    throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "displayValue is of wrong type");
+    throw new PresentationError(PresentationStatus.InvalidArgument, "displayValue is of wrong type");
   return displayValue;
 };
 
@@ -147,7 +147,7 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
   if (isMerged) {
     const displayValue = item.displayValues[field.name];
     if (!isPrimitive(displayValue))
-      throw new ECPresentationError(ECPresentationStatus.Error, "displayValue should be primitive");
+      throw new PresentationError(PresentationStatus.Error, "displayValue should be primitive");
     // if the value is merged, just take the display value
     value = {
       valueFormat: PropertyValueFormat.Primitive,
@@ -157,7 +157,7 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
   } else {
     const dictionaryValue = item.values[field.name];
     if (!isNestedContent(dictionaryValue))
-      throw new ECPresentationError(ECPresentationStatus.Error, "value should be nested content");
+      throw new PresentationError(PresentationStatus.Error, "value should be nested content");
     // nested content value is in NestedContent[] format
     const nestedContentArray: content.NestedContent[] = dictionaryValue;
     value = {
@@ -176,7 +176,7 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
 };
 
 /**
- * A helper class which creates `ui-components` objects from `ecpresentation` objects.
+ * A helper class which creates `ui-components` objects from `presentation` objects.
  */
 export default class ContentBuilder {
   /**

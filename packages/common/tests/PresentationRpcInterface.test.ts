@@ -6,7 +6,7 @@ import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
 import {
-  ECPresentationRpcInterface,
+  PresentationRpcInterface,
   KeySet, Paged,
   HierarchyRequestOptions, ContentRequestOptions,
 } from "@src/index";
@@ -14,36 +14,36 @@ import { VariableValueTypes } from "@src/IRulesetVariablesManager";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "@helpers/random";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 
-describe("ECPresentationRpcInterface", () => {
+describe("PresentationRpcInterface", () => {
 
   describe("getClient", () => {
 
     beforeEach(() => {
-      RpcManager.terminateInterface(ECPresentationRpcInterface);
+      RpcManager.terminateInterface(PresentationRpcInterface);
     });
 
     it("throws when not registered", () => {
-      expect(() => ECPresentationRpcInterface.getClient()).to.throw();
+      expect(() => PresentationRpcInterface.getClient()).to.throw();
     });
 
     it("returns interface when registered", () => {
-      initializeRpcInterface(ECPresentationRpcInterface);
-      const proxy = ECPresentationRpcInterface.getClient();
-      expect(proxy).is.instanceof(ECPresentationRpcInterface);
+      initializeRpcInterface(PresentationRpcInterface);
+      const proxy = PresentationRpcInterface.getClient();
+      expect(proxy).is.instanceof(PresentationRpcInterface);
     });
 
   });
 
   describe("calls forwarding", () => {
 
-    let rpcInterface: ECPresentationRpcInterface;
+    let rpcInterface: PresentationRpcInterface;
     let mock: moq.IMock<(<T>(operation: string, ...parameters: any[]) => Promise<T>)>;
     const testData = {
       imodelToken: new IModelToken(),
     };
 
     beforeEach(() => {
-      rpcInterface = new ECPresentationRpcInterface();
+      rpcInterface = new PresentationRpcInterface();
       mock = moq.Mock.ofInstance(rpcInterface.forward);
       rpcInterface.forward = mock.object;
     });

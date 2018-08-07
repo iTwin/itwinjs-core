@@ -7,8 +7,8 @@ const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, Content, Descriptor, ECPresentationRpcInterface, HierarchyRequestOptions, Paged, ContentRequestOptions, RequestOptions } from "@bentley/ecpresentation-common";
-import ECPresentationManager from "@src/ECPresentationManager";
+import { KeySet, Content, Descriptor, PresentationRpcInterface, HierarchyRequestOptions, Paged, ContentRequestOptions, RequestOptions } from "@common/index";
+import PresentationManager from "@src/PresentationManager";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import RulesetManager from "@srcRulesetManager";
 import {
@@ -18,10 +18,10 @@ import {
 } from "@helpers/random";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
 
-describe("ECPresentationManager", () => {
+describe("PresentationManager", () => {
 
-  let interfaceMock: moq.IMock<ECPresentationRpcInterface>;
-  let manager: ECPresentationManager;
+  let interfaceMock: moq.IMock<PresentationRpcInterface>;
+  let manager: PresentationManager;
   const testData = {
     imodelToken: new IModelToken(),
     imodelMock: moq.Mock.ofType<IModelConnection>(),
@@ -31,16 +31,16 @@ describe("ECPresentationManager", () => {
   };
 
   beforeEach(() => {
-    initializeRpcInterface(ECPresentationRpcInterface);
+    initializeRpcInterface(PresentationRpcInterface);
 
-    interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
-    ECPresentationRpcInterface.getClient = () => interfaceMock.object;
+    interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
+    PresentationRpcInterface.getClient = () => interfaceMock.object;
     testData.imodelMock.setup((x) => x.iModelToken).returns(() => testData.imodelToken);
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
     testData.clientId = faker.random.uuid();
 
-    manager = ECPresentationManager.create({ clientId: testData.clientId });
+    manager = PresentationManager.create({ clientId: testData.clientId });
   });
 
   const toIModelTokenOptions = <TOptions extends RequestOptions<IModelConnection>>(options: TOptions) => {
@@ -57,13 +57,13 @@ describe("ECPresentationManager", () => {
 
     it("sets active locale if supplied with props", async () => {
       const props = { activeLocale: faker.locale };
-      const mgr = ECPresentationManager.create(props);
+      const mgr = PresentationManager.create(props);
       expect(mgr.activeLocale).to.eq(props.activeLocale);
     });
 
     it("sets custom clientId if supplied with props", async () => {
       const props = { clientId: faker.random.word() };
-      const mgr = ECPresentationManager.create(props);
+      const mgr = PresentationManager.create(props);
       expect(mgr.clientId).to.eq(props.clientId);
     });
 

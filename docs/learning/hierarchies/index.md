@@ -1,4 +1,4 @@
-# ECPresentation Hierarchies
+# Hierarchies
 
 Table of Contents:
 - [ECExpressions](./ECExpressions.md)

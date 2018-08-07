@@ -3,5 +3,5 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-export { default as ECPresentationPropertyDataProvider } from "./DataProvider";
+export { default as PresentationPropertyDataProvider } from "./DataProvider";
 export { default as withUnifiedSelection } from "./WithUnifiedSelection";

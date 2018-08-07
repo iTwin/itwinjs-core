@@ -10,24 +10,24 @@ import * as moq from "@helpers/Mocks";
 import { createRandomECInstanceNodeKey } from "@helpers/random";
 import { createRandomTreeNodeItem } from "@helpers/UiComponents";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, BaseNodeKey, ECInstanceNodeKey } from "@bentley/ecpresentation-common";
+import { KeySet, BaseNodeKey, ECInstanceNodeKey } from "@bentley/presentation-common";
 import {
-  ECPresentation,
+  Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
-} from "@bentley/ecpresentation-frontend";
+} from "@bentley/presentation-frontend";
 import { Tree, TreeNodeItem } from "@bentley/ui-components";
 import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
-import { ECPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "@src/tree";
+import { PresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "@src/tree";
 
 // tslint:disable-next-line:variable-name naming-convention
-const ECPresentationTree = withUnifiedSelection(Tree);
+const PresentationTree = withUnifiedSelection(Tree);
 
 describe("Tree withUnifiedSelection", () => {
 
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType<ECPresentationTreeDataProvider>();
+  const dataProviderMock = moq.Mock.ofType<PresentationTreeDataProvider>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   beforeEach(() => {
     testRulesetId = faker.random.word();
@@ -35,7 +35,7 @@ describe("Tree withUnifiedSelection", () => {
     setupDataProvider();
   });
 
-  const setupDataProvider = (providerMock?: moq.IMock<ECPresentationTreeDataProvider>, imodel?: IModelConnection, rulesetId?: string, rootNodes?: () => TreeNodeItem[], childNodes?: (parent: TreeNodeItem) => TreeNodeItem[]) => {
+  const setupDataProvider = (providerMock?: moq.IMock<PresentationTreeDataProvider>, imodel?: IModelConnection, rulesetId?: string, rootNodes?: () => TreeNodeItem[], childNodes?: (parent: TreeNodeItem) => TreeNodeItem[]) => {
     if (!providerMock)
       providerMock = dataProviderMock;
     if (!imodel)
@@ -57,14 +57,14 @@ describe("Tree withUnifiedSelection", () => {
   };
 
   it("mounts", () => {
-    mount(<ECPresentationTree
+    mount(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />);
   });
 
   it("uses data provider's imodel and rulesetId", () => {
-    const component = shallow(<ECPresentationTree
+    const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
@@ -76,9 +76,9 @@ describe("Tree withUnifiedSelection", () => {
   it("creates default implementation for selection handler when not provided through props", () => {
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
-    ECPresentation.selection = selectionManagerMock.object;
+    Presentation.selection = selectionManagerMock.object;
 
-    const tree = shallow(<ECPresentationTree
+    const tree = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
 
@@ -89,14 +89,14 @@ describe("Tree withUnifiedSelection", () => {
   });
 
   it("renders correctly", () => {
-    expect(shallow(<ECPresentationTree
+    expect(shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />)).to.matchSnapshot();
   });
 
   it("disposes selection handler when unmounts", () => {
-    const tree = shallow(<ECPresentationTree
+    const tree = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />);
@@ -105,14 +105,14 @@ describe("Tree withUnifiedSelection", () => {
   });
 
   it("updates selection handler and data provider when props change", () => {
-    const tree = shallow<TreeProps>(<ECPresentationTree
+    const tree = shallow<TreeProps>(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />);
 
     const imodelMock2 = moq.Mock.ofType<IModelConnection>();
     const rulesetId2 = faker.random.word();
-    const providerMock2 = moq.Mock.ofType<ECPresentationTreeDataProvider>();
+    const providerMock2 = moq.Mock.ofType<PresentationTreeDataProvider>();
     setupDataProvider(providerMock2, imodelMock2.object, rulesetId2);
 
     tree.setProps({
@@ -124,7 +124,7 @@ describe("Tree withUnifiedSelection", () => {
   });
 
   it("handles missing selection handler when unmounts", () => {
-    const component = shallow(<ECPresentationTree
+    const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />, { disableLifecycleMethods: true });
@@ -132,7 +132,7 @@ describe("Tree withUnifiedSelection", () => {
   });
 
   it("handles missing selection handler when updates", () => {
-    const component = shallow(<ECPresentationTree
+    const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />, { disableLifecycleMethods: true });
@@ -147,7 +147,7 @@ describe("Tree withUnifiedSelection", () => {
         const node = createRandomTreeNodeItem();
         const arr = [faker.random.uuid(), node.id, faker.random.uuid()];
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           selectedNodes={arr}
@@ -163,7 +163,7 @@ describe("Tree withUnifiedSelection", () => {
         const node = createRandomTreeNodeItem();
         const arr = [faker.random.uuid(), faker.random.uuid()];
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           selectedNodes={arr}
@@ -181,7 +181,7 @@ describe("Tree withUnifiedSelection", () => {
         const callback = moq.Mock.ofType<(node: TreeNodeItem) => boolean>();
         callback.setup((x) => x(node)).returns(() => result).verifiable();
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           selectedNodes={callback.object}
@@ -198,7 +198,7 @@ describe("Tree withUnifiedSelection", () => {
         const node = createRandomTreeNodeItem();
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet());
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />, { disableLifecycleMethods: true });
@@ -214,7 +214,7 @@ describe("Tree withUnifiedSelection", () => {
         node.extendedData.key = nodeKey;
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey]));
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
@@ -230,7 +230,7 @@ describe("Tree withUnifiedSelection", () => {
         node.extendedData.key = nodeKey;
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey.instanceKey]));
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
@@ -249,7 +249,7 @@ describe("Tree withUnifiedSelection", () => {
         node.extendedData.key = nodeKey;
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet());
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
@@ -268,7 +268,7 @@ describe("Tree withUnifiedSelection", () => {
         const callback = moq.Mock.ofType<(nodes: TreeNodeItem[], replace: boolean) => boolean>();
         callback.setup((x) => x(nodes, false)).returns(() => true).verifiable();
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesSelected={callback.object}
@@ -286,7 +286,7 @@ describe("Tree withUnifiedSelection", () => {
         const callback = moq.Mock.ofType<(nodes: TreeNodeItem[], replace: boolean) => boolean>();
         callback.setup((x) => x(nodes, true)).returns(() => false).verifiable();
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesSelected={callback.object}
@@ -301,7 +301,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("returns false when there's no selection handler", () => {
         const nodes = [createRandomTreeNodeItem()];
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />, { disableLifecycleMethods: true });
@@ -317,7 +317,7 @@ describe("Tree withUnifiedSelection", () => {
         nodes[0].extendedData.key = createRandomECInstanceNodeKey();
         nodes[1].extendedData.key = { type: faker.random.word(), pathFromRoot: [] };
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           selectionTarget={SelectionTarget.Instance}
@@ -341,7 +341,7 @@ describe("Tree withUnifiedSelection", () => {
         const callback = moq.Mock.ofType<(nodes: TreeNodeItem[]) => boolean>();
         callback.setup((x) => x(nodes)).returns(() => true).verifiable();
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesDeselected={callback.object}
@@ -358,7 +358,7 @@ describe("Tree withUnifiedSelection", () => {
         const callback = moq.Mock.ofType<(nodes: TreeNodeItem[]) => boolean>();
         callback.setup((x) => x(nodes)).returns(() => false).verifiable();
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesDeselected={callback.object}
@@ -372,7 +372,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("returns false when there's no selection handler", () => {
         const nodes = [createRandomTreeNodeItem()];
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />, { disableLifecycleMethods: true });
@@ -387,7 +387,7 @@ describe("Tree withUnifiedSelection", () => {
         nodes[0].extendedData.key = createRandomECInstanceNodeKey();
         nodes[1].extendedData.key = { type: faker.random.word(), pathFromRoot: [] };
 
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           selectionTarget={SelectionTarget.Instance}
@@ -420,7 +420,7 @@ describe("Tree withUnifiedSelection", () => {
       };
 
       it("re-renders tree on selection changes when selection level is 0", () => {
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
@@ -430,7 +430,7 @@ describe("Tree withUnifiedSelection", () => {
       });
 
       it("doesn't re-render tree on selection changes when selection level is not 0", () => {
-        const tree = shallow(<ECPresentationTree
+        const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);

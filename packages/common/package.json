@@ -1,7 +1,7 @@
 {
-  "name": "@bentley/ecpresentation-common",
+  "name": "@bentley/presentation-common",
   "version": "0.5.1",
-  "description": "Common pieces for ecpresentation packages.",
+  "description": "Common pieces for iModelJs presentation packages",
   "keywords": [
     "Bentley",
     "EC",
@@ -20,8 +20,8 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name ecpresentation-common",
-    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/ecpresentation-common/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name presentation-common",
+    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/presentation-common/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
     "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
     "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",

@@ -4,11 +4,11 @@
 /** @module Hierarchies */
 
 import * as React from "react";
-import { Subtract } from "@bentley/ecpresentation-common";
+import { Subtract } from "@bentley/presentation-common";
 import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import { getDisplayName } from "../common/Utils";
-import IECPresentationTreeDataProvider from "./IECPresentationTreeDataProvider";
-import FilteredECPresentationTreeDataProvider from "./FilteredDataProvider";
+import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
+import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
 import "./WithFilteringSupport.scss";
 
 /**
@@ -17,7 +17,7 @@ import "./WithFilteringSupport.scss";
 export interface Props {
   filter?: string;
   /** The data provider used by the tree. */
-  dataProvider: IECPresentationTreeDataProvider;
+  dataProvider: IPresentationTreeDataProvider;
   /**
    * Called once filter is applied.
    */
@@ -25,7 +25,7 @@ export interface Props {
 }
 
 interface State {
-  filteredDataProvider?: FilteredECPresentationTreeDataProvider;
+  filteredDataProvider?: FilteredPresentationTreeDataProvider;
 }
 
 const defaultState: State = {
@@ -36,7 +36,7 @@ const defaultState: State = {
  * A HOC component that adds filtering functionality to the supplied
  * tree component.
  *
- * **Note:** it is required for the tree to use [[IECPresentationTreeDataProvider]]
+ * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
 export default function withFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props & Pick<TreeProps, "expandedNodes">> & Props> {
@@ -45,8 +45,8 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
 
   return class WithFilteringSupport extends React.Component<CombinedProps, State> {
     public static get displayName() { return `WithFilteringSupport(${getDisplayName(TreeComponent)})`; }
-    public constructor(props: CombinedProps) {
-      super(props);
+    public constructor(props: CombinedProps, context?: any) {
+      super(props, context);
       this.state = defaultState;
     }
 
@@ -91,7 +91,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
       if (this.props.filter !== filter)
         return;
 
-      const filteredDataProvider = new FilteredECPresentationTreeDataProvider(this.props.dataProvider, filter, nodePaths);
+      const filteredDataProvider = new FilteredPresentationTreeDataProvider(this.props.dataProvider, filter, nodePaths);
       this.setState({ filteredDataProvider });
     }
 

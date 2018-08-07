@@ -1,4 +1,4 @@
-# Contributing to the ECPresentation Library
+# Contributing to the iModelJs Presentation Library
 
 Below are instructions for library developers on how to build,
 commit, push and publish changes to the library.

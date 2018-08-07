@@ -1,4 +1,4 @@
-# ECPresentation Content
+# Content
 
 Table of Contents:
 - [ECExpressions](./ECExpressions.md)

@@ -5,7 +5,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/ecpresentation-common";
+import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/presentation-common";
 import { PersistenceHelper } from "@src/index";
 import { createRandomECInstanceNodeKey, createRandomId } from "@helpers/random";
 import { RelatedElementProps } from "@bentley/imodeljs-common/lib/common";

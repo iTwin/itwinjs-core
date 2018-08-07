@@ -12,13 +12,13 @@ import {
   StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Backend.Imports
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_END__
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
 // __PUBLISH_EXTRACT_START__ Backend.Initialization.RpcInterface
-ElectronRpcManager.initializeImpl({}, [...otherRpcInterfaces, ECPresentationRpcInterface]);
+ElectronRpcManager.initializeImpl({}, [...otherRpcInterfaces, PresentationRpcInterface]);
 // __PUBLISH_EXTRACT_END__
 
 const isDevBuild = (process.env.NODE_ENV === "development");

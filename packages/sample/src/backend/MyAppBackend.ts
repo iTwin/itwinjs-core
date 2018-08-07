@@ -12,9 +12,9 @@ initLogging();
 // initialize imodeljs-backend
 IModelHost.startup();
 
-// __PUBLISH_EXTRACT_START__ Backend.Initialization.ECPresentation
-import { ECPresentation } from "@bentley/ecpresentation-backend";
-ECPresentation.initialize({
+// __PUBLISH_EXTRACT_START__ Backend.Initialization.Presentation
+import { Presentation } from "@bentley/presentation-backend";
+Presentation.initialize({
   rulesetDirectories: [path.join("assets", "presentation_rules")],
   localeDirectories: [path.join("assets", "locales")],
 });

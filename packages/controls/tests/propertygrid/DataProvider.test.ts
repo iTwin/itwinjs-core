@@ -9,11 +9,11 @@ import * as faker from "faker";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { PropertyRecord } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ValuesDictionary } from "@bentley/ecpresentation-common";
-import * as content from "@bentley/ecpresentation-common/lib/content";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
-import ECPresentationPropertyDataProvider from "@src/propertygrid/DataProvider";
+import { ValuesDictionary } from "@bentley/presentation-common";
+import * as content from "@bentley/presentation-common/lib/content";
+import { Presentation } from "@bentley/presentation-frontend";
+import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
+import PresentationPropertyDataProvider from "@src/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import {
   createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
@@ -26,7 +26,7 @@ const favoritesCategoryName = "Favorite";
  * This is just a helper class to provide public access to
  * protected methods of TableDataProvider
  */
-class Provider extends ECPresentationPropertyDataProvider {
+class Provider extends PresentationPropertyDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
   public configureContentDescriptor(descriptor: content.Descriptor) { return super.configureContentDescriptor(descriptor); }
   public shouldExcludeFromDescriptor(field: content.Field) { return super.shouldExcludeFromDescriptor(field); }
@@ -45,12 +45,12 @@ describe("PropertyDataProvider", () => {
   let rulesetId: string;
   let provider: Provider;
   let memoizedCacheSpies: MemoizedCacheSpies;
-  const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
+  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
     rulesetId = faker.random.word();
-    ECPresentation.presentation = presentationManagerMock.object;
-    ECPresentation.i18n = new I18N([], "", {
+    Presentation.presentation = presentationManagerMock.object;
+    Presentation.i18n = new I18N([], "", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
   });

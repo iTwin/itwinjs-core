@@ -10,8 +10,8 @@ import {
   RpcOperation, IModelToken,
 } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Frontend.Imports
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
 import initLogging from "./api/logging";
@@ -26,11 +26,11 @@ initLogging();
 (function initRpc() {
   const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeClient({}, [...otherRpcInterfaces, ECPresentationRpcInterface]);
+    ElectronRpcManager.initializeClient({}, [...otherRpcInterfaces, PresentationRpcInterface]);
   } else {
     const rpcParams: BentleyCloudRpcParams = { info: { title: "my-app", version: "v1.0" } };
     // __PUBLISH_EXTRACT_START__ Frontend.Initialization.RpcInterface
-    const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, ECPresentationRpcInterface]);
+    const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, PresentationRpcInterface]);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
       RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
@@ -48,8 +48,8 @@ export class SampleApp extends IModelApp {
     if (process.env.NODE_ENV === "development")
       ClientConfig.devCorsProxyServer = `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`;
 
-    // __PUBLISH_EXTRACT_START__ Frontend.Initialization.ECPresentation
-    ECPresentation.initialize({
+    // __PUBLISH_EXTRACT_START__ Frontend.Initialization.Presentation
+    Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
     });
     // __PUBLISH_EXTRACT_END__

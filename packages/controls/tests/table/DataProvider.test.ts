@@ -8,20 +8,20 @@ import * as faker from "faker";
 import { SortDirection } from "@bentley/ui-core";
 import { TableDataChangeEvent } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentationError, ValuesDictionary } from "@bentley/ecpresentation-common";
-import * as content from "@bentley/ecpresentation-common/lib/content";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
-import ECPresentationTableDataProvider from "@src/table/DataProvider";
+import { PresentationError, ValuesDictionary } from "@bentley/presentation-common";
+import * as content from "@bentley/presentation-common/lib/content";
+import { Presentation } from "@bentley/presentation-frontend";
+import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
+import PresentationTableDataProvider from "@src/table/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor, createRandomECInstanceKey } from "@helpers/random";
 import { PromiseContainer } from "@helpers/Promises";
 
 /**
  * This is just a helper class to provide public access to
- * protected methods of ECPresentationTableDataProvider
+ * protected methods of PresentationTableDataProvider
  */
-class Provider extends ECPresentationTableDataProvider {
+class Provider extends PresentationTableDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
   public configureContentDescriptor(descriptor: content.Descriptor) { return super.configureContentDescriptor(descriptor); }
 }
@@ -35,11 +35,11 @@ describe("TableDataProvider", () => {
   let rulesetId: string;
   let provider: Provider;
   let memoizedCacheSpies: MemoizedCacheSpies;
-  const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
+  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
     rulesetId = faker.random.word();
-    ECPresentation.presentation = presentationManagerMock.object;
+    Presentation.presentation = presentationManagerMock.object;
   });
   beforeEach(() => {
     presentationManagerMock.reset();
@@ -215,7 +215,7 @@ describe("TableDataProvider", () => {
       source.fields = [];
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
-      await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(ECPresentationError);
+      await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(PresentationError);
     });
 
     it("invalidates descriptor configuration and content", async () => {
@@ -332,7 +332,7 @@ describe("TableDataProvider", () => {
         descriptor: createRandomDescriptor(),
         contentSet: [record],
       });
-      await expect(provider.getRow(0)).to.eventually.be.rejectedWith(ECPresentationError);
+      await expect(provider.getRow(0)).to.eventually.be.rejectedWith(PresentationError);
     });
 
     it("requests content in pages", async () => {

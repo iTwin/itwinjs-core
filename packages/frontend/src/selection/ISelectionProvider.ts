@@ -4,7 +4,7 @@
 /** @module UnifiedSelection */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/ecpresentation-common";
+import { KeySet } from "@bentley/presentation-common";
 import SelectionChangeEvent from "./SelectionChangeEvent";
 
 /**

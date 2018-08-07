@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { ECPresentationError } from "@bentley/ecpresentation-common";
-import * as content from "@bentley/ecpresentation-common/lib/content";
+import { PresentationError } from "@bentley/presentation-common";
+import * as content from "@bentley/presentation-common/lib/content";
 import {
   createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomECClassInfo, createRandomECInstanceKey, createRandomRelationshipPath,
@@ -104,7 +104,7 @@ describe("ContentBuilder", () => {
       };
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, []);
-      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
     });
 
     it("creates record with merged primitive value", () => {
@@ -185,7 +185,7 @@ describe("ContentBuilder", () => {
       };
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, []);
-      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
     });
 
     it("creates record with merged array value", () => {
@@ -358,7 +358,7 @@ describe("ContentBuilder", () => {
       };
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, []);
-      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
     });
 
     it("creates record with multiple nested content values", () => {
@@ -443,7 +443,7 @@ describe("ContentBuilder", () => {
       };
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, [field.name]);
-      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
     });
 
     it("creates record with merged inside nested content value", () => {

@@ -5,22 +5,23 @@ import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
-import { RegisteredRuleset, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { RegisteredRuleset } from "@bentley/presentation-common";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 import RulesetManager from "@src/RulesetManager";
 
 describe("RulesetManager", () => {
 
-  let interfaceMock: moq.IMock<ECPresentationRpcInterface>;
+  let interfaceMock: moq.IMock<PresentationRpcInterface>;
   let manager: RulesetManager;
   const testData = {
     clientId: "",
   };
 
   beforeEach(() => {
-    initializeRpcInterface(ECPresentationRpcInterface);
+    initializeRpcInterface(PresentationRpcInterface);
 
-    interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
-    ECPresentationRpcInterface.getClient = () => interfaceMock.object;
+    interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
+    PresentationRpcInterface.getClient = () => interfaceMock.object;
 
     testData.clientId = faker.random.uuid();
 

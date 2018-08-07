@@ -5,9 +5,9 @@
 
 import StyleHelper from "../common/StyleHelper";
 import { CheckBoxState } from "@bentley/ui-core/lib/enums/CheckBoxState";
-import { Node } from "@bentley/ecpresentation-common";
+import { Node } from "@bentley/presentation-common";
 import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
-import { PageOptions as PresentationPageOptions } from "@bentley/ecpresentation-common";
+import { PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { PageOptions as UiPageOptions } from "@bentley/ui-components/lib/common/PageOptions";
 
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): TreeNodeItem[] => {

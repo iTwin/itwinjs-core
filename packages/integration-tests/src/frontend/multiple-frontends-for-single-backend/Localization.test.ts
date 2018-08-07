@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 
 before(() => {
   initialize();
@@ -20,14 +20,14 @@ describe("Multiple frontends for one backend", async () => {
   describe("Localization", () => {
 
     let imodel: IModelConnection;
-    let frontends: ECPresentationManager[];
+    let frontends: PresentationManager[];
 
     before(async () => {
       const testIModelName: string = "assets/datasets/1K.bim";
       imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
       expect(imodel).is.not.null;
 
-      frontends = ["en", "test"].map((locale) => ECPresentationManager.create({ activeLocale: locale }));
+      frontends = ["en", "test"].map((locale) => PresentationManager.create({ activeLocale: locale }));
     });
 
     after(async () => {

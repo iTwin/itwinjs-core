@@ -5,7 +5,7 @@
 
 import { IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Keys, KeySet } from "@bentley/ecpresentation-common";
+import { Keys, KeySet } from "@bentley/presentation-common";
 import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
 import SelectionManager from "./SelectionManager";
 import ISelectionProvider from "./ISelectionProvider";

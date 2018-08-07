@@ -7,10 +7,10 @@ import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { PromiseContainer } from "@helpers/Promises";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import * as content from "@bentley/ecpresentation-common/lib/content";
-import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+import * as content from "@bentley/presentation-common/lib/content";
+import { KeySet, PageOptions } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 import ContentDataProvider, { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor } from "@helpers/random";
 
@@ -52,12 +52,12 @@ describe("ContentDataProvider", () => {
   let displayType: string;
   let provider: Provider;
   let memoizedCacheSpies: MemoizedCacheSpies;
-  const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
+  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
     rulesetId = faker.random.word();
     displayType = faker.random.word();
-    ECPresentation.presentation = presentationManagerMock.object;
+    Presentation.presentation = presentationManagerMock.object;
   });
   beforeEach(() => {
     presentationManagerMock.reset();
