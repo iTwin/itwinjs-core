@@ -17,11 +17,12 @@ Key BIS terms used in this documentation are defined on this page.
 | **BIS** | Base Infrastructure Schemas. A coordinated family of schemas for modeling built infrastructure (e.g. buildings, roads, bridges, factories, etc.) BIS also addresses concepts needed for infrastructure-related workflows (e.g. documents, drawings, requirements, issues, etc.). |
 | **BisCore** | The base BIS Domain for BIS. All ECClasses in any other Domain must derive (directly or indirectly) from a BisCore class. |
 | **Category** | A property of a GeometricElement that "categorizes" its geometry. Every GeometricElement is assigned to one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. |
-| **Class** | See [ECClass](#ec-class). |
-| **Code** | An optional three part *human readable* identifier for an Element. A code consists of a CodeSpec, CodeScope, and CodeValue. If any of the three parts is defined, the combination of all three parts must be unique within an iModel. |
-| **CodeScope** | A Code Scope determines a *scope for uniqueness* for the CodeValue. For example, a scope may specify the whole repository, only within a certain Model, within an assembly, etc. For a given CodeSpec and CodeScope, all CodeValues must be unique. |
-| **CodeSpec** | A CodeSpec defines the *specification* (i.e. type) of a code. Often the specification is defined by some external system that enforces conventions, consistency, and validation. A CodeSpec captures the rules for encoding and decoding significant business information into and from a CodeValue. iModels hold a table of the known CodeSpecs, defined by the CodeSpec ECClass, and Elements refer to one of them by Id. |
-| **CodeValue** | A human-readable string with the *name* of an Element. CodeValues are formatted according to the rules of its CodeSpec. |
+| **Class** | See [ECClass](#ecclass). |
+| **Code** | A synonym for [CodeValue](#code-value-property). See [Codes](./codes.md). |
+| **CodeScope Property** | A navigation property of Element that points to an Element that indicates the *scope for uniqueness* for the CodeValue. See [Codes](./codes.md). |
+| **CodeSpec** | A "Code Specification" that specifies how a Code is encoded and decoded. See [Codes](./codes.md). |
+| **CodeSpec Property** | A navigation property of Element that points to a [CodeSpec](#code-spec) that specifies how the Code is encoded and decoded. See [Codes](./codes.md). |
+| **CodeValue Property** | A nullable string property of Element that holds a human-readable identifier of the [Entity](#entity) that the Element represents. See [Codes](./codes.md). |
 | **DefinitionElement** | A subclass of InformationContentElement that holds information that helps *define* other Elements and is intended to be referenced (i.e. shared) by multiple of those Elements. |
 | **Digital Twin** | A digital representation of some portion of the real world. A Digital Twin is designed to be used by multiple applications (in contrast to application-specific “silo” databases). |
 | **Domain** | A named set of ECClasses that define the information for a particular discipline or field of work. All classes in a Domain ultimately must derive from a BisCore class. The ECClasses for a Domain are defined in a ECSchema file, an hence the terms *Domain* and *ECSchema* are often used interchangeably. |
@@ -34,9 +35,9 @@ Key BIS terms used in this documentation are defined on this page.
 | **Element** | The base class in BIS for an *Entity with a Code*. An Element is smallest individually identifiable building-block for modeling in a BIS Repository. There can be different subclasses of Element corresponding to different Modeling Perspectives. Multiple Elements can be related together to model different Perspectives of an Object. |
 | **ElementAspect** | A BIS class that adds properties and/or relationships to a single Element to add more detail. ElementAspects can be used, for example, to record information that is only be needed in certain situations or in some stages of the Element's lifecycle. An ElementAspect is *owned by*, and thus is deleted with, its owning Element. |
 | **ElementId** |A 64-bit unique Id for an Element within a BIS Repository. For iModels, ElementIds are assigned by combining a 24-bit BriefcaseId with a 40-bit sequentially assigned value.  |
-| **ElementOwnsChildElements** | Relates an Element to *child* Elements which represent *parts* of the Entity modeled by the parent Element. Element subclasses can either allow the use child Elements to model its parts, or allow use of the ModelModelsElement relationship with another Model to express a detailed model of the parts, but not both. |
+| **ElementOwnsChildElements** | Relates an Element to *child* Elements which represent *parts* of the [Entity](#entity) modeled by the parent Element. Element subclasses can either allow the use of child Elements to model its parts, or allow use of the ModelModelsElement relationship with another Model to express a detailed model of the parts, but not both. |
 | **Entity** | A portion of a real-world Object that is relevant for a given Modeling Perspective. The complete Object is the sum of its Entities. For example, an Entity can be the role that the Object plays in a particular system. |
-| **FederationGuid** | An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuids are assigned by external systems and are used to *federate* Elements to their external meaning. Within a BIS Repository, FederationGuids must be unique. |
+| **FederationGuid** | An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for the [Entity](#entity) that an Element models. Generally it is intended that FederationGuids are assigned by external systems and are used to *federate* Elements to their external meaning. Within a BIS Repository, FederationGuids must be unique, and thus can be used as secondary identifiers for an Element (when they are present). |
 | **GeometricElement** | A subclass of Element that can include geometry (in its GeometryStream property.) Only GeometricElements are visible in Views. |
 | **GeometricModel** | A subclass of Model that can hold GeometricElements. |
 | **GeometryPart** | A named GeometryStream that can be shared by many GeometricElements. |
@@ -52,9 +53,9 @@ Key BIS terms used in this documentation are defined on this page.
 | **Object** | A real-world object that may be physical or non-physical. Not used to refer to instances of ECClasses. |
 | **Perspective** | See [Modeling Perspective](#modeling-perspective) |
 | **PhysicalModel** | A subclass of `SpatialModel` for the physical perspective that holds `PhysicalElement`s and `SpatialLocationElement`s. |
-| **Relationship** | See [ECRelationship](#ec-relationship). |
+| **Relationship** | See [ECRelationship](#ecrelationship). |
 | **RepositoryModel** | A special Model that is the root of the hierarchy of Models that make up a Digital Twin. Every Repository has one and only one RepositoryModel, and it is the only Model that does not have a ModelModelsElement relationship to another Element. |
-| **Schema** |See [ECSchema](#ec-schema). |
+| **Schema** |See [ECSchema](#ecschema). |
 | **SheetModel** | A digital representation of a *sheet of paper*. Sheet Models are 2d models in bounded paper coordinates. SheetModels may contain annotation Elements as well as references to 2d or 3d Views. |
 | **Spatial Coordinate System** | The 3d coordinate system of a BIS Repository. The units are always meters (see ACS). The origin (0,0,0) of the Spatial Coordinate System may be oriented on the earth via an [EcefLocation](https://en.wikipedia.org/wiki/ECEF). |
 | **SpatialModel** | A subclass of GeometricModel that holds 3d Elements in the BIS Repository's Spatial Coordinate System. |
