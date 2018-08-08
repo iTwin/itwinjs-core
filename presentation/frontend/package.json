@@ -21,11 +21,10 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name presentation-frontend",
-    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/presentation-frontend/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/frontend",
+    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/frontend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
     "lint": "tslint -p ./src",
-    "pack": "node ../../scripts/pack.js",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --file ./tests/index.test.ts tests/**/*.ts",
     "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.frontend.xml",
     "watch": "npm test -- --reporter min --watch-extensions ts --watch"
