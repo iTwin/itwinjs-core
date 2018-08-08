@@ -18,8 +18,8 @@
     "bentley-webpack-tools": "./bin/bentley-webpack-tools.js"
   },
   "dependencies": {
-    "@bentley/dev-cors-proxy-server": "0",
-    "@types/chai": "^4.1.3",
+    "@bentley/dev-cors-proxy-server": "0.0.6",
+    "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.5",
@@ -97,10 +97,10 @@
     "@types/react-dom": "^16.0.6",
     "chromedriver": "^2.34.1",
     "electron-chromedriver": "^2.0.0",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-test-renderer": "^16.4.1",
-    "typescript": "^2.9.1"
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "react-test-renderer": "^16.4.2",
+    "typescript": ">=2.9.1"
   },
   "devDependencies": {
     "@types/react": "^16.4.7",
@@ -110,7 +110,7 @@
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-test-renderer": "^16.4.2",
-    "typescript": "^2.9.2"
+    "typescript": "~2.9.1"
   },
   "types": "./index.d.ts"
 }

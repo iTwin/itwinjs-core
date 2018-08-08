@@ -47,7 +47,7 @@
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
-    "@types/mocha": "^2.2.48",
+    "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^3.5.6",
@@ -55,15 +55,15 @@
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "nock": "^9.2.3",
-    "nyc": "^11.8.0",
+    "nyc": "^12.0.2",
     "mocha": "^5.2.0",
     "source-map-support": "^0.5.6",
     "ts-node": "^6.0.3",
-    "tslint": "^5.10.1",
+    "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typescript": "~2.9.1",
-    "webpack": "^4.16.1"
+    "webpack": "^4.16.4"
   },
   "dependencies": {
     "deep-assign": "^2.0.0",
