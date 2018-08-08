@@ -235,9 +235,9 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(jsonDecimal)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
-        await expect(testFormat.fromJson(jsonScientific)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
-        await expect(testFormat.fromJson(jsonStation)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
+        await expect(testFormat.fromJson(jsonDecimal)).to.be.rejectedWith(ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
+        await expect(testFormat.fromJson(jsonScientific)).to.be.rejectedWith(ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
+        await expect(testFormat.fromJson(jsonStation)).to.be.rejectedWith(ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
       });
       it("Type is decimal, scientific, or station; Precision value is valid", async () => {
         const jsonDecimal = {
@@ -955,9 +955,9 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(jsonDecimal), ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
-        assert.throws(() => testFormat.fromJsonSync(jsonScientific), ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
-        assert.throws(() => testFormat.fromJsonSync(jsonStation), ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
+        assert.throws(() => testFormat.fromJsonSync(jsonDecimal), ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
+        assert.throws(() => testFormat.fromJsonSync(jsonScientific), ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
+        assert.throws(() => testFormat.fromJsonSync(jsonStation), ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
       });
       it("Type is decimal, scientific, or station; Precision value is valid", () => {
         const jsonDecimal = {
@@ -2111,6 +2111,145 @@ describe("Format tests", () => {
         },
       };
       assert.throws(() => Schema.fromJsonSync(testSchema), ECObjectsError, `The Format AmerMYFI4 has an invalid 'Composite' attribute. It must have 1-4 units.`);
+    });
+  });
+  describe("toJson", () => {
+    beforeEach(() => {
+      Schema.ec32 = true;
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testFormat = new Format(schema, "AmerMYFI4");
+    });
+
+    afterEach(() => {
+      Schema.ec32 = false;
+    });
+    it("Basic test I", () => {
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          AmerMYFI4: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "TestSchema.MILE",
+                  label: "mile(s)",
+                },
+              ],
+            },
+          },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Imperial: {
+            schemaItemType: "UnitSystem",
+          },
+          MILE: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Imperial",
+            definition: "mile",
+          },
+        },
+      };
+      const ecSchema = Schema.fromJsonSync(testSchema);
+      assert.isDefined(ecSchema);
+      const testItem = ecSchema.getItemSync("AmerMYFI4");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Format);
+      const formatTest: Format = testItem as Format;
+      assert.isDefined(formatTest);
+      const formatSerialization = formatTest.toJson(false, true);
+      assert.isDefined(formatSerialization);
+      expect(formatSerialization.type).equals( "Fractional");
+      expect(formatSerialization.precision).equals(4);
+      expect(formatSerialization.decimalSeparator).equals(".");
+      expect(formatSerialization.roundFactor).equals(0);
+      expect(formatSerialization.showSignOption).equals("onlyNegative");
+      expect(formatSerialization.stationSeparator).equals("+");
+      expect(formatSerialization.thousandSeparator).equals(",");
+      expect(formatSerialization.uomSeparator).equals(" ");
+      expect(formatSerialization.composite.includeZero).equals(false);
+      expect(formatSerialization.composite.spacer).equals("-");
+      expect(formatSerialization.composite.units).to.deep.equal([{name: "MILE", label: "mile(s)"}]);
+
+    });
+    it("Basic test with formatTraits", () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        label: "myfi4",
+        description: "",
+        roundFactor: 0.0,
+        type: "fractional",
+        formatTraits: "keepSingleZero|trailZeroes",
+        precision: 4,
+        decimalSeparator: ".",
+        thousandSeparator: ",",
+        uomSeparator: " ",
+      };
+      testFormat.fromJsonSync(json);
+      const formatSerialization = testFormat.toJson(false, true);
+      assert.isDefined(formatSerialization);
+      assert(formatSerialization.formatTraits.indexOf("keepSingleZero") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("trailZeroes") !== -1);
+    });
+    it("String with valid options", () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        label: "myfi4",
+        description: "",
+        roundFactor: 0.0,
+        type: "fractional",
+        showSignOption: "onlyNegative",
+        formatTraits: "trailZeroes|keepSingleZero|zeroEmpty|keepDecimalPoint|applyRounding|fractionDash|showUnitLabel|prependUnitLabel|use1000Separator|exponentOnlyNegative",
+        precision: 4,
+        decimalSeparator: ".",
+        thousandSeparator: ",",
+        uomSeparator: " ",
+      };
+      testFormat.fromJsonSync(json);
+      const formatSerialization = testFormat.toJson(false, true);
+      assert.isDefined(formatSerialization);
+      assert(formatSerialization.formatTraits.indexOf("trailZeroes") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("keepSingleZero") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("zeroEmpty") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("keepDecimalPoint") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("applyRounding") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("fractionDash") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("showUnitLabel") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("prependUnitLabel") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("use1000Separator") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("exponentOnlyNegative") !== -1);
+    });
+    it("Empty string should make formatTraits undefined", () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        label: "myfi4",
+        description: "",
+        roundFactor: 0.0,
+        type: "fractional",
+        showSignOption: "onlyNegative",
+        formatTraits: "",
+        precision: 4,
+        decimalSeparator: ".",
+        thousandSeparator: ",",
+        uomSeparator: " ",
+      };
+      testFormat.fromJsonSync(json);
+      testFormat.fromJsonSync(json);
+      const formatSerialization = testFormat.toJson(false, true);
+      assert.isDefined(formatSerialization);
+      assert(formatSerialization.formatTraits.length === 0);
     });
   });
 });

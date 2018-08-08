@@ -27,6 +27,13 @@ export default class InvertedUnit extends SchemaItem {
   get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.invertsUnit  = this.invertsUnit!.name;
+    schemaJson.unitSystem = this.unitSystem!.name;
+    return schemaJson;
+  }
+
   /**
    * Populates this Inverted Unit with the values from the provided.
    */

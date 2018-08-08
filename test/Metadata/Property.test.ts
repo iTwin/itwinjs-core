@@ -277,6 +277,114 @@ describe("Property", () => {
       await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
     });
   });
+  describe("toJson", () => {
+    it("Simple serialization", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        name: "ValidProp",
+        description: "A really long description...",
+        label: "SomeDisplayLabel",
+        propertyType: "PrimitiveProperty",
+        readOnly: true,
+        priority: 100,
+      };
+      const testProp = new MockProperty("ValidProp");
+      expect(testProp).to.exist;
+      testProp.fromJson(propertyJson);
+      const serialized = testProp.toJson();
+      assert(serialized.name, "ValidProp");
+      assert(serialized.description, "A really long description...");
+      assert(serialized.label, "SomeDisplayLabel");
+      assert(serialized.propertyType, "PrimitiveProperty");
+      assert(serialized.readOnly === true);
+      assert(serialized.priority === 100);
+    });
+    it("Serialization with one custom attribute- only class name", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        name: "ValidProp",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+          },
+        ],
+      };
+      const testProp = new MockProperty("ValidProp");
+      expect(testProp).to.exist;
+      testProp.fromJson(propertyJson);
+      const serialized = testProp.toJson();
+      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+    });
+    it("Serialization with one custom attribute- additional properties", () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        name: "ValidProp",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+            ShowClasses: true,
+          },
+        ],
+      };
+      const testProp = new MockProperty("ValidProp");
+      expect(testProp).to.exist;
+      testProp.fromJson(propertyJson);
+      const serialized = testProp.toJson();
+      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+      assert(serialized.customAttributes[0].ShowClasses === true);
+    });
+    it("Serialization with multiple custom attributes- only class name", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        name: "ValidProp",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+          },
+          {
+            className: "CoreAttributes.HiddenSchema",
+          },
+          {
+            className: "CoreCustom.HiddenSchema",
+          },
+        ],
+      };
+      const testProp = new MockProperty("ValidProp");
+      expect(testProp).to.exist;
+      testProp.fromJson(propertyJson);
+      const serialized = testProp.toJson();
+      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+      assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
+      assert(serialized.customAttributes[2].className === "CoreCustom.HiddenSchema");
+    });
+    it("Serialization with multiple custom attributes- additional properties", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        name: "ValidProp",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+            ShowClasses: true,
+          },
+          {
+            className: "CoreAttributes.HiddenSchema",
+            FloatValue: 1.2,
+          },
+          {
+            className: "CoreCustom.HiddenSchema",
+            IntegerValue: 5,
+          },
+        ],
+      };
+      const testProp = new MockProperty("ValidProp");
+      expect(testProp).to.exist;
+      testProp.fromJson(propertyJson);
+      const serialized = testProp.toJson();
+      assert(serialized.customAttributes[0].ShowClasses === true);
+      assert(serialized.customAttributes[1].FloatValue === 1.2);
+      assert(serialized.customAttributes[2].IntegerValue === 5);
+    });
+  });
 });
 
 describe("PrimitiveProperty", () => {
@@ -391,6 +499,34 @@ describe("PrimitiveProperty", () => {
       assert(cat!.name === "MyCategory");
     });
   });
+  describe("toJson", () => {
+    let testProperty: PrimitiveProperty;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      const testClass = new EntityClass(schema, "TestClass");
+      testProperty = new PrimitiveProperty(testClass, "TestProperty", PrimitiveType.Double);
+    });
+
+    it("should successfully serialize valid JSON", async () => {
+      const propertyJson = {
+        typeName: "double",
+        minLength: 2,
+        maxLength: 4,
+        minValue: 6,
+        maxValue: 8,
+        extendedTypeName: "SomeExtendedType",
+      };
+      expect(testProperty).to.exist;
+      await testProperty.fromJson(propertyJson);
+      const testPropSerialization = testProperty.toJson();
+      expect(testPropSerialization.minLength).to.eql(2);
+      expect(testPropSerialization.maxLength).to.eql(4);
+      expect(testPropSerialization.minValue).to.eql(6);
+      expect(testPropSerialization.maxValue).to.eql(8);
+      expect(testPropSerialization.extendedTypeName).to.eql("SomeExtendedType");
+    });
+  });
 });
 
 describe("EnumerationProperty", () => {
@@ -423,6 +559,27 @@ describe("EnumerationProperty", () => {
       const propertyJson = { typeName: "ThisDoesNotMatch"};
       expect(testProperty).to.exist;
       await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+    });
+  });
+  describe("toJson", () => {
+    let testProperty: EnumerationProperty;
+    let testEnum: Enumeration;
+
+    beforeEach(async () => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
+      testProperty = new EnumerationProperty(testClass, "TestProperty", testEnum);
+    });
+
+    it("should successfully serialize valid JSON", async () => {
+      const propertyJson = {
+        typeName: "TestSchema.1.0.0.TestEnum",
+      };
+      expect(testProperty).to.exist;
+      await testProperty.fromJson(propertyJson);
+      const testPropSerialization = testProperty.toJson();
+      assert(testPropSerialization.typeName, "TestEnum");
     });
   });
 });
@@ -459,6 +616,27 @@ describe("StructProperty", () => {
       await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
+  describe("toJson", () => {
+    let testProperty: StructProperty;
+    let testStruct: StructClass;
+
+    beforeEach(async () => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testStruct = await (schema as MutableSchema).createStructClass("TestStruct");
+      testProperty = new StructProperty(testClass, "TestProperty", testStruct);
+    });
+
+    it("should successfully serialize valid JSON", async () => {
+      const propertyJson = {
+        typeName: "TestSchema.1.0.0.TestStruct",
+      };
+      expect(testProperty).to.exist;
+      await testProperty.fromJson(propertyJson);
+      const testPropSerialization = testProperty.toJson();
+      assert(testPropSerialization.typeName, "TestStruct");
+    });
+  });
 });
 
 describe("PrimitiveArrayProperty", () => {
@@ -485,5 +663,26 @@ describe("PrimitiveArrayProperty", () => {
 
     it("should throw for invalid minOccurs", async () => testInvalidAttribute(testProperty, "minOccurs", "number", "0"));
     it("should throw for invalid maxOccurs", async () => testInvalidAttribute(testProperty, "maxOccurs", "number", "0"));
+  });
+  describe("toJson", () => {
+    let testProperty: PrimitiveArrayProperty;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      const testClass = new EntityClass(schema, "TestClass");
+      testProperty = new PrimitiveArrayProperty(testClass, "TestProperty");
+    });
+
+    it("should successfully serialize valid JSON", async () => {
+      const propertyJson = {
+        minOccurs: 2,
+        maxOccurs: 4,
+      };
+      expect(testProperty).to.exist;
+      await testProperty.fromJson(propertyJson);
+      const testPropSerialization = testProperty.toJson();
+      expect(testPropSerialization.minOccurs).to.eql(2);
+      expect(testPropSerialization.maxOccurs).to.eql(4);
+    });
   });
 });

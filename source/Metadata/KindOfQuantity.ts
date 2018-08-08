@@ -38,6 +38,23 @@ export default class KindOfQuantity extends SchemaItem {
     return this.presentationUnits.length === 0 ? undefined : this.presentationUnits[0];
   }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.precision = this.precision;
+    schemaJson.persistenceUnit = {
+      unit: this.persistenceUnit!.unit,
+      format: this.persistenceUnit!.format,
+    };
+    schemaJson.presentationUnits = [];
+    this.presentationUnits.forEach((unit: FormatUnitSet) => {
+      schemaJson.presentationUnits.push({
+        unit: unit.unit,
+        format: unit.format,
+      });
+    });
+    return schemaJson;
+  }
+
   private koqFromJson(jsonObj: any) {
     if (undefined !== jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")

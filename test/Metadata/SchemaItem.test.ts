@@ -2,12 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 
 import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import SchemaItem from "../../source/Metadata/SchemaItem";
 import { SchemaKey, SchemaItemKey, SchemaItemType } from "../../source/ECObjects";
+import EntityClass from "../../source/Metadata/EntityClass";
 
 describe("SchemaItem", () => {
   describe("fromJson", () => {
@@ -55,6 +56,59 @@ describe("SchemaItem", () => {
     it("should throw for invalid label", async () => testInvalidAttribute("label", "string", 0));
     it("should throw for invalid schema", async () => testInvalidAttribute("schema", "string", 0));
     it("should throw for invalid schemaVersion", async () => testInvalidAttribute("schemaVersion", "string", 0));
+  });
+  describe("toJson", () => {
+    let baseClass: any;
+    let schema;
+    before(() => {
+      Schema.ec32 = false;
+      schema = new Schema("ExampleSchema", 1, 0, 0);
+      baseClass = new EntityClass(schema, "ExampleEntity");
+    });
+    it("Serialize SchemaItem Standalone", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        schema: "ExampleSchema",
+        version: "1.0.0",
+        schemaItemType: "EntityClass",
+        name: "ExampleEntity",
+        label: "ExampleEntity",
+        description: "An example entity class.",
+      };
+      await (baseClass as EntityClass).fromJson(propertyJson);
+      const testClass = await (baseClass as EntityClass).toJson(true, true);
+      expect(testClass).to.exist;
+      assert(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
+      assert(testClass.schema, "ExampleSchema");
+      assert(testClass.schemaVersion, "1.0.0");
+      assert(testClass.schemaItemType, "EntityClass");
+      assert(testClass.name, "ExampleEntity");
+      assert(testClass.label, "ExampleEntity");
+      assert(testClass.description, "An example entity class.");
+    });
+    it("Serialize SchemaItem", async () => {
+      const schemaItemJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          name: "ExampleSchema",
+          version: "1.0.0",
+          alias: "ex",
+          items: {
+            ExampleEntity: {
+              schemaItemType: "EntityClass",
+              label: "ExampleEntity",
+              description: "An example entity class.",
+            },
+          },
+        };
+      const ecschema = await Schema.fromJson(schemaItemJson);
+      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      assert.isDefined(testEntity);
+      const testClass = await testEntity!.toJson(true, true);
+      expect(testClass).to.exist;
+      assert(testClass.schemaItemType, "EntityClass");
+      assert(testClass.name, "ExampleEntity");
+      assert(testClass.description, "An example entity class.");
+    });
   });
 });
 

@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import { CustomAttributeContainerType, ECClassModifier, SchemaItemType, parseCustomAttributeContainerType } from "../ECObjects";
+import { CustomAttributeContainerType, ECClassModifier, SchemaItemType, parseCustomAttributeContainerType, containerTypeToString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import Schema from "./Schema";
 
@@ -23,6 +23,12 @@ export default class CustomAttributeClass extends ECClass {
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this.schemaItemType = SchemaItemType.CustomAttributeClass;
+  }
+
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.appliesTo = containerTypeToString(this.containerType);
+    return schemaJson;
   }
 
   private caFromJson(jsonObj: any): void {

@@ -114,7 +114,7 @@ describe("KindOfQuantity EC3.2", () => {
 
       assert.isDefined(koq.persistenceUnit);
       const schemaPersistenceUnit = ecSchema.lookupItemSync<Unit>("Formats.IN");
-      assert.equal(schemaPersistenceUnit, ecSchema.lookupItemSync<Unit>(koq.persistenceUnit!.schemaName + "." + koq.persistenceUnit!.name));
+      assert.equal(schemaPersistenceUnit, ecSchema.lookupItemSync<Unit>(koq.persistenceUnit!.fullName));
 
       assert.isDefined(koq.presentationUnits);
       expect(koq.presentationUnits!.length).to.eql(1);
@@ -351,6 +351,120 @@ describe("KindOfQuantity EC3.2", () => {
       it("sync - should throw for format override with a different number of unit", () => {
         assert.throws(() => Schema.fromJsonSync(incorrectNumUnit, context), ECObjectsError,  `Cannot add presetantion format to KindOfQuantity 'TestKoQ' because the number of unit overrides is inconsistent with the number in the Format 'SingleUnitFormat'.`);
       });
+    });
+  });
+  describe("toJson", () => {
+    let context: SchemaContext;
+    beforeEach(() => {
+      context = new SchemaContext();
+
+      // contains the Formats schema
+      context.addLocater(new TestSchemaLocater());
+    });
+
+    function createSchemaJson(koq: any) {
+      return createSchemaJsonWithItems({
+        TestKoQ: {
+          schemaItemType: "KindOfQuantity",
+          ...koq,
+        },
+      }, true, {
+        references: [
+          {
+            name: "Formats",
+            version: "1.0.0",
+          },
+        ],
+      });
+    }
+
+    it("async - should succeed with fully defined", async () => {
+      const fullDefinedJson = createSchemaJson({
+        precision: 5,
+        persistenceUnit: "Formats.IN",
+        presentationUnits: [
+          "Formats.DefaultReal",
+        ],
+      });
+      const ecSchema = await Schema.fromJson(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = await ecSchema.getItem("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantityEC32);
+      const koq: KindOfQuantityEC32 = testItem as KindOfQuantityEC32;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.precision).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.IN");
+      expect(koqSerialization.presentationUnits[0]).equal("DefaultReal");
+    });
+    it("sync - should succeed with fully defined", () => {
+      const fullDefinedJson = createSchemaJson({
+        precision: 5,
+        persistenceUnit: "Formats.IN",
+        presentationUnits: [
+          "Formats.DefaultReal",
+        ],
+      });
+      const ecSchema = Schema.fromJsonSync(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = ecSchema.getItemSync("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantityEC32);
+      const koq: KindOfQuantityEC32 = testItem as KindOfQuantityEC32;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.precision).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.IN");
+      expect(koqSerialization.presentationUnits[0]).equal("DefaultReal");
+    });
+    it("async - should succeed with list of presentation units", async () => {
+      const fullDefinedJson = createSchemaJson({
+        precision: 5,
+        persistenceUnit: "Formats.FT",
+        presentationUnits: [
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+        ],
+      });
+      const ecSchema = await Schema.fromJson(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = await ecSchema.getItem("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantityEC32);
+      const koq: KindOfQuantityEC32 = testItem as KindOfQuantityEC32;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.precision).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.FT");
+      expect(koqSerialization.presentationUnits).to.deep.equal(["DefaultReal", "DefaultReal", "DefaultReal"]);
+    });
+    it("sync - should succeed with list of presentation units", () => {
+      const fullDefinedJson = createSchemaJson({
+        precision: 5,
+        persistenceUnit: "Formats.FT",
+        presentationUnits: [
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+        ],
+      });
+      const ecSchema = Schema.fromJsonSync(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = ecSchema.getItemSync("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantityEC32);
+      const koq: KindOfQuantityEC32 = testItem as KindOfQuantityEC32;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.precision).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.FT");
+      expect(koqSerialization.presentationUnits).to.deep.equal(["DefaultReal", "DefaultReal", "DefaultReal"]);
     });
   });
 });

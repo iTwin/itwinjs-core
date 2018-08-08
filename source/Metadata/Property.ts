@@ -3,16 +3,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedRelationshipClass } from "../Interfaces";
-import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
+import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType, strengthDirectionToString, primitiveTypeToString} from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
+import { PropertyType, PropertyTypeUtils, propertyTypeToString } from "../PropertyTypes";
 import ECClass, { StructClass } from "./Class";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import { AnyClass } from "../Interfaces";
 import { RelationshipClass } from "..";
-import processCustomAttributes, { CustomAttributeSet } from "./CustomAttribute";
+import processCustomAttributes, { serializeCustomAttributes, CustomAttributeSet } from "./CustomAttribute";
 import Enumeration from "./Enumeration";
 
 /**
@@ -73,6 +73,25 @@ export abstract class Property {
       return undefined;
 
     return this.class.schema.lookupItemSync(this._kindOfQuantity);
+  }
+
+  public toJson() {
+    const schemaJson: any = {};
+    schemaJson.name = this.name;
+    schemaJson.propertyType = propertyTypeToString(this._type);
+    if (this.description !== undefined)
+      schemaJson.description = this.description;
+    if (this.label !== undefined)
+      schemaJson.label = this.label;
+    schemaJson.readOnly = this.isReadOnly;
+    if (this.category !== undefined)
+      schemaJson.category = this.category.fullName; // needs to be fully qualified name
+    if (this.priority !== undefined)
+      schemaJson.priority = this.priority;
+    const customAttributes = serializeCustomAttributes(this.customAttributes);
+    if (customAttributes !== undefined)
+      schemaJson.customAttributes = customAttributes;
+    return schemaJson;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -167,6 +186,21 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     super(ecClass, name, type);
   }
 
+  public toJson() {
+    const schemaJson = super.toJson();
+    if (this.extendedTypeName !== undefined)
+      schemaJson.extendedTypeName = this.extendedTypeName;
+    if (this._minLength !== undefined)
+      schemaJson.minLength = this.minLength;
+    if (this._maxLength !== undefined)
+      schemaJson.maxLength = this.maxLength;
+    if (this._minValue !== undefined)
+      schemaJson.minValue = this.minValue;
+    if (this._maxValue !== undefined)
+      schemaJson.maxValue = this.maxValue;
+    return schemaJson;
+  }
+
   public async fromJson(jsonObj: any): Promise<void> {
     this.fromJsonSync(jsonObj);
   }
@@ -228,12 +262,23 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
+  public toJson() {
+    const schemaJson = super.toJson();
+    schemaJson.typeName = primitiveTypeToString(this.primitiveType);
+    return schemaJson;
+  }
 }
 
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   protected _enumeration: Enumeration;
 
   get enumeration(): Enumeration { return this._enumeration; }
+
+  public toJson() {
+    const schemaJson = super.toJson();
+    schemaJson.typeName = this.enumeration.fullName;
+    return schemaJson;
+  }
 
   constructor(ecClass: ECClass, name: string, type: Enumeration) {
     // TODO: Should we allow specifying the backing type?
@@ -266,6 +311,11 @@ export class StructProperty extends Property {
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, PropertyType.Struct);
     this._structClass = type;
+  }
+  public toJson() {
+    const schemaJson = super.toJson();
+    schemaJson.typeName = this.structClass.fullName;
+    return schemaJson;
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -300,6 +350,13 @@ export class NavigationProperty extends Property {
 
   get direction() { return this._direction; }
 
+  public toJson() {
+    const schemaJson = super.toJson();
+    schemaJson.relationshipName = this.relationshipClass.fullName;
+    schemaJson.direction = strengthDirectionToString(this.direction);
+    return schemaJson;
+  }
+
   constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: StrengthDirection) {
     super(ecClass, name, PropertyType.Navigation);
     this._relationshipClass = relationship;
@@ -330,6 +387,14 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
     constructor( ...args: any[]) {
       super(...args);
       this._type = PropertyTypeUtils.asArray(this._type);
+    }
+
+    public toJson() {
+      const schemaJson = super.toJson();
+      schemaJson.minOccurs = this.minOccurs;
+      if (this.maxOccurs !== undefined)
+        schemaJson.maxOccurs = this.maxOccurs;
+      return schemaJson;
     }
 
     public async fromJson(jsonObj: any): Promise<void> {

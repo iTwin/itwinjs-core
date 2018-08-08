@@ -512,4 +512,58 @@ describe("EntityClass", () => {
       expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
   });
+  describe("toJson", () => {
+    const schema = new Schema("TestSchema", 1, 0, 0);
+    const testEntityClass = new EntityClass(schema, "testClass");
+    const schemaJsonOne = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      version: "1.2.3",
+      name: "testClass",
+      schemaItemType: "EntityClass",
+      baseClass: "TestSchema.testBaseClass",
+    };
+    it("async - Simple serialization", async () => {
+      await testEntityClass.fromJson(schemaJsonOne);
+      const serialized = testEntityClass.toJson(true, true);
+      assert(serialized.baseClass, "TestSchema.testBaseClass");
+      assert(serialized.modifier, "None");
+      assert(serialized.schemaVersion, "1.0.0");
+      assert(serialized.name, "testClass");
+    });
+    it("sync - Simple serialization", () => {
+      testEntityClass.fromJsonSync(schemaJsonOne);
+      const serialized = testEntityClass.toJson(true, true);
+      assert(serialized.baseClass, "TestSchema.testBaseClass");
+      assert(serialized.modifier, "None");
+      assert(serialized.schemaVersion, "1.0.0");
+      assert(serialized.name, "testClass");
+    });
+    it("should succeed with mixin", async () => {
+      const schemaJson = createSchemaJsonWithItems({
+        testMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.testClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          mixins: [ "TestSchema.testMixin" ],
+        },
+      });
+
+      const ecschema = await Schema.fromJson(schemaJson);
+      assert.isDefined(ecschema);
+
+      const testClass = await ecschema.getItem("testClass");
+      assert.isDefined(testClass);
+      assert.isTrue(testClass instanceof EntityClass);
+      const entityClass = testClass as EntityClass;
+      const entityClassSerialization = entityClass!.toJson(false, true);
+      const expectedResult = {
+        schemaItemType: "EntityClass",
+        modifier: "None",
+        mixins: [ "TestSchema.testMixin" ],
+      };
+      expect(entityClassSerialization).to.deep.equal(expectedResult);
+    });
+  });
 });

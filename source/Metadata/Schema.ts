@@ -15,7 +15,7 @@ import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
 import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import processCustomAttributes, { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
+import processCustomAttributes, { serializeCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
 import UnitSystem from "./UnitSystem";
 import Phenomenon from "./Phenomenon";
@@ -420,6 +420,37 @@ export default class Schema implements CustomAttributeContainerProps {
       return undefined;
 
     return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+  }
+
+  public toJson() {
+    const schemaJson: { [value: string]: any } = {};
+    schemaJson.$schema = (Schema.ec32) ? SCHEMAURL3_2 : SCHEMAURL3_1; // $schema is required
+    schemaJson.name = this.name; // name is required
+    schemaJson.version = this.schemaKey.version.toString(true);
+    schemaJson.alias = this.alias; // alias is required
+    if (undefined !== this.label) // label is optional
+      schemaJson.label = this.label;
+    if (undefined !== this.description) // description is optional
+      schemaJson.description = this.description;
+    if (undefined !== this.references && this.references.length > 0) { // references is optional
+      schemaJson.references = [];
+      this.references.forEach((refSchema: Schema) => {
+        schemaJson.references.push({
+          name: refSchema.name,
+          version: refSchema.schemaKey.version.toString(true),
+        });
+      });
+    }
+    const customAttributes = serializeCustomAttributes(this.customAttributes);
+    if (undefined !== customAttributes)
+      schemaJson.customAttributes = customAttributes;
+    if (this._items.length > 0) {
+      schemaJson.items = {};
+      this._items.forEach((schemaItem: SchemaItem) => {
+        schemaJson.items[schemaItem.name] = schemaItem.toJson(false, true);
+      });
+    }
+    return schemaJson;
   }
 
   /**

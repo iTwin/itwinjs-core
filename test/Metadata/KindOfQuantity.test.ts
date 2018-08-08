@@ -188,5 +188,43 @@ describe("KindOfQuantity", () => {
       assert.throws(() => testKoQ.fromJsonSync(persistenceUnitWithInvalidFormat), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);
     });
   });
+  describe("toJson", () => {
+    let testKoQ: KindOfQuantity;
+    beforeEach(() => {
+      testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
+    });
 
+    const baseJson = {
+      schemaItemType: "KindOfQuantity",
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+      name: "TestKindOfQuantity",
+      schema: "TestSchema",
+      schemaVersion: "1.0.0",
+    };
+    it("should successfully deserialize valid JSON", async () => {
+      const koqJson = {
+        ...baseJson,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        precision: 1.234,
+        persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
+        presentationUnits: [
+          { unit: "cm", format: "format"},
+          { unit: "in", format: "anotherFormat" },
+        ],
+      };
+      await testKoQ.fromJson(koqJson);
+      const koQSerialization = testKoQ.toJson(true, true);
+      assert.isDefined(koQSerialization);
+      expect(koQSerialization.name).to.eql("TestKindOfQuantity");
+      expect(koQSerialization.label).to.eql("SomeDisplayLabel");
+      expect(koQSerialization.description).to.eql("A really long description...");
+      expect(koQSerialization.precision).to.eql(1.234);
+      expect(koQSerialization.presentationUnits).to.exist;
+      expect(koQSerialization.presentationUnits.length).to.eql(2);
+      expect(koQSerialization.presentationUnits[0]).to.eql({ unit: "cm", format: "format"});
+      expect(koQSerialization.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
+      expect(koQSerialization.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
+    });
+  });
 });

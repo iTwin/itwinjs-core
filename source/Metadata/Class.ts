@@ -4,8 +4,8 @@
 
 import Enumeration from "./Enumeration";
 import SchemaItem from "./SchemaItem";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
-import processCustomAttributes, { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType, classModifierToString } from "../ECObjects";
+import processCustomAttributes, { serializeCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -288,6 +288,10 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       if (resolvedType === undefined)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
+      // If resolvedType is a SchemaItem, make sure it is an Enumeration- if not, throw an error
+      if (typeof(resolvedType) !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
+        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+
       return resolvedType;
     }
 
@@ -311,6 +315,23 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     }
 
     return primitiveType;
+  }
+
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.modifier = classModifierToString(this.modifier);
+    if (this.baseClass  !== undefined)
+      schemaJson.baseClass = this.baseClass.fullName;
+    if (this.properties !== undefined && this.properties.length > 0) {
+      schemaJson.properties = [];
+      this.properties.forEach((prop: Property) => {
+        schemaJson.properties.push(prop.toJson());
+      });
+    }
+    const customAttributes = serializeCustomAttributes(this.customAttributes);
+    if (customAttributes !== undefined)
+      schemaJson.customAttributes = customAttributes;
+    return schemaJson;
   }
 
   /**

@@ -19,6 +19,12 @@ export default class PropertyCategory extends SchemaItem {
     this.schemaItemType = SchemaItemType.PropertyCategory;
   }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.priority = this.priority;
+    return schemaJson;
+  }
+
   public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
 

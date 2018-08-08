@@ -19,10 +19,13 @@ describe("RelationshipConstraint", () => {
       testConstraint = new RelationshipConstraint(relClass, RelationshipEnd.Source);
     });
 
-    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
+    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any, anyRelationshipConstraint?: boolean) {
       expect(testConstraint).to.exist;
       const json: any = { [attributeName]: value };
-      await expect(testConstraint.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipConstraint TestRelationship.source has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+      if (anyRelationshipConstraint !== undefined)
+        await expect(testConstraint.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+      else
+        await expect(testConstraint.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipConstraint TestRelationship.source has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
     it("should throw for invalid roleLabel", async () => testInvalidAttribute("roleLabel", "string", 0));

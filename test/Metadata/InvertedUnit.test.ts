@@ -453,4 +453,64 @@ describe("Inverted Unit tests", () => {
       assert(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem!.definition);
     });
   });
+  describe("toJson", () => {
+    beforeEach(() => {
+      Schema.ec32 = true;
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
+    });
+
+    afterEach(() => {
+      Schema.ec32 = false;
+    });
+    const jsonOne = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+      version: "1.0.0",
+      name: "TestSchema",
+      items: {
+        HORIZONTAL_PER_VERTICAL: {
+            schemaItemType: "InvertedUnit",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+        },
+        INTERNATIONAL: {
+          schemaItemType: "UnitSystem",
+          label: "Imperial",
+          description: "Units of measure from the british imperial empire",
+        },
+        VERTICAL_PER_HORIZONTAL: {
+          schemaItemType: "Unit",
+          phenomenon: "TestSchema.Length",
+          unitSystem: "TestSchema.INTERNATIONAL",
+          definition: "Vert/Horizontal",
+        },
+        Length: {
+          schemaItemType: "Phenomenon",
+          definition: "TestSchema.Length",
+        },
+      },
+    };
+    it("async- Serialization of fully defined inverted unit", async () => {
+      const ecSchema = await Schema.fromJson(jsonOne);
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
+      assert.isTrue(testItem instanceof InvertedUnit);
+      const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
+      assert.isDefined(testInvertedUnit);
+      const invertedUnitSerialization = testInvertedUnit!.toJson(true, true);
+      expect(invertedUnitSerialization.unitSystem).to.eql("INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
+    });
+    it("sync- Serialization of fully defined inverted unit", () => {
+      const ecSchema = Schema.fromJsonSync(jsonOne);
+      assert.isDefined(ecSchema);
+      const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
+      assert.isTrue(testItem instanceof InvertedUnit);
+      const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
+      assert.isDefined(testInvertedUnit);
+      const invertedUnitSerialization = testInvertedUnit!.toJson(true, true);
+      expect(invertedUnitSerialization.unitSystem).to.eql("INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
+    });
+  });
 });

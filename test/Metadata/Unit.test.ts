@@ -259,4 +259,86 @@ describe("Unit", () => {
       assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidOffsetJson)), ECObjectsError, `The Unit TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`);
     });
   });
+  describe("toJson", () => {
+    const fullyDefinedUnit = createSchemaJson({
+      label: "Millimeter",
+      description: "A unit defining the millimeter metric unit of length",
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.MM",
+      numerator: 5,
+      denominator: 1,
+      offset: 4,
+    });
+
+    it("async - should succeed with fully defined", async () => {
+      const ecSchema = await Schema.fromJson(fullyDefinedUnit);
+      const unit = await ecSchema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const unitSerialization = unit!.toJson(true, true);
+
+      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
+      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
+      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
+      expect(unitSerialization.denominator).to.equal(1);
+      expect(unitSerialization.numerator).to.equal(5);
+      expect(unitSerialization.offset).to.equal(4);
+    });
+
+    it("sync - should succeed with fully defined", () => {
+      const ecSchema = Schema.fromJsonSync(fullyDefinedUnit);
+      const unit = ecSchema.getItemSync<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const unitSerialization = unit!.toJson(true, true);
+
+      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
+      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
+      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
+      expect(unitSerialization.denominator).to.equal(1);
+      expect(unitSerialization.numerator).to.equal(5);
+      expect(unitSerialization.offset).to.equal(4);
+    });
+
+    // Check order of schema items shouldn't matter
+    const reverseOrderJson = createSchemaJsonWithItems({
+      M: {
+        schemaItemType: "Unit",
+        phenomenon: "TestSchema.Length",
+        unitSystem: "TestSchema.Metric",
+        definition: "[MILLI]*M",
+      },
+      Length: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+        label: "length",
+      },
+      Metric: {
+        schemaItemType: "UnitSystem",
+        label: "metric",
+      },
+    }, true);
+    it("async - order shouldn't matter", async () => {
+      const ecSchema = await Schema.fromJson(reverseOrderJson);
+      assert.isDefined(ecSchema);
+      const unit = await ecSchema.getItem<Unit>("M");
+      assert.isDefined(unit);
+      const unitSerialization = unit!.toJson(true, true);
+
+      expect(unitSerialization.phenomenon).to.eql("TestSchema.Length");
+      expect(unitSerialization.unitSystem).to.eql("TestSchema.Metric");
+      expect(unitSerialization.definition).to.eql("[MILLI]*M");
+    });
+
+    it("sync - should succeed with dependency order", () => {
+      const ecSchema = Schema.fromJsonSync(reverseOrderJson);
+      assert.isDefined(ecSchema);
+      const unit = ecSchema.getItemSync<Unit>("M");
+      assert.isDefined(unit);
+      const unitSerialization = unit!.toJson(true, true);
+
+      expect(unitSerialization.phenomenon).to.eql("TestSchema.Length");
+      expect(unitSerialization.unitSystem).to.eql("TestSchema.Metric");
+      expect(unitSerialization.definition).to.eql("[MILLI]*M");
+    });
+  });
 });

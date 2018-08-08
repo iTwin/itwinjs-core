@@ -109,6 +109,24 @@ export default class Enumeration extends SchemaItem {
     this.enumerators.push(enumerator);
   }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.backingTypeName = (this.isInt()) ? "int" : "string";
+    schemaJson.isStrict = this.isStrict;
+    schemaJson.enumerators = [];
+    this._enumerators.forEach((element: AnyEnumerator) => {
+      const enumJson: any = {};
+      enumJson.name = element.name;
+      enumJson.value = element.value;
+      if (undefined !== element.label)
+        enumJson.label = element.label;
+      if (undefined !== element.description)
+        enumJson.description = element.description;
+      schemaJson.enumerators.push(enumJson);
+    });
+    return schemaJson;
+  }
+
   /**
    * Populates this Enumeration with the values from the provided.
    */

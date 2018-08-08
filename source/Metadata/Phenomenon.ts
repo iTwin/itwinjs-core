@@ -19,6 +19,12 @@ export default class Phenomenon extends SchemaItem {
 
   get definition(): string { return this._definition; }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.definition  = this.definition;
+    return schemaJson;
+  }
+
   private phenomenonFromJson(jsonObj: any) {
     if (undefined === jsonObj.definition)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} does not have the required 'definition' attribute.`);

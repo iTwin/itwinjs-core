@@ -9,7 +9,7 @@ import Schema from "./Schema";
 import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
 import { FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits,
-        parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption } from "../utils/FormatEnums";
+        parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, formatTypeToString, showSignOptionToString, formatTraitsToArray, scientificTypeToString } from "../utils/FormatEnums";
 
 export default class Format extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
@@ -193,6 +193,51 @@ export default class Format extends SchemaItem {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It must be a one character string.`);
       this._stationSeparator = jsonObj.stationSeparator;
     }
+  }
+
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.type = formatTypeToString(this.type!);
+    schemaJson.precision = this.precision;
+    if (undefined !== this.roundFactor)
+      schemaJson.roundFactor = this.roundFactor;
+    if (undefined !== this.minWidth)
+      schemaJson.minWidth = this.minWidth;
+    if (undefined !== this.showSignOption)
+      schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
+    if (undefined !== this.formatTraits)
+      schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
+    if (undefined !== this.decimalSeparator)
+      schemaJson.decimalSeparator = this.decimalSeparator;
+    if (undefined !== this.thousandSeparator)
+      schemaJson.thousandSeparator = this.thousandSeparator;
+    if (undefined !== this.uomSeparator)
+      schemaJson.uomSeparator = this.uomSeparator;
+    if (undefined !== this.scientificType)
+      schemaJson.scientificType = scientificTypeToString(this.scientificType);
+    if (undefined !== this.stationOffsetSize)
+      schemaJson.stationOffsetSize = this.stationOffsetSize;
+    if (undefined !== this.stationSeparator)
+      schemaJson.stationSeparator = this.stationSeparator;
+    if (undefined !== this.units) {
+      const composite: { [value: string]: any } = {};
+      composite.spacer = this.spacer;
+      composite.includeZero = this.includeZero;
+      composite.units = [];
+      this.units.forEach((unit: any) => {
+        if (undefined !== unit[1])
+        composite.units.push({
+            name: unit[0].name,
+            label: unit[1],
+          });
+        else
+        composite.units.push({
+            name: unit[0].name,
+          });
+      });
+      schemaJson.composite = composite;
+    }
+    return schemaJson;
   }
 
   /**

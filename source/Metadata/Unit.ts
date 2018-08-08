@@ -70,6 +70,20 @@ export default class Unit extends SchemaItem {
     }
   }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.phenomenon = this.phenomenon!.fullName;
+    schemaJson.unitSystem = this.unitSystem!.fullName;
+    schemaJson.definition  = this.definition;
+    if (undefined !== this.numerator)
+      schemaJson.numerator = this.numerator;
+    if (undefined !== this.denominator)
+      schemaJson.denominator  = this.denominator;
+    if (undefined !== this.offset)
+      schemaJson.offset  = this.offset;
+    return schemaJson;
+  }
+
   /**
    * Populates this Unit with the values from the provided.
    */

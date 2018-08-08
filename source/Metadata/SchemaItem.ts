@@ -7,6 +7,9 @@ import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
+const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem";
+const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
+
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.
  */
@@ -31,6 +34,23 @@ export default abstract class SchemaItem {
   get label() { return this._label; }
 
   get description() { return this._description; }
+
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const itemJson: { [value: string]: any } = {};
+    if (standalone) {
+      itemJson.$schema = (Schema.ec32) ? SCHEMAURL3_2 : SCHEMAURL3_1; // $schema is required
+      itemJson.schema = this.schema.name;
+      itemJson.name = this.name; // name is required
+      if (includeSchemaVersion) // check flag to see if we should output version
+        itemJson.schemaVersion = this.key.schemaKey.version.toString();
+    }
+    itemJson.schemaItemType = schemaItemTypeToString(this.schemaItemType);
+    if (this.label !== undefined)
+      itemJson.label = this.label;
+    if (this.description  !== undefined)
+      itemJson.description  = this.description;
+    return itemJson;
+  }
 
   private itemFromJson(jsonObj: any) {
     if (undefined === jsonObj.schemaItemType)

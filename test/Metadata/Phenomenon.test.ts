@@ -165,4 +165,32 @@ describe("Phenomenon tests", () => {
       assert.throws(() => testPhenomenon.fromJsonSync(json), ECObjectsError,  `The Phenomenon AREA has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
   });
+  describe("toJson", () => {
+    beforeEach(() => {
+      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      testPhenomenon = new Phenomenon(schema, "AREA");
+    });
+    it("async - Basic test", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "Phenomenon",
+        name: "AREA",
+        definition: "Units.LENGTH(2)",
+      };
+      await testPhenomenon.fromJson(json);
+      const phenomSerialization = testPhenomenon.toJson(true, true);
+      assert(phenomSerialization.definition, "Units.LENGTH(2)");
+    });
+    it("sync - Basic test",  () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "Phenomenon",
+        name: "AREA",
+        definition: "Units.LENGTH(2)",
+      };
+      testPhenomenon.fromJsonSync(json);
+      const phenomSerialization = testPhenomenon.toJson(true, true);
+      assert(phenomSerialization.definition, "Units.LENGTH(2)");
+    });
+  });
 });

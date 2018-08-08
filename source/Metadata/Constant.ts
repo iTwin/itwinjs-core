@@ -55,6 +55,17 @@ export default class Constant extends SchemaItem {
     }
   }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    if (this.phenomenon !== undefined)
+      schemaJson.phenomenon   = this.phenomenon!.fullName;
+    schemaJson.definition  = this.definition;
+    if (this.numerator !== undefined)
+      schemaJson.numerator = this.numerator;
+    schemaJson.denominator  = this.denominator;
+    return schemaJson;
+  }
+
   /**
    * Populates this Constant with the values from the provided.
    */

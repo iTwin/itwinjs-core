@@ -3,10 +3,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import { ECClassModifier, StrengthDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
-        parseStrength, parseStrengthDirection, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
+import { ECClassModifier, StrengthDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType, CustomAttributeContainerType,
+        parseStrength, parseStrengthDirection, SchemaItemKey, strengthToString, strengthDirectionToString } from "../ECObjects";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
-import processCustomAttributes, { CustomAttributeSet } from "./CustomAttribute";
+import processCustomAttributes, { CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -54,6 +54,15 @@ export default class RelationshipClass extends ECClass {
 
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
+  }
+
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.strength = strengthToString(this.strength);
+    schemaJson.strengthDirection = strengthDirectionToString(this.strengthDirection);
+    schemaJson.source = this.source.toJson();
+    schemaJson.target  = this.target.toJson();
+    return schemaJson;
   }
 
   /**
@@ -149,6 +158,26 @@ export class RelationshipConstraint {
 
     // TODO: Handle relationship constraints
     this._constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
+  }
+
+  public toJson() {
+    const schemaJson: { [value: string]: any } = {};
+    schemaJson.multiplicity = this.multiplicity!.toString();
+    schemaJson.roleLabel = this.roleLabel;
+    schemaJson.polymorphic = this.polymorphic;
+    if (undefined !== this.abstractConstraint) {
+      schemaJson.abstractConstraint = this.abstractConstraint.fullName;
+    }
+    if (this.constraintClasses !== undefined && this.constraintClasses.length > 0) {
+      schemaJson.constraintClasses = [];
+      this.constraintClasses.forEach(async (constraintClass: LazyLoadedRelationshipConstraintClass) => {
+        schemaJson.constraintClasses.push(constraintClass.fullName);
+      });
+    }
+    const customAttributes = serializeCustomAttributes(this.customAttributes);
+    if (undefined !== customAttributes)
+      schemaJson.customAttributes = customAttributes;
+    return schemaJson;
   }
 
   /**

@@ -11,6 +11,7 @@ import Mixin from "../../source/Metadata/Mixin";
 import { StructClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
 import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
+import { SchemaContext } from "../../source/Context";
 
 describe("Schema", () => {
   describe("api creation of schema", () => {
@@ -312,6 +313,296 @@ describe("Schema", () => {
     it("should throw for invalid alias", async () => testInvalidAttribute(new Schema("BadSchema", 1, 2, 3), "alias", "string", 0));
     it("should throw for invalid label", async () => testInvalidAttribute(new Schema("BadSchema", 1, 2, 3), "label", "string", 0));
     it("should throw for invalid description", async () => testInvalidAttribute(new Schema("BadSchema", 1, 2, 3), "description", "string", 0));
+  });
+  describe("toJSON", () => {
+    it("Simple serialization", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+      };
+      const testSchema = new Schema("ValidSchema", 1, 2, 3);
+      expect(testSchema).to.exist;
+      await testSchema.fromJson(propertyJson);
+      const serialized = testSchema.toJson();
+      assert(serialized.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema");
+      assert(serialized.name, "ValidSchema");
+      assert(serialized.version, "01.02.03");
+      assert(serialized.alias, "vs");
+      assert(serialized.label, "SomeDisplayLabel");
+      assert(serialized.description, "A really long description...");
+    });
+    it("Serialization with one custom attribute- only class name", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+          },
+        ],
+      };
+      const testSchema = new Schema("ValidSchema", 1, 2, 3);
+      expect(testSchema).to.exist;
+      await testSchema.fromJson(propertyJson);
+      const serialized = testSchema.toJson();
+      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+    });
+    it("Serialization with one custom attribute- additional properties", () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+            ShowClasses: true,
+          },
+        ],
+      };
+      const testSchema = new Schema("ValidSchema", 1, 2, 3);
+      expect(testSchema).to.exist;
+      testSchema.fromJsonSync(propertyJson);
+      const serialized = testSchema.toJson();
+      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+      assert(serialized.customAttributes[0].ShowClasses === true);
+    });
+    it("Serialization with multiple custom attributes- only class name", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+          },
+          {
+            className: "CoreAttributes.HiddenSchema",
+          },
+          {
+            className: "CoreCustom.HiddenSchema",
+          },
+        ],
+      };
+      const testSchema = new Schema("ValidSchema", 1, 2, 3);
+      expect(testSchema).to.exist;
+      await testSchema.fromJson(propertyJson);
+      const serialized = testSchema.toJson();
+      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+      assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
+      assert(serialized.customAttributes[2].className === "CoreCustom.HiddenSchema");
+    });
+    it("Serialization with multiple custom attributes- additional properties", async () => {
+      const propertyJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        customAttributes: [
+          {
+            className: "CoreCustomAttributes.HiddenSchema",
+            ShowClasses: true,
+          },
+          {
+            className: "CoreAttributes.HiddenSchema",
+            FloatValue: 1.2,
+          },
+          {
+            className: "CoreCustom.HiddenSchema",
+            IntegerValue: 5,
+          },
+        ],
+      };
+      const testSchema = new Schema("ValidSchema", 1, 2, 3);
+      expect(testSchema).to.exist;
+      await testSchema.fromJson(propertyJson);
+      const serialized = testSchema.toJson();
+      assert(serialized.customAttributes[0].ShowClasses === true);
+      assert(serialized.customAttributes[1].FloatValue === 1.2);
+      assert(serialized.customAttributes[2].IntegerValue === 5);
+    });
+    it("Serialization with one reference", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        references: [
+          {
+            name: "RefSchema",
+            version: "1.0.0",
+          },
+        ],
+      };
+      const refSchema = new Schema("RefSchema", 1, 0, 0);
+      const context = new SchemaContext();
+      await context.addSchema(refSchema);
+      let testSchema = new Schema("ValidSchema", 1, 2, 3);
+      testSchema = await Schema.fromJson(schemaJson, context);
+      expect(testSchema).to.exist;
+      const entityClassJson = testSchema.toJson();
+      assert.isDefined(entityClassJson);
+      assert(entityClassJson.references[0].name === "RefSchema");
+      assert(entityClassJson.references[0].version === "01.00.00");
+    });
+    it("Serialization with multiple references", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        references: [
+          {
+            name: "RefSchema",
+            version: "1.0.0",
+          },
+          {
+            name: "AnotherRefSchema",
+            version: "1.0.2",
+          },
+        ],
+      };
+      const refSchema = new Schema("RefSchema", 1, 0, 0);
+      const anotherRefSchema = new Schema("AnotherRefSchema", 1, 0, 2);
+      const context = new SchemaContext();
+      context.addSchemaSync(refSchema);
+      context.addSchemaSync(anotherRefSchema);
+      let testSchema = new Schema("ValidSchema", 1, 2, 3);
+      testSchema = Schema.fromJsonSync(schemaJson, context);
+      expect(testSchema).to.exist;
+      const entityClassJson = testSchema.toJson();
+      assert.isDefined(entityClassJson);
+      assert(entityClassJson.references[0].name === "RefSchema");
+      assert(entityClassJson.references[0].version === "01.00.00");
+      assert(entityClassJson.references[1].name === "AnotherRefSchema");
+      assert(entityClassJson.references[1].version === "01.00.02");
+    });
+    it("Serialization with one reference and item", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        references: [
+          {
+            name: "RefSchema",
+            version: "1.0.5",
+          },
+        ],
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            label: "ExampleEntity",
+            description: "An example entity class.",
+          },
+        },
+      };
+
+      const refSchema = new Schema("RefSchema", 1, 0, 5);
+      const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
+      assert.isDefined(refBaseClass);
+      const context = new SchemaContext();
+      await context.addSchema(refSchema);
+      let testSchema = new Schema("TestSchema", 1, 2, 3);
+      testSchema = await Schema.fromJson(schemaJson, context);
+      const entityClassJson = testSchema.toJson();
+      assert.isDefined(entityClassJson);
+      assert.isDefined(entityClassJson.items.testClass);
+      assert(entityClassJson.items.testClass.schemaItemType, "EntityClass");
+      assert(entityClassJson.items.testClass.label, "ExampleEntity");
+      assert(entityClassJson.items.testClass.description, "An example entity class.");
+    });
+    it("Serialization with one reference and multiple items", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        references: [
+          {
+            name: "RefSchema",
+            version: "1.0.5",
+          },
+        ],
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            label: "ExampleEntity",
+            description: "An example entity class.",
+          },
+          ExampleMixin: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.testClass",
+          },
+          ExampleStruct: {
+            schemaItemType: "StructClass",
+            name: "ExampleStruct",
+            modifier: "sealed",
+            properties: [
+              {
+                propertyType: "PrimitiveArrayProperty",
+                name: "ExamplePrimitiveArray",
+                typeName: "TestSchema.testEnum",
+                minOccurs: 7,
+                maxOccurs: 20,
+              },
+            ],
+          },
+          testEnum: {
+            schemaItemType: "Enumeration",
+            backingTypeName: "integer",
+            enumerators: [
+              {
+                name: "ZeroValue",
+                value: 0,
+                label: "None",
+              },
+            ],
+          },
+        },
+      };
+
+      const refSchema = new Schema("RefSchema", 1, 0, 5);
+      const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
+      assert.isDefined(refBaseClass);
+      const context = new SchemaContext();
+      await context.addSchema(refSchema);
+      let testSchema = new Schema("TestSchema", 1, 2, 3);
+      testSchema = await Schema.fromJson(schemaJson, context);
+      const entityClassJson = testSchema.toJson();
+      assert.isDefined(entityClassJson);
+
+      assert.isDefined(entityClassJson.items.testClass);
+      assert(entityClassJson.items.testClass.schemaItemType, "EntityClass");
+      assert(entityClassJson.items.testClass.label, "ExampleEntity");
+      assert(entityClassJson.items.testClass.description, "An example entity class.");
+
+      assert.isDefined(entityClassJson.items.ExampleMixin);
+      assert(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
+
+      assert.isDefined(entityClassJson.items.ExampleStruct);
+      assert(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
+
+      assert.isDefined(entityClassJson.items.testEnum);
+      assert(entityClassJson.items.testEnum.schemaItemType, "Enumeration");
+    });
   });
 }); // Schema tests
 

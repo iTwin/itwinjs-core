@@ -53,6 +53,33 @@ describe("PropertyCategory", () => {
       await expect(testCategory.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The PropertyCategory TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
     });
   });
+  describe("toJson", () => {
+    it("fully defined", async () => {
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          testPropCategory: {
+            schemaItemType: "PropertyCategory",
+            priority: 5,
+          },
+        },
+      };
+
+      const ecSchema = await Schema.fromJson(testSchema);
+      assert.isDefined(ecSchema);
+
+      const item = await ecSchema.getItem("testPropCategory");
+      assert.isDefined(item);
+      assert.isTrue(item instanceof PropertyCategory);
+
+      const propCat = item as PropertyCategory;
+      assert.isDefined(propCat);
+      const propCatSerialization = propCat.toJson(true, true);
+      expect(propCatSerialization.priority).equal(5);
+    });
+  });
 
   describe("accept", () => {
     let testCategory: PropertyCategory;

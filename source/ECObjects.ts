@@ -633,6 +633,7 @@ export class SchemaItemKey {
   get schemaKey() { return this._schemaKey; }
   get name() { return this._name.name; }
   get schemaName() { return this.schemaKey.name; }
+  get fullName() { return this.schemaName + "." + this.name; }
 
   /**
    * Checks whether this SchemaItemKey matches the one provided.

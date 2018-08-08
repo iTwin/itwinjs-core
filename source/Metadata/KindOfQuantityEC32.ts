@@ -144,6 +144,19 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     }
   }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    schemaJson.precision = this.precision;
+    schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
+    if (this.presentationUnits !== undefined) {
+      schemaJson.presentationUnits = [];
+      this.presentationUnits.forEach((unit: Format) => {
+        schemaJson.presentationUnits.push(unit.name);
+      });
+    }
+    return schemaJson;
+  }
+
   public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
     this.loadKOQProperties(jsonObj);

@@ -42,6 +42,14 @@ export default class Mixin extends ECClass {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
+  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    if (undefined !== this.appliesTo) {
+     schemaJson.appliesTo = this.appliesTo.fullName;
+    }
+    return schemaJson;
+  }
+
   public async fromJson(jsonObj: any): Promise<void> {
     this.fromJsonSync(jsonObj);
   }

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 import Schema from "../../source/Metadata/Schema";
@@ -73,6 +73,113 @@ describe("CustomAttributeClass", () => {
         appliesTo: 0,
       };
       await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The CustomAttributeClass TestCustomAttribute has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+    });
+  });
+  describe("toJson", () => {
+    let testClass: CustomAttributeClass;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testClass = new CustomAttributeClass(schema, "TestCustomAttribute");
+    });
+
+    it("async - should succeed with fully defined standalone", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        schema: "TestSchema",
+        schemaVersion: "1.0.0",
+        schemaItemType: "CustomAttributeClass",
+        name: "TestCustomAttribute",
+        modifier: "sealed",
+        appliesTo: "Schema, AnyProperty",
+      };
+
+      await testClass.fromJson(schemaJson);
+      const caJson = testClass!.toJson(true, true);
+      assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
+      assert(caJson.appliesTo, "Schema,AnyProperty");
+      assert(caJson.modifier, "Sealed");
+      assert(caJson.name, "TestCustomAttribute");
+      assert(caJson.schema, "TestSchema");
+      assert(caJson.schemaItemType, "CustomAttributeClass");
+      assert(caJson.schemaVersion, "1.0.0");
+    });
+    it("sync - should succeed with fully defined standalone", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        schema: "TestSchema",
+        schemaVersion: "1.0.0",
+        schemaItemType: "CustomAttributeClass",
+        name: "TestCustomAttribute",
+        modifier: "sealed",
+        appliesTo: "Schema, AnyProperty",
+      };
+
+      testClass.fromJsonSync(schemaJson);
+      const caJson = testClass!.toJson(true, true);
+      assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
+      assert(caJson.appliesTo, "Schema,AnyProperty");
+      assert(caJson.modifier, "Sealed");
+      assert(caJson.name, "TestCustomAttribute");
+      assert(caJson.schema, "TestSchema");
+      assert(caJson.schemaItemType, "CustomAttributeClass");
+      assert(caJson.schemaVersion, "1.0.0");
+    });
+    it("async - should succeed with fully defined without standalone", async () => {
+      const schemaJson = createSchemaJsonWithItems({
+        testMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.testClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          mixins: [ "TestSchema.testMixin" ],
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          modifier: "sealed",
+          appliesTo: "Schema, AnyProperty",
+        },
+      });
+      const ecschema = await Schema.fromJson(schemaJson);
+      assert.isDefined(ecschema);
+
+      const testCustomAttribute = await ecschema.getItem("testCustomAttribute");
+      assert.isDefined(testCustomAttribute);
+      assert.isTrue(testCustomAttribute instanceof CustomAttributeClass);
+      const customAttributeClass = testCustomAttribute as CustomAttributeClass;
+      const caSerialization = customAttributeClass!.toJson(false, true);
+      assert.isDefined(caSerialization);
+      expect(caSerialization.appliesTo).eql("Schema,AnyProperty");
+      expect(caSerialization.modifier).eql("Sealed");
+    });
+    it("sync - should succeed with fully defined without standalone", () => {
+      const schemaJson = createSchemaJsonWithItems({
+        testMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.testClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          mixins: [ "TestSchema.testMixin" ],
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          modifier: "sealed",
+          appliesTo: "Schema, AnyProperty",
+        },
+      });
+      const ecschema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(ecschema);
+
+      const testCustomAttribute = ecschema.getItemSync("testCustomAttribute");
+      assert.isDefined(testCustomAttribute);
+      assert.isTrue(testCustomAttribute instanceof CustomAttributeClass);
+      const customAttributeClass = testCustomAttribute as CustomAttributeClass;
+      const caSerialization = customAttributeClass!.toJson(false, false);
+      assert.isDefined(caSerialization);
+      expect(caSerialization.appliesTo).eql("Schema,AnyProperty");
+      expect(caSerialization.modifier).eql("Sealed");
     });
   });
 });

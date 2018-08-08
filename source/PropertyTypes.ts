@@ -1,4 +1,5 @@
 import { PrimitiveType } from "./ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 const enum PropertyFlags {
   Primitive = 0x01,
@@ -50,4 +51,14 @@ export namespace PropertyTypeUtils {
   export function asArray(t: PropertyType): PropertyType { return t | PropertyFlags.Array; }
   export function getPrimitiveType(t: PropertyType): PrimitiveType { return (0xFF01 & t); }
   export function fromPrimitiveType(t: PrimitiveType): PropertyType { return t | 0; }
+}
+
+export function propertyTypeToString(type: PropertyType) {
+  if (PropertyTypeUtils.isPrimitive(type))
+    return (PropertyTypeUtils.isArray(type)) ? "PrimitiveArrayProperty" : "PrimitiveProperty";
+  if (PropertyTypeUtils.isStruct(type))
+    return (PropertyTypeUtils.isArray(type)) ? "StructArrayProperty" : "StructProperty";
+  if (PropertyTypeUtils.isNavigation(type))
+    return "NavigationProperty";
+  throw new ECObjectsError(ECObjectsStatus.InvalidType, "Invalid propertyType");
 }
