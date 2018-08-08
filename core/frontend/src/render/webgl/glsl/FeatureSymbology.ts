@@ -177,7 +177,7 @@ const checkVertexDiscard = `
     return true;
 
   bool hasAlpha = 1.0 == u_hasAlpha;
-  if (v_feature_alpha_flashed.y > 0.0) {
+  if (v_feature_alpha_flashed.x > 0.0) {
     const float s_minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
     const float s_maxAlpha = (255.0 - s_minTransparency) / 255.0;
     hasAlpha = v_feature_alpha_flashed.x < s_maxAlpha;
@@ -662,18 +662,17 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
 }
 
 // bool feature_invisible = false;
-// varying vec4 v_feature_rgb; // alpha > 0.0 if overridden
+// varying vec3 v_feature_rgb; // if not overridden, .r < 0; else rgb color override
+// varying vec4 v_feature_alpha_flashed; // x = alpha if overridden, else < 0; y = 1 if flashed, 2 if hilited, 3 if both, 0 if neither
 // varying vec4 v_feature_alpha_flashed; // y > 0.0 if overridden. z > 0.0 if flashed. w > 0.0 if hilited.
 // vec4 linear_feature_overrides; // x: weight overridden y: weight z: line code overridden w: line code
 const computeFeatureOverrides = `
-  v_feature_rgb = vec4(1.0);
-  v_feature_alpha_flashed = vec4(1.0);
+  v_feature_rgb = vec3(-1.0);
+  v_feature_alpha_flashed = vec2(-1.0, 0.0);
   vec4 value = getFirstFeatureRgba();
 
   // 2 RGBA values per feature - first R is override flags mask
   if (0.0 == value.r) {
-    v_feature_rgb.a = 0.0;
-    v_feature_alpha_flashed.yzw = vec3(0.0);
     return; // nothing overridden for this feature
   }
 
@@ -682,12 +681,15 @@ const computeFeatureOverrides = `
   if (feature_invisible)
     return;
 
-  v_feature_rgb.a = extractNthFeatureBit(flags, kOvrBit_Rgb);
-  v_feature_alpha_flashed.y = extractNthFeatureBit(flags, kOvrBit_Alpha);
-  if (v_feature_alpha_flashed.y > 0.0 || v_feature_rgb.a > 0.0) {
+  bool rgbOverridden = extractNthFeatureBit(flags, kOvrBit_Rgb) > 0.0;
+  bool alphaOverridden = extractNthFeatureBit(flags, kOvrBit_Alpha) > 0.0;
+  if (alphaOverridden || rgbOverridden) {
     vec4 rgba = getSecondFeatureRgba();
-    v_feature_rgb.rgb = rgba.rgb;
-    v_feature_alpha_flashed.x = rgba.a;
+    if (rgbOverridden)
+      v_feature_rgb = rgba.rgb;
+
+    if (alphaOverridden)
+      v_feature_alpha_flashed.x = rgba.a;
   }
 
   linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
@@ -696,23 +698,24 @@ const computeFeatureOverrides = `
                                   value.b * 256.0);
 
   feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
-  v_feature_alpha_flashed.z = extractNthFeatureBit(flags, kOvrBit_Flashed);
-  v_feature_alpha_flashed.w = extractNthFeatureBit(flags, kOvrBit_Hilited);
+  v_feature_alpha_flashed.y = extractNthFeatureBit(flags, kOvrBit_Flashed);
+  v_feature_alpha_flashed.y += 2.0 * extractNthFeatureBit(flags, kOvrBit_Hilited);
 `;
 
 const applyFeatureColor = `
-  if (floatToBool(v_feature_rgb.a))
+  if (v_feature_rgb.r >= 0.0)
     baseColor.rgb = v_feature_rgb.rgb * baseColor.a;
 
-  if (floatToBool(v_feature_alpha_flashed.y))
+  if (v_feature_alpha_flashed.x >= 0.0)
     baseColor = adjustPreMultipliedAlpha(baseColor, v_feature_alpha_flashed.x);
 
   return baseColor;
 `;
 
 const applyFlash = `
-  float isFlashed = floatToBool(v_feature_alpha_flashed.z) ? 1.0 : 0.0;
-  float isHilited = floatToBool(v_feature_alpha_flashed.w) ? 1.0 : 0.0;
+  float flashHilite = floor(v_feature_alpha_flashed.y + 0.5);
+  float isFlashed = (flashHilite == 1.0 || flashHilite == 3.0) ? 1.0 : 0.0;
+  float isHilited = (flashHilite >= 2.0) ? 1.0 : 0.0;
 
   float hiliteRatio = u_hilite_settings.x * isHilited;
   baseColor = revertPreMultipliedAlpha(baseColor);
@@ -738,8 +741,8 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
 
   assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
 
-  builder.addVarying("v_feature_rgb", VariableType.Vec4);
-  builder.addVarying("v_feature_alpha_flashed", VariableType.Vec4);
+  builder.addVarying("v_feature_rgb", VariableType.Vec3);
+  builder.addVarying("v_feature_alpha_flashed", VariableType.Vec2);
 
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);
