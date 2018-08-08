@@ -1578,146 +1578,110 @@ export class WindowAreaTool extends ViewTool {
 /** @hidden */
 export class DefaultViewTouchTool extends ViewManip {
   public static toolId = ""; // touch tools installed by IdleTool are never registered
-  //  private allowZoom: boolean = true;
-  private rotatePrevented: boolean = false;
-  private doing2dRotation: boolean = false;
   private lastPtView = new Point3d();
   private startPtWorld = new Point3d();
   private startPtView = new Point3d();
-  //  private startTime: number = 0;
+  private startDirection = new Vector2d();
+  private startDistance = 0.0;
+  private startTouchCount = 0;
   private frustum = new Frustum();
-  //  private is2dRotateGestureLimit = 350;   // milliseconds
 
-  constructor(ev: BeTouchEvent, private allowRotate: boolean) {
-    super(ev.viewport!, 0, true, false, false);
-    this.onStart(ev);
-    //    this.handleEvent(ev);
+  constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
+    super(startEv.viewport!, 0, true, false, false);
+    this.onStart(startEv);
+    this.handleEvent(ev);
   }
 
-  private is2dRotateGesture(_ev: BeTouchEvent): boolean {
-    if (!this.allowRotate || this.rotatePrevented)
-      return false;
-
-    if (this.doing2dRotation)
-      return true;
-
-    /*     const vp = this.viewport!;
-        const view = vp.view;
-        const info = ev.gestureInfo!;
-        if (view.allow3dManipulations() || info.numberTouches !== 2) {
-          this.rotatePrevented = false;
-          return false;
-        }
-
-        const startInfo = this.startInfo;
-        const angleChange = Math.abs(this.getRotationFromStart(info).radians);
-        const angularDistance = Math.abs(info.distance / 2.0 * Math.sin(angleChange));
-        const zoomDistance = Math.abs(info.distance - startInfo.distance);
-
-        const panDistance = startInfo.getViewPoint(vp).distance(info.getViewPoint(vp));
-
-        if (angleChange > Math.PI / 10 || angularDistance > zoomDistance && angularDistance > panDistance * 0.75) {
-          this.doing2dRotation = true;
-          return true;
-        }
-
-        const timeDiff = Date.now() - this.startTime;
-        this.rotatePrevented = timeDiff > this.is2dRotateGestureLimit; */
-    return false;
-  }
-
-  private is3dRotateGesture(_ev: BeTouchEvent): boolean {
-    //    return this.allowRotate && (1 === ev.gestureInfo!.numberTouches) && this.viewport!.view.allow3dManipulations();
-    return true;
-  }
-
-  /*   private computeZoomRatio(info: GestureInfo): number {
-      if (!this.allowZoom)
-        return 1.0;
-
-      let newDistance = info.distance;
-      if (newDistance < 1.0)
-        newDistance = 1.0;
-
-      let startDistance = this.startInfo.distance;
-      if (startDistance < 1.0)
-        startDistance = 1.0;
-
-      let zoomRatio = startDistance / newDistance;
-      if (zoomRatio < 0.1)
-        zoomRatio = 0.1;
-      else if (zoomRatio > 10.0)
-        zoomRatio = 10.0;
-
-      if (info.numberTouches > 2 || (Math.abs(startDistance - newDistance) < this.viewport!.pixelsFromInches(0.125)))
-        zoomRatio = 1.0;
-
-      return zoomRatio;
+  public onStart(ev: BeTouchEvent): void {
+    const vp = this.viewport!;
+    vp.getWorldFrustum(this.frustum);
+    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+    if (undefined !== visiblePoint) {
+      this.startPtWorld.setFrom(visiblePoint);
+      vp.worldToView(this.startPtWorld, this.startPtView);
+    } else {
+      this.startPtView.setFrom(ev.viewPoint);
+      this.startPtView.z = vp.worldToView(vp.view.getTargetPoint()).z;
+      vp.viewToWorld(this.startPtView, this.startPtWorld);
     }
-
-    private getRotationFromStart(info: GestureInfo): Angle {
-      const currentTouches = info.touches;
-      const startTouches = this.startInfo.touches;
-      const startVec = new Vector2d(startTouches[1].x - startTouches[0].x, startTouches[1].y - startTouches[0].y);
-      const currentVec = new Vector2d(currentTouches[1].x - currentTouches[0].x, currentTouches[1].y - currentTouches[0].y);
-      return startVec.angleTo(currentVec);
-    } */
-
-  private handle2dRotate(_ev: BeTouchEvent): boolean {
-    const vp = this.viewport!;
-
-    //  All of the transforms and computation are relative to the original transform.
-    if (!vp.setupViewFromFrustum(this.frustum))
-      return true;
-
-    /*     const view = vp.view;
-        const info = ev.gestureInfo!;
-        const currentTouches = info.touches;
-        const startTouches = this.startInfo.touches;
-
-        const startPt0 = vp.viewToWorld(new Point3d(startTouches[0].x, startTouches[0].y, 0));
-        const currPt0 = vp.viewToWorld(new Point3d(currentTouches[0].x, currentTouches[0].y, 0));
-        const diffWorld = startPt0.minus(currPt0);
-        const translateTransform = Transform.createTranslation(diffWorld);
-
-        const radians = this.getRotationFromStart(info);
-        const matrix = RotMatrix.createRotationAroundVector(view.getZVector(), radians)!;
-        const rotationTransform = Transform.createFixedPointAndMatrix(currPt0, matrix);
-        let transform = translateTransform.multiplyTransformTransform(rotationTransform);
-
-        const zoomRatio = this.computeZoomRatio(info);
-        const scaleTransform = Transform.createScaleAboutPoint(startPt0, zoomRatio);
-
-        transform = scaleTransform.multiplyTransformTransform(transform);
-        const frust = this.frustum.transformBy(transform);
-
-        vp.setupViewFromFrustum(frust);
-        this.saveTouchStopData(info);
-        this.doUpdate(true);
-
-        this.lastPtView.setFrom(currPt0); */
-    return true;
+    this.lastPtView.setFrom(this.startPtView);
+    this.startTouchCount = ev.touchCount;
+    this.startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : Vector2d.createZero());
+    this.startDistance = (2 === ev.touchCount ? this.startDirection.magnitude() : 0.0);
   }
 
-  private handle3dRotate(ev: BeTouchEvent) {
-    if (this.lastPtView.isAlmostEqual(ev.viewPoint, 2.0))
-      return true;
+  private computeZoomRatio(ev: BeTouchEvent): number {
+    if (0.0 === this.startDistance)
+      return 1.0;
 
     const vp = this.viewport!;
-    const currPt = ev.viewPoint.clone();
-    if (this.startPtView.isAlmostEqual(currPt, 2.0))
-      currPt.setFrom(this.startPtView);
+    const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : 0.0);
 
-    this.lastPtView.setFrom(currPt);
+    if (0.0 === distance)
+      return 1.0;
 
-    if (!vp.setupViewFromFrustum(this.frustum))
-      return true;
+    if (Math.abs(this.startDistance - distance) < this.viewport!.pixelsFromInches(0.2))
+      return 1.0;
 
+    let zoomRatio = this.startDistance / distance;
+    if (zoomRatio < 0.1)
+      zoomRatio = 0.1;
+    else if (zoomRatio > 10.0)
+      zoomRatio = 10.0;
+
+    return zoomRatio;
+  }
+
+  private computeRotation(ev: BeTouchEvent): Angle {
+    if (ev.touchCount < 2)
+      return Angle.createDegrees(0.0);
+
+    const vp = this.viewport!;
+    const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp));
+    const rotation = this.startDirection.angleTo(direction);
+
+    if (Math.abs(rotation.radians) < Angle.createDegrees(5.0).radians)
+      return Angle.createDegrees(0.0);
+
+    const angularDistance = Math.abs(direction.magnitude() / 2.0 * Math.sin(Math.abs(rotation.radians)));
+    const zoomDistance = Math.abs(direction.magnitude() - this.startDirection.magnitude());
+    const panDistance = this.startPtView.distanceXY(this.lastPtView);
+
+    // NOTE: The * 0.75 below is because it's easy to confuse an attempted rotate for an attempted pan, and this tries to balance that without having a false positive in the opposite direction.
+    if (Math.abs(rotation.radians) > Angle.createDegrees(18.0).radians || (angularDistance > zoomDistance && angularDistance > panDistance * 0.75))
+      return rotation;
+
+    return Angle.createDegrees(0.0);
+  }
+
+  private handle2dPan(_ev: BeTouchEvent): void {
+    const vp = this.viewport!;
+    const screenDist = Point2d.create(this.startPtView.x - this.lastPtView.x, this.startPtView.y - this.lastPtView.y);
+    vp.scroll(screenDist);
+  }
+
+  private handle2dRotateZoom(ev: BeTouchEvent): void {
+    const vp = this.viewport!;
+    const rotation = this.computeRotation(ev);
+    const zoomRatio = this.computeZoomRatio(ev);
+    const targetWorld = vp.viewToWorld(this.lastPtView);
+    const translateTransform = Transform.createTranslation(this.startPtWorld.minus(targetWorld));
+    const rotationTransform = Transform.createFixedPointAndMatrix(targetWorld, RotMatrix.createRotationAroundVector(vp.view.getZVector(), rotation)!);
+    const scaleTransform = Transform.createScaleAboutPoint(this.startPtWorld, zoomRatio);
+    const transform = translateTransform.multiplyTransformTransform(rotationTransform);
+
+    scaleTransform.multiplyTransformTransform(transform, transform);
+    const frustum = this.frustum.transformBy(transform);
+    vp.setupViewFromFrustum(frustum);
+  }
+
+  private handle3dRotate(_ev: BeTouchEvent): void {
+    const vp = this.viewport!;
     const viewRect = vp.viewRect;
     const xExtent = viewRect.width;
     const yExtent = viewRect.height;
-    const xDelta = currPt.x - this.startPtView.x;
-    const yDelta = currPt.y - this.startPtView.y;
+    const xDelta = this.lastPtView.x - this.startPtView.x;
+    const yDelta = this.lastPtView.y - this.startPtView.y;
 
     const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
     const yAxis = vp.rotMatrix.getRow(0);
@@ -1725,85 +1689,89 @@ export class DefaultViewTouchTool extends ViewManip {
     const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
 
-    // ### TODO Follow rotateViewWorld logic
-    //    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
-    //    const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
-
-    //    if (!vp.setupViewFromFrustum(frustum))
-    //      return true;
-
     const result = worldRMatrix.getAxisAndAngleOfRotation();
     const radians = Angle.createRadians(-result.angle.radians);
     const worldAxis = result.axis;
 
     const rotationMatrix = RotMatrix.createRotationAroundVector(worldAxis, radians);
     if (!rotationMatrix)
-      return true;
-    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, rotationMatrix);
-    const frustum = this.frustum.clone();
-    frustum.multiply(worldTransform);
-
-    if (!vp.setupViewFromFrustum(frustum))
-      return true;
-
-    //    this.saveTouchStopData(ev.gestureInfo!);
-    // this.doUpdate(true);
-    return true;
-  }
-
-  public onStart(ev: BeTouchEvent): void {
-    // super.onStart(ev);
-
-    const vp = this.viewport!;
-    vp.getWorldFrustum(this.frustum);
-
-    this.doing2dRotation = this.rotatePrevented = false;
-    this.startPtWorld.setFrom(ev.point);
-    this.startPtView.setFrom(ev.viewPoint);
-    this.updateTargetCenter();
-
-    if (vp.isCameraOn()) {
-      const targetCenterView = vp.worldToView(this.targetCenterWorld);
-      this.startPtView.z = targetCenterView.z;
-      vp.viewToWorld(this.startPtView, this.startPtWorld);
-    }
-
-    this.lastPtView.setFrom(this.startPtView);
-    //    this.startTime = Date.now();
-    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
-    if (!visiblePoint)
       return;
 
-    this.startPtWorld.setFrom(visiblePoint);
-    vp.worldToView(this.startPtWorld, this.startPtView);
-    this.lastPtView.setFrom(this.startPtView);
+    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, rotationMatrix);
+    const frustum = this.frustum.transformBy(worldTransform);
+    vp.setupViewFromFrustum(frustum);
   }
 
-  protected handleEvent(ev: BeTouchEvent): boolean {
-    if (this.is3dRotateGesture(ev))
-      return this.handle3dRotate(ev);
-
-    if (this.is2dRotateGesture(ev))
-      return this.handle2dRotate(ev);
-
+  private handle3dPanZoom(ev: BeTouchEvent): void {
     const vp = this.viewport!;
-    //    const info = ev.gestureInfo!;
-    //    const zoomRatio = this.computeZoomRatio(info);
-    const zoomRatio = 0.25;
+    const zoomRatio = this.computeZoomRatio(ev);
 
-    // reset frustum to original position
-    if (!vp.setupViewFromFrustum(this.frustum))
-      return true;
+    if (vp.isCameraOn()) {
+      const targetWorld = vp.viewToWorld(this.lastPtView);
+      const preTrans = Transform.createTranslationXYZ(-targetWorld.x, -targetWorld.y, -targetWorld.z);
+      const postTrans = Transform.createTranslation(this.startPtWorld);
 
-    let zoomCenter = (vp.view.allow3dManipulations() ? vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches)) : undefined);
-    if (undefined === zoomCenter)
-      zoomCenter = ev.point;
+      preTrans.origin.scaleInPlace(zoomRatio);
+      preTrans.matrix.scale(zoomRatio, preTrans.matrix);
+      const cameraTransform = postTrans.multiplyTransformTransform(preTrans);
 
-    vp.zoom(ev.point, zoomRatio);
-    //    this.saveTouchStopData(info);
-    this.doUpdate(true);
+      const view = vp.view as ViewState3d;
+      const oldEyePoint = view.getEyePoint();
+      const newEyePoint = cameraTransform.multiplyPoint3d(oldEyePoint);
+      const cameraOffset = newEyePoint.minus(oldEyePoint);
+      const cameraOffsetTransform = Transform.createTranslation(cameraOffset);
 
-    return true;
+      const frustum = this.frustum.transformBy(cameraOffsetTransform);
+      vp.setupViewFromFrustum(frustum);
+      return;
+    }
+
+    const targetNpc = vp.viewToNpc(this.lastPtView);
+    const transform = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1.0));
+    const viewCenter = Point3d.create(.5, .5, .5);
+    const startPtNpc = vp.viewToNpc(this.startPtView);
+    const shift = startPtNpc.minus(targetNpc); shift.z = 0.0;
+    const offset = Transform.createTranslation(shift);
+
+    transform.multiplyTransformTransform(offset, transform);
+    transform.multiplyPoint3d(viewCenter, viewCenter);
+    vp.npcToWorld(viewCenter, viewCenter);
+    vp.zoom(viewCenter, zoomRatio);
+  }
+
+  private handleEvent(ev: BeTouchEvent): void {
+    if (undefined === this.viewport)
+      return;
+
+    if (this.startTouchCount !== ev.touchCount) {
+      this.onStart(ev);
+      return;
+    }
+
+    const smallDistance = this.viewport.pixelsFromInches(0.05);
+    if (this.lastPtView.isAlmostEqualXY(ev.viewPoint, smallDistance))
+      return;
+
+    if (this.startPtView.isAlmostEqualXY(ev.viewPoint, smallDistance)) {
+      this.lastPtView.setFrom(this.startPtView);
+    } else {
+      this.lastPtView.setFrom(ev.viewPoint); this.lastPtView.z = this.startPtView.z;
+    }
+
+    if (!this.viewport.setupViewFromFrustum(this.frustum))
+      return;
+
+    if (this.viewport.view.allow3dManipulations()) {
+      if (ev.isSingleTouch)
+        return this.handle3dRotate(ev);
+
+      return this.handle3dPanZoom(ev);
+    }
+
+    if (ev.isSingleTouch)
+      return this.handle2dPan(ev);
+
+    return this.handle2dRotateZoom(ev);
   }
 
   public async onTouchMove(ev: BeTouchEvent): Promise<void> { this.handleEvent(ev); }
@@ -1812,21 +1780,6 @@ export class DefaultViewTouchTool extends ViewManip {
 
   public async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.Yes; }
   public async onDataButtonUp(_ev: BeButtonEvent) { return EventHandled.Yes; }
-
-  /*   public onMultiFingerMove(ev: BeGestureEvent): boolean {
-      const info = ev.gestureInfo!;
-      if (info.numberTouches !== this.startInfo.numberTouches) {
-        this.onStart(ev);
-        return true;
-      }
-      return this.handleEvent(ev);
-    }
-
-    public onSingleFingerMove(ev: BeGestureEvent): boolean { return this.onMultiFingerMove(ev); }
-    public onEndGesture(_ev: BeGestureEvent): boolean {
-      this.clearTouchStopData();
-      return this.endGesture();
-    } */
 
 }
 

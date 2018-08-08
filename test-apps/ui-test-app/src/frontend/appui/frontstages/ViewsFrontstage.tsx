@@ -7,7 +7,7 @@ import { Id64Props } from "@bentley/bentleyjs-core";
 
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
-import { FrontstageProps } from "@bentley/ui-framework";
+import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
 import { ToolButton, ToolItemDef } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
@@ -137,24 +137,19 @@ export class ViewsFrontstage {
         ],
       },
       bottomRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "NavigationTreeWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
+            id: "VerticalPropertyGrid",
             classId: "VerticalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
+            defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
             classId: "HorizontalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
+            defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
@@ -183,6 +178,30 @@ export class ViewsFrontstage {
 
   private rotateCommand = () => {
     IModelApp.tools.run("View.Rotate", ViewportManager.getActiveViewport());
+  }
+
+  private tool1 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControl.setWidgetState(WidgetState.Open);
+      }
+    }
+  }
+
+  private tool2 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControl.setWidgetState(WidgetState.Off);
+      }
+    }
   }
 
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
@@ -215,8 +234,8 @@ export class ViewsFrontstage {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this.tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this.tool2} />
             <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"

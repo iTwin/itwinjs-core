@@ -146,14 +146,13 @@ export namespace Attachments {
         this.setupFromView();
 
       this._scene = [];
-      const requests = new TileRequests();
-      const sceneContext = new SceneContext(this, requests);
+      const sceneContext = new SceneContext(this, new TileRequests());
       view.createScene(sceneContext);
 
-      requests.requestMissing();
+      sceneContext.requests.requestMissing();
 
       // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-      if (!view.areAllTileTreesLoaded || requests.hasMissingTiles)
+      if (!view.areAllTileTreesLoaded || sceneContext.requests.hasMissingTiles)
         return State.Loading;
 
       return State.Ready;
@@ -294,13 +293,12 @@ export namespace Attachments {
     private static DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
     // ------------------------------------------------------------------------------------------
     private _tilePolyfaces: IndexedPolyface[] = [];
-    private _placement: Tile3dPlacement;
 
-    public constructor(root: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement) {
+    private constructor(root: Tree3d, parent: Tile3d | undefined, tileRange: ElementAlignedBox3d) {
       super(new Tile.Params(
         root,
         "",
-        new ElementAlignedBox3d(),
+        tileRange,
         .5 * Math.sqrt(2 * QUERY_SHEET_TILE_PIXELS * QUERY_SHEET_TILE_PIXELS),
         [],
         parent,
@@ -308,41 +306,43 @@ export namespace Attachments {
         undefined,
         undefined,
       ));
+    }
 
-      this._placement = placement;
-      const tree = this.rootAsTree3d;
-
+    public static create(root: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement): Tile3d {
       let fullRange: Range3d;
-      if (this.parent !== undefined)
-        fullRange = this.parent.range.clone();
+      if (parent !== undefined)
+        fullRange = parent.range.clone();
       else
-        fullRange = tree.getRootRange();
+        fullRange = root.getRootRange();
 
       const mid = fullRange.low.interpolate(0.5, fullRange.high);
-      switch (this._placement) {
+      const range = new ElementAlignedBox3d();
+      switch (placement) {
         case Tile3dPlacement.UpperLeft:
-          this.range.extend(mid);
-          this.range.extend(Point3d.create(fullRange.low.x, fullRange.high.y, 0));
+          range.extend(mid);
+          range.extend(Point3d.create(fullRange.low.x, fullRange.high.y, 0));
           break;
         case Tile3dPlacement.UpperRight:
-          this.range.extend(mid);
-          this.range.extend(fullRange.high);
+          range.extend(mid);
+          range.extend(fullRange.high);
           break;
         case Tile3dPlacement.LowerLeft:
-          this.range.extend(fullRange.low);
-          this.range.extend(mid);
+          range.extend(fullRange.low);
+          range.extend(mid);
           break;
         case Tile3dPlacement.LowerRight:
-          this.range.extend(Point3d.create(fullRange.high.x, fullRange.low.y, 0));
-          this.range.extend(mid);
+          range.extend(Point3d.create(fullRange.high.x, fullRange.low.y, 0));
+          range.extend(mid);
           break;
         case Tile3dPlacement.Root:
         default:
-          this.range.extendRange(fullRange);
+          range.extendRange(fullRange);
           break;
       }
-      this.range.low.z = 0;
-      this.range.high.z = 1;
+      range.low.z = 0;
+      range.high.z = 1;
+
+      return new Tile3d(root, parent, range);
     }
 
     /** Get the root tile tree cast to a Tree3d. */
@@ -356,11 +356,6 @@ export namespace Attachments {
     public get hasGraphics(): boolean { return this.isReady; }
     // override
     public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
-
-    /** override - Should not be used. Use getChildren() method on Tile3d instead. */
-    public get children(): Tile[] | undefined {
-      return undefined;
-    }
 
     // override
     public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
@@ -381,7 +376,7 @@ export namespace Attachments {
       }
 
       const tooCoarse = Tile.Visibility.TooCoarse === vis;
-      const children = tooCoarse ? this.getChildren(true) : undefined;
+      const children = tooCoarse ? this.prepareChildren() : undefined;
 
       if (children !== undefined) {
         const initialSize = selected.length;
@@ -456,7 +451,7 @@ export namespace Attachments {
       let currentState = this.getState();
 
       // "Ready" state is a valid situation. It means another tile created the scene for this level of detail. We will use that scene.
-      // However, this means we would be usng the texture for that other tile, which is not what we want. We must recreate the texture.
+      // However, this means we would be using the texture for that other tile, which is not what we want. We must recreate the texture.
 
       assert(currentState !== State.Empty);
       if (currentState === State.Empty) {
@@ -521,14 +516,14 @@ export namespace Attachments {
       }
     }
 
-    public getChildren(load: boolean): Tile[] | undefined {
+    public prepareChildren(): Tile[] | undefined {
       if (this._children === undefined)
         this._children = [];
-      if (this._children.length === 0 && load) {
-        const childTileUL = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.UpperLeft);
-        const childTileUR = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.UpperRight);
-        const childTileLL = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.LowerLeft);
-        const childTileLR = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.LowerRight);
+      if (this._children.length === 0) {
+        const childTileUL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperLeft);
+        const childTileUR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperRight);
+        const childTileLL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerLeft);
+        const childTileLR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerRight);
         this._children.push(childTileUL);
         this._children.push(childTileUR);
         this._children.push(childTileLL);
@@ -760,9 +755,7 @@ export namespace Attachments {
       }
 
       const range = attachment.placement.calculateRange();
-      // ###TODO: Figure out why bias distance dependent upon attachment display priority puts us out of range to draw
-      // this.biasDistance = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
-      this.biasDistance = 0.5;
+      this.biasDistance = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
 
       range.getNpcToWorldRangeTransform(this.viewport.toParent);
       this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1, this.viewport.toParent.matrix);
@@ -771,7 +764,7 @@ export namespace Attachments {
       if (fromParent !== undefined)
         this.graphicsClip = attachment.getOrCreateClip(fromParent);
 
-      this._rootTile = new Tile3d(this, undefined, Tile3dPlacement.Root);
+      this._rootTile = Tile3d.create(this, undefined, Tile3dPlacement.Root);
       (this._rootTile as Tile3d).createPolyfaces(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)
 
       this.location.setFrom(this.viewport.toParent.clone());

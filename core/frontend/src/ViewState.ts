@@ -258,7 +258,7 @@ export abstract class ViewState extends ElementState {
     let allLoaded = true;
     this.forEachModel((model: GeometricModelState) => {
       const loadStatus = model.loadStatus;
-      if (loadStatus === TileTree.LoadStatus.NotLoaded || loadStatus === TileTree.LoadStatus.Loading)
+      if (loadStatus !== TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
     return allLoaded;
@@ -911,8 +911,9 @@ export abstract class ViewState extends ElementState {
 
   private addModelToScene(model: GeometricModelState, context: SceneContext): void {
     model.loadTileTree();
-    if (undefined !== model.tileTree)
+    if (undefined !== model.tileTree) {
       model.tileTree.drawScene(context);
+    }
   }
 
   /**
@@ -1801,5 +1802,13 @@ export class SheetViewState extends ViewState2d {
       else
         context.setViewBackground(border);
     }
+  }
+
+  public computeFitRange(): Range3d {
+    const size = this.sheetSize;
+    if (0 >= size.x || 0 >= size.y)
+      return super.computeFitRange();
+    else
+      return new Range3d(0, 0, -1, size.x, size.y, 1);
   }
 }

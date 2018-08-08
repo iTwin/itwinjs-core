@@ -47,6 +47,7 @@ export interface ToolSettingsZoneProps extends CommonProps {
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
 
+  /** hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
     isPopoverOpen: false,

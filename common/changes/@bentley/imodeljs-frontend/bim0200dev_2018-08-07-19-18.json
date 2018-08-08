@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Added separate ToolSettings for touch move distance and delay.",
+      "comment": "IdleTool default touch support for pan and pinch zoom.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

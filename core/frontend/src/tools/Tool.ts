@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d } from "@bentley/geometry-core";
+import { Point3d, Point2d, PolygonOps } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
@@ -168,6 +168,29 @@ export class BeTouchEvent extends BeButtonEvent {
   public static getTouchPosition(touch: Touch, vp: Viewport): Point2d {
     const rect = vp.getClientRect();
     return Point2d.createFrom({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
+  }
+  public static getTouchListCentroid(list: TouchList, vp: Viewport): Point2d | undefined {
+    switch (list.length) {
+      case 0: {
+        return undefined;
+      }
+      case 1: {
+        return this.getTouchPosition(list[0], vp);
+      }
+      case 2: {
+        return this.getTouchPosition(list[0], vp).interpolate(0.5, this.getTouchPosition(list[1], vp));
+      }
+      default: {
+        const points: Point2d[] = [];
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < list.length; i++) {
+          points.push(this.getTouchPosition(list[i], vp));
+        }
+        const centroid = Point2d.createZero();
+        PolygonOps.centroidAndArea(points, centroid);
+        return centroid;
+      }
+    }
   }
   public static findTouchById(list: TouchList, id: number): Touch | undefined {
     // tslint:disable-next-line:prefer-for-of

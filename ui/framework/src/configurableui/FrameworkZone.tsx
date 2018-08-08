@@ -7,11 +7,12 @@ import * as React from "react";
 
 import { WidgetType, WidgetDef } from "./WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
-import StackedWidget, { EachWidgetProps } from "./StackedWidget";
+import { StackedWidget, EachWidgetProps } from "./StackedWidget";
 import ZoneTargets from "./ZoneTargets";
 import { ZoneTargetProvider } from "./FrontstageZone";
 import { StatusBar } from "./StatusBar";
 import { ZoneDef } from "./ZoneDef";
+import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageManager";
 
 import NZ_ZoneState from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
@@ -23,9 +24,9 @@ import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Manage
 // Zone React Components
 // -----------------------------------------------------------------------------
 
-/** Props for the Zone Component.
+/** Props for the FrameworkZone Component.
  */
-export interface ZoneWithDefProps {
+export interface FrameworkZoneProps {
   zoneState: NZ_ZoneState;
   targetedBounds: RectangleProps | undefined;
   widgetChangeHandler: WidgetChangeHandler;
@@ -34,9 +35,35 @@ export interface ZoneWithDefProps {
   zoneDefProvider: ZoneDefProvider;
 }
 
+interface FrameworkZoneState {
+  updatedWidgetDef: WidgetDef | undefined;
+}
+
 /** ConfigurableUI Zone React Component.
  */
-export class ZoneWithDef extends React.Component<ZoneWithDefProps> {
+export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
+  constructor(props: FrameworkZoneProps) {
+    super(props);
+  }
+
+  /** hidden */
+  public readonly state: Readonly<FrameworkZoneState> = {
+    updatedWidgetDef: undefined,
+  };
+
+  public componentDidMount(): void {
+    FrontstageManager.WidgetStateChangedEvent.addListener(this.handleWidgetStateChangedEvent);
+  }
+
+  public componentWillUnmount(): void {
+    FrontstageManager.WidgetStateChangedEvent.removeListener(this.handleWidgetStateChangedEvent);
+  }
+
+  private handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
+    if (this.containsWidgetDef(args.widgetDef)) {
+      this.setState((_prevState, _props) => ({ updatedWidgetDef: args.widgetDef }));
+    }
+  }
 
   public render(): React.ReactNode {
     return (
@@ -61,6 +88,16 @@ export class ZoneWithDef extends React.Component<ZoneWithDefProps> {
     );
   }
 
+  private containsWidgetDef(widgetDef: WidgetDef): boolean {
+    return this.props.zoneState.widgets.some((wProps) => {
+      const zoneDef = this.props.zoneDefProvider.getZoneDef(wProps.id);
+      if (!zoneDef)
+        return false;
+
+      return zoneDef.widgetDefs.some((wDef) => wDef === widgetDef);
+    });
+  }
+
   private getWidget = () => {
     if (this.props.zoneState.widgets.length === 1) {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
@@ -83,10 +120,20 @@ export class ZoneWithDef extends React.Component<ZoneWithDefProps> {
         id: widget.id,
         tabs: zoneDef.widgetDefs.map((widgetDef, tabIndex) => {
           let isActive = false;
-          if (!activeWidgetDef && widget.tabIndex === tabIndex) {
-            activeWidgetDef = widgetDef;
-            activeZoneDef = zoneDef;
-            isActive = true;
+          if (!activeWidgetDef) {
+            if (!widgetDef.defaultOpenUsed) {
+              if ((zoneDef.isDefaultOpen || widgetDef === this.state.updatedWidgetDef) && widgetDef.isDefaultOpen) {
+                isActive = true;
+              }
+              widgetDef.defaultOpenUsed = true;
+            } else if (widget.tabIndex === tabIndex) {
+              isActive = true;
+            }
+
+            if (isActive) {
+              activeWidgetDef = widgetDef;
+              activeZoneDef = zoneDef;
+            }
           }
 
           return {
