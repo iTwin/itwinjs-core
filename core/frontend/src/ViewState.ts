@@ -27,7 +27,7 @@ import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";
 import { Attachments, SheetBorder } from "./Sheet";
-import { TileTree, Tile } from "./tile/TileTree";
+import { TileTree } from "./tile/TileTree";
 
 export const enum GridOrientationType {
   View = 0,
@@ -1432,8 +1432,7 @@ export abstract class ViewState3d extends ViewState {
     points[3].x = extents.low.x;
 
     const aboveGround = this.isEyePointAbove(extents.low.z);
-    const colors: ColorDef[] = [];
-    const gradient = ground.getGroundPlaneTextureSymb(aboveGround, colors);
+    const gradient = ground.getGroundPlaneGradient(aboveGround);
     const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
     if (!texture)
       return;
@@ -1454,7 +1453,7 @@ export abstract class ViewState3d extends ViewState {
       return;
 
     const params = new GraphicParams();
-    params.setLineColor(colors[0]);
+    params.setLineColor(gradient.keys[0].color);
     params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
@@ -1599,12 +1598,6 @@ export abstract class ViewState2d extends ViewState {
     return model;
   }
 
-  /** Create the scene for this view from a set of pre-initialized DrawArgs. */
-  public createSceneFromDrawArgs(args: Tile.DrawArgs) {
-    // ###TODO: Check for a context RenderPlan wait time in the draw arguments given
-    args.root.draw(args);
-  }
-
   public equalState(other: ViewState2d): boolean {
     return this.baseModelId.equals(other.baseModelId) &&
       this.origin.isAlmostEqual(other.origin) &&
@@ -1666,7 +1659,7 @@ export class DrawingViewState extends ViewState2d {
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  /** DEBUG ONLY - A list of attachment Ids that are the only ones that should be loaded. If this member is undefined, all attachments will be loaded. */
+  /** DEBUG ONLY - A list of attachment Ids that are the only ones that should be loaded. If this member is left undefined, all attachments will be loaded. */
   private static DEBUG_FILTER_ATTACHMENTS?: Id64Array;
   // ------------------------------------------------------------------------------------------
 
@@ -1687,13 +1680,14 @@ export class SheetViewState extends ViewState2d {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
       this._attachmentIds = [];
       attachments.forEach((idProp) => this._attachmentIds.push(idProp));
+      this._attachments = new Attachments.AttachmentList();
     }
   }
 
   public static get className() { return "SheetViewDefinition"; }
   public readonly sheetSize: Point2d;
   private _attachmentIds: Id64Array;
-  private _attachments = new Attachments.AttachmentList();
+  private _attachments: Attachments.AttachmentList;
   private all3dAttachmentTilesLoaded: boolean = true;
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
@@ -1711,9 +1705,9 @@ export class SheetViewState extends ViewState2d {
 
     this._attachments.clear();
 
-    // DEBUG ONLY --------------------------------------
+    // DEBUG ONLY ---------------------
     this.debugFilterAttachments();
-    // -------------------------------------------------
+    // --------------------------------
 
     // Query the attachments using the id list, and grab all of their corresponding view ids
     const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];

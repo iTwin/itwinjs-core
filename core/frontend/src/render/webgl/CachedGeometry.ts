@@ -177,7 +177,7 @@ export abstract class IndexedGeometry extends CachedGeometry {
 /** A geometric primitive representative of a set of clipping planes to clip a volume of space. */
 export class ClipMaskGeometry extends IndexedGeometry {
   public constructor(indices: Uint32Array, vertices: QPoint3dList) {
-    super(IndexedGeometryParams.create(vertices.toTypedArray(), vertices.params, indices)!);
+    super(IndexedGeometryParams.createFromList(vertices, indices)!);
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }

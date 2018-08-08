@@ -268,6 +268,7 @@ export namespace Attachments {
         512,  // does not matter... have no children
         [],
       ));
+      this.setIsReady();
     }
 
     public get hasChildren(): boolean { return false; }
@@ -283,7 +284,7 @@ export namespace Attachments {
       drawArgs.graphics.setViewFlagOverrides(this.root.viewFlagOverrides);
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
-      myRoot.view.createSceneFromDrawArgs(drawArgs);
+      viewRoot.draw(drawArgs);
     }
   }
 
@@ -962,7 +963,7 @@ export namespace Attachments {
     public get state(): State { return State.Ready; }
 
     public get is2d(): boolean { return false; }
-    public get is3d(): boolean { return false; }
+    public get is3d(): boolean { return true; }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
     public getState(depth: number): State { return depth < this.states.length ? this.states[depth] : State.NotLoaded; }
