@@ -1,0 +1,79 @@
+{
+  "name": "@bentley/presentation-frontend",
+  "version": "0.5.1",
+  "description": "Frontend of iModelJs Presentation library",
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iModelJS",
+    "Frontend"
+  ],
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "scripts": {
+    "build": "tsc -p ./src",
+    "clean": "rimraf lib package-deps.json",
+    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
+    "docs": "npm run docs:reference && npm run docs:changelog",
+    "docs:changelog": "node ../../scripts/copy-changelog.js --changelog ./CHANGELOG.md --name presentation-frontend",
+    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../out/docs/extract --json=../../out/docs/reference/presentation-frontend/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
+    "lint": "tslint -p ./src",
+    "pack": "node ../../scripts/pack.js",
+    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --file ./tests/index.test.ts tests/**/*.ts",
+    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.frontend.xml",
+    "watch": "npm test -- --reporter min --watch-extensions ts --watch"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "0.112.0",
+    "@bentley/imodeljs-i18n": "0.112.0",
+    "@bentley/imodeljs-common": "0.112.0",
+    "@bentley/imodeljs-frontend": "0.112.0",
+    "@bentley/presentation-common": "^0.5.1"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "0.112.0",
+    "@bentley/bentleyjs-tools": "0.112.0",
+    "@bentley/imodeljs-i18n": "0.112.0",
+    "@bentley/imodeljs-common": "0.112.0",
+    "@bentley/imodeljs-frontend": "0.112.0",
+    "@bentley/presentation-common": "^0.5.1",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/chai-jest-snapshot": "^1.3.0",
+    "@types/chai-spies": "^0",
+    "@types/deep-equal": "^1",
+    "@types/faker": "^4.1.0",
+    "@types/mocha": "^2.2.48",
+    "cross-env": "^5.1.4",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "chai-jest-snapshot": "^1.3.0",
+    "chai-spies": "1.0.0",
+    "cpx": "^1.5.0",
+    "deep-equal": "^1",
+    "faker": "^4.1.0",
+    "mocha": "^5.2.0",
+    "nyc": "^11.8.0",
+    "rimraf": "^2.6.2",
+    "ts-node": "^6.0.3",
+    "tsconfig-paths": "^3.3.2",
+    "tslint": "^5.10.1",
+    "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typemoq": "^2.1.0",
+    "typescript": "~2.9.1",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "nyc": {
+    "nycrc-path": "../.nycrc",
+    "report-dir": "../../out/reports/coverage/frontend",
+    "temp-directory": "../../out/reports/coverage/frontend/.nyc_output"
+  }
+}
