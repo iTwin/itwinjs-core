@@ -167,7 +167,7 @@ export class ViewHandleArray {
   }
 
   public setFocus(index: number): void {
-    if (this.focus === index && (this.focusDrag === this.viewTool.isDragging))
+    if (this.focus === index && (this.focusDrag === this.viewTool.inHandleModify))
       return;
 
     let focusHandle: ViewingToolHandle | undefined;
@@ -184,7 +184,7 @@ export class ViewHandleArray {
     }
 
     this.focus = index;
-    this.focusDrag = this.viewTool.isDragging;
+    this.focusDrag = this.viewTool.inHandleModify;
 
     if (undefined !== this.viewport)
       this.viewport.invalidateDecorations();
@@ -202,10 +202,9 @@ export abstract class ViewManip extends ViewTool {
   public viewport?: Viewport = undefined;
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
-  public alwaysLeaveLastView = false;
   public readonly targetCenterWorld = new Point3d();
+  public inHandleModify = false;
   public isDragging = false;
-  public isDragOperation = false;
   public stoppedOverHandle = false;
   public targetCenterValid = false;
   public targetCenterLocked = false;
@@ -213,8 +212,7 @@ export abstract class ViewManip extends ViewTool {
   protected forcedHandle = ViewHandleType.None;
   public readonly lastFrustum = new Frustum();
 
-  constructor(viewport: Viewport | undefined, public handleMask: number, public isOneShot: boolean, public scrollOnNoMotion: boolean,
-    public isDragOperationRequired: boolean = false) {
+  constructor(viewport: Viewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
     super();
     this.viewHandles = new ViewHandleArray(this);
     this.changeViewport(viewport);
@@ -229,7 +227,7 @@ export abstract class ViewManip extends ViewTool {
     }
 
     this.nPts = 0;
-    this.isDragging = false;
+    this.inHandleModify = false;
     this.inDynamicUpdate = false;
     this.frustumValid = false;
 
@@ -238,7 +236,7 @@ export abstract class ViewManip extends ViewTool {
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     // Tool was started in "drag required" mode, don't advance tool state and wait to see if we get the start drag event.
-    if (0 === this.nPts && this.isDragOperationRequired && !this.isDragOperation)
+    if (0 === this.nPts && this.isDraggingRequired && !this.isDragging)
       return EventHandled.No;
 
     switch (this.nPts) {
@@ -254,7 +252,7 @@ export abstract class ViewManip extends ViewTool {
 
     if (this.nPts > 1) {
       this.inDynamicUpdate = false;
-      if (this.processPoint(ev, false) && this.isOneShot)
+      if (this.processPoint(ev, false) && this.oneShot)
         this.exitTool();
       else
         this.onReinitialize();
@@ -264,7 +262,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    if (this.nPts <= 1 && this.isDragOperationRequired && !this.isDragOperation && this.isOneShot)
+    if (this.nPts <= 1 && this.isDraggingRequired && !this.isDragging && this.oneShot)
       this.exitTool();
 
     return EventHandled.No;
@@ -280,12 +278,11 @@ export abstract class ViewManip extends ViewTool {
     }
 
     IModelApp.toolAdmin.processWheelEvent(ev, false);
-    this.doUpdate(true);
     return EventHandled.Yes;
   }
 
   public async startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled> {
-    if (this.isDragging)
+    if (this.inHandleModify)
       return EventHandled.No; // If already changing the view reject the request...
 
     if (undefined !== forcedHandle) {
@@ -295,7 +292,7 @@ export abstract class ViewManip extends ViewTool {
     }
 
     this.receivedDownEvent = true; // Request up events even though we may not have gotten the down event...
-    this.isDragOperation = true;
+    this.isDragging = true;
 
     if (0 === this.nPts)
       this.onDataButtonDown(ev);
@@ -315,11 +312,11 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    // NOTE: To support startHandleDrag being called by IdleTool for middle button drag, check isDragging and not the button type...
-    if (!this.isDragging)
+    // NOTE: To support startHandleDrag being called by IdleTool for middle button drag, check inHandleModify and not the button type...
+    if (!this.inHandleModify)
       return EventHandled.No;
 
-    this.isDragOperation = false;
+    this.isDragging = false;
 
     if (0 === this.nPts)
       return EventHandled.Yes;
@@ -358,8 +355,8 @@ export abstract class ViewManip extends ViewTool {
       return;
 
     const hitHandle = this.viewHandles.hitHandle;
-    if (hitHandle && hitHandle.noMotion(ev))
-      this.doUpdate(false);
+    if (hitHandle)
+      hitHandle.noMotion(ev);
   }
 
   public onPostInstall(): void {
@@ -372,7 +369,7 @@ export abstract class ViewManip extends ViewTool {
 
     if (this.inDynamicUpdate) {
       this.endDynamicUpdate();
-      restorePrevious = !this.alwaysLeaveLastView;
+      restorePrevious = true;
     }
 
     const vp = this.viewport;
@@ -404,7 +401,7 @@ export abstract class ViewManip extends ViewTool {
       return;
 
     if (this.targetCenterValid) {
-      if (this.isDragging)
+      if (this.inHandleModify)
         return;
       if (IModelApp.tentativePoint.isActive) {
         this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
@@ -416,7 +413,7 @@ export abstract class ViewManip extends ViewTool {
     if (IModelApp.tentativePoint.isActive)
       return this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
 
-    if (TentativeOrAccuSnap.isHot())
+    if (TentativeOrAccuSnap.isHot)
       return this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), true, false);
 
     if (vp.viewCmdTargetCenter && this.isPointVisible(vp.viewCmdTargetCenter))
@@ -437,7 +434,7 @@ export abstract class ViewManip extends ViewTool {
     this.frustumValid = false;
 
     if (this.viewHandles.testHit(ev.viewPoint, forcedHandle)) {
-      this.isDragging = true;
+      this.inHandleModify = true;
       this.viewHandles.focusHitHandle();
       const handle = this.viewHandles.hitHandle;
       if (undefined !== handle && !handle.firstPoint(ev))
@@ -453,9 +450,6 @@ export abstract class ViewManip extends ViewTool {
       return true;
 
     const doUpdate = hitHandle.doManipulation(ev, inDynamics);
-    if (doUpdate)
-      this.doUpdate(true);
-
     return inDynamics || (doUpdate && hitHandle.checkOneShot());
   }
 
@@ -485,8 +479,6 @@ export abstract class ViewManip extends ViewTool {
 
     return pt.z;
   }
-
-  public doUpdate(_abortOnButton: boolean) { }  // we currently have no built-in support for dynamics, therefore nothing to update.
 
   /**
    * Set the target point for viewing operations.
@@ -525,7 +517,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   protected static _useViewAlignedVolume: boolean = false;
-  public static fitView(viewport: Viewport, doUpdate: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: Viewport, doAnimate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum();
@@ -537,7 +529,7 @@ export abstract class ViewManip extends ViewTool {
 
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
-    if (doUpdate)
+    if (doAnimate)
       viewport.animateFrustumChange(before, viewport.getFrustum());
 
     viewport.synchWithView(true);
@@ -649,7 +641,7 @@ class ViewTargetCenter extends ViewingToolHandle {
   }
 
   public testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
-    if (this.viewTool.isDragOperationRequired)
+    if (this.viewTool.isDraggingRequired)
       return false; // Target center handle is not usable in this mode...
 
     const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
@@ -686,7 +678,7 @@ class ViewTargetCenter extends ViewingToolHandle {
       return;
 
     let sizeInches = 0.2;
-    if (!hasFocus && this.viewTool.isDragging) {
+    if (!hasFocus && this.viewTool.inHandleModify) {
       sizeInches = 0.1; // Display small target when dragging...
       hasFocus = false;
     }
@@ -729,7 +721,7 @@ class ViewPan extends ViewingToolHandle {
   private anchorPt: Point3d = new Point3d();
   private lastPtNpc: Point3d = new Point3d();
   public get handleType() { return ViewHandleType.Pan; }
-  public getHandleCursor() { return this.viewTool.isDragging ? BeCursor.ClosedHand : BeCursor.OpenHand; }
+  public getHandleCursor() { return this.viewTool.inHandleModify ? BeCursor.ClosedHand : BeCursor.OpenHand; }
 
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean) {
     const vp = ev.viewport!;
@@ -1136,10 +1128,11 @@ abstract class ViewNavigate extends ViewingToolHandle {
     const orientationEvent = this.tryOrientationEvent(forward, ev);
     const orientationResult = orientationEvent.result;
     const elapsedTime = this.getElapsedTime(currentTime);
-    this.lastMotionTime = currentTime;
 
+    this.lastMotionTime = currentTime;
     const vp = this.viewTool.viewport!;
     const motion = this.getNavigateMotion(elapsedTime);
+
     let haveNavigateEvent: boolean = !!motion;
     if (haveNavigateEvent) {
       const frust = vp.getWorldFrustum();
@@ -1149,41 +1142,19 @@ abstract class ViewNavigate extends ViewingToolHandle {
         if (OrientationResult.NoEvent === orientationResult)
           return false;
       }
+      return true;
     }
 
-    let doFull = false;
-    let doDynamic = false;
-    if (haveNavigateEvent)
-      doDynamic = true;
-    else {
-      switch (orientationResult) {
-        case OrientationResult.Disabled:
-        case OrientationResult.NoEvent:
-          doFull = true;
-          break;
-        case OrientationResult.RejectedByController:
-          if (!this.haveStaticOrientation(forward, currentTime))
-            return false;
-
-          doFull = true;
-          break;
-        case OrientationResult.Success:
-          if (this.haveStaticOrientation(forward, currentTime))
-            doFull = true;
-          else
-            doDynamic = true;
-          break;
-      }
+    switch (orientationResult) {
+      case OrientationResult.Disabled:
+      case OrientationResult.NoEvent:
+        return true;
+      case OrientationResult.RejectedByController:
+      case OrientationResult.Success:
+        return this.haveStaticOrientation(forward, currentTime);
+      default:
+        return false;
     }
-
-    if (doFull) {
-      this.viewTool.endDynamicUpdate();
-      this.viewTool.doUpdate(true);
-      this.viewTool.beginDynamicUpdate();
-      return false;
-    }
-
-    return doDynamic;
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean {
@@ -1349,23 +1320,23 @@ export class FitViewTool extends ViewTool {
 /** The tool that performs a Pan view operation */
 export class PanTool extends ViewManip {
   public static toolId = "View.Pan";
-  constructor(vp: Viewport, oneShot = false, scrollOnNoMotion = false, isDragOperationRequired = false) {
-    super(vp, ViewHandleType.Pan, oneShot, scrollOnNoMotion, isDragOperationRequired);
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
 }
 
 /** tool that performs a Rotate view operation */
 export class RotateTool extends ViewManip {
   public static toolId = "View.Rotate";
-  constructor(vp: Viewport, oneShot = false, scrollOnNoMotion = false, isDragOperationRequired = false) {
-    super(vp, isDragOperationRequired ? ViewHandleType.Rotate : ViewHandleType.TargetCenter | ViewHandleType.Pan | ViewHandleType.Rotate, oneShot, scrollOnNoMotion, isDragOperationRequired);
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, isDraggingRequired ? ViewHandleType.Rotate : ViewHandleType.TargetCenter | ViewHandleType.Pan | ViewHandleType.Rotate, oneShot, isDraggingRequired);
   }
 }
 
 /** tool that performs the walk operation */
 export class ViewWalkTool extends ViewManip {
   public static toolId = "View.Walk";
-  constructor(vp: Viewport) { super(vp, ViewHandleType.Walk, false, true, false); }
+  constructor(vp: Viewport) { super(vp, ViewHandleType.Walk, false, false); }
 }
 
 /** tool that performs a Window-area view operation */
@@ -1587,7 +1558,7 @@ export class DefaultViewTouchTool extends ViewManip {
   private frustum = new Frustum();
 
   constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
-    super(startEv.viewport!, 0, true, false, false);
+    super(startEv.viewport!, 0, true, false);
     this.onStart(startEv);
     this.handleEvent(ev);
   }
@@ -1786,14 +1757,14 @@ export class DefaultViewTouchTool extends ViewManip {
 export class ViewLookTool extends ViewManip {
   public static toolId = "View.Look";
   constructor(vp: Viewport) {
-    super(vp, ViewHandleType.Look, true, false, true);
+    super(vp, ViewHandleType.Look, true, true);
   }
 }
 
 export class ViewScrollTool extends ViewManip {
   public static toolId = "View.Scroll";
   constructor(vp: Viewport) {
-    super(vp, ViewHandleType.Scroll, true, false, true);
+    super(vp, ViewHandleType.Scroll, true, true);
   }
 }
 

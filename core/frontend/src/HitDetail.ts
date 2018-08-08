@@ -97,9 +97,6 @@ export class HitDetail {
    */
   public getPoint(): Point3d { return this.hitPoint; }
 
-  /** Type guard for SnapDetail. */
-  public isSnapDetail(): this is SnapDetail { return false; }
-
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
@@ -161,13 +158,11 @@ export class SnapDetail extends HitDetail {
   /** Returns `HitDetailType.Snap` */
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
-  /** Type guard for SnapDetail. */
-  public isSnapDetail(): this is SnapDetail { return true; }
+  public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
   /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
-  public isHot(): boolean { return this.heat !== SnapHeat.None; }
+  public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
-  public isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+  public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
 

@@ -39,10 +39,10 @@ export class IdleTool extends InteractiveTool {
     const tp = IModelApp.tentativePoint;
     await tp.process(ev);
 
-    if (tp.isSnapped()) {
+    if (tp.isSnapped) {
       IModelApp.toolAdmin.adjustSnapPoint();
     } else {
-      if (IModelApp.accuDraw.isActive()) {
+      if (IModelApp.accuDraw.isActive) {
         const point = tp.point;
         const vp = ev.viewport!;
         if (vp.isSnapAdjustmentRequired()) {

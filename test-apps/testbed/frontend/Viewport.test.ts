@@ -93,16 +93,16 @@ describe("Viewport", () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const viewport = new TestViewport(canvas!, vpView);
     const accudraw = IModelApp.accuDraw;
-    assert.isTrue(accudraw.isEnabled(), "Accudraw should be enabled");
+    assert.isTrue(accudraw.isEnabled, "Accudraw should be enabled");
     const pt = new Point3d(1, 1, 1);
     accudraw.adjustPoint(pt, viewport, false);
 
     accudraw.activate();
-    assert.isTrue(accudraw.isActive(), "AccuDraw is active");
+    assert.isTrue(accudraw.isActive, "AccuDraw is active");
     accudraw.deactivate();
-    assert.isFalse(accudraw.isActive(), "not active");
+    assert.isFalse(accudraw.isActive, "not active");
     accudraw.setCompassMode(CompassMode.Polar);
-    assert.equal(accudraw.getCompassMode(), CompassMode.Polar, "polar mode");
+    assert.equal(accudraw.compassMode, CompassMode.Polar, "polar mode");
   });
 
   it("loadFontMap", async () => {
