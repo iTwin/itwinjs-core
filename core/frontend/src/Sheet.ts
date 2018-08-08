@@ -963,7 +963,7 @@ export namespace Attachments {
     public get state(): State { return State.Ready; }
 
     public get is2d(): boolean { return false; }
-    public get is3d(): boolean { return false; }
+    public get is3d(): boolean { return true; }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
     public getState(depth: number): State { return depth < this.states.length ? this.states[depth] : State.NotLoaded; }

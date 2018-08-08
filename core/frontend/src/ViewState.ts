@@ -1680,13 +1680,14 @@ export class SheetViewState extends ViewState2d {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
       this._attachmentIds = [];
       attachments.forEach((idProp) => this._attachmentIds.push(idProp));
+      this._attachments = new Attachments.AttachmentList();
     }
   }
 
   public static get className() { return "SheetViewDefinition"; }
   public readonly sheetSize: Point2d;
   private _attachmentIds: Id64Array;
-  private _attachments = new Attachments.AttachmentList();
+  private _attachments: Attachments.AttachmentList;
   private all3dAttachmentTilesLoaded: boolean = true;
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
@@ -1704,9 +1705,9 @@ export class SheetViewState extends ViewState2d {
 
     this._attachments.clear();
 
-    // DEBUG ONLY --------------------------------------
+    // DEBUG ONLY ---------------------
     this.debugFilterAttachments();
-    // -------------------------------------------------
+    // --------------------------------
 
     // Query the attachments using the id list, and grab all of their corresponding view ids
     const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
