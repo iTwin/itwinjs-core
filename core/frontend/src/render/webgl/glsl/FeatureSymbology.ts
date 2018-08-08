@@ -393,8 +393,6 @@ export const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition).xyz;";
 const checkForEarlySurfaceDiscard = `
   if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
     return false;
-  else if (isBelowTransparencyThreshold())
-    return true;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
@@ -405,8 +403,6 @@ const checkForEarlySurfaceDiscard = `
 const checkForEarlySurfaceDiscardWithElemID = `
   if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
     return false;
-  else if (isBelowTransparencyThreshold())
-    return true;
   else if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
     return false; // no normal == never-lit geometry == never rendered with edges == don't have to test further
 
@@ -614,17 +610,17 @@ export function addElementId(builder: ProgramBuilder, alwaysUniform: boolean = f
 // For hidden line + solid fill modes...translucent + opaque passes only.
 // Note the test is based on the element color's alpha, ignoring any feature overrides etc.
 const isBelowTransparencyThreshold = `
-bool isBelowTransparencyThreshold() {
-  return v_baseAlpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
-}
+  return g_baseAlpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
 `;
 
 export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
   const frag = builder.frag;
+  const vert = builder.vert;
+
   addWindowToTexCoords(frag);
 
-  frag.addFunction(isBelowTransparencyThreshold);
-  frag.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
+  vert.set(VertexShaderComponent.CheckForLateDiscard, isBelowTransparencyThreshold);
+  vert.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
     prog.addProgramUniform("u_transparencyThreshold", (uniform, params) => {
       uniform.setUniform1f(params.target.transparencyThreshold);
     });
@@ -638,7 +634,6 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
   } else {
-    const vert = builder.vert;
     addFeatureIndex(vert);
     addEdgeWidth(vert);
     vert.addFunction(GLSLVertex.computeLineWeight);

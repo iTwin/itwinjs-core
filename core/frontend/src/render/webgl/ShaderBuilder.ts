@@ -469,6 +469,9 @@ export const enum VertexShaderComponent {
   // (Optional) Add the element id to the vertex shader.
   // void computeElementId()
   AddComputeElementId,
+  // (Optional) After all output (varying) values have been computed, return true if this vertex should be discarded.
+  // bool checkForLateDiscard()
+  CheckForLateDiscard,
 
   COUNT,
 }
@@ -550,6 +553,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     for (const comp of this._computedVarying) {
       main.addline("  " + comp);
+    }
+
+    const checkForLateDiscard = this.get(VertexShaderComponent.CheckForLateDiscard);
+    if (undefined !== checkForLateDiscard) {
+      prelude.addFunction("bool checkForLateDiscard()", checkForLateDiscard);
+      main.addline(GLSLVertex.lateDiscard);
     }
 
     prelude.addMain(main.source);
