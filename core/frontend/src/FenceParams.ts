@@ -6,10 +6,7 @@ import { Viewport } from "./Viewport";
 import { Range3d, ClipVector } from "@bentley/geometry-core";
 
 /**
- * The fence clip mode controls element acceptance criteria. A clip mode of none returns
- * only elements inside the fence when overlaps aren't requested. A clip mode of
- * original or copy always returns overlapping elements. The actual clip behavior varies
- * according to the fence operation, e.g. delete, move, copy.
+ * The fence clip mode controls element acceptance criteria.
  */
 export const enum FenceClipMode {
   /** Inclusion of inside/overlapping elements controlled by overlap mode. No clipping of elements satisfying the fence criteria. */

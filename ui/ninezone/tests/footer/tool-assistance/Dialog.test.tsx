@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Dialog from "@src/footer/indicator-dialog/Dialog";
+import Dialog from "@src/footer/tool-assistance/Dialog";
 
 describe("<Dialog />", () => {
   it("should render", () => {

@@ -57,20 +57,7 @@ export class MeshBuilder {
     this.tileRange = tileRange;
   }
 
-  /**
-   * create instance of MeshBuilder without a predefined mesh instance
-   * @param props
-   * props to create mesh:
-   *    props.displayParams : DisplayParams
-   *    props.features? : Mesh.Features | undefined
-   *    props.type : Mesh.PrimitiveType
-   *    props.range : Range3d
-   *    props.is2d : boolean
-   *    props.isPlanar : boolean
-   * additional props:
-   *    props.tolerance : number
-   *    props.areaTolerance : number
-   */
+  /** create a new MeshBuilder */
   public static create(props: MeshBuilder.Props): MeshBuilder {
     const mesh = Mesh.create(props);
     const { tolerance, areaTolerance, range } = props;
@@ -97,9 +84,6 @@ export class MeshBuilder {
    * add data from polyface into mesh builder
    * @param polyface the indexed polyface to iterate the facets of in order to load each facet's triangles' vertices
    * @param props the properties required for this operation
-   *    props.includeParams: boolean
-   *    props.fillColor: number
-   *    props.mappedTexture?: TextureMapping
    */
   public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {
     const visitor = polyface.createVisitor();
@@ -112,12 +96,8 @@ export class MeshBuilder {
   }
 
   /**
-   *
-   * @param visitor
+   * @param visitor the PolyfaceVisitor containing the face data to be added
    * @param props the properties required for this operation:
-   *    props.includeParams: boolean
-   *    props.fillColor: number
-   *    props.mappedTexture?: TextureMapping
    */
   public addFromPolyfaceVisitor(visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceOptions): void {
     const { pointCount, normalCount, paramCount, requireNormals } = visitor;

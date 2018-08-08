@@ -6,13 +6,13 @@
 import { UiEvent } from "@bentley/ui-core";
 
 import { FrontstageDef, FrontstageProps } from "./FrontstageDef";
-
 import { ToolItemDef } from "./Item";
-import ContentControl from "./ContentControl";
-
-import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Management";
+import { ContentControl } from "./ContentControl";
 import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
+import { WidgetDef, WidgetState } from "./WidgetDef";
+
+import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Management";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -81,6 +81,17 @@ export interface NavigationAidActivatedEventArgs {
  */
 export class NavigationAidActivatedEvent extends UiEvent<NavigationAidActivatedEventArgs> { }
 
+/** Widget State Changed Event Args class.
+ */
+export interface WidgetStateChangedEventArgs {
+  widgetDef: WidgetDef;
+  widgetState: WidgetState;
+}
+
+/** Widget State Changed Event class.
+ */
+export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
+
 /** Modal Frontstage information interface.
  */
 export interface ModalFrontstageInfo {
@@ -106,6 +117,7 @@ export class FrontstageManager {
   private static _contentLayoutActivatedEvent: ContentLayoutActivatedEvent = new ContentLayoutActivatedEvent();
   private static _contentControlActivatedEvent: ContentControlActivatedEvent = new ContentControlActivatedEvent();
   private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
+  private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
 
   private static _nineZoneStateManagement: NineZoneStateManagement = new NineZoneStateManagement();
 
@@ -120,6 +132,8 @@ export class FrontstageManager {
   public static get ContentControlActivatedEvent(): ContentControlActivatedEvent { return this._contentControlActivatedEvent; }
 
   public static get NavigationAidActivatedEvent(): NavigationAidActivatedEvent { return this._navigationAidActivatedEvent; }
+
+  public static get WidgetStateChangedEvent(): WidgetStateChangedEvent { return this._widgetStateChangedEvent; }
 
   public static get NineZoneStateManagement(): NineZoneStateManagement { return this._nineZoneStateManagement; }
 

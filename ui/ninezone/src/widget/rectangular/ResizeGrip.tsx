@@ -9,11 +9,13 @@ import PointerCaptor from "../../base/PointerCaptor";
 import CommonProps from "../../utilities/Props";
 import "./ResizeGrip.scss";
 
+/** Properties of [[ResizeGrip]] component. */
 export interface ResizeGripProps extends CommonProps {
   onResize?: (x: number, y: number) => void;
   direction: ResizeDirection;
 }
 
+/** Available resize directions of resize grip. */
 export enum ResizeDirection {
   EastWest,
   NorthSouth,
@@ -21,12 +23,18 @@ export enum ResizeDirection {
   NorthWest_SouthEast,
 }
 
+/** Helpers for [[ResizeDirection]]. */
 export class ResizeDirectionHelpers {
-  public static EW_CLASS_NAME = "nz-direction-ew";
-  public static NS_CLASS_NAME = "nz-direction-ns";
-  public static NE_SW_CLASS_NAME = "nz-direction-ne-sw";
-  public static NW_SE_CLASS_NAME = "nz-direction-nw-se";
+  /** Class name of [[ResizeDirection.EastWest]] */
+  public static readonly EW_CLASS_NAME = "nz-direction-ew";
+  /** Class name of [[ResizeDirection.NorthSouth]] */
+  public static readonly NS_CLASS_NAME = "nz-direction-ns";
+  /** Class name of [[ResizeDirection.NorthEast_SouthWest]] */
+  public static readonly NE_SW_CLASS_NAME = "nz-direction-ne-sw";
+  /** Class name of [[ResizeDirection.NorthWest_SouthEast]] */
+  public static readonly NW_SE_CLASS_NAME = "nz-direction-nw-se";
 
+  /** @returns Returns class name of specified [[ResizeDirection]] */
   public static getCssClassName(direction: ResizeDirection): string {
     switch (direction) {
       case ResizeDirection.EastWest:
@@ -41,6 +49,7 @@ export class ResizeDirectionHelpers {
   }
 }
 
+/** Resize grip used by [[Stacked]] component. */
 export default class ResizeGrip extends React.Component<ResizeGripProps> {
   private _isDragging = false;
   private _lastX = 0;

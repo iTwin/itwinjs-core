@@ -6,14 +6,19 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
 import MouseTracker from "../../context/MouseTracker";
 import Css from "../../utilities/Css";
-import Props from "../../utilities/Props";
-
+import CommonProps from "../../utilities/Props";
 import "./Tooltip.scss";
 
-export default class Tooltip extends React.Component<Props> {
+/** Properties of [[Tooltip]] component. */
+export interface TooltipProps extends CommonProps {
+  /** Tooltip content. */
+  children?: React.ReactNode;
+}
+
+/** Tooltip component that follows the mouse. */
+export default class Tooltip extends React.Component<TooltipProps> {
   public render() {
     const className = classnames(
       "nz-popup-tooltip-tooltip",

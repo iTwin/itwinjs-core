@@ -5,7 +5,7 @@
 
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
@@ -258,6 +258,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     builder.addShape(shapePts);
   }
 
+  private _pickableOverlay: boolean = false; // ###TODO Remove - testing only
+
   /** Returns a GraphicBuilder for this AuxCoordSystemState. */
   private createGraphic(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
     const checkOutOfView = (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None;
@@ -280,7 +282,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     rMatrix.scaleRows(scale, scale / exagg, scale, rMatrix);
     const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
 
-    const graphic = context.createWorldOverlay(transform);
+    const graphic = this._pickableOverlay ? context.createPickableDecoration(new Id64("0xffffff0000000003"), transform) : context.createWorldOverlay(transform);
     const vp = context.viewport;
     this.addAxis(graphic, 0, options, vp);
     this.addAxis(graphic, 1, options, vp);

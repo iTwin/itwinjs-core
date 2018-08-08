@@ -2,7 +2,7 @@
 
 exports[`<Toggle /> renders correctly 1`] = `
 <div
-  className="nz-widget-toolSettings-settings-popover-toggle"
+  className="nz-widget-toolSettings-settings-toggle"
 >
   <div
     className="nz-toggle"

@@ -6,7 +6,6 @@ import * as React from "react";
 import Backstage from "@src/backstage/Backstage";
 import Item from "@src/backstage/Item";
 import Separator from "@src/backstage/Separator";
-import Button from "@src/buttons/Button";
 import * as AlignCenter from "!!svg-react-loader!@bentley/svg-icons/icons/align-center.svg";
 
 export interface State {
@@ -68,9 +67,12 @@ export default class BackstagePage extends React.Component<{}, State> {
   public render() {
     return (
       <>
-        <Button onClick={this.handleOpenBackstageButtonClick}>
+        <button
+          className="bwc-buttons-blue"
+          onClick={this.handleOpenBackstageButtonClick}
+        >
           Open
-        </Button>
+        </button>
         <Backstage
           isOpen={this.state.isOpen}
           items={this.getItems()}

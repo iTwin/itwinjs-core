@@ -5,15 +5,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps from "../../utilities/Props";
 import "./Item.scss";
 
+/** Properties of [[Item]] component */
 export interface ItemProps extends CommonProps {
+  /** Component children. */
+  children?: React.ReactNode;
+  /** Describes if item is active. */
   isActive?: boolean;
+  /** Function called when the item is clicked. */
   onClick?: () => void;
 }
 
+/** Toolbar item component. Used in [[Toolbar]] */
 export default class Item extends React.Component<ItemProps> {
   public render() {
     const className = classnames(

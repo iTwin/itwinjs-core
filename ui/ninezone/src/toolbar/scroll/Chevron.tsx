@@ -5,21 +5,24 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import Direction, { DirectionHelpers } from "../../utilities/Direction";
-import "./Arrow.scss";
+import "./Chevron.scss";
 
-export interface ArrowProps extends CommonProps {
-  direction?: Direction;
+/** Properties of [[Chevron]] component. */
+export interface ChevronProps extends CommonProps, NoChildrenProps {
+  /** Direction of chevron. */
+  direction: Direction;
+  /** Function called when chevron is clicked. */
   onClick?: () => void;
 }
 
-export default class Arrow extends React.Component<ArrowProps> {
+/** Chevron component used in [[Indicator]]. */
+export default class Chevron extends React.Component<ChevronProps> {
   public render() {
     const className = classnames(
-      "nz-toolbar-scroll-arrow",
-      DirectionHelpers.getCssClassName(this.props.direction || Direction.Left),
+      "nz-toolbar-scroll-chevron",
+      DirectionHelpers.getCssClassName(this.props.direction),
       this.props.className);
 
     return (

@@ -8,7 +8,6 @@ import { Timer } from "@bentley/ui-core";
 import App from "@src/app/App";
 import Content from "@src/app/Content";
 import AppButton from "@src/toolbar/button/App";
-import Button from "@src/buttons/Button";
 import MouseTracker from "@src/context/MouseTracker";
 import Footer from "@src/footer/Footer";
 import MessageCenter, { MessageCenterButton } from "@src/footer/message-center/MessageCenter";
@@ -19,8 +18,8 @@ import SnapModeDialog from "@src/footer/snap-mode/Dialog";
 import SnapModeIcon from "@src/footer/snap-mode/Icon";
 import SnapModeIndicator from "@src/footer/snap-mode/Indicator";
 import SnapRow from "@src/footer/snap-mode/Snap";
-import IndicatorDialog from "@src/footer/indicator-dialog/Dialog";
 import ToolAssistanceIndicator from "@src/footer/tool-assistance/Indicator";
+import ToolAssistanceDialog from "@src/footer/tool-assistance/Dialog";
 import ActivityMessage from "@src/footer/message/Activity";
 import StatusMessage from "@src/footer/message/content/status/Message";
 import StatusLayout from "@src/footer/message/content/status/Layout";
@@ -45,12 +44,12 @@ import AssistanceItem from "@src/widget/tool-settings/assistance/Item";
 import AssistanceSeparator from "@src/widget/tool-settings/assistance/Separator";
 import NestedToolSettings from "@src/widget/tool-settings/settings/Nested";
 import NoToolSettings from "@src/widget/tool-settings/settings/NoSettings";
-import Overflow from "@src/widget/tool-settings/settings/popover/Overflow";
-import PopoverToggle from "@src/widget/tool-settings/settings/popover/Toggle";
+import ScrollableArea from "@src/widget/tool-settings/settings/ScrollableArea";
+import PopoverToggle from "@src/widget/tool-settings/settings/Toggle";
 import ToolSettings from "@src/widget/tool-settings/settings/Settings";
 import Tooltip from "@src/widget/tool-settings/Tooltip";
 import ToolSettingsWidget from "@src/widget/ToolSettings";
-import ExpandableItem, { ExpandableItemProps } from "@src/toolbar/item/expandable/Expandable";
+import ExpandableItem from "@src/toolbar/item/expandable/Expandable";
 import OverflowItem from "@src/toolbar/item/Overflow";
 import GroupColumn from "@src/toolbar/item/expandable/group/Column";
 import GroupTool from "@src/toolbar/item/expandable/group/tool/Tool";
@@ -58,7 +57,7 @@ import ToolGroupExpander from "@src/toolbar/item/expandable/group/tool/Expander"
 import { GroupWithContainIn as ToolGroupComponent } from "@src/toolbar/item/expandable/group/Group";
 import { NestedWithContainIn as NestedToolGroup } from "@src/toolbar/item/expandable/group/Nested";
 import HistoryIcon from "@src/toolbar/item/expandable/history/Icon";
-import HistoryTray, { addItem, HistoryProps } from "@src/toolbar/item/expandable/history/Tray";
+import HistoryTray, { History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
 import ToolbarIcon from "@src/toolbar/item/Icon";
 import Toolbar from "@src/toolbar/Toolbar";
 import ScrollableToolbar from "@src/toolbar/Scrollable";
@@ -166,8 +165,8 @@ export interface ToolGroup {
   backTrays: ReadonlyArray<string>;
   trays: { [key: string]: ToolGroupTray };
   direction: Direction;
-  history: HistoryProps<HistoryItem>;
-  isExpanded: boolean;
+  history: History<HistoryItem>;
+  isExtended: boolean;
   isToolGroupOpen: boolean;
 }
 
@@ -233,7 +232,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           },
           direction: Direction.Bottom,
           history: [],
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
           icon: "icon-2d",
         } as ToolGroup,
@@ -257,7 +256,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           },
           direction: Direction.Bottom,
           history: [],
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
           icon: "icon-angle",
         } as ToolGroup,
@@ -286,7 +285,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           direction: Direction.Right,
           history: [],
           icon: "icon-attach",
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "browse": {
@@ -317,7 +316,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           direction: Direction.Left,
           history: [],
           icon: "icon-calendar",
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "channel": {
@@ -341,7 +340,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           },
           direction: Direction.Left,
           history: [],
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "chat": {
@@ -372,7 +371,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           direction: Direction.Left,
           history: [],
           icon: "icon-clipboard",
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "cube": {
@@ -449,7 +448,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           },
           direction: Direction.Right,
           history: [],
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "document": {
@@ -476,7 +475,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           direction: Direction.Right,
           history: [],
           icon: "icon-validate",
-          isExpanded: false,
+          isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "chat1": {
@@ -539,24 +538,34 @@ export default class ZonesExample extends React.Component<{}, State> {
         <Zone bounds={this.state.nineZone.zones[1].bounds}>
           <ToolsWidget
             button={
-              <AppButton>
-                <i className="icon icon-home" />
-              </AppButton>
+              <AppButton
+                icon={
+                  <i className="icon icon-home" />
+                }
+              />
             }
             horizontalToolbar={
-              <Toolbar>
-                {this.getToolbarItem("angle")}
-                {this.getToolbarItem("2d")}
-              </Toolbar>
+              <Toolbar
+                expandsTo={Direction.Bottom}
+                items={
+                  <>
+                    {this.getToolbarItem("angle")}
+                    {this.getToolbarItem("2d")}
+                  </>
+                }
+              />
             }
             verticalToolbar={
               <Toolbar
                 expandsTo={Direction.Right}
-              >
-                {this.getToolbarItem("cube")}
-                {this.getToolbarItem("attach")}
-                {this.getToolbarItem("validate")}
-              </Toolbar>
+                items={
+                  <>
+                    {this.getToolbarItem("cube")}
+                    {this.getToolbarItem("attach")}
+                    {this.getToolbarItem("validate")}
+                  </>
+                }
+              />
             }
           />
         </Zone>
@@ -578,7 +587,7 @@ export default class ZonesExample extends React.Component<{}, State> {
               <>
                 <ToolAssistanceIndicator
                   dialog={
-                    <IndicatorDialog isOpen={this.state.openWidget === FooterWidget.ToolAssistance} />
+                    this.state.openWidget !== FooterWidget.ToolAssistance ? undefined : <ToolAssistanceDialog />
                   }
                   icons={
                     <>
@@ -587,99 +596,99 @@ export default class ZonesExample extends React.Component<{}, State> {
                     </>
                   }
                   isStepStringVisible={this.state.nineZone.isInFooterMode}
-                  onIndicatorClick={this.handleToolAssistanceIndicatorIsDialogOpenChange}
+                  onClick={this.handleToolAssistanceIndicatorIsDialogOpenChange}
                   stepString="Start Point"
                 />
                 <MessageCenterIndicator
                   ref={this._footerMessages}
                   label="Message(s):"
                   isLabelVisible={this.state.nineZone.isInFooterMode}
-                  balloonText="9+"
-                  onIndicatorClick={this.handleMessageIndicatorIsDialogOpenChange}
+                  balloonLabel="9+"
+                  onClick={this.handleMessageIndicatorIsDialogOpenChange}
                   dialog={
-                    <MessageCenter
-                      isOpen={this.state.openWidget === FooterWidget.Messages}
-                      title="Messages"
-                      buttons={
-                        <>
-                          <MessageCenterButton>
-                            <i className={"icon icon-export"} />
-                          </MessageCenterButton>
-                          <MessageCenterButton onClick={() => {
-                            this.setState((prevState) => ({
-                              ...prevState,
-                              openWidget: FooterWidget.None,
-                            }));
-                          }}>
-                            <i className={"icon icon-close"} />
-                          </MessageCenterButton>
-                        </>
-                      }
-                      tabs={
-                        <>
-                          <MessageCenterTab
-                            isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
-                            onClick={this.handleOnAllMessagesTabClick}
-                          >
-                            All
+                    this.state.openWidget !== FooterWidget.Messages ? undefined :
+                      <MessageCenter
+                        title="Messages"
+                        buttons={
+                          <>
+                            <MessageCenterButton>
+                              <i className={"icon icon-export"} />
+                            </MessageCenterButton>
+                            <MessageCenterButton onClick={() => {
+                              this.setState((prevState) => ({
+                                ...prevState,
+                                openWidget: FooterWidget.None,
+                              }));
+                            }}>
+                              <i className={"icon icon-close"} />
+                            </MessageCenterButton>
+                          </>
+                        }
+                        tabs={
+                          <>
+                            <MessageCenterTab
+                              isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
+                              onClick={this.handleOnAllMessagesTabClick}
+                            >
+                              All
                           </MessageCenterTab>
-                          <MessageCenterTab
-                            isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
-                            onClick={this.handleOnProblemsTabClick}
-                          >
-                            Problems
+                            <MessageCenterTab
+                              isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
+                              onClick={this.handleOnProblemsTabClick}
+                            >
+                              Problems
                           </MessageCenterTab>
-                        </>
-                      }
-                      messages={this.getMessagesCenterMessages()}
-                    />
+                          </>
+                        }
+                        messages={this.getMessagesCenterMessages()}
+                      />
                   }
                 />
                 <SnapModeIndicator
                   label="Snap Mode"
                   isLabelVisible={this.state.nineZone.isInFooterMode}
-                  onIndicatorClick={this.handleSnapModeIndicatorIsDialogOpenChange}
+                  onClick={this.handleSnapModeIndicatorIsDialogOpenChange}
                   icon={
                     <SnapModeIcon text="k" />
                   }
                   dialog={
-                    <SnapModeDialog
-                      isOpen={this.state.openWidget === FooterWidget.SnapMode}
-                      title="Snap Mode"
-                      snaps={
-                        <>
-                          <SnapRow
-                            key="1"
-                            isActive
-                            label="Keypoint"
-                            icon={
-                              <SnapModeIcon isActive text="k" />
-                            }
-                          />
-                          <SnapRow
-                            key="2"
-                            label="Intersection"
-                            icon={
-                              <SnapModeIcon text="i" />
-                            }
-                          />
-                          <SnapRow
-                            key="3"
-                            label="Center"
-                            icon={
-                              <SnapModeIcon text="c" />
-                            }
-                          />
-                          <SnapRow
-                            key="4"
-                            label="Nearest"
-                            icon={
-                              <SnapModeIcon text="n" />
-                            }
-                          />
-                        </>
-                      }
-                    />
+                    this.state.openWidget !== FooterWidget.SnapMode ? undefined :
+                      <SnapModeDialog
+                        title="Snap Mode"
+                        snaps={
+                          <>
+                            <SnapRow
+                              key="1"
+                              isActive
+                              label="Keypoint"
+                              icon={
+                                <SnapModeIcon isActive text="k" />
+                              }
+                            />
+                            <SnapRow
+                              key="2"
+                              label="Intersection"
+                              icon={
+                                <SnapModeIcon text="i" />
+                              }
+                            />
+                            <SnapRow
+                              key="3"
+                              label="Center"
+                              icon={
+                                <SnapModeIcon text="c" />
+                              }
+                            />
+                            <SnapRow
+                              key="4"
+                              label="Nearest"
+                              icon={
+                                <SnapModeIcon text="n" />
+                              }
+                            />
+                          </>
+                        }
+                      />
                   }
                 />
               </>
@@ -759,8 +768,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private handleContentClick = (e: React.MouseEvent<HTMLElement>) => {
-    // tslint:disable
-    console.log(e);
     if (e.target !== e.currentTarget)
       return;
 
@@ -804,7 +811,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     });
   }
 
-  private handleOnIsHistoryExpandedChange = (isExpanded: boolean, toolKey: string) => {
+  private handleOnIsHistoryExtendedChange = (isExtended: boolean, toolKey: string) => {
     this.setState((prevState) => {
       return {
         ...prevState,
@@ -812,7 +819,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           ...prevState.tools,
           [toolKey]: {
             ...prevState.tools[toolKey],
-            isExpanded,
+            isExtended,
           },
         },
       };
@@ -833,9 +840,9 @@ export default class ZonesExample extends React.Component<{}, State> {
           ...prevState.tools,
           [toolKey]: {
             ...prevState.tools[toolKey],
-            isExpanded: false,
+            isExtended: false,
             isToolGroupOpen: false,
-            history: addItem(key, item, tool.history),
+            history: DefaultHistoryManager.addItem(key, item, tool.history),
           },
         },
       };
@@ -853,8 +860,8 @@ export default class ZonesExample extends React.Component<{}, State> {
           ...prevState.tools,
           [item.toolKey]: {
             ...prevState.tools[item.toolKey],
-            isExpanded: false,
-            history: addItem(item.columnKey + "-" + item.itemKey, item, tool.history),
+            isExtended: false,
+            history: DefaultHistoryManager.addItem(item.columnKey + "-" + item.itemKey, item, tool.history),
           },
         },
       };
@@ -909,19 +916,19 @@ export default class ZonesExample extends React.Component<{}, State> {
     });
   }
 
-  private handlePopoverIsOpenChange = (isOpen: boolean) => {
-    this.setState(() => {
+  private handlePopoverToggleClick = () => {
+    this.setState((prevState) => {
       return {
         isNestedPopoverOpen: false,
-        isPopoverOpen: isOpen,
+        isPopoverOpen: !prevState.isPopoverOpen,
       };
     });
   }
 
-  private handleNestedPopoverIsOpenChange = (isOpen: boolean) => {
-    this.setState(() => {
+  private handleNestedPopoverToggleClick = () => {
+    this.setState((prevState) => {
       return {
-        isNestedPopoverOpen: isOpen,
+        isNestedPopoverOpen: !prevState.isNestedPopoverOpen,
       };
     });
   }
@@ -1035,10 +1042,8 @@ export default class ZonesExample extends React.Component<{}, State> {
     return (
       <HistoryTray
         direction={tool.direction}
-        isExpanded={tool.isExpanded}
-        onIsExpandedChange={(isExpanded) => this.handleOnIsHistoryExpandedChange(isExpanded, toolKey)}
-      >
-        {
+        isExtended={tool.isExtended}
+        items={
           tool.history.map((entry) => {
             const tray = tool.trays[entry.item.trayKey];
             return (
@@ -1051,7 +1056,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             );
           })
         }
-      </HistoryTray>
+      />
     );
   }
 
@@ -1129,21 +1134,22 @@ export default class ZonesExample extends React.Component<{}, State> {
     );
   }
 
-  private getToolbarItem(toolKey: string): React.ReactElement<ExpandableItemProps> {
+  private getToolbarItem(toolKey: string) {
     const tool = this.state.tools[toolKey];
     if (isToolGroup(tool)) {
       return (
         <ExpandableItem
-          key={toolKey}
-          onIsHistoryExpandedChange={(isExpanded) => this.handleOnIsHistoryExpandedChange(isExpanded, toolKey)}
           history={this.getHistoryTray(toolKey)}
+          key={toolKey}
+          onIsHistoryExtendedChange={(isExtended) => this.handleOnIsHistoryExtendedChange(isExtended, toolKey)}
           panel={this.getToolGroup(toolKey)}
         >
           <ToolbarIcon
+            icon={
+              <i className={`icon ${tool.icon}`} />
+            }
             onClick={() => this.handleOnExpandableItemClick(toolKey)}
-          >
-            <i className={`icon ${tool.icon}`} />
-          </ToolbarIcon>
+          />
         </ExpandableItem>
       );
     }
@@ -1151,13 +1157,14 @@ export default class ZonesExample extends React.Component<{}, State> {
     return (
       <ToolbarIcon
         key={toolKey}
-      >
-        <i className={`icon ${tool.icon}`} />
-      </ToolbarIcon>
+        icon={
+          <i className={`icon ${tool.icon}`} />
+        }
+      />
     );
   }
 
-  private getToolGroup(toolKey: string): React.ReactNode {
+  private getToolGroup(toolKey: string) {
     const tool = this.state.tools[toolKey] as ToolGroup;
     if (!tool.isToolGroupOpen)
       return undefined;
@@ -1218,6 +1225,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         <NestedToolGroup
           title={tray.title}
           container={this._zones}
+          columns={columns}
           onBack={() => this.setState((prevState) => {
             const t = prevState.tools[toolKey] as ToolGroup;
             let trayId = tool.trayId;
@@ -1237,70 +1245,74 @@ export default class ZonesExample extends React.Component<{}, State> {
               },
             };
           })}
-        >
-          {columns}
-        </NestedToolGroup>
+        />
       );
 
     return (
       <ToolGroupComponent
         title={tray.title}
         container={this._zones}
-      >
-        {columns}
-      </ToolGroupComponent>
+        columns={columns}
+      />
     );
   }
 
   private getToolSettingsWidget() {
     const toolbar = (
-      <Toolbar>
-        <ToolbarIcon
-          key="0"
-          isActive={
-            this.state.secondZoneContent === SecondZoneContent.ToolSettings ||
-            this.state.secondZoneContent === SecondZoneContent.EmptyToolSettings
-          }
-          onClick={
-            () => {
-              this.setState((prevState) => {
-                let secondZoneContent = SecondZoneContent.None;
-                if (prevState.secondZoneContent === SecondZoneContent.None)
-                  secondZoneContent = SecondZoneContent.EmptyToolSettings;
-                else if (prevState.secondZoneContent === SecondZoneContent.ToolAssistance)
-                  secondZoneContent = SecondZoneContent.ToolSettings;
-                return {
-                  secondZoneContent,
-                };
-              });
-            }
-          }
-        >
-          <i className="icon icon-settings" />
-        </ToolbarIcon>
-        <ToolbarIcon
-          key="1"
-          isActive={this.state.secondZoneContent === SecondZoneContent.ToolAssistance}
-          onClick={
-            () => {
-              this.setState((prevState) => {
-                let secondZoneContent = SecondZoneContent.None;
-                if (prevState.secondZoneContent === SecondZoneContent.None)
-                  secondZoneContent = SecondZoneContent.ToolAssistance;
-                else if (prevState.secondZoneContent === SecondZoneContent.EmptyToolSettings)
-                  secondZoneContent = SecondZoneContent.ToolAssistance;
-                else if (prevState.secondZoneContent === SecondZoneContent.ToolSettings)
-                  secondZoneContent = SecondZoneContent.ToolAssistance;
-                return {
-                  secondZoneContent,
-                };
-              });
-            }
-          }
-        >
-          <i className="icon icon-help" />
-        </ToolbarIcon>
-      </Toolbar>
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolbarIcon
+              icon={
+                <i className="icon icon-settings" />
+              }
+              isActive={
+                this.state.secondZoneContent === SecondZoneContent.ToolSettings ||
+                this.state.secondZoneContent === SecondZoneContent.EmptyToolSettings
+              }
+              key="0"
+              onClick={
+                () => {
+                  this.setState((prevState) => {
+                    let secondZoneContent = SecondZoneContent.None;
+                    if (prevState.secondZoneContent === SecondZoneContent.None)
+                      secondZoneContent = SecondZoneContent.EmptyToolSettings;
+                    else if (prevState.secondZoneContent === SecondZoneContent.ToolAssistance)
+                      secondZoneContent = SecondZoneContent.ToolSettings;
+                    return {
+                      secondZoneContent,
+                    };
+                  });
+                }
+              }
+            />
+            <ToolbarIcon
+              icon={
+                <i className="icon icon-help" />
+              }
+              isActive={this.state.secondZoneContent === SecondZoneContent.ToolAssistance}
+              key="1"
+              onClick={
+                () => {
+                  this.setState((prevState) => {
+                    let secondZoneContent = SecondZoneContent.None;
+                    if (prevState.secondZoneContent === SecondZoneContent.None)
+                      secondZoneContent = SecondZoneContent.ToolAssistance;
+                    else if (prevState.secondZoneContent === SecondZoneContent.EmptyToolSettings)
+                      secondZoneContent = SecondZoneContent.ToolAssistance;
+                    else if (prevState.secondZoneContent === SecondZoneContent.ToolSettings)
+                      secondZoneContent = SecondZoneContent.ToolAssistance;
+                    return {
+                      secondZoneContent,
+                    };
+                  });
+                }
+              }
+            />
+          </>
+        }
+      />
     );
 
     switch (this.state.secondZoneContent) {
@@ -1335,49 +1347,47 @@ export default class ZonesExample extends React.Component<{}, State> {
             content={
               <ToolSettings>
                 <PopoverToggle
-                  isOpen={this.state.isPopoverOpen}
-                  onIsOpenChange={this.handlePopoverIsOpenChange}
+                  content={"Toggle"}
+                  onClick={this.handlePopoverToggleClick}
                   popoverContent={
-                    <ToolSettings>
-                      <PopoverToggle
-                        isOpen={this.state.isNestedPopoverOpen}
-                        onIsOpenChange={this.handleNestedPopoverIsOpenChange}
-                        popoverContent={
-                          <NestedToolSettings
-                            label="Nested"
-                            onBackButtonClick={this.handleNestedToolSettingsBackButtonClick}
-                          >
-                            <Overflow>
-                              Settings
-                              SettingsSettingsSettings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                              Settings
-                          </Overflow>
-                          </NestedToolSettings>
-                        }
-                      >
-                        Toggle for nested popover
-                      </PopoverToggle>
-                    </ToolSettings>
+                    !this.state.isPopoverOpen ? undefined :
+                      <ToolSettings>
+                        <PopoverToggle
+                          content={"Toggle for nested popover"}
+                          onClick={this.handleNestedPopoverToggleClick}
+                          popoverContent={
+                            !this.state.isNestedPopoverOpen ? undefined :
+                              <NestedToolSettings
+                                label="Nested"
+                                onBackButtonClick={this.handleNestedToolSettingsBackButtonClick}
+                              >
+                                <ScrollableArea>
+                                  1. Settings
+                                  2. SettingsSettingsSettings
+                                  3. Settings
+                                  4. Settings
+                                  5. Settings
+                                  6. Settings
+                                  7. Settings
+                                  8. Settings
+                                  9. Settings
+                                  10. Settings
+                                  11. Settings
+                                  12. Settings
+                                  13. Settings
+                                  14. Settings
+                                  15. Settings
+                                  16. Settings
+                                  17. Settings
+                                  18. Settings
+                                  19. Settings
+                          </ScrollableArea>
+                              </NestedToolSettings>
+                          }
+                        />
+                      </ToolSettings>
                   }
-                >
-                  Toggle
-                </PopoverToggle>
+                />
               </ToolSettings>
             }
           />
@@ -1412,7 +1422,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             >
               <StatusLayout
                 label={
-                  <MessageLabel>Rendering 'big-image.png'</MessageLabel>
+                  <MessageLabel text="Rendering 'big-image.png'" />
                 }
                 buttons={
                   <MessageHyperlink
@@ -1437,7 +1447,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 titleBar={
                   <MessageTitleBar
                     title={
-                      <MessageTitle>Dialog</MessageTitle>
+                      <MessageTitle text="Dialog" />
                     }
                     buttons={
                       <MessageDialogButton onClick={this.hideMessages}>
@@ -1448,33 +1458,43 @@ export default class ZonesExample extends React.Component<{}, State> {
                 }
                 content={
                   <MessageDialogButtonsContent
-                    content={
-                      <MessageDialogScrollableContent>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vehicula viverra ante a finibus. Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis. Nullam condimentum imperdiet elit vitae vulputate. Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar. In fringilla tellus sem, id sollicitudin leo condimentum sed. Quisque tempor sed risus gravida tincidunt. Nulla id hendrerit sapien.
-                      <br />
-                        <br />
-                        In vestibulum ipsum lorem. Aliquam accumsan tortor sit amet facilisis lacinia. Nam quis lacus a urna eleifend finibus. Donec id purus id turpis viverra faucibus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed finibus dui ut efficitur interdum. Donec a congue mauris. Praesent ornare egestas accumsan. Pellentesque malesuada diam nisl, a elementum turpis commodo quis. Suspendisse vitae diam accumsan, ullamcorper ante in, porttitor turpis. Phasellus scelerisque tristique imperdiet.
-                      <br />
-                        <br />
-                        Aenean interdum nulla ex, sed molestie lectus pulvinar ac. Mauris sagittis tempor justo ac imperdiet. Fusce iaculis cursus lectus sit amet semper. Quisque at volutpat magna, vitae lacinia nunc. Suspendisse a ipsum orci. Duis in mi sit amet purus blandit mattis porttitor mollis enim. Curabitur dictum nisi massa, eu luctus sapien viverra quis.
-                      <br />
-                        <br />
-                        Ut sed pellentesque diam. Integer non pretium nibh. Nulla scelerisque ipsum ac porttitor lobortis. Suspendisse eu egestas felis, sit amet facilisis neque. In sit amet fermentum nisl. Proin volutpat ex et ligula auctor, id cursus elit fringilla. Nulla facilisi. Proin dictum a lectus a elementum. Mauris ultricies dapibus libero ut interdum.
-                      <br />
-                        <br />
-                        Suspendisse blandit mauris metus, in accumsan magna venenatis pretium. Ut ante odio, tempor non quam at, scelerisque pulvinar dui. Duis in magna ut leo fermentum pellentesque venenatis vitae sapien. Suspendisse potenti. Nunc quis ex ac mi porttitor euismod. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nunc tincidunt nunc id sem varius imperdiet. Phasellus congue orci vitae lorem malesuada, vel tempor tortor molestie. Nullam gravida tempus ornare.
-                    </MessageDialogScrollableContent>
+                    buttons={
+                      <>
+                        <button
+                          className="bwc-buttons-blue"
+                          onClick={this.hideMessages}
+                        >
+                          Yes
+                        </button>
+                        <button className="bwc-buttons-hollow" onClick={this.hideMessages}>
+                          No
+                        </button>
+                      </>
                     }
-                  >
-                    <Button onClick={this.hideMessages}>
-                      Yes
-                  </Button>
-                    <div className="bwc-buttons-hollow" onClick={this.hideMessages}>
-                      No
-                  </div>
-                  </MessageDialogButtonsContent>
+                    content={
+                      <MessageDialogScrollableContent
+                        content={
+                          <>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.Integer vehicula viverra ante a finibus.Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis.Nullam condimentum imperdiet elit vitae vulputate.Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar.In fringilla tellus sem, id sollicitudin leo condimentum sed.Quisque tempor sed risus gravida tincidunt.Nulla id hendrerit sapien.
+                          <br />
+                            <br />
+                            In vestibulum ipsum lorem.Aliquam accumsan tortor sit amet facilisis lacinia.Nam quis lacus a urna eleifend finibus.Donec id purus id turpis viverra faucibus.Lorem ipsum dolor sit amet, consectetur adipiscing elit.Sed finibus dui ut efficitur interdum.Donec a congue mauris.Praesent ornare egestas accumsan.Pellentesque malesuada diam nisl, a elementum turpis commodo quis.Suspendisse vitae diam accumsan, ullamcorper ante in, porttitor turpis.Phasellus scelerisque tristique imperdiet.
+                          <br />
+                            <br />
+                            Aenean interdum nulla ex, sed molestie lectus pulvinar ac.Mauris sagittis tempor justo ac imperdiet.Fusce iaculis cursus lectus sit amet semper.Quisque at volutpat magna, vitae lacinia nunc.Suspendisse a ipsum orci.Duis in mi sit amet purus blandit mattis porttitor mollis enim.Curabitur dictum nisi massa, eu luctus sapien viverra quis.
+                          <br />
+                            <br />
+                            Ut sed pellentesque diam.Integer non pretium nibh.Nulla scelerisque ipsum ac porttitor lobortis.Suspendisse eu egestas felis, sit amet facilisis neque.In sit amet fermentum nisl.Proin volutpat ex et ligula auctor, id cursus elit fringilla.Nulla facilisi.Proin dictum a lectus a elementum.Mauris ultricies dapibus libero ut interdum.
+                          <br />
+                            <br />
+                            Suspendisse blandit mauris metus, in accumsan magna venenatis pretium.Ut ante odio, tempor non quam at, scelerisque pulvinar dui.Duis in magna ut leo fermentum pellentesque venenatis vitae sapien.Suspendisse potenti.Nunc quis ex ac mi porttitor euismod.Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.Nunc tincidunt nunc id sem varius imperdiet.Phasellus congue orci vitae lorem malesuada, vel tempor tortor molestie.Nullam gravida tempus ornare.
+                        </>
+                        }
+                      />
+                    }
+                  />
                 }
-                resizeHandle={<DialogResizeHandle />}
+                resizeHandle={< DialogResizeHandle />}
               />
             }
           />
@@ -1494,20 +1514,21 @@ export default class ZonesExample extends React.Component<{}, State> {
                 };
               });
             }}
-          >
-            <StatusMessage
-              status={Status.Success}
-              icon={
-                <i className="icon icon-status-success-hollow" />
-              }
-            >
-              <StatusLayout
-                label={
-                  <MessageLabel>Image 'big.png' saved.</MessageLabel>
+            content={
+              <StatusMessage
+                status={Status.Success}
+                icon={
+                  <i className="icon icon-status-success-hollow" />
                 }
-              />
-            </StatusMessage>
-          </ToastMessage>
+              >
+                <StatusLayout
+                  label={
+                    <MessageLabel text="Image 'big.png' saved." />
+                  }
+                />
+              </StatusMessage>
+            }
+          />
         );
       }
       case (Message.Sticky): {
@@ -1521,7 +1542,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             >
               <StatusLayout
                 label={
-                  <MessageLabel>Unable to load 3 fonts, replaced with Arial.</MessageLabel>
+                  <MessageLabel text="Unable to load 3 fonts, replaced with Arial." />
                 }
                 buttons={
                   <MessageButton onClick={this.hideMessages}>
@@ -1680,14 +1701,19 @@ export default class ZonesExample extends React.Component<{}, State> {
     switch (widgetId) {
       case 3: {
         return (
-          <Toolbar>
-            {this.getToolbarItem("document")}
-            {this.getToolbarItem("browse")}
-            {this.getToolbarItem("channel")}
-            {this.getToolbarItem("chat")}
-            {this.getToolbarItem("clipboard")}
-            {this.getToolbarItem("calendar")}
-          </Toolbar>
+          <Toolbar
+            expandsTo={Direction.Bottom}
+            items={
+              <>
+                {this.getToolbarItem("document")}
+                {this.getToolbarItem("browse")}
+                {this.getToolbarItem("channel")}
+                {this.getToolbarItem("chat")}
+                {this.getToolbarItem("clipboard")}
+                {this.getToolbarItem("calendar")}
+              </>
+            }
+          />
         );
       }
       case 4: {
@@ -1698,7 +1724,8 @@ export default class ZonesExample extends React.Component<{}, State> {
           <ThemeContext.Consumer>
             {
               (theme) => (
-                <Button
+                <button
+                  className="bwc-buttons-blue"
                   onClick={() => {
                     switch (theme.name) {
                       case PrimaryTheme.name: {
@@ -1721,7 +1748,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                   }}
                 >
                   Theme: {theme.name}
-                </Button>
+                </button>
               )
             }
           </ThemeContext.Consumer>
@@ -1730,15 +1757,22 @@ export default class ZonesExample extends React.Component<{}, State> {
       case 7: {
         return (
           <>
-            <Button onClick={() => this.setVisibleMessage(Message.Activity)}>
+            <button
+              className="bwc-buttons-blue"
+              onClick={() => this.setVisibleMessage(Message.Activity)}
+            >
               Show Activity Message
-            </Button>
+            </button>
             <br />
-            <Button onClick={() => this.setVisibleMessage(Message.Modal)}>
+            <button
+              className="bwc-buttons-blue"
+              onClick={() => this.setVisibleMessage(Message.Modal)}
+            >
               Show Modal Message
-            </Button>
+            </button>
             <br />
-            <Button
+            <button
+              className="bwc-buttons-blue"
               onClick={() => {
                 this.setVisibleMessage(Message.Toast);
                 this.setState(() => {
@@ -1749,14 +1783,18 @@ export default class ZonesExample extends React.Component<{}, State> {
               }}
             >
               Show Toast Message
-            </Button>
+            </button>
             <br />
-            <Button onClick={() => this.setVisibleMessage(Message.Sticky)}>
+            <button
+              className="bwc-buttons-blue"
+              onClick={() => this.setVisibleMessage(Message.Sticky)}
+            >
               Show Sticky Message
-            </Button>
+            </button>
             <br />
             <br />
-            <Button
+            <button
+              className="bwc-buttons-blue"
               onClick={() => {
                 this.setState(() => {
                   return {
@@ -1766,10 +1804,11 @@ export default class ZonesExample extends React.Component<{}, State> {
               }}
             >
               Show Tooltip
-            </Button>
+            </button>
             <br />
             <br />
-            <Button
+            <button
+              className="bwc-buttons-blue"
               onClick={() => {
                 this.setState((prevState) => {
                   const nineZone = this._nineZone.onChangeFooterMode(!prevState.nineZone.isInFooterMode, prevState.nineZone);
@@ -1780,7 +1819,7 @@ export default class ZonesExample extends React.Component<{}, State> {
               }}
             >
               Change Footer Mode
-            </Button>
+            </button>
           </>
         );
       }
@@ -1945,53 +1984,62 @@ export default class ZonesExample extends React.Component<{}, State> {
           <ToolsWidget
             isNavigation
             horizontalToolbar={
-              <Toolbar>
-                <OverflowItem
-                  key="0"
-                  onClick={() => this.setState((prevState) => ({
-                    ...prevState,
-                    isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                  }))}
-                  panel={
-                    this.state.isOverflowItemOpen ?
-                      (
-                        <ToolGroupComponent
-                          title={"Overflow Button"}
-                          container={this._zones}
-                        >
-                          <GroupColumn>
-                            <GroupTool
-                              onClick={() => this.setState((prevState) => ({
-                                ...prevState,
-                                isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                              }))}
-                            >
-                              Tool1
+              <Toolbar
+                expandsTo={Direction.Bottom}
+                items={
+                  <>
+                    <OverflowItem
+                      key="0"
+                      onClick={() => this.setState((prevState) => ({
+                        ...prevState,
+                        isOverflowItemOpen: !prevState.isOverflowItemOpen,
+                      }))}
+                      panel={
+                        !this.state.isOverflowItemOpen ? undefined :
+                          (
+                            <ToolGroupComponent
+                              title={"Overflow Button"}
+                              container={this._zones}
+                              columns={
+                                <GroupColumn>
+                                  <GroupTool
+                                    onClick={() => this.setState((prevState) => ({
+                                      ...prevState,
+                                      isOverflowItemOpen: !prevState.isOverflowItemOpen,
+                                    }))}
+                                  >
+                                    Tool1
                                 </GroupTool>
-                          </GroupColumn>
-                        </ToolGroupComponent>
-                      )
-                      : undefined
-                  }
-                >
+                                </GroupColumn>
+                              }
+                            />
+                          )
 
-                </OverflowItem>
-                {this.getToolbarItem("chat")}
-              </Toolbar>
+                      }
+                    >
+
+                    </OverflowItem>
+                    {this.getToolbarItem("chat")}
+                  </>
+                }
+              />
             }
             verticalToolbar={
               <ScrollableToolbar
                 expandsTo={Direction.Left}
                 onScroll={this.handleOnScrollableToolbarScroll}
-              >
-                {this.getToolbarItem("channel")}
-                {this.getToolbarItem("chat")}
-                {this.getToolbarItem("browse")}
-                {this.getToolbarItem("clipboard")}
-                {this.getToolbarItem("calendar")}
-                {this.getToolbarItem("chat1")}
-                {this.getToolbarItem("document")}
-              </ScrollableToolbar>
+                items={
+                  <>
+                    {this.getToolbarItem("channel")}
+                    {this.getToolbarItem("chat")}
+                    {this.getToolbarItem("browse")}
+                    {this.getToolbarItem("clipboard")}
+                    {this.getToolbarItem("calendar")}
+                    {this.getToolbarItem("chat1")}
+                    {this.getToolbarItem("document")}
+                  </>
+                }
+              />
             }
           />
         </Zone>

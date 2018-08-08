@@ -59,6 +59,7 @@
     "aux",
     "backplane",
     "bbox",
+    "brep",
     "bspline",
     "changeset",
     "changesets",

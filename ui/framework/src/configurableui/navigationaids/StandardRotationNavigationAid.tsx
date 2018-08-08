@@ -173,23 +173,24 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
     return (
       <NZ_ContainedTray
         noVerticalContainment={true}
-      >
-        <NZ_Column>
-          {this.state.list.map((item, itemIndex) => {
-            return (
-              <NZ_Item
-                key={itemIndex.toString()}
-                ref={itemIndex.toString()}
-                label={item.label}
-                icon={<span className={"icon " + item.iconClass} />}
-                isActive={this.state.selected === itemIndex}
-                onClick={() => this.handleListItemClicked(itemIndex)}
-              >
-              </NZ_Item>
-            );
-          })}
-        </NZ_Column>
-      </NZ_ContainedTray>
+        columns={
+          <NZ_Column>
+            {this.state.list.map((item, itemIndex) => {
+              return (
+                <NZ_Item
+                  key={itemIndex.toString()}
+                  ref={itemIndex.toString()}
+                  label={item.label}
+                  icon={<span className={"icon " + item.iconClass} />}
+                  isActive={this.state.selected === itemIndex}
+                  onClick={() => this.handleListItemClicked(itemIndex)}
+                >
+                </NZ_Item>
+              );
+            })}
+          </NZ_Column>
+        }
+      />
     );
   }
 }

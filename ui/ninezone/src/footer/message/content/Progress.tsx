@@ -6,14 +6,17 @@
 import * as classnames from "classnames";
 import * as React from "react";
 
-import CommonProps from "../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../utilities/Props";
 import Css from "../../../utilities/Css";
 import withTheme, { WithThemeProps } from "../../../theme/WithTheme";
 import { Status, StatusHelpers } from "./status/Status";
 import "./Progress.scss";
 
-export interface ProgressProps extends CommonProps {
+/** Properties of [[Progress]] component. */
+export interface ProgressProps extends CommonProps, NoChildrenProps {
+  /** Progress of this progress bar. Range from 0 to 100 (percentage). */
   progress: number;
+  /** Progress bar status. */
   status: Status;
 }
 
@@ -39,11 +42,11 @@ const ProgressComponent: React.StatelessComponent<ProgressProps> = (props) => {
           <div className="nz-progress-bar-tip"></div>
         </div>
       </div>
-      {props.children}
     </div>
   );
 };
 
+/** Progress bar component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name
 export const Progress: React.ComponentClass<ProgressProps & WithThemeProps> = withTheme(ProgressComponent);
 

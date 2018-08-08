@@ -25,3 +25,10 @@ $nz-scrollbar-padding: 2px;
     margin-right: -2 * $padding;
   }
 }
+
+@mixin nz-hidden-scrollbar {
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}

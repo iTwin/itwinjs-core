@@ -68,6 +68,17 @@ export const enum ImageSourceFormat {
   Png = 2,
 }
 
+/** Validates that a numeric value is a valid ImageSourceFormat value. */
+export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
+  switch (format) {
+    case ImageSourceFormat.Jpeg:
+    case ImageSourceFormat.Png:
+      return true;
+    default:
+      return false;
+  }
+}
+
 /** Image data encoded and compressed in either Jpeg or Png format. */
 export class ImageSource {
   /** The content of the image, compressed */

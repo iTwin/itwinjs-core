@@ -66,6 +66,7 @@ interface ContentWrapperState {
  */
 class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapperState> {
 
+  /** hidden */
   public readonly state: Readonly<ContentWrapperState>;
 
   constructor(props: ContentWrapperProps) {
@@ -451,6 +452,7 @@ export interface ContentLayoutReactProps {
 export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
   private _contentContainer: React.ReactNode | undefined;
 
+  /** hidden */
   public readonly state: Readonly<ContentLayoutState>;
 
   constructor(props: ContentLayoutReactProps, context?: any) {

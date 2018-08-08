@@ -9,14 +9,14 @@ import { Direction } from "@src/utilities/Direction";
 
 describe("<Toolbar />", () => {
   it("should render", () => {
-    mount(<Toolbar />);
+    mount(<Toolbar expandsTo={Direction.Left} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Toolbar />).should.matchSnapshot();
+    shallow(<Toolbar expandsTo={Direction.Left} />).should.matchSnapshot();
   });
 
   it("renders vertical with expands to direction", () => {
-    shallow(<Toolbar expandsTo={Direction.Left}/>).should.matchSnapshot();
+    shallow(<Toolbar expandsTo={Direction.Right} />).should.matchSnapshot();
   });
 });

@@ -267,6 +267,29 @@ export class RenderCommands {
     });
   }
 
+  private addPickableDecorations(decs: Decorations): void {
+    if (undefined !== decs.normal) {
+      for (const normal of decs.normal) {
+        const gf = normal as Graphic;
+        if (gf.isPickable)
+          gf.addCommands(this);
+      }
+    }
+
+    if (undefined !== decs.world) {
+      const world = this.target.getWorldDecorations(decs.world);
+      this.pushAndPopBranch(world, () => {
+        for (let i = 0; i < world.branch.entries.length; i++) {
+          const gf = (world.branch.entries[i] as Graphic);
+          if (gf.isPickable)
+            this.addDecoration(gf, world.overrides[i]);
+        }
+      });
+    }
+
+    // ###TODO: overlays
+  }
+
   public addBackground(gf?: Graphic): void {
     if (undefined === gf)
       return;
@@ -428,15 +451,36 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
+  public initForPickOverlays(overlays: DecorationList): void {
+    this.clear();
+
+    this._addTranslucentAsOpaque = true;
+    this._stack.pushState(this.target.decorationState);
+
+    for (const overlay of overlays.list) {
+      const gf = overlay.graphic as Graphic;
+      if (gf.isPickable)
+        this.addDecoration(gf, overlay.overrides);
+    }
+
+    this._stack.pop();
+    this._addTranslucentAsOpaque = false;
+  }
+
   public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
       // Set flag to force translucent gometry to be put into the opaque pass.
       this._addTranslucentAsOpaque = true;
+
       // Add the scene graphics.
       this.addGraphics(scene);
-      // TODO: also add any pickable decorations.
+
+      // Also add any pickable decorations.
+      if (undefined !== dec)
+        this.addPickableDecorations(dec);
+
       this._addTranslucentAsOpaque = false;
       return;
     }
@@ -496,7 +540,8 @@ export class RenderCommands {
   public addBatch(batch: Batch): void {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
-    assert(RenderPass.None === this._forcedRenderPass);
+    // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?
+    // assert(RenderPass.None === this._forcedRenderPass);
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
 

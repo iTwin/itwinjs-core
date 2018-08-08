@@ -196,7 +196,16 @@ export class ShaderProgram implements IDisposable {
     gl.attachShader(this._glProgram, vert);
     gl.attachShader(this._glProgram, frag);
     gl.linkProgram(this._glProgram);
-    return gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
+
+    const linkLog = gl.getProgramInfoLog(this._glProgram);
+    gl.validateProgram(this._glProgram);
+    const validateLog = gl.getProgramInfoLog(this._glProgram);
+
+    const succeeded = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
+    if (!succeeded)
+      assert(succeeded, "Link errors: " + linkLog + " Validate errors: " + validateLog);
+
+    return succeeded;
   }
   public compile(): boolean {
     switch (this._status) {

@@ -6,32 +6,39 @@ import * as React from "react";
 
 import Scrollable, { ScrollableState } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
+import Chevron from "@src/toolbar/scroll/Chevron";
 
 describe("<Scrollable />", () => {
   it("should render", () => {
-    mount(<Scrollable />);
+    mount(<Scrollable expandsTo={Direction.Left} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Scrollable />).should.matchSnapshot();
+    shallow(<Scrollable expandsTo={Direction.Left} />).should.matchSnapshot();
   });
 
   it("renders with visible item threshold", () => {
-    shallow(<Scrollable visibleItemThreshold={2} />).should.matchSnapshot();
+    shallow(<Scrollable expandsTo={Direction.Left} visibleItemThreshold={2} />).should.matchSnapshot();
   });
 
   it("renders with expandsTo", () => {
-    shallow(<Scrollable expandsTo={Direction.Left} />).should.matchSnapshot();
+    shallow(<Scrollable expandsTo={Direction.Right} />).should.matchSnapshot();
   });
 
   it("renders vertical with overflow scrolled left correctly", () => {
     const sut = shallow(
-      <Scrollable visibleItemThreshold={3}>
-        <div />
-        <div />
-        <div />
-        <div />
-      </Scrollable>,
+      <Scrollable
+        expandsTo={Direction.Left}
+        visibleItemThreshold={3}
+        items={
+          <>
+            <div />
+            <div />
+            <div />
+            <div />
+          </>
+        }
+      />,
     );
     sut.setState({
       scrollOffset: 1,
@@ -42,13 +49,17 @@ describe("<Scrollable />", () => {
   it("renders vertical with overflow scrolled right most correctly", () => {
     const sut = shallow(
       <Scrollable
+        expandsTo={Direction.Left}
         visibleItemThreshold={2}
-      >
-        <div />
-        <div />
-        <div />
-        <div />
-      </Scrollable>,
+        items={
+          <>
+            <div />
+            <div />
+            <div />
+            <div />
+          </>
+        }
+      />,
     );
     sut.setState({
       scrollOffset: 2,
@@ -57,19 +68,19 @@ describe("<Scrollable />", () => {
   });
 
   it("initial scroll offset should be 0", () => {
-    const sut = shallow<Scrollable, ScrollableState>(<Scrollable />);
+    const sut = shallow<Scrollable, ScrollableState>(<Scrollable expandsTo={Direction.Left} />);
     sut.state().scrollOffset.should.eq(0);
   });
 
   it("should handle left scroll indicator click events", () => {
-    const sut = mount<Scrollable, ScrollableState>(<Scrollable visibleItemThreshold={3} />);
+    const sut = mount<Scrollable, ScrollableState>(<Scrollable expandsTo={Direction.Left} visibleItemThreshold={3} />);
     sut.setState({
       scrollOffset: 2,
     });
     const scroll = sut.findWhere((node) => node.name() === "div" && node.hasClass("nz-left"));
     scroll.exists().should.true;
 
-    const indicator = scroll.findWhere((node) => node.name() === "div" && node.hasClass("nz-indicator"));
+    const indicator = scroll.findWhere((node) => node.type() === Chevron);
     indicator.exists().should.true;
 
     indicator.simulate("click");
@@ -79,14 +90,18 @@ describe("<Scrollable />", () => {
   it("should handle right scroll indicator click events", () => {
     const sut = mount<Scrollable, ScrollableState>(
       <Scrollable
+        expandsTo={Direction.Left}
         visibleItemThreshold={2}
-      >
-        <div />
-        <div />
-        <div />
-        <div />
-        <div />
-      </Scrollable>,
+        items={
+          <>
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
+          </>
+        }
+      />,
     );
     sut.setState({
       scrollOffset: 1,
@@ -94,7 +109,7 @@ describe("<Scrollable />", () => {
     const scroll = sut.findWhere((node) => node.name() === "div" && node.hasClass("nz-right"));
     scroll.exists().should.true;
 
-    const indicator = scroll.findWhere((node) => node.name() === "div" && node.hasClass("nz-indicator"));
+    const indicator = scroll.findWhere((node) => node.type() === Chevron);
     indicator.exists().should.true;
 
     indicator.simulate("click");

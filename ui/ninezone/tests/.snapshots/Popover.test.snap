@@ -5,3 +5,9 @@ exports[`<Popover /> renders correctly 1`] = `
   className="nz-popup-popover-popover nz-direction-left"
 />
 `;
+
+exports[`<Popover /> should set direction class 1`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-right"
+/>
+`;

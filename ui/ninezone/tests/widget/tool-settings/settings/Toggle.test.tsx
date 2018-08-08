@@ -4,14 +4,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import ScrollableArea from "@src/widget/tool-settings/settings/popover/ScrollableArea";
+import Toggle from "@src/widget/tool-settings/settings/Toggle";
 
-describe("<ScrollableArea />", () => {
+describe("<Toggle />", () => {
   it("should render", () => {
-    mount(<ScrollableArea />);
+    mount(<Toggle />);
   });
 
   it("renders correctly", () => {
-    shallow(<ScrollableArea />).should.matchSnapshot();
+    shallow(<Toggle />).should.matchSnapshot();
   });
 });

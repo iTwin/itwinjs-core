@@ -47,9 +47,12 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
 
     if (appButton) {
       return (
-        <NZ_AppButton onClick={this.executeAppButtonClick}>
-          <Icon iconInfo={appButton.iconInfo} />
-        </NZ_AppButton>
+        <NZ_AppButton
+          onClick={this.executeAppButtonClick}
+          icon={
+            <Icon iconInfo={appButton.iconInfo} />
+          }
+        />
       );
     }
 
@@ -74,6 +77,7 @@ export interface ToolWidgetState {
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
 
+  /** hidden */
   public readonly state: Readonly<ToolWidgetState>;
 
   constructor(props: ToolWidgetPropsEx, context?: any) {

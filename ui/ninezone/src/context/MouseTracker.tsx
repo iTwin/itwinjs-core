@@ -5,10 +5,16 @@
 
 import * as React from "react";
 
+/** Properties of [[MouseTracker]] component. */
 export interface MouseTrackerProps {
+  /** Function called when mouse coordinates changes. */
   onCoordinatesChange?: (x: number, y: number) => void;
 }
 
+/**
+ * This component listens and reports the mousemove events.
+ * @note Does not render.
+ */
 export default class MouseTracker extends React.Component<MouseTrackerProps> {
   public componentDidMount() {
     document.addEventListener("mousemove", this.handleMouseMove);

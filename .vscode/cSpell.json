@@ -18,6 +18,7 @@
         "bbox",
         "BENTLEYCONFIG",
         "bentleyjs",
+        "brep",
         "bspline",
         "candela",
         "changeset",

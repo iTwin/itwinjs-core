@@ -66,24 +66,17 @@ These two rules imply that a given class of Element cannot be both sub-modeled *
 
 [ElementAspects](./glossary.md#elementaspect) are a flexible way to augment the properties of an Element. They are sets of properties that typically hold information needed only in certain contexts, e.g. during the construction phase or when we have a link to information about the modeled Entity in a different repository. ElementAspects are not individually identifiable (thus relationships cannot point to them), but they may be the "source" of a relationship pointing to an Element.
 
-### Element Identity
+### Identifiers
 
-Elements have three primary identifiers: [ElementId](./glossary.md#elementid), [Code](./glossary.md#code), and [FederationGuid](./glossary.md#federationguid).
+Elements have one primary identifier ([ElementId](./glossary.md#elementid)) and hold two identifiers of the real-world [Entity](./glossary.md#entity) that the Element models: [Code](./codes.md) and [FederationGuid](./glossary.md#federationguid).
 
-The ElementId is a 64-bit integer that must be unique within the BIS Repository. Different implementations of BIS Repository manage this identifier differently.
+[**ElementId**](./glossary.md#elementid) is a 64-bit integer property that is the Element's primary identifier and must be unique within the BIS Repository. Different implementations of BIS Repository manage this identifier differently.
 
-The Code is a human-readable identifier that en**code**s some business meaning. Elements have three properties supporting the Code:
+The [**Code**](./codes.md) is a human-readable string identifier of the represented Entity. The Code en**code**s some business meaning.
+There are three Element properties related to the Code: [CodeValue](./glossary.md#codevalue-property) holds the Code, [CodeSpec](./glossary.md#codespec-property) governs its encoding/decoding, and [CodeScope](./glossary.md#codescope-property) defines the scope within which it is unique. The combination of the three code-related properties must be unique within the BIS repository and could be considered a secondary identifier of the Element.
 
-- A CodeScope NavigationProperty pointing to an Element that defines the scope within which the Code must be unique
+The [**FederationGuid**](./glossary.md#federationguid) is optional but can be used to identify an Entity that is represented in many different repositories (BIS or otherwise).
 
-- A CodeSpec NavigationProperty pointing to a CodeSpecification Element. The CodeSpecification defines how a Code is encoded and decoded, i.e. how it is formatted from business data (including managed alphanumeric sequences)
-
-- A CodeValue containing the actual human-readable string identifier
-
-The Code is often used to identify Entities on drawings and in GUIs and may be used in many different software systems.
-
-The FederationGuid is optional but can be used to precisely identify an Entity that is represented in many different systems, including those that do not use BIS.
-
-UserLabel is an optional property of an Element that can be used as an informal name in the GUI, but it does not have to be unique. In some GUIs, if the UserLabel is null, the CodeValue will be used as a display label.
+**UserLabel** is an optional property of an Element that can be used as an informal name in the GUI, but it does not have to be unique. In some GUIs, if the UserLabel is null, the CodeValue will be used as a display label.
 
 > Next: [BIS Organization](./bis-organization.md)

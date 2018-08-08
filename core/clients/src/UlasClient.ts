@@ -35,6 +35,45 @@ export interface FeatureLogEntryAttribute {
   value: any;
 }
 
+export interface ProductVersion {
+  major: number;
+  minor: number;
+  sub1?: number;
+  sub2?: number;
+}
+
+/**
+ * Usage log entry data that is submitted to the ULAS Posting Service.
+ * See [UlasClient]$(imodeljs-clients)
+ */
+export class UsageLogEntry {
+  /* The product ID for which usage is being submitted. It is a 4-digit Product ID from the GPR */
+  public readonly productId: number;
+
+  /* Product version */
+  public productVersion: ProductVersion;
+
+  /* The client's machine name */
+  public hostName: string;
+  /* The user's login name. */
+  public hostUserName: string;
+
+  /* Identifies the source of the usage log entry. */
+  public logPostingSource: LogPostingSource;
+  /* The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
+  should not count towards a customer’s peak processing. */
+  public usageType: UsageType;
+
+  /* The GUID of the project that the usage should be associated with.  */
+  public projectId?: GuidProps;
+
+  public readonly timestamp: string;
+
+  public constructor(productId: number) {
+    this.productId = productId;
+    this.timestamp = new Date().toISOString();
+  }
+}
 /**
  * Feature log entry data that is submitted to the ULAS Posting Service.
  * See [UlasClient]$(imodeljs-clients)
@@ -45,8 +84,8 @@ export class FeatureLogEntry {
   /* The product ID for which usage is being submitted. It is a 4-digit Product ID from the GPR */
   public readonly productId: number;
 
-  /* Product version expressed as array of the version digits */
-  public productVersion: number[];
+  /* Product version */
+  public productVersion: ProductVersion;
 
   /* Additional user-defined metadata for the feature usage. */
   public usageData: FeatureLogEntryAttribute[];
@@ -158,7 +197,7 @@ export class UlasClient extends Client {
 
   /**
    * Gets the (delegation) access token to acess the service
-   * @param authTokenInfo Access token.
+   * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */
   public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
@@ -166,48 +205,73 @@ export class UlasClient extends Client {
     return imsClient.getToken(authorizationToken);
   }
 
-  public async logFeature(token: AccessToken, entry: FeatureLogEntry): Promise<LogPostingResponse> {
-    const postUrl: string = (await this.getUrl()) + "/featureLog";
-    const entriesJson: any = FeatureEntryLogConverter.toJson(token, entry, this._policyIds);
+  /**
+   * Logs a usage entry via the ULAS service
+   * @param token Access token.
+   * @param entry Usage log entry.
+   * @returns Reponse from the service.
+   */
+  public async logUsage(token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
+    const entryJson: any = UlasLogEntryLogConverter.toUsageLogJson(token, entry, this._policyIds);
+    return await this.logEntry(token, entryJson, false);
+  }
+
+  /**
+   * Logs one ore more feature entries via the ULAS service
+   * @param token Access token.
+   * @param entries One or more feature log entries.
+   * @returns Reponse from the service.
+   */
+  public async logFeature(token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
+    if (entries.length === 0)
+      throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
+
+    const entriesJson: any = UlasLogEntryLogConverter.toFeatureLogJson(token, entries, this._policyIds);
+    return await this.logEntry(token, entriesJson, true);
+  }
+
+  private async logEntry(token: AccessToken, entryJson: any, isFeatureEntry: boolean): Promise<LogPostingResponse> {
+    let postUrl: string = (await this.getUrl());
+    if (isFeatureEntry)
+      postUrl += "/featureLog";
 
     const options: RequestOptions = {
       method: "POST",
       headers: { authorization: "SAML " + Base64.btoa(token.getSamlAssertion()!) },
-      body: entriesJson,
+      body: entryJson,
     };
 
     await this.setupOptionDefaults(options);
 
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, "Sending Feature Log REST request...", () => ({ url: postUrl, body: entriesJson }));
+      Logger.logTrace(loggingCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
 
     const resp: Response = await request(postUrl, options);
 
-    const requestDetails = { url: postUrl, body: entriesJson, response: resp };
+    const requestDetails = { url: postUrl, body: entryJson, response: resp };
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, "Sent Feature Log REST request.", () => requestDetails);
+      Logger.logTrace(loggingCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);
 
     const respBody: any = resp.body;
     if (!respBody || !respBody.status || !respBody.reqID)
-      throw new Error(`Post Feature Log REST request failed: No response body available. Details: ${JSON.stringify(requestDetails)}`);
+      throw new Error(`Post ${isFeatureEntry ? "Feature" : "Usage"} Log REST request failed: No response body available. Details: ${JSON.stringify(requestDetails)}`);
 
     const status: BentleyStatus = respBody.status.toLowerCase() === "success" ? BentleyStatus.SUCCESS : BentleyStatus.ERROR;
     const message: string = !!respBody.msg ? respBody.msg : "";
     const time: number = !!respBody.time ? respBody.time : -1;
     const requestId = new Guid(respBody.reqID);
     if (status !== BentleyStatus.SUCCESS)
-      throw new Error(`Post Feature Log REST request failed: ${message}. Details: ${JSON.stringify(requestDetails)}`);
+      throw new Error(`Post ${isFeatureEntry ? "Feature" : "Usage"} Log REST request failed: ${message}. Details: ${JSON.stringify(requestDetails)}`);
 
     return { status, message, time, requestId };
   }
 }
 
-class FeatureEntryLogConverter {
-  public static toJson(token: AccessToken, entry: FeatureLogEntry, policyIds: ImsPolicyIds): any {
+class UlasLogEntryLogConverter {
+  public static toUsageLogJson(token: AccessToken, entry: UsageLogEntry, policyIds: ImsPolicyIds): any {
     if (!token.getUserProfile())
       throw new Error("AccessToken is expected to include user information");
 
-    const ftrID: string = FeatureEntryLogConverter.guidToString(entry.featureId);
     const prdid: number = entry.productId;
     // empty for now
     const fstr: string = "";
@@ -218,71 +282,122 @@ class FeatureEntryLogConverter {
     // WIP: must be replaced by pulling from policy file. For now we use imsID.
     const pid: string = imsID;
 
-    const hID: string = FeatureEntryLogConverter.prepareMachineName(entry.hostName);
-    const cSID: string = hID.length > 0 ? FeatureEntryLogConverter.computeHash(hID) : "";
+    const hID: string = UlasLogEntryLogConverter.prepareMachineName(entry.hostName);
+    const cSID: string = hID.length > 0 ? UlasLogEntryLogConverter.computeHash(hID) : "";
 
-    const uID: string = FeatureEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
-    const uSID: string = uID.length > 0 ? FeatureEntryLogConverter.computeHash(uID) : "";
+    const uID: string = UlasLogEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
+    const uSID: string = uID.length > 0 ? UlasLogEntryLogConverter.computeHash(uID) : "";
 
-    const polID: string = FeatureEntryLogConverter.guidToString(policyIds.policyFileId);
-    const secID: string = FeatureEntryLogConverter.guidToString(policyIds.securableId);
+    const polID: string = UlasLogEntryLogConverter.guidToString(policyIds.policyFileId);
+    const secID: string = UlasLogEntryLogConverter.guidToString(policyIds.securableId);
 
-    // version must be encoded into a single number where each version digit is padded out to 4 digits
-    // Ex: 3.99.4 -> 300990004
-    const lastVersionDigitIx: number = entry.productVersion.length - 1;
-    const productVersionDigits: number[] = [...entry.productVersion];
-    for (let i = 0; i < 4 - entry.productVersion.length; i++) {
-      productVersionDigits.push(0);
-    }
-
-    let ver: number = 0;
-    for (let i = lastVersionDigitIx; i >= 0; i--) {
-      ver += entry.productVersion[i] * Math.pow(10000, lastVersionDigitIx - i);
-    }
+    const ver: number = UlasLogEntryLogConverter.toVersionNumber(entry.productVersion);
 
     let projID: string | undefined;
     if (!!entry.projectId)
-      projID = FeatureEntryLogConverter.guidToString(entry.projectId);
+      projID = UlasLogEntryLogConverter.guidToString(entry.projectId);
 
     const evTimeZ: string = entry.timestamp;
 
-    let sDateZ: string;
-    let eDateZ: string;
-    let corID: string;
-    const startEntry: FeatureStartedLogEntry = entry as FeatureStartedLogEntry;
-    const endEntry: FeatureEndedLogEntry = entry as FeatureEndedLogEntry;
-    const defaultDate: string = "0001-01-01T00:00:00Z";
-    if (!!startEntry.entryId) {
-      sDateZ = evTimeZ;
-      eDateZ = defaultDate;
-      corID = FeatureEntryLogConverter.guidToString(startEntry.entryId);
-    } else if (!!endEntry.startEntryId) {
-      sDateZ = defaultDate;
-      eDateZ = evTimeZ;
-      corID = FeatureEntryLogConverter.guidToString(endEntry.startEntryId);
-    } else {
-      sDateZ = evTimeZ;
-      eDateZ = evTimeZ;
-      corID = FeatureEntryLogConverter.guidToString(policyIds.correlationId);
-    }
+    const corID: string = UlasLogEntryLogConverter.guidToString(policyIds.correlationId);
 
     // for now this is always 1
     const lVer: number = 1;
 
-    const lSrc: string = FeatureEntryLogConverter.logPostingSourceToString(entry.logPostingSource);
+    const lSrc: string = UlasLogEntryLogConverter.logPostingSourceToString(entry.logPostingSource);
     const country: string = userProfile.usageCountryIso;
 
-    const uType: string = FeatureEntryLogConverter.usageTypeToString(entry.usageType);
-
-    const uData = [];
-    for (const att of entry.usageData) {
-      uData.push({ name: att.name, value: att.value.toString() });
-    }
-
+    const uType: string = UlasLogEntryLogConverter.usageTypeToString(entry.usageType);
     return {
       ultId, pid, imsID, hID, cSID, uID, uSID, polID, secID, prdid, fstr, ver, projID, corID,
-      evTimeZ, lVer, lSrc, country, uType, ftrID, sDateZ, eDateZ, uData,
+      evTimeZ, lVer, lSrc, country, uType,
     };
+  }
+
+  public static toFeatureLogJson(token: AccessToken, entries: FeatureLogEntry[], policyIds: ImsPolicyIds): any {
+    if (!token.getUserProfile())
+      throw new Error("AccessToken is expected to include user information");
+
+    const json = [];
+    for (const entry of entries) {
+      const ftrID: string = UlasLogEntryLogConverter.guidToString(entry.featureId);
+      const prdid: number = entry.productId;
+      // empty for now
+      const fstr: string = "";
+
+      const userProfile: UserProfile = token.getUserProfile()!;
+      const ultId: number = parseInt(userProfile.ultimateId, 10);
+      const imsID: string = userProfile.userId;
+      // WIP: must be replaced by pulling from policy file. For now we use imsID.
+      const pid: string = imsID;
+
+      const hID: string = UlasLogEntryLogConverter.prepareMachineName(entry.hostName);
+      const cSID: string = hID.length > 0 ? UlasLogEntryLogConverter.computeHash(hID) : "";
+
+      const uID: string = UlasLogEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
+      const uSID: string = uID.length > 0 ? UlasLogEntryLogConverter.computeHash(uID) : "";
+
+      const polID: string = UlasLogEntryLogConverter.guidToString(policyIds.policyFileId);
+      const secID: string = UlasLogEntryLogConverter.guidToString(policyIds.securableId);
+
+      const ver: number = UlasLogEntryLogConverter.toVersionNumber(entry.productVersion);
+
+      let projID: string | undefined;
+      if (!!entry.projectId)
+        projID = UlasLogEntryLogConverter.guidToString(entry.projectId);
+
+      const evTimeZ: string = entry.timestamp;
+
+      let sDateZ: string;
+      let eDateZ: string;
+      let corID: string;
+      const startEntry: FeatureStartedLogEntry = entry as FeatureStartedLogEntry;
+      const endEntry: FeatureEndedLogEntry = entry as FeatureEndedLogEntry;
+      const defaultDate: string = "0001-01-01T00:00:00Z";
+      if (!!startEntry.entryId) {
+        sDateZ = evTimeZ;
+        eDateZ = defaultDate;
+        corID = UlasLogEntryLogConverter.guidToString(startEntry.entryId);
+      } else if (!!endEntry.startEntryId) {
+        sDateZ = defaultDate;
+        eDateZ = evTimeZ;
+        corID = UlasLogEntryLogConverter.guidToString(endEntry.startEntryId);
+      } else {
+        sDateZ = evTimeZ;
+        eDateZ = evTimeZ;
+        corID = UlasLogEntryLogConverter.guidToString(policyIds.correlationId);
+      }
+
+      // for now this is always 1
+      const lVer: number = 1;
+
+      const lSrc: string = UlasLogEntryLogConverter.logPostingSourceToString(entry.logPostingSource);
+      const country: string = userProfile.usageCountryIso;
+
+      const uType: string = UlasLogEntryLogConverter.usageTypeToString(entry.usageType);
+
+      const uData = [];
+      for (const att of entry.usageData) {
+        uData.push({ name: att.name, value: att.value.toString() });
+      }
+
+      json.push({
+        ultId, pid, imsID, hID, cSID, uID, uSID, polID, secID, prdid, fstr, ver, projID, corID,
+        evTimeZ, lVer, lSrc, country, uType, ftrID, sDateZ, eDateZ, uData,
+      });
+    }
+    return json;
+  }
+
+  private static toVersionNumber(version: ProductVersion): number {
+    // version must be encoded into a single number where each version digit is padded out to 4 digits
+    // and the version is always considered to have 4 digits.
+    // Ex: 3.99.4 -> 3.99.4.0 -> 3009900040000
+    let verNumber: number = !!version.sub2 ? version.sub2 : 0;
+    verNumber += 10000 * (!!version.sub1 ? version.sub1 : 0);
+    verNumber += Math.pow(10000, 2) * version.minor;
+    verNumber += Math.pow(10000, 3) * version.major;
+    return verNumber;
   }
 
   private static guidToString(guid: GuidProps): string {

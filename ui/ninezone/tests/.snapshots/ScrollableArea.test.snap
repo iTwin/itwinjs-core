@@ -2,10 +2,11 @@
 
 exports[`<ScrollableArea /> renders correctly 1`] = `
 <div
-  className="nz-widget-toolSettings-settings-popover-scrollableArea"
+  className="nz-widget-toolSettings-settings-scrollableArea"
 >
   <div
-    className="nz-container"
+    className="nz-content"
+    onScroll={[Function]}
   />
 </div>
 `;
