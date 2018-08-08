@@ -415,12 +415,10 @@ export abstract class InteractiveTool extends Tool {
   public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
 
   /**
-   * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
+   * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.
    * @param hit The HitDetail whose info is needed.
-   * @param _delimiter Use this string to break lines of the description.
    * @return A Promise for the string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
-   * The default implementation shows hit description
    */
   public async getToolTip(_hit: HitDetail): Promise<string> { return _hit.getToolTip(); }
 
