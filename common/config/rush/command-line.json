@@ -1,0 +1,69 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/web-build-tools/master/apps/rush-lib/src/schemas/command-line.schema.json",
+  "commands": [
+    {
+      "commandKind": "bulk",
+      "name": "clean",
+      "summary": "Cleans all projects",
+      "description": "Cleans build output from every project",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "lint",
+      "summary": "Lints all projects",
+      "description": "Runs Linter on every project",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "test",
+      "summary": "Runs tests on all projects",
+      "description": "Runs tests on every project",
+      "enableParallelism": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "cover",
+      "summary": "Runs test coverage on all projects",
+      "description": "Runs tests coverage on every project",
+      "enableParallelism": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "test-cover",
+      "summary": "Runs tests and generates test and coverage reports",
+      "description": "",
+      "enableParallelism": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "pack",
+      "summary": "Pack publishable packages",
+      "description": "For each published packages creates a packed .tgz package in the out/packages directory",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "extract",
+      "summary": "Extract code samples",
+      "description": "Extract code pieces that can be used in documentation",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "docs",
+      "summary": "Extract documentation",
+      "description": "Extract API documentation from source files",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    }
+  ]
+}

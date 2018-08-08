@@ -1,0 +1,43 @@
+{
+  "learning": {
+    "docSiteId": 1,
+    "displayName": "Home"
+  },
+  "consume": {
+    "docSiteId": 2,
+    "displayName": "Consume"
+  },
+  "reference": {
+    "docSiteId": 3,
+    "displayName": "API Reference"
+  },
+  "contribute": {
+    "docSiteId": 4,
+    "displayName": "Contribute"
+  },
+  "releases": {
+    "docSiteId": 5,
+    "displayName": "Releases"
+  },
+  "metadata": {
+    "home": "learning",
+    "headerTabs": {
+      "Home": {
+        "docSite": "learning"
+      },
+      "Consume": {
+        "docSite": "consume"
+      },
+      "Reference": {
+        "docSite": "reference"
+      },
+      "Contribute": {
+        "docSite": "contribute"
+      },
+      "Releases": {
+        "docSite": "releases"
+      }
+    },
+    "docSiteOrder": ["learning", "consume", "reference", "contribute", "releases"]
+  }
+}

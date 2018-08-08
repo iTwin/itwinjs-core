@@ -1,0 +1,220 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Web: All",
+      "configurations": [
+        "Web: Server (backend)",
+        "Web: Chrome (frontend)"
+      ]
+    },
+    {
+      "name": "Electron: All",
+      "configurations": [
+        "Electron: Main (backend)",
+        "Electron: Renderer (frontend)"
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Common",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/packages/common/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/packages/common",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Backend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/packages/backend/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/packages/backend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Frontend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/packages/frontend/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/packages/frontend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Components",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/packages/components/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/packages/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "-r",
+        "ignore-styles",
+        "-r",
+        "jsdom-global/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Integration",
+      "program": "${workspaceFolder}/packages/common/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/packages/common",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "./tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Web: Server (backend)",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/packages/sample/node_modules/@bentley/imodeljs-react-scripts/bin/imodeljs-react-scripts",
+      "cwd": "${workspaceFolder}/packages/sample",
+      "args": [
+        "start",
+        "--noElectron"
+      ],
+      "env": {
+        "BROWSER": "none"
+      },
+      "timeout": 60000
+    },
+    {
+      "name": "Web: Chrome (frontend)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "webRoot": "${workspaceFolder}/packages/sample",
+      "sourceMapPathOverrides": {
+        // map sources from node_modules to our source directory
+        "webpack:///../frontend/*": "${workspaceFolder}/packages/frontend/*",
+        // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
+        "webpack:///./~/*": "${webRoot}/node_modules/*",
+        "webpack:///./*":   "${webRoot}/*",
+        "webpack:///*":     "*",
+        "webpack:///packages/*": "${webRoot}/*",
+      },
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Electron: Main (backend)",
+      "protocol": "legacy",
+      "runtimeExecutable": "node",
+      "cwd": "${workspaceFolder}/packages/sample",
+      "args": [
+        "${workspaceFolder}/packages/sample/node_modules/@bentley/imodeljs-react-scripts/scripts/start",
+        "--noWeb",
+        "--electronDebug=5858",
+        "--electronRemoteDebug=9223"
+      ],
+      "port": 5858,
+      "env": {
+        "BROWSER": "none"
+      },
+      "timeout": 30000
+    },
+    {
+      "name": "Electron: Renderer (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceFolder}/packages/sample",
+      "sourceMapPathOverrides": {
+        // map sources from node_modules to our source directory
+        "webpack:///./~/@bentley/ecpresentation-frontend/*": "${workspaceFolder}/packages/frontend/*",
+        // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
+        "webpack:///./~/*": "${webRoot}/node_modules/*",
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///*": "*",
+        "webpack:///packages/*": "${webRoot}/*",
+      },
+      "timeout": 30000
+    }
+  ]
+}

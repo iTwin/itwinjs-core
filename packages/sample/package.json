@@ -1,0 +1,54 @@
+{
+  "name": "sample",
+  "description": "A test app to demonstrate library capabilities",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "version": "0.0.0",
+  "engines": {
+    "node": "8.9.1"
+  },
+  "private": true,
+  "scripts": {
+    "build": "",
+    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../out/docs/extract",
+    "start": "imodeljs-react-scripts start"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "~0.112.0",
+    "@bentley/geometry-core": "~0.112.0",
+    "@bentley/imodeljs-i18n": "~0.112.0",
+    "@bentley/imodeljs-clients": "~0.112.0",
+    "@bentley/imodeljs-common": "~0.112.0",
+    "@bentley/imodeljs-backend": "~0.112.0",
+    "@bentley/imodeljs-frontend": "~0.112.0",
+    "@bentley/presentation-common": "^0.5.1",
+    "@bentley/presentation-backend": "^0.5.1",
+    "@bentley/presentation-frontend": "^0.5.1",
+    "@bentley/presentation-components": "^0.5.1",
+    "@bentley/ui-core": "~0.112.0",
+    "@bentley/ui-components": "~0.112.0",
+    "body-parser": "^1.18.1",
+    "bunyan": "^1.8.12",
+    "electron-devtools-installer": "^2.2.3",
+    "express": "^4.16.2",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "~0.112.0",
+    "@bentley/imodeljs-react-scripts": "^4.0.10",
+    "@types/body-parser": "latest",
+    "@types/bunyan": "^1.8.4",
+    "@types/electron-devtools-installer": "^2.0.2",
+    "@types/express": "^4.0.39",
+    "@types/react": "^16.0.31",
+    "@types/react-dom": "^16.0.3",
+    "electron": "^2",
+    "electron-builder": "^19.49.2",
+    "webpack": "^4.1.0"
+  },
+  "homepage": "http://localhost:3000/"
+}

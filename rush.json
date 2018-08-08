@@ -1,0 +1,39 @@
+{
+  "rushVersion": "5.0.0",
+  "npmVersion": "5.5.1",
+  "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
+  "projects": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "projectFolder": "packages/common",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@bentley/presentation-backend",
+      "projectFolder": "packages/backend",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@bentley/presentation-frontend",
+      "projectFolder": "packages/frontend",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@bentley/presentation-components",
+      "projectFolder": "packages/components",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "sample",
+      "projectFolder": "packages/sample"
+    },
+    {
+      "packageName": "integration-tests",
+      "projectFolder": "packages/integration-tests"
+    },
+    {
+      "packageName": "scripts",
+      "projectFolder": "scripts"
+    }
+  ]
+}

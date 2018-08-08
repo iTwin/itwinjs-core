@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "RegisteredRuleset now contains ruleset's hash which helps us verify ruleset integrity",
+      "type": "patch"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "IRulesetManager API changes",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

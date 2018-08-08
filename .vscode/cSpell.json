@@ -1,0 +1,70 @@
+// cSpell Settings
+{
+    // Version of the setting file.  Always 0.1
+    "version": "0.1",
+    // language - current active spelling language
+    "language": "en",
+    // words - list of words to be always considered correct
+    "words": [
+        "appicon",
+        "backend",
+        "bentleyjs",
+        "changelogs",
+        "changeset",
+        "Cornsilk",
+        "dataset",
+        "datasets",
+        "descr",
+        "deserialization",
+        "deserialize",
+        "deserialized",
+        "deserializes",
+        "devtools",
+        "ecpresentation",
+        "ecproperties",
+        "ecproperty",
+        "electronaddon",
+        "frontend",
+        "frontends",
+        "guid",
+        "hexa",
+        "IFNULL",
+        "imodel",
+        "imodeljs",
+        "imodels",
+        "junit",
+        "inversed",
+        "lcov",
+        "memoization",
+        "memoized",
+        "memoizes",
+        "nodeaddon",
+        "nodeaddonapi",
+        "objs",
+        "overriden",
+        "parentship",
+        "performant",
+        "propertygrid",
+        "pseudolocalize",
+        "readonly",
+        "recurse",
+        "roundtrip",
+        "ruleset",
+        "rulesets",
+        "selectable",
+        "struct",
+        "structs",
+        "typemoq",
+        "unmount",
+        "unmounts",
+        "VSTS",
+        "winx",
+        "xmlhttprequest"
+    ],
+    // flagWords - list of words to be always considered incorrect
+    // This is useful for offensive words and common spelling errors.
+    // For example "hte" should be "the"
+    "flagWords": [],
+    // do not show up in the status bar
+    "showStatus": false
+}

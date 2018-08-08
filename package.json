@@ -1,0 +1,26 @@
+{
+  "name": "main",
+  "version": "0.0.0",
+  "description": "EC presentation library",
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iModelJS"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ecpresentation"
+  },
+  "scripts": {
+    "build": "",
+    "cover:merge": "node scripts/merge-coverage-reports.js --coverageDir out/reports/coverage",
+    "start": "cd packages/sample && npm start"
+  }
+}

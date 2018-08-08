@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TreeDataProvider returns child nodes 1`] = `
+Array [
+  Object {
+    "checkBoxState": 0,
+    "description": "child description",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "pathFromRoot": Array [
+          "ee67a94585cfa7f72b31583c06fbef12",
+          "467292525bfba9a9c5f7a6deee88dacf",
+        ],
+        "type": "child",
+      },
+    },
+    "hasChildren": false,
+    "id": "467292525bfba9a9c5f7a6deee88dacf/ee67a94585cfa7f72b31583c06fbef12",
+    "isCheckBoxEnabled": false,
+    "label": "child label",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": "ee67a94585cfa7f72b31583c06fbef12",
+  },
+]
+`;
+
+exports[`TreeDataProvider returns root nodes 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "root description",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "pathFromRoot": Array [
+          "ee67a94585cfa7f72b31583c06fbef12",
+        ],
+        "type": "root",
+      },
+    },
+    "hasChildren": true,
+    "id": "ee67a94585cfa7f72b31583c06fbef12",
+    "isCheckBoxEnabled": false,
+    "label": "root label",
+    "labelBackColor": 8388863,
+    "labelBold": true,
+    "labelForeColor": 4278190335,
+    "labelItalic": true,
+    "parentId": undefined,
+  },
+]
+`;
