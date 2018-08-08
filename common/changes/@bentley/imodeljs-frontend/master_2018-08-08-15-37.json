@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Fix for 2d views attachments modifying transform of their root view",
+      "comment": "Code cleanup",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }
