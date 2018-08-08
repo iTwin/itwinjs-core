@@ -20,5 +20,5 @@ const argv = yargs
   .command(require("../scripts/test-e2e"))
   .command(require("../scripts/cover"))
   .command(require("../scripts/build"))
-  .epilogue(`${chalk.cyan("For more information on a particular command, run:")}\n\n    ${chalk.bold("imodeljs-react-scripts")} ${chalk.yellow("<command>")} ${chalk.green("--help")}`)
+  .epilogue(`${chalk.cyan("For more information on a particular command, run:")}\n\n    ${chalk.bold("bentley-webpack-tools")} ${chalk.yellow("<command>")} ${chalk.green("--help")}`)
   .argv;

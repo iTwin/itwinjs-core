@@ -21,8 +21,8 @@ exports.handler = async (argv) => {
   const quote = (s) => `"${s}"`;
   const forwardedArgs = process.argv.slice(3);
 
-  const startBackend = quote(["imodeljs-react-scripts", "start-backend", ...forwardedArgs].join(" "));
-  const startFrontend = quote(["imodeljs-react-scripts", "start-frontend", ...forwardedArgs].join(" "));
+  const startBackend = quote(["bentley-webpack-tools", "start-backend", ...forwardedArgs].join(" "));
+  const startFrontend = quote(["bentley-webpack-tools", "start-frontend", ...forwardedArgs].join(" "));
 
   if (argv.tmux) {
     spawnStmux([

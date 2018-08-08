@@ -25,7 +25,7 @@ const config = {
 
   // Compile node compatible code
   target: "node",
-  
+
   // The base directory, an absolute path, for resolving entry points and loaders from configuration.
   context: paths.appTest,
 
@@ -39,15 +39,17 @@ const config = {
   // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
   externals: [
     // Don't include anything from node_modules in the bundle
-    nodeExternals({whitelist: [
-      ...helpers.modulesToExcludeFromTests,
-      /bwc-polymer/,
-      /\.s?css$/,
-      /\.svg$/,
-      /\.d\.ts$/,
-    ]}),
+    nodeExternals({
+      whitelist: [
+        ...helpers.modulesToExcludeFromTests,
+        /bwc-polymer/,
+        /\.s?css$/,
+        /\.svg$/,
+        /\.d\.ts$/,
+      ]
+    }),
   ],
-  
+
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: "inline-cheap-module-source-map",
@@ -86,8 +88,8 @@ const config = {
   },
   module: {
     // WIP: The fixNodeModulesPaths hack above introduced some "Critical dependency: the request of a dependency is an expression" webpack warning.
-    // This "noParse" avoids that warning. It's still a hack though - Webpack shouldn't even be trying to parse anything in imodeljs-react-scripts. 
-    noParse: path.resolve(__dirname),  
+    // This "noParse" avoids that warning. It's still a hack though - Webpack shouldn't even be trying to parse anything in @bentley/webpack-tools.
+    noParse: path.resolve(__dirname),
     strictExportPresence: true,
     rules: [
       // WIP: This is a temporary (hack) workaround for the supporting snapshots with mocha-webpack.
@@ -112,7 +114,7 @@ const config = {
         // match the requirements. When no loader matches it will fall
         // back to the "file" loader at the end of the loader list.
         oneOf: [
-          { 
+          {
             test: helpers.modulesToExcludeFromTests,
             use: require.resolve("null-loader"),
           },
@@ -138,7 +140,7 @@ const config = {
             use: {
               loader: require.resolve("file-loader"),
               options: {
-                emitFile: false, // don't actually emit the file to the `lib` folder; we just want the filename returned in tests 
+                emitFile: false, // don't actually emit the file to the `lib` folder; we just want the filename returned in tests
                 name: "[path][name].[ext]",
               },
             }

@@ -7,11 +7,11 @@
   "scripts": {
     "build": "tsc -p ./src 1>&2",
     "lint": "tslint -p ./src 1>&2",
-    "webpack": "imodeljs-react-scripts build electron",
+    "webpack": "bentley-webpack-tools build electron",
     "electron": "electron ./lib/main.js",
-    "start": "imodeljs-react-scripts start",
-    "test": "imodeljs-react-scripts test",
-    "cover": "imodeljs-react-scripts cover",
+    "start": "bentley-webpack-tools start",
+    "test": "bentley-webpack-tools test",
+    "cover": "bentley-webpack-tools cover",
     "clean": "rimraf lib && rimraf dist",
     "docs": ""
   },
@@ -30,7 +30,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/imodeljs-react-scripts": "^5.4.6",
+    "@bentley/webpack-tools": "0.112.0",
     "@bentley/dev-cors-proxy-server": "0.0.6",
     "@bentley/bentleyjs-tools": "0.112.0",
     "@bentley/bentleyjs-core": "0.112.0",

@@ -23,9 +23,9 @@ exports.handler = (argv) => {
     const reporterOptions = (!CONTINUOUS_INTEGRATION) ? [] : [
       "--reporter=cobertura"
     ];
-  
+
     const forwardedArgs = process.argv.slice(3);
-    const reportDir = (argv.subdirectory) ? path.join(paths.appCoverage, argv.subdirectory) : paths.appCoverage; 
+    const reportDir = (argv.subdirectory) ? path.join(paths.appCoverage, argv.subdirectory) : paths.appCoverage;
 
     // Start the tests
     const args = [
@@ -33,20 +33,20 @@ exports.handler = (argv) => {
       "--reporter=text-summary",
       ...reporterOptions,
       "--report-dir", reportDir,
-      "imodeljs-react-scripts",
+      "bentley-webpack-tools",
       "test",
       ...forwardedArgs
     ];
     const code = await spawn(require.resolve(".bin/nyc"), args);
-    
+
     // If coverage run was successful, print where to find the coverage reports
-    if (code === 0) {      
+    if (code === 0) {
       const appLcovReport = path.resolve(reportDir, "lcov-report/index.html");
       const appCoberturaReport = path.resolve(reportDir, "cobertura-coverage.xml");
 
       let url = appLcovReport.replace(/\\/g, "/");
       url = encodeURI((url.startsWith("/") ? "file://" : "file:///") + url);
-      
+
       console.log();
       console.log(`You can view a detailed ${chalk.cyan("LCOV Report")} at:   ${chalk.bold(path.relative(process.cwd(), appLcovReport))}`);
 
@@ -57,7 +57,7 @@ exports.handler = (argv) => {
         await new Promise((r) => setTimeout(r, 100));
       }
     }
-    
+
     process.exit(code);
   })();
 

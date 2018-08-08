@@ -1,21 +1,21 @@
 {
-  "name": "@bentley/imodeljs-react-scripts",
-  "description": "Configuration and scripts for a React-based imodeljs app.",
-  "license": "UNLICENSED",
-  "repository": {
-    "type": "git",
-    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imsejs-app"
-  },
+  "name": "@bentley/webpack-tools",
+  "version": "0.112.0",
+  "description": "Configuration and scripts for imodeljs apps and services.",
+  "license": "MIT",
+  "repository": {},
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "version": "5.4.8",
-  "engines": {
-    "node": "8.9.1"
+  "scripts": {
+    "build": "",
+    "clean": "",
+    "docs": "",
+    "lint": ""
   },
   "bin": {
-    "imodeljs-react-scripts": "./bin/imodeljs-react-scripts.js"
+    "bentley-webpack-tools": "./bin/bentley-webpack-tools.js"
   },
   "dependencies": {
     "@bentley/dev-cors-proxy-server": "0",
