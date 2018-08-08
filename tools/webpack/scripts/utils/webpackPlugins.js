@@ -95,6 +95,9 @@ class CopyNativeAddonsPlugin {
           continue;
           
         const packageJsonPath = copyPackage(pkgName);
+        if (!packageJsonPath)
+          continue;
+
         copiedPackages.add(pkgName);
 
         const packageJson = require(packageJsonPath);
