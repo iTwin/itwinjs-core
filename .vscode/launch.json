@@ -200,7 +200,7 @@
       "request": "launch",
       "name": "SimpleViewTest Browser (backend)",
       "cwd": "${workspaceRoot}/test-apps/simpleviewtest",
-      "program": "${workspaceRoot}/test-apps/simpleviewtest/lib/backend/public/WebMain.js",
+      "program": "${workspaceRoot}/test-apps/simpleviewtest/lib/backend/WebMain.js",
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
