@@ -33,7 +33,8 @@ exports.handler = (argv) => {
       "--reporter=text-summary",
       ...reporterOptions,
       "--report-dir", reportDir,
-      "bentley-webpack-tools",
+      "node",
+      path.resolve(__dirname, "..", "bin", "bentley-webpack-tools.js"),
       "test",
       ...forwardedArgs
     ];

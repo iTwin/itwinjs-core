@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 "use strict";
 
+const path = require("path");
 const chalk = require("chalk");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const { spawnStmux } = require("./utils/tmuxUtils");
@@ -21,8 +22,9 @@ exports.handler = async (argv) => {
   const quote = (s) => `"${s}"`;
   const forwardedArgs = process.argv.slice(3);
 
-  const startBackend = quote(["bentley-webpack-tools", "start-backend", ...forwardedArgs].join(" "));
-  const startFrontend = quote(["bentley-webpack-tools", "start-frontend", ...forwardedArgs].join(" "));
+  const bentleyWebpackToolsPath = path.resolve(__dirname, "..", "bin", "bentley-webpack-tools.js");
+  const startBackend = quote(["node", bentleyWebpackToolsPath, "start-backend", ...forwardedArgs].join(" "));
+  const startFrontend = quote(["node", bentleyWebpackToolsPath, "start-frontend", ...forwardedArgs].join(" "));
 
   if (argv.tmux) {
     spawnStmux([
