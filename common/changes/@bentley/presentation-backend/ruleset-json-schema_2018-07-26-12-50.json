@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/ecpresentation-backend",
+      "packageName": "@bentley/presentation-backend",
       "comment": "React to Ruleset data structure changes",
       "type": "minor"
     }
   ],
-  "packageName": "@bentley/ecpresentation-backend",
+  "packageName": "@bentley/presentation-backend",
   "email": "grigas.petraitis@bentley.com"
 }

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-components",
-      "comment": "Rename package to `ecpresentation-components`",
+      "comment": "Rename package to `presentation-components`",
       "type": "minor"
     }
   ],

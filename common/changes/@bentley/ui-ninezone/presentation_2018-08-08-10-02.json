@@ -2,10 +2,10 @@
   "changes": [
     {
       "comment": "",
-      "packageName": "@bentley/presentation-backend",
+      "packageName": "@bentley/ui-ninezone",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/presentation-backend",
+  "packageName": "@bentley/ui-ninezone",
   "email": "grigas.petraitis@bentley.com"
 }

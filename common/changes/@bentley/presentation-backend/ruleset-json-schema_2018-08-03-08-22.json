@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/ecpresentation-backend",
+      "packageName": "@bentley/presentation-backend",
       "comment": "User Settings rename to Ruleset Variables and related API changes",
       "type": "minor"
     }
   ],
-  "packageName": "@bentley/ecpresentation-backend",
+  "packageName": "@bentley/presentation-backend",
   "email": "grigas.petraitis@bentley.com"
 }

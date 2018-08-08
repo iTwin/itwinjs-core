@@ -2,10 +2,10 @@
   "changes": [
     {
       "comment": "",
-      "packageName": "@bentley/presentation-backend",
+      "packageName": "@bentley/ui-framework",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/presentation-backend",
+  "packageName": "@bentley/ui-framework",
   "email": "grigas.petraitis@bentley.com"
 }

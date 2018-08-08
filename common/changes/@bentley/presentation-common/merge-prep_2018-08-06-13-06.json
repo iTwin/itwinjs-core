@@ -2,10 +2,10 @@
   "changes": [
     {
       "comment": "",
-      "packageName": "@bentley/ecpresentation-common",
+      "packageName": "@bentley/presentation-common",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/ecpresentation-common",
+  "packageName": "@bentley/presentation-common",
   "email": "grigas.petraitis@bentley.com"
 }
