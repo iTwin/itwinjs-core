@@ -221,6 +221,58 @@ export class ShaderVariables {
   }
 
   public get length(): number { return this._list.length; }
+
+  // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
+  public exceedsMaxVaryingVectors(): boolean {
+    // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
+    // The packing rules are defined by the standard. Specifically each row can contain one of:
+    //  vec4
+    //  vec3 (+ float)
+    //  vec2 (+ vec2)
+    //  vec2 (+ float (+ float))
+    //  float (+ float (+ float (+ float)))
+    const registers = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
+    for (const variable of this._list) {
+      if (VariableScope.Varying !== variable.scope)
+        continue;
+
+      let variableSize = 0;
+      switch (variable.type) {
+        case VariableType.Int:
+        case VariableType.Float:
+          variableSize = 1;
+          break;
+        case VariableType.Vec2:
+          variableSize = 2;
+          break;
+        case VariableType.Vec3:
+          variableSize = 3;
+          break;
+        case VariableType.Vec4:
+          variableSize = 4;
+          break;
+        default:
+          assert(false, "Invalid varying variable type");
+          continue;
+      }
+
+      // Find the first available slot into which to insert this variable
+      let slotAvailable = false;
+      for (let i = 0; i < 8; i++) {
+        const newSize = registers[i] + variableSize;
+        if (newSize <= 4) {
+          registers[i] = newSize;
+          slotAvailable = true;
+          break;
+        }
+      }
+
+      if (!slotAvailable)
+        return true;
+    }
+
+    return false;
+  }
 }
 
 /** Convenience API for assembling glsl source code. */
@@ -790,6 +842,9 @@ export class ProgramBuilder {
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
+    if (this.vert.exceedsMaxVaryingVectors())
+      assert(false, "GL_MAX_VARYING_VECTORS exceeded");
+
     const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
