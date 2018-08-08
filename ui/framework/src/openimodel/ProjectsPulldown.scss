@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+.fw-projectspulldown-container {
+  border-style: solid;
+  border-width: 1px;
+  border-color: Black;
+  position: absolute;
+  top: 60px;
+  left: 100px;
+  height: 60%;
+  display: block;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  z-index: 80,
+}
+

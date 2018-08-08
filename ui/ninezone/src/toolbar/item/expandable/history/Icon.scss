@@ -1,0 +1,65 @@
+@import "@bentley/ui-core/lib/colors";
+@import "_variables";
+
+.nz-toolbar-item-expandable-history-icon {
+  $desktop-icon-width: 16px;
+  $desktop-icon-height: $desktop-icon-width;
+  $desktop-icon-left-margin: ($desktop-item-width - $desktop-icon-width) / 2; //to center icon
+  $desktop-icon-top-margin: ($desktop-item-height - $desktop-icon-height) / 2; //to center icon
+  $icon-color: rgba($text-light, 0.88);
+  $hovered-icon-color: $primary-tint;
+  $pressed-icon-color: rgba($text-light, 0.88);
+  $icon-shadow: drop-shadow(0 1px 0 $text-dark);
+  $no-shadow: drop-shadow(0 0 0 transparent);
+
+  > * {
+    display: inline-block;
+    margin-top: $desktop-icon-top-margin;
+    margin-left: $desktop-icon-left-margin;
+    width: $desktop-icon-width;
+    height: $desktop-icon-height;
+    color: $icon-color;
+    filter: $icon-shadow;
+    transition: all 500ms ease;
+
+    svg {
+      filter: $icon-shadow;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &:hover > * {
+    color: $hovered-icon-color;
+    transition-duration: 150ms;
+  }
+
+  &:active > * {
+    color: $pressed-icon-color;
+    filter: $no-shadow;
+
+    svg {
+      filter: $no-shadow;
+    }
+  }
+
+  &.nz-is-active > * {
+    color: $active-icon-color;
+    filter: $no-shadow;
+    transition-duration: 0s;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+
+    svg {
+      filter: $no-shadow;
+    }
+  }
+
+  &.nz-is-disabled > * {
+    color: $icon-color;
+    opacity: .22;
+  }
+}

@@ -1,0 +1,16 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../../../theme/_theme";
+
+@include nz-style-component(nz-footer-message-content-label) {
+  color: $text-dark;
+}
+
+
+@include nz-dark-component {
+  color: $text-light;
+}
+
+
+@include nz-light-component {
+  color: #333333;
+}

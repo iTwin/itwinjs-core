@@ -1,0 +1,9 @@
+@import "../../_geometry";
+@import "../../_z-index";
+
+.nz-popup-tooltip-tooltip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  @include nz-z-index(tooltip);
+}

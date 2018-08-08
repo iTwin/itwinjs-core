@@ -1,0 +1,140 @@
+{
+  "rushVersion": "5.0.0",
+  "npmVersion": "5.5.1",
+  "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
+  "projectFolderMinDepth": 2,
+  "approvedPackagesPolicy": {
+    "reviewCategories": [
+      "frontend",
+      "backend",
+      "common",
+      "tools",
+      "internal"
+    ],
+    "ignoredNpmScopes": [
+      "@types"
+    ]
+  },
+  "projects": [
+    {
+      "packageName": "@bentley/bentleyjs-tools",
+      "projectFolder": "tools/bentley",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "projectFolder": "core/bentley",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/geometry-core",
+      "projectFolder": "core/geometry",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "projectFolder": "core/common",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "projectFolder": "core/backend",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-clients",
+      "projectFolder": "core/clients",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "projectFolder": "core/frontend",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-i18n",
+      "projectFolder": "core/i18n",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ui-core",
+      "projectFolder": "ui/core",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "projectFolder": "ui/components",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ui-ninezone",
+      "projectFolder": "ui/ninezone",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ui-framework",
+      "projectFolder": "ui/framework",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "bemetalsmith",
+      "projectFolder": "tools/bemetalsmith",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "example-code-snippets",
+      "projectFolder": "example-code/snippets",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "example-code-app",
+      "projectFolder": "example-code/app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "simpleviewtest",
+      "projectFolder": "test-apps/simpleviewtest",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "testbed",
+      "projectFolder": "test-apps/testbed",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "ui-test-app",
+      "projectFolder": "test-apps/ui-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    }
+  ]
+}

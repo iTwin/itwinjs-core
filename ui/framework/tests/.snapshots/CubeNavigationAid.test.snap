@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CubeNavigationAid <CubeNavigationAid /> renders correctly 1`] = `
+<div
+  className="cube-container"
+  onMouseDown={[Function]}
+  onMouseMove={[Function]}
+>
+  <div
+    className="cube-canvas-container"
+  />
+  <div
+    className="cube-pointer-container visible"
+  >
+    <div
+      className="cube-row"
+    >
+      <span
+        className="cube-pointer icon icon-caret-down"
+        onClick={[Function]}
+      />
+    </div>
+    <div
+      className="cube-row cube-pointer-center"
+    >
+      <span
+        className="cube-pointer icon icon-caret-right"
+        onClick={[Function]}
+      />
+      <span
+        className="cube-pointer icon icon-caret-left"
+        onClick={[Function]}
+      />
+    </div>
+    <div
+      className="cube-row"
+    >
+      <span
+        className="cube-pointer icon icon-caret-up"
+        onClick={[Function]}
+      />
+    </div>
+  </div>
+</div>
+`;

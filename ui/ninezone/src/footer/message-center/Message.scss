@@ -1,0 +1,22 @@
+@import "@bentley/ui-core/lib/colors";
+@import "_variables";
+
+.nz-footer-messageCenter-message {
+  $vertical-padding: $nz-message-horizontal-padding;
+
+  min-height: 48px;
+  box-sizing: border-box;
+  margin-left: $nz-message-horizontal-padding;
+  margin-right: $nz-message-horizontal-padding;
+  padding-left: $nz-message-horizontal-padding;
+  padding-right: $nz-message-horizontal-padding;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+  display: grid;
+  grid-gap: 12px;
+  grid-auto-flow: column;
+  align-items: center;
+  grid-auto-columns: minmax(0, auto) 1fr;
+  line-height: 16px;
+  color: $text-dark;
+}

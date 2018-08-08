@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SheetNavigationAid <SheetNavigationAid /> renders correctly 1`] = `
+<div
+  className="sheet-navigation"
+>
+  <div
+    className="gradient"
+  />
+  <div
+    className="sheet-title"
+  >
+    general.sheet
+  </div>
+  <div
+    className="sheet-name"
+    onClick={[Function]}
+  >
+    Sheet 1
+  </div>
+  <div
+    className="sheet-container"
+  >
+    <div
+      className="sheet-caret icon icon-caret-left"
+      onClick={[Function]}
+    />
+    <div>
+      1
+       
+      general.of
+       
+      7
+    </div>
+    <div
+      className="sheet-caret icon icon-caret-right"
+      onClick={[Function]}
+    />
+  </div>
+</div>
+`;

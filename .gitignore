@@ -1,0 +1,23 @@
+# dependencies
+node_modules
+
+# build output
+.nyc_output
+/core/**/lib
+/ui/**/lib
+/example-code/**/lib
+/test-apps/**/lib
+/core/geometry/src/test/output
+/core/backend/src/test/output
+/generated-docs
+/out
+**/DevBuild.txt
+
+# rush-specific
+/common/temp
+package-deps.json
+*.build.log
+*.build.error.log
+
+# docs
+/public

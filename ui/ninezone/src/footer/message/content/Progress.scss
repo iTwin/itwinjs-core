@@ -1,0 +1,94 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../../../theme/_theme";
+
+@include nz-style-component(nz-footer-message-content-progress) {
+  $progress-tip-height: 5px;
+  $progress-tip-width: 2px;
+  $progress-height: 3px;
+  $progress-margin: ($progress-tip-height - $progress-height) / 2;
+
+  height: $progress-tip-height;
+  overflow: hidden;
+
+  > .nz-progress {
+    position: relative;
+    top: $progress-margin;
+    height: $progress-height;
+
+    > .nz-progress-bar {
+      height: 100%;
+      width: 0%;
+      position: relative;
+
+      > .nz-progress-bar-tip {
+        background-color: inherit;
+        height: $progress-tip-height;
+        width: $progress-tip-width;
+        position: absolute;
+        right: 0;
+        top: -$progress-margin;
+        border-radius: $progress-tip-width;
+      }
+    }
+  }
+
+  &.nz-status-information {
+    > .nz-progress {
+      background-color: $primary-tint;
+
+      > .nz-progress-bar {
+        background-color: $primary-base;
+      }
+    }
+  }
+
+  &.nz-status-success {
+    > .nz-progress {
+      background-color: $accent-tint;
+
+      > .nz-progress-bar {
+        background-color: $accent-base;
+      }
+    }
+  }
+
+  &.nz-status-error {
+    > .nz-progress {
+      background-color: $alert-tint;
+
+      > .nz-progress-bar {
+        background-color: $alert-base;
+      }
+    }
+  }
+}
+
+@include nz-dark-component {
+  > .nz-progress {
+    background-color: rgb(45, 55, 60);
+  }
+
+  &.nz-status-information {
+    > .nz-progress {
+      > .nz-progress-bar {
+        background-color: $primary-tint;
+      }
+    }
+  }
+
+  &.nz-status-success {
+    > .nz-progress {
+      > .nz-progress-bar {
+        background-color: $accent-tint;
+      }
+    }
+  }
+
+  &.nz-status-error {
+    > .nz-progress {
+      > .nz-progress-bar {
+        background-color: $alert-tint;
+      }
+    }
+  }
+}

@@ -1,0 +1,157 @@
+@import "./item/_variables";
+@import "_variables";
+
+@mixin scrollTransition {
+  transition-property: margin;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+}
+
+.nz-toolbar-scrollable {
+  $desktop-space-between-toolbar-items: 1px;
+  $border-width: $items-border-width;
+  $size: $desktop-item-height + $border-width * 2;
+
+  position: relative;
+
+  > .nz-items-viewport {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+
+    > .nz-items {
+      @include scrollTransition;
+    }
+  }
+
+  > .nz-history {
+    > .nz-viewport {
+      overflow: hidden;
+      position: relative;
+
+      > .nz-container {
+        position: relative;
+
+        @include scrollTransition;
+
+        > .nz-item {
+          position: relative;
+        }
+      }
+    }
+  }
+
+  > .nz-panels {
+    @include scrollTransition;
+  }
+
+  &.nz-vertical {
+    > .nz-history {
+      > .nz-viewport {
+        > .nz-container {
+          > .nz-item {
+            height: $desktop-item-height;
+          }
+        }
+      }
+    }
+  }
+
+  &.nz-horizontal {
+    > .nz-history {
+      > .nz-viewport {
+        > .nz-container {
+          display: grid;
+          grid-auto-flow: column;
+          left: 1px;
+
+          > .nz-item {
+            width: $desktop-item-width;
+          }
+        }
+      }
+    }
+  }
+
+  > .nz-items-viewport {
+    > .nz-left, > .nz-right {
+      position: absolute;
+
+      &:not(.nz-is-visible) {
+        display: none;
+      }
+    }
+  }
+
+  &.nz-vertical {
+    width: $size;
+
+    &.nz-scroll-indicator-left-only {
+      > .nz-items-viewport {
+        > .nz-left {
+          height: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+        }
+      }
+    }
+
+    &.nz-scroll-indicator-right-only {
+      > .nz-right {
+        height: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+      }
+    }
+
+    > .nz-items-viewport {
+      > .nz-left, > .nz-right {
+        width: 100%;
+        height: $desktop-item-height;
+      }
+
+      > .nz-left {
+        top: 0;
+      }
+
+      > .nz-right {
+        bottom: 0;
+      }
+    }
+  }
+
+  &.nz-horizontal {
+    height: $size;
+
+    &.nz-scroll-indicator-left-only {
+      > .nz-items-viewport {
+        > .nz-left {
+          width: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+        }
+      }
+    }
+
+    &.nz-scroll-indicator-right-only {
+      > .nz-right {
+        width: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+      }
+    }
+
+    > .nz-items-viewport {
+      > .nz-left, > .nz-right {
+        top: 0;
+        height: 100%;
+        width: $desktop-item-width;
+      }
+
+      > .nz-left {
+        left: 0;
+      }
+
+      > .nz-right {
+        right: 0;
+      }
+
+      > .nz-items {
+        display: inline-flex;
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="RobotWorld" alias="RobotWorld" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+    <ECSchemaReference name="ECDbMap" version="02.00" alias="ecdbmap"/>
+
+    <ECEntityClass typeName="Robot" modifier="Sealed">
+        <BaseClass>bis:SpatialLocationElement</BaseClass>
+        <ECProperty propertyName="radius" typeName="double" description="the girth of the robot" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Barrier" modifier="Sealed">
+        <BaseClass>bis:SpatialLocationElement</BaseClass>
+        <ECProperty propertyName="length" typeName="double" description="the length of the barrier" />
+    </ECEntityClass>
+
+    <!-- A Barrier can optionally have a hole init -->
+    <ECEntityClass typeName="BarrierHoleAspect">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="offset" typeName="double" description="offset to start of hole"/>
+        <ECProperty propertyName="length" typeName="double" description="length of hole"/>
+    </ECEntityClass>
+
+</ECSchema>

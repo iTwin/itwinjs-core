@@ -1,0 +1,39 @@
+@import "../../_geometry";
+@import "_variables";
+
+.nz-toolbar-button-expandable {
+  $triangle-width: 6px;
+  $triangle-height: $triangle-width;
+  $shadow-vertical-offset: 1px;
+  $margin-from-triangle-to-stroke: 5px;
+  $arrow-shadow: $icon-shadow;
+
+  position: relative;
+
+  > .nz-button {
+    > .nz-triangle {
+      border-radius: 0;
+      position: absolute;
+      right: $margin-from-triangle-to-stroke;
+      bottom: $margin-from-triangle-to-stroke;
+      filter: $arrow-shadow;
+      pointer-events: none;
+
+      @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: rgba($text-dark, 0.88));
+    }
+
+    &:hover {
+      > .nz-triangle {
+        @include triangle-bottom-right-color($hovered-icon-color);
+      }
+    }
+
+    &:active {
+      > .nz-triangle {
+        filter: $no-shadow;
+
+        @include triangle-bottom-right-color($pressed-icon-color);
+      }
+    }
+  }
+}

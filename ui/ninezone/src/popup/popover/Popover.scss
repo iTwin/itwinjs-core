@@ -1,0 +1,28 @@
+@import "../../_geometry";
+@import "../../_z-index";
+
+.nz-popup-popover-popover {
+  position: absolute;
+
+  @include nz-z-index(tooltip);
+
+  &.nz-direction-left {
+    top: 0;
+    transform: translateX(-100%);
+  }
+
+  &.nz-direction-top {
+    bottom: 100%;
+    left: 0;
+  }
+
+  &.nz-direction-right {
+    top: 0;
+    left: 100%;
+  }
+
+  &.nz-direction-bottom {
+    top: 100%;
+    left: 0;
+  }
+}

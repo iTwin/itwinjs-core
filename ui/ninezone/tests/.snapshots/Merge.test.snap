@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Merge /> renders correctly 1`] = `
+<Target
+  className="nz-zones-target-merge"
+>
+  <div
+    className="nz-grid"
+  >
+    <div
+      className="nz-top-outline nz-bottom-outline nz-left-outline nz-right-outline"
+      key="0_0"
+      style={
+        Object {
+          "gridColumn": 1,
+          "gridRow": 1,
+        }
+      }
+    />
+  </div>
+</Target>
+`;

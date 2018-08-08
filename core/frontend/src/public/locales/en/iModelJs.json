@@ -1,0 +1,51 @@
+{
+  "ViewUndo": {
+    "NoPreviousViewOps": "No previous viewing operations",
+    "NoPreviousUndos": "Only valid after 'View Previous'"
+  },
+  "Manipulator": {
+    "ModifyHandle": "Handle: %s",
+    "ModifyHandleAngle": "SHIFT - Tap to change action = ",
+    "ModifyHandleAction": "SHIFT - Tap for preserve angle on/off = ",
+    "ProjectExtents": "Project Extents",
+    "ModifyProjectExtents": "Modify Project Extents"
+  },
+  "Viewing": {
+    "InvalidWindow": "Invalid window",
+    "MinWindow": "Minimum window",
+    "MaxWindow": "Maximum window",
+    "MaxZoom": "Maximum Zoom"
+  },
+  "ElementUndo": {
+    "NothingToUndo": "No actions to undo",
+    "NothingToRedo": "Nothing has been undone",
+    "UndoAll": "Do you really want to undo all changes?"
+  },
+  "AccuDraw": {
+    "Prompt": {
+      "DefineOrigin": "Define X axis origin",
+      "DefineXAxis": "Define X axis",
+      "DefineYDir": "Define Y axis",
+      "DefineElem": "Select element to define rotation"
+    }
+  },
+  "LocateFailure": {
+    "NoElements": "No Elements Found",
+    "LockedModel": "Element is in a model with locate turned off",
+    "LockedElem": "Element is locked",
+    "ByApp": "Element not valid for tool",
+    "ByCommand": "Element rejected by tool",
+    "ByType": "Element type not valid for this tool",
+    "ByProperties": "Element properties not valid for this tool",
+    "Transient": "Element is a transient element",
+    "ModelNotAllowed": "Element is in a model that is not allowed by this tool",
+    "NotSnappable": "Element is not snappable",
+    "RejectedByElement": "Element does not allow this operation"
+  },
+  "Element": {
+    "Id": "Id",
+    "Model": "Model",
+    "Category": "Category",
+    "Type": "Class"
+  }
+}

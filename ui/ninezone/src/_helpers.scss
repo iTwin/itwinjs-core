@@ -1,0 +1,46 @@
+// Generates map from array.
+// Key of each entry is ($array entry value: result of $fn call).
+// $fn is called with specified $args.
+// Usage example:
+/*
+  $counter: 0;
+  @function step($step) {
+    $counter: $counter + $step !global;
+    @return $counter;
+  }
+  nz-map-from-array($array, step, 1000);
+*/
+@function nz-map-from-array($array, $fn, $args...) {
+  $map: ();
+  @each $item in $array {
+    $kvp: (
+      $item: call($fn, $args...)
+    );
+    $map: map-merge($map, $kvp)
+  }
+  @return $map;
+}
+
+// Generates map from array.
+// Key of each entry is ($array entry value: result of $fn call).
+// $fn is called with one argument:
+// 1. First entry with $initialArg
+// 2. Other entries with previous result of $fn call.
+// Usage example:
+/*
+  @function step($counter) {
+    @return $counter + 1000;
+  }
+  nz-map-from-array-with-result-arg($array, step, 0);
+*/
+@function nz-map-from-array-with-result-arg($array, $fn, $initialArg) {
+  $map: ();
+  $result: $initialArg;
+  @each $item in $array {
+    $result: call($fn, $result);
+    $kvp: ($item: $result);
+    $map: map-merge($map, $kvp)
+  }
+  @return $map;
+}
+

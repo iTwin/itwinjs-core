@@ -1,0 +1,39 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import * as HighlightJs from "highlight.js";
+import * as React from "react";
+
+export interface Props {
+  language: string;
+  value: string;
+}
+
+export default class CodeBlock extends React.Component<Props> {
+  private _code: HTMLElement | undefined = undefined;
+
+  public componentDidMount() {
+    this.highlightCode();
+  }
+
+  public componentDidUpdate() {
+    this.highlightCode();
+  }
+
+  public render() {
+    return (
+      <pre>
+        <code ref={(ref) => ref && (this._code = ref)} className={this.props.language}>
+          {this.props.value}
+        </code>
+      </pre>
+    );
+  }
+
+  private highlightCode() {
+    if (!this._code)
+      return;
+
+    HighlightJs.highlightBlock(this._code);
+  }
+}

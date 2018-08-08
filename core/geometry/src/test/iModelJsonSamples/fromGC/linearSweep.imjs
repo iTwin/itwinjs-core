@@ -1,0 +1,196 @@
+[
+{"linearSweep":
+ {"contour":
+  {"loop":[
+   {"lineString":[[0,0,0],
+    [2,0,0],
+    [2,3,0],
+    [0,3,0]]
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"loop":[
+   {"lineString":[[0,0,0],
+    [2,0,0],
+    [2,3,0],
+    [0,3,0]]
+   }]
+  },
+  "capped":true,
+  "vector":[0,0,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"loop":[
+   {"lineString":[[0,0,0],
+    [2,0,0],
+    [2,3,0],
+    [0,3,0]]
+   }]
+  },
+  "capped":false,
+  "vector":[0.1,0.21,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"loop":[
+   {"lineString":[[0,0,0],
+    [2,0,0],
+    [2,3,0],
+    [0,3,0]]
+   }]
+  },
+  "capped":true,
+  "vector":[0.1,0.21,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"lineSegment":[[0,0,0],
+    [1,0,0]]
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"lineSegment":[[0,0,0],
+    [1,1,0]]
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"arc":
+    {"center":[0,0,0],
+     "vectorX":[1,0,0],
+     "vectorY":[0,1,0],
+     "sweepStartEnd":[0,90]
+    }
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"arc":
+    {"center":[0,0,0],
+     "vectorX":[1,0,0],
+     "vectorY":[0,1,0],
+     "sweepStartEnd":[-40,270]
+    }
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"arc":
+    {"center":[0,0,0],
+     "vectorX":[1,0.1,0],
+     "vectorY":[-0.03,0.3,0],
+     "sweepStartEnd":[-40,270]
+    }
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,1.234]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"lineString":[[0,0,1],
+    [1,0,1],
+    [1,1,1]]
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,3]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"loop":[
+   {"lineString":[[0,0,1],
+    [1,0,1],
+    [1,1,1]]
+   }]
+  },
+  "capped":true,
+  "vector":[0,0,3]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"lineString":[[0,0,1],
+    [1,0,1],
+    [1,1,1],
+    [1e-11,1e-11,1]]
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,3]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"loop":[
+   {"lineString":[[0,0,1],
+    [1,0,1],
+    [1,1,1],
+    [0,0,1]]
+   }]
+  },
+  "capped":true,
+  "vector":[0,0,3]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"path":[
+   {"lineString":[[0,0,1],
+    [1,0,1],
+    [1,1,1],
+    [0,0,1]]
+   }]
+  },
+  "capped":false,
+  "vector":[0,0,3]
+ }
+},
+{"linearSweep":
+ {"contour":
+  {"loop":[
+   {"lineString":[[0,0,1],
+    [1,0,1],
+    [1,1,1],
+    [0,0,1]]
+   }]
+  },
+  "capped":true,
+  "vector":[0,0,3]
+ }
+}]

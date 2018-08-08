@@ -1,0 +1,40 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../../../theme/_theme";
+
+@include nz-style-component(nz-footer-message-content-button) {
+  color: $background-5;
+  cursor: pointer;
+
+  &:hover {
+    color: $background-3;
+  }
+
+  &:active {
+    color: $background-4;
+  }
+}
+
+
+@include nz-dark-component {
+  color: $background-3;
+
+  &:hover {
+    color: $background-1;
+  }
+
+  &:active {
+    color: $background-2;
+  }
+}
+
+@include nz-light-component {
+  color: $text-dark;
+
+  &:hover {
+    color: rgba($text-dark, $alpha: 0.5);
+  }
+
+  &:active {
+    color: rgba($text-dark, $alpha: 0.75);
+  }
+}

@@ -1,0 +1,54 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../_z-index";
+@import "_variables";
+
+.nz-footer-footer {
+  background-color: $background-2;
+  border-width: 0;
+  border-top-width: 1px;
+  border-color: $background-4;
+  border-style: solid;
+  pointer-events: auto;
+  position: relative;
+
+  > .nz-message {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+
+    @include nz-z-index(message);
+  }
+
+  > .nz-indicators {
+    height: $footer-height;
+    display: flex;
+    flex-direction: row;
+
+    > *:not(:last-child) {
+      $separator-width: 1px;
+
+      position: relative;
+
+      &:after {
+        content: '';
+        width: $separator-width;
+        height: 100%;
+        background-color: $background-3;
+        border-right: $separator-width solid #ffffff;
+        position: absolute;
+        right: 0;
+      }
+    }
+  }
+
+  &.nz-widget-mode {
+    > .nz-indicators {
+      > *:not(:last-child) {
+        &:after {
+          display: none;
+        }
+      }
+    }
+  }
+}

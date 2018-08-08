@@ -1,0 +1,28 @@
+@import "@bentley/bwc/lib/index.scss";
+@import "@bentley/ui-core/lib/colors";
+@import "_customTheme";
+
+.nzdemo-pages-zones {
+  @include bwc-font-family;
+  @include bwc-text;
+
+  .nzdemo-success {
+    color: $accent-base;
+  }
+
+  .nzdemo-progress {
+    color: $primary-base;
+  }
+
+  .nzdemo-error {
+    color: $alert-base;
+  }
+
+  .nzdemo-warning {
+    color: rgb(241, 39, 18);
+  }
+
+  .nzdemo-favorite {
+    color: rgb(241, 223, 18);
+  }
+}

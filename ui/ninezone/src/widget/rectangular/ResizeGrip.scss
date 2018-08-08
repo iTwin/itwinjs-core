@@ -1,0 +1,30 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "../_variables";
+
+.nz-widget-rectangular-resizeGrip {
+  pointer-events: auto;
+
+  &.nz-direction-ew {
+    cursor: ew-resize;
+    width: $resize-grip-size;
+  }
+
+  &.nz-direction-ns {
+    cursor: ns-resize;
+    height: $resize-grip-size;
+  }
+
+  &.nz-direction-ne-sw {
+    cursor: nesw-resize;
+    width: $resize-grip-size;
+    height: $resize-grip-size;
+  }
+
+  &.nz-direction-nw-se {
+    cursor: nwse-resize;
+    width: $resize-grip-size;
+    height: $resize-grip-size;
+  }
+}

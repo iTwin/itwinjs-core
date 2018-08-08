@@ -1,0 +1,98 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/colors";
+@import "../_z-index";
+@import "_variables";
+
+.nz-backstage-backstage {
+  position: absolute;
+  width: 0;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background-color: rgba(#222, 0.6);
+
+  @include nz-z-index(backstage);
+
+  > .nz-items {
+    width: 0;
+    height: 100%;
+    background-color: $background-5;
+    transition: transform .25s ease;
+    transform: translateX(-100%);
+
+    // Handle tiny separators between items.
+    > * {
+      position: relative;
+
+      &:before {
+        content: '';
+        height: $nz-tiny-separator-height;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: $background-4;
+      }
+
+      &:last-child:after {
+        content: '';
+        height: $nz-tiny-separator-height;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        background-color: $background-4;
+      }
+
+      &:first-child {
+        &:before {
+          height: 0;
+        }
+      }
+    }
+
+    > .nz-is-active {
+      &:before {
+        height: 0;
+      }
+
+      &:after {
+        height: 0;
+      }
+
+      & + * {
+        &:before {
+          height: 0;
+        }
+      }
+    }
+
+    > .nz-backstage-separator {
+      &:before {
+        height: 0;
+      }
+
+      &:after {
+        height: 0;
+      }
+
+      & + * {
+        &:before {
+          height: 0;
+        }
+      }
+    }
+  }
+
+  &.nz-is-open {
+    width: 100%;
+
+    > .nz-items {
+      min-width: 280px;
+      transform: translateX(0);
+    }
+  }
+}

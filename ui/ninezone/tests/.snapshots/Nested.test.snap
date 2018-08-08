@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Nested /> renders correctly 1`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-nested"
+>
+  <div
+    className="nz-back-arrow-container"
+  >
+    <BackArrow />
+  </div>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Nested /> renders correctly 2`] = `
+<Settings
+  className="nz-widget-toolSettings-settings-nested"
+>
+  <div
+    className="nz-header"
+  >
+    <BackButton
+      className="nz-button"
+    />
+    <div
+      className="nz-label"
+    />
+  </div>
+</Settings>
+`;

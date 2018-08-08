@@ -1,0 +1,31 @@
+[
+{"rotationalSweep":
+ {"axis":[0,1,0],
+  "contour":
+  {"loop":[
+   {"lineString":[[1,0,0],
+    [3,0,0],
+    [3,3,0],
+    [1,3,0]]
+   }]
+  },
+  "capped":false,
+  "center":[0,0,0],
+  "sweepAngle":120
+ }
+},
+{"rotationalSweep":
+ {"axis":[0,1,0],
+  "contour":
+  {"loop":[
+   {"lineString":[[1,0,0],
+    [3,0,0],
+    [3,3,0],
+    [1,3,0]]
+   }]
+  },
+  "capped":true,
+  "center":[0,0,0],
+  "sweepAngle":150
+ }
+}]

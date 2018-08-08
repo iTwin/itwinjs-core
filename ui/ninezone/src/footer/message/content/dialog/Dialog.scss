@@ -1,0 +1,22 @@
+@import "@bentley/ui-core/lib/colors";
+@import "_variables";
+
+.nz-footer-message-content-dialog-dialog {
+  border: {
+    color: $background-5;
+    style: solid;
+    width: $nz-dialog-border-width;
+    radius: 3px;
+  };
+  background-color: $background-2;
+  overflow: hidden;
+  display: grid;
+  grid-auto-rows: auto minmax(0, 1fr);
+  position: relative;
+
+  > .nz-resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+}
