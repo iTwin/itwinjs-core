@@ -78,15 +78,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Moved caching from schema locaters into SchemaContext only
 - Classes now hold a collection of properties instead of LazyLoadedProperty
 
-[Unreleased]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.8.0&targetVersion=GBmaster
-[0.8.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.7.0&targetVersion=GT0.8.0
-[0.7.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.6.1&targetVersion=GT0.7.0
-[0.6.1]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.6.0&targetVersion=GT0.6.1
-[0.6.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.3&targetVersion=GT0.6.0
-[0.5.3]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.2&targetVersion=GT0.5.3
-[0.5.2]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.1&targetVersion=GT0.5.2
-[0.5.1]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.0&targetVersion=GT0.5.1
-[0.5.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECSchema%20Editor/_git/ec-js/branches?_a=commits&baseVersion=GT0.0.1&targetVersion=GT0.5.0
+[Unreleased]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.9.0&targetVersion=GBmaster
+[0.9.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.8.0&targetVersion=GT0.9.0
+[0.8.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.7.0&targetVersion=GT0.8.0
+[0.7.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.6.1&targetVersion=GT0.7.0
+[0.6.1]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.6.0&targetVersion=GT0.6.1
+[0.6.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.3&targetVersion=GT0.6.0
+[0.5.3]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.2&targetVersion=GT0.5.3
+[0.5.2]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.1&targetVersion=GT0.5.2
+[0.5.1]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.5.0&targetVersion=GT0.5.1
+[0.5.0]: https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/ec-js/branches?_a=commits&baseVersion=GT0.0.1&targetVersion=GT0.5.0
 
 <!-- This is a slightly better formatting in the VSCode markdown preview: -->
 <style>
