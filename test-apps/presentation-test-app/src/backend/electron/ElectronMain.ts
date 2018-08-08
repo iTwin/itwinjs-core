@@ -1,104 +1,81 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import * as path from "path";
 import { app, protocol, BrowserWindow } from "electron";
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from "electron-devtools-installer";
-import * as path from "path";
-import * as url from "url";
+import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
 
-// Initialize my application rpc configuration for the backend
-import {
-  ElectronRpcManager,
-  StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface,
-} from "@bentley/imodeljs-common";
-// __PUBLISH_EXTRACT_START__ Backend.Imports
-import { PresentationRpcInterface } from "@bentley/presentation-common";
-// __PUBLISH_EXTRACT_END__
-import SampleRpcInterface from "../../common/SampleRpcInterface";
+/**
+ * Initializes Electron backend
+ */
+export default function initialize(rpcs: RpcInterfaceDefinition[]) {
+  // tell ElectronRpcManager which RPC interfaces to handle
+  // __PUBLISH_EXTRACT_START__ Backend.Initialization.RpcInterface
+  ElectronRpcManager.initializeImpl({}, rpcs);
+  // __PUBLISH_EXTRACT_END__
 
-const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
-// __PUBLISH_EXTRACT_START__ Backend.Initialization.RpcInterface
-ElectronRpcManager.initializeImpl({}, [...otherRpcInterfaces, PresentationRpcInterface]);
-// __PUBLISH_EXTRACT_END__
+  // in order to preserve the platform standard behavior on MacOS,
+  // the application needs to continue running even if the "main" window closes
+  // so we'll keep a reference to the currently open "main" window here
+  let mainWindow: BrowserWindow | undefined;
 
-const isDevBuild = (process.env.NODE_ENV === "development");
-let winRef: any;
-
-const iconPath = (isDevBuild) ? path.join(__dirname, "../public/appicon.ico") : path.join(__dirname, "public/appicon.ico");
-
-function createWindow() {
-  // tslint:disable:no-console
-  installExtension(REACT_DEVELOPER_TOOLS);
-    // .then((name) => console.log(`Added Extension:  ${name}`))
-    // .catch((err) => console.log("An error occurred: ", err));
-
-  installExtension(REDUX_DEVTOOLS);
-    // .then((name) => console.log(`Added Extension:  ${name}`))
-    // .catch((err) => console.log("An error occurred: ", err));
-  // tslint:enable:no-console
-
-  const win = new BrowserWindow({
-    webPreferences: {
-      webSecurity: !isDevBuild, // Workaround for CORS issue in dev build
-      experimentalFeatures: true, // Needed for CSS Grid support
-    },
-    autoHideMenuBar: true,
-    icon: iconPath,
-  });
-  winRef = win;
-
-  if (isDevBuild) {
-    win.loadURL(url.format({
-      pathname: "localhost:3000",
-      protocol: "http:",
-      slashes: true,
-    }));
-  } else {
-    win.loadURL(url.format({
-      pathname: path.join(__dirname, "public/index.html"),
-      protocol: "file:",
-      slashes: true,
-    }));
+  /**
+   * Converts an "electron://" URL to an absolute file path.
+   *
+   * We use this protocol in production builds because our frontend must be built with absolute URLs,
+   * however, since we're loading everything directly from the install directory, we cannot know the
+   * absolute path at build time.
+   */
+  function parseElectronUrl(requestedUrl: string): string {
+    let assetPath = requestedUrl.substr("electron://".length);
+    assetPath = assetPath.replace(/#.*$/, "");
+    return path.normalize(`${__dirname}/public/${assetPath}`);
   }
 
-  win.on("closed", () => {
-    winRef = null;
+  /**
+   * Creates the "main" electron BrowserWindow with the application's frontend.
+   */
+  function createWindow() {
+    // in dev builds (npm start), we don't copy the public folder to lib/public,
+    // so we'll need to access the original public dir for our app icon
+    const isDevBuild = (process.env.NODE_ENV === "development");
+    const iconPath = (isDevBuild) ? path.join(__dirname, "../public/appicon.ico") : path.join(__dirname, "public/appicon.ico");
+
+    // configure and create the main window
+    mainWindow = new BrowserWindow({
+      autoHideMenuBar: true,
+      icon: iconPath,
+    });
+    mainWindow.on("closed", () => mainWindow = undefined);
+
+    // install some devtools extensions for easier react and redux debugging
+    installExtension(REACT_DEVELOPER_TOOLS);
+    installExtension(REDUX_DEVTOOLS);
+
+    // load the frontend
+    //    in development builds, the frontend assets are served by the webpack devserver
+    //    in production builds, load the built frontend assets directly from the filesystem
+    mainWindow.loadURL(isDevBuild ? "http://localhost:3000" : parseElectronUrl("electron://index.html"));
+  }
+
+  // open the "frontend" window when the application starts up
+  app.on("ready", () => {
+    createWindow();
+
+    // also handle any "electron://" requests and redirect them to "file://" URLs
+    protocol.registerFileProtocol("electron", (request, callback) => callback(parseElectronUrl(request.url)));
+  });
+
+  // quit the application when all windows are closed (unless we're running on MacOS)
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin")
+      app.quit();
+  });
+
+  // re-open the main window if it was closed and the app is re-activated (this is the normal MacOS behavior)
+  app.on("activate", () => {
+    if (!mainWindow)
+      createWindow();
   });
 }
-
-app.on("ready", createWindow);
-
-app.on("ready", () => {
-  protocol.registerFileProtocol("electron", (request, callback) => {
-    let assetPath = request.url.substr("electron://".length);
-    assetPath = assetPath.replace(/#.*$/, "");
-    callback(path.normalize(`${__dirname}/public/${assetPath}`));
-  }, (error) => {
-    if (error)
-      // tslint:disable-next-line:no-console
-      console.error("Failed to register protocol");
-  });
-});
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin")
-    app.quit();
-});
-
-// Handle custom keyboard shortcuts
-app.on("web-contents-created", (_e, wc) => {
-  wc.on("before-input-event", (event, input) => {
-    // CTRL + SHIFT + I  ==> Toggle DevTools
-    if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
-      if (winRef)
-        winRef.toggleDevTools();
-
-      event.preventDefault();
-    }
-  });
-});
-
-app.on("activate", () => {
-  if (winRef === null)
-    createWindow();
-});

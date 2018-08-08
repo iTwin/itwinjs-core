@@ -62,6 +62,7 @@
     "faker": "^4.1.0",
     "lolex": "^2.7.1",
     "mocha": "^5.2.0",
+    "mocha-tldr-reporter": "^1.0.0",
     "nyc": "^11.8.0",
     "rimraf": "^2.6.2",
     "ts-node": "^6.0.3",

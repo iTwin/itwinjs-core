@@ -1,36 +1,33 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams,
   ElectronRpcManager, ElectronRpcConfiguration,
-  StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface,
   RpcOperation, IModelToken,
 } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Frontend.Imports
-import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
-import initLogging from "./api/logging";
-import SampleRpcInterface from "../common/SampleRpcInterface";
+import rpcs from "../common/Rpcs";
 import App from "./components/app/App";
 import "./index.css";
+import { UiCore } from "@bentley/ui-core/lib";
 
 // initialize logging
-initLogging();
+Logger.initializeToConsole();
 
 // initialize RPC
 (function initRpc() {
-  const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, SampleRpcInterface];
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeClient({}, [...otherRpcInterfaces, PresentationRpcInterface]);
+    ElectronRpcManager.initializeClient({}, rpcs);
   } else {
-    const rpcParams: BentleyCloudRpcParams = { info: { title: "my-app", version: "v1.0" } };
+    const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" } };
     // __PUBLISH_EXTRACT_START__ Frontend.Initialization.RpcInterface
-    const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, PresentationRpcInterface]);
+    const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
       RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
@@ -39,10 +36,12 @@ initLogging();
 
 // subclass of IModelApp needed to use IModelJs API
 export class SampleApp extends IModelApp {
-  private static _localizationNamespace: I18NNamespace;
-
+  private static _ready: Promise<void>;
   protected static onStartup() {
-    this._localizationNamespace = IModelApp.i18n.registerNamespace("Sample");
+    const readyPromises = new Array<Promise<void>>();
+
+    const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");
+    readyPromises.push(localizationNamespace.readFinished);
 
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
@@ -54,10 +53,12 @@ export class SampleApp extends IModelApp {
     });
     // __PUBLISH_EXTRACT_END__
 
-    UiComponents.initialize(IModelApp.i18n);
+    readyPromises.push(UiCore.initialize(IModelApp.i18n));
+    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
+    this._ready = Promise.all(readyPromises).then(() => { });
   }
 
-  public static get ready(): Promise<void> { return this._localizationNamespace.readFinished; }
+  public static get ready(): Promise<void> { return this._ready; }
 }
 
 SampleApp.startup();

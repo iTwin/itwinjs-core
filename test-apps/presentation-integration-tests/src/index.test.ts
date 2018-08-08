@@ -1,4 +1,4 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import "../../../scripts/setup-tests.js";
+import "../../../presentation/scripts/setup-tests.js";

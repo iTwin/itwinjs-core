@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import "../../../scripts/setup-tests.js";
+import "../../scripts/setup-tests.js";
 
 const shouldRecurseIntoDirectory = (directoryPath: string) => {
   return fs.lstatSync(directoryPath).isDirectory()

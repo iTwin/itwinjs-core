@@ -11,8 +11,8 @@
         "@bentley/presentation-common/lib/*"
       ],
       "@helpers/*": [
-        "../../presentation/common/tests/_helpers/*",
-        "../../presentation/frontend/tests/_helpers/*"
+        "../../../presentation/common/tests/_helpers/*",
+        "../../../presentation/frontend/tests/_helpers/*"
       ]
     }
   },

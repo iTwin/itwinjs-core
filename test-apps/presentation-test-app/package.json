@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "0.112.0",
+    "@bentley/bwc": "^6.0.1",
     "@bentley/imodeljs-react-scripts": "^5.4.6",
     "@types/body-parser": "^1.17.0",
     "@types/bunyan": "^1.8.4",

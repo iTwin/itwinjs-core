@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as enzyme from "enzyme";
 import * as chaiJestSnapshot from "chai-jest-snapshot";
-import "../../../scripts/setup-tests.js";
+import "../../scripts/setup-tests.js";
 
 // configure enzyme (testing utils for React)
 enzyme.configure({ adapter: new (require("enzyme-adapter-react-16"))() }); // tslint:disable-line:no-var-requires
