@@ -1657,6 +1657,7 @@ export class Viewport {
     if (!sync.isValidScene) {
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
+      view.createTerrain(context);
       context.requests.requestMissing();
       target.changeScene(context.graphics);
       target.changeTerrain(context.terrain);

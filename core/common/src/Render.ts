@@ -442,6 +442,8 @@ export class ViewFlags {
   public monochrome: boolean = false;
   /** Ignore geometry maps */
   public noGeometryMap: boolean = false;
+  /** Display background map */
+  public backgroundMap: boolean = false;
   /** Use material colors for hidden lines */
   public hLineMaterialColors: boolean = false;
   /** 0=none, 1=generate mask, 2=use mask */
@@ -474,6 +476,7 @@ export class ViewFlags {
       val.monochrome = other.monochrome;
       val.noGeometryMap = other.noGeometryMap;
       val.hLineMaterialColors = other.hLineMaterialColors;
+      val.backgroundMap = other.backgroundMap;
       val.edgeMask = other.edgeMask;
     }
     return val;
@@ -513,6 +516,7 @@ export class ViewFlags {
     if (this.clipVolume) out.clipVol = true;
     if (this.hLineMaterialColors) out.hlMatColors = true;
     if (this.monochrome) out.monochrome = true;
+    if (this.backgroundMap) out.backgroundMap = true;
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
 
     out.renderMode = this.renderMode;
@@ -545,6 +549,7 @@ export class ViewFlags {
     val.monochrome = JsonUtils.asBool(json.monochrome);
     val.edgeMask = JsonUtils.asInt(json.edgeMask);
     val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
+    val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
 
     const renderModeValue = JsonUtils.asInt(json.renderMode);
     if (renderModeValue < RenderMode.HiddenLine)
@@ -581,6 +586,7 @@ export class ViewFlags {
       && this.monochrome === other.monochrome
       && this.noGeometryMap === other.noGeometryMap
       && this.hLineMaterialColors === other.hLineMaterialColors
+      && this.backgroundMap === other.backgroundMap
       && this.edgeMask === other.edgeMask;
   }
 }
@@ -610,6 +616,7 @@ export namespace ViewFlag {
     kGeometryMap,
     kHlineMaterialColors,
     kEdgeMask,
+    kBackgroundMap,
   }
 
   /**
@@ -661,6 +668,7 @@ export namespace ViewFlag {
     public setShowConstructions(val: boolean) { this.values.constructions = val; this.setPresent(PresenceFlag.kConstructions); }
     public setMonochrome(val: boolean) { this.values.monochrome = val; this.setPresent(PresenceFlag.kMonochrome); }
     public setIgnoreGeometryMap(val: boolean) { this.values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
+    public setShowBackgroundMap(val: boolean) { this.values.backgroundMap = val; this.setPresent(PresenceFlag.kBackgroundMap); }
     public setUseHlineMaterialColors(val: boolean) { this.values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
     public setEdgeMask(val: number) { this.values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
     public setRenderMode(val: RenderMode) { this.values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
@@ -690,6 +698,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kConstructions)) base.constructions = this.values.constructions;
       if (this.isPresent(PresenceFlag.kMonochrome)) base.monochrome = this.values.monochrome;
       if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this.values.noGeometryMap;
+      if (this.isPresent(PresenceFlag.kBackgroundMap)) base.backgroundMap = this.values.backgroundMap;
       if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this.values.hLineMaterialColors;
       if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this.values.edgeMask;
       if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this.values.renderMode;

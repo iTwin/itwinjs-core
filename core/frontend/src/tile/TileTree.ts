@@ -7,7 +7,6 @@ import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDurat
 import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
-import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { GraphicType } from "../render/GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
@@ -418,7 +417,7 @@ export namespace Tile {
       return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
     }
 
-    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector, viewFrustum?: ViewFrustum) {
+    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
       this.location = location;
       this.root = root;
       this.clip = clip;
@@ -427,7 +426,7 @@ export namespace Tile {
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
       this.missing = context.requests.getMissing(root);
-      this.viewFrustum = viewFrustum !== undefined ? viewFrustum : context.viewport.viewFrustum;
+      this.viewFrustum = context.doTerrain ? ViewFrustum.createFromWidenedViewport(context.viewport) : context.viewport.viewFrustum;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
     }
@@ -453,10 +452,7 @@ export namespace Tile {
 
       const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
       const branch = this.context.createBranch(this.graphics, this.location, clipVolume);
-      if (this.root.isTerrain)
-        this.context.outputTerrain(branch);
-      else
-        this.context.outputGraphic(branch);
+      this.context.outputGraphic(branch);
     }
 
     public insertMissing(tile: Tile): void { this.missing.insert(tile); }
@@ -485,7 +481,8 @@ export namespace Tile {
 }
 
 export class TileTree implements IDisposable {
-  public readonly model: GeometricModelState;
+  public readonly iModel: IModelConnection;
+  public readonly is3d: boolean;
   public readonly location: Transform;
   public readonly id: Id64;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
@@ -494,11 +491,11 @@ export class TileTree implements IDisposable {
   public clipVector?: ClipVector;
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
-  public readonly isTerrain: boolean;
   public readonly yAxisUp: boolean;
 
   public constructor(props: TileTree.Params) {
-    this.model = props.model;
+    this.iModel = props.iModel;
+    this.is3d = props.is3d;
     this.id = props.id;
     this.location = props.location;
     this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
@@ -507,7 +504,6 @@ export class TileTree implements IDisposable {
     this.loader = props.loader;
     this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
-    this.isTerrain = props.isTerrain ? props.isTerrain : false;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
   }
 
@@ -517,10 +513,9 @@ export class TileTree implements IDisposable {
     dispose(this._rootTile);
   }
 
-  public get is3d(): boolean { return this.model.is3d; }
-  public get is2d(): boolean { return this.model.is2d; }
-  public get modelId(): Id64 { return this.model.id; }
-  public get iModel(): IModelConnection { return this.model.iModel; }
+  public get is2d(): boolean { return !this.is3d; }
+  public get modelId(): Id64 { return this.id; }
+
   public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new ElementAlignedBox3d(); }
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
@@ -551,10 +546,7 @@ export class TileTree implements IDisposable {
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
-    const vf = this.isTerrain ? ViewFrustum.createFromWidenedViewport(context.viewport) : undefined;
-    if (this.isTerrain)
-      console.log("Creating new WebMercator tree draw args"); // tslint:disable-line:no-console
-    return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector, vf);
+    return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector);
   }
 
   public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }
@@ -592,16 +584,16 @@ export abstract class TileLoader {
     streamBuffer.rewind(4);
     switch (format) {
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.model, tile.range, IModelApp.renderSystem, tile.yAxisUp, isCanceled);
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, isCanceled);
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.model, IModelApp.renderSystem, isCanceled);
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, isCanceled);
         break;
 
       case TileIO.Format.Pnts:
         {
-          tile.setGraphic(PntsTileIO.readPointCloud(streamBuffer, tile.root.model, tile.range, IModelApp.renderSystem, tile.yAxisUp));
+          tile.setGraphic(PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp));
           return;
         }
     }
@@ -649,7 +641,8 @@ export namespace TileTree {
     public constructor(
       public readonly id: Id64,
       public readonly rootTile: TileProps,
-      public readonly model: GeometricModelState,
+      public readonly iModel: IModelConnection,
+      public readonly is3d: boolean,
       public readonly loader: TileLoader,
       public readonly location: Transform,
       public readonly maxTilesToSkip?: number,
@@ -657,8 +650,8 @@ export namespace TileTree {
       public readonly isTerrain?: boolean,
       public readonly clipVector?: ClipVector) { }
 
-    public static fromJSON(props: TileTreeProps, model: GeometricModelState, loader: TileLoader) {
-      return new Params(Id64.fromJSON(props.id), props.rootTile, model, loader, Transform.fromJSON(props.location), props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
+    public static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader) {
+      return new Params(Id64.fromJSON(props.id), props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
     }
   }
 

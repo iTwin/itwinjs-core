@@ -465,12 +465,13 @@ export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
   public readonly terrain: RenderGraphic[] = [];
   public readonly requests: TileRequests;
+  public doTerrain: boolean = false;
 
   public constructor(vp: Viewport, requests: TileRequests) {
     super(vp);
     this.requests = requests;
   }
 
-  public outputGraphic(graphic: RenderGraphic): void { this.graphics.push(graphic); }
-  public outputTerrain(graphic: RenderGraphic): void { this.terrain.push(graphic); }
+  public setDoTerrain(): void { this.doTerrain = true; }
+  public outputGraphic(graphic: RenderGraphic): void { this.doTerrain ? this.terrain.push(graphic) : this.graphics.push(graphic); }
 }
