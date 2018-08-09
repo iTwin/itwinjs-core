@@ -1,6 +1,6 @@
-# ECJs
+# ECSchema Metadata
 
-ECJs provides an API to work with EC metadata in Javascript (build using Typescript).
+ECSchema Metadata provides an API to work with EC metadata in Javascript (build using Typescript).
 
 ## Getting Started
 
