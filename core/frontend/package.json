@@ -1,0 +1,65 @@
+{
+  "name": "@bentley/imodeljs-frontend",
+  "version": "0.112.0",
+  "description": "iModelJs frontend components",
+  "main": "lib/frontend.js",
+  "typings": "lib/frontend",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc 1>&2 && npm run copy:public",
+    "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
+    "copy:public": "cpx ./src/public/**/* ./lib/public",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend/json/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2"
+  },
+  "repository": {},
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "0.112.0",
+    "@bentley/geometry-core": "0.112.0",
+    "@bentley/imodeljs-clients": "0.112.0",
+    "@bentley/imodeljs-common": "0.112.0",
+    "@bentley/imodeljs-i18n": "0.112.0"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "0.112.0",
+    "@bentley/bentleyjs-tools": "0.112.0",
+    "@bentley/geometry-core": "0.112.0",
+    "@bentley/imodeljs-clients": "0.112.0",
+    "@bentley/imodeljs-common": "0.112.0",
+    "@bentley/imodeljs-i18n": "0.112.0",
+    "@types/i18next": "^8.4.2",
+    "@types/i18next-browser-languagedetector": "^2.0.1",
+    "@types/i18next-xhr-backend": "^1.4.1",
+    "@types/js-base64": "^2.3.1",
+    "cpx": "^1.5.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.10.1",
+    "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typescript": "~2.9.1"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+  ],
+  "dependencies": {
+    "fuse.js": "^3.2.0",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
+    "js-base64": "^2.4.5"
+  }
+}

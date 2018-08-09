@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dialog <Dialog /> renders correctly 1`] = `
+<div
+  className="dialog dialog-open"
+>
+  <div
+    className="dialog-container"
+    style={
+      Object {
+        "height": "",
+        "left": "",
+        "margin": "",
+        "top": "",
+        "width": "50%",
+      }
+    }
+  >
+    <div
+      className="dialog-area"
+    >
+      <div
+        className="dialog-head"
+        onMouseDown={[Function]}
+      >
+        <div
+          className="dialog-title"
+        />
+        <span
+          className="dialog-close icon icon-close"
+        />
+      </div>
+      <div
+        className="dialog-content"
+      />
+      <div
+        className="dialog-footer"
+      >
+        <div
+          className="dialog-buttons"
+        />
+      </div>
+    </div>
+    <div
+      className="dialog-drag dialog-drag-right"
+      onMouseDown={[Function]}
+      onTouchStart={[Function]}
+    />
+    <div
+      className="dialog-drag dialog-drag-bottom-mid"
+      onMouseDown={[Function]}
+      onTouchStart={[Function]}
+    />
+    <div
+      className="dialog-drag dialog-drag-bottom-right"
+      onMouseDown={[Function]}
+      onTouchStart={[Function]}
+    />
+  </div>
+</div>
+`;

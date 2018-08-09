@@ -1,0 +1,22 @@
+@import "_helpers";
+
+// Order matters, last is top-most on screen.
+$nz-internal-z-index-layers: content, zones, zone-target, zone-outline, backstage-overlay, backstage, expandable, toolbarHistory, toolbarPanel, message, dialog, tooltip;
+
+$nz-z-index-step: 1000;
+
+@function nz-internal-get-next-z-index-step($counter) {
+  @return $counter + $nz-z-index-step;
+}
+
+$nz-internal-z-index-layer-map: nz-map-from-array-with-result-arg($nz-internal-z-index-layers, get-function(nz-internal-get-next-z-index-step), 0);
+
+// Use this to get z-index value
+@function nz-get-z-index($layer) {
+  @return map-get($nz-internal-z-index-layer-map, $layer);
+}
+
+// Use this to add z-index property
+@mixin nz-z-index($layer) {
+  z-index: nz-get-z-index($layer);
+}

@@ -1,0 +1,12 @@
+/* $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $ */
+@import "@bentley/bwc/lib/index.scss";
+
+.bui-waitspinner-div {
+  background-color: #eef0f3;
+  text-align: center;
+  line-height: 100px;
+  }
+
+  .bui-waitspinner-loader {
+    @include bwc-loaders-medium;
+  }

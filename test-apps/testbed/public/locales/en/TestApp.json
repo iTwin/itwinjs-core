@@ -1,0 +1,30 @@
+{
+  "tools": {
+    "Test": {
+      "Immediate": {
+        "keyin": "Localized TestImmediate Keyin",
+        "flyover": "Localized TestImmediate Flyover",
+        "description": "Test of an Immediate Command"
+      },
+      "AnotherImmediate": {
+        "keyin": "Localized AnotherImmediate keyin and flyover",
+        "description": "Another Immediate Command description"
+      },
+      "ThirdImmediate": {
+        "keyin": "Localized ThirdImmediate Keyin",
+        "flyover": "ThirdImmediate flyover and description"
+      },
+      "FourthImmediate": {
+        "keyin": "Localized FourthImmediate keyin, flyover, and description"
+      }
+    }
+  },
+  "TrivialTests": {
+    "Test1": "Localized Trivial Test 1",
+    "Test2": "Localized Trivial Test 2"
+  },
+  "SubstitutionTests": {
+    "Test1": "Substitute {{varA}} and {{varB}}",
+    "Test2": "Reverse substitute {{varB}} and {{varA}}"
+  }
+}

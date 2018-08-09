@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestBim" alias="testbim" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
+  <ECEntityClass typeName="TestDocument">
+    <BaseClass>bis:Document</BaseClass>
+    <BaseClass>bis:ISubModeledElement</BaseClass>
+    <ECProperty propertyName="testDocumentProperty" typeName="int" displayLabel="test doc prop"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestDefinitionModel">
+    <BaseClass>bis:DefinitionModel</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestDefinitionElement">
+    <BaseClass>bis:DefinitionElement</BaseClass>
+    <ECProperty propertyName="testProperty" typeName="string"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestPhysicalElement">
+    <BaseClass>bis:DefinitionElement</BaseClass>
+    <ECProperty propertyName="testProperty" typeName="string"/>
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="TestPhysicalObjectRelatedToTestPhysicalObject" strengthDirection="Backward" strength="referencing" modifier="Sealed">
+      <Source multiplicity="(0..1)" polymorphic="true" roleLabel="a" >
+          <Class class="TestPhysicalObject"/>
+      </Source>
+      <Target multiplicity="(0..1)" polymorphic="true" roleLabel="b" >
+          <Class class="TestPhysicalObject"/>
+      </Target>
+  </ECRelationshipClass>
+
+  <ECEntityClass typeName="TestPhysicalObject" >
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECNavigationProperty propertyName="relatedElement" relationshipName="TestPhysicalObjectRelatedToTestPhysicalObject" direction="Forward" readOnly="True"/>
+    <ECProperty propertyName="longProp" typeName="long" displayLabel="an int64_t value" />
+    <ECProperty propertyName="intProperty" typeName="int" displayLabel="an int32 value" />
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="TestModelModelsElement" strength="embedding" strengthDirection="Backward" modifier="None">
+      <BaseClass>bis:ModelModelsElement</BaseClass>
+      <Source multiplicity="(0..1)" roleLabel="models" polymorphic="true">
+          <Class class="bis:Model"/>
+      </Source>
+      <Target multiplicity="(0..1)" roleLabel="is modeled by" polymorphic="true">
+          <Class class="bis:ISubModeledElement" />
+      </Target>
+  </ECRelationshipClass>
+
+</ECSchema>

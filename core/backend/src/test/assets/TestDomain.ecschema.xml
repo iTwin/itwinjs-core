@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestDomain" alias="testbim" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+    <ECEntityClass typeName="IMixin" modifier="Abstract">
+        <ECCustomAttributes>
+            <IsMixin xmlns="CoreCustomAttributes.1.0">
+                <AppliesToEntityClass>TestDomainClass</AppliesToEntityClass>
+            </IsMixin>
+        </ECCustomAttributes>
+        <ECProperty propertyName="TestMixinProperty" typeName="int" description="A property that is inherited by any class which applies the mixin."/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestDomainClass" description="A test domain class that has a base and mixin applied to it.">
+        <BaseClass>bis:DefinitionElement</BaseClass>
+        <BaseClass>IMixin</BaseClass>
+        <ECProperty propertyName="TestProperty" typeName="int"/>
+    </ECEntityClass>
+</ECSchema>

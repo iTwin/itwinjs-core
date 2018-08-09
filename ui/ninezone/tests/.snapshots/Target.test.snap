@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Target /> renders correctly 1`] = `
+<div
+  className="nz-zones-target-target"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+/>
+`;

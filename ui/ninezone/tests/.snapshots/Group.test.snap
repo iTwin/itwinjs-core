@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Group /> renders correctly 1`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-group"
+>
+  <Title />
+  <Columns />
+</Panel>
+`;

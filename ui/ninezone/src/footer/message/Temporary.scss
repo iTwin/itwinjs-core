@@ -1,0 +1,8 @@
+@import "../../_z-index";
+
+.nz-footer-message-temporary {
+  position: absolute;
+  padding: 10px 15px;
+  background-color: rgba(#EEE, 0.8);
+  @include nz-z-index(message);
+}

@@ -1,0 +1,53 @@
+{
+  "name": "@bentley/imodeljs-i18n",
+  "version": "0.112.0",
+  "description": "iModelJs localization code",
+  "main": "lib/i18n",
+  "typings": "lib/i18n",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/i18n/json/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2"
+  },
+  "repository": {},
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "0.112.0"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "0.112.0",
+    "@bentley/bentleyjs-tools": "0.112.0",
+    "@types/i18next": "^8.4.2",
+    "@types/i18next-browser-languagedetector": "^2.0.1",
+    "@types/i18next-xhr-backend": "^1.4.1",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.10.1",
+    "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typescript": "~2.9.1"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-i18n",
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: imodeljs-i18n should remain UI technology agnostic, so no react/angular dependencies are allowed"
+  ],
+  "dependencies": {
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1"
+  }
+}

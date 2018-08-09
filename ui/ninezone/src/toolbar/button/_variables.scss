@@ -1,0 +1,22 @@
+@import "@bentley/ui-core/lib/colors";
+
+// Common
+$button-stroke-width: 2px;
+$button-stroke-color: $background-5;
+$button-stroke-radius: 3px;
+
+$icon-color: rgba($text-dark, 0.88);
+$pressed-icon-color: rgba($text-light, 0.88);
+$hovered-icon-color: $primary-tone;
+$icon-shadow: drop-shadow(0 1px 0 $text-light);
+$no-shadow: drop-shadow(0 0 0 transparent);
+
+$bar-width: 8px;
+$bar-height: 2px;
+$bar-right-corner-radius: 1px;
+
+// Mouse + Large screen
+$mls-button-width: 60px;
+$mls-button-height: 60px;
+
+$mls-icon-size: 36px;

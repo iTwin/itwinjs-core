@@ -1,0 +1,17 @@
+{
+  "extends": "@bentley/bentleyjs-tools/tslint.json",
+  "rules": {
+    "no-console": [
+      false
+    ],
+    "unified-signatures": false,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "always"
+      }
+    ]
+  }
+}

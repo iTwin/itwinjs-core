@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+.message-box-container {
+  display: flex;
+  .message-box-icon {
+    flex: 0 0;
+    font-size: $bwc-icons-medium;
+    padding: 0 $bwc-unbordered-padding $bwc-unbordered-padding $bwc-unbordered-padding;
+  }
+  .message-box-content {
+    flex: 1 1;
+  }
+}
+
+.message-box-success {
+  color: $bwc-green;
+}
+.message-box-information {
+  color: $bwc-blue;
+}
+.message-box-question {
+  color: $bwc-yellow;
+}
+.message-box-warning {
+  color: $bwc-orange;
+}
+.message-box-error, .message-box-fatal {
+  color: $bwc-red;
+}
+
+.notifymessage-icon {
+  margin-right: 6px;
+}

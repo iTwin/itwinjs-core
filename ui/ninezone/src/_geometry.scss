@@ -1,0 +1,66 @@
+@mixin triangle-common {
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+@mixin triangle-left-color($color: black) {
+  border-color: transparent $color transparent transparent;
+}
+
+@mixin triangle-left($height: $width, $width: $height, $color: black) {
+  border-width: ($height / 2) $width ($height / 2) 0;
+
+  @include triangle-common;
+  @include triangle-left-color($color);
+}
+
+@mixin triangle-top-color($color: black) {
+  border-color: transparent transparent $color transparent;
+}
+
+@mixin triangle-top($height: $width, $width: $height, $color: black) {
+  border-width: 0 ($width / 2) $height ($width / 2);
+
+  @include triangle-common;
+  @include triangle-top-color($color);
+}
+
+@mixin triangle-right-color($color: black) {
+  border-color: transparent transparent transparent $color;
+}
+
+@mixin triangle-right($height: $width, $width: $height, $color: black) {
+  border-width: ($height / 2) 0 ($height / 2) $width;
+
+  @include triangle-common;
+  @include triangle-right-color($color);
+}
+
+@mixin triangle-bottom-color($color: black) {
+  border-color: $color transparent transparent transparent;
+}
+
+@mixin triangle-bottom($height: $width, $width: $height, $color: black) {
+  border-width: $height ($width / 2) 0 ($width / 2);
+
+  @include triangle-common;
+  @include triangle-bottom-color($color);
+}
+
+@mixin triangle-bottom-right-color($color: black) {
+  border-color: transparent transparent $color transparent;
+}
+
+@mixin triangle-bottom-right($height: $width, $width: $height, $color: black) {
+  border-width: 0 0 $height $width;
+
+  @include triangle-common;
+  @include triangle-bottom-right-color($color);
+}
+
+@mixin oval($width: $height, $height: $width) {
+  width: $width;
+  height: $height;
+  border-radius: #{$width / 2} / #{$height / 2};
+}

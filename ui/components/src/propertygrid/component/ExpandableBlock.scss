@@ -1,0 +1,118 @@
+@import "@bentley/bwc/lib/mixins";
+
+.BwcExpandableBlock {
+  @include bwc-expandable-blocks-block;
+}
+
+.BwcExpandableBlock .VerticalPropertyRecord {
+  border-top: 1px solid #ccc;
+}
+
+.BwcExpandableBlock .VerticalPropertyRecord .PropertyName {
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-top: 0.2em;
+}
+
+.BwcExpandableBlock .VerticalPropertyRecord .PropertyValue {
+  margin-top: 0.2em;
+  margin-bottom: 0.4em;
+  font-size: 0.85em;
+}
+
+.BwcExpandableBlock .VerticalPropertyRecord:last-child .PropertyValue {
+  margin-bottom: 0.1em;
+}
+
+.BwcExpandableBlock .HorizontalPropertyList {
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+.BwcExpandableBlock .HorizontalPropertyList td {
+  border: 1px solid #ccc;
+  padding: 0.25em;
+}
+
+.BwcExpandableBlock .HorizontalPropertyRecord .PropertyName {
+  font-size: 0.85em;
+  padding-right: 1em;
+  width: 25%;
+}
+
+.BwcExpandableBlock .HorizontalPropertyRecord .PropertyValue {
+  font-size: 0.85em;
+}
+
+.BwcExpandableBlock .HorizontalPropertyList {
+  width: 100%;
+}
+
+.BwcExpandableBlock .SmallerPadding {
+  padding: 4px;
+}
+
+.BwcExpandableBlock .header .SmallerIconContainer {
+  line-height: 23px;
+  width: 23px;
+}
+
+.BwcExpandableBlock .header .SmallerTitle {
+  font-size: 0.95em;
+  line-height: 23px;
+}
+
+.BwcExpandableBlocksList {
+  @include bwc-expandable-blocks-list;
+}
+
+.PropertyGrid {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.PropertyGridWrapper {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+
+  @supports (-webkit-overflow-scrolling: touch) {
+    overflow-y: scroll; /* overflow-y has to be scroll, not auto */
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+// Experimental from Bil G. - grid, group, row
+.grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  grid-gap: 5px;
+  border: solid 2px green;
+}
+.group, .row {
+  /* span the whole grid */
+  grid-column: 1 / -1;
+
+  /* create another grid and inherit the values from the parent grid */
+  display: inherit;
+  grid-template-columns: inherit;
+  grid-gap: inherit;
+
+  /* overwrite the display for browsers that understand display: contents */
+  display: contents; /* See: https://gridbyexample.com/video/subgrid-display-contents/ */
+}
+
+.group-name {
+  grid-column: 1 / -1; /* spans the whole grid */
+  background: rgba(255, 0, 0, .5);
+}
+.row-label {
+  padding: .5em;
+  background: rgba(0, 255, 0, .5);
+}
+.row-value {
+  background: rgba(0, 0, 255, .25);
+}
+.group.collapsed > .row {
+  display: none;
+}

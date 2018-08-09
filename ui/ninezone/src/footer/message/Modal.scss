@@ -1,0 +1,24 @@
+@import "../../_z-index";
+@import "../../_prefix";
+
+.nz-footer-message-modal {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: rgba(#333, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @include nz-z-index(dialog);
+
+  > .nz-dialog {
+    max-height: 50%;
+    max-width: 55%;
+    min-height: 200px;
+    min-width: 180px;
+    display: flex;
+  }
+}

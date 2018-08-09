@@ -1,0 +1,12 @@
+@import "../_variables";
+
+.nz-footer-message-content-dialog-content-content {
+  padding: $nz-dialog-padding;
+  height: 100%;
+  box-sizing: border-box;
+
+  > .nz-content {
+    height: 100%;
+    overflow: hidden;
+  }
+}

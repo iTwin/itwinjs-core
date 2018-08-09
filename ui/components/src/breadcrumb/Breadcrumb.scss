@@ -1,0 +1,209 @@
+/*---------------------------------------------------------------------------------------------
+ | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+
+$breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
+
+.breadcrumb {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+
+  &.breadcrumb-active {
+    > .breadcrumb-head {
+      > .breadcrumb-input {
+        display: block;
+      }
+
+      > .breadcrumb-close {
+        display: block;
+      }
+
+      > .breadcrumb-split-buttons {
+        display: none;
+      }
+    }
+  }
+
+  > .breadcrumb-head {
+    position: relative;
+
+    > .breadcrumb-input {
+      @include bwc-inputs-input;
+
+      width: calc(100% - #{$breadcrumb-edge});
+      display: none;
+      height: $bwc-line-height;
+    }
+
+    > .breadcrumb-close {
+      display: none;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      padding: $bwc-inputs-padding-bordered - 1px;
+      margin: $bwc-inputs-margin 0;
+      height: $bwc-line-height;
+      width: $bwc-line-height;
+      font-size: $bwc-icons-small;
+      line-height: $bwc-line-height;
+      text-align: center;
+      cursor: pointer;
+
+      &:hover {
+        color: $bwc-blue;
+      }
+    }
+
+    > .context-menu .context-menu-item {
+      padding: $bwc-bordered-padding;
+      transform: rotate(180deg);
+
+      > .context-menu-icon {
+        display: none;
+      }
+
+      > .context-menu-content {
+        transform: rotate(-180deg);
+      }
+    }
+
+    > .breadcrumb-split-buttons {
+      @include bwc-inputs-input;
+
+      display: flex;
+      width: calc(100% - #{$breadcrumb-edge});
+      background-color: white;
+
+      > .breadcrumb-up-dir {
+        height: $bwc-line-height;
+        width: $bwc-line-height;
+        flex-shrink: 0;
+        flex-grow: 0;
+        font-size: $bwc-icons-small;
+        border-right: 1px solid $bwc-inputs-border-color;
+        margin-right: $bwc-bordered-padding;
+        cursor: pointer;
+
+        &:hover {
+          color: $bwc-blue;
+        }
+
+        &.root {
+          color: $bwc-gray;
+          cursor: default;
+
+          &:hover {
+            color: $bwc-gray;
+          }
+        }
+      }
+
+      > .breadcrumb-split-button {
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+
+        .split-button-arrow-icon {
+          font-size: 10px;
+          line-height: $bwc-line-height;
+          transform: rotate(-90deg);
+        }
+
+        &.expanded .split-button-arrow-icon {
+          transform: rotate(0deg);
+        }
+      }
+
+      .breadcrumb-end-node {
+        @include bwc-text-block;
+
+        margin: 0;
+        user-select: none;
+        cursor: pointer;
+
+        &:hover {
+          color: $bwc-blue;
+        }
+      }
+    }
+
+    .breadcrumb-selected {
+      font-weight: bold;
+    }
+  }
+
+  > .breadcrumb-details {
+    background-color: $bwc-white;
+    border: 1px solid $bwc-inputs-border-color;
+
+    > .breadcrumb-detail-row {
+      display: flex;
+      padding: $bwc-bordered-padding;
+      cursor: default;
+
+      &:hover {
+        background-color: $bwc-gray;
+      }
+
+      &:not(:last-child) {
+        border-bottom: 1px solid $bwc-inputs-border-color;
+      }
+
+      > .breadcrumb-detail-icon {
+        text-align: center;
+        line-height: $bwc-line-height;
+        height: $bwc-line-height;
+        width: $bwc-line-height;
+        font-size: $bwc-line-height;
+      }
+
+      > .breadcrumb-detail-content {
+        @include bwc-text(body);
+      }
+    }
+  }
+}
+
+.breadcrumb-details {
+  &:focus {
+    outline: 0;
+  }
+
+  overflow: auto;
+  background-color: $bwc-white;
+  border: 1px solid $bwc-inputs-border-color;
+
+  > .breadcrumb-detail-row {
+    display: flex;
+    user-select: none;
+    padding: $bwc-bordered-padding;
+    cursor: default;
+
+    &:hover {
+      background-color: $bwc-gray;
+    }
+
+    &.selected {
+      background-color: $bwc-blue;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid $bwc-inputs-border-color;
+    }
+
+    > .breadcrumb-detail-icon {
+      text-align: center;
+      line-height: $bwc-line-height;
+      height: $bwc-line-height;
+      width: $bwc-line-height;
+      font-size: $bwc-line-height;
+      margin-right: $bwc-unbordered-padding;
+    }
+
+    > .breadcrumb-detail-content {
+      @include bwc-text(body);
+    }
+  }
+}

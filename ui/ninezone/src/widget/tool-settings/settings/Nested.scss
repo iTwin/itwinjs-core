@@ -1,0 +1,29 @@
+.nz-widget-toolSettings-settings-nested {
+  display: block;
+
+  > .nz-header {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    grid-auto-columns: auto 1fr;
+    grid-column-gap: 5px;
+    margin-bottom: 5px;
+
+    > .nz-button {
+      grid-row: 1;
+      width: 25px;
+      height: 25px;
+
+      > .nz-back-icon {
+        > * {
+          width: 15px;
+          height: 15px;
+        }
+      }
+    }
+
+    > .nz-label {
+      grid-row: 1;
+    }
+  }
+}

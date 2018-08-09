@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Assistance /> renders correctly 1`] = `
+<div
+  className="nz-widget-toolSettings-assistance-assistance"
+/>
+`;

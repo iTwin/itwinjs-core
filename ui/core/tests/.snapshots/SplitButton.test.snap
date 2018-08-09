@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SplitButton /> renders correctly 1`] = `
+<div
+  className="split-button"
+>
+  <div
+    className="split-button-label"
+  >
+    <React.Fragment />
+     
+    test
+  </div>
+  <div
+    className="split-button-arrow"
+    onClick={[Function]}
+    onKeyUp={[Function]}
+    tabIndex={0}
+  >
+    <div
+      className="split-button-arrow-icon icon icon-chevron-down"
+    />
+    <ContextMenu
+      autoflip={false}
+      directionX={2}
+      directionY={5}
+      edgeLimit={true}
+      floating={true}
+      onBlur={[Function]}
+      onEsc={[Function]}
+      onSelect={[Function]}
+      opened={false}
+      parentHeight={0}
+      parentWidth={0}
+      selected={0}
+    />
+  </div>
+</div>
+`;

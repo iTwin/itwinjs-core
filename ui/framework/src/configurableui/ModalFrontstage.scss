@@ -1,0 +1,83 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/index.scss";
+
+ .modal-frontstage {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  z-index: 900;
+  box-sizing: border-box;
+  transition: all .5s ease;
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+  background: transparent;
+  transition: background .25s ease, visibility 0s ease 0.275s;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.modal-frontstage.open {
+  // background: #f9f9f9;
+  // filter: opacity(100%);
+  visibility: visible;
+  pointer-events: unset;
+  transition: background .25s ease;
+}
+
+.modal-frontstage .app-bar {
+  transition: transform .125s;
+  padding: 10px;
+  background: #16191b;
+  height: 60px;
+  transform: translateY(-100%);
+}
+
+.modal-frontstage .modal-content {
+  overflow: hidden;
+  height: 100%;
+}
+
+.modal-frontstage.open .app-bar {
+  transform: translateY(0%);
+  transition: transform .125s ease;
+}
+
+.modal-frontstage .app-bar .bwc-text-headline {
+  display: inline-block;
+  color: #FFF;
+  line-height: 60px;
+  vertical-align: top;
+  padding: 0 15px;
+  margin: 0;
+  font-size: 28px;
+}
+
+.modal-frontstage .app-bar .app-bar-right {
+  color: #FFF;
+  line-height: 60px;
+  vertical-align: center;
+  float: right;
+  margin-right: 20px;
+}
+
+.modal-frontstage .app-bar > :first-child  {
+  display: inline-block;
+  border: solid 3px #FFF;
+  fill: #FFF !important;
+  color: #FFF;
+  transition: all .125s ease;
+}
+
+.modal-frontstage .app-bar > :first-child svg {
+  filter: none !important;
+}
+
+.modal-frontstage .app-bar > :first-child:hover:not(.is-pressed) {
+  border-color: $bwc-blue !important;
+  fill: #008be1 !important;
+}

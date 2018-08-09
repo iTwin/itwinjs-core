@@ -1,0 +1,8 @@
+[
+{"cylinder":
+ {"capped":false,
+  "start":[1,2,1],
+  "end":[2,3,8],
+  "radius":0.5
+ }
+}]

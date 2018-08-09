@@ -1,0 +1,17 @@
+@import "../../../../_math";
+@import "_variables";
+
+.nz-toolbar-item-expandable-group-backArrow {
+  $border: solid $back-arrow-thickness currentColor;
+  $size: sqrt($back-arrow-size-val * $back-arrow-size-val * 8) / 2 + px;
+
+  color: $text-light;
+  width: $size;
+  height: $size;
+  border-top: $border;
+  border-left: $border;
+  margin-left: $back-arrow-thickness;
+  margin-top: $back-arrow-thickness;
+  box-sizing: border-box;
+  transform: rotate(-45deg);
+}
