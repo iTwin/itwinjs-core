@@ -16,6 +16,7 @@ import {
   GraphicType,
   GeometryAccumulator,
   DisplayParams,
+  Branch,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d, Polyface, IndexedPolyface, Point2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
@@ -419,7 +420,9 @@ describe("PrimitiveBuilder tests", () => {
     accum.addPolyface(loopGeom.getPolyfaces(0.22)![0].indexedPolyface, displayParams, Transform.createIdentity());
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
-    primBuilder.finishGraphic(accum);
-    expect(primBuilder.primitives.length).to.equal(2);
+    const graphic = primBuilder.finishGraphic(accum);
+    expect(primBuilder.primitives.length).to.equal(0); // if only 1 entry (a branch), the list of primitives is popped.
+    expect(graphic instanceof Branch).to.be.true;
+    expect((graphic as Branch).branch.entries.length).to.equal(2);
   });
 });
