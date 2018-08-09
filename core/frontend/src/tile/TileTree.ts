@@ -546,7 +546,7 @@ export class TileTree implements IDisposable {
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
-    return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector);
+    return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVector);
   }
 
   public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }

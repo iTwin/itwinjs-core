@@ -851,8 +851,6 @@ export namespace Attachments {
 
     /** Returns true if this attachment is a 2d view attachment. */
     public abstract get is2d(): boolean;
-    /** Returns true if this attachment is a 3d view attachment. */
-    public abstract get is3d(): boolean;
     /** Returns true if this attachment is ready to be drawn. */
     public abstract get state(): State;
     /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
@@ -937,7 +935,6 @@ export namespace Attachments {
     }
 
     public get is2d(): boolean { return true; }
-    public get is3d(): boolean { return false; }
     public get state(): State { return this._status; }
 
     public load(_sheetView: SheetViewState, _sceneContext: SceneContext) {
@@ -955,15 +952,13 @@ export namespace Attachments {
       this.states = [];
     }
 
-    // ###TODO: Make this state used by attachments list and get rid of 3d attachments flag on SheetViewState
+    public get is2d(): boolean { return false; }
+
     /**
-     * Returns "loaded" state.
-     * 3d view attachments tell the SheetViewState directly whether or not to continue creating the scene using its "all3dAttachmentTilesReady" member.
+     * Always returns a state of "Ready".
+     * 3d view attachments tell the SheetViewState directly whether or not to continue creating the scene by modifying its "all3dAttachmentTilesReady" member.
      */
     public get state(): State { return State.Ready; }
-
-    public get is2d(): boolean { return false; }
-    public get is3d(): boolean { return false; }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
     public getState(depth: number): State { return depth < this.states.length ? this.states[depth] : State.NotLoaded; }

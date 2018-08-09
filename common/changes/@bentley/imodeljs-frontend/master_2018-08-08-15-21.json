@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix for 2d views attachments modifying transform of their root view",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "nate.rex@bentley.com"
+}
