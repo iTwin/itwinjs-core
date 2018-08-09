@@ -653,8 +653,7 @@ export class ViewFrustum {
   }
 
   public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
-    const vf = new ViewFrustum(view !== undefined ? view : vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight);
-    return vf.invalidFrustum ? undefined : vf;
+    return new ViewFrustum(view !== undefined ? view : vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight);
   }
 
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
