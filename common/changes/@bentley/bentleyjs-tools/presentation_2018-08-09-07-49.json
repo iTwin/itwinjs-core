@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support multiple file extensions for sample code extraction (separated by comma)",
+      "packageName": "@bentley/bentleyjs-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-tools",
+  "email": "grigas.petraitis@bentley.com"
+}

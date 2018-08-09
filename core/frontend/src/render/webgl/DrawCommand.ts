@@ -192,7 +192,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], [], [], []];
+  private readonly _commands: DrawCommands[];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -220,8 +220,8 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Hilite))
       flags |= CompositeFlags.Hilite;
 
-    assert(4 === RenderPass.Translucent);
-    assert(6 === RenderPass.Hilite);
+    assert(5 === RenderPass.Translucent);
+    assert(7 === RenderPass.Hilite);
 
     return flags;
   }
@@ -232,7 +232,9 @@ export class RenderCommands {
   constructor(target: Target, stack: BranchStack) {
     this.target = target;
     this._stack = stack;
-    assert(RenderPass.COUNT === this._commands.length);
+    this._commands = Array<DrawCommands>(RenderPass.COUNT);
+    for (let i = 0; i < RenderPass.COUNT; ++i)
+      this._commands[i] = [];
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {

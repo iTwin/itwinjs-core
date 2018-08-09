@@ -1,0 +1,206 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NodePathElement fromJSON creates valid NodePathElement from JSON 1`] = `
+Object {
+  "children": Array [],
+  "index": 333,
+  "isMarked": true,
+  "node": Object {
+    "backColor": undefined,
+    "description": undefined,
+    "foreColor": "#3AF79E",
+    "hasChildren": false,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": true,
+    "isEditable": false,
+    "isExpanded": true,
+    "isSelectable": true,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Tajikistan",
+        "id": "0x7c4a000000278c",
+      },
+      "pathFromRoot": Array [
+        "32224f6c-4c12-4d84-a248-7912933b9c0d",
+        "2ae720f0-5f5f-4380-8dcf-42b29bba3e81",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "payment Tasty",
+  },
+}
+`;
+
+exports[`NodePathElement fromJSON creates valid NodePathElement from serialized JSON 1`] = `
+Object {
+  "children": Array [],
+  "index": 364,
+  "isMarked": false,
+  "node": Object {
+    "description": "Id repellendus praesentium alias rerum et omnis aut laborum eveniet.",
+    "foreColor": "#4A97E8",
+    "hasChildren": false,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "dynamic",
+        "id": "0x387500000138c8",
+      },
+      "pathFromRoot": Array [
+        "e7735c5f-e115-46d2-a5f4-fb3fb39817e4",
+        "4bc9ff58-df2e-4369-ac6d-2f9ce2f72521",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "infrastructures",
+  },
+}
+`;
+
+exports[`NodePathElement[] fromJSON creates valid NodePathElement[] from JSON 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 449,
+    "isMarked": true,
+    "node": Object {
+      "backColor": "rgb(
+    148,
+    184,
+    246
+  )",
+      "description": "Est et doloribus consequatur a totam maiores nostrum voluptatum.",
+      "foreColor": undefined,
+      "hasChildren": false,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": false,
+      "isChecked": false,
+      "isEditable": true,
+      "isExpanded": false,
+      "isSelectable": true,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "reciprocal",
+          "id": "0x3dd0000000e5f4",
+        },
+        "pathFromRoot": Array [
+          "76f871cc-f32b-44c5-a308-dfaa5ba3fb6a",
+          "1a828e76-0678-4765-8002-2fa9e36e1392",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Licensed wireless",
+    },
+  },
+  Object {
+    "children": Array [],
+    "index": 157,
+    "isMarked": true,
+    "node": Object {
+      "backColor": "rgb(
+    168,
+    43,
+    21
+  )",
+      "description": undefined,
+      "foreColor": "#9861B9",
+      "hasChildren": true,
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": true,
+      "isChecked": true,
+      "isEditable": true,
+      "isExpanded": true,
+      "isSelectable": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "ADP",
+          "id": "0x43600000008c46",
+        },
+        "pathFromRoot": Array [
+          "ad04dc4f-3625-42e7-b2a4-3fc7a77eaccb",
+          "a7f48a6e-6794-4f2c-b6cb-cfed6e58f270",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "navigating",
+    },
+  },
+]
+`;
+
+exports[`NodePathElement[] fromJSON creates valid NodePathElement[] from serialized JSON 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 691,
+    "isMarked": false,
+    "node": Object {
+      "backColor": "rgb(
+    120,
+    9,
+    138
+  )",
+      "description": "Ad beatae sunt asperiores labore ipsa et provident voluptatem natus.",
+      "foreColor": "#02EE0D",
+      "hasChildren": true,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": true,
+      "isEditable": true,
+      "isExpanded": true,
+      "isSelectable": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Bike",
+          "id": "0xb9f200000135bc",
+        },
+        "pathFromRoot": Array [
+          "210fc227-a508-4cc2-9589-8a907d468035",
+          "733f4777-de2b-4507-a6eb-63211a04ad25",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Multi-layered JBOD",
+    },
+  },
+  Object {
+    "children": Array [],
+    "index": 570,
+    "isMarked": true,
+    "node": Object {
+      "backColor": "rgb(
+    253,
+    184,
+    100
+  )",
+      "description": "Esse totam numquam sed cumque dolore quam tempore.",
+      "foreColor": "#3FFB7F",
+      "hasChildren": true,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": true,
+      "isSelectable": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Checking Account",
+          "id": "0x1388d000001536b",
+        },
+        "pathFromRoot": Array [
+          "def658cf-4949-4ac5-97af-65b2063aaec0",
+          "3833ad65-ca9f-4ade-993d-ce1c57ca7546",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Rubber",
+    },
+  },
+]
+`;

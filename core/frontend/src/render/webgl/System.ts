@@ -55,7 +55,7 @@ export const enum DepthType {
   RenderBufferUnsignedShort16,     // core to WebGL1
   // TextureUnsignedShort16,       // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   // TextureUnsignedInt24,         // core to WebGL2
-  // TextureUnsignedInt24Stencil8, // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
+  TextureUnsignedInt24Stencil8,    // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   TextureUnsignedInt32,            // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   // TextureFloat32,               // core to WebGL2
   // TextureFloat32Stencil8,       // core to WeBGL2
@@ -145,7 +145,8 @@ export class Capabilities {
     }
 
     // Determine the maximum depth attachment type.
-    this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
+    // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
+    this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
     return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
@@ -440,6 +441,10 @@ export class System extends RenderSystem {
       }
       case DepthType.TextureUnsignedInt32: {
         return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
+      }
+      case DepthType.TextureUnsignedInt24Stencil8: {
+        const dtExt: WEBGL_depth_texture | undefined = this.capabilities.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
+        return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
       }
       default: {
         assert(false);

@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`KeySet [get] instanceKeys returns map with multiple entries for each class name when keys have different class names 1`] = `
+Map {
+  "aaa" => Set {
+    "0x489b0000011bdd",
+  },
+  "bbb" => Set {
+    "0xbe260000001272",
+  },
+}
+`;
+
+exports[`KeySet [get] instanceKeys returns map with one entry when all keys have same class name 1`] = `
+Map {
+  "aaa" => Set {
+    "0x4661000000dc75",
+    "0x6b4c0000015491",
+  },
+}
+`;
+
+exports[`KeySet [get] nodeKeys returns set with node keys 1`] = `
+Set {
+  Object {
+    "instanceKey": Object {
+      "className": "Mouse",
+      "id": "0x17330000000af45",
+    },
+    "pathFromRoot": Array [
+      "ab56fd0d-5577-4f68-a2c1-4f390950ff7c",
+      "ebede29d-348b-45ba-862a-4023864af832",
+    ],
+    "type": "ECInstanceNode",
+  },
+  Object {
+    "instanceKey": Object {
+      "className": "Sierra Leone",
+      "id": "0xedcb000000a5f2",
+    },
+    "pathFromRoot": Array [
+      "8ccf0ac8-3d01-49c4-8256-2918fd77819c",
+      "bbec4a09-7228-4ac0-865c-a46e1671ccf3",
+    ],
+    "type": "ECInstanceNode",
+  },
+}
+`;
+
+exports[`KeySet serialization roundtrip 1`] = `
+Object {
+  "instanceKeys": Array [
+    Array [
+      "Ergonomic Concrete Computer",
+      Array [
+        "0xc5e2000000a425",
+        "0x14990000016cd0",
+      ],
+    ],
+    Array [
+      "Rustic Soft Fish",
+      Array [
+        "0xa46c00000153ae",
+      ],
+    ],
+  ],
+  "nodeKeys": Array [
+    Object {
+      "instanceKey": Object {
+        "className": "Multi-lateral",
+        "id": "0x1816600000067a9",
+      },
+      "pathFromRoot": Array [
+        "1e674819-3238-44e6-9599-0ce47a5f28a7",
+        "241922d2-ad4d-4ed7-b584-50311c418df8",
+      ],
+      "type": "ECInstanceNode",
+    },
+  ],
+}
+`;
