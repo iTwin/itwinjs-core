@@ -15,7 +15,7 @@
     "lint": "tslint --project . 1>&2",
     "pack": "node ../../scripts/pack.js",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
-    "test": "node --prof ../../tools/bentley/scripts/uitesting/run-tests.js --testsDir ./tests",
+    "test": "node ../../tools/bentley/scripts/uitesting/run-tests.js --testsDir ./tests",
     "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --coverage --report"
   },
   "repository": {},
