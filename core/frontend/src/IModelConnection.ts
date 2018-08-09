@@ -273,7 +273,7 @@ export class IModelConnection extends IModel {
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
-    return await IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
+    return IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
   /** Query for a set of element ids that satisfy the supplied query params  */
@@ -288,7 +288,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
-    await IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
+    return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
 
   /**
@@ -300,7 +300,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
-    return await IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
+    return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
 
   /**
@@ -370,7 +370,7 @@ export namespace IModelConnection {
 
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-      return await IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
+      return IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     }
 
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
@@ -411,7 +411,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsTemplate=FALSE ";
       }
-      return await IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
+      return IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
     }
 
     /** Code to run when the IModelConnection has closed. */
@@ -435,17 +435,17 @@ export namespace IModelConnection {
 
     /** Get an array of [[ElementProps]] given one or more element ids. */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-      return await IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
+      return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-      return await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
+      return IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
     }
 
     /** Ask the backend to format (for presentation) the specified list of element ids. */
     public async formatElements(elementIds: Id64Arg): Promise<any[]> {
-      return await IModelReadRpcInterface.getClient().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
+      return IModelReadRpcInterface.getClient().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
     }
   }
 
@@ -513,7 +513,7 @@ export namespace IModelConnection {
       const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
       params.where = queryParams.where || "";
-      if (!queryParams.wantPrivate) {
+      if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsPrivate=FALSE ";
       }

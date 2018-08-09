@@ -1011,13 +1011,12 @@ describe("iModel", () => {
     assert.equal(readFromDb, myStrVal, "query string after save");
 
     const myPropsBlob: FilePropertyProps = { name: "MyBlob", namespace: "test1", id: 10 };
-    const testRange = new Uint32Array(500);
+    const testRange = new Uint8Array(500);
     testRange.fill(11);
-    const blobVal = testRange.buffer as ArrayBuffer;
-    stat = iModel.saveFileProperty(myPropsBlob, blobVal);
+    stat = iModel.saveFileProperty(myPropsBlob, testRange);
     assert.equal(stat, 0, "saveFileProperty as blob");
     const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
-    assert.deepEqual(blobFromDb, blobVal, "query blob after save");
+    assert.deepEqual(blobFromDb, testRange, "query blob after save");
 
     let next = iModel.queryNextAvailableFileProperty(myPropsBlob);
     assert.equal(11, next, "queryNextAvailableFileProperty blob");

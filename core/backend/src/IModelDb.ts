@@ -838,14 +838,14 @@ export class IModelDb extends IModel {
   /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
-  public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
+  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as Uint8Array | undefined; }
 
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, value: string | ArrayBuffer): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), value); }
+  public saveFileProperty(prop: FilePropertyProps, value: string | Uint8Array): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), value); }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
