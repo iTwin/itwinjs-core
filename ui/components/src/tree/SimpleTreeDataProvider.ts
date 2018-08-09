@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { TreeNodeItem, TreeDataProvider } from "./TreeDataProvider";
+import { TreeNodeItem, TreeDataProvider, TreeDataChangeEvent } from "./TreeDataProvider";
 import { PageOptions } from "../common/PageOptions";
 
 /**
@@ -22,6 +22,8 @@ export default class SimpleTreeDataProvider implements TreeDataProvider {
   public constructor(hierarchy: SimpleTreeDataProviderHierarchy) {
     this._hierarchy = hierarchy;
   }
+
+  public onTreeNodeChanged: TreeDataChangeEvent = new TreeDataChangeEvent();
 
   private getNodes(parentId?: string, pageOptions?: PageOptions): ReadonlyArray<Readonly<TreeNodeItem>> {
     const nodes = this._hierarchy.get(parentId);

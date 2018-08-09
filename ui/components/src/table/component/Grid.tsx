@@ -13,16 +13,16 @@ export interface GridProps {
   rows: any[];
 }
 
-export interface GridState {
+interface State {
   selectedRow?: any;
 }
 
 /**
  * Grid React component
  */
-export class Grid extends React.Component<GridProps, GridState> {
+export class Grid extends React.Component<GridProps, State> {
 
-  public readonly state: Readonly<GridState> = {};
+  public readonly state: Readonly<State> = {};
 
   public rowGetter(i: number) {
     return this.props.rows[i];

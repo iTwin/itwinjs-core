@@ -5,6 +5,7 @@ export { default as UiComponents } from "./UiComponents";
 export * from "./breadcrumb";
 export * from "./common";
 export * from "./converters";
+export * from "./dragdrop";
 export * from "./properties";
 export * from "./propertygrid";
 export * from "./table";

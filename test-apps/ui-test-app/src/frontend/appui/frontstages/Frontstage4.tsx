@@ -99,6 +99,18 @@ export class Frontstage4 {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
+          {
+            classId: "BreadcrumbDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
+          {
+            classId: "TreeDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
         ],
       },
       bottomCenter: {
@@ -132,7 +144,13 @@ export class Frontstage4 {
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "NavigationTreeWidget",
+            classId: "TableDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
+          {
+            classId: "TreeDemoWidget",
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",

@@ -10,6 +10,8 @@ import { DisposableList } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { TableDataProvider, ColumnDescription, RowItem } from "../TableDataProvider";
+import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments } from "../../dragdrop";
+import { DragDropRow } from "./DragDropRowRenderer";
 import "./Grid.scss";
 
 /** Props for the Table React component */
@@ -25,28 +27,39 @@ export interface TableProps {
   onRowsSelected?: (rows: RowItem[], replace: boolean) => boolean;
   /** Callback for when rows are deselected */
   onRowsDeselected?: (rows: RowItem[]) => boolean;
+
+  canDropOn?: boolean;
+  onDropTargetDrop?: (data: DropTargetArguments) => DropTargetArguments;
+  onDropTargetOver?: (data: DropTargetArguments) => void;
+  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
+  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
+  onDragSourceEnd?: (data: DragSourceArguments) => void;
+  objectType?: string | ((data: any) => string);
+  objectTypes?: string[];
 }
 
-export interface TableState {
+interface TableState {
   selectedRowKeys: string[];
   columns: ReactDataGridColumn[];
   rows: TableRow[];
   rowsCount: number;
 }
 
-export interface ReactDataGridColumn {
+interface ReactDataGridColumn {
   key: string;
   name: string;
+  formatter?: any;
+  width?: number;
   resizable?: boolean;
   sortable?: boolean;
 }
 
-export interface ReactDataGridRow {
+interface ReactDataGridRow {
   __key: string;
   [columnKey: string]: string | undefined;
 }
 
-export interface TableRow {
+interface TableRow {
   row: ReactDataGridRow;
   item: RowItem;
 }
@@ -160,6 +173,10 @@ export class Table extends React.Component<TableProps, TableState> {
     return {
       key: columnDescription.key,
       name: label,
+      ...( columnDescription.icon ? {
+        width: 32,
+        formatter: IconCell,
+      } : {}),
       resizable: columnDescription.resizable !== undefined ? columnDescription.resizable : false,
       sortable: columnDescription.sortable !== undefined ? columnDescription.sortable : false,
     };
@@ -327,19 +344,106 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   public render() {
+  // tslint:disable-next-line:variable-name
+    const DragDropWrapper =
+      withDropTarget(class extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
+      public render(): React.ReactNode {
+        const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps;
+        return (<div className="react-data-grid-wrapper" {...props} />);
+      }
+    });
     return (
-      <div className="react-data-grid-wrapper">
+      <DragDropWrapper
+        dropStyle={{
+          height: "100%",
+        }}
+        onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+          args.dropLocation = this.props.dataProvider;
+          if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
+          return args;
+        }}
+        onDropTargetOver={(args: DropTargetArguments) => {
+          args.dropLocation = this.props.dataProvider;
+          if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
+        }}
+        canDropTargetDrop={(args: DropTargetArguments) => {
+          args.dropLocation = this.props.dataProvider;
+          if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
+          return true;
+        }}
+        objectTypes={this.props.objectTypes}
+        >
         <ReactDataGrid
           columns={this.state.columns}
           rowGetter={this.rowGetter}
           rowsCount={this.state.rowsCount}
-          enableCellSelect={false}
+          enableCellSelect={true}
           minHeight={500}
           headerRowHeight={25}
           rowHeight={25}
+          rowRenderer={
+            <DragDropRow
+              canDropOn={this.props.canDropOn}
+              onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+                args.dropLocation = this.props.dataProvider;
+                if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
+                return args;
+              }}
+              onDropTargetOver={(args: DropTargetArguments) => {
+                args.dropLocation = this.props.dataProvider;
+                if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
+              }}
+              canDropTargetDrop={(args: DropTargetArguments) => {
+                args.dropLocation = this.props.dataProvider;
+                if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
+                return true;
+              }}
+              onDragSourceBegin={(args: DragSourceArguments) => {
+                args.parentObject = this.props.dataProvider;
+                if (args.dataObject !== undefined && args.row !== undefined && this.state.rows) {
+                  const { row } = args;
+                  if (row < this.state.rowsCount && this.state.rows[row]) {
+                    const rowItem = this.state.rows[row];
+                    if (rowItem !== undefined && rowItem.item !== undefined) {
+                      args.dataObject = rowItem.item.extendedData;
+                      args.dataObject.id = rowItem.item.key;
+                      args.dataObject.parentId = this.props.dataProvider;
+                    }
+                  }
+                }
+                if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
+                return args;
+              }}
+              onDragSourceEnd={(args: DragSourceArguments) => {
+                args.parentObject = this.props.dataProvider;
+                if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
+              }}
+              objectType={(data: any) => {
+                if (this.props.objectType) {
+                  if (typeof this.props.objectType === "function") {
+                    if (data) {
+                      const {row} = data;
+                      if (row >= 0 && row < this.state.rows.length) {
+                        const rowItem = this.state.rows[row];
+                        if (rowItem !== undefined && rowItem.item !== undefined) {
+                          const d = rowItem.item.extendedData || {};
+                          d.id = rowItem.item.key;
+                          d.parentId = this.props.dataProvider;
+                          return this.props.objectType(d);
+                        }
+                      }
+                    }
+                  } else {
+                    return this.props.objectType;
+                  }
+                }
+                return "";
+              }}
+              objectTypes={this.props.objectTypes}
+            />
+          }
           rowSelection={{
             showCheckbox: false,
-            enableShiftSelect: true,
             onRowsSelected: this.onRowsSelected,
             onRowsDeselected: this.onRowsDeselected,
             selectBy: {
@@ -349,7 +453,16 @@ export class Table extends React.Component<TableProps, TableState> {
           onRowClick={(index, row) => this.onRowClick(index, row as ReactDataGridRow)}
           onGridSort={this.handleGridSort}
         />
-      </div>
+      </DragDropWrapper>
     );
+  }
+}
+
+export class IconCell extends React.Component<{value?: any}> {
+  public render() {
+    let classes = "icon";
+    if (this.props.value)
+      classes += " " + this.props.value;
+    return <div className={classes} />;
   }
 }

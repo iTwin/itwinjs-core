@@ -9,9 +9,13 @@ import * as classnames from "classnames";
 
 import "./Breadcrumb.scss";
 import { SplitButton } from "@bentley/ui-core";
+import { TreeDataProvider, TreeNodeItem } from "../tree";
+import { TableDataProvider, Table, RowItem, ColumnDescription } from "../table";
 import { ContextMenu, ContextMenuItem } from "@bentley/ui-core";
-import { BreadcrumbItem, BreadcrumbRoot, BreadcrumbNode } from "./BreadcrumbTreeData";
+import { BreadcrumbTreeUtils, DataRowItem } from "./BreadcrumbTreeUtils";
+import { DropTargetArguments, DragSourceArguments } from "../dragdrop";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
+import { DragDropBreadcrumbButton } from "./DragDropBreadcrumbButton";
 
 enum BreadcrumbMode {
   Dropdown,
@@ -34,15 +38,21 @@ export interface BreadcrumbProps {
    * Default value: "15em"
    */
   width?: number | string;
+
+  onDropTargetDrop?: (data: DropTargetArguments) => DropTargetArguments;
+  onDropTargetOver?: (data: DropTargetArguments) => void;
+  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
+  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
+  onDragSourceEnd?: (data: DragSourceArguments) => void;
+  objectType?: string | ((data: any) => string);
+  objectTypes?: string[] | ((data: any) => string[]);
 }
 
 /** @hidden */
 export interface BreadcrumbState {
   width: number | string;
-  currentTree: BreadcrumbItem;
+  current?: TreeNodeItem;
   inputActive: boolean;
-  autocompleting: boolean;
-  autocompleteList: BreadcrumbNode[];
 }
 
 /**
@@ -53,7 +63,6 @@ export interface BreadcrumbState {
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
   private _inputElement: HTMLInputElement | null = null;
   private _buttonElement: HTMLElement | null = null;
-  private root: BreadcrumbRoot;
 
   public static defaultProps: Partial<BreadcrumbProps> = {
     delimiter: "\\",
@@ -63,27 +72,16 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   /** @hidden */
   public readonly state: Readonly<BreadcrumbState> = {
     width: this.props.width!,
-    currentTree: this.root,
     inputActive: false,
-    autocompleting: false,
-    autocompleteList: [],
   };
 
-  constructor(props: BreadcrumbProps) {
-    super(props);
-    this.root = new BreadcrumbRoot(this.props.dataProvider, "", this.props.delimiter);
-  }
-
   public componentDidMount() {
-    this.props.path.setBreadcrumbData(this.root, this.root);
+    this.props.path.setDataProvider(this.props.dataProvider);
     this.props.path.BreadcrumbUpdateEvent.addListener(this.handleUpdate);
   }
 
   private handleUpdate = (args: BreadcrumbUpdateEventArgs) => {
-    if (args.root)
-      this.root = args.root;
-    if (args.currentNode)
-      this.setState({ currentTree: args.currentNode });
+    this.setState({ current: args.currentNode });
   }
 
   public render(): React.ReactNode {
@@ -92,46 +90,53 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
         className={classnames("breadcrumb", { "breadcrumb-active": this.state.inputActive })}>
         <div className={"breadcrumb-head"}>
           <BreadcrumbDropdown
-            root={this.root}
+            dataProvider={this.props.dataProvider}
+            path={this.props.path}
             button={(el) => { this._buttonElement = el; }}
-            current={this.state.currentTree}
+            current={this.state.current}
             onModeSwitch={this.handleModeSwitch}
-            onTreeChange={this.handleTreeChange}
-            width={this.props.width!} />
+            delimiter={this.props.delimiter}
+            width={this.props.width!}
+            onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+              // boilerplate default
+              if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
+              return args;
+            }}
+            onDropTargetOver={this.props.onDropTargetOver}
+            canDropTargetDrop={this.props.canDropTargetDrop}
+            onDragSourceBegin={(args: DragSourceArguments) => {
+              // boilerplate default
+              if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
+              return args;
+            }}
+            onDragSourceEnd={this.props.onDragSourceEnd}
+            objectType={this.props.objectType}
+            objectTypes={this.props.objectTypes}
+          />
           <BreadcrumbInput
-            root={this.root}
+            dataProvider={this.props.dataProvider}
+            path={this.props.path}
             input={(el) => { this._inputElement = el; }}
             buttonElement={this._buttonElement}
-            current={this.state.currentTree}
+            current={this.state.current}
             onModeSwitch={this.handleModeSwitch}
-            onTreeChange={this.handleTreeChange}
+            delimiter={this.props.delimiter}
             width={this.props.width!} />
         </div>
       </div>
     );
   }
 
-  private handleTreeChange = (tree: BreadcrumbItem) => {
-    this.setState({ currentTree: tree });
-    this.props.path.setBreadcrumbData(this.root, tree);
-  }
-
-  private handleModeSwitch = (type: BreadcrumbMode, newTree?: BreadcrumbItem) => {
+  private handleModeSwitch = (type: BreadcrumbMode) => {
     switch (type) {
       case BreadcrumbMode.Dropdown:
-        if (newTree) {
-          this.setState({ currentTree: newTree }, () => {
-            this.setState({ inputActive: false });
-          });
-        } else {
-          this.setState({ inputActive: false });
-        }
+        this.setState({ inputActive: false });
         break;
       case BreadcrumbMode.Input:
         this.setState({ inputActive: true }, () => {
-          this.root.pathTo(this.state.currentTree).then((pathList) => {
+          BreadcrumbTreeUtils.pathTo(this.props.dataProvider, this.state.current).then((pathList) => {
             if (this._inputElement) {
-              this._inputElement.value = this.root.nodeListToString(pathList);
+              this._inputElement.value = BreadcrumbTreeUtils.nodeListToString(pathList, this.props.delimiter!);
               this._inputElement.focus();
             }
           });
@@ -144,19 +149,20 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
 export default Breadcrumb;
 
 interface BreadcrumbInputProps {
-  root: BreadcrumbRoot;
+  dataProvider: TreeDataProvider;
+  path: BreadcrumbPath;
   buttonElement: HTMLElement | null;
-  current: BreadcrumbItem;
+  current?: TreeNodeItem;
   input: (el: HTMLInputElement | null) => void;
-  onModeSwitch: (mode: BreadcrumbMode, tree?: BreadcrumbItem) => void;
-  onTreeChange: (tree: BreadcrumbItem) => void;
+  onModeSwitch: (mode: BreadcrumbMode) => void;
   width: number | string;
+  delimiter?: string;
 }
 
 interface BreadcrumbInputState {
   autocompleting: boolean;
-  autocompletePath: BreadcrumbItem[];
-  autocompleteItems: BreadcrumbNode[];
+  autocompletePath: ReadonlyArray<Readonly<TreeNodeItem>>;
+  autocompleteItems: ReadonlyArray<Readonly<TreeNodeItem>>;
 }
 
 class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbInputState> {
@@ -170,9 +176,9 @@ class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbIn
   };
 
   public render(): JSX.Element {
-    let path = this.props.root.nodeListToString(this.state.autocompletePath);
-    if (path.length > 0)
-      path += this.props.root.delimiter;
+    let pathStr = BreadcrumbTreeUtils.nodeListToString(this.state.autocompletePath, this.props.delimiter!);
+    if (pathStr.length > 0)
+      pathStr += this.props.delimiter;
 
     let width = 0;
     if (this._inputElement) {
@@ -208,7 +214,7 @@ class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbIn
           }}
         >
           {this.state.autocompleteItems.map((node, index) => {
-            const p = path + node.label;
+            const p = pathStr + node.label;
             let l = 0;
             if (this._inputElement) {
               l = this._inputElement.value.length;
@@ -218,16 +224,18 @@ class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbIn
                 key={index}
                 onSelect={(event) => {
                   if (this._inputElement) {
-                    const s = path + node.label + this.props.root.delimiter;
+                    const s = pathStr + node.label + this.props.delimiter;
                     this._inputElement.value = s;
                     this._inputElement.focus();
                     this._inputElement.setSelectionRange(s.length, s.length);
 
-                    this.updateList().then((autocompleteData) => {
+                    const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
+                    BreadcrumbTreeUtils.findMatches(this.props.dataProvider, autocompleteStr, this.props.delimiter!, true)
+                      .then((data) => {
                       this.setState({
+                        autocompletePath: data.list,
+                        autocompleteItems: data.items,
                         autocompleting: false,
-                        autocompleteItems: autocompleteData.items,
-                        autocompletePath: autocompleteData.list,
                       });
                     });
                     event.stopPropagation();
@@ -243,6 +251,12 @@ class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbIn
   }
   public componentDidMount() {
     window.addEventListener("click", this.handleClick);
+    this.props.path.BreadcrumbUpdateEvent.addListener(this.handleUpdate);
+  }
+
+  private handleUpdate = () => {
+    this.setState({ autocompleting: false });
+    this.props.onModeSwitch(BreadcrumbMode.Dropdown);
   }
 
   public componentWillUnmount() {
@@ -297,12 +311,12 @@ class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbIn
         break;
       case 13: /*<Return>*/
         if (this._inputElement) {
-          this.props.root.findChild(this._inputElement.value).then((item) => {
+          BreadcrumbTreeUtils.findChild(this.props.dataProvider, this._inputElement.value, this.props.delimiter!)
+            .then((item) => {
             if (item !== undefined) {
-              const i = item as BreadcrumbItem;
               this.setState({ autocompleting: false });
-              this.props.onTreeChange(i);
-              this.props.onModeSwitch(BreadcrumbMode.Dropdown, i);
+              this.props.path.setCurrentNode(item);
+              this.props.onModeSwitch(BreadcrumbMode.Dropdown);
             } else {
               alert("Not found. Please check your spelling and try again.");
             }
@@ -314,38 +328,40 @@ class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbIn
 
   private handleChange = (): void => {
     if (this._inputElement) {
-      this.updateList().then((autocompleteData) => {
+      const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
+      BreadcrumbTreeUtils.findMatches(this.props.dataProvider, autocompleteStr, this.props.delimiter!, true)
+        .then((data) => {
         this.setState({
-          autocompletePath: autocompleteData.list,
-          autocompleteItems: autocompleteData.items,
-          autocompleting: autocompleteData.items.length > 0,
+          autocompletePath: data.list,
+          autocompleteItems: data.items,
+          autocompleting: data.items.length > 0,
         });
       });
     }
   }
-
-  private updateList = async (): Promise<{ items: BreadcrumbNode[], list: BreadcrumbItem[] }> => {
-    if (this._inputElement) {
-      const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
-      return await this.props.root.findMatches(autocompleteStr, true);
-    }
-    return { items: [], list: [] };
-  }
-
 }
 
 interface BreadcrumbDropdownProps {
-  current: BreadcrumbItem;
-  root: BreadcrumbRoot;
+  current: TreeNodeItem | undefined;
+  dataProvider: TreeDataProvider;
+  path: BreadcrumbPath;
   button: (el: HTMLElement | null) => void;
-  onModeSwitch: (mode: BreadcrumbMode, tree?: BreadcrumbItem) => void;
-  onTreeChange: (tree: BreadcrumbItem) => void;
+  onModeSwitch: (mode: BreadcrumbMode) => void;
+  delimiter?: string;
   width: number | string;
+
+  onDropTargetDrop?: (data: DropTargetArguments) => DragSourceArguments;
+  onDropTargetOver?: (data: DropTargetArguments) => void;
+  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
+  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
+  onDragSourceEnd?: (data: DragSourceArguments) => void;
+  objectType?: string | ((data: any) => string);
+  objectTypes?: string[] | ((data: any) => string[]);
 }
 
 interface BreadcrumbDropdownState {
-  nodes: BreadcrumbItem[];
-  nodeChildren: BreadcrumbNode[][];
+  nodes: ReadonlyArray<Readonly<TreeNodeItem> | undefined>;
+  nodeChildren: Array<ReadonlyArray<Readonly<TreeNodeItem>>>;
 }
 
 class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, BreadcrumbDropdownState> {
@@ -357,8 +373,32 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
     nodeChildren: [],
   };
 
+  constructor(props: BreadcrumbDropdownProps) {
+    super(props);
+  }
+
   public componentDidMount() {
-    this.updateTree();
+    this.updateTree(this.props.dataProvider, this.props.current);
+    this.props.path.BreadcrumbUpdateEvent.addListener(this.pathUpdate);
+    this.props.dataProvider.onTreeNodeChanged.addListener(this.treeUpdate);
+  }
+
+  private pathUpdate = (args: BreadcrumbUpdateEventArgs) => {
+    if (args.dataProvider)
+      this.updateTree(args.dataProvider, args.currentNode);
+  }
+
+  private treeUpdate = () => {
+    this.updateTree(this.props.dataProvider, this.props.current);
+  }
+
+  public componentDidUpdate(prevProps: BreadcrumbDropdownProps) {
+    if (!this.props.path.BreadcrumbUpdateEvent.has(this.pathUpdate)) {
+      this.props.path.BreadcrumbUpdateEvent.addListener(this.pathUpdate);
+      if (prevProps.path) {
+        prevProps.path.BreadcrumbUpdateEvent.removeListener(this.pathUpdate);
+      }
+    }
   }
 
   public render(): JSX.Element {
@@ -372,32 +412,98 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
         style={{ width: this.props.width! }}
         onClick={this.focusInput}>
         <div className={classnames("breadcrumb-up-dir", "icon", "icon-sort-up", {
-          root: this.props.current && this.props.current.equals(this.props.root) })
+          root: this.props.current === undefined })
         } onClick={this.handleUpClick} />
         {this.state.nodes.map((node, i) => {
-          const label = "label" in node ? node.label : " ";
-          if (this.state.nodeChildren[i] && this.state.nodeChildren[i].length > 0) {
+          const label = node && "label" in node ? node.label : " ";
+          const dropTargetDropCallback = (args: DropTargetArguments): DropTargetArguments => {
+            args.dropLocation = node || this.props.dataProvider;
+            if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
+            return args;
+          };
+          const dropTargetOverCallback = (args: DropTargetArguments) => {
+            args.dropLocation = node || this.props.dataProvider;
+            if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
+          };
+          const canDropTargetDropCallback = (args: DropTargetArguments) => {
+            args.dropLocation = node || this.props.dataProvider;
+            if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
+            return true;
+          };
+          const dragSourceBeginCallback = (args: DragSourceArguments) => {
+            if (node && node.extendedData) {
+              args.dataObject = node.extendedData;
+              if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
+                args.dataObject.parentId = this.props.dataProvider;
+              }
+              if (i > 0) {
+                const parent = this.state.nodes[i - 1];
+                args.parentObject = parent || this.props.dataProvider;
+              }
+            }
+            if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
+            return args;
+          };
+          const dragSourceEndCallback = (args: DragSourceArguments) => {
+            if (i > 0) {
+              const parent = this.state.nodes[i - 1];
+              args.parentObject = parent || this.props.dataProvider;
+            }
+            if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
+          };
+
+          const button = (
+            <DragDropBreadcrumbButton
+              onDropTargetDrop={dropTargetDropCallback}
+              onDropTargetOver={dropTargetOverCallback}
+              canDropTargetDrop={canDropTargetDropCallback}
+              onDragSourceBegin={dragSourceBeginCallback}
+              onDragSourceEnd={dragSourceEndCallback}
+              objectType={() => {
+                if (this.props.objectType) {
+                  if (typeof this.props.objectType === "function") {
+                    if (node && node.extendedData) {
+                      return this.props.objectType(node.extendedData);
+                    }
+                  } else
+                    return this.props.objectType;
+                }
+                return "";
+              }}
+              objectTypes={() => {
+                if (this.props.objectTypes) {
+                  if (typeof this.props.objectTypes === "function") {
+                    if (node && node.extendedData) {
+                      return this.props.objectTypes(node.extendedData);
+                    }
+                  } else
+                    return this.props.objectTypes;
+                }
+                return [];
+              }}
+            >
+            <span className={classnames("icon", (node && node.iconPath ) || (!node && "icon-browse") || "")} /> {label}
+            </DragDropBreadcrumbButton>
+          );
+
+          if (this.state.nodeChildren[i].length > 0) {
             return (
               <SplitButton
                 className={"breadcrumb-split-button"}
-                icon={node.icon}
                 key={i}
                 onClick={(event) => {
                   event.stopPropagation();
-                  this.updateTree().then(() => {
-                    this.props.onTreeChange(node);
-                  });
+                  this.props.path.setCurrentNode(node);
                 }}
-                label={label}>
+                label={button}
+              >
                 {this.state.nodeChildren[i].map((child, d) => {
                   return (
                     <ContextMenuItem
                       key={d}
-                      icon={child.icon}
+                      icon={child.iconPath}
                       onSelect={(_event) => {
-                        this.updateTree().then(() => {
-                          this.props.onTreeChange(child);
-                        });
+                        this.props.path.setCurrentNode(child);
                       }}>
                       {child.label}
                     </ContextMenuItem>
@@ -408,7 +514,7 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
           } else {
             return (
               <span className={"breadcrumb-end-node"} key={i}>
-                <span className={classnames("icon", node.icon)} /> {label}
+                {button}
               </span>
             );
           }
@@ -418,27 +524,29 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
   }
 
   private handleUpClick = () => {
-    if (!this.props.current.equals(this.props.root) && "parent" in this.props.current)
-      this.props.onTreeChange(this.props.current.parent);
-  }
-
-  public componentDidUpdate(prevProps: BreadcrumbDropdownProps) {
-    if (prevProps.current !== this.props.current || prevProps.root !== this.props.root) {
-      this.updateTree();
+    if (this.props.current !== undefined) {
+      BreadcrumbTreeUtils.pathTo(this.props.dataProvider, this.props.current).then((p) => {
+        if (p.length > 1)
+          this.props.path.setCurrentNode(p[p.length - 2]);
+        else if (p.length === 1)
+          this.props.path.setCurrentNode(undefined);
+      });
     }
   }
-  private updateTree = async () => {
-    const nodeChildren: BreadcrumbNode[][] = [];
+
+  private updateTree = async (dataProvider: TreeDataProvider, currentNode?: TreeNodeItem) => {
+    const tree = dataProvider || this.props.dataProvider;
+    const nodeChildren: Array<ReadonlyArray<Readonly<TreeNodeItem>>> = [];
     const rev = ++this._treeRevision;
-    const nodes: BreadcrumbItem[] = await this.props.root.pathTo(this.props.current);
+    const nodes: ReadonlyArray<Readonly<TreeNodeItem> | undefined> = [undefined, ...await BreadcrumbTreeUtils.pathTo(tree, currentNode)];
     for (const i in nodes) {
       if (nodes.hasOwnProperty(i)) {
-        if (nodes[i] === this.props.root) {
-          nodeChildren[i] = await this.props.root.loadRoot();
+        if (nodes[i] === undefined) {
+          nodeChildren[i] = await tree.getRootNodes({ size: 9999, start: 0 });
         } else {
-          nodeChildren[i] = await this.props.root.loadChildren(nodes[i] as BreadcrumbNode);
+          nodeChildren[i] = await tree.getChildNodes(nodes[i] as TreeNodeItem, { size: 9999, start: 0 });
         }
-        nodeChildren[i] = nodeChildren[i].filter((child) => child.hasChildren);
+        nodeChildren[i] = nodeChildren[i].filter((child) => child === undefined || child.hasChildren);
       }
     }
     // check to see if tree has been updated in the meantime. ie. this update took too long.
@@ -457,132 +565,187 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
 export interface BreadcrumbDetailsProps {
   /** Path data object shared by Breadcrumb component */
   path: BreadcrumbPath;
+  columns?: ColumnDescription[];
+
+  objectType?: string | ((data: any) => string);
+  objectTypes?: string[];
+  onDropTargetDrop?: (data: DropTargetArguments) => DragSourceArguments;
+  onDropTargetOver?: (data: DropTargetArguments) => void;
+  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
+  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
+  onDragSourceEnd?: (data: DragSourceArguments) => void;
 }
 
 /** @hidden */
 export interface BreadcrumbDetailsState {
-  root?: BreadcrumbRoot;
-  node?: BreadcrumbItem;
-  childNodes: BreadcrumbNode[];
-  selected: number;
+  table?: TableDataProvider;
+  childNodes?: ReadonlyArray<Readonly<TreeNodeItem>>;
 }
 
-/** Breadcrumb Details view */
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
-
-  /** @hidden */
-  public readonly state: Readonly<BreadcrumbDetailsState> = {
-    childNodes: [],
-    selected: -1,
+  public static defaultProps: Partial<BreadcrumbDetailsProps> = {
+    columns: [
+      {key: "icon", label: "", icon: true},
+      {key: "label", label: "Name"},
+      {key: "description", label: "Description"},
+    ],
   };
 
+  public readonly state: BreadcrumbDetailsState = {};
+
+  constructor(props: BreadcrumbDetailsProps) {
+    super(props);
+  }
+
   public componentDidMount() {
-    const root = this.props.path.getRoot();
+    const dataProvider = this.props.path.getDataProvider();
     const node = this.props.path.getCurrentNode();
-    if (root && node)
-      this.updateTree(root, node);
-    this.props.path.BreadcrumbUpdateEvent.addListener(this.handleUpdate);
-  }
-
-  private handleUpdate = (args: BreadcrumbUpdateEventArgs) => {
-    this.updateTree(args.root, args.currentNode);
-  }
-
-  private handleBlur = () => {
-    this.setState({ selected: -1 });
-  }
-
-  private handleKeyUp = (event: any) => {
-    let { selected } = this.state;
-    switch (event.keyCode) {
-      case 27: /*<Esc>*/
-        selected = -1;
-        break;
-      case 38: /*<Up>*/
-      case 40: /*<Down>*/
-        if (selected === -1)
-          selected = 0;
-        else {
-          if (event.keyCode === 38) {
-            if (selected === 0)
-              selected = this.state.childNodes.length - 1;
-            else
-              selected--;
-          } else {
-            if (selected === this.state.childNodes.length - 1)
-              selected = 0;
-            else
-              selected++;
-          }
-        }
-        break;
-      case 13: /*<Return>*/
-      case 39: /*<Right>*/
-        if (this.state.selected >= 0 && this.state.selected < this.state.childNodes.length) {
-          const child = this.state.childNodes[this.state.selected];
-          if (child && child.hasChildren) {
-            selected = 0;
-            this.props.path.setBreadcrumbData(undefined, child);
-          }
-        }
-        break;
-      case 8: /*<Backspace>*/
-      case 37: /*<Left>*/
-        if (this.state.node && this.state.root && "parent" in this.state.node && this.state.node.parent) {
-          selected = 0;
-          this.props.path.setBreadcrumbData(undefined, this.state.node.parent);
-        }
-        break;
+    if (dataProvider) {
+      this.updateTree(dataProvider, node);
+      dataProvider.onTreeNodeChanged.addListener(this.treeChange);
+      this.props.path.BreadcrumbUpdateEvent.addListener(this.pathChange);
     }
-    this.setState({ selected });
   }
 
-  public render(): JSX.Element {
+  public componentDidUpdate(prevProps: BreadcrumbDetailsProps) {
+    if (!this.props.path.BreadcrumbUpdateEvent.has(this.pathChange)) {
+      this.props.path.BreadcrumbUpdateEvent.addListener(this.pathChange);
+      if (prevProps.path) {
+        prevProps.path.BreadcrumbUpdateEvent.removeListener(this.pathChange);
+      }
+    }
+  }
+  private treeChange = () => {
+    const dataProvider = this.props.path.getDataProvider();
+    const node = this.props.path.getCurrentNode();
+    if (dataProvider) {
+      if (node) {
+        dataProvider.getChildNodes(node, {size: 9999, start: 0}).then((nodes) => {
+          if (nodes.length === 0) {
+            BreadcrumbTreeUtils.pathTo(dataProvider, node).then((p) => {
+              if (p.length > 1)
+                this.props.path.setCurrentNode(p[p.length - 2]);
+              else if (p.length === 1)
+                this.props.path.setCurrentNode(undefined);
+              this.updateTree(dataProvider, node);
+            });
+          } else this.updateTree(dataProvider, node);
+        });
+      } else this.updateTree(dataProvider, undefined);
+    }
+  }
+  private pathChange = (args: BreadcrumbUpdateEventArgs) => {
+    if (args.dataProvider) {
+      this.updateTree(args.dataProvider, args.currentNode);
+    }
+  }
+  private updateTree = async (treeDataProvider: TreeDataProvider, node: TreeNodeItem | undefined) => {
+    let childNodes: ReadonlyArray<Readonly<TreeNodeItem>> = [];
+    if (node === undefined)
+      childNodes = await treeDataProvider.getRootNodes({size: 9999, start: 0});
+    else {
+      childNodes = await treeDataProvider.getChildNodes(node, {size: 9999, start: 0});
+      if (childNodes.length === 0) {
+        const p = await BreadcrumbTreeUtils.pathTo(treeDataProvider, node);
+        if (p.length > 1)
+          this.props.path.setCurrentNode(p[p.length - 2]);
+        else if (p.length === 1)
+          this.props.path.setCurrentNode(undefined);
+      }
+    }
+    const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!);
+    this.setState({ table, childNodes });
+  }
+  public render(): React.ReactElement<any> {
+    const dataProvider = this.props.path.getDataProvider();
+    const node = this.props.path.getCurrentNode();
+    const {childNodes} = this.state;
     return (
-      <div className={"breadcrumb-details"} tabIndex={-1} onKeyUp={this.handleKeyUp} onBlur={this.handleBlur}>
-        {this.state.childNodes.map((child, i) => {
-          return (
-            <BreadcrumbDetailRow
-              key={i}
-              className={classnames({ selected: this.state.selected === i })}
-              icon={child.hasChildren ? "icon-folder" : (child.icon || "")}
-              onClick={() => {
-                this.setState({ selected: i });
-              }}
-              onDoubleClick={(event) => {
-                event.preventDefault();
-                if (child.hasChildren)
-                  this.props.path.setBreadcrumbData(undefined, child);
-              }}>{child.label}</BreadcrumbDetailRow>
-          );
-        })}
-      </div>
-    );
-  }
-  private updateTree = async (root: BreadcrumbRoot, node: BreadcrumbItem) => {
-    let childNodes: BreadcrumbNode[] = [];
-    if (node.equals(root))
-      childNodes = await root.loadRoot();
-    else
-      childNodes = await root.loadChildren(node as BreadcrumbNode);
+      <div className="breadcrumb-details">
+        {
+        this.state.table &&
+          <Table
+            dataProvider={this.state.table}
+            canDropOn={true}
+            onRowsSelected={(rows: RowItem[], replace: boolean) => {
+              if (rows.length > 0) {
+                const row = rows[0] as DataRowItem;
+                if ("_node" in row && row._node && row._node.hasChildren) {
+                  this.props.path.setCurrentNode(row._node);
+                  if (dataProvider)
+                    this.updateTree(dataProvider, row._node);
+                }
+              }
+              return replace;
+            }}
+            onDropTargetOver={(args: DropTargetArguments) => {
+              if (this.props.onDropTargetOver) {
+                args.dropLocation = node || dataProvider;
+                if (childNodes && args.dropRect && args.row) {
+                  const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+                  if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
+                    const rowNum = relativeY > 1 / 2 ?
+                      args.row - 1 : args.row;
+                    args.row = undefined;
+                    args.dropLocation = childNodes[rowNum];
+                  }
+                }
+                this.props.onDropTargetOver(args);
 
-    this.setState({ node, root, childNodes });
-  }
-}
-
-interface BreadcrumbDetailRowProps {
-  icon: string;
-  className?: string;
-  onClick?: (event: any) => any;
-  onDoubleClick?: (event: any) => any;
-}
-
-class BreadcrumbDetailRow extends React.Component<BreadcrumbDetailRowProps> {
-  public render(): JSX.Element {
-    return (
-      <div className={classnames("breadcrumb-detail-row", this.props.className)} onClick={this.props.onClick} onDoubleClick={this.props.onDoubleClick}>
-        <div className={classnames("breadcrumb-detail-icon", "icon", this.props.icon)} />
-        <div className={"breadcrumb-detail-content"}>{this.props.children}</div>
+              } // else: must be tree object, leave it be.
+            }}
+            onDropTargetDrop={(args: DropTargetArguments) => {
+              args.dropLocation = node || dataProvider;
+              if (childNodes && args.dropRect && args.row) {
+                const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+                if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
+                  const rowNum = relativeY > 1 / 2 ?
+                    args.row - 1 : args.row;
+                  args.row = undefined;
+                  args.dropLocation = childNodes[rowNum];
+                }
+              }
+              if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
+                args.dataObject.parentId = dataProvider;
+              }
+              if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
+              return args;
+            }}
+            canDropTargetDrop={(args: DropTargetArguments) => {
+              args.dropLocation = node || dataProvider;
+              if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
+                args.dataObject.parentId = this.props.path.getDataProvider();
+              }
+              if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
+              return true;
+            }}
+            onDragSourceBegin={(args: DragSourceArguments) => {
+              if (args.dataObject) {
+                args.dataObject.parentId = node ? node.id : dataProvider;
+              }
+              args.parentObject = node || dataProvider;
+              if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
+              return args;
+            }}
+            onDragSourceEnd={(args: DragSourceArguments) => {
+              args.parentObject = node || dataProvider;
+              if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
+            }}
+            objectType={(data: any) => {
+              if (this.props.objectType) {
+                if (typeof this.props.objectType === "function") {
+                  if (data && typeof data === "object") {
+                    data.parentId = node ? node.id : dataProvider;
+                  }
+                  return this.props.objectType(data);
+                } else
+                  return this.props.objectType;
+              }
+              return "";
+            }}
+            objectTypes={this.props.objectTypes}
+            />
+        }
       </div>
     );
   }

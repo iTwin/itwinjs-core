@@ -122,6 +122,14 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-dnd",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-dnd-html5-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-dom",
       "allowedCategories": [ "frontend", "internal" ]
     },

@@ -58,6 +58,7 @@
     "@types/mocha": "^2.2.48",
     "@types/react": "^16.4.4",
     "@types/react-data-grid": "^2.0.11",
+    "@types/react-dnd": "^2.0.36",
     "@types/react-dom": "^16.0.3",
     "@types/sinon": "^5.0.1",
     "@types/sinon-chai": "^3.2.0",
@@ -94,6 +95,7 @@
     "lodash": "^4.14.0",
     "react": "^16.4.1",
     "react-data-grid": "^3.0.0",
+    "react-dnd": "^5.0.0",
     "react-dom": "^16.4.1"
   },
   "nyc": {

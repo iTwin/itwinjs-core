@@ -20,7 +20,7 @@ export enum SplitButtonActionType {
 /** Property interface for SplitButton */
 export interface SplitButtonProps {
   /** Label to display in click area. */
-  label: string;
+  label: string | React.ReactNode;
   /** Listens for click events on button area */
   onClick?: (event: any) => any;
   className?: string;
@@ -52,7 +52,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     }
     return (
       <div className={classnames("split-button", this.props.className, { expanded: this.state.expanded })}>
-        <div onClick={this.props.onClick} className={"split-button-label"}>{icon} {this.props.label}</div>
+        <div onClick={this.props.onClick} className={"split-button-label"}>{icon} {this.props.label} </div>
         <div className={"split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this.handleClick} tabIndex={0} onKeyUp={this.handleKeyUp}>
           <div className={classnames("split-button-arrow-icon", "icon", "icon-chevron-down")} >
           </div>
