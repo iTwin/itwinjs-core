@@ -463,15 +463,15 @@ export class DecorateContext extends RenderContext {
 
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
-  public readonly terrain: RenderGraphic[] = [];
+  public readonly backgroundMap: RenderGraphic[] = [];
   public readonly requests: TileRequests;
-  public doTerrain: boolean = false;
+  public backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined = undefined;
 
   public constructor(vp: Viewport, requests: TileRequests) {
     super(vp);
     this.requests = requests;
   }
 
-  public setDoTerrain(): void { this.doTerrain = true; }
-  public outputGraphic(graphic: RenderGraphic): void { this.doTerrain ? this.terrain.push(graphic) : this.graphics.push(graphic); }
+  public setBackgroundMapPlane(plane: Plane3dByOriginAndUnitNormal): void { this.backgroundMapPlane = plane; }
+  public outputGraphic(graphic: RenderGraphic): void { undefined !== this.backgroundMapPlane ? this.backgroundMap.push(graphic) : this.graphics.push(graphic); }
 }

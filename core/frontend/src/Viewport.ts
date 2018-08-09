@@ -7,6 +7,7 @@ import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   RotMatrix, Transform, Map4d, Point4d, Constant, XYAndZ,
 } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
@@ -385,7 +386,7 @@ export class ViewFrustum {
   private readonly _clientWidth: number;
   private readonly _clientHeight: number;
 
-  private readonly _isTerrainFrustum: boolean;
+  private readonly _displayedPlane: Plane3dByOriginAndUnitNormal | undefined;
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
@@ -463,13 +464,11 @@ export class ViewFrustum {
       return;
 
     let extents = view.getViewedExtents() as Range3d;
+
+    this.extendRangeForDisplayedPlane(extents);
+
     if (extents.isNull())
       return;
-    if (this._isTerrainFrustum) { // ###TODO: This needs to be done in a better way.
-      const scaleAmt = 10.0; // (extents.high.x - extents.low.x) * 10.0;
-      console.log("Scaling viewport for WebMercator geometry by " + scaleAmt); // tslint:disable-line:no-console
-      extents.scaleAboutCenterInPlace(scaleAmt);
-    }
 
     // convert viewed extents in world coordinates to min/max in view aligned coordinates
     const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
@@ -503,7 +502,48 @@ export class ViewFrustum {
     if (delta.z > eyeOrg.z)
       delta.z = eyeOrg.z;
   }
+  private extendRangeForDisplayedPlane(extents: Range3d) {
+    const view = this.view;
+    if (!view.is3d()) // only necessary for 3d views
+      return;
 
+    if (this._displayedPlane === undefined)
+      return;
+
+    const planeNormal = this._displayedPlane.getNormalRef();
+    const viewZ = this.rotMatrix.getRow(2);
+    const onPlane = viewZ.crossProduct(planeNormal);   // vector on display plane.
+    if (onPlane.magnitude() > 1.0E-8) {
+      const intersect = new Point3d();
+      const frustum = new Frustum();
+      let includeHorizon = false;
+      const worldToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOrigin, this.viewDelta).map as Map4d;
+      const minimumEyeDistance = 10.0;
+      const horizonDistance = 10000;
+      worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
+
+      for (let i = 0; i < 4; i++) {
+        const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
+        const intersectDistance = frustumRay.intersectionWithPlane(this._displayedPlane, intersect);
+        if (intersectDistance !== undefined && (!view.isCameraOn() || intersectDistance > 0.0))
+          extents.extend(intersect);
+        else includeHorizon = true;
+      }
+      if (includeHorizon) {
+        const rangeCenter = extents.fractionToPoint(.5, .5, .5);
+        const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
+        extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
+      }
+      if (view.isCameraOn()) {
+        extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
+      }
+
+    } else {
+      // display plane parallel to view....
+      extents.extend(this._displayedPlane.getOriginRef().plusScaled(planeNormal, -1.0));
+      extents.extend(this._displayedPlane.getOriginRef().plusScaled(planeNormal, 1.0));
+    }
+  }
   private calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
     return Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high)!;
@@ -522,11 +562,11 @@ export class ViewFrustum {
     return corners;
   }
 
-  private constructor(view: ViewState, clientWidth: number, clientHeight: number, isTerrainFrustum?: boolean) {
+  private constructor(view: ViewState, clientWidth: number, clientHeight: number, displayedPlane?: Plane3dByOriginAndUnitNormal) {
     this._view = view;
     this._clientWidth = clientWidth;
     this._clientHeight = clientHeight;
-    this._isTerrainFrustum = isTerrainFrustum !== undefined ? isTerrainFrustum : false;
+    this._displayedPlane = displayedPlane;
 
     const origin = this.view.getOrigin().clone();
     const delta = this.view.getExtents().clone();
@@ -617,8 +657,8 @@ export class ViewFrustum {
     return vf.invalidFrustum ? undefined : vf;
   }
 
-  public static createFromWidenedViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
-    const vf = new ViewFrustum(view !== undefined ? view : vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight, true);
+  public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
+    const vf = new ViewFrustum(vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight, plane);
     return vf.invalidFrustum ? undefined : vf;
   }
 
@@ -870,6 +910,7 @@ export class Viewport {
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
+  public get backgroundMapPlane() { return this.view.displayStyle.getBackgroundMapPlane(); }
 
   /**
    * Sets a function which can customize the appearance of features within a viewport.
@@ -1660,7 +1701,7 @@ export class Viewport {
       view.createTerrain(context);
       context.requests.requestMissing();
       target.changeScene(context.graphics);
-      target.changeTerrain(context.terrain);
+      target.changeTerrain(context.backgroundMap);
 
       isRedrawNeeded = true;
       sync.setValidScene();

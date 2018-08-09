@@ -10,6 +10,7 @@ import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem } from "./rendering";
 import { SkyBoxCreateParams, SkyboxSphereType } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -61,7 +62,7 @@ export abstract class DisplayStyleState extends ElementState {
   public setMonochromeColor(val: ColorDef): void { this._monochrome = val; this.setStyle("monochromeColor", val); }
 
   public getBackgroundMap(): BackgroundMapState { return this._backgroundMap; }
-
+  public getBackgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.getBackgroundMap().getPlane() : undefined; }
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 
   public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {

@@ -34,15 +34,14 @@ import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
-/**
- * A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
- */
+/* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
 export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
   public readonly viewFrustum: ViewFrustum;
-  public readonly terrainFrustum: ViewFrustum;
+  public readonly terrainFrustum: ViewFrustum | undefined;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -56,10 +55,10 @@ export class RenderPlan {
   public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
   public get fraction(): number { return this._curFrustum.frustFraction; }
 
-  public selectTerrainFrustum() { this._curFrustum = this.terrainFrustum; }
+  public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum, activeVolume?: RenderClipVolume, hline?: HiddenLine.Params, lights?: SceneLights) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Params, lights?: SceneLights) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -82,9 +81,7 @@ export class RenderPlan {
     const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
-
-    const terrainFrustum = ViewFrustum.createFromWidenedViewport(vp);
-    assert(terrainFrustum !== undefined);
+    const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
 
     const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.getMonochromeColor(), vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights);
 

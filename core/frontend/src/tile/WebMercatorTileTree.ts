@@ -15,6 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }
 function latitudeToMercator(latitude: number) {
@@ -471,6 +472,9 @@ export class BackgroundMapState {
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this.iModel, true, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
+  }
+  public getPlane(): Plane3dByOriginAndUnitNormal {
+    return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this.groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
   }
   public constructor(json: any, private iModel: IModelConnection) {
     this.providerName = JsonUtils.asString(json.providerName, "BingProvider");
