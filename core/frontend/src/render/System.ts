@@ -184,28 +184,33 @@ export class Decorations implements IDisposable {
   }
 }
 
-export class GraphicBranch {
+export class GraphicBranch implements IDisposable {
   public readonly entries: RenderGraphic[] = [];
+  public readonly ownsEntries: boolean;
   private _viewFlagOverrides = new ViewFlag.Overrides();
   public symbologyOverrides?: FeatureSymbology.Overrides;
 
-  public constructor() { }
+  public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
 
-  public add(graphic: RenderGraphic): void {
-    this.entries.push(graphic);
-  }
-  public addRange(graphics: RenderGraphic[]): void {
-    graphics.forEach(this.add);
-  }
+  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
+  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
-  public clear() {
-    this.entries.length = 0;
-  }
+  public clear() { this.entries.length = 0; }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
+
+  public dispose(): void {
+    if (this.ownsEntries) {
+      for (const entry of this.entries) {
+        entry.dispose();
+      }
+    }
+
+    this.clear();
+  }
 }
 
 /** Describes aspects of a pixel as read from a RenderTarget. */
