@@ -19,7 +19,7 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-clients",
@@ -27,7 +27,7 @@
     },
     {
       "name": "@bentley/imodeljs-common",
-      "allowedCategories": [ "backend", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-frontend",
@@ -40,6 +40,22 @@
     {
       "name": "@bentley/imodeljs-native-platform-api",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/presentation-backend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/presentation-common",
+      "allowedCategories": [ "backend", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/presentation-components",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/presentation-frontend",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/svg-icons",
@@ -74,6 +90,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "bunyan",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "case-sensitive-paths-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -98,6 +118,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "deep-equal",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
       "name": "dotenv",
       "allowedCategories": [ "tools" ]
     },
@@ -112,6 +136,10 @@
     {
       "name": "exports-loader",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "faker",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "file-loader",
@@ -158,6 +186,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "json-schema-faker",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "license-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -166,8 +198,16 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "lolex",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "mini-css-extract-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "mocha-tldr-reporter",
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "mocha-webpack",
@@ -272,6 +312,14 @@
     {
       "name": "tree-kill",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "tslint-consistent-codestyle",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "typescript-json-schema",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "uglifyjs-webpack-plugin",

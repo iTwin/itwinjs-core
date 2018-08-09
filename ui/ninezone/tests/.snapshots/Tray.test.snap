@@ -33,10 +33,8 @@ exports[`<Tray /> renders items 1`] = `
   <div
     className="nz-items"
   >
-    <React.Fragment>
-      <br />
-      <br />
-    </React.Fragment>
+    <br />
+    <br />
   </div>
   <div
     className="nz-extend-indicator"

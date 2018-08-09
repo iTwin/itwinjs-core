@@ -1,0 +1,602 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Field fromJSON creates valid Field from valid JSON 1`] = `
+Field {
+  "category": Object {
+    "description": "Tenetur quo recusandae.",
+    "expand": true,
+    "label": "Oregon",
+    "name": "Designer",
+    "priority": 5601,
+  },
+  "editor": Object {
+    "name": "pixel",
+  },
+  "isReadonly": true,
+  "label": "Sleek SAS e-commerce",
+  "name": "engineer",
+  "priority": 59753,
+  "type": Object {
+    "typeName": "serial",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
+exports[`Field fromJSON creates valid Field from valid serialized JSON 1`] = `
+Field {
+  "category": Object {
+    "description": "Tempora eius eveniet vel.",
+    "expand": false,
+    "label": "Extension",
+    "name": "auxiliary",
+    "priority": 2776,
+  },
+  "editor": Object {
+    "name": "standardization",
+  },
+  "isReadonly": true,
+  "label": "Electronics tan",
+  "name": "Garden",
+  "priority": 81468,
+  "type": Object {
+    "typeName": "bit",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
+exports[`Field fromJSON creates valid NestedContentField from valid JSON 1`] = `
+NestedContentField {
+  "category": Object {
+    "description": "Facere explicabo incidunt.",
+    "expand": false,
+    "label": "mint green global",
+    "name": "Salad",
+    "priority": 76388,
+  },
+  "contentClassInfo": Object {
+    "id": "0x5dab0000006e6d",
+    "label": "e-business",
+    "name": "Manager",
+  },
+  "editor": Object {
+    "name": "frictionless",
+  },
+  "isReadonly": true,
+  "label": "Pines Cape Verde Refined Plastic Chair",
+  "name": "California",
+  "nestedFields": Array [
+    Field {
+      "category": Object {
+        "description": "Facere explicabo incidunt.",
+        "expand": false,
+        "label": "mint green global",
+        "name": "Salad",
+        "priority": 76388,
+      },
+      "editor": Object {
+        "name": "frictionless",
+      },
+      "isReadonly": true,
+      "label": "label 1",
+      "name": "name1",
+      "priority": 30477,
+      "type": Object {
+        "typeName": "point",
+        "valueFormat": "Primitive",
+      },
+    },
+    Field {
+      "category": Object {
+        "description": "Facere explicabo incidunt.",
+        "expand": false,
+        "label": "mint green global",
+        "name": "Salad",
+        "priority": 76388,
+      },
+      "editor": Object {
+        "name": "frictionless",
+      },
+      "isReadonly": true,
+      "label": "label 2",
+      "name": "name2",
+      "priority": 30477,
+      "type": Object {
+        "typeName": "point",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "pathToPrimaryClass": Array [
+    Object {
+      "isForwardRelationship": false,
+      "isPolymorphicRelationship": true,
+      "relationshipInfo": Object {
+        "id": "0x1cd5000000cbb6",
+        "label": "Leone Chicken Cambridgeshire",
+        "name": "Cambridgeshire",
+      },
+      "sourceClassInfo": Object {
+        "id": "0xc04300000101c3",
+        "label": "invoice",
+        "name": "Front-line",
+      },
+      "targetClassInfo": Object {
+        "id": "0x134710000007529",
+        "label": "Brunei Dollar",
+        "name": "Principal",
+      },
+    },
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
+      "relationshipInfo": Object {
+        "id": "0xf4700000072af",
+        "label": "Credit Card Account Ohio",
+        "name": "feed",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x102a60000013d60",
+        "label": "protocol",
+        "name": "clear-thinking",
+      },
+      "targetClassInfo": Object {
+        "id": "0x151da0000005548",
+        "label": "Kentucky Lempira Savings Account",
+        "name": "Re-engineered",
+      },
+    },
+  ],
+  "priority": 30477,
+  "type": Object {
+    "members": Array [
+      Object {
+        "label": "label 1",
+        "name": "name1",
+        "type": Object {
+          "typeName": "serial",
+          "valueFormat": "Primitive",
+        },
+      },
+      Object {
+        "label": "label 2",
+        "name": "name2",
+        "type": Object {
+          "typeName": "bit",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "typeName": "multi-byte",
+    "valueFormat": "Struct",
+  },
+}
+`;
+
+exports[`Field fromJSON creates valid PropertiesField from valid JSON 1`] = `
+PropertiesField {
+  "category": Object {
+    "description": "Corporis occaecati explicabo voluptatum ipsam debitis.",
+    "expand": false,
+    "label": "Sausages",
+    "name": "structure",
+    "priority": 59710,
+  },
+  "editor": Object {
+    "name": "Synchronised",
+  },
+  "isReadonly": true,
+  "label": "Toys feed platforms",
+  "name": "Infrastructure",
+  "priority": 72750,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1103100000044e6",
+          "label": "Mozambique",
+          "name": "hack",
+        },
+        "name": "Granite",
+        "type": "double",
+      },
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x5ff700000118ae",
+            "label": "Refined Steel Shoes auxiliary",
+            "name": "Savings Account",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x1ce40000016d0d",
+            "label": "panel",
+            "name": "virtual",
+          },
+          "targetClassInfo": Object {
+            "id": "0x46ca000000de1e",
+            "label": "5th generation",
+            "name": "Consultant",
+          },
+        },
+      ],
+    },
+  ],
+  "type": Object {
+    "typeName": "int",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
+exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON 1`] = `
+NestedContentField {
+  "category": Object {
+    "description": "Maiores et modi optio.",
+    "expand": false,
+    "label": "Brazil portal",
+    "name": "SSL",
+    "priority": 42869,
+  },
+  "contentClassInfo": Object {
+    "id": "0xa600000001e9",
+    "label": "Brazilian Real sexy",
+    "name": "Borders",
+  },
+  "editor": Object {
+    "name": "deposit",
+  },
+  "isReadonly": false,
+  "label": "wireless",
+  "name": "national",
+  "nestedFields": Array [
+    Field {
+      "category": Object {
+        "description": "Maiores et modi optio.",
+        "expand": false,
+        "label": "Brazil portal",
+        "name": "SSL",
+        "priority": 42869,
+      },
+      "editor": Object {
+        "name": "deposit",
+      },
+      "isReadonly": false,
+      "label": "label 1",
+      "name": "name1",
+      "priority": 16304,
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+    Field {
+      "category": Object {
+        "description": "Maiores et modi optio.",
+        "expand": false,
+        "label": "Brazil portal",
+        "name": "SSL",
+        "priority": 42869,
+      },
+      "editor": Object {
+        "name": "deposit",
+      },
+      "isReadonly": false,
+      "label": "label 2",
+      "name": "name2",
+      "priority": 16304,
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "pathToPrimaryClass": Array [
+    Object {
+      "isForwardRelationship": false,
+      "isPolymorphicRelationship": true,
+      "relationshipInfo": Object {
+        "id": "0x587e0000003879",
+        "label": "Legacy payment optical",
+        "name": "Awesome Metal Towels",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x150230000008bcb",
+        "label": "Swedish Krona index",
+        "name": "Technician",
+      },
+      "targetClassInfo": Object {
+        "id": "0x7949000001451d",
+        "label": "Malagasy Ariary",
+        "name": "Metal",
+      },
+    },
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
+      "relationshipInfo": Object {
+        "id": "0x9f41000000fc93",
+        "label": "Checking Account",
+        "name": "portals",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x36570000010fdf",
+        "label": "Ball SCSI",
+        "name": "Bacon",
+      },
+      "targetClassInfo": Object {
+        "id": "0x1514c0000001a14",
+        "label": "Administrator Central Delaware",
+        "name": "Cambridgeshire",
+      },
+    },
+  ],
+  "priority": 16304,
+  "type": Object {
+    "members": Array [
+      Object {
+        "label": "label 1",
+        "name": "name1",
+        "type": Object {
+          "typeName": "date",
+          "valueFormat": "Primitive",
+        },
+      },
+      Object {
+        "label": "label 2",
+        "name": "name2",
+        "type": Object {
+          "typeName": "smallint",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "typeName": "Savings Account",
+    "valueFormat": "Struct",
+  },
+}
+`;
+
+exports[`NestedContentField fromJSON creates valid NestedContentField from valid serialized JSON 1`] = `
+NestedContentField {
+  "category": Object {
+    "description": "Voluptas esse sint dolores.",
+    "expand": true,
+    "label": "bluetooth",
+    "name": "Money Market Account",
+    "priority": 17759,
+  },
+  "contentClassInfo": Object {
+    "id": "0x11ce50000013c9a",
+    "label": "District deposit",
+    "name": "Illinois",
+  },
+  "editor": Object {
+    "name": "yellow",
+  },
+  "isReadonly": false,
+  "label": "Incredible",
+  "name": "Frozen",
+  "nestedFields": Array [
+    Field {
+      "category": Object {
+        "description": "Voluptas esse sint dolores.",
+        "expand": true,
+        "label": "bluetooth",
+        "name": "Money Market Account",
+        "priority": 17759,
+      },
+      "editor": Object {
+        "name": "yellow",
+      },
+      "isReadonly": false,
+      "label": "label 1",
+      "name": "name1",
+      "priority": 12077,
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+    Field {
+      "category": Object {
+        "description": "Voluptas esse sint dolores.",
+        "expand": true,
+        "label": "bluetooth",
+        "name": "Money Market Account",
+        "priority": 17759,
+      },
+      "editor": Object {
+        "name": "yellow",
+      },
+      "isReadonly": false,
+      "label": "label 2",
+      "name": "name2",
+      "priority": 12077,
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "pathToPrimaryClass": Array [
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": true,
+      "relationshipInfo": Object {
+        "id": "0x152b600000092bf",
+        "label": "Up-sized Total",
+        "name": "overriding",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x8847000000b225",
+        "label": "neutral SAS",
+        "name": "Dynamic",
+      },
+      "targetClassInfo": Object {
+        "id": "0x13dd000000f084",
+        "label": "Money Market Account hacking",
+        "name": "Ways",
+      },
+    },
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
+      "relationshipInfo": Object {
+        "id": "0x1cf5000000f4ff",
+        "label": "Incredible red Customer",
+        "name": "ROI",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x158c100000142c9",
+        "label": "orchestration Ergonomic Metal Bacon",
+        "name": "Chips",
+      },
+      "targetClassInfo": Object {
+        "id": "0x7e1a0000000076",
+        "label": "paradigms repurpose Soft",
+        "name": "Berkshire",
+      },
+    },
+  ],
+  "priority": 12077,
+  "type": Object {
+    "members": Array [
+      Object {
+        "label": "label 1",
+        "name": "name1",
+        "type": Object {
+          "typeName": "blob",
+          "valueFormat": "Primitive",
+        },
+      },
+      Object {
+        "label": "label 2",
+        "name": "name2",
+        "type": Object {
+          "typeName": "varchar",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "typeName": "turquoise",
+    "valueFormat": "Struct",
+  },
+}
+`;
+
+exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON 1`] = `
+PropertiesField {
+  "category": Object {
+    "description": "Sequi repudiandae velit atque voluptas.",
+    "expand": true,
+    "label": "Grocery West Virginia",
+    "name": "Incredible",
+    "priority": 39804,
+  },
+  "editor": Object {
+    "name": "Guatemala",
+  },
+  "isReadonly": false,
+  "label": "Tanzanian Shilling front-end optical",
+  "name": "Producer",
+  "priority": 57252,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0xe388000000049c",
+          "label": "Wooden Pizza",
+          "name": "Refined Granite Bike",
+        },
+        "name": "exuding",
+        "type": "double",
+      },
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x1201000000145cf",
+            "label": "Centralized Program",
+            "name": "Creek",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xe16e0000017efb",
+            "label": "Berkshire bypass Refined Metal Pants",
+            "name": "demand-driven",
+          },
+          "targetClassInfo": Object {
+            "id": "0xdd110000010bd1",
+            "label": "Awesome SCSI",
+            "name": "Tasty",
+          },
+        },
+      ],
+    },
+  ],
+  "type": Object {
+    "typeName": "boolean",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
+exports[`PropertiesField fromJSON creates valid PropertiesField from valid serialized JSON 1`] = `
+PropertiesField {
+  "category": Object {
+    "description": "Vitae deleniti eum aperiam quo recusandae doloremque voluptatum alias ut.",
+    "expand": false,
+    "label": "Incredible Granite Towels wireless info-mediaries",
+    "name": "orange",
+    "priority": 59789,
+  },
+  "editor": Object {
+    "name": "Unbranded",
+  },
+  "isReadonly": false,
+  "label": "Investment Account copy bypassing",
+  "name": "Garden",
+  "priority": 32204,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x56e700000047cb",
+          "label": "EXE",
+          "name": "open system",
+        },
+        "name": "Technician",
+        "type": "text",
+      },
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0xb6b800000129c8",
+            "label": "Checking Account Pants",
+            "name": "Islands",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x132810000005c53",
+            "label": "Hat haptic",
+            "name": "Cambridgeshire",
+          },
+          "targetClassInfo": Object {
+            "id": "0x160b40000001c89",
+            "label": "Health yellow",
+            "name": "Junctions",
+          },
+        },
+      ],
+    },
+  ],
+  "type": Object {
+    "typeName": "binary",
+    "valueFormat": "Primitive",
+  },
+}
+`;

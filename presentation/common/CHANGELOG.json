@@ -1,0 +1,233 @@
+{
+  "name": "@bentley/ecpresentation-common",
+  "entries": [
+    {
+      "version": "0.5.1",
+      "tag": "@bentley/ecpresentation-common_v0.5.1",
+      "date": "Thu, 02 Aug 2018 17:56:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependency versions to 0.109.0"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.5.0",
+      "tag": "@bentley/ecpresentation-common_v0.5.0",
+      "date": "Tue, 24 Jul 2018 13:20:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Move Omit & Subtract definitions from `controls` to `common`"
+          },
+          {
+            "comment": "Create an interface for IRulesetManager and a concept of RegisteredRuleSet"
+          },
+          {
+            "comment": "Fixed KeySet serialization."
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Added api for getting distinct values."
+          },
+          {
+            "comment": "Added api for getting node paths and filtered node paths."
+          },
+          {
+            "comment": "Remove ruleset management functions from ECPresentationManager"
+          },
+          {
+            "comment": "Change the format of request options."
+          },
+          {
+            "comment": "Active locale is now a property of request options rather than presentation manager / RPC interface."
+          },
+          {
+            "comment": "Rename UserSettingsManager interface to IUserSettingsManager"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.1",
+      "tag": "@bentley/ecpresentation-common_v0.4.1",
+      "date": "Fri, 22 Jun 2018 10:25:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.0",
+      "tag": "@bentley/ecpresentation-common_v0.4.0",
+      "date": "Thu, 14 Jun 2018 12:12:59 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Deserialization fixes"
+          },
+          {
+            "comment": "Add LoggingNamespaces enum that lists all logger namespaces used by ECPresentation library"
+          },
+          {
+            "comment": "Type safe ValuesDictionary"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Change ECPresentation manager to work with IModel instead of IModelToken"
+          },
+          {
+            "comment": "Added interfaces for UserSettingsManager."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.1",
+      "tag": "@bentley/ecpresentation-common_v0.3.1",
+      "date": "Wed, 23 May 2018 10:15:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependencies to 0.88"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.0",
+      "tag": "@bentley/ecpresentation-common_v0.3.0",
+      "date": "Fri, 18 May 2018 14:15:29 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add missing documentation"
+          },
+          {
+            "comment": "Use ECPresentationError instead of generic Error."
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Added interfaces for presentation rules."
+          },
+          {
+            "comment": "ECPresentationManager.getContentDescriptor may return no descriptor if there is none with the specified parameters."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.0",
+      "tag": "@bentley/ecpresentation-common_v0.2.0",
+      "date": "Fri, 11 May 2018 06:57:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "React to Gateway's API changes: renamed ECPresentationGateway to ECPresentationRpcInterface."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.2",
+      "tag": "@bentley/ecpresentation-common_v0.1.2",
+      "date": "Tue, 08 May 2018 07:05:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "100% unit test coverage"
+          },
+          {
+            "comment": "Fix Changes.js.map being included into the package."
+          },
+          {
+            "comment": "Update imodeljs-core dependencies to 0.80"
+          },
+          {
+            "comment": "Update bentleyjs-core dependency to 8"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.1",
+      "tag": "@bentley/ecpresentation-common_v0.1.1",
+      "date": "Sun, 29 Apr 2018 08:07:40 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed packaging."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.0",
+      "tag": "@bentley/ecpresentation-common_v0.1.0",
+      "date": "Thu, 26 Apr 2018 09:27:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added a KeySet and PersistentKeysContainer definition. Changed InstanceKey definition to store class name instead of id."
+          },
+          {
+            "comment": "KeySet (de)serialization for passing over gateway / addon boundary"
+          },
+          {
+            "comment": "PresentationManager now accepts keys as KeySets"
+          },
+          {
+            "comment": "Fixed node keys deserialization."
+          },
+          {
+            "comment": "Readonly-ness fixes"
+          },
+          {
+            "comment": "KeySet can now work with other KeySets or SerializedKeySets"
+          },
+          {
+            "comment": "API cleanup"
+          },
+          {
+            "comment": "Stop using intermediate JSON format for data objects"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.5",
+      "tag": "@bentley/ecpresentation-common_v0.0.5",
+      "date": "Fri, 20 Apr 2018 13:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Created compound index.ts file that exports package contents so consumers don't have to import each package piece individually through \"lib\" directory."
+          },
+          {
+            "comment": "Updated package dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.1",
+      "tag": "@bentley/ecpresentation-common_v0.0.2",
+      "date": "Wed, 28 Feb 2018 13:44:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Created a new package for common ecpresentation classes / utils."
+          }
+        ]
+      }
+    }
+  ]
+}

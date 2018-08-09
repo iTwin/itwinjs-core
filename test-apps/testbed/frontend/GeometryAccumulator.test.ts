@@ -14,17 +14,13 @@ import {
   Geometry,
   DisplayParams,
   StrokesPrimitiveList,
-  // StrokesPrimitivePointLists,
-  // StrokesPrimitivePointList,
   PolyfacePrimitiveList,
   PolyfacePrimitive,
-  // PrimitiveBuilder,
   System,
-  // GraphicBuilderCreateParams,
-  // GraphicType,
   GeometryAccumulator,
   GeometryOptions,
   RenderGraphic,
+  Branch,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
@@ -325,6 +321,9 @@ describe("GeometryAccumulator tests", () => {
 
     const graphics = new Array<RenderGraphic>();
     accum.saveToGraphicList(graphics, new GeometryOptions(), 0.22);
-    expect(graphics.length).to.equal(2);
+    expect(graphics.length).to.equal(1);
+    const graphic = graphics[0];
+    expect(graphic instanceof Branch).to.be.true;
+    expect((graphic as Branch).branch.entries.length).to.equal(2);
   });
 });
