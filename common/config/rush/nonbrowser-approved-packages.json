@@ -3,7 +3,7 @@
   "packages": [
     {
       "name": "@bentley/bemetalsmith",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/bentleyjs-tools",
@@ -35,7 +35,7 @@
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "chai-jest-snapshot",
@@ -199,7 +199,7 @@
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "sinon-chai",
