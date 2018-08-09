@@ -27,10 +27,10 @@ import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
 import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
 import { UpdatePlan } from "./render/UpdatePlan";
+import { IModelConnection } from "./IModelConnection";
 
 /** Describes the geometry and styling of a sheet border decoration. */
 export class SheetBorder {
@@ -562,7 +562,7 @@ export namespace Attachments {
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(loader: TileLoader, model: GeometricModelState, attachment: Attachment) {
+    public constructor(loader: TileLoader, iModel: IModelConnection, attachment: Attachment) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
         attachment.id,
@@ -575,17 +575,14 @@ export namespace Attachments {
           maximumSize: 512,
           childIds: [],
         },
-        model.iModel,
-        model.is3d,
+        iModel,
+        false,
         loader,
         Transform.createIdentity(),
         undefined,
         undefined,
       ));
     }
-
-    public get is2d(): boolean { return true; }
-    public get is3d(): boolean { return false; }
   }
 
   /** An extension of TileTree specific to rendering 2d attachments. */
@@ -595,8 +592,8 @@ export namespace Attachments {
     public readonly drawingToAttachment: Transform;
     public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
-    private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-      super(new TileLoader2d(view), model, attachment);
+    private constructor(iModel: IModelConnection, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
+      super(new TileLoader2d(view), iModel, attachment);
 
       this.view = view;
       this.viewRoot = viewRoot;
@@ -657,7 +654,7 @@ export namespace Attachments {
 
       viewedModel.getOrLoadTileTree();
       if (viewedModel.tileTree !== undefined)
-        attachment.tree = new Tree2d(viewedModel, attachment, view, viewedModel.tileTree);
+        attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree);
 
       if (viewedModel.loadStatus === TileTree.LoadStatus.Loaded)
         return State.Ready;
@@ -705,7 +702,7 @@ export namespace Attachments {
     public readonly featureTable: FeatureTable;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-      super(new TileLoader3d(), new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel), attachment);   // Pass along a null Model3dState
+      super(new TileLoader3d(), view.iModel, attachment);
 
       this.tileColor = tileColorSequence.next;
       this.featureTable = new FeatureTable(1);
