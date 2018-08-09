@@ -38,10 +38,10 @@
     "@types/cpx": "1.5",
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
-    "@types/mocha": "^2.2.48",
+    "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "chai-jest-snapshot": "^1.3.0",
+    "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "cpx": "^1.5.0",
     "deep-equal": "^1",
@@ -55,11 +55,11 @@
     "@bentley/bentleyjs-tools": "0.112.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
-    "nyc": "^11.8.0",
+    "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
     "ts-node": "^6.0.3",
     "tsconfig-paths": "^3.3.2",
-    "tslint": "^5.10.1",
+    "tslint": "^5.11.0",
     "typescript": "~2.9.1"
   }
 }

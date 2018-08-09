@@ -3,283 +3,510 @@
   "packages": [
     {
       "name": "@bentley/bemetalsmith",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [
+        "common",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/bentleyjs-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/dev-cors-proxy-server",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@bentley/imodeljs-react-scripts",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "asn1",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "cache-require-paths",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "chai-jest-snapshot",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-spies",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "chalk",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "child_process",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "chokidar",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "commander",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "comment-json",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "cpx",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "cross-env",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "cross-spawn",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "css-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "debug",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "dirty-chai",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "electron",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "electron-builder",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "electron-devtools-installer",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "enzyme",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "enzyme-adapter-react-16",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "enzyme-to-json",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "exceljs",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "express",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "html-webpack-plugin",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "merge-json",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "mocha",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "mocha-junit-reporter",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "nock",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "node-glob",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "obj-traverse",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "raw-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-markdown",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-router-dom",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "rimraf",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "sass-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "save",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
     },
     {
       "name": "style-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "svg-react-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "ts-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "tslint-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "typedoc",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "typedoc-plugin-external-module-name",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend"
+      ]
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "typescript",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "url-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "webpack-dev-server",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     }
   ]
 }

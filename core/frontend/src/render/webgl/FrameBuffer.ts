@@ -60,7 +60,9 @@ export class FrameBuffer implements IDisposable {
         if (depthBuffer instanceof RenderBuffer) {
           gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, dbHandle);
         } else {
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
+          // Looks like we only get a 24 bit depth buffer anyway, so use a 24-8 with a stencil.
+          // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
         }
       }
     }

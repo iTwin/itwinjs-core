@@ -26,7 +26,6 @@
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./src",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.ts",
-    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.frontend.xml",
     "watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
@@ -49,22 +48,22 @@
     "@types/chai-spies": "^0",
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
-    "@types/mocha": "^2.2.48",
+    "@types/mocha": "^5.2.5",
     "cross-env": "^5.1.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "chai-jest-snapshot": "^1.3.0",
+    "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "cpx": "^1.5.0",
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "mocha": "^5.2.0",
     "mocha-tldr-reporter": "^1.0.0",
-    "nyc": "^11.8.0",
+    "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
     "ts-node": "^6.0.3",
     "tsconfig-paths": "^3.3.2",
-    "tslint": "^5.10.1",
+    "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
@@ -72,8 +71,6 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "nycrc-path": "../.nycrc",
-    "report-dir": "../../out/reports/coverage/frontend",
-    "temp-directory": "../../out/reports/coverage/frontend/.nyc_output"
+    "nycrc-path": "../.nycrc"
   }
 }

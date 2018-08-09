@@ -7,11 +7,11 @@
   "scripts": {
     "build": "tsc -p ./src 1>&2",
     "lint": "tslint -p ./src 1>&2",
-    "webpack": "imodeljs-react-scripts build electron",
+    "webpack": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js build electron",
     "electron": "electron ./lib/main.js",
-    "start": "imodeljs-react-scripts start",
-    "test": "imodeljs-react-scripts test",
-    "cover": "imodeljs-react-scripts cover",
+    "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start",
+    "test": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js test",
+    "cover": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js cover",
     "clean": "rimraf lib && rimraf dist",
     "docs": ""
   },
@@ -30,7 +30,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/imodeljs-react-scripts": "^5.4.6",
+    "@bentley/webpack-tools": "0.112.0",
     "@bentley/dev-cors-proxy-server": "0.0.6",
     "@bentley/bentleyjs-tools": "0.112.0",
     "@bentley/bentleyjs-core": "0.112.0",
@@ -43,18 +43,18 @@
     "@bentley/icons-webfont": "^6.5.0",
     "@types/electron-devtools-installer": "^2.0.2",
     "@types/express": "^4.11.1",
-    "@types/react": "^16.4.4",
-    "@types/react-dom": "^16.0.3",
+    "@types/react": "^16.4.7",
+    "@types/react-dom": "^16.0.6",
     "@types/react-redux": "^5.0.15",
     "@types/three": "^0.92.0",
     "cpx": "^1.5.0",
     "electron": "2.0.1",
     "electron-builder": "^20.13.3",
     "electron-chromedriver": "^2.0.0",
-    "react-test-renderer": "^16.4.1",
+    "react-test-renderer": "^16.4.2",
     "rimraf": "^2.6.2",
     "tsconfig-paths": "^3.3.2",
-    "tslint": "^5.10.1",
+    "tslint": "^5.11.0",
     "typescript": "~2.9.1"
   },
   "dependencies": {
@@ -71,8 +71,8 @@
     "@bentley/ui-framework": "0.112.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",
     "three": "^0.92.0"

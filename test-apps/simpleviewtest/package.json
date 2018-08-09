@@ -49,9 +49,9 @@
     "null-loader": "^0.1.1",
     "rimraf": "^2.6.2",
     "source-map-loader": "^0.2.3",
-    "tslint": "^5.10.1",
+    "tslint": "^5.11.0",
     "typescript": "~2.9.1",
-    "webpack": "^4.16.1"
+    "webpack": "^4.16.4"
   },
   "homepage": "http://localhost:3000/"
 }
