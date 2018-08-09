@@ -546,7 +546,8 @@ export class ViewFrustum {
   }
   private calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
-    return Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high)!;
+    const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
+    return undefined === map ? Map4d.createIdentity() : map;
   }
 
   /* Get the extents of this view, in ViewCoordinates, as a Range3d */
