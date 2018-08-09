@@ -15,7 +15,7 @@
     "test:watch": "betools test-tsnode --testDir=./test/ --watch",
     "docs": "betools docs --onlyJson --json=./lib/docs/json/ec-js/file.json",
     "docs:dev": "npm run docs && bmsWatch --source ./lib/docs --destination public --typeDocSource C:/dev/imodeljs/ecobjects-js/source",
-    "cover": "nyc node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
+    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./test/**/*.test.ts",
     "start": "npm run build && npm run test & npm run cover & npm run docs"
   },
   "keywords": [

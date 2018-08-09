@@ -23,6 +23,7 @@
     "publish:clients": "cd core/clients && npm publish",
     "publish:frontend": "cd core/frontend && npm publish",
     "publish:i18n": "cd core/i18n && npm publish",
+    "publish:ecschema-metadata": "cd core/ecschema-metadata && npm publish",
     "publish:dev-cors-proxy-server": "cd tools/dev-cors-proxy-server && npm publish",
     "publish:ui-components": "cd ui/components && npm publish",
     "publish:ui-core": "cd ui/core && npm publish",
@@ -44,6 +45,7 @@
     "test:frontend": "cd test-apps/testbed && node bin/testbed.js --fgrep #integration --invert",
     "test:frontend:integration": "cd test-apps/testbed && node bin/testbed.js --fgrep #integration",
     "test:frontend:performance": "cd test-apps/testbed && npm run build:perf && node bin/testbed.js --usePerfWriterServer",
+    "test:ecschema-metadata": "cd core/ecschema-metadata && npm run test",
     "test:example-code-snippets": "cd example-code/snippets && npm run test",
     "test:example-code-app": "cd example-code/app && npm run test",
     "test:perf": "cd core/backend && npm run perftest",
@@ -60,6 +62,7 @@
     "cover:backend:integration": "cd core/backend && npm run cover:integration",
     "cover:clients": "cd core/clients && npm run cover",
     "cover:testbed": "cd test-apps/testbed && node bin/testbed.js --coveragePattern ../core/frontend/lib/**/*.js",
+    "cover:ecschema-metadata": "cd core/ecschema-metadata && npm run cover",
     "module:backend": "cd core/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
     "module:frontend": "cd core/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true"
   },
