@@ -10,13 +10,11 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .nyc_output",
     "lint": "tslint --project . 1>&2",
-    "prebuild": "npm run lint & npm run clean",
     "test": "betools test-tsnode --testDir=./test/ --tscPaths",
     "test:watch": "betools test-tsnode --testDir=./test/ --watch",
     "docs": "betools docs --onlyJson --json=./lib/docs/json/ec-js/file.json",
-    "docs:dev": "npm run docs && bmsWatch --source ./lib/docs --destination public --typeDocSource C:/dev/imodeljs/ecobjects-js/source",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./test/**/*.test.ts",
-    "start": "npm run build && npm run test & npm run cover & npm run docs"
+    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },
   "keywords": [
     "Bentley",
@@ -30,7 +28,6 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "0.112.0",
-    "@bentley/bemetalsmith": "^2.9.0",
     "@bentley/bentleyjs-tools": "0.98.0-5",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7.1.0",
