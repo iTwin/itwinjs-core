@@ -492,6 +492,12 @@ function changeOverrideColor() {
   theViewport!.view.setFeatureOverridesDirty();
 }
 
+// change iModel on mobile app
+async function changeModel(event: any) {
+  const modelName = event.target.selectedOptions["0"].value;
+  await resetStandaloneIModel("sample_documents/" + modelName);
+}
+
 // change active view.
 async function changeView(event: any) {
   const spinner = document.getElementById("spinner") as HTMLDivElement;
@@ -584,7 +590,28 @@ function addRenderModeHandler(id: string) {
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
-  document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
+  if (MobileRpcConfiguration.isMobileFrontend) {
+    const modelList = document.createElement("select");
+    modelList.id = "modelList";
+    // Use hardcoded list for test sample files for mobile
+    modelList.innerHTML =
+      " <option value='04_Plant.i.ibim'>04_Plant</option> \
+        <option value='almostopaque.ibim'>almostopaque</option> \
+        <option value='mesh_widget_piece.ibim'>mesh_widget_piece</option> \
+        <option value='PhotoRealisticRendering.ibim'>PhotoRealisticRendering</option> \
+        <option value='PSolidNewTransparent.ibim'>PSolidNewTransparent</option> \
+        <option value='rectangle.ibim'>rectangle</option> \
+        <option value='scattergories.ibim'>scattergories</option> \
+        <option value='SketchOnSurface.ibim'>SketchOnSurface</option> \
+        <option value='slabs.ibim'>slabs</option> \
+        <option value='small_building_2.ibim'>small_building_2</option> \
+        <option value='tr_blk.ibim'>tr_blk</option>";
+
+    document.getElementById("toolBar")!.replaceChild(modelList, document.getElementById("selectIModel")!);
+    modelList.addEventListener("change", changeModel);
+  } else {
+    document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
+  }
   document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startToggleModel")!.addEventListener("click", startToggleModel);
   document.getElementById("startCategorySelection")!.addEventListener("click", startCategorySelection);
