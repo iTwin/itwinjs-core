@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PresentationRuleSet RuleSetId="Localization" VersionMajor="1" VersionMinor="0" SupportedSchemas=""
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RootNodeRule>
+    <CustomNode Type="root" Label="@Test:string@" Description="@Test:nested.string@" ImageId="root image id" />
+  </RootNodeRule>
+</PresentationRuleSet>

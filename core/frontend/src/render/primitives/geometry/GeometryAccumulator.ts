@@ -6,13 +6,13 @@
 import { Transform, Range3d, Loop, Path, IndexedPolyface, Point3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../../../IModelConnection";
 import { GeometryOptions } from "../Primitives";
-import { RenderSystem, RenderGraphic } from "../../System";
+import { RenderSystem, RenderGraphic, GraphicBranch } from "../../System";
 import { DisplayParams } from "../DisplayParams";
 import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 import { GeometryList } from "./GeometryList";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, assert } from "@bentley/bentleyjs-core";
 import { FeatureTable } from "@bentley/imodeljs-common";
 
 export class GeometryAccumulator {
@@ -140,11 +140,35 @@ export class GeometryAccumulator {
    */
   public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: Id64): FeatureTable | undefined {
     const meshes = this.toMeshes(options, tolerance, pickableId);
+    if (0 === meshes.length)
+      return undefined;
+
     const args = new MeshGraphicArgs();
+
+    // All of the meshes are quantized to the same range.
+    // If that range is small relative to the distance from the origin, quantization errors can produce display artifacts.
+    // Remove the translation from the quantization parameters and apply it in the transform instead.
+    const branch = new GraphicBranch(true);
+    const qorigin = new Point3d();
+
     for (const mesh of meshes) {
+      const verts = mesh.points;
+      if (branch.isEmpty) {
+        qorigin.setFrom(verts.params.origin);
+      } else {
+        assert(verts.params.origin.isAlmostEqual(qorigin));
+      }
+
+      verts.params.origin.setZero();
+
       const graphic = mesh.getGraphics(args, this.system);
       if (undefined !== graphic)
-        graphics.push(graphic);
+        branch.add(graphic);
+    }
+
+    if (!branch.isEmpty) {
+      const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+      graphics.push(this.system.createBranch(branch, transform));
     }
 
     return meshes.features;

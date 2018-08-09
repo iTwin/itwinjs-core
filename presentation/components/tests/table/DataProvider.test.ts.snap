@@ -1,0 +1,111 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `
+Array [
+  Object {
+    "editable": true,
+    "filterable": true,
+    "key": "Implemented",
+    "label": "Checking Account Kuwaiti Dinar Gibraltar Pound",
+    "propertyDescription": Object {
+      "displayLabel": "Checking Account Kuwaiti Dinar Gibraltar Pound",
+      "name": "Implemented",
+      "typename": "smallint",
+    },
+    "sortable": true,
+  },
+  Object {
+    "editable": true,
+    "filterable": true,
+    "key": "Reduced",
+    "label": "Small Rubber Cheese",
+    "propertyDescription": Object {
+      "displayLabel": "Small Rubber Cheese",
+      "name": "Reduced",
+      "typename": "bigint",
+    },
+    "sortable": true,
+  },
+  Object {
+    "editable": true,
+    "filterable": true,
+    "key": "upward-trending",
+    "label": "Cambridgeshire Rubber hack",
+    "propertyDescription": Object {
+      "displayLabel": "Cambridgeshire Rubber hack",
+      "name": "upward-trending",
+      "typename": "boolean",
+    },
+    "sortable": true,
+  },
+]
+`;
+
+exports[`TableDataProvider getRow returns valid row item 1`] = `
+Object {
+  "cells": Array [
+    Object {
+      "key": "deposit",
+      "record": PropertyRecord {
+        "description": "aggregate",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "multi-byte",
+          "name": "deposit",
+          "typename": "int",
+        },
+        "value": Object {
+          "displayValue": "aggregate",
+          "value": "synthesizing",
+          "valueFormat": 0,
+        },
+      },
+    },
+    Object {
+      "key": "product",
+      "record": PropertyRecord {
+        "description": "Cayman Islands",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "functionalities Intelligent Tasty",
+          "editor": Object {
+            "name": "e-services",
+            "params": Array [],
+          },
+          "name": "product",
+          "typename": "real",
+        },
+        "value": Object {
+          "displayValue": "Cayman Islands",
+          "value": "Malagasy Ariary",
+          "valueFormat": 0,
+        },
+      },
+    },
+    Object {
+      "key": "plum",
+      "record": PropertyRecord {
+        "description": "Mauritius Rupee",
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "bleeding-edge Auto Loan Account",
+          "name": "plum",
+          "typename": "datetime",
+        },
+        "value": Object {
+          "displayValue": "Mauritius Rupee",
+          "value": "Pa'anga",
+          "valueFormat": 0,
+        },
+      },
+    },
+  ],
+  "key": Object {
+    "className": "azure",
+    "id": "0x98cd000001245e",
+  },
+}
+`;
