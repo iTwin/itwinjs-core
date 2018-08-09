@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Backstage <Backstage /> renders correctly 1`] = `
-<React.Fragment>
+<Fragment>
   <Backstage
     className="backstageOpen"
     isOpen={true}
@@ -21,11 +21,11 @@ exports[`Backstage <Backstage /> renders correctly 1`] = `
       }
     }
   />
-</React.Fragment>
+</Fragment>
 `;
 
 exports[`Backstage <Backstage /> with child items 1`] = `
-<React.Fragment>
+<Fragment>
   <Backstage
     className="backstageOpen"
     isOpen={true}
@@ -74,5 +74,5 @@ exports[`Backstage <Backstage /> with child items 1`] = `
       }
     }
   />
-</React.Fragment>
+</Fragment>
 `;

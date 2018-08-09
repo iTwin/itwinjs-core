@@ -1,0 +1,35 @@
+{
+  "require": [
+    "source-map-support/register",
+    "ts-node/register",
+    "tsconfig-paths/register"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.d.ts",
+    "**/*.d.tsx",
+    "tests/**/*",
+    "lib/**/*",
+    "node_modules/**/*"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "reporter": [
+    "text-summary",
+    "html",
+    "json"
+  ],
+  "all": true,
+  "check-coverage": true,
+  "statements": 100,
+  "functions": 100,
+  "branches": 100,
+  "lines": 100
+}

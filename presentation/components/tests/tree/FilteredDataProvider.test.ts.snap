@@ -1,0 +1,305 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FilteredTreeDataProvider createHierarchy creates hierarchy 1`] = `
+Map {
+  "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a" => Array [
+    Object {
+      "checkBoxState": 0,
+      "description": "",
+      "displayCheckBox": true,
+      "extendedData": Object {
+        "key": Object {
+          "instanceKey": Object {
+            "className": "compressing",
+            "id": "0x5b420000003081",
+          },
+          "pathFromRoot": Array [
+            "ec940c92-5980-4eb5-bec9-704edb8f1272",
+            "be3b713c-8c3e-40b8-9206-010831d4838f",
+          ],
+          "type": "ECInstanceNode",
+        },
+      },
+      "hasChildren": false,
+      "id": "be3b713c-8c3e-40b8-9206-010831d4838f/ec940c92-5980-4eb5-bec9-704edb8f1272",
+      "isCheckBoxEnabled": true,
+      "label": "A-1-1",
+      "labelBackColor": -1889663745,
+      "labelBold": false,
+      "labelForeColor": undefined,
+      "labelItalic": false,
+      "parentId": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
+    },
+  ],
+  "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64" => Array [
+    Object {
+      "checkBoxState": 0,
+      "description": "Ea eum labore velit voluptatem in.",
+      "displayCheckBox": true,
+      "extendedData": Object {
+        "key": Object {
+          "instanceKey": Object {
+            "className": "European Monetary Unit (E.M.U.-6)",
+            "id": "0x1d200000151af",
+          },
+          "pathFromRoot": Array [
+            "c9427f95-0f93-463c-953e-d9823c990006",
+            "0a6e90df-c64f-4192-9396-a54b9bc1d0cc",
+          ],
+          "type": "ECInstanceNode",
+        },
+      },
+      "hasChildren": false,
+      "id": "0a6e90df-c64f-4192-9396-a54b9bc1d0cc/c9427f95-0f93-463c-953e-d9823c990006",
+      "isCheckBoxEnabled": false,
+      "label": "A-2-2-1",
+      "labelBackColor": 564105215,
+      "labelBold": false,
+      "labelForeColor": undefined,
+      "labelItalic": false,
+      "parentId": "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+    },
+  ],
+  "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186" => Array [
+    Object {
+      "checkBoxState": 1,
+      "description": "Sint libero laudantium voluptatem magni et voluptas quis.",
+      "displayCheckBox": true,
+      "extendedData": Object {
+        "key": Object {
+          "instanceKey": Object {
+            "className": "Minnesota",
+            "id": "0xcfbe0000007bf8",
+          },
+          "pathFromRoot": Array [
+            "dcb68625-021e-40e1-839b-08a0214f5943",
+            "142b23f9-5f0d-4b34-b39f-de2c0a107d9c",
+          ],
+          "type": "ECInstanceNode",
+        },
+      },
+      "hasChildren": false,
+      "id": "142b23f9-5f0d-4b34-b39f-de2c0a107d9c/dcb68625-021e-40e1-839b-08a0214f5943",
+      "isCheckBoxEnabled": true,
+      "label": "A-2-1",
+      "labelBackColor": 1531058431,
+      "labelBold": false,
+      "labelForeColor": -1590574337,
+      "labelItalic": false,
+      "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+    },
+    Object {
+      "checkBoxState": 1,
+      "description": "",
+      "displayCheckBox": false,
+      "extendedData": Object {
+        "key": Object {
+          "instanceKey": Object {
+            "className": "Incredible",
+            "id": "0x332b000000c483",
+          },
+          "pathFromRoot": Array [
+            "9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+            "729087ec-e569-4f02-9212-b8007ffd5072",
+          ],
+          "type": "ECInstanceNode",
+        },
+      },
+      "hasChildren": true,
+      "id": "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+      "isCheckBoxEnabled": false,
+      "label": "A-2-2",
+      "labelBackColor": undefined,
+      "labelBold": false,
+      "labelForeColor": undefined,
+      "labelItalic": false,
+      "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+    },
+  ],
+  undefined => Array [
+    Object {
+      "checkBoxState": 1,
+      "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
+      "displayCheckBox": false,
+      "extendedData": Object {
+        "key": Object {
+          "instanceKey": Object {
+            "className": "bandwidth",
+            "id": "0xa0da000001762c",
+          },
+          "pathFromRoot": Array [
+            "6fbe024f-2316-4265-a6e8-d65a837e308a",
+            "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
+          ],
+          "type": "ECInstanceNode",
+        },
+      },
+      "hasChildren": true,
+      "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
+      "isCheckBoxEnabled": false,
+      "label": "A-1",
+      "labelBackColor": undefined,
+      "labelBold": false,
+      "labelForeColor": undefined,
+      "labelItalic": false,
+      "parentId": undefined,
+    },
+    Object {
+      "checkBoxState": 1,
+      "description": "Voluptas enim ex eveniet facere.",
+      "displayCheckBox": false,
+      "extendedData": Object {
+        "key": Object {
+          "instanceKey": Object {
+            "className": "front-end",
+            "id": "0xf9270000012549",
+          },
+          "pathFromRoot": Array [
+            "e14e4128-01ae-43e4-8790-9992f94b3186",
+            "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5",
+          ],
+          "type": "ECInstanceNode",
+        },
+      },
+      "hasChildren": true,
+      "id": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+      "isCheckBoxEnabled": false,
+      "label": "A-2",
+      "labelBackColor": 499774463,
+      "labelBold": false,
+      "labelForeColor": -284526081,
+      "labelItalic": false,
+      "parentId": undefined,
+    },
+  ],
+}
+`;
+
+exports[`FilteredTreeDataProvider getAllNodeIds returns all ids for all nodes 1`] = `
+Array [
+  "be3b713c-8c3e-40b8-9206-010831d4838f/ec940c92-5980-4eb5-bec9-704edb8f1272",
+  "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
+  "142b23f9-5f0d-4b34-b39f-de2c0a107d9c/dcb68625-021e-40e1-839b-08a0214f5943",
+  "0a6e90df-c64f-4192-9396-a54b9bc1d0cc/c9427f95-0f93-463c-953e-d9823c990006",
+  "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+  "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+]
+`;
+
+exports[`FilteredTreeDataProvider getChildNodes returns child nodes 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "Sint libero laudantium voluptatem magni et voluptas quis.",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Minnesota",
+          "id": "0xcfbe0000007bf8",
+        },
+        "pathFromRoot": Array [
+          "dcb68625-021e-40e1-839b-08a0214f5943",
+          "142b23f9-5f0d-4b34-b39f-de2c0a107d9c",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": false,
+    "id": "142b23f9-5f0d-4b34-b39f-de2c0a107d9c/dcb68625-021e-40e1-839b-08a0214f5943",
+    "isCheckBoxEnabled": true,
+    "label": "A-2-1",
+    "labelBackColor": 1531058431,
+    "labelBold": false,
+    "labelForeColor": -1590574337,
+    "labelItalic": false,
+    "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+  },
+  Object {
+    "checkBoxState": 1,
+    "description": "",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Incredible",
+          "id": "0x332b000000c483",
+        },
+        "pathFromRoot": Array [
+          "9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+          "729087ec-e569-4f02-9212-b8007ffd5072",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+    "isCheckBoxEnabled": false,
+    "label": "A-2-2",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+  },
+]
+`;
+
+exports[`FilteredTreeDataProvider getRootNodes return root nodes 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "bandwidth",
+          "id": "0xa0da000001762c",
+        },
+        "pathFromRoot": Array [
+          "6fbe024f-2316-4265-a6e8-d65a837e308a",
+          "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
+    "isCheckBoxEnabled": false,
+    "label": "A-1",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": undefined,
+  },
+  Object {
+    "checkBoxState": 1,
+    "description": "Voluptas enim ex eveniet facere.",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "front-end",
+          "id": "0xf9270000012549",
+        },
+        "pathFromRoot": Array [
+          "e14e4128-01ae-43e4-8790-9992f94b3186",
+          "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+    "isCheckBoxEnabled": false,
+    "label": "A-2",
+    "labelBackColor": 499774463,
+    "labelBold": false,
+    "labelForeColor": -284526081,
+    "labelItalic": false,
+    "parentId": undefined,
+  },
+]
+`;
