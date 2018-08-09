@@ -4,14 +4,14 @@ exports[`<Dialog /> renders correctly 1`] = `
 <Component
   className="nz-footer-snapMode-dialog"
   content={
-    <Unknown>
+    <UNDEFINED>
       <div
         className="nz-title"
       />
       <div
         className="nz-snaps"
       />
-    </Unknown>
+    </UNDEFINED>
   }
   direction={1}
 />

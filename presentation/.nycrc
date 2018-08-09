@@ -4,10 +4,6 @@
     "ts-node/register",
     "tsconfig-paths/register"
   ],
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
   "exclude": [
     "**/*.test.ts",
     "**/*.test.tsx",

@@ -15,7 +15,7 @@
     "build": "tsc 1>&2 && npm run extract",
     "clean": "rimraf lib",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "start": "imodeljs-react-scripts start"
+    "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "0.112.0",
@@ -35,24 +35,24 @@
     "bunyan": "^1.8.12",
     "electron-devtools-installer": "^2.2.4",
     "express": "^4.16.3",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1"
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2"
   },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "0.112.0",
     "@bentley/bwc": "^6.0.1",
-    "@bentley/imodeljs-react-scripts": "^5.4.6",
+    "@bentley/webpack-tools": "0.112.0",
     "@types/body-parser": "^1.17.0",
     "@types/bunyan": "^1.8.4",
     "@types/electron-devtools-installer": "^2.0.2",
     "@types/express": "^4.11.1",
-    "@types/react": "^16.4.4",
-    "@types/react-dom": "^16.0.3",
+    "@types/react": "^16.4.7",
+    "@types/react-dom": "^16.0.6",
     "electron": "2.0.1",
     "electron-builder": "^20.13.3",
-    "webpack": "^4.16.1",
+    "webpack": "^4.16.4",
     "rimraf": "^2.6.2",
-    "tslint": "^5.10.1",
+    "tslint": "^5.11.0",
     "typescript": "~2.9.1"
   },
   "proxy": {
