@@ -20,6 +20,6 @@ export interface ThumbnailFormatProps {
 
 /** Properties of a thumbnail in an iModel. */
 export interface ThumbnailProps extends ThumbnailFormatProps {
-  /** Base64 encoded image */
-  image: string;
+  /** image data */
+  image: Uint8Array;
 }

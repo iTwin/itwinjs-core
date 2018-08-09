@@ -513,7 +513,7 @@ export class TileTree implements IDisposable {
   }
 
   public get is3d(): boolean { return this.model.is3d; }
-  public get is2d(): boolean { return this.model.is2d; }
+  public get is2d(): boolean { return !this.is3d; }
   public get modelId(): Id64 { return this.model.id; }
   public get iModel(): IModelConnection { return this.model.iModel; }
   public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new ElementAlignedBox3d(); }

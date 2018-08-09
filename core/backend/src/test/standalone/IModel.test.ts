@@ -13,7 +13,7 @@ import {
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement, EntityMetaData, PrimitiveTypeCode,
+  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement, EntityMetaData, PrimitiveTypeCode, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -566,6 +566,35 @@ describe("iModel", () => {
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
   });
 
+  it("read view thumbnail", () => {
+    const viewId = "0x24";
+    const thumbnail = imodel5.views.getThumbnail(viewId);
+    assert.exists(thumbnail);
+    if (!thumbnail)
+      return;
+    assert.equal(thumbnail.format, ImageSourceFormat.Jpeg);
+    assert.equal(thumbnail.height, 768);
+    assert.equal(thumbnail.width, 768);
+    assert.equal(thumbnail.image!.length, 18062);
+
+    thumbnail.width = 100;
+    thumbnail.height = 200;
+    thumbnail.format = ImageSourceFormat.Png;
+    thumbnail.image = new Uint8Array(200);
+    thumbnail.image.fill(12);
+    const stat = imodel5.views.saveThumbnail(viewId, thumbnail);
+    assert.equal(stat, 0, "save thumbnail");
+    const thumbnail2 = imodel5.views.getThumbnail(viewId);
+    assert.exists(thumbnail2);
+    if (!thumbnail2)
+      return;
+    assert.equal(thumbnail2.format, ImageSourceFormat.Png);
+    assert.equal(thumbnail2.height, 200);
+    assert.equal(thumbnail2.width, 100);
+    assert.equal(thumbnail2.image!.length, 200);
+    assert.equal(thumbnail2.image![0], 12);
+  });
+
   it("ecefLocation for iModels", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
@@ -1013,7 +1042,7 @@ describe("iModel", () => {
     const myPropsBlob: FilePropertyProps = { name: "MyBlob", namespace: "test1", id: 10 };
     const testRange = new Uint8Array(500);
     testRange.fill(11);
-    stat = iModel.saveFileProperty(myPropsBlob, testRange);
+    stat = iModel.saveFileProperty(myPropsBlob, undefined, testRange);
     assert.equal(stat, 0, "saveFileProperty as blob");
     const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
     assert.deepEqual(blobFromDb, testRange, "query blob after save");
@@ -1023,7 +1052,7 @@ describe("iModel", () => {
 
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(2, next, "queryNextAvailableFileProperty str");
-    assert.equal(0, iModel.deleteFileProperty(myPropsStr));
+    assert.equal(0, iModel.deleteFileProperty(myPropsStr), "do deleteFileProperty");
     assert.equal(stat, 0, "deleteFileProperty");
     assert.isUndefined(iModel.queryFilePropertyString(myPropsStr), "property was deleted");
     next = iModel.queryNextAvailableFileProperty(myPropsStr);

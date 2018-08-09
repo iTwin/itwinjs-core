@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport } from "@bentley/imodeljs-frontend";
-import { SpatialViewDefinition } from "@bentley/imodeljs-backend/lib/backend";
+import { IModelApp, IModelConnection, ViewState, Viewport, SpatialViewState } from "@bentley/imodeljs-frontend";
 
 export class RobotWorldApp extends IModelApp {
 
@@ -11,7 +10,7 @@ export class RobotWorldApp extends IModelApp {
   // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getViewList
   /** Get the list of Spatial views from the robot iModel. */
   public static async getSpatialViews(): Promise<IModelConnection.ViewSpec[]> {
-    return await this._robotIModel.views.getViewList({ from: SpatialViewDefinition.classFullName, wantPrivate: false });
+    return this._robotIModel.views.getViewList({ from: SpatialViewState.sqlName });
   }
   // __PUBLISH_EXTRACT_END__
 

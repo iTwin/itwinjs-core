@@ -590,7 +590,6 @@ export namespace Attachments {
       ));
     }
 
-    public get is2d(): boolean { return true; }
     public get is3d(): boolean { return false; }
   }
 

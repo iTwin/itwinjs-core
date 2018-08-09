@@ -427,7 +427,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onTouchTap(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
+  public isCompatibleViewport(_vp: Viewport, _isSelectedViewChange: boolean): boolean { return true; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
 
   /**

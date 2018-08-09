@@ -9,6 +9,7 @@ import {
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
   IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback, ViewStateData, CategorySelectorProps, ModelSelectorProps, SheetProps,
+  ThumbnailProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -845,13 +846,13 @@ export class IModelDb extends IModel {
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, value: string | Uint8Array): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), value); }
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), strValue, blobVal); }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
+  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined, undefined); }
 
   /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
@@ -1220,6 +1221,37 @@ export namespace IModelDb {
         }));
       }
       return viewStateData;
+    }
+
+    private getViewThumbnailArg(viewDefinitionId: Id64Arg): string {
+      const viewProps: FilePropertyProps = { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId.toString() };
+      return JSON.stringify(viewProps);
+    }
+
+    /** Get the thumbnail for a view.
+     * @param viewDefinitionId The Id of the view for thumbnail
+     * @return the ThumbnailProps, or undefined if no thumbnail exists.
+     */
+    public getThumbnail(viewDefinitionId: Id64Arg): ThumbnailProps | undefined {
+      const viewArg = this.getViewThumbnailArg(viewDefinitionId);
+      const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
+      if (undefined === sizeProps)
+        return undefined;
+
+      const out = JSON.parse(sizeProps) as ThumbnailProps;
+      out.format = (out.format as any) === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png;
+      out.image = this._iModel.nativeDb.queryFileProperty(viewArg, false) as Uint8Array;
+      return out;
+    }
+
+    /** Save a thumbnail for a view.
+     * @param viewDefinitionId The Id of the view for thumbnail
+     * @param thumbnail The thumbnail data.
+     */
+    public saveThumbnail(viewDefinitionId: Id64Arg, thumbnail: ThumbnailProps) {
+      const viewArg = this.getViewThumbnailArg(viewDefinitionId);
+      const props = { format: thumbnail.format === ImageSourceFormat.Jpeg ? "jpeg" : "png", height: thumbnail.height, width: thumbnail.width };
+      return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
     }
   }
 
