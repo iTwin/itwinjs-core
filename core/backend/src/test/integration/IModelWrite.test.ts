@@ -203,7 +203,7 @@ describe("IModelWriteTest", () => {
     await iModel.close(accessToken);
   });
 
-  it("should push changes with codes (#integration)", async () => {
+  it.skip("should push changes with codes (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
