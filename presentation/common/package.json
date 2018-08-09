@@ -16,7 +16,7 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src && npm run ruleset-json-schema",
+    "build": "tsc -p ./src 1>&2 && npm run ruleset-json-schema",
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
