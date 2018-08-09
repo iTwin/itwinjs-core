@@ -14,7 +14,7 @@ declare global {
     padStartEx(targetLength: number, padString: string): string;
   }
 }
-String.prototype.format = function() {
+String.prototype.format = function () {
   const args = arguments;
   return this.replace(/{(\d+)}/g, (match, theNumber) => {
     return typeof args[theNumber] !== "undefined"
@@ -26,17 +26,17 @@ String.prototype.format = function() {
 // Temporary work around - need to add padStart method to string here for now...
 if (!String.prototype.padStartEx) {
   String.prototype.padStartEx = function padStartEx(targetLength: number, padString: string) {
-      targetLength = targetLength >> 0; // truncate if number or convert non-number to 0;
-      padString = String((typeof padString !== "undefined" ? padString : " "));
-      if (this.length > targetLength) {
-          return String(this);
-      } else {
-          targetLength = targetLength - this.length;
-          if (targetLength > padString.length) {
-              padString += padString.repeat(targetLength / padString.length); // append to original to ensure we are longer than needed
-          }
-          return padString.slice(0, targetLength) + String(this);
+    targetLength = targetLength >> 0; // truncate if number or convert non-number to 0;
+    padString = String((typeof padString !== "undefined" ? padString : " "));
+    if (this.length > targetLength) {
+      return String(this);
+    } else {
+      targetLength = targetLength - this.length;
+      if (targetLength > padString.length) {
+        padString += padString.repeat(targetLength / padString.length); // append to original to ensure we are longer than needed
       }
+      return padString.slice(0, targetLength) + String(this);
+    }
   };
 }
 
@@ -80,9 +80,9 @@ export abstract class SchemaFileLocater {
     return new Promise((resolve, reject) => {
       fs.readFile(filePath, "utf-8", (err, data) => {
         if (err)
-         reject(err);
+          reject(err);
         else
-         resolve(data);
+          resolve(data);
       });
     });
   }
@@ -115,7 +115,7 @@ export abstract class SchemaFileLocater {
   public addSchemaSearchPath(schemaPath: string) {
     // If the path is not in the schemaPaths array, add it
     if (!this.searchPaths.find((entry) => entry === schemaPath))
-        this.searchPaths.push(schemaPath);
+      this.searchPaths.push(schemaPath);
   }
 
   protected abstract getSchemaKey(data: string): SchemaKey;
@@ -150,7 +150,7 @@ export abstract class SchemaFileLocater {
 
     // If the key matches, put it in foundFiles
     if (key.matches(desiredKey, matchType))
-    foundFiles.push(new FileSchemaKey(key, fullPath, file.toString()));
+      foundFiles.push(new FileSchemaKey(key, fullPath, file.toString()));
   }
 
   /**
@@ -165,7 +165,7 @@ export abstract class SchemaFileLocater {
   private addCandidateSchemaKeys(foundFiles: FileSchemaKey[], schemaPath: string, fileFilter: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
     const fullPath = path.join(schemaPath, fileFilter);
 
-    const result = new glob.GlobSync(fullPath, {sync: true});
+    const result = new glob.GlobSync(fullPath, { sync: true });
     for (const match of result.found) {
       let fileName = path.basename(match, (".ecschema." + format));
       // TODO: should this be moved or handled elsewhere?
