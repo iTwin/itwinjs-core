@@ -21,10 +21,12 @@
     ".ts",
     ".tsx"
   ],
+  "temp-directory": "./lib/test/coverage/.nyc_output",
+  "report-dir": "./lib/test/coverage",
   "reporter": [
     "text-summary",
-    "html",
-    "json"
+    "lcov",
+    "cobertura"
   ],
   "all": true,
   "check-coverage": true,

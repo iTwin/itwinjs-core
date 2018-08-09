@@ -28,7 +28,6 @@
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "tslint -p ./src",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.ts",
-    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.common.xml",
     "watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
@@ -70,8 +69,6 @@
     "typescript-json-schema": "^0.28.0"
   },
   "nyc": {
-    "nycrc-path": "../.nycrc",
-    "temp-directory": "../../out/reports/coverage/common/.nyc_output",
-    "report-dir": "../../out/reports/coverage/common"
+    "nycrc-path": "../.nycrc"
   }
 }

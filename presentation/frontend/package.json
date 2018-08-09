@@ -26,7 +26,6 @@
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./src",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.ts",
-    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.frontend.xml",
     "watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
@@ -72,8 +71,6 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "nycrc-path": "../.nycrc",
-    "report-dir": "../../out/reports/coverage/frontend",
-    "temp-directory": "../../out/reports/coverage/frontend/.nyc_output"
+    "nycrc-path": "../.nycrc"
   }
 }

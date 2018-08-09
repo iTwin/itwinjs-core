@@ -28,7 +28,6 @@
     "lint": "tslint -p ./src",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.ts",
-    "test-cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-junit-reporter --reporter-options mochaFile=../../out/reports/tests/results.backend.xml",
     "watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
@@ -73,8 +72,6 @@
     "typescript": "~2.9.1"
   },
   "nyc": {
-    "nycrc-path": "../.nycrc",
-    "temp-directory": "../../out/reports/coverage/backend/.nyc_output",
-    "report-dir": "../../out/reports/coverage/backend"
+    "nycrc-path": "../.nycrc"
   }
 }
