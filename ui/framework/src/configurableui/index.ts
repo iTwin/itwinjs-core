@@ -24,6 +24,7 @@ export * from "./ItemProps";
 export * from "./KeyboardShortcut";
 export * from "./MessageManager";
 export * from "./ModalDialogManager";
+export * from "./DragDropLayerManager";
 export * from "./ModalFrontstage";
 export * from "./NavigationAidControl";
 export * from "./NavigationWidget";
