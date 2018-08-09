@@ -15,7 +15,7 @@
     "build": "tsc 1>&2 && npm run extract",
     "clean": "rimraf lib",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "start": "imodeljs-react-scripts start"
+    "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "0.112.0",
@@ -41,7 +41,7 @@
   "devDependencies": {
     "@bentley/bentleyjs-tools": "0.112.0",
     "@bentley/bwc": "^6.0.1",
-    "@bentley/imodeljs-react-scripts": "^5.4.6",
+    "@bentley/webpack-tools": "0.112.0",
     "@types/body-parser": "^1.17.0",
     "@types/bunyan": "^1.8.4",
     "@types/electron-devtools-installer": "^2.0.2",
