@@ -8,7 +8,7 @@ import {
   ElectronRpcManager, ElectronRpcConfiguration,
   RpcOperation, IModelToken,
 } from "@bentley/imodeljs-common";
-// __PUBLISH_EXTRACT_START__ Frontend.Imports
+// __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
@@ -26,7 +26,7 @@ Logger.initializeToConsole();
     ElectronRpcManager.initializeClient({}, rpcs);
   } else {
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" } };
-    // __PUBLISH_EXTRACT_START__ Frontend.Initialization.RpcInterface
+    // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
@@ -47,7 +47,7 @@ export class SampleApp extends IModelApp {
     if (process.env.NODE_ENV === "development")
       ClientConfig.devCorsProxyServer = `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`;
 
-    // __PUBLISH_EXTRACT_START__ Frontend.Initialization.Presentation
+    // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
     });

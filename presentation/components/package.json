@@ -19,7 +19,7 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src 1>&2 && npm run build:assets && npm run build:scss",
+    "build": "tsc -p ./src 1>&2 && npm run build:assets && npm run build:scss && npm run extract",
     "build:scss": "cpx ./src/**/*.scss ./lib",
     "build:assets": "cpx ./public/**/* ./lib/public && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
@@ -27,7 +27,7 @@
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/components",
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/components/json/file.json --onlyJson %TYPEDOC_THEME%",
-    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
+    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./src",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register -r ignore-styles -r jsdom-global/register --check-leaks --full-trace --file ./tests/index.test.ts tests/**/*.{ts,tsx}",

@@ -12,9 +12,9 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc 1>&2 && npm run extract",
     "clean": "rimraf lib",
-    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../out/docs/extract",
+    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "start": "imodeljs-react-scripts start"
   },
   "dependencies": {

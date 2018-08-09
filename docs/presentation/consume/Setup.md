@@ -5,31 +5,39 @@ consumers must do before the library can be used.
 
 ## Backend
 
-1. Initialize:
+1. Initialize the library:
   ``` ts
-  [[include:Backend.Initialization.Presentation]]
+  [[include:Presentation.Backend.Initialization]]
   ```
-2. Initialize `PresentationRpcInterface` (amongst other RPC interfaces):
+
+2. Register `PresentationRpcInterface` (amongst other RPC interfaces):
   ``` ts
-  [[include:Backend.Imports]]
+  [[include:Presentation.Common.Imports]]
   ```
   ``` ts
-  [[include:Backend.Initialization.RpcInterface]]
+  [[include:Presentation.Common.RpcInterface]]
+  ```
+  ``` ts
+  [[include:Presentation.Backend.RpcInterface]]
   ```
 
 ## Frontend
 
-1. Import dependencies:
+1. Initialize the library:
   ``` ts
-  [[include:Frontend.Imports]]
+  [[include:Presentation.Frontend.Imports]]
+  ```
+  ``` ts
+  [[include:Presentation.Frontend.Initialization]]
   ```
 
-2. Initialize:
+2. Register `PresentationRpcInterface` (amongst other RPC interfaces):
   ``` ts
-  [[include:Frontend.Initialization.Presentation]]
+  [[include:Presentation.Common.Imports]]
   ```
-
-3. Initialize `PresentationRpcInterface` (amongst other RPC interfaces):
   ``` ts
-  [[include:Frontend.Initialization.RpcInterface]]
+  [[include:Presentation.Common.RpcInterface]]
+  ```
+  ``` ts
+  [[include:Presentation.Frontend.RpcInterface]]
   ```

@@ -15,7 +15,7 @@ Logger.initializeToConsole();
 // initialize imodeljs-backend
 IModelHost.startup();
 
-// __PUBLISH_EXTRACT_START__ Backend.Initialization.Presentation
+// __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { Presentation } from "@bentley/presentation-backend";
 Presentation.initialize({
   rulesetDirectories: [path.join("assets", "presentation_rules")],
