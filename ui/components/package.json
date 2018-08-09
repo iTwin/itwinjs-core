@@ -69,8 +69,11 @@
     "cross-env": "^5.1.4",
     "dirty-chai": "^2.0.1",
     "enzyme": "^3.3.0",
+    "ignore-styles": "^5.0.1",
+    "jsdom": "^11.12.0",
+    "jsdom-global": "3.0.2",
     "mocha": "^5.2.0",
-    "nyc": "^12.0.2",
+    "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
     "sinon": "^6.1.4",
     "sinon-chai": "^3.2.0",
@@ -97,8 +100,8 @@
     "react-dom": "^16.4.2"
   },
   "nyc": {
-    "nycrc-path": "../../.nycrc",
-    "temp-directory": "../../out/reports/coverage/components/.nyc_output",
-    "report-dir": "../../out/reports/coverage/components"
+    "nycrc-path": "../.nycrc",
+    "temp-directory": "../../out/reports/coverage/ui-components/.nyc_output",
+    "report-dir": "../../out/reports/coverage/ui-components"
   }
 }

@@ -55,7 +55,7 @@
     "@bentley/bentleyjs-tools": "0.112.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
-    "nyc": "^12.0.2",
+    "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
     "ts-node": "^6.0.3",
     "tsconfig-paths": "^3.3.2",

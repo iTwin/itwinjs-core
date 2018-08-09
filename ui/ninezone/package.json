@@ -60,9 +60,12 @@
     "css-loader": "^0.28.11",
     "dirty-chai": "^2.0.1",
     "enzyme": "^3.3.0",
+    "ignore-styles": "^5.0.1",
+    "jsdom": "^11.12.0",
+    "jsdom-global": "3.0.2",
     "html-webpack-plugin": "^3.2.0",
     "mocha": "^5.2.0",
-    "nyc": "^12.0.2",
+    "nyc": "^13.0.1",
     "raw-loader": "^0.5.1",
     "react-markdown": "^3.2.1",
     "react-router-dom": "^4.2.2",
@@ -95,8 +98,8 @@
     "react-dom": "^16.4.2"
   },
   "nyc": {
-    "nycrc-path": "../../.nycrc",
-    "temp-directory": "../../out/reports/coverage/ninezone/.nyc_output",
-    "report-dir": "../../out/reports/coverage/ninezone"
+    "nycrc-path": "../.nycrc",
+    "temp-directory": "../../out/reports/coverage/ui-ninezone/.nyc_output",
+    "report-dir": "../../out/reports/coverage/ui-ninezone"
   }
 }

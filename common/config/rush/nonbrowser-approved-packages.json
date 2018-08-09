@@ -127,7 +127,7 @@
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "jsdom",

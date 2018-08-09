@@ -55,7 +55,7 @@
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "nock": "^9.2.3",
-    "nyc": "^12.0.2",
+    "nyc": "^13.0.1",
     "mocha": "^5.2.0",
     "source-map-support": "^0.5.6",
     "ts-node": "^6.0.3",
@@ -76,10 +76,10 @@
   },
   "nyc": {
     "include": [
-      "./src/**/*.ts"
+      "src/**"
     ],
     "exclude": [
-      "./src/test/*",
+      "src/test/*",
       "**/*.d.ts"
     ],
     "extension": [

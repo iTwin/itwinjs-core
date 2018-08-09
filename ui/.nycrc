@@ -1,10 +1,18 @@
 {
   "require": [
+    "ignore-styles",
+    "jsdom-global/register",
     "source-map-support/register",
     "ts-node/register",
     "tsconfig-paths/register"
   ],
+  "include": [
+    "src/**"
+  ],
   "exclude": [
+    "**/*.css",
+    "**/*.scss",
+    "*.scss",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.d.ts",
@@ -24,10 +32,5 @@
     "lcov",
     "cobertura"
   ],
-  "all": true,
-  "check-coverage": true,
-  "statements": 100,
-  "functions": 100,
-  "branches": 100,
-  "lines": 100
+  "all": true
 }
