@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NodeKey fromJSON creates BaseNodeKey 1`] = `
+Object {
+  "pathFromRoot": Array [
+    "d75d7bdc-c0f7-4e4a-9b67-6575afae7eb8",
+  ],
+  "type": "backing up",
+}
+`;
+
+exports[`NodeKey fromJSON creates ECClassGroupingNodeKey 1`] = `
+Object {
+  "className": "New Mexico",
+  "pathFromRoot": Array [
+    "f6197eae-8ae8-44c3-b286-3432422b5f98",
+  ],
+  "type": "ECClassGroupingNode",
+}
+`;
+
+exports[`NodeKey fromJSON creates ECInstanceNodeKey 1`] = `
+Object {
+  "instanceKey": Object {
+    "className": "Ameliorated",
+    "id": "0x451a00000068da",
+  },
+  "pathFromRoot": Array [
+    "000df554-2edd-4edd-8b22-be522c878f31",
+  ],
+  "type": "ECInstanceNode",
+}
+`;
+
+exports[`NodeKey fromJSON creates ECPropertyGroupingNodeKey 1`] = `
+Object {
+  "className": "Division",
+  "groupingValue": 77874,
+  "pathFromRoot": Array [
+    "e6a23e27-348a-47e3-9061-62dfaca34d39",
+  ],
+  "propertyName": "Planner",
+  "type": "ECPropertyGroupingNode",
+}
+`;
+
+exports[`NodeKey fromJSON creates LabelGroupingNodeKey 1`] = `
+Object {
+  "label": "evolve Berkshire",
+  "pathFromRoot": Array [
+    "f1dd9cea-1a68-494b-a67f-635d9d40589b",
+  ],
+  "type": "DisplayLabelGroupingNode",
+}
+`;

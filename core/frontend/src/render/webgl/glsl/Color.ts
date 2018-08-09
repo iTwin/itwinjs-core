@@ -24,7 +24,7 @@ const computeElementColor = `
   }
 `;
 const computeBaseAlpha = `
-  v_baseAlpha = color.a;
+  g_baseAlpha = color.a;
 `;
 const adjustAndReturnColor = `
   if (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass)
@@ -54,7 +54,7 @@ export function addColor(builder: ProgramBuilder, forwardBaseAlpha: boolean = fa
   builder.vert.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
 
   if (forwardBaseAlpha)
-    builder.addVarying("v_baseAlpha", VariableType.Float);
+    builder.addGlobal("g_baseAlpha", VariableType.Float);
 
   addRenderPass(builder.vert);
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeColor", forwardBaseAlpha ? computeSurfaceColor : computeColor);

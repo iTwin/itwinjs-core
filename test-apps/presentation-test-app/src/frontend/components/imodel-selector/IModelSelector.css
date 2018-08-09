@@ -1,0 +1,8 @@
+.IModelSelector {
+  padding: 10px;
+}
+
+.IModelSelector .Error {
+  margin-top: 10px;
+  color: red;
+}
