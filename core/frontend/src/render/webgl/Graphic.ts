@@ -512,7 +512,7 @@ export class Branch extends Graphic {
       branch.setViewFlags(viewFlags);
   }
 
-  public dispose() { }
+  public dispose() { this.branch.dispose(); }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public assignUniformFeatureIndices(index: number): void {

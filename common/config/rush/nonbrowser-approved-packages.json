@@ -27,7 +27,7 @@
     },
     {
       "name": "cache-require-paths",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "chai",
@@ -35,15 +35,15 @@
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "chai-jest-snapshot",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "chai-spies",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "chalk",
@@ -71,7 +71,7 @@
     },
     {
       "name": "cross-env",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "cross-spawn",
@@ -107,11 +107,11 @@
     },
     {
       "name": "enzyme-adapter-react-16",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "enzyme-to-json",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "exceljs",
@@ -163,7 +163,7 @@
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "obj-traverse",
@@ -227,11 +227,11 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "tslint",
@@ -251,7 +251,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "typescript",

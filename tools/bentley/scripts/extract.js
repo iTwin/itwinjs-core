@@ -14,14 +14,13 @@ const __PUBLISH_EXTRACT_END__ = "__PUBLISH_EXTRACT_END__";
 
 const extractDir = (argv.extractFrom === undefined) ? paths.appTest : argv.extractFrom;
 const outDir = (argv.out === undefined) ? paths.libExtract : argv.out;
-const fileExt = (argv.fileExt === undefined) ? "test.ts" : argv.fileExt;
+const fileExt = (argv.fileExt === undefined) ? ["test.ts"] : argv.fileExt.split(",");
 const recursive = (argv.recursive === undefined) ? false : true;
 
 const ignoreFunction = (file, stats) => {
   if (stats.isDirectory())
     return !recursive; // don't ignore subdirectories in recursive mode
-
-  return !file.endsWith(fileExt); // don't ignore files with the desired extension
+  return !fileExt.some((ext) => file.endsWith(ext)); // don't ignore files with desired extensions
 };
 
 readDirectory(extractDir, [ignoreFunction], (error, inputFileNames) => {
