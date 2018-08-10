@@ -1,0 +1,7 @@
+source
+test
+lib/**/test
+lib/**/*.map
+lib/**/docs
+.nyc_output
+.vscode

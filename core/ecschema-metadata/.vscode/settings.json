@@ -1,0 +1,21 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "editor.tabSize": 2,
+  "files.exclude": {
+    "node_modules": true,
+    "lib": true,
+    ".nyc_output": true
+  },
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "cSpell.words": [
+    "struct",
+    "deserialization",
+    "deserializing",
+    "deserialize",
+    "containertype",
+    "entityclass",
+    "customattributeclass",
+    "mixins",
+    "ecobjects"
+  ]
+}
