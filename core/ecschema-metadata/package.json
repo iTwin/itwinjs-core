@@ -27,8 +27,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.112.0",
-    "@bentley/bentleyjs-tools": "0.112.0",
+    "@bentley/bentleyjs-core": "0.113.0",
+    "@bentley/bentleyjs-tools": "0.113.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",

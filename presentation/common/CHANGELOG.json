@@ -1,6 +1,35 @@
 {
-  "name": "@bentley/ecpresentation-common",
+  "name": "@bentley/presentation-common",
   "entries": [
+    {
+      "version": "0.113.0",
+      "tag": "@bentley/presentation-common_v0.113.0",
+      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Rename `ECPresentation` to `Presentation`"
+          },
+          {
+            "comment": "Refactor PresentationRuleSet JSON schema to make it clearer and less ambiguous"
+          },
+          {
+            "comment": "IRulesetManager API changes"
+          },
+          {
+            "comment": "User Settings rename to Ruleset Variables and related API changes"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Generate JSON schema for Ruleset data structure"
+          },
+          {
+            "comment": "RegisteredRuleset now contains ruleset's hash which helps us verify ruleset integrity"
+          }
+        ]
+      }
+    },
     {
       "version": "0.5.1",
       "tag": "@bentley/ecpresentation-common_v0.5.1",

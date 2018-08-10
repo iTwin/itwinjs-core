@@ -7,11 +7,11 @@ cases lower levels are somehow related to their above level. As a result,
 changing a level clears selection of all lower levels.
 
 Example:
-1. User selects a *Model* node in the tree. Thats **selection level 0**.
+1. User selects a *Model* node in the tree. That's **selection level 0**.
 2. Content components react to selection change:
    - Grid shows all model *Elements*
    - Graphics view highlights all model *Elements*
-   - Property pane shows selected *Model* properties
+   - Property pane shows properties of selected *Model*
 3. User selects one of the *Element* instances in the grid. That's
 **selection level 1**.
 4. Content components react to selection change:
