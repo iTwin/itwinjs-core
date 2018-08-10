@@ -5,12 +5,12 @@
 import { assert, expect } from "chai";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema, { MutableSchema } from "../../source/Metadata/Schema";
-import EntityClass from "../../source/Metadata/EntityClass";
-import Mixin from "../../source/Metadata/Mixin";
-import { ECObjectsError } from "../../source/Exception";
-import { NavigationProperty } from "../../source/Metadata/Property";
-import { StrengthDirection } from "../../source/ECObjects";
+import Schema, { MutableSchema } from "../../src/Metadata/Schema";
+import EntityClass from "../../src/Metadata/EntityClass";
+import Mixin from "../../src/Metadata/Mixin";
+import { ECObjectsError } from "../../src/Exception";
+import { NavigationProperty } from "../../src/Metadata/Property";
+import { StrengthDirection } from "../../src/ECObjects";
 
 describe("Mixin", () => {
   describe("deserialization", () => {
@@ -32,13 +32,13 @@ describe("Mixin", () => {
             polymorphic: true,
             multiplicity: "(0..*)",
             roleLabel: "Source RoleLabel",
-            constraintClasses: [ "TestSchema.TestEntity" ],
+            constraintClasses: ["TestSchema.TestEntity"],
           },
           target: {
             polymorphic: true,
             multiplicity: "(0..*)",
             roleLabel: "Target RoleLabel",
-            constraintClasses: [ "TestSchema.TestEntity" ],
+            constraintClasses: ["TestSchema.TestEntity"],
           },
         },
       });
@@ -156,7 +156,7 @@ describe("Mixin", () => {
 
     it("should throw for missing appliesTo", async () => {
       expect(testMixin).to.exist;
-      await expect(testMixin.fromJson({...baseJson})).to.be.rejectedWith(ECObjectsError, `The Mixin TestMixin is missing the required 'appliesTo' attribute.`);
+      await expect(testMixin.fromJson({ ...baseJson })).to.be.rejectedWith(ECObjectsError, `The Mixin TestMixin is missing the required 'appliesTo' attribute.`);
     });
 
     it("should throw for invalid appliesTo", async () => {
@@ -173,7 +173,7 @@ describe("Mixin", () => {
     let testMixin: Mixin;
     const baseJson = { schemaItemType: "Mixin" };
 
-    beforeEach( () => {
+    beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       testEntity = (schema as MutableSchema).createEntityClassSync("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
@@ -192,7 +192,7 @@ describe("Mixin", () => {
 
     it("should throw for missing appliesTo", async () => {
       expect(testMixin).to.exist;
-      assert.throws(() => testMixin.fromJsonSync({...baseJson}), ECObjectsError, `The Mixin TestMixin is missing the required 'appliesTo' attribute.`);
+      assert.throws(() => testMixin.fromJsonSync({ ...baseJson }), ECObjectsError, `The Mixin TestMixin is missing the required 'appliesTo' attribute.`);
     });
 
     it("should throw for invalid appliesTo", async () => {

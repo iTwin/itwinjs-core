@@ -3,14 +3,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
-import Schema from "../../source/Metadata/Schema";
-import Format from "../../source/Metadata/Format";
-import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "../../source/utils/FormatEnums";
-import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
-import Unit from "../../source/Metadata/Unit";
-import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
+
+import Schema from "../../src/Metadata/Schema";
+import Format from "../../src/Metadata/Format";
+import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "../../src/utils/FormatEnums";
+import { ECObjectsError } from "../../src/Exception";
+import Unit from "../../src/Metadata/Unit";
+import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 
 describe("Format tests", () => {
   let testFormat: Format;
@@ -128,7 +128,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        assert(testFormat.roundFactor ===  20);
+        assert(testFormat.roundFactor === 20);
       });
       it("Type is required", async () => {
         const json = {
@@ -689,7 +689,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        assert(testFormat.formatTraits ===  0);
+        assert(testFormat.formatTraits === 0);
       });
       it("String[] with valid options", async () => {
         const json = {
@@ -848,7 +848,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         testFormat.fromJsonSync(json);
-        assert(testFormat.roundFactor ===  20);
+        assert(testFormat.roundFactor === 20);
       });
       it("Type is required", () => {
         const json = {
@@ -1410,7 +1410,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         testFormat.fromJsonSync(json);
-        assert(testFormat.formatTraits ===  0);
+        assert(testFormat.formatTraits === 0);
       });
       it("String[] with valid options", () => {
         const json = {
@@ -1543,7 +1543,7 @@ describe("Format tests", () => {
       assert.isDefined(testUnitItem);
       const unitTest: Unit = testUnitItem as Unit;
       assert(unitTest!.name, "MILE");
-     });
+    });
     it("Throw for Composite with missing units attribute", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -1845,7 +1845,7 @@ describe("Format tests", () => {
       assert.isDefined(testUnitItem);
       const unitTest: Unit = testUnitItem as Unit;
       assert(unitTest!.name, "MILE");
-     });
+    });
     it("Throw for Composite with missing units attribute", () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -2168,7 +2168,7 @@ describe("Format tests", () => {
       assert.isDefined(formatTest);
       const formatSerialization = formatTest.toJson(false, true);
       assert.isDefined(formatSerialization);
-      expect(formatSerialization.type).equals( "Fractional");
+      expect(formatSerialization.type).equals("Fractional");
       expect(formatSerialization.precision).equals(4);
       expect(formatSerialization.decimalSeparator).equals(".");
       expect(formatSerialization.roundFactor).equals(0);
@@ -2178,7 +2178,7 @@ describe("Format tests", () => {
       expect(formatSerialization.uomSeparator).equals(" ");
       expect(formatSerialization.composite.includeZero).equals(false);
       expect(formatSerialization.composite.spacer).equals("-");
-      expect(formatSerialization.composite.units).to.deep.equal([{name: "MILE", label: "mile(s)"}]);
+      expect(formatSerialization.composite.units).to.deep.equal([{ name: "MILE", label: "mile(s)" }]);
 
     });
     it("Basic test with formatTraits", () => {

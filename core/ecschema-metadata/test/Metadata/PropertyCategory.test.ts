@@ -3,9 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
-import { ECObjectsError } from "../../source/Exception";
-import PropertyCategory from "../../source/Metadata/PropertyCategory";
+import Schema from "../../src/Metadata/Schema";
+import { ECObjectsError } from "../../src/Exception";
+import PropertyCategory from "../../src/Metadata/PropertyCategory";
 import * as sinon from "sinon";
 
 describe("PropertyCategory", () => {

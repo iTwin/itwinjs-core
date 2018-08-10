@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DelayedPromise, DelayedPromiseWithProps } from "../../source/DelayedPromise";
+import { DelayedPromise, DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import * as sinon from "sinon";
 
 describe("DelayedPromise", () => {

@@ -3,13 +3,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
-import Constant from "../../source/Metadata/Constant";
-import { ECObjectsError } from "../../source/Exception";
+import Schema from "../../src/Metadata/Schema";
+import Constant from "../../src/Metadata/Constant";
+import { ECObjectsError } from "../../src/Exception";
 import * as sinon from "sinon";
-import Phenomenon from "../../source/Metadata/Phenomenon";
+import Phenomenon from "../../src/Metadata/Phenomenon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { SchemaItemType } from "../../source";
+import { SchemaItemType } from "../../src";
 
 describe("Constant", () => {
   before(() => {

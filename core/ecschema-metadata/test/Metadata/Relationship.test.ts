@@ -3,11 +3,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
-import EntityClass from "../../source/Metadata/EntityClass";
-import RelationshipClass from "../../source/Metadata/RelationshipClass";
-import { RelationshipMultiplicity, StrengthType, StrengthDirection } from "../../source/ECObjects";
-import { ECObjectsError } from "../../source/Exception";
+import Schema from "../../src/Metadata/Schema";
+import EntityClass from "../../src/Metadata/EntityClass";
+import RelationshipClass from "../../src/Metadata/RelationshipClass";
+import { RelationshipMultiplicity, StrengthType, StrengthDirection } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
 
 describe("RelationshipMultiplicity", () => {
   describe("fromString", () => {

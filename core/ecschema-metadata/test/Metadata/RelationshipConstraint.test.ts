@@ -4,10 +4,10 @@
 
 import { assert, expect } from "chai";
 
-import Schema from "../../source/Metadata/Schema";
-import { ECObjectsError } from "../../source/Exception";
-import RelationshipClass, { RelationshipConstraint } from "../../source/Metadata/RelationshipClass";
-import { RelationshipEnd} from "../../source/ECObjects";
+import Schema from "../../src/Metadata/Schema";
+import { ECObjectsError } from "../../src/Exception";
+import RelationshipClass, { RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
+import { RelationshipEnd } from "../../src/ECObjects";
 
 describe("RelationshipConstraint", () => {
   describe("fromJson", () => {
@@ -91,12 +91,12 @@ describe("RelationshipConstraint", () => {
       expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       expect(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
     });
-    it("sync - Deserialize Two Custom Attributes",  () => {
+    it("sync - Deserialize Two Custom Attributes", () => {
       testConstraint.fromJsonSync(twoCustomAttributesJson);
       expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       expect(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
     });
-    it("sync - Deserialize Two Custom Attributes with additional properties",  () => {
+    it("sync - Deserialize Two Custom Attributes with additional properties", () => {
       const relConstraintJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "ValidSchema",
@@ -118,13 +118,13 @@ describe("RelationshipConstraint", () => {
     const mustBeAnArrayJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       name: "InvalidSchema",
-      customAttributes:  "CoreCustomAttributes.HiddenSchema",
+      customAttributes: "CoreCustomAttributes.HiddenSchema",
     };
     it("async - Custom Attributes must be an array", async () => {
       await expect(testConstraint.fromJson(mustBeAnArrayJson)).to.be.rejectedWith(ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
 
     });
-    it("sync - Custom Attributes must be an array",  () => {
+    it("sync - Custom Attributes must be an array", () => {
       assert.throws(() => testConstraint.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
   });

@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { ISchemaLocater } from "../../source/Context";
-import { SchemaKey, SchemaMatchType, SchemaContext } from "../../source";
-import Schema from "../../source/Metadata/Schema";
+import { ISchemaLocater } from "../../src/Context";
+import { SchemaKey, SchemaMatchType, SchemaContext } from "../../src";
+import Schema from "../../src/Metadata/Schema";
 
 const formatsKey = new SchemaKey("Formats", 1, 0, 0);
 

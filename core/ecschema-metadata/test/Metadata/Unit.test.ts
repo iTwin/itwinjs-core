@@ -6,11 +6,11 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema from "../../source/Metadata/Schema";
-import Unit from "../../source/Metadata/Unit";
-import Phenomenon from "../../source/Metadata/Phenomenon";
-import UnitSystem from "../../source/Metadata/UnitSystem";
-import { ECObjectsError } from "../../source/Exception";
+import Schema from "../../src/Metadata/Schema";
+import Unit from "../../src/Metadata/Unit";
+import Phenomenon from "../../src/Metadata/Phenomenon";
+import UnitSystem from "../../src/Metadata/UnitSystem";
+import { ECObjectsError } from "../../src/Exception";
 
 describe("Unit", () => {
   before(() => {

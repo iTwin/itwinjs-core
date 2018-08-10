@@ -4,9 +4,9 @@
 
 import { assert } from "chai";
 
-import { SchemaXmlFileLocater } from "../../source/Deserialization/SchemaXmlFileLocater";
-import { FileSchemaKey } from "../../source/Deserialization/SchemaFileLocater";
-import { SchemaKey, SchemaMatchType, ECObjectsError, ECObjectsStatus, SchemaContext } from "../../source";
+import { SchemaXmlFileLocater } from "../../src/Deserialization/SchemaXmlFileLocater";
+import { FileSchemaKey } from "../../src/Deserialization/SchemaFileLocater";
+import { SchemaKey, SchemaMatchType, ECObjectsError, ECObjectsStatus, SchemaContext } from "../../src";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;

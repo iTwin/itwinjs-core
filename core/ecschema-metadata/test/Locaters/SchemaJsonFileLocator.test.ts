@@ -4,10 +4,10 @@
 
 import { assert } from "chai";
 
-import { SchemaJsonFileLocater } from "../../source/Deserialization/SchemaJsonFileLocater";
-import { FileSchemaKey } from "../../source/Deserialization/SchemaFileLocater";
-import { SchemaContext } from "../../source/Context";
-import { ECObjectsError, ECObjectsStatus, SchemaKey, SchemaMatchType } from "../../source";
+import { SchemaJsonFileLocater } from "../../src/Deserialization/SchemaJsonFileLocater";
+import { FileSchemaKey } from "../../src/Deserialization/SchemaFileLocater";
+import { SchemaContext } from "../../src/Context";
+import { ECObjectsError, ECObjectsStatus, SchemaKey, SchemaMatchType } from "../../src";
 
 describe("SchemaJsonFileLocater tests: ", () => {
   let locater: SchemaJsonFileLocater;

@@ -3,15 +3,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
-import { SchemaContext } from "../../source/Context";
-import { ECObjectsError } from "../../source/Exception";
-import { SchemaDeserializationVisitor } from "../../source/Interfaces";
-import SchemaReadHelper from "../../source/Deserialization/Helper";
 import * as sinon from "sinon";
-import { AnyClass } from "../../source/Interfaces";
-import { SchemaItemType } from "../../source/ECObjects";
-import { NavigationProperty } from "../../source/Metadata/Property";
+
+import Schema from "../../src/Metadata/Schema";
+import { SchemaContext } from "../../src/Context";
+import { ECObjectsError } from "../../src/Exception";
+import { SchemaDeserializationVisitor } from "../../src/Interfaces";
+import SchemaReadHelper from "../../src/Deserialization/Helper";
+import { AnyClass } from "../../src/Interfaces";
+import { SchemaItemType } from "../../src/ECObjects";
+import { NavigationProperty } from "../../src/Metadata/Property";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -138,7 +139,7 @@ describe("Full Schema Deserialization", () => {
     it("should throw for missing reference name", async () => {
       const json = {
         ...baseJson,
-        references: [ { version: "1.0.5" } ],
+        references: [{ version: "1.0.5" }],
       };
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references is missing the required 'name' property.`);
     });
@@ -146,7 +147,7 @@ describe("Full Schema Deserialization", () => {
     it("should throw for invalid reference name", async () => {
       const json = {
         ...baseJson,
-        references: [ { name: 0, version: "1.0.5" } ],
+        references: [{ name: 0, version: "1.0.5" }],
       };
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
     });
@@ -154,7 +155,7 @@ describe("Full Schema Deserialization", () => {
     it("should throw for missing reference version", async () => {
       const json = {
         ...baseJson,
-        references: [ { name: "RefSchema" } ],
+        references: [{ name: "RefSchema" }],
       };
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references is missing the required 'version' property.`);
     });
@@ -162,7 +163,7 @@ describe("Full Schema Deserialization", () => {
     it("should throw for invalid reference version", async () => {
       const json = {
         ...baseJson,
-        references: [ { name: "RefSchema", version: 0 } ],
+        references: [{ name: "RefSchema", version: 0 }],
       };
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
     });
@@ -179,7 +180,7 @@ describe("Full Schema Deserialization", () => {
       let json: any = { ...baseJson, items: 0 };
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' property. It should be of type 'object'.`);
 
-      json = { ...baseJson, items: [ {} ] };
+      json = { ...baseJson, items: [{}] };
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' property. It should be of type 'object'.`);
     });
 
@@ -416,10 +417,10 @@ describe("Full Schema Deserialization", () => {
             schemaItemType: "RelationshipClass",
             description: "Description for BRelationshipClass",
             source: {
-              constraintClasses: [ "TestSchema.AEntityClass" ],
+              constraintClasses: ["TestSchema.AEntityClass"],
             },
             target: {
-              constraintClasses: [ "TestSchema.AEntityClass" ],
+              constraintClasses: ["TestSchema.AEntityClass"],
             },
           },
         },
@@ -468,10 +469,10 @@ describe("Full Schema Deserialization", () => {
             schemaItemType: "RelationshipClass",
             description: "Description for ARelationshipClass",
             source: {
-              constraintClasses: [ "TestSchema.BEntityClass" ],
+              constraintClasses: ["TestSchema.BEntityClass"],
             },
             target: {
-              constraintClasses: [ "TestSchema.BEntityClass" ],
+              constraintClasses: ["TestSchema.BEntityClass"],
             },
           },
           BEntityClass: {
@@ -517,7 +518,7 @@ describe("Full Schema Deserialization", () => {
 
       expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[0]).to.equal("Description for ARelationshipClass",
-      `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before the relationship its NavigationProperty uses, "ARelationshipClass" was fully deserialized.`);
+        `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before the relationship its NavigationProperty uses, "ARelationshipClass" was fully deserialized.`);
 
       expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testRelationship)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BEntityClass",

@@ -4,14 +4,14 @@
 
 import { assert, expect } from "chai";
 
-import Schema, { MutableSchema } from "../../source/Metadata/Schema";
-import ECClass from "../../source/Metadata/Class";
-import EntityClass from "../../source/Metadata/EntityClass";
-import Mixin from "../../source/Metadata/Mixin";
-import { StructClass } from "../../source/Metadata/Class";
-import { ECObjectsError } from "../../source/Exception";
-import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
-import { SchemaContext } from "../../source/Context";
+import Schema, { MutableSchema } from "../../src/Metadata/Schema";
+import ECClass from "../../src/Metadata/Class";
+import EntityClass from "../../src/Metadata/EntityClass";
+import Mixin from "../../src/Metadata/Mixin";
+import { StructClass } from "../../src/Metadata/Class";
+import { ECObjectsError } from "../../src/Exception";
+import { SchemaKey, SchemaMatchType } from "../../src/ECObjects";
+import { SchemaContext } from "../../src/Context";
 
 describe("Schema", () => {
   describe("api creation of schema", () => {
@@ -24,9 +24,9 @@ describe("Schema", () => {
     });
 
     it("with invalid version numbers should fail", () => {
-      expect(() => {new Schema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
-      expect(() => {new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
-      expect(() => {new Schema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
+      expect(() => { new Schema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
+      expect(() => { new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
+      expect(() => { new Schema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
     });
   });
 
@@ -166,14 +166,14 @@ describe("Schema", () => {
         expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
         expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
       });
-      it("sync - Deserialize Two Custom Attributes",  () => {
+      it("sync - Deserialize Two Custom Attributes", () => {
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         testSchema.fromJsonSync(twoCustomAttributeJson);
         expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
         expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
       });
-      it("sync - Deserialize Two Custom Attributes with additional properties",  () => {
+      it("sync - Deserialize Two Custom Attributes with additional properties", () => {
         const propertyJson = {
           $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
           name: "ValidSchema",
@@ -206,7 +206,7 @@ describe("Schema", () => {
         alias: "vs",
         label: "SomeDisplayLabel",
         description: "A really long description...",
-        customAttributes:  "CoreCustomAttributes.HiddenSchema",
+        customAttributes: "CoreCustomAttributes.HiddenSchema",
       };
       it("async - Custom Attributes must be an array", async () => {
         const testSchema = new Schema("InvalidSchema", 1, 2, 3);
@@ -214,7 +214,7 @@ describe("Schema", () => {
         await expect(testSchema.fromJson(mustBeArrayJson)).to.be.rejectedWith(ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
 
       });
-      it("sync - Custom Attributes must be an array",  () => {
+      it("sync - Custom Attributes must be an array", () => {
         const testSchema = new Schema("InvalidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         assert.throws(() => testSchema.fromJsonSync(mustBeArrayJson), ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);

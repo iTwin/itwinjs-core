@@ -8,13 +8,13 @@ import * as sinon from "sinon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
-import { ECObjectsError } from "../../source/Exception";
-import KindOfQuantityEC32 from "../../source/Metadata/KindOfQuantityEC32";
-import Schema from "../../source/Metadata/Schema";
+import { ECObjectsError } from "../../src/Exception";
+import KindOfQuantityEC32 from "../../src/Metadata/KindOfQuantityEC32";
+import Schema from "../../src/Metadata/Schema";
 
-import Unit from "../../source/Metadata/Unit";
-import Format from "../../source/Metadata/Format";
-import { SchemaContext, DecimalPrecision } from "../../source";
+import Unit from "../../src/Metadata/Unit";
+import Format from "../../src/Metadata/Format";
+import { SchemaContext, DecimalPrecision } from "../../src";
 
 describe("KindOfQuantity EC3.2", () => {
   before(() => {
@@ -62,13 +62,13 @@ describe("KindOfQuantity EC3.2", () => {
           ...koq,
         },
       }, true, {
-        references: [
-          {
-            name: "Formats",
-            version: "1.0.0",
-          },
-        ],
-      });
+          references: [
+            {
+              name: "Formats",
+              version: "1.0.0",
+            },
+          ],
+        });
     }
 
     const fullDefinedJson = createSchemaJson({
@@ -158,7 +158,7 @@ describe("KindOfQuantity EC3.2", () => {
       await expect(Schema.fromJson(invalidPresentationUnits, context)).to.be.rejectedWith(ECObjectsError, `The Kind Of Quantity TestKoQ has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
     });
     it("sync - should throw for presentationUnits not an array or string", () => {
-      assert.throws(() => Schema.fromJsonSync(invalidPresentationUnits, context), ECObjectsError,  `The Kind Of Quantity TestKoQ has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
+      assert.throws(() => Schema.fromJsonSync(invalidPresentationUnits, context), ECObjectsError, `The Kind Of Quantity TestKoQ has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
     });
 
     // invalid presentation format
@@ -173,7 +173,7 @@ describe("KindOfQuantity EC3.2", () => {
       await expect(Schema.fromJson(formatNonExistent, context)).to.be.rejectedWith(ECObjectsError, `The SchemaItem NonexistentFormat does not exist.`);
     });
     it("sync - should throw for presentationUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(formatNonExistent, context), ECObjectsError,  `The SchemaItem NonexistentFormat does not exist.`);
+      assert.throws(() => Schema.fromJsonSync(formatNonExistent, context), ECObjectsError, `The SchemaItem NonexistentFormat does not exist.`);
     });
 
     describe("format overrides", () => {
@@ -349,7 +349,7 @@ describe("KindOfQuantity EC3.2", () => {
         await expect(Schema.fromJson(incorrectNumUnit, context)).to.be.rejectedWith(ECObjectsError, `Cannot add presetantion format to KindOfQuantity 'TestKoQ' because the number of unit overrides is inconsistent with the number in the Format 'SingleUnitFormat'.`);
       });
       it("sync - should throw for format override with a different number of unit", () => {
-        assert.throws(() => Schema.fromJsonSync(incorrectNumUnit, context), ECObjectsError,  `Cannot add presetantion format to KindOfQuantity 'TestKoQ' because the number of unit overrides is inconsistent with the number in the Format 'SingleUnitFormat'.`);
+        assert.throws(() => Schema.fromJsonSync(incorrectNumUnit, context), ECObjectsError, `Cannot add presetantion format to KindOfQuantity 'TestKoQ' because the number of unit overrides is inconsistent with the number in the Format 'SingleUnitFormat'.`);
       });
     });
   });
@@ -369,13 +369,13 @@ describe("KindOfQuantity EC3.2", () => {
           ...koq,
         },
       }, true, {
-        references: [
-          {
-            name: "Formats",
-            version: "1.0.0",
-          },
-        ],
-      });
+          references: [
+            {
+              name: "Formats",
+              version: "1.0.0",
+            },
+          ],
+        });
     }
 
     it("async - should succeed with fully defined", async () => {

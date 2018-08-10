@@ -5,14 +5,14 @@
 import { assert, expect } from "chai";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema, { MutableSchema } from "../../source/Metadata/Schema";
-import ECClass, { MutableClass } from "../../source/Metadata/Class";
-import EntityClass, { MutableEntityClass } from "../../source/Metadata/EntityClass";
-import Mixin from "../../source/Metadata/Mixin";
-import RelationshipClass from "../../source/Metadata/RelationshipClass";
-import { ECClassModifier } from "../../source/ECObjects";
-import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
-import { ECObjectsError } from "../../source/Exception";
+import Schema, { MutableSchema } from "../../src/Metadata/Schema";
+import ECClass, { MutableClass } from "../../src/Metadata/Class";
+import EntityClass, { MutableEntityClass } from "../../src/Metadata/EntityClass";
+import Mixin from "../../src/Metadata/Mixin";
+import RelationshipClass from "../../src/Metadata/RelationshipClass";
+import { ECClassModifier } from "../../src/ECObjects";
+import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import { ECObjectsError } from "../../src/Exception";
 
 describe("EntityClass", () => {
   describe("get inherited properties", () => {
@@ -141,7 +141,7 @@ describe("EntityClass", () => {
         },
         testClass: {
           schemaItemType: "EntityClass",
-          mixins: [ "TestSchema.testMixin" ],
+          mixins: ["TestSchema.testMixin"],
         },
       });
 
@@ -229,7 +229,7 @@ describe("EntityClass", () => {
       assert.isDefined(testBaseEntity);
 
       assert.isDefined(await testEntity!.baseClass);
-      assert.isTrue(typeof(await testEntity!.baseClass) === "object");
+      assert.isTrue(typeof (await testEntity!.baseClass) === "object");
 
       assert.isTrue(await testEntity!.baseClass === testBaseEntity);
     });
@@ -256,7 +256,7 @@ describe("EntityClass", () => {
 
       const baseClass = testEntity!.getBaseClassSync();
       assert.isDefined(baseClass);
-      assert.isTrue(typeof(baseClass) === "object");
+      assert.isTrue(typeof (baseClass) === "object");
 
       assert.isTrue(baseClass === testBaseEntity);
     });
@@ -370,7 +370,7 @@ describe("EntityClass", () => {
 
     it("should throw for property with missing typeName", async () => {
       const json = createSchemaJson({
-        properties: [{ name: "badProp", propertyType: "PrimitiveProperty"}],
+        properties: [{ name: "badProp", propertyType: "PrimitiveProperty" }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'typeName' property.`);
     });
@@ -496,7 +496,7 @@ describe("EntityClass", () => {
       json = { ...baseJson, mixins: [0] };
       await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-      json = { ...baseJson, mixins: [ "DoesNotExist" ] };
+      json = { ...baseJson, mixins: ["DoesNotExist"] };
       await expect(testClass.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
 
@@ -508,7 +508,7 @@ describe("EntityClass", () => {
       json = { ...baseJson, mixins: [0] };
       expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `The ECEntityClass TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-      json = { ...baseJson, mixins: [ "DoesNotExist" ] };
+      json = { ...baseJson, mixins: ["DoesNotExist"] };
       expect(() => testClass.fromJsonSync(json)).to.throw(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
   });
@@ -546,7 +546,7 @@ describe("EntityClass", () => {
         },
         testClass: {
           schemaItemType: "EntityClass",
-          mixins: [ "TestSchema.testMixin" ],
+          mixins: ["TestSchema.testMixin"],
         },
       });
 
@@ -561,7 +561,7 @@ describe("EntityClass", () => {
       const expectedResult = {
         schemaItemType: "EntityClass",
         modifier: "None",
-        mixins: [ "TestSchema.testMixin" ],
+        mixins: ["TestSchema.testMixin"],
       };
       expect(entityClassSerialization).to.deep.equal(expectedResult);
     });

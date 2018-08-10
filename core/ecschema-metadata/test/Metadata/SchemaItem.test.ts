@@ -4,11 +4,11 @@
 
 import { assert, expect } from "chai";
 
-import Schema from "../../source/Metadata/Schema";
-import { ECObjectsError } from "../../source/Exception";
-import SchemaItem from "../../source/Metadata/SchemaItem";
-import { SchemaKey, SchemaItemKey, SchemaItemType } from "../../source/ECObjects";
-import EntityClass from "../../source/Metadata/EntityClass";
+import Schema from "../../src/Metadata/Schema";
+import { ECObjectsError } from "../../src/Exception";
+import SchemaItem from "../../src/Metadata/SchemaItem";
+import { SchemaKey, SchemaItemKey, SchemaItemType } from "../../src/ECObjects";
+import EntityClass from "../../src/Metadata/EntityClass";
 
 describe("SchemaItem", () => {
   describe("fromJson", () => {
@@ -22,7 +22,7 @@ describe("SchemaItem", () => {
           super(schema, name);
           this.schemaItemType = SchemaItemType.EntityClass;
         }
-        public async accept() {}
+        public async accept() { }
       }
       testItem = new MockSchemaItem("BadSchemaItem");
     });
@@ -88,18 +88,18 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem", async () => {
       const schemaItemJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-          name: "ExampleSchema",
-          version: "1.0.0",
-          alias: "ex",
-          items: {
-            ExampleEntity: {
-              schemaItemType: "EntityClass",
-              label: "ExampleEntity",
-              description: "An example entity class.",
-            },
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "ExampleSchema",
+        version: "1.0.0",
+        alias: "ex",
+        items: {
+          ExampleEntity: {
+            schemaItemType: "EntityClass",
+            label: "ExampleEntity",
+            description: "An example entity class.",
           },
-        };
+        },
+      };
       const ecschema = await Schema.fromJson(schemaItemJson);
       const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
       assert.isDefined(testEntity);

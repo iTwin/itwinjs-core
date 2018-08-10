@@ -3,12 +3,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { ECClassModifier, CustomAttributeContainerType, parseClassModifier,
-         PrimitiveType, parsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
-         RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, StrengthDirection,
-         parseStrengthDirection, SchemaItemType, schemaItemTypeToString, parseSchemaItemType, classModifierToString, strengthToString,
-         strengthDirectionToString, parseRelationshipEnd, primitiveTypeToString } from "../source/ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../source/Exception";
+import {
+  ECClassModifier, CustomAttributeContainerType, parseClassModifier,
+  PrimitiveType, parsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
+  RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, StrengthDirection,
+  parseStrengthDirection, SchemaItemType, schemaItemTypeToString, parseSchemaItemType, classModifierToString, strengthToString,
+  strengthDirectionToString, parseRelationshipEnd, primitiveTypeToString
+} from "../src/ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../src/Exception";
 
 describe("Parsing/ToString Functions", () => {
   it("parsePrimitiveType", () => {

@@ -1,7 +1,11 @@
-source
+# start off ignoring everything, and then add back only the files we want
+*
+!lib/**/*.d.ts
+!lib/**/*.js
+!lib/assets/**
+assets/**
 test
-lib/**/test
-lib/**/*.map
-lib/**/docs
-.nyc_output
-.vscode
+perftest
+!public/**
+!package.json
+!*.md

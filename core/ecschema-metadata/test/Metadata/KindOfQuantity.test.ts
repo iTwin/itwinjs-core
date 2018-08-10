@@ -5,10 +5,10 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "../../source/Metadata/Schema";
-import { ECObjectsError } from "../../source/Exception";
+import Schema from "../../src/Metadata/Schema";
+import { ECObjectsError } from "../../src/Exception";
 
-import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
+import KindOfQuantity from "../../src/Metadata/KindOfQuantity";
 
 describe("KindOfQuantity", () => {
   const schema = new Schema("TestSchema", 1, 0, 0);
@@ -209,7 +209,7 @@ describe("KindOfQuantity", () => {
         precision: 1.234,
         persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
         presentationUnits: [
-          { unit: "cm", format: "format"},
+          { unit: "cm", format: "format" },
           { unit: "in", format: "anotherFormat" },
         ],
       };
@@ -222,7 +222,7 @@ describe("KindOfQuantity", () => {
       expect(koQSerialization.precision).to.eql(1.234);
       expect(koQSerialization.presentationUnits).to.exist;
       expect(koQSerialization.presentationUnits.length).to.eql(2);
-      expect(koQSerialization.presentationUnits[0]).to.eql({ unit: "cm", format: "format"});
+      expect(koQSerialization.presentationUnits[0]).to.eql({ unit: "cm", format: "format" });
       expect(koQSerialization.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
       expect(koQSerialization.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
     });

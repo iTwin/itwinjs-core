@@ -3,9 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema, { MutableSchema } from "../../source/Metadata/Schema";
-import ECClass, { MutableClass } from "../../source/Metadata/Class";
-import { PrimitiveType } from "../../source/ECObjects";
+import Schema, { MutableSchema } from "../../src/Metadata/Schema";
+import ECClass, { MutableClass } from "../../src/Metadata/Class";
+import { PrimitiveType } from "../../src/ECObjects";
 
 describe("Property Inheritance", () => {
   describe("Struct class with two levels of base classes", () => {
@@ -22,16 +22,22 @@ describe("Property Inheritance", () => {
       version: "01.00.00",
       alias: "ts",
       items: {
-        RootClass: { schemaItemType: "StructClass",
-          properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string" },
-                        {name : "P2", propertyType : "PrimitiveProperty", typeName : "string" }]},
-        MiddleClass: { schemaItemType: "StructClass", baseClass: "TestSchema.RootClass",
-          properties : [{name : "P2", propertyType : "PrimitiveProperty", typeName : "string" },
-                        {name : "P1", propertyType : "PrimitiveProperty", typeName : "string" },
-                        {name : "P3", propertyType : "PrimitiveProperty", typeName : "string" }]},
-        TestClass: { schemaItemType: "StructClass", baseClass: "TestSchema.MiddleClass",
-          properties : [{name : "P4", propertyType : "PrimitiveProperty", typeName : "string"},
-                        {name : "P3", propertyType : "PrimitiveProperty", typeName : "string"}]},
+        RootClass: {
+          schemaItemType: "StructClass",
+          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        MiddleClass: {
+          schemaItemType: "StructClass", baseClass: "TestSchema.RootClass",
+          properties: [{ name: "P2", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        TestClass: {
+          schemaItemType: "StructClass", baseClass: "TestSchema.MiddleClass",
+          properties: [{ name: "P4", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
       },
     };
 
@@ -66,16 +72,22 @@ describe("Property Inheritance", () => {
       version: "01.00.00",
       alias: "ts",
       items: {
-        RootClass: { schemaItemType: "EntityClass",
-          properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string" },
-                        {name : "P2", propertyType : "PrimitiveProperty", typeName : "string" }]},
-        MiddleClass: { schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass",
-          properties : [{name : "P2", propertyType : "PrimitiveProperty", typeName : "string" },
-                        {name : "P1", propertyType : "PrimitiveProperty", typeName : "string" },
-                        {name : "P3", propertyType : "PrimitiveProperty", typeName : "string" }]},
-        TestClass: { schemaItemType: "EntityClass", baseClass: "TestSchema.MiddleClass",
-          properties : [{name : "P4", propertyType : "PrimitiveProperty", typeName : "string"},
-                        {name : "P3", propertyType : "PrimitiveProperty", typeName : "string"}]},
+        RootClass: {
+          schemaItemType: "EntityClass",
+          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        MiddleClass: {
+          schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass",
+          properties: [{ name: "P2", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        TestClass: {
+          schemaItemType: "EntityClass", baseClass: "TestSchema.MiddleClass",
+          properties: [{ name: "P4", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
       },
     };
 
@@ -110,11 +122,15 @@ describe("Property Inheritance", () => {
       version: "01.00.00",
       alias: "ts",
       items: {
-        RootClass: { schemaItemType: "EntityClass",
-          properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string" }]},
-        Mixin: { schemaItemType: "Mixin",         appliesTo: "TestSchema.RootClass",
-          properties : [{name : "P5", propertyType : "PrimitiveProperty", typeName : "string"}]},
-        TestClass: { schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass", mixins: [ "TestSchema.Mixin" ]},
+        RootClass: {
+          schemaItemType: "EntityClass",
+          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        Mixin: {
+          schemaItemType: "Mixin", appliesTo: "TestSchema.RootClass",
+          properties: [{ name: "P5", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        TestClass: { schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass", mixins: ["TestSchema.Mixin"] },
       },
     };
 
@@ -197,9 +213,11 @@ describe("Property Inheritance", () => {
       version: "01.00.00",
       alias: "ts",
       items: {
-        RootClass: { schemaItemType: "StructClass",
-          properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string" }]},
-        TestClass: { schemaItemType: "StructClass", baseClass: "TestSchema.RootClass"},
+        RootClass: {
+          schemaItemType: "StructClass",
+          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        TestClass: { schemaItemType: "StructClass", baseClass: "TestSchema.RootClass" },
       },
     };
 
@@ -271,61 +289,71 @@ describe("Property Inheritance", () => {
   });
 
   describe("Entity with complex base and mixin hierarchy", () => {
-      // This is the class hierarchy used in this test. The numbers indicate override priority,
-      // i.e., the order that they should be returned by testClass.getAllBaseClasses():
-      //
-      //  [A:P1,P2]  (B)  (C:P3)  (D:P4)          [] := EntityClass
-      //     \      /      /     /            () := Mixin
-      //    2[ G:P1 ]  (E)    (F)
-      //           \    /     /
-      //             [H:P2]
-      // We are using the labels to tell the properties apart which have been overwritten
-      const testSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-        name: "TestSchema",
-        version: "01.00.00",
-        alias: "ts",
-        items: {
-          A: { schemaItemType: "EntityClass",
-            properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string" },
-                          {name : "P2", propertyType : "PrimitiveProperty", typeName : "string" }]},
-          B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-          C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A",
-            properties : [{name : "P3", propertyType : "PrimitiveProperty", typeName : "string"}]},
-          D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A",
-            properties : [{name : "P4", propertyType : "PrimitiveProperty", typeName : "string"}]},
-          E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
-          F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
-          G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ],
-            properties : [{name : "P1", propertyType : "PrimitiveProperty", typeName : "string"}]},
-          H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ],
-            properties : [{name : "P2", propertyType : "PrimitiveProperty", typeName : "string"}]},
+    // This is the class hierarchy used in this test. The numbers indicate override priority,
+    // i.e., the order that they should be returned by testClass.getAllBaseClasses():
+    //
+    //  [A:P1,P2]  (B)  (C:P3)  (D:P4)          [] := EntityClass
+    //     \      /      /     /            () := Mixin
+    //    2[ G:P1 ]  (E)    (F)
+    //           \    /     /
+    //             [H:P2]
+    // We are using the labels to tell the properties apart which have been overwritten
+    const testSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      name: "TestSchema",
+      version: "01.00.00",
+      alias: "ts",
+      items: {
+        A: {
+          schemaItemType: "EntityClass",
+          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
+          { name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
         },
-      };
-      const expectedOrder = ["P1(G)", "P2(H)", "P3(C)", "P4(D)"];
+        B: { schemaItemType: "Mixin", appliesTo: "TestSchema.A" },
+        C: {
+          schemaItemType: "Mixin", appliesTo: "TestSchema.A",
+          properties: [{ name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        D: {
+          schemaItemType: "Mixin", appliesTo: "TestSchema.A",
+          properties: [{ name: "P4", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        E: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
+        F: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+        G: {
+          schemaItemType: "EntityClass", baseClass: "TestSchema.A", mixins: ["TestSchema.B"],
+          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+        H: {
+          schemaItemType: "EntityClass", baseClass: "TestSchema.G", mixins: ["TestSchema.E", "TestSchema.F"],
+          properties: [{ name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
+        },
+      },
+    };
+    const expectedOrder = ["P1(G)", "P2(H)", "P3(C)", "P4(D)"];
 
-      it("async iteration", async () => {
-        const schema = await Schema.fromJson(testSchemaJson);
-        expect(schema).to.exist;
+    it("async iteration", async () => {
+      const schema = await Schema.fromJson(testSchemaJson);
+      expect(schema).to.exist;
 
-        const testClass = await schema.getItem<ECClass>("H");
-        expect(testClass).to.exist;
-        const result = await testClass!.getProperties();
-        const names = result.map((p) => `${p.name}(${p.class.name})`);
+      const testClass = await schema.getItem<ECClass>("H");
+      expect(testClass).to.exist;
+      const result = await testClass!.getProperties();
+      const names = result.map((p) => `${p.name}(${p.class.name})`);
 
-        assert.deepEqual(names, expectedOrder);
-      });
-
-      it("sync iteration", () => {
-        const schema = Schema.fromJsonSync(testSchemaJson);
-        expect(schema).to.exist;
-
-        const testClass = schema.getItemSync<ECClass>("H");
-        expect(testClass).to.exist;
-        const result = testClass!.getPropertiesSync();
-        const names = result.map((p) => `${p.name}(${p.class.name})`);
-
-        assert.deepEqual(names, expectedOrder);
-      });
+      assert.deepEqual(names, expectedOrder);
     });
+
+    it("sync iteration", () => {
+      const schema = Schema.fromJsonSync(testSchemaJson);
+      expect(schema).to.exist;
+
+      const testClass = schema.getItemSync<ECClass>("H");
+      expect(testClass).to.exist;
+      const result = testClass!.getPropertiesSync();
+      const names = result.map((p) => `${p.name}(${p.class.name})`);
+
+      assert.deepEqual(names, expectedOrder);
+    });
+  });
 });

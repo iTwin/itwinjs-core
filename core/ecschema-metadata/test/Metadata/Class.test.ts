@@ -6,13 +6,13 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema, { MutableSchema } from "../../source/Metadata/Schema";
-import EntityClass from "../../source/Metadata/EntityClass";
-import { SchemaContext } from "../../source/Context";
-import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
-import ECClass, { MutableClass } from "../../source/Metadata/Class";
-import { ECObjectsError } from "../../source/Exception";
-import { SchemaItemType } from "../../source/ECObjects";
+import Schema, { MutableSchema } from "../../src/Metadata/Schema";
+import EntityClass from "../../src/Metadata/EntityClass";
+import { SchemaContext } from "../../src/Context";
+import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import ECClass, { MutableClass } from "../../src/Metadata/Class";
+import { ECObjectsError } from "../../src/Exception";
+import { SchemaItemType } from "../../src/ECObjects";
 
 describe("ECClass", () => {
   let schema: Schema;
@@ -204,7 +204,7 @@ describe("ECClass", () => {
       assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
       assert.isDefined(testClass!.customAttributes!["ExampleCustomAttributes.ExampleSchema"]);
     });
-    it("sync - Deserialize Two Custom Attributes",  () => {
+    it("sync - Deserialize Two Custom Attributes", () => {
       schema = Schema.fromJsonSync(twoCustomAttributesJson);
 
       const testClass = schema.getItemSync<EntityClass>("testClass");
@@ -230,7 +230,7 @@ describe("ECClass", () => {
     it("sync - Custom Attributes must be an array", async () => {
       assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The AnyClass testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
-    it("sync - Deserialize Multiple Custom Attributes with additional properties",  () => {
+    it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const classJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
@@ -450,7 +450,7 @@ describe("ECClass", () => {
         super(newSchema, name);
         this.schemaItemType = SchemaItemType.EntityClass;
       }
-      public async accept() {}
+      public async accept() { }
     }
 
     beforeEach(() => {
@@ -653,7 +653,7 @@ describe("ECClass", () => {
 
   describe("accept", () => {
     let testClass: ECClass;
-    class MockECClass extends ECClass {}
+    class MockECClass extends ECClass { }
 
     beforeEach(() => {
       testClass = new MockECClass(schema, "TestClass");
@@ -690,13 +690,13 @@ describe("ECClass", () => {
       alias: "ts",
       items: {
         A: { schemaItemType: "EntityClass" },
-        B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-        C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-        D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
-        E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
-        F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
-        G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
-        H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
+        B: { schemaItemType: "Mixin", appliesTo: "TestSchema.A" },
+        C: { schemaItemType: "Mixin", appliesTo: "TestSchema.A" },
+        D: { schemaItemType: "Mixin", appliesTo: "TestSchema.A" },
+        E: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
+        F: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+        G: { schemaItemType: "EntityClass", baseClass: "TestSchema.A", mixins: ["TestSchema.B"] },
+        H: { schemaItemType: "EntityClass", baseClass: "TestSchema.G", mixins: ["TestSchema.E", "TestSchema.F"] },
       },
     };
     const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
@@ -749,13 +749,13 @@ describe("ECClass", () => {
             polymorphic: true,
             multiplicity: "(0..*)",
             roleLabel: "Source RoleLabel",
-            constraintClasses: [ "TestSchema.TestEntity" ],
+            constraintClasses: ["TestSchema.TestEntity"],
           },
           target: {
             polymorphic: true,
             multiplicity: "(0..*)",
             roleLabel: "Target RoleLabel",
-            constraintClasses: [ "TestSchema.TestEntity" ],
+            constraintClasses: ["TestSchema.TestEntity"],
           },
         },
       });
@@ -771,8 +771,8 @@ describe("ECClass", () => {
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",
           },
-          ],
-        });
+        ],
+      });
 
       await assert.isRejected(Schema.fromJson(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
     });
@@ -787,8 +787,8 @@ describe("ECClass", () => {
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",
           },
-          ],
-        });
+        ],
+      });
 
       assert.throw(() => Schema.fromJsonSync(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
     });

@@ -2,11 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaXmlFileLocater } from "../source/Deserialization/SchemaXmlFileLocater";
-import { SchemaKey, SchemaContext, SchemaMatchType } from "../source";
-import Schema from "../source/Metadata/Schema";
+import { SchemaXmlFileLocater } from "../src/Deserialization/SchemaXmlFileLocater";
+import { SchemaKey, SchemaContext, SchemaMatchType } from "../src";
+import Schema from "../src/Metadata/Schema";
 import { assert } from "chai";
-import { SchemaGraphUtil } from "../source/Deserialization/SchemaGraphUtil";
+import { SchemaGraphUtil } from "../src/Deserialization/SchemaGraphUtil";
 
 describe("SchemaGraphUtil tests:", () => {
   const path = __dirname + "\\assets";

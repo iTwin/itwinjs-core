@@ -5,11 +5,11 @@
 import { assert, expect } from "chai";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema from "../../source/Metadata/Schema";
-import { ECObjectsError } from "../../source/Exception";
-import CustomAttributeClass from "../../source/Metadata/CustomAttributeClass";
-import { ECClassModifier } from "../../source/ECObjects";
-import { CustomAttributeContainerType } from "../../source/index";
+import Schema from "../../src/Metadata/Schema";
+import { ECObjectsError } from "../../src/Exception";
+import CustomAttributeClass from "../../src/Metadata/CustomAttributeClass";
+import { ECClassModifier } from "../../src/ECObjects";
+import { CustomAttributeContainerType } from "../../src";
 
 describe("CustomAttributeClass", () => {
 
@@ -54,7 +54,7 @@ describe("CustomAttributeClass", () => {
 
   describe("fromJson", () => {
     let testClass: CustomAttributeClass;
-    const baseJson = {schemaItemType: "CustomAttributeClass"};
+    const baseJson = { schemaItemType: "CustomAttributeClass" };
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -63,7 +63,7 @@ describe("CustomAttributeClass", () => {
 
     it("should throw for missing appliesTo", async () => {
       expect(testClass).to.exist;
-      await expect(testClass.fromJson({...baseJson})).to.be.rejectedWith(ECObjectsError, `The CustomAttributeClass TestCustomAttribute is missing the required 'appliesTo' attribute.`);
+      await expect(testClass.fromJson({ ...baseJson })).to.be.rejectedWith(ECObjectsError, `The CustomAttributeClass TestCustomAttribute is missing the required 'appliesTo' attribute.`);
     });
 
     it("should throw for invalid appliesTo", async () => {
@@ -133,7 +133,7 @@ describe("CustomAttributeClass", () => {
         },
         testClass: {
           schemaItemType: "EntityClass",
-          mixins: [ "TestSchema.testMixin" ],
+          mixins: ["TestSchema.testMixin"],
         },
         testCustomAttribute: {
           schemaItemType: "CustomAttributeClass",
@@ -161,7 +161,7 @@ describe("CustomAttributeClass", () => {
         },
         testClass: {
           schemaItemType: "EntityClass",
-          mixins: [ "TestSchema.testMixin" ],
+          mixins: ["TestSchema.testMixin"],
         },
         testCustomAttribute: {
           schemaItemType: "CustomAttributeClass",

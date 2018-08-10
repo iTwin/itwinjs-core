@@ -3,11 +3,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
-import UnitSystem from "../../source/Metadata/UnitSystem";
-import { ECObjectsError } from "../../source/Exception";
-import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
 import * as sinon from "sinon";
+import Schema from "../../src/Metadata/Schema";
+import UnitSystem from "../../src/Metadata/UnitSystem";
+import { ECObjectsError } from "../../src/Exception";
+import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 
 describe("UnitSystem tests", () => {
   let testUnitSystem: UnitSystem;

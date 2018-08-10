@@ -9,10 +9,10 @@ const expect = chai.expect;
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
-import Schema from "../../source/Metadata/Schema";
-import { SchemaKey, SchemaMatchType } from "../../source/ECObjects";
-import { SchemaContext, SchemaCache } from "../../source/Context";
-import { ECObjectsError } from "../../source/Exception";
+import Schema from "../../src/Metadata/Schema";
+import { SchemaKey, SchemaMatchType } from "../../src/ECObjects";
+import { SchemaContext, SchemaCache } from "../../src/Context";
+import { ECObjectsError } from "../../src/Exception";
 
 describe("Schema Context", () => {
   it("should succeed locating added schema", async () => {

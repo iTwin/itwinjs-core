@@ -4,18 +4,21 @@
 
 import { assert, expect } from "chai";
 
-import Schema, { MutableSchema } from "../../source/Metadata/Schema";
-import EntityClass from "../../source/Metadata/EntityClass";
-import { ECObjectsError } from "../../source/Exception";
-import { Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty, StructArrayProperty, EnumerationArrayProperty, NavigationProperty  } from "../../source/Metadata/Property";
-import { PropertyType } from "../../source/PropertyTypes";
-import Enumeration from "../../source/Metadata/Enumeration";
-import ECClass, { StructClass, MutableClass } from "../../source/Metadata/Class";
-import PropertyCategory from "../../source/Metadata/PropertyCategory";
-import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
-import RelationshipClass from "../../source/Metadata/RelationshipClass";
-import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
-import { PrimitiveType } from "../../source/ECObjects";
+import Schema, { MutableSchema } from "../../src/Metadata/Schema";
+import EntityClass from "../../src/Metadata/EntityClass";
+import { ECObjectsError } from "../../src/Exception";
+import {
+  Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
+  StructArrayProperty, EnumerationArrayProperty, NavigationProperty
+} from "../../src/Metadata/Property";
+import { PropertyType } from "../../src/PropertyTypes";
+import Enumeration from "../../src/Metadata/Enumeration";
+import ECClass, { StructClass, MutableClass } from "../../src/Metadata/Class";
+import PropertyCategory from "../../src/Metadata/PropertyCategory";
+import KindOfQuantity from "../../src/Metadata/KindOfQuantity";
+import RelationshipClass from "../../src/Metadata/RelationshipClass";
+import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import { PrimitiveType } from "../../src/ECObjects";
 
 async function testInvalidAttribute(prop: Property, attributeName: string, expectedType: string, value: any) {
   expect(prop).to.exist;
@@ -218,7 +221,7 @@ describe("Property", () => {
       expect(testProp).to.exist;
       assert.throws(() => testProp.fromJsonSync(mustBeArrayJson), ECObjectsError, "The AnyProperty BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
     });
-    it("sync - Deserialize Multiple Custom Attributes with additional properties",  () => {
+    it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const propertyJson = {
         name: "Prop",
         customAttributes: [
@@ -245,7 +248,7 @@ describe("Property", () => {
     });
 
     it("should throw for mismatched name", async () => {
-      const propertyJson = { name: "ThisDoesNotMatch"};
+      const propertyJson = { name: "ThisDoesNotMatch" };
       const testProp = new MockProperty("BadProp");
       expect(testProp).to.exist;
       await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
@@ -260,7 +263,7 @@ describe("Property", () => {
       await testInvalidAttribute(new MockProperty("BadProp"), "category", "string", 0);
 
       // Also test for a PropertyCategory that doesn't exist
-      const propertyJson = { category: "TestSchema.NonExistentPropertyCategory"};
+      const propertyJson = { category: "TestSchema.NonExistentPropertyCategory" };
       const testProp = new MockProperty("BadProp");
       await testProp.fromJson(propertyJson);
       await expect(testProp.category).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
@@ -271,7 +274,7 @@ describe("Property", () => {
       await testInvalidAttribute(new MockProperty("BadProp"), "kindOfQuantity", "string", 0);
 
       // Also test for a KindOfQuantity that doesn't exist
-      const propertyJson = { kindOfQuantity: "TestSchema.NonExistentKindOfQuantity"};
+      const propertyJson = { kindOfQuantity: "TestSchema.NonExistentKindOfQuantity" };
       const testProp = new MockProperty("BadProp");
       await testProp.fromJson(propertyJson);
       await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
@@ -417,7 +420,7 @@ describe("PrimitiveProperty", () => {
     });
 
     it("should throw for mismatched typeName", async () => {
-      const propertyJson = { typeName: "string"};
+      const propertyJson = { typeName: "string" };
       expect(testProperty).to.exist;
       await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
@@ -428,7 +431,7 @@ describe("PrimitiveProperty", () => {
     it("should throw for invalid minValue", async () => testInvalidAttribute(testProperty, "minValue", "number", "0"));
     it("should throw for invalid maxValue", async () => testInvalidAttribute(testProperty, "maxValue", "number", "0"));
     it("should throw for invalid extendedTypeName", async () => testInvalidAttribute(testProperty, "extendedTypeName", "string", 0));
-    });
+  });
 
   describe("KindOfQuantity in referenced schema", () => {
     let testProperty: PrimitiveProperty;
@@ -444,10 +447,10 @@ describe("PrimitiveProperty", () => {
     });
 
     const propertyJson = {
-      kindOfQuantity : "Reference.MyKindOfQuantity",
-      name : "Primitive",
-      propertyType : "PrimitiveProperty",
-      typeName : "double",
+      kindOfQuantity: "Reference.MyKindOfQuantity",
+      name: "Primitive",
+      propertyType: "PrimitiveProperty",
+      typeName: "double",
     };
 
     it("Should load KindOfQuantity synchronously", () => {
@@ -479,10 +482,10 @@ describe("PrimitiveProperty", () => {
     });
 
     const propertyJson = {
-      category : "Reference.MyCategory",
-      name : "Primitive",
-      propertyType : "PrimitiveProperty",
-      typeName : "double",
+      category: "Reference.MyCategory",
+      name: "Primitive",
+      propertyType: "PrimitiveProperty",
+      typeName: "double",
     };
 
     it("Should load PropertyCategory synchronously", () => {
@@ -556,7 +559,7 @@ describe("EnumerationProperty", () => {
 
     it("should throw for invalid typeName", async () => testInvalidAttribute(testProperty, "typeName", "string", 0));
     it("should throw for mismatched typeName", async () => {
-      const propertyJson = { typeName: "ThisDoesNotMatch"};
+      const propertyJson = { typeName: "ThisDoesNotMatch" };
       expect(testProperty).to.exist;
       await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
@@ -611,7 +614,7 @@ describe("StructProperty", () => {
 
     it("should throw for invalid typeName", async () => testInvalidAttribute(testProperty, "typeName", "string", 0));
     it("should throw for mismatched typeName", async () => {
-      const propertyJson = { typeName: "ThisDoesNotMatch"};
+      const propertyJson = { typeName: "ThisDoesNotMatch" };
       expect(testProperty).to.exist;
       await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });

@@ -3,14 +3,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
-import Schema from "../../source/Metadata/Schema";
-import InvertedUnit from "../../source/Metadata/InvertedUnit";
-import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
-import UnitSystem from "../../source/Metadata/UnitSystem";
-import Unit from "../../source/Metadata/Unit";
-import { schemaItemTypeToString, SchemaItemType } from "../../source/ECObjects";
+
+import Schema from "../../src/Metadata/Schema";
+import InvertedUnit from "../../src/Metadata/InvertedUnit";
+import { ECObjectsError } from "../../src/Exception";
+import UnitSystem from "../../src/Metadata/UnitSystem";
+import Unit from "../../src/Metadata/Unit";
+import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
@@ -61,10 +61,10 @@ describe("Inverted Unit tests", () => {
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              unitSystem: "TestSchema.INTERNATIONAL",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
-              label: "Horizontal/Vertical",
+            schemaItemType: "InvertedUnit",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            label: "Horizontal/Vertical",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -99,10 +99,10 @@ describe("Inverted Unit tests", () => {
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              unitSystem: "TestSchema.INTERNATIONAL",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
-              label: "Horizontal/Vertical",
+            schemaItemType: "InvertedUnit",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            label: "Horizontal/Vertical",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -173,9 +173,9 @@ describe("Inverted Unit tests", () => {
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
-              label: "Horizontal/Vertical",
+            schemaItemType: "InvertedUnit",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            label: "Horizontal/Vertical",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -203,9 +203,9 @@ describe("Inverted Unit tests", () => {
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              unitSystem: "TestSchema.INTERNATIONAL",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            schemaItemType: "InvertedUnit",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -259,17 +259,17 @@ describe("Inverted Unit tests", () => {
       Schema.ec32 = false;
     });
 
-    it("Basic test for label",  () => {
+    it("Basic test for label", () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              unitSystem: "TestSchema.INTERNATIONAL",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
-              label: "Horizontal/Vertical",
+            schemaItemType: "InvertedUnit",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            label: "Horizontal/Vertical",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -297,17 +297,17 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testInvertedUnit);
       assert(testInvertedUnit.label, "Horizontal/Vertical");
     });
-    it("Label and description are optional",  () => {
+    it("Label and description are optional", () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              unitSystem: "TestSchema.INTERNATIONAL",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
-              label: "Horizontal/Vertical",
+            schemaItemType: "InvertedUnit",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            label: "Horizontal/Vertical",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -336,7 +336,7 @@ describe("Inverted Unit tests", () => {
       assert(testInvertedUnit.unitSystem, "TestSchema.INTERNATIONAL");
       assert(testInvertedUnit.invertsUnit, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
-    it("Label must be string",  () => {
+    it("Label must be string", () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schemaItemType: "InvertedUnit",
@@ -348,7 +348,7 @@ describe("Inverted Unit tests", () => {
       };
       assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError, `The SchemaItem HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
     });
-    it("Description must be string",  () => {
+    it("Description must be string", () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schemaItemType: "InvertedUnit",
@@ -371,16 +371,16 @@ describe("Inverted Unit tests", () => {
       };
       assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
     });
-    it("unitSystem is required",  () => {
+    it("unitSystem is required", () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
-              label: "Horizontal/Vertical",
+            schemaItemType: "InvertedUnit",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            label: "Horizontal/Vertical",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -408,9 +408,9 @@ describe("Inverted Unit tests", () => {
         name: "TestSchema",
         items: {
           HORIZONTAL_PER_VERTICAL: {
-              schemaItemType: "InvertedUnit",
-              unitSystem: "TestSchema.INTERNATIONAL",
-              invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+            schemaItemType: "InvertedUnit",
+            unitSystem: "TestSchema.INTERNATIONAL",
+            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
           },
           INTERNATIONAL: {
             schemaItemType: "UnitSystem",
@@ -469,9 +469,9 @@ describe("Inverted Unit tests", () => {
       name: "TestSchema",
       items: {
         HORIZONTAL_PER_VERTICAL: {
-            schemaItemType: "InvertedUnit",
-            unitSystem: "TestSchema.INTERNATIONAL",
-            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+          schemaItemType: "InvertedUnit",
+          unitSystem: "TestSchema.INTERNATIONAL",
+          invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
         },
         INTERNATIONAL: {
           schemaItemType: "UnitSystem",

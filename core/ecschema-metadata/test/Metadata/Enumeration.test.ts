@@ -3,10 +3,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../source/Metadata/Schema";
-import Enumeration, { MutableEnumeration } from "../../source/Metadata/Enumeration";
-import { ECObjectsError } from "../../source/Exception";
-import { PrimitiveType } from "../../source/ECObjects";
+import Schema from "../../src/Metadata/Schema";
+import Enumeration, { MutableEnumeration } from "../../src/Metadata/Enumeration";
+import { ECObjectsError } from "../../src/Exception";
+import { PrimitiveType } from "../../src/ECObjects";
 import * as sinon from "sinon";
 
 describe("Enumeration", () => {
@@ -145,19 +145,19 @@ describe("Enumeration", () => {
       expect(enumeration.enumerators.length).to.eql(2);
     }
     function assertValidEnumerator(enumeration: Enumeration, enumVal: number | string, label?: string, description?: string) {
-      if (typeof(enumVal) === "number") {
+      if (typeof (enumVal) === "number") {
         expect(enumeration.isInt()).to.be.true;
         expect(enumeration.isString()).to.be.false;
-        if (typeof(label) !== undefined)
+        if (typeof (label) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
-        if (typeof(description) !== undefined)
+        if (typeof (description) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
       } else {
         expect(enumeration.isInt()).to.be.false;
         expect(enumeration.isString()).to.be.true;
-        if (typeof(label) !== undefined)
+        if (typeof (label) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
-        if (typeof(description) !== undefined)
+        if (typeof (description) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
       }
     }
@@ -332,7 +332,7 @@ describe("Enumeration", () => {
         description: "A really long description...",
         enumerators: [
           { name: "SixValue", value: 6 },
-          { name: "EightValue", value: 6},
+          { name: "EightValue", value: 6 },
         ],
       };
       await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
@@ -464,7 +464,7 @@ describe("Enumeration", () => {
         label: "SomeDisplayLabel",
         description: "A really long description...",
         enumerators: [
-          {  name: "5FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
+          { name: "5FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
       await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
@@ -517,8 +517,8 @@ describe("Enumeration", () => {
           backingTypeName: "string",
           isStrict: true,
           enumerators: [
-            { name: "SixValue", value: "six", label: "Six label", description: "SixValue enumerator description"  },
-            { name: "EightValue", value: "eight", label: "Eight label", description: "EightValue enumerator description"},
+            { name: "SixValue", value: "six", label: "Six label", description: "SixValue enumerator description" },
+            { name: "EightValue", value: "eight", label: "Eight label", description: "EightValue enumerator description" },
           ],
         };
         await testEnumSansPrimType.fromJson(json);
@@ -544,8 +544,8 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            {  name: "AValue", value: "A" },
-            {  name: "BValue", value: "B" },
+            { name: "AValue", value: "A" },
+            { name: "BValue", value: "B" },
           ],
         };
         await testEnumSansPrimType.fromJson(json);
@@ -565,7 +565,7 @@ describe("Enumeration", () => {
           description: "A really long description...",
           enumerators: [
             { name: "TwoValue", value: 2 },
-            { name: "FourValue",  value: 4 },
+            { name: "FourValue", value: 4 },
           ],
         };
         await testEnumSansPrimType.fromJson(json);
