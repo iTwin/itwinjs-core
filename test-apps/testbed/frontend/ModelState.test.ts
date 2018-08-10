@@ -73,7 +73,7 @@ describe("ModelState", () => {
     assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
   });
 
-  it("view thumbnails", async () => {
+  it.only("view thumbnails", async () => {
     const thumbnail = await imodel2.views.getThumbnail("0x24");
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
@@ -86,6 +86,15 @@ describe("ModelState", () => {
       await imodel2.views.getThumbnail("0x25");
       assert.fail("getThumbnail should not return");
     } catch (_err) { } // thumbnail doesn't exist
+
+    thumbnail.format = "png";
+    thumbnail.height = 100;
+    thumbnail.width = 200;
+    thumbnail.image = new Uint8Array(300);
+    thumbnail.image.fill(33);
+
+    // TODO: this needs support from Steve Wilson for sending binary from frontend to backend.
+    // await imodel2.views.saveThumbnail("0x24", thumbnail);
 
   });
 });

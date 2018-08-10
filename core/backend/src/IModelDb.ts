@@ -37,17 +37,10 @@ const loggingCategory = "imodeljs-backend.IModelDb";
 export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
-export enum SyncMode {
-  FixedVersion = 1,
-  PullOnly = 2,
-  PullAndPush = 3,
-}
+export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 
 /** Mode to access the IModelDb */
-export enum AccessMode {
-  Shared = 1,
-  Exclusive = 2,
-}
+export enum AccessMode { Shared = 1, Exclusive = 2 }
 
 /** Parameters to open the iModelDb */
 export class OpenParams {
@@ -90,14 +83,10 @@ export class OpenParams {
   public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly); }
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
-  public static pullAndPush(): OpenParams {
-    return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush);
-  }
+  public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db */
-  public static standalone(openMode: OpenMode) {
-    return new OpenParams(openMode);
-  }
+  public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
 }
 
 /**
@@ -672,14 +661,13 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if an open IModelDb matching the token is not found.
    */
   public static find(iModelToken: IModelToken): IModelDb {
-    Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    // Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry) {
-      Logger.logTrace(loggingCategory, "IModelDb not found - throwing a not found response", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+      Logger.logError(loggingCategory, "IModelDb not found", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       throw new IModelNotFoundResponse();
     }
-    Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-    assert(!!briefcaseEntry.iModelDb);
+    // Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     return briefcaseEntry.iModelDb!;
   }
 
@@ -1228,7 +1216,7 @@ export namespace IModelDb {
      * @param viewDefinitionId The Id of the view for thumbnail
      * @return the ThumbnailProps, or undefined if no thumbnail exists.
      */
-    public getThumbnail(viewDefinitionId: Id64Arg): ThumbnailProps | undefined {
+    public getThumbnail(viewDefinitionId: Id64Props): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
       if (undefined === sizeProps)
@@ -1242,8 +1230,9 @@ export namespace IModelDb {
     /** Save a thumbnail for a view.
      * @param viewDefinitionId The Id of the view for thumbnail
      * @param thumbnail The thumbnail data.
+     * @returns 0 if successful
      */
-    public saveThumbnail(viewDefinitionId: Id64Arg, thumbnail: ThumbnailProps) {
+    public saveThumbnail(viewDefinitionId: Id64Props, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);

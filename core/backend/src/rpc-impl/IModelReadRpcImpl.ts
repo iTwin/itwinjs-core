@@ -173,20 +173,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getViewThumbnail(iModelToken: IModelToken, viewId: string): Promise<Uint8Array> {
     const thumbnail = IModelDb.find(iModelToken).views.getThumbnail(viewId);
-    if (undefined === thumbnail)
+    if (undefined === thumbnail || 0 === thumbnail.image.byteLength)
       return Promise.reject(new Error("no thumbnail"));
 
-    // include the metadata in the binary transfer by allocating a new buffer 8 bytes larger
-    const thumbBytes = Math.ceil(thumbnail.image.length / 2) * 2; // must be a multiple of 2.
-    const val = new Uint8Array(thumbBytes + 8);
-    const image = new Uint8Array(val.buffer, 8); // put the image data at offset 8
-    image.set(thumbnail.image);
-
-    const intVals = new Uint16Array(val.buffer); // create a 16 bit array mapped to the val buffer
-    intVals[0] = thumbnail.image.length;
-    intVals[1] = thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png;
-    intVals[2] = thumbnail.width;
-    intVals[3] = thumbnail.height;
+    const thumbBytes = Math.ceil(thumbnail.image.byteLength / 2) * 2; // must be a multiple of 2.
+    const val = new Uint8Array(thumbBytes + 8);   // include the metadata in the binary transfer by allocating a new buffer 8 bytes larger
+    // Put the metadata in the first 8 bytes.
+    new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);
+    new Uint8Array(val.buffer, 8).set(thumbnail.image); // put the image data at offset 8 after metadata
     return val;
   }
 }

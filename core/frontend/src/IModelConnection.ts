@@ -563,10 +563,26 @@ export namespace IModelConnection {
      * @returns A Promise of the ThumbnailProps.
      * @throws `Error` exception if no thumbnail exists.
      */
-    public async getThumbnail(viewId: Id64Arg): Promise<ThumbnailProps> {
+    public async getThumbnail(viewId: Id64Props): Promise<ThumbnailProps> {
       const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken, viewId.toString());
       const intVals = new Uint16Array(val.buffer);
       return { format: intVals[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intVals[2], height: intVals[3], image: new Uint8Array(val.buffer, 8, intVals[0]) };
+    }
+
+    /** Save a thumbnail for a view.
+     * @param viewId The id of the view for the thumbnail.
+     * @param thumbnail The thumbnail data to save.
+     * @returns A void Promise
+     * @throws `Error` exception if the thumbnail wasn't successfully saved.
+     */
+    public async saveThumbnail(viewId: Id64Props, thumbnail: ThumbnailProps): Promise<void> {
+      const id = new Id64(viewId);
+      const thumbBytes = Math.ceil(thumbnail.image.length / 2) * 2; // must be a multiple of 2.
+      const val = new Uint8Array(thumbBytes + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
+      new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
+      new Uint32Array(val.buffer, 8).set([id.getLowUint32(), id.getHighUint32()]); // viewId is 8 bytes starting at offset 8
+      new Uint8Array(val.buffer, 16).set(thumbnail.image); // image data at offset 16
+      return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken, val);
     }
   }
 

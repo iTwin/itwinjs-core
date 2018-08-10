@@ -14,12 +14,7 @@ import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
 export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
-
-export const enum BeButton {
-  Data = 0,
-  Reset = 1,
-  Middle = 2,
-}
+export const enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
 export enum BeCursor {
   Default = "default",
@@ -44,7 +39,7 @@ export const enum InputSource {
   Touch = 2,
 }
 
-/** The *source* that generated a point. */
+/** The *source* that generated a coordinate. */
 export const enum CoordSource {
   /** Event was created by an action from the user */
   User = 0,
