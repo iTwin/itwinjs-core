@@ -1454,6 +1454,7 @@ export class Viewport {
 
   /** @hidden */
   public renderFrame(plan: UpdatePlan): boolean {
+    console.log("############## Beginning of renderFrame"); // tslint:disable-line
     const sync = this.sync;
     const view = this.view;
     const target = this.target;
@@ -1490,6 +1491,7 @@ export class Viewport {
     }
 
     if (view.areFeatureOverridesDirty) {
+      console.log("----waiting for tiles to load, areFeatureOverridesDirty = true"); // tslint:disable-line
       const ovrs = new FeatureSymbology.Overrides(view);
       if (undefined !== this._addFeatureOverrides)
         this._addFeatureOverrides(ovrs, this);
@@ -1503,6 +1505,7 @@ export class Viewport {
       this.setupFromView();
 
     if (!sync.isValidScene) {
+      console.log("----waiting for tiles to load, isValidScene = true"); // tslint:disable-line
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
       context.requests.requestMissing();
@@ -1514,12 +1517,14 @@ export class Viewport {
     }
 
     if (!sync.isValidRenderPlan) {
+      console.log("----waiting for tiles to load, isValidRenderPlan = true"); // tslint:disable-line
       target.changeRenderPlan(new RenderPlan(this));
       sync.setValidRenderPlan();
       isRedrawNeeded = true;
     }
 
     if (!sync.isValidDecorations) {
+      console.log("----waiting for tiles to load, isValidDecorations = true"); // tslint:disable-line
       const decorations = new Decorations();
       this.prepareDecorations(plan, decorations);
       target.changeDecorations(decorations);
@@ -1527,14 +1532,19 @@ export class Viewport {
     }
 
     if (this.processFlash()) {
+      console.log("----waiting for tiles to load, processFlash = true"); // tslint:disable-line
       target.setFlashed(new Id64(this.flashedElem!), this.flashIntensity);
       isRedrawNeeded = true;
     }
 
     timer.stop();
-    if (isRedrawNeeded)
+    if (isRedrawNeeded) {
+      console.log("## renderframe - drawFrame start"); // tslint:disable-line
       target.drawFrame(timer.elapsed.milliseconds);
+      console.log("## renderframe - drawFrame end"); // tslint:disable-line
+    }
 
+    console.log("############## End of renderFrame"); // tslint:disable-line
     return true;
   }
 

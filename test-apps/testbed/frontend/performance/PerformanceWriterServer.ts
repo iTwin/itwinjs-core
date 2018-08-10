@@ -67,6 +67,42 @@ export function run(): Express.Application {
     return res.status(200).send();
   });
 
+  app.post("/saveCanvas", async (_req: any, res: any) => {
+    // const json = JSON.parse(_req.body.data);
+    // // const reader = new FileReader();
+    // // reader.onloadend =
+
+    // // const image = new Image();
+    // // image.id = "pic";
+    // // image.src = json; // canvas.toDataURL();
+
+    // // if (typeof imgOrURL === "object")
+    // //   window.win = open(image.src);
+    // // else
+    // //   window.win = open(image);
+    // window.win = open(json);
+
+    // var link = $('<a href="' + tempUrl + '" id="download" download="' + fileName + '" target="_blank"> </a>');
+    // body.append(link);
+    // $("#download").get(0).click();
+
+    // setTimeout('win.document.execCommand("SaveAs")', 0);
+
+
+
+
+
+    // /////////////////////////////////////////
+    // // https://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
+
+
+    // var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+    // window.location.href = image; // it will save locally
+    // /////////////////////////////////////////
+
+    return res.status(200).send();
+  });
+
   // return server instance so that calling context can close the port when it needs to
   return server;
 }

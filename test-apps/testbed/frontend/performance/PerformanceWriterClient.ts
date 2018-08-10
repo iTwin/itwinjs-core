@@ -32,4 +32,11 @@ export class PerformanceWriterClient {
   public static async finishSeries(): Promise<Response> {
     return await request("http://localhost:3002/finishSeries", { method: "POST" });
   }
+
+  /**
+   * save the current canvas image
+   */
+  public static async saveCanvas(data: any): Promise<Response> {
+    return await request("http://localhost:3002/saveCanvas", { method: "POST", body: { data: JSON.stringify(data) } });
+  }
 }

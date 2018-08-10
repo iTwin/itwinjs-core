@@ -366,6 +366,7 @@ export class Tile implements IDisposable {
 
         IModelApp.viewManager.onNewTilesReady();
       }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; this._children = undefined; });
+      IModelApp.viewManager.numTilesLoading += 1;
     }
 
     return this._childrenLoadStatus;

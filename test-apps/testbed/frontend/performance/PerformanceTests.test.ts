@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ViewState } from "@bentley/imodeljs-frontend"; // @ts-ignore
+import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-frontend"; // @ts-ignore
 import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common"; // tslint:disable-line
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
@@ -11,13 +11,87 @@ import { IModelApi } from "./IModelApi"; // @ts-ignore
 import { ProjectApi } from "./ProjectApi"; // @ts-ignore
 import { CONSTANTS } from "../../common/Testbed";
 import * as path from "path";
+// import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core/lib/Time";
+import { StopWatch, BeTimePoint } from "@bentley/bentleyjs-core";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
+
+// function sleep(ms: number) {
+//   return new Promise((resolve) => setTimeout(resolve, ms));
+// }
+
+function resolveAfter5Seconds(ms: number) { // must call await before this function!!!
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+}
 
 function createWindow() {
   const canv = document.createElement("canvas");
   canv.id = "imodelview";
   document.body.appendChild(canv);
+}
+
+async function waitForTilesToLoad() {
+  theViewport!.continuousRendering = false; // true;
+  const viewManager = IModelApp.viewManager;
+  // Start timer for tile loading time
+  const timer = new StopWatch(undefined, true);
+  let haveNewTiles = true;
+  // for (let haveNewTiles = true; haveNewTiles;) { // !(activeViewState.viewState!.areAllTileTreesLoaded);) { // haveNewTiles /*|| viewManager.numTilesLoading > 0*/;) {
+  while (haveNewTiles) {
+    console.log("----------------------------------------START OF WHILE LOOP"); // tslint:disable-line
+    const plan = new UpdatePlan();
+    // plan.quitTime = BeTimePoint.fromNow(BeDuration.fromSeconds(100000));
+    console.log("----waiting for tiles to load, about to renderFrame"); // tslint:disable-line
+    await theViewport!.sync.setRedrawPending;
+    await theViewport!.sync.invalidateScene();
+    await theViewport!.renderFrame(plan);
+    // viewport.RenderQueue().WaitForIdle(); // viewManager.processIdle();
+    console.log("----waiting for tiles to load, finished renderFrame"); // tslint:disable-line
+    haveNewTiles = viewManager.sceneInvalidated && activeViewState.viewState!.areAllTileTreesLoaded;
+    if (!haveNewTiles || viewManager.numTilesLoading === 0) {
+      console.log("----haveNewTiles = " + haveNewTiles); // tslint:disable-line
+      console.log("----numTilesLoading = " + viewManager.numTilesLoading); // tslint:disable-line
+      // sleep(10000);
+      haveNewTiles = viewManager.sceneInvalidated;
+    }
+    const requests = new TileRequests();
+    const sceneContext = new SceneContext(theViewport!, requests);
+    activeViewState.viewState!.createScene(sceneContext);
+    requests.requestMissing();
+
+    // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
+    // savePng();
+    console.log("---------Are all tiles loaded???? " + !haveNewTiles); // tslint:disable-line
+
+    console.log("----numTilesLoading = " + viewManager.numTilesLoading); // tslint:disable-line
+
+    //////////////////////////////////////////
+    // const plan2 = new UpdatePlan();
+    // await theViewport!.renderFrame(plan2);
+
+    // await theViewport!.sync.setRedrawPending;
+    // await theViewport!.renderFrame(plan2);
+
+    // // for (let i = 0; i < 21; ++i) {
+    // await theViewport!.sync.setRedrawPending;
+    // await theViewport!.renderFrame(plan);
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    await resolveAfter5Seconds(10000);
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    // await sleep(10000);
+    await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
+  }
+  theViewport!.continuousRendering = false;
+  const plan = new UpdatePlan();
+  await theViewport!.renderFrame(plan);
+  timer.stop();
+  curTileLoadingTime = timer.current.milliseconds;
+  console.log("----end of wait for tiles to load"); // tslint:disable-line
 }
 
 class PerformanceEntryData {
@@ -43,12 +117,13 @@ class PerformanceEntry {
   public viewFlags = "unknown";
   public data = new PerformanceEntryData();
 
-  public constructor(frameTimes: number[], imodelName?: string, viewName?: string, viewFlags?: string) {
+  public constructor(tileLoadingTime: number, frameTimes: number[], imodelName?: string, viewName?: string, viewFlags?: string) {
     let sumOfTimes = 0;
     for (let i = 0; i < 10; i++)
       sumOfTimes += frameTimes[i];
 
     const data = this.data;
+    data.tileLoadingTime = tileLoadingTime;
     data.scene = frameTimes[0];
     data.garbageExecute = frameTimes[1]; // This is mostly the begin paint now.
     data.initCommands = frameTimes[2];
@@ -69,8 +144,30 @@ class PerformanceEntry {
   }
 }
 
-async function printResults(frameTimes: number[]) {
-  await PerformanceWriterClient.addEntry(new PerformanceEntry(frameTimes, configuration.iModelName, configuration.viewName));
+async function printResults(tileLoadingTime: number, frameTimes: number[]) {
+  await PerformanceWriterClient.addEntry(new PerformanceEntry(tileLoadingTime, frameTimes, configuration.iModelName, configuration.viewName));
+}
+
+function savePng() {
+  const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
+  const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
+  // console.log("&&&&&&&&&&&&&URL: " + tempUrl); // tslint:disable-line
+  // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
+  const newlink = document.createElement("a");
+  // newlink.innerHTML = "Google";
+  // newlink.setAttribute("title", "Google");
+
+  newlink.setAttribute("href", tempUrl);
+  newlink.setAttribute("id", "download");
+  newlink.setAttribute("download", defaultFileLocation);
+  newlink.setAttribute("target", "_blank");
+  document.body.appendChild(newlink);
+
+  // const link = $('<a href="' + tempUrl + '" id="download" download="' + fileName + '" target="_blank"> </a>');
+  document.body.appendChild(newlink);
+  (document.getElementById("download") as HTMLCanvasElement).click();
+  // $("#download").get(0).click();
+
 }
 
 class SimpleViewState {
@@ -87,6 +184,7 @@ class SimpleViewState {
 let configuration: SVTConfiguration;
 let theViewport: Viewport | undefined;
 let activeViewState: SimpleViewState = new SimpleViewState();
+let curTileLoadingTime = 0;
 
 async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
@@ -99,7 +197,7 @@ async function _changeView(view: ViewState) {
 async function openView(state: SimpleViewState) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement; // await document.createElement("htmlCanvas") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
-  htmlCanvas!.width = htmlCanvas!.height = 400;
+  htmlCanvas!.width = htmlCanvas!.height = 500;
   await document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
@@ -168,6 +266,100 @@ interface SVTConfiguration {
   viewName?: string;
 }
 
+async function mainBody() {
+  console.log("---Just started mainBody!!!!"); // tslint:disable-line
+  await PerformanceWriterClient.startup();
+  console.log("---Just started mainBody2!!!!"); // tslint:disable-line ////////////MUST FIGUREOUT WHY THIS FUNCTION ISN'T GETTIING CALLED
+
+  // this is the default configuration
+  configuration = {
+    userName: "bistroDEV_pmadm1@mailinator.com",
+    password: "pmadm1",
+    iModelName: path.join(iModelLocation, "Wraith_MultiMulti.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
+    viewName: "V0", // "Physical-Tag",
+  } as SVTConfiguration;
+  // override anything that's in the configuration
+  // retrieveConfigurationOverrides(configuration);
+  // applyConfigurationOverrides(configuration);
+
+  console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
+
+  // Start the backend
+  // const config = new IModelHostConfiguration();
+  // config.hubDeploymentEnv = "QA";
+  // await IModelHost.startup(config);
+  console.log("Starting create Window"); // tslint:disable-line
+
+  await createWindow();
+
+  // start the app.
+  await IModelApp.startup();
+  console.log("IModelApp Started up"); // tslint:disable-line
+
+  // initialize the Project and IModel Api
+  console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
+  await ProjectApi.init();
+  await IModelApi.init();
+  console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
+
+  activeViewState = new SimpleViewState();
+
+  // showStatus("Opening", configuration.iModelName);
+  console.log("Opening standaloneImodel"); // tslint:disable-line
+  await openStandaloneIModel(activeViewState, configuration.iModelName);
+
+  // open the specified view
+  // showStatus("opening View", configuration.viewName);
+  console.log("Build the view list"); // tslint:disable-line
+  await buildViewList(activeViewState, configuration);
+
+  // now connect the view to the canvas
+  console.log("Open the view"); // tslint:disable-line
+  await openView(activeViewState);
+  console.log("This is from frontend/main"); // tslint:disable-line
+
+  // Load all tiles ???
+  // await waitForTilesToLoad().then(savePng);
+  await console.log("1111111111111111111111 - waitForTilesToLoad has STARTED"); // tslint:disable-line
+  await waitForTilesToLoad();
+  await console.log("1111111111111111111111 - waitForTilesToLoad has FINISHED"); // tslint:disable-line
+  savePng();
+
+  // savePng();
+
+  const plan = new UpdatePlan();
+  await theViewport!.renderFrame(plan);
+
+  await theViewport!.sync.setRedrawPending;
+  await theViewport!.renderFrame(plan);
+  const target = (theViewport!.target as Target);
+  const frameTimes = target.frameTimings;
+  for (let i = 0; i < 11 && frameTimes.length; ++i)
+    await console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
+
+  await console.log("///////////////////////////////// start extra renderFrames"); // tslint:disable-line
+
+  for (let i = 0; i < 21; ++i) {
+    await console.log("///////////////////////////////// extra renderFrames " + i); // tslint:disable-line
+    await theViewport!.sync.setRedrawPending;
+    await theViewport!.renderFrame(plan);
+    await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
+  }
+
+  savePng();
+
+  await console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
+  if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
+  await IModelApp.shutdown();
+  await PerformanceWriterClient.finishSeries();
+  // WebGLTestContext.shutdown();
+  // TestApp.shutdown();
+  await console.log("//" + (theViewport!.target as Target).frameTimings); // tslint:disable-line
+  console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
+
+}
+
+
 describe("PerformanceTests - 1", () => {
   // let imodel: IModelConnection;
   // let spatialView: SpatialViewState;
@@ -185,197 +377,129 @@ describe("PerformanceTests - 1", () => {
 
   // });
 
-  it("Test 1 - Wraith Model - W0", async () => {
-    await PerformanceWriterClient.startup();
+  // it("Test 1 - Wraith Model - W0", async () => {
+  //   await PerformanceWriterClient.startup();
 
-    // this is the default configuration
-    configuration = {
-      userName: "bistroDEV_pmadm1@mailinator.com",
-      password: "pmadm1",
-      iModelName: path.join(iModelLocation, "Wraith.ibim"), // path.join("../../", __dirname, "Wraith.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
-      viewName: "W0", // "Physical-Tag",
-    } as SVTConfiguration;
-    // override anything that's in the configuration
-    // retrieveConfigurationOverrides(configuration);
-    // applyConfigurationOverrides(configuration);
+  //   // this is the default configuration
+  //   configuration = {
+  //     userName: "bistroDEV_pmadm1@mailinator.com",
+  //     password: "pmadm1",
+  //     iModelName: path.join(iModelLocation, "Wraith.ibim"), // path.join("../../", __dirname, "Wraith.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
+  //     viewName: "W0", // "Physical-Tag",
+  //   } as SVTConfiguration;
+  //   // override anything that's in the configuration
+  //   // retrieveConfigurationOverrides(configuration);
+  //   // applyConfigurationOverrides(configuration);
 
-    console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
+  //   console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
 
-    // Start the backend
-    // const config = new IModelHostConfiguration();
-    // config.hubDeploymentEnv = "QA";
-    // await IModelHost.startup(config);
-    console.log("Starting create Window"); // tslint:disable-line
+  //   // Start the backend
+  //   // const config = new IModelHostConfiguration();
+  //   // config.hubDeploymentEnv = "QA";
+  //   // await IModelHost.startup(config);
+  //   console.log("Starting create Window"); // tslint:disable-line
 
-    await createWindow();
+  //   await createWindow();
 
-    // start the app.
-    await IModelApp.startup();
-    console.log("IModelApp Started up"); // tslint:disable-line
+  //   // start the app.
+  //   await IModelApp.startup();
+  //   console.log("IModelApp Started up"); // tslint:disable-line
 
-    // initialize the Project and IModel Api
-    console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
-    await ProjectApi.init();
-    await IModelApi.init();
-    console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
+  //   // initialize the Project and IModel Api
+  //   console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
+  //   await ProjectApi.init();
+  //   await IModelApi.init();
+  //   console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
 
-    activeViewState = new SimpleViewState();
+  //   activeViewState = new SimpleViewState();
 
-    // showStatus("Opening", configuration.iModelName);
-    console.log("Opening standaloneImodel"); // tslint:disable-line
-    await openStandaloneIModel(activeViewState, configuration.iModelName);
+  //   // showStatus("Opening", configuration.iModelName);
+  //   console.log("Opening standaloneImodel"); // tslint:disable-line
+  //   await openStandaloneIModel(activeViewState, configuration.iModelName);
 
-    // open the specified view
-    // showStatus("opening View", configuration.viewName);
-    console.log("Build the view list"); // tslint:disable-line
-    await buildViewList(activeViewState, configuration);
+  //   // open the specified view
+  //   // showStatus("opening View", configuration.viewName);
+  //   console.log("Build the view list"); // tslint:disable-line
+  //   await buildViewList(activeViewState, configuration);
 
-    // now connect the view to the canvas
-    console.log("Open the view"); // tslint:disable-line
-    await openView(activeViewState);
-    console.log("This is from frontend/main"); // tslint:disable-line
+  //   // now connect the view to the canvas
+  //   console.log("Open the view"); // tslint:disable-line
+  //   await openView(activeViewState);
+  //   console.log("This is from frontend/main"); // tslint:disable-line
 
-    const plan = new UpdatePlan();
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    const target = (theViewport!.target as Target);
-    const frameTimes = target.frameTimings;
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
+  //   // Load all tiles ???
+  //   await waitForTilesToLoad();
 
-    await printResults(frameTimes);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
+  //   const plan = new UpdatePlan();
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   const target = (theViewport!.target as Target);
+  //   const frameTimes = target.frameTimings;
+  //   for (let i = 0; i < 11 && frameTimes.length; ++i)
+  //     console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
 
-    console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-    if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-    await IModelApp.shutdown();
-    await PerformanceWriterClient.finishSeries();
-    // WebGLTestContext.shutdown();
-    // TestApp.shutdown();
-    console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
+  //   await printResults(frameTimes);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   for (let i = 0; i < 11 && frameTimes.length; ++i)
+  //     console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
+  //   theViewport!.sync.setRedrawPending;
+  //   await theViewport!.renderFrame(plan);
+  //   await printResults((theViewport!.target as Target).frameTimings);
 
-  });
+  //   console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
+  //   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
+  //   await IModelApp.shutdown();
+  //   await PerformanceWriterClient.finishSeries();
+  //   // WebGLTestContext.shutdown();
+  //   // TestApp.shutdown();
+  //   console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
 
-  it("Test 1 - Wraith Model - W1", async () => {
-    await PerformanceWriterClient.startup();
+  // });
 
-    // this is the default configuration
-    configuration = {
-      userName: "bistroDEV_pmadm1@mailinator.com",
-      password: "pmadm1",
-      iModelName: path.join(iModelLocation, "Wraith.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
-      viewName: "W1", // "Physical-Tag",
-    } as SVTConfiguration;
-    // override anything that's in the configuration
-    // retrieveConfigurationOverrides(configuration);
-    // applyConfigurationOverrides(configuration);
+  it("Test 2 - Wraith_MultiMulti Model - V0", (done) => {
+    console.log("/////////////////////////////////  -- b4 async"); // tslint:disable-line
+    // (async () => {
+    //   console.log("/////////////////////////////////  -- b4 mainBody"); // tslint:disable-line
+    //   await mainBody();
+    //   console.log("/////////////////////////////////  -- after mainBody"); // tslint:disable-line
+    // })();
 
-    console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
 
-    // Start the backend
-    // const config = new IModelHostConfiguration();
-    // config.hubDeploymentEnv = "QA";
-    // await IModelHost.startup(config);
-    console.log("Starting create Window"); // tslint:disable-line
+    // MOCHA Done
 
-    await createWindow();
-
-    // start the app.
-    await IModelApp.startup();
-    console.log("IModelApp Started up"); // tslint:disable-line
-
-    // initialize the Project and IModel Api
-    console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
-    await ProjectApi.init();
-    await IModelApi.init();
-    console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
-
-    activeViewState = new SimpleViewState();
-
-    // showStatus("Opening", configuration.iModelName);
-    console.log("Opening standaloneImodel"); // tslint:disable-line
-    await openStandaloneIModel(activeViewState, configuration.iModelName);
-
-    // open the specified view
-    // showStatus("opening View", configuration.viewName);
-    console.log("Build the view list"); // tslint:disable-line
-    await buildViewList(activeViewState, configuration);
-
-    // now connect the view to the canvas
-    console.log("Open the view"); // tslint:disable-line
-    await openView(activeViewState);
-    console.log("This is from frontend/main"); // tslint:disable-line
-
-    const plan = new UpdatePlan();
-    await theViewport!.renderFrame(plan);
-    const target = (theViewport!.target as Target);
-    const frameTimes = target.frameTimings;
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-
-    await printResults(frameTimes);
-    await theViewport!.renderFrame(plan);
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
-    await printResults((theViewport!.target as Target).frameTimings);
-
-    console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-    if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-    await IModelApp.shutdown();
-    await PerformanceWriterClient.finishSeries();
-    // WebGLTestContext.shutdown();
-    // TestApp.shutdown();
-    console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
-
+    mainBody().then((_result) => {
+      console.log("/////////////////////////////////  -- inside .then() function"); // tslint:disable-line
+    }).catch((_error) => {
+      console.log("/////////////////////////////////  -- error happened!!"); // tslint:disable-line
+    });
+    console.log("/////////////////////////////////  -- after async"); // tslint:disable-line
+    done();
   });
 
 });

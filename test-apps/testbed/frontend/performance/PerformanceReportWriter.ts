@@ -116,9 +116,6 @@ export class PerformanceReportWriter {
 
         ws.getRow(resultsRow).getCell(4).value = "Min Time";
 
-        for (let i = 0; i < PerformanceReportWriter.dataArray.length; i++) // tslint:disable-line
-          console.log("-" + PerformanceReportWriter.dataArray[i]); // tslint:disable-line
-
         const minTotal = Math.min(...PerformanceReportWriter.dataArray.map((row: number[]) => row[13]));
         let minRow = 0;
         for (let i = 0; i < PerformanceReportWriter.dataArray.length; i++) {
