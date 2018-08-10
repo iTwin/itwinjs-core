@@ -352,6 +352,7 @@ export class ViewFrustum {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
   private readonly viewCorners: Range3d = new Range3d();
+  private readonly _aspectRatioLocked: boolean;
   /** @hidden */
   public frustFraction: number = 1.0;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
@@ -401,6 +402,9 @@ export class ViewFrustum {
    *  modifies the point and vector given
    */
   protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
+    if (this._aspectRatioLocked)
+      return;
+
     const windowAspect = this.viewRect.aspect * this.view.getAspectRatioSkew();
     const viewAspect = delta.x / delta.y;
 
@@ -564,11 +568,12 @@ export class ViewFrustum {
     return corners;
   }
 
-  private constructor(view: ViewState, clientWidth: number, clientHeight: number, displayedPlane?: Plane3dByOriginAndUnitNormal) {
+  private constructor(view: ViewState, clientWidth: number, clientHeight: number, aspectRatioLocked: boolean, displayedPlane?: Plane3dByOriginAndUnitNormal) {
     this._view = view;
     this._clientWidth = clientWidth;
     this._clientHeight = clientHeight;
     this._displayedPlane = displayedPlane;
+    this._aspectRatioLocked = aspectRatioLocked;
 
     const origin = this.view.getOrigin().clone();
     const delta = this.view.getExtents().clone();
@@ -655,11 +660,11 @@ export class ViewFrustum {
   }
 
   public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
-    return new ViewFrustum(view !== undefined ? view : vp.view, vp.viewRect.width, vp.viewRect.height);
+    return new ViewFrustum(view !== undefined ? view : vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked);
   }
 
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
-    const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, plane);
+    const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked, plane);
     return vf.invalidFrustum ? undefined : vf;
   }
 
@@ -847,6 +852,7 @@ export class Viewport {
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
+  public get isAspectRatioLocked(): boolean { return false; }
 
   /** @hidden */
   public readonly target: RenderTarget;

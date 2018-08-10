@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor, Vector3d } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -199,7 +199,7 @@ export namespace Attachments {
     }
 
     // override
-    protected adjustAspectRatio(_origin: Point3d, _delta: Vector3d) { }
+    public get isAspectRatioLocked(): boolean { return true; }
   }
 
   /** Describes the location of a tile within the range of a quad subdivided in four parts. */
