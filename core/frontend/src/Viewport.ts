@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -389,7 +389,7 @@ export class ViewFrustum {
   private readonly _displayedPlane: Plane3dByOriginAndUnitNormal | undefined;
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
+  private get viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   /** @hidden */
@@ -547,6 +547,7 @@ export class ViewFrustum {
   private calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
     const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
+    assert(undefined !== map, "undefined npcToViewMap");
     return undefined === map ? Map4d.createIdentity() : map;
   }
 
@@ -654,11 +655,11 @@ export class ViewFrustum {
   }
 
   public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
-    return new ViewFrustum(view !== undefined ? view : vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight);
+    return new ViewFrustum(view !== undefined ? view : vp.view, vp.viewRect.width, vp.viewRect.height);
   }
 
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
-    const vf = new ViewFrustum(vp.view, vp.canvas.clientWidth, vp.canvas.clientHeight, plane);
+    const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, plane);
     return vf.invalidFrustum ? undefined : vf;
   }
 
@@ -840,8 +841,12 @@ export class Viewport {
   public get rotMatrix(): RotMatrix { return this._viewFrustum.rotMatrix; }
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
-  public get viewRect(): ViewRect { return this._viewFrustum.viewRect; }
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
+
+  private readonly _viewRange: ViewRect = new ViewRect();
+
+  /** Get the rectangle of this Viewport in ViewCoordinates. */
+  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** @hidden */
   public readonly target: RenderTarget;
@@ -994,10 +999,10 @@ export class Viewport {
     }
 
     // Default to a (0, 0, 0) to (1, 1, 1) range if no range was provided
-    rect = (rect && rect.isValid) ? rect : this._viewFrustum.viewRect;
+    rect = (rect && rect.isValid) ? rect : this.viewRect;
 
     // Determine the screen rectangle in which to query visible depth min + max
-    const readRect = rect.computeOverlap(this._viewFrustum.viewRect);
+    const readRect = rect.computeOverlap(this.viewRect);
     if (undefined === readRect)
       return undefined;
 
@@ -1343,7 +1348,7 @@ export class Viewport {
       viewRange.extendArray(frust.points, viewTransform);
     }
 
-    this.view.lookAtViewAlignedVolume(viewRange, vf.viewRect.aspect, margin);
+    this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, margin);
     this.setupFromView();
   }
 
@@ -1355,7 +1360,7 @@ export class Viewport {
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, margin?: MarginPercent) {
     const range = Range3d.fromJSON(volume);
-    this.view.lookAtVolume(range, this._viewFrustum.viewRect.aspect, margin);
+    this.view.lookAtVolume(range, this.viewRect.aspect, margin);
     this.setupFromView();
   }
 
@@ -1759,7 +1764,7 @@ export class Viewport {
    * @returns a Pixel.Buffer object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    const viewRect = this._viewFrustum.viewRect;
+    const viewRect = this.viewRect;
     if (!rect.isContained(viewRect))
       return undefined;
 
@@ -1784,7 +1789,7 @@ export class Viewport {
     const vf = this._viewFrustum;
 
     const result = undefined !== out ? out : new Point3d();
-    const viewRect = vf.viewRect;
+    const viewRect = this.viewRect;
     result.x = (x + 0.5 - viewRect.left) / viewRect.width;
     result.y = 1.0 - (y + 0.5 - viewRect.top) / viewRect.height;
     if (vf.frustFraction < 1.0)
@@ -1832,6 +1837,7 @@ export class OffScreenViewport extends Viewport {
 
   public setRect(rect: ViewRect, temporary: boolean = false) {
     this.target.setViewRect(rect, temporary);
+    this.changeView(this.view);
   }
 
   /** @hidden */
