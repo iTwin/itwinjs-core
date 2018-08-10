@@ -9,7 +9,7 @@ import {
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
   IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback, ViewStateData, CategorySelectorProps, ModelSelectorProps, SheetProps,
-  ThumbnailProps, ImageSourceFormat,
+  ThumbnailProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -84,14 +84,10 @@ export class OpenParams {
   }
 
   /** Create parameters to open the Db as of a fixed version in a readonly mode */
-  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared): OpenParams {
-    return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion);
-  }
+  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion); }
 
   /** Create parameters to open the Db to allow only pulls from the Hub */
-  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive): OpenParams {
-    return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly);
-  }
+  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly); }
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
   public static pullAndPush(): OpenParams {
@@ -1239,7 +1235,6 @@ export namespace IModelDb {
         return undefined;
 
       const out = JSON.parse(sizeProps) as ThumbnailProps;
-      out.format = (out.format as any) === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png;
       out.image = this._iModel.nativeDb.queryFileProperty(viewArg, false) as Uint8Array;
       return out;
     }
@@ -1250,7 +1245,7 @@ export namespace IModelDb {
      */
     public saveThumbnail(viewDefinitionId: Id64Arg, thumbnail: ThumbnailProps) {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
-      const props = { format: thumbnail.format === ImageSourceFormat.Jpeg ? "jpeg" : "png", height: thumbnail.height, width: thumbnail.width };
+      const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
     }
   }
