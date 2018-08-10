@@ -393,6 +393,13 @@ export abstract class ViewState extends ElementState {
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
+  public createTerrain(context: SceneContext): void {
+    const backgroundMapPlane = this.displayStyle.getBackgroundMapPlane();
+    if (undefined !== backgroundMapPlane) {
+      context.setBackgroundMapPlane(backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+      this.displayStyle.getBackgroundMap().addToScene(context);
+    }
+  }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 

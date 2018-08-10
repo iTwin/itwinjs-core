@@ -6,11 +6,11 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping } from "@bentley/imodeljs-common";
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
-import { GeometricModelState } from "../ModelState";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { IModelConnection } from "../IModelConnection";
 
 /** Provides facilities for deserializing Batched 3D Model (B3dm) tiles.  */
 export namespace B3dmTileIO {
@@ -41,24 +41,24 @@ export namespace B3dmTileIO {
 
   /** Deserializes an B3DM tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
 
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
-      return undefined !== props ? new Reader(props, model, system, range, isCanceled) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isCanceled) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, private range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
-      super(props, model, system, isCanceled);
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, iModel, modelId, is3d, system, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
       const isLeaf = true;    // TBD...
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       // NB: For reality models with no batch table, we want the model ID in the feature table
-      const featureTable: FeatureTable = new FeatureTable(1, this.model.id);
-      const feature = new Feature(this.model.id);
+      const featureTable: FeatureTable = new FeatureTable(1, this.modelId);
+      const feature = new Feature(this.modelId);
       featureTable.insert(feature);
 
       await this.loadTextures();
@@ -68,7 +68,7 @@ export namespace B3dmTileIO {
       return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
-      const feature = new Feature(this.model.id);
+      const feature = new Feature(this.modelId);
 
       features.add(feature, 1);
       return true;

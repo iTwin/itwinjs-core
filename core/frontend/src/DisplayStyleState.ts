@@ -21,6 +21,8 @@ import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64Props, Id64 } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem, TextureImage } from "./render/System";
+import { BackgroundMapState } from "./tile/WebMercatorTileTree";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -28,6 +30,7 @@ export abstract class DisplayStyleState extends ElementState {
   private _background: ColorDef;
   private _monochrome: ColorDef;
   private _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  private _backgroundMap: BackgroundMapState;
 
   constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
@@ -36,6 +39,7 @@ export abstract class DisplayStyleState extends ElementState {
     const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
     const monoJson = this.getStyles()[monoName];
     this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
+    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
   }
 
   public equalState(other: DisplayStyleState): boolean {
@@ -69,6 +73,8 @@ export abstract class DisplayStyleState extends ElementState {
   public getMonochromeColor(): ColorDef { return this._monochrome; }
   public setMonochromeColor(val: ColorDef): void { this._monochrome = val; this.setStyle("monochromeColor", val); }
 
+  public getBackgroundMap(): BackgroundMapState { return this._backgroundMap; }
+  public getBackgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.getBackgroundMap().getPlane() : undefined; }
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 
   public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {

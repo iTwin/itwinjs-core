@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor, Vector3d } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -27,10 +27,10 @@ import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
 import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
 import { UpdatePlan } from "./render/UpdatePlan";
+import { IModelConnection } from "./IModelConnection";
 
 /** Describes the geometry and styling of a sheet border decoration. */
 export class SheetBorder {
@@ -160,7 +160,7 @@ export namespace Attachments {
 
     public renderImage(): ImageBuffer | undefined {
       if (!this.sync.isValidRenderPlan) {
-        this.target.changeRenderPlan(new RenderPlan(this));
+        this.target.changeRenderPlan(RenderPlan.createFromViewport(this));
         this.sync.setValidRenderPlan();
       }
 
@@ -199,7 +199,7 @@ export namespace Attachments {
     }
 
     // override
-    protected adjustAspectRatio(_origin: Point3d, _delta: Vector3d) { }
+    public get isAspectRatioLocked(): boolean { return true; }
   }
 
   /** Describes the location of a tile within the range of a quad subdivided in four parts. */
@@ -496,7 +496,7 @@ export namespace Attachments {
             const frust = viewport.getFrustum(CoordSystem.Npc);
             frust.initFromRange(this.range);  // use unclipped range of tile to change the frustum (this is what we're looking at)
 
-            const rootToNpc = viewport.worldToNpcMap;
+            const rootToNpc = viewport.viewFrustum.worldToNpcMap;
             rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frust.points);
             viewport.setupViewFromFrustum(frust);
 
@@ -569,10 +569,10 @@ export namespace Attachments {
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(loader: TileLoader, model: GeometricModelState, attachment: Attachment) {
+    public constructor(loader: TileLoader, iModel: IModelConnection, modelId: Id64) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
-        attachment.id,
+        modelId,
         {
           id: { treeId: "", tileId: "" },
           range: {
@@ -582,16 +582,14 @@ export namespace Attachments {
           maximumSize: 512,
           childIds: [],
         },
-        model,
+        iModel,
+        false,
         loader,
         Transform.createIdentity(),
         undefined,
         undefined,
       ));
     }
-
-    public get is2d(): boolean { return true; }
-    public get is3d(): boolean { return false; }
   }
 
   /** An extension of TileTree specific to rendering 2d attachments. */
@@ -601,8 +599,8 @@ export namespace Attachments {
     public readonly drawingToAttachment: Transform;
     public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
-    private constructor(model: GeometricModel2dState, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-      super(new TileLoader2d(view), model, attachment);
+    private constructor(iModel: IModelConnection, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
+      super(new TileLoader2d(view), iModel, attachment.id);
 
       this.view = view;
       this.viewRoot = viewRoot;
@@ -711,7 +709,7 @@ export namespace Attachments {
     public readonly featureTable: FeatureTable;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-      super(new TileLoader3d(), new GeometricModel3dState({ modeledElement: { id: "" }, classFullName: "", id: "" }, view.iModel), attachment);   // Pass along a null Model3dState
+      super(new TileLoader3d(), view.iModel, new Id64(""));
 
       this.tileColor = tileColorSequence.next;
       this.featureTable = new FeatureTable(1);

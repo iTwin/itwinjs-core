@@ -129,7 +129,7 @@ describe("Viewport", () => {
     const vp = new TestViewport(canvas!, vpView);
     let plan: RenderPlan | undefined;
     try {
-      plan = new RenderPlan(vp);
+      plan = RenderPlan.createFromViewport(vp);
     } catch (e) {
       plan = undefined;
     }

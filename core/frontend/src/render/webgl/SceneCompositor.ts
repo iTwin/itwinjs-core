@@ -550,12 +550,18 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
+    this._target.plan!.selectTerrainFrustum();
+    this._target.changeFrustum(this._target.plan!);
+
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
       System.instance.applyRenderState(this.getRenderState(RenderPass.Terrain));
       this._target.techniques.execute(this._target, cmds, RenderPass.Terrain);
     });
+
+    this._target.plan!.selectViewFrustum();
+    this._target.changeFrustum(this._target.plan!);
   }
 
   private renderSkyBox(commands: RenderCommands, needComposite: boolean) {

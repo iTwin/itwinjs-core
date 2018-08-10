@@ -184,6 +184,7 @@ export abstract class Target extends RenderTarget {
   private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
+  public plan?: RenderPlan;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -401,7 +402,78 @@ export abstract class Target extends RenderTarget {
     hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
   };
 
+  public changeFrustum(plan: RenderPlan): void {
+    plan.frustum.clone(this.planFrustum);
+
+    const farLowerLeft = plan.frustum.getCorner(Npc.LeftBottomRear);
+    const farLowerRight = plan.frustum.getCorner(Npc.RightBottomRear);
+    const farUpperLeft = plan.frustum.getCorner(Npc.LeftTopRear);
+    const farUpperRight = plan.frustum.getCorner(Npc.RightTopRear);
+    const nearLowerLeft = plan.frustum.getCorner(Npc.LeftBottomFront);
+    const nearLowerRight = plan.frustum.getCorner(Npc.RightBottomFront);
+    const nearUpperLeft = plan.frustum.getCorner(Npc.LeftTopFront);
+    const nearUpperRight = plan.frustum.getCorner(Npc.RightTopFront);
+
+    const scratch = Target._scratch;
+    const nearCenter = nearLowerLeft.interpolate(0.5, nearUpperRight, scratch.nearCenter);
+
+    const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, scratch.viewX);
+    const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, scratch.viewY);
+    const viewZ = viewX.crossProduct(viewY, scratch.viewZ).normalize()!;
+
+    this._planFraction = plan.fraction;
+
+    if (!plan.is3d) {
+      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
+      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
+      const depth = 2 * RenderTarget.frustumDepth2d;
+
+      this.nearPlaneCenter.set(nearCenter.x, nearCenter.y, RenderTarget.frustumDepth2d);
+
+      lookIn(this.nearPlaneCenter, viewX, viewY, viewZ, this.viewMatrix);
+      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
+
+      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
+      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee);
+    } else if (plan.fraction > 0.999) { // ortho
+      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
+      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
+      const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3).magnitude();
+
+      lookIn(nearCenter, viewX, viewY, viewZ, this.viewMatrix);
+      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
+
+      this.nearPlaneCenter.setFrom(nearLowerLeft);
+      this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
+
+      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
+      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.Orthographic);
+    } else { // perspective
+      const scale = 1.0 / (1.0 - plan.fraction);
+      const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3);
+      const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, scratch.point3);
+
+      const frustumLeft = dotDifference(farLowerLeft, cameraPosition, viewX) * plan.fraction;
+      const frustumRight = dotDifference(farLowerRight, cameraPosition, viewX) * plan.fraction;
+      const frustumBottom = dotDifference(farLowerLeft, cameraPosition, viewY) * plan.fraction;
+      const frustumTop = dotDifference(farUpperLeft, cameraPosition, viewY) * plan.fraction;
+      const frustumFront = -dotDifference(nearLowerLeft, cameraPosition, viewZ);
+      const frustumBack = -dotDifference(farLowerLeft, cameraPosition, viewZ);
+
+      lookIn(cameraPosition, viewX, viewY, viewZ, this.viewMatrix);
+      frustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumFront, frustumBack, this.projectionMatrix);
+
+      this.nearPlaneCenter.setFrom(nearLowerLeft);
+      this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
+
+      this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
+      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
+    }
+  }
+
   public changeRenderPlan(plan: RenderPlan): void {
+    this.plan = plan;
+
     if (this._dcAssigned && plan.is3d !== this.is3d) {
       // changed the dimensionality of the Target. World decorations no longer valid.
       // (lighting is enabled or disabled based on 2d vs 3d).
@@ -484,71 +556,8 @@ export abstract class Target extends RenderTarget {
 
     this._stack.setViewFlags(vf);
 
-    plan.frustum.clone(this.planFrustum);
+    this.changeFrustum(plan);
 
-    const farLowerLeft = plan.frustum.getCorner(Npc.LeftBottomRear);
-    const farLowerRight = plan.frustum.getCorner(Npc.RightBottomRear);
-    const farUpperLeft = plan.frustum.getCorner(Npc.LeftTopRear);
-    const farUpperRight = plan.frustum.getCorner(Npc.RightTopRear);
-    const nearLowerLeft = plan.frustum.getCorner(Npc.LeftBottomFront);
-    const nearLowerRight = plan.frustum.getCorner(Npc.RightBottomFront);
-    const nearUpperLeft = plan.frustum.getCorner(Npc.LeftTopFront);
-    const nearUpperRight = plan.frustum.getCorner(Npc.RightTopFront);
-
-    const nearCenter = nearLowerLeft.interpolate(0.5, nearUpperRight, scratch.nearCenter);
-
-    const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, scratch.viewX);
-    const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, scratch.viewY);
-    const viewZ = viewX.crossProduct(viewY, scratch.viewZ).normalize()!;
-
-    this._planFraction = plan.fraction;
-
-    if (!plan.is3d) {
-      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
-      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
-      const depth = 2 * RenderTarget.frustumDepth2d;
-
-      this.nearPlaneCenter.set(nearCenter.x, nearCenter.y, RenderTarget.frustumDepth2d);
-
-      lookIn(this.nearPlaneCenter, viewX, viewY, viewZ, this.viewMatrix);
-      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
-
-      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee);
-    } else if (plan.fraction > 0.999) { // ortho
-      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
-      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
-      const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3).magnitude();
-
-      lookIn(nearCenter, viewX, viewY, viewZ, this.viewMatrix);
-      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
-
-      this.nearPlaneCenter.setFrom(nearLowerLeft);
-      this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
-
-      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.Orthographic);
-    } else { // perspective
-      const scale = 1.0 / (1.0 - plan.fraction);
-      const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3);
-      const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, scratch.point3);
-
-      const frustumLeft = dotDifference(farLowerLeft, cameraPosition, viewX) * plan.fraction;
-      const frustumRight = dotDifference(farLowerRight, cameraPosition, viewX) * plan.fraction;
-      const frustumBottom = dotDifference(farLowerLeft, cameraPosition, viewY) * plan.fraction;
-      const frustumTop = dotDifference(farUpperLeft, cameraPosition, viewY) * plan.fraction;
-      const frustumFront = -dotDifference(nearLowerLeft, cameraPosition, viewZ);
-      const frustumBack = -dotDifference(farLowerLeft, cameraPosition, viewZ);
-
-      lookIn(cameraPosition, viewX, viewY, viewZ, this.viewMatrix);
-      frustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumFront, frustumBack, this.projectionMatrix);
-
-      this.nearPlaneCenter.setFrom(nearLowerLeft);
-      this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
-
-      this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
-      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
-    }
     // this.shaderlights.clear // ###TODO : Lighting
     this._fStop = 0.0;
     this._ambientLight[0] = 0.2;
