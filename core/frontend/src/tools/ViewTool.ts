@@ -5,8 +5,8 @@
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
-import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode, LinePixels } from "@bentley/imodeljs-common";
+import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
+import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
@@ -984,21 +984,31 @@ class ViewScroll extends ViewingToolHandle {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
-    const point = new Point2d(this.anchorPtView.x, this.anchorPtView.y);
-    const points = [point];
     const black = ColorDef.black.clone();
-    const white = ColorDef.white.clone();
+    const white = ColorDef.white.clone(); white.setAlpha(100);
+    const green = ColorDef.green.clone(); green.setAlpha(200);
     const graphic = context.createViewOverlay();
 
-    graphic.setSymbology(black, black, 9);
-    graphic.addPointString2d(points, 0.0);
-
-    graphic.setSymbology(white, black, 5);
-    graphic.addPointString2d(points, 0.0);
-
-    points.push(new Point2d(this.lastPtView.x, this.lastPtView.y));
-    graphic.setSymbology(white, white, 1, LinePixels.Code2);
+    const points = [new Point2d(this.anchorPtView.x, this.anchorPtView.y), new Point2d(this.lastPtView.x, this.lastPtView.y)];
+    graphic.setSymbology(green, green, 2);
     graphic.addLineString2d(points, 0.0);
+
+    const radius = context.viewport.pixelsFromInches(0.15);
+    const ellipse = Arc3d.createXYEllipse(this.anchorPtView, radius, radius);
+    graphic.setBlankingFill(white);
+    graphic.addArc(ellipse, true, true);
+    graphic.setSymbology(black, black, 1);
+    graphic.addArc(ellipse, false, false);
+
+    const dvec = Vector2d.createStartEnd(points[0], points[1]);
+    if (dvec.magnitude() > 0.1) {
+      const slashPts = [new Point2d(), new Point2d()];
+      dvec.normalize(dvec);
+      points[0].plusScaled(dvec, radius, slashPts[0]);
+      points[0].plusScaled(dvec, -radius, slashPts[1]);
+      graphic.setSymbology(black, black, 2);
+      graphic.addLineString2d(slashPts, 0.0);
+    }
 
     context.addViewOverlay(graphic.finish());
   }
@@ -1070,6 +1080,7 @@ class ViewZoom extends ViewingToolHandle {
   private anchorPtView = new Point3d();
   private anchorPtNpc = new Point3d();
   private lastPtView = new Point3d();
+  private lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
   public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
 
@@ -1083,17 +1094,34 @@ class ViewZoom extends ViewingToolHandle {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
-    const point = new Point2d(this.anchorPtView.x, this.anchorPtView.y);
-    const points = [point];
     const black = ColorDef.black.clone();
-    const white = ColorDef.white.clone();
+    const white = ColorDef.white.clone(); white.setAlpha(100);
+    const radius = context.viewport.pixelsFromInches(0.15);
+    const plusMinus = context.viewport.pixelsFromInches(0.075);
     const graphic = context.createViewOverlay();
 
-    graphic.setSymbology(black, black, 9);
-    graphic.addPointString2d(points, 0.0);
+    const ellipse = Arc3d.createXYEllipse(this.anchorPtView, radius, radius);
+    graphic.setBlankingFill(white);
+    graphic.addArc(ellipse, true, true);
+    graphic.setSymbology(black, black, 1);
+    graphic.addArc(ellipse, false, false);
 
-    graphic.setSymbology(white, black, 5);
-    graphic.addPointString2d(points, 0.0);
+    const lineHorzPts = [new Point2d(), new Point2d()];
+    lineHorzPts[0].x = this.anchorPtView.x - plusMinus;
+    lineHorzPts[0].y = this.anchorPtView.y;
+    lineHorzPts[1].x = this.anchorPtView.x + plusMinus;
+    lineHorzPts[1].y = this.anchorPtView.y;
+    graphic.setSymbology(black, black, 2);
+    graphic.addLineString2d(lineHorzPts, 0.0);
+
+    if (this.lastZoomRatio < 1.0) {
+      const lineVertPts = [new Point2d(), new Point2d()];
+      lineVertPts[0].x = this.anchorPtView.x;
+      lineVertPts[0].y = this.anchorPtView.y - plusMinus;
+      lineVertPts[1].x = this.anchorPtView.x;
+      lineVertPts[1].y = this.anchorPtView.y + plusMinus;
+      graphic.addLineString2d(lineVertPts, 0.0);
+    }
 
     context.addViewOverlay(graphic.finish());
   }
@@ -1103,7 +1131,7 @@ class ViewZoom extends ViewingToolHandle {
     const viewport = tool.viewport!;
     const view = viewport.view;
     if (view.is3d() && view.isCameraOn()) {
-      const visiblePoint = viewport.pickNearestVisibleGeometry(ev.rawPoint, viewport.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+      const visiblePoint = viewport.pickNearestVisibleGeometry(CoordSource.User === ev.coordsFrom ? ev.rawPoint : ev.point, viewport.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
       if (undefined !== visiblePoint) {
         this.anchorPtView.setFrom(visiblePoint);
         viewport.worldToView(this.anchorPtView, this.anchorPtView);
@@ -1114,8 +1142,11 @@ class ViewZoom extends ViewingToolHandle {
       }
     }
 
-    this.anchorPtView.setFrom(ev.viewPoint);
-    this.lastPtView.setFrom(ev.viewPoint);
+    if (CoordSource.User === ev.coordsFrom)
+      this.anchorPtView.setFrom(ev.viewPoint);
+    else
+      viewport.worldToView(ev.point, this.anchorPtView);
+    this.lastPtView.setFrom(this.anchorPtView);
     tool.viewport!.viewToNpc(this.anchorPtView, this.anchorPtNpc);
     tool.beginDynamicUpdate();
     return true;
@@ -1153,6 +1184,8 @@ class ViewZoom extends ViewingToolHandle {
 
     if (dist.y < 0)
       zoomRatio = 1.0 / zoomRatio;
+
+    this.lastZoomRatio = zoomRatio;
 
     if (view.is3d() && view.isCameraOn()) {
       const anchorPtWorld = viewport.npcToWorld(this.anchorPtNpc);
