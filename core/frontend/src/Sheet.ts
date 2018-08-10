@@ -562,10 +562,10 @@ export namespace Attachments {
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(loader: TileLoader, iModel: IModelConnection, attachment: Attachment) {
+    public constructor(loader: TileLoader, iModel: IModelConnection, modelId: Id64) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
-        attachment.id,
+        modelId,
         {
           id: { treeId: "", tileId: "" },
           range: {
@@ -593,7 +593,7 @@ export namespace Attachments {
     public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
     private constructor(iModel: IModelConnection, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-      super(new TileLoader2d(view), iModel, attachment);
+      super(new TileLoader2d(view), iModel, attachment.id);
 
       this.view = view;
       this.viewRoot = viewRoot;
@@ -702,7 +702,7 @@ export namespace Attachments {
     public readonly featureTable: FeatureTable;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-      super(new TileLoader3d(), view.iModel, attachment);
+      super(new TileLoader3d(), view.iModel, new Id64(""));
 
       this.tileColor = tileColorSequence.next;
       this.featureTable = new FeatureTable(1);
