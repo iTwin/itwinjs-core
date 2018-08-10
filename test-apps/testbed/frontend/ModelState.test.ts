@@ -73,7 +73,7 @@ describe("ModelState", () => {
     assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
   });
 
-  it.only("view thumbnails", async () => {
+  it("view thumbnails", async () => {
     const thumbnail = await imodel2.views.getThumbnail("0x24");
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
