@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -146,14 +146,13 @@ export namespace Attachments {
         this.setupFromView();
 
       this._scene = [];
-      const requests = new TileRequests();
-      const sceneContext = new SceneContext(this, requests);
+      const sceneContext = new SceneContext(this, new TileRequests());
       view.createScene(sceneContext);
 
-      requests.requestMissing();
+      sceneContext.requests.requestMissing();
 
       // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-      if (!view.areAllTileTreesLoaded || requests.hasMissingTiles)
+      if (!view.areAllTileTreesLoaded || sceneContext.requests.hasMissingTiles)
         return State.Loading;
 
       return State.Ready;
@@ -198,6 +197,9 @@ export namespace Attachments {
         this.setRect(new ViewRect(0, 0, dim, dim), true);
       }
     }
+
+    // override
+    protected adjustAspectRatio(_origin: Point3d, _delta: Vector3d) { }
   }
 
   /** Describes the location of a tile within the range of a quad subdivided in four parts. */
@@ -241,13 +243,15 @@ export namespace Attachments {
   }
 
   class TileLoader3d extends AttachmentTileLoader {
-    private static _debugNoTile3dTextures = false; // set this to true to output color-coded polys instead of textures for debugging.
+    /** DEBUG ONLY - Setting this to true will result in only sheet tile polys being drawn, and not the textures they contain. */
+    private static DEBUG_NO_TEXTURES = false;
+    // ----------------------------------------------------------------------------------
     private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
       renderMode: RenderMode.SmoothShade,
       noCameraLights: true,
       noSourceLights: true,
       noSolarLight: true,
-      noTexture: TileLoader3d._debugNoTile3dTextures,
+      noTexture: TileLoader3d.DEBUG_NO_TEXTURES,
     }));
 
     public get maxDepth() { return 32; }
@@ -264,6 +268,7 @@ export namespace Attachments {
         512,  // does not matter... have no children
         [],
       ));
+      this.setIsReady();
     }
 
     public get hasChildren(): boolean { return false; }
@@ -279,20 +284,22 @@ export namespace Attachments {
       drawArgs.graphics.setViewFlagOverrides(this.root.viewFlagOverrides);
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
-      myRoot.view.createSceneFromDrawArgs(drawArgs);
+      viewRoot.draw(drawArgs);
     }
   }
 
   /** An extension of Tile specific to rendering 3d attachments. */
   export class Tile3d extends Tile {
+    /** DEBUG ONLY - This member will cause the sheet tile polyfaces to draw along with the underlying textures. */
+    private static DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
+    // ------------------------------------------------------------------------------------------
     private _tilePolyfaces: IndexedPolyface[] = [];
-    private _placement: Tile3dPlacement;
 
-    public constructor(root: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement) {
+    private constructor(root: Tree3d, parent: Tile3d | undefined, tileRange: ElementAlignedBox3d) {
       super(new Tile.Params(
         root,
         "",
-        new ElementAlignedBox3d(),
+        tileRange,
         .5 * Math.sqrt(2 * QUERY_SHEET_TILE_PIXELS * QUERY_SHEET_TILE_PIXELS),
         [],
         parent,
@@ -300,41 +307,43 @@ export namespace Attachments {
         undefined,
         undefined,
       ));
+    }
 
-      this._placement = placement;
-      const tree = this.rootAsTree3d;
-
+    public static create(root: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement): Tile3d {
       let fullRange: Range3d;
-      if (this.parent !== undefined)
-        fullRange = this.parent.range.clone();
+      if (parent !== undefined)
+        fullRange = parent.range.clone();
       else
-        fullRange = tree.getRootRange();
+        fullRange = root.getRootRange();
 
       const mid = fullRange.low.interpolate(0.5, fullRange.high);
-      switch (this._placement) {
+      const range = new ElementAlignedBox3d();
+      switch (placement) {
         case Tile3dPlacement.UpperLeft:
-          this.range.extend(mid);
-          this.range.extend(Point3d.create(fullRange.low.x, fullRange.high.y, 0));
+          range.extend(mid);
+          range.extend(Point3d.create(fullRange.low.x, fullRange.high.y, 0));
           break;
         case Tile3dPlacement.UpperRight:
-          this.range.extend(mid);
-          this.range.extend(fullRange.high);
+          range.extend(mid);
+          range.extend(fullRange.high);
           break;
         case Tile3dPlacement.LowerLeft:
-          this.range.extend(fullRange.low);
-          this.range.extend(mid);
+          range.extend(fullRange.low);
+          range.extend(mid);
           break;
         case Tile3dPlacement.LowerRight:
-          this.range.extend(Point3d.create(fullRange.high.x, fullRange.low.y, 0));
-          this.range.extend(mid);
+          range.extend(Point3d.create(fullRange.high.x, fullRange.low.y, 0));
+          range.extend(mid);
           break;
         case Tile3dPlacement.Root:
         default:
-          this.range.extendRange(fullRange);
+          range.extendRange(fullRange);
           break;
       }
-      this.range.low.z = 0;
-      this.range.high.z = 1;
+      range.low.z = 0;
+      range.high.z = 1;
+
+      return new Tile3d(root, parent, range);
     }
 
     /** Get the root tile tree cast to a Tree3d. */
@@ -348,11 +357,6 @@ export namespace Attachments {
     public get hasGraphics(): boolean { return this.isReady; }
     // override
     public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
-
-    /** override - Should not be used. Use getChildren() method on Tile3d instead. */
-    public get children(): Tile[] | undefined {
-      return undefined;
-    }
 
     // override
     public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
@@ -373,7 +377,7 @@ export namespace Attachments {
       }
 
       const tooCoarse = Tile.Visibility.TooCoarse === vis;
-      const children = tooCoarse ? this.getChildren(true) : undefined;
+      const children = tooCoarse ? this.prepareChildren() : undefined;
 
       if (children !== undefined) {
         const initialSize = selected.length;
@@ -448,7 +452,7 @@ export namespace Attachments {
       let currentState = this.getState();
 
       // "Ready" state is a valid situation. It means another tile created the scene for this level of detail. We will use that scene.
-      // However, this means we would be usng the texture for that other tile, which is not what we want. We must recreate the texture.
+      // However, this means we would be using the texture for that other tile, which is not what we want. We must recreate the texture.
 
       assert(currentState !== State.Empty);
       if (currentState === State.Empty) {
@@ -513,14 +517,14 @@ export namespace Attachments {
       }
     }
 
-    public getChildren(load: boolean): Tile[] | undefined {
+    public prepareChildren(): Tile[] | undefined {
       if (this._children === undefined)
         this._children = [];
-      if (this._children.length === 0 && load) {
-        const childTileUL = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.UpperLeft);
-        const childTileUR = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.UpperRight);
-        const childTileLL = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.LowerLeft);
-        const childTileLR = new Tile3d(this.rootAsTree3d, this, Tile3dPlacement.LowerRight);
+      if (this._children.length === 0) {
+        const childTileUL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperLeft);
+        const childTileUR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperRight);
+        const childTileLL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerLeft);
+        const childTileLR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerRight);
         this._children.push(childTileUL);
         this._children.push(childTileUR);
         this._children.push(childTileLL);
@@ -529,32 +533,35 @@ export namespace Attachments {
       return this._children.length === 0 ? undefined : this._children;
     }
 
-    private static _drawDebugGraphics = false;
     public drawGraphics(args: Tile.DrawArgs) {
-      if (!Tile3d._drawDebugGraphics) {
-        super.drawGraphics(args);
+      super.drawGraphics(args);
+      if (!Tile3d.DRAW_DEBUG_POLYFACE_GRAPHICS) {
         return;
       }
 
       const polys = this._tilePolyfaces;
-      if (0 === polys.length)
+      if (polys.length === 0)
         return;
 
-      const fillColor = this.rootAsTree3d.tileColor;
-      const lineColor = fillColor.clone();
+      const lineColor = ColorDef.blue.clone();
+      const fillColor = ColorDef.green.clone();
+      fillColor.setAlpha(0x88);
       lineColor.setAlpha(0xff);
       const builder = args.context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
       builder.setSymbology(lineColor, fillColor, 2);
       for (const poly of polys) {
-        const lineString: Point3d[] = [];
-        for (const index of poly.data.pointIndex)
-          lineString.push(poly.data.point.getPoint3dAt(index));
-
-        builder.addShape(lineString);
-        builder.addLineString(lineString);
+        const polyVisitor = IndexedPolyfaceVisitor.create(poly, 0);
+        while (polyVisitor.moveToNextFacet()) {
+          const lineString: Point3d[] = [];
+          for (let i = 0; i < 3; i++)
+            lineString.push(polyVisitor.getPoint(i));
+          if (lineString.length > 0)
+            lineString.push(lineString[0].clone()); // close the loop
+          builder.addLineString(lineString);
+        }
       }
 
-      args.graphics.add(builder.finish()!);
+      args.graphics.add(builder.finish());
     }
   }
 
@@ -741,16 +748,13 @@ export namespace Attachments {
       // turn off skybox and groundplane
       if (view.isSpatialView()) {
         const spatial = view as SpatialViewState;
-        const env = spatial.getDisplayStyle3d().getEnvironment();
+        const env = spatial.getDisplayStyle3d().environment;
         env.ground.display = false;
         env.sky.display = false;
-        spatial.getDisplayStyle3d().setEnvironment(env);
       }
 
       const range = attachment.placement.calculateRange();
-      // ###TODO: Figure out why bias distance dependent upon attachment display priority puts us out of range to draw
-      // this.biasDistance = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
-      this.biasDistance = 0.5;
+      this.biasDistance = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
 
       range.getNpcToWorldRangeTransform(this.viewport.toParent);
       this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1, this.viewport.toParent.matrix);
@@ -759,7 +763,7 @@ export namespace Attachments {
       if (fromParent !== undefined)
         this.graphicsClip = attachment.getOrCreateClip(fromParent);
 
-      this._rootTile = new Tile3d(this, undefined, Tile3dPlacement.Root);
+      this._rootTile = Tile3d.create(this, undefined, Tile3dPlacement.Root);
       (this._rootTile as Tile3d).createPolyfaces(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)
 
       this.location.setFrom(this.viewport.toParent.clone());
@@ -798,6 +802,9 @@ export namespace Attachments {
 
   /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies its view and its position on the sheet. */
   export abstract class Attachment {
+    /** DEBUG ONLY - The color of the attachment bounding box if drawn. */
+    public static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef = ColorDef.red;
+    // ---------------------------------------------------
     public id: Id64;
     public readonly view: ViewState;
     public scale: number;
@@ -805,7 +812,6 @@ export namespace Attachments {
     public clip: ClipVector;
     public displayPriority: number;
     protected _tree?: Tree;
-    public static readonly boundingBoxColor: ColorDef = ColorDef.red;   // ***DEBUG
 
     protected constructor(props: ViewAttachmentProps, view: ViewState) {
       this.id = new Id64(props.id);
@@ -843,8 +849,6 @@ export namespace Attachments {
 
     /** Returns true if this attachment is a 2d view attachment. */
     public abstract get is2d(): boolean;
-    /** Returns true if this attachment is a 3d view attachment. */
-    public abstract get is3d(): boolean;
     /** Returns true if this attachment is ready to be drawn. */
     public abstract get state(): State;
     /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
@@ -900,8 +904,8 @@ export namespace Attachments {
       return clipReturn;
     }
 
-    // DEBUG ONLY
-    public drawDebugBorder(context: SceneContext) {
+    /** DEBUG ONLY - Draw a border around this attachment using its placement. */
+    public debugDrawBorder(context: SceneContext) {
       const origin = this.placement.origin;
       const bbox = this.placement.bbox;
       const rect: Point2d[] = [
@@ -912,7 +916,7 @@ export namespace Attachments {
         Point2d.create(origin.x, origin.y)];
 
       const builder = context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
-      builder.setSymbology(Attachment.boundingBoxColor, Attachment.boundingBoxColor, 2);
+      builder.setSymbology(Attachment.DEBUG_BOUNDING_BOX_COLOR, Attachment.DEBUG_BOUNDING_BOX_COLOR, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();
       context.outputGraphic(attachmentBorder);
@@ -929,7 +933,6 @@ export namespace Attachments {
     }
 
     public get is2d(): boolean { return true; }
-    public get is3d(): boolean { return false; }
     public get state(): State { return this._status; }
 
     public load(_sheetView: SheetViewState, _sceneContext: SceneContext) {
@@ -947,15 +950,13 @@ export namespace Attachments {
       this.states = [];
     }
 
-    // ###TODO: Make this state used by attachments list and get rid of 3d attachments flag on SheetViewState
+    public get is2d(): boolean { return false; }
+
     /**
-     * Returns "loaded" state.
-     * 3d view attachments tell the SheetViewState directly whether or not to continue creating the scene using its "all3dAttachmentTilesReady" member.
+     * Always returns a state of "Ready".
+     * 3d view attachments tell the SheetViewState directly whether or not to continue creating the scene by modifying its "all3dAttachmentTilesReady" member.
      */
     public get state(): State { return State.Ready; }
-
-    public get is2d(): boolean { return false; }
-    public get is3d(): boolean { return false; }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
     public getState(depth: number): State { return depth < this.states.length ? this.states[depth] : State.NotLoaded; }

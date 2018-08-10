@@ -1,6 +1,33 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 02 Aug 2018 09:07:03 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Aug 2018 12:19:22 GMT and should not be manually modified.
+
+## 0.112.0
+Tue, 07 Aug 2018 12:19:22 GMT
+
+### Updates
+
+- Support pickable decorations.
+- Detect tap and double tap and provide tool methods to handle these events.
+- Remove old gesture events. Added onTouchComplete event for when all fingers leave surface.
+- Moved tapCount to BeTouchEvent. Added methods to convert touch event to mouse events. Rename onModelMotion to onMouseMotion.
+- Added separate ToolSettings for touch move distance and delay.
+- Support spherical skybox image projections.
+- Support cubemap skybox images.
+
+## 0.111.0
+Mon, 06 Aug 2018 19:25:38 GMT
+
+### Updates
+
+- All 3d view attachments overlay correctly.
+- 'Fit View' in a sheet view fits to the dimensions of the sheet.
+- Fix for not selecting the first sheet tile of 3d view attachment
+
+## 0.110.0
+Thu, 02 Aug 2018 14:48:42 GMT
+
+*Version update only*
 
 ## 0.109.0
 Thu, 02 Aug 2018 09:07:03 GMT

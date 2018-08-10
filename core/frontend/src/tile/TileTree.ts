@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable } from "@bentley/bentleyjs-core";
+import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
@@ -28,6 +28,8 @@ function compareMissingTiles(lhs: Tile, rhs: Tile): number {
 
 // ###TODO: TileRequests and MissingNodes are likely to change...
 export class MissingNodes extends SortedArray<Tile> {
+  public awaitingChildren: boolean = false;
+
   public constructor() { super(compareMissingTiles); }
 }
 
@@ -51,7 +53,7 @@ export class TileRequests {
   }
   public get hasMissingTiles(): boolean {
     for (const value of this._map.values())
-      if (value.length > 0)
+      if (value.length > 0 || value.awaitingChildren)
         return true;
     return false;
   }
@@ -272,8 +274,11 @@ export class Tile implements IDisposable {
       }
     }
 
-    this.loadChildren(); // NB: asynchronous
+    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     const children = canSkipThisTile ? this.children : undefined;
+    if (canSkipThisTile && TileTree.LoadStatus.Loading === childrenLoadStatus)
+      args.markChildrenLoading();
+
     if (undefined !== children) {
       this._childrenLastUsed = args.now;
       let allChildrenDrawable = true;
@@ -365,7 +370,10 @@ export class Tile implements IDisposable {
         }
 
         IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; this._children = undefined; });
+      }).catch((_err) => {
+        this._childrenLoadStatus = TileTree.LoadStatus.NotFound;
+        this._children = undefined;
+      });
     }
 
     return this._childrenLoadStatus;
@@ -456,6 +464,7 @@ export namespace Tile {
     }
 
     public insertMissing(tile: Tile): void { this.missing.insert(tile); }
+    public markChildrenLoading(): void { this.missing.awaitingChildren = true; }
   }
 
   /** Parameters used to construct a Tile. */
@@ -546,7 +555,7 @@ export class TileTree implements IDisposable {
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
-    return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector);
+    return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVector);
   }
 
   public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }
@@ -567,7 +576,7 @@ export abstract class TileLoader {
   public loadGraphics(tile: Tile, geometry: any): void {
     let blob: Uint8Array | undefined;
     if (typeof geometry === "string") {
-      blob = new Uint8Array(atob(geometry as string).split("").map((c) => c.charCodeAt(0)));
+      blob = base64StringToUint8Array(geometry as string);
     } else if (geometry instanceof ArrayBuffer) {
       blob = new Uint8Array(geometry as ArrayBuffer);
     } else {

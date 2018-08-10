@@ -28,7 +28,7 @@ import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
-import { MobileRpcManager } from "../common/MobileRpcManager";
+import { MobileRpcManager, MobileRpcConfiguration } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import * as ttjs from "tooltip.js";
 
 type Tooltip = ttjs.default;
@@ -388,7 +388,7 @@ function updateRenderModeOptionsMap() {
   let groundplane = false;
   if (theViewport!.view.is3d()) {
     const view = theViewport!.view as ViewState3d;
-    const env = view.getDisplayStyle3d().getEnvironment();
+    const env = view.getDisplayStyle3d().environment;
     skybox = env.sky.display;
     groundplane = env.ground.display;
   }
@@ -493,6 +493,12 @@ function changeOverrideColor() {
   theViewport!.view.setFeatureOverridesDirty();
 }
 
+// change iModel on mobile app
+async function changeModel(event: any) {
+  const modelName = event.target.selectedOptions["0"].value;
+  await resetStandaloneIModel("sample_documents/" + modelName);
+}
+
 // change active view.
 async function changeView(event: any) {
   const spinner = document.getElementById("spinner") as HTMLDivElement;
@@ -585,7 +591,28 @@ function addRenderModeHandler(id: string) {
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
-  document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
+  if (MobileRpcConfiguration.isMobileFrontend) {
+    const modelList = document.createElement("select");
+    modelList.id = "modelList";
+    // Use hardcoded list for test sample files for mobile
+    modelList.innerHTML =
+      " <option value='04_Plant.i.ibim'>04_Plant</option> \
+        <option value='almostopaque.ibim'>almostopaque</option> \
+        <option value='mesh_widget_piece.ibim'>mesh_widget_piece</option> \
+        <option value='PhotoRealisticRendering.ibim'>PhotoRealisticRendering</option> \
+        <option value='PSolidNewTransparent.ibim'>PSolidNewTransparent</option> \
+        <option value='rectangle.ibim'>rectangle</option> \
+        <option value='scattergories.ibim'>scattergories</option> \
+        <option value='SketchOnSurface.ibim'>SketchOnSurface</option> \
+        <option value='slabs.ibim'>slabs</option> \
+        <option value='small_building_2.ibim'>small_building_2</option> \
+        <option value='tr_blk.ibim'>tr_blk</option>";
+
+    document.getElementById("toolBar")!.replaceChild(modelList, document.getElementById("selectIModel")!);
+    modelList.addEventListener("change", changeModel);
+  } else {
+    document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
+  }
   document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startToggleModel")!.addEventListener("click", startToggleModel);
   document.getElementById("startCategorySelection")!.addEventListener("click", startCategorySelection);
@@ -753,7 +780,7 @@ const docReady = new Promise((resolve) => {
 
 // main entry point.
 async function main() {
-  if (!MobileRpcManager.isMobile) {
+  if (!MobileRpcConfiguration.isMobileFrontend) {
     // retrieve, set, and output the global configuration variable
     await retrieveConfiguration(); // (does a fetch)
     console.log("Configuration", JSON.stringify(configuration));
@@ -765,9 +792,9 @@ async function main() {
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-  } else if (MobileRpcManager.isMobile) {
-    Object.assign(configuration, { standalone: true, iModelName: "assets/sample_documents/PhotoRealisticRendering.ibim" });
-    rpcConfiguration = MobileRpcManager.initializeMobile([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  } else if (MobileRpcConfiguration.isMobileFrontend) {
+    Object.assign(configuration, { standalone: true, iModelName: "sample_documents/04_Plant.i.ibim" });
+    rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     Config.devCorsProxyServer = "https://localhost:3001";

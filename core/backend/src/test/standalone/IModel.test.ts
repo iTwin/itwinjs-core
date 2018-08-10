@@ -6,7 +6,7 @@ import * as path from "path";
 import { DbResult, Guid, Id64, BeEvent, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
-  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
+  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, GeometricModel, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
   IModelDb, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType, Entity,
   Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
@@ -261,6 +261,10 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
+    const modelExtents: AxisAlignedBox3d = model.queryExtents();
+    assert.isBelow(modelExtents.low.x, modelExtents.high.x);
+    assert.isBelow(modelExtents.low.y, modelExtents.high.y);
+    assert.isBelow(modelExtents.low.z, modelExtents.high.z);
   });
 
   it("should find a tile tree for a geometric model", () => {
@@ -844,6 +848,9 @@ describe("iModel", () => {
     const id0 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
     const id1 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
     const id2 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+
+    const geometricModel = testImodel.models.getModel(newModelId) as GeometricModel;
+    assert.throws(() => geometricModel.queryExtents()); // no geometry
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
     const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);

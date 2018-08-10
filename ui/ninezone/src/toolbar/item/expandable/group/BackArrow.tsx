@@ -5,12 +5,15 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import Props from "../../../../utilities/Props";
-
+import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
 import "./BackArrow.scss";
 
-export default class BackArrow extends React.Component<Props> {
+/** Properties of [[BackArrow]] component. */
+export interface BackArrowProps extends CommonProps, NoChildrenProps {
+}
+
+/** Back arrow used in [[NestedGroup]] component. */
+export default class BackArrow extends React.Component<BackArrowProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-backArrow",

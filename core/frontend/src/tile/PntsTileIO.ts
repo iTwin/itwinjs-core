@@ -6,7 +6,7 @@ import { TileIO } from "./TileIO";
 import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable } from "@bentley/imodeljs-common";
 import { Id64, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../render/System";
-import { StringUtils } from "@bentley/bentleyjs-core";
+import { utf8ToString } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Transform, Point3d, RotMatrix, Angle, Vector3d } from "@bentley/geometry-core";
@@ -39,7 +39,7 @@ export namespace PntsTileIO {
 
     const featureTableJsonOffset = stream.curPos;
     const featureStrData = stream.nextBytes(header.featureTableJsonLength);
-    const featureStr = StringUtils.utf8ToString(featureStrData);
+    const featureStr = utf8ToString(featureStrData);
     const featureValue = JSON.parse(featureStr as string);
 
     if (undefined === featureValue) { }

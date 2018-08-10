@@ -689,7 +689,7 @@ export class HalfEdgeGraph {
    * * Call the announceFace function
    * * continue search if announceFace(graph, node) returns true
    * * terminate search if announceface (graph, node) returns false
-   * @param  annonceFace function to apply at one node of each face.
+   * @param  announceFace function to apply at one node of each face.
    */
   public announceFaceLoops(announceFace: GraphNodeFunction) {
     this.clearMask(HalfEdgeMask.VISITED);

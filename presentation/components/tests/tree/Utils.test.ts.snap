@@ -1,0 +1,179 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Utils createTreeNodeItem creates tree node 1`] = `
+Object {
+  "checkBoxState": 0,
+  "description": "",
+  "displayCheckBox": false,
+  "extendedData": Object {
+    "key": Object {
+      "instanceKey": Object {
+        "className": "COM",
+        "id": "0x535d0000015d88",
+      },
+      "pathFromRoot": Array [
+        "b5c02a04-6127-4f62-b128-58488bc1c9d1",
+        "19fb96ab-449d-4f28-a09d-cff691955c55",
+      ],
+      "type": "ECInstanceNode",
+    },
+  },
+  "hasChildren": false,
+  "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
+  "isCheckBoxEnabled": false,
+  "label": "engage",
+  "labelBackColor": -2027626753,
+  "labelBold": false,
+  "labelForeColor": undefined,
+  "labelItalic": false,
+  "parentId": undefined,
+}
+`;
+
+exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
+Object {
+  "checkBoxState": 1,
+  "description": "Et velit aperiam sed aut.",
+  "displayCheckBox": false,
+  "extendedData": Object {
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Small Fresh Shoes",
+        "id": "0x11d2d0000000aba",
+      },
+      "pathFromRoot": Array [
+        "df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
+        "0b80175c-270d-4a1a-bba3-14ef8866c2a1",
+      ],
+      "type": "ECInstanceNode",
+    },
+  },
+  "hasChildren": true,
+  "id": "0b80175c-270d-4a1a-bba3-14ef8866c2a1/df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
+  "isCheckBoxEnabled": false,
+  "label": "Indian Rupee Rufiyaa systems",
+  "labelBackColor": undefined,
+  "labelBold": false,
+  "labelForeColor": undefined,
+  "labelItalic": false,
+  "parentId": "Dynamic",
+}
+`;
+
+exports[`Utils createTreeNodeItems creates tree nodes 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "Necessitatibus eum ab.",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Data",
+          "id": "0xdbbd0000011f6d",
+        },
+        "pathFromRoot": Array [
+          "4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
+          "e845ce78-d049-4079-8e52-c1852841f2dd",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": false,
+    "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
+    "isCheckBoxEnabled": true,
+    "label": "intranet Executive",
+    "labelBackColor": 99406079,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": undefined,
+  },
+  Object {
+    "checkBoxState": 1,
+    "description": "",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "payment",
+          "id": "0x5d070000002c52",
+        },
+        "pathFromRoot": Array [
+          "4ed5eba5-6260-4081-9375-0f3daeabb142",
+          "1892b75e-f471-4908-bcd9-caf25d633b21",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": false,
+    "id": "1892b75e-f471-4908-bcd9-caf25d633b21/4ed5eba5-6260-4081-9375-0f3daeabb142",
+    "isCheckBoxEnabled": true,
+    "label": "Buckinghamshire",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": undefined,
+  },
+]
+`;
+
+exports[`Utils createTreeNodeItems creates tree nodes with parentId 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "At enim qui enim quisquam ratione debitis sequi totam aut.",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "metrics",
+          "id": "0x63060000003c1a",
+        },
+        "pathFromRoot": Array [
+          "7563a72a-9ca8-4deb-b3f2-90e038b00330",
+          "fde07d2e-c992-4c8d-9f77-66e2d57cff27",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "fde07d2e-c992-4c8d-9f77-66e2d57cff27/7563a72a-9ca8-4deb-b3f2-90e038b00330",
+    "isCheckBoxEnabled": false,
+    "label": "Haiti",
+    "labelBackColor": 480516607,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": "Functionality",
+  },
+  Object {
+    "checkBoxState": 0,
+    "description": "Voluptas cupiditate rerum consequatur illum unde molestiae quam.",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Future",
+          "id": "0x1797b0000009652",
+        },
+        "pathFromRoot": Array [
+          "d29db17a-7270-42f3-a398-05abe6ed9fcd",
+          "7bda1c50-0d4d-45d6-bc09-e4f2bdad7ba2",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": false,
+    "id": "7bda1c50-0d4d-45d6-bc09-e4f2bdad7ba2/d29db17a-7270-42f3-a398-05abe6ed9fcd",
+    "isCheckBoxEnabled": false,
+    "label": "SSL methodologies Berkshire",
+    "labelBackColor": 1088423167,
+    "labelBold": false,
+    "labelForeColor": 944178687,
+    "labelItalic": false,
+    "parentId": "Functionality",
+  },
+]
+`;

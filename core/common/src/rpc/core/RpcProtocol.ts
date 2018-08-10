@@ -37,7 +37,7 @@ export interface RpcRequestFulfillment {
   id: string;
 
   /** The result for the request. */
-  result: string | ArrayBuffer;
+  result: string | Uint8Array;
 
   /** A protocol-specific status code value for the request. */
   status: number;

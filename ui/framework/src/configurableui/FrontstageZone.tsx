@@ -6,7 +6,7 @@
 import * as React from "react";
 
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, GhostOutlineProvider } from "./FrontstageComposer";
-import { ZoneWithDef } from "./ZoneWithDef";
+import { FrameworkZone } from "./FrameworkZone";
 import { ToolSettingsZone } from "./ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 import { FrontstageManager } from "./FrontstageManager";
@@ -30,7 +30,7 @@ export interface ZoneTargetProvider {
 
 /** Props for the Frontstage Zone Component.
  */
-export interface Props {
+export interface FrontstageZoneProps {
   zoneState: NZ_ZoneState;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
@@ -41,7 +41,7 @@ export interface Props {
 
 /** Frontstage Zone React Component.
  */
-export class FrontstageZone extends React.Component<Props> implements ZoneTargetProvider {
+export class FrontstageZone extends React.Component<FrontstageZoneProps> implements ZoneTargetProvider {
   public render(): React.ReactNode {
     if (this.props.zoneState.widgets.length === 1) {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
@@ -70,7 +70,7 @@ export class FrontstageZone extends React.Component<Props> implements ZoneTarget
     }
 
     return (
-      <ZoneWithDef
+      <FrameworkZone
         zoneState={this.props.zoneState}
         widgetChangeHandler={this.props.widgetChangeHandler}
         targetedBounds={this.props.ghostOutlineProvider.getGhostOutlineBounds(this.props.zoneState.id)}

@@ -8,15 +8,15 @@ The properties of an element are defined in its [Schema](./schemas-domains.md). 
 
 ### CodeSpec
 
-See [CodeSpec](./codes.md#codespec)
+See [CodeSpec](./codes.md#codespec-property)
 
 ### CodeScope
 
-See [CodeScope](./codes.md#codescope)
+See [CodeScope](./codes.md#codescope-property)
 
 ### CodeValue
 
-See [CodeValue](./codes.md#codevalue)
+See [CodeValue](./codes.md#codevalue-property)
 
 ### FederationGuid
 

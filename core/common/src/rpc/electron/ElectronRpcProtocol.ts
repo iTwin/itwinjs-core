@@ -50,20 +50,10 @@ if (interop) {
         response = RpcRequestFulfillment.forUnknownError(request, err);
       }
 
-      const result = response.result;
-      if (typeof (result) === "string") {
-        evt.sender.send(CHANNEL, response);
-      } else {
-        response.result = new Uint8Array(result) as any; // Uint8Array does NOT copy the underlying buffer
-        evt.sender.send(CHANNEL, response);
-      }
+      evt.sender.send(CHANNEL, response);
     });
   } else if (interop.ipcRenderer) {
     interop.ipcRenderer.on(CHANNEL, (_evt: any, fulfillment: RpcRequestFulfillment) => {
-      if (fulfillment.result instanceof Uint8Array) {
-        fulfillment.result = fulfillment.result.buffer as ArrayBuffer;
-      }
-
       const protocol = instances.get(fulfillment.interfaceName) as ElectronRpcProtocol;
       const request = protocol.configuration.controlChannel.requests.get(fulfillment.id) as ElectronRpcRequest;
       request.fulfillment = fulfillment;

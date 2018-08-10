@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PresentationRuleSet RuleSetId="SimpleHierarchy" VersionMajor="1" VersionMinor="0" SupportedSchemas="Generic,BisCore" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RootNodeRule>
+    <CustomNode Type="root" Label="root label" Description="root description" ImageId="root image id" />
+    <CheckBoxRule DefaultValue="true" IsEnabled="False" />
+    <StyleOverride ForeColor='"Red"' BackColor='"Green"' FontStyle='"Italic Bold"' />
+  </RootNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type = "root"'>
+    <CustomNode Type="child" Label="child label" Description="child description" ImageId="child image id" />
+  </ChildNodeRule>
+</PresentationRuleSet>

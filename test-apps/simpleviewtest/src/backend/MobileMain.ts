@@ -1,7 +1,6 @@
 import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { initializeBackend } from "./backend";
-import { MobileRpcManager } from "../common/MobileRpcManager";
-
+import { MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 // tslint:disable:no-console
 
 export function getRpcInterfaces() {
@@ -10,4 +9,4 @@ export function getRpcInterfaces() {
 
 // Initialize the backend
 initializeBackend();
-MobileRpcManager.initializeMobile(getRpcInterfaces());
+MobileRpcManager.initializeImpl(getRpcInterfaces());

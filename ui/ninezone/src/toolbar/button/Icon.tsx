@@ -5,14 +5,19 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import Button, { ToolbarButtonProps } from "./Button";
 import "./Icon.scss";
 
+/** Properties of [[ToolbarIcon]] component. */
 export interface ToolbarIconProps extends ToolbarButtonProps {
+  /** Button icon. */
   icon?: React.ReactNode;
 }
 
+/**
+ * Toolbar button which displays icon. Used in [[Toolbar]] component.
+ * @note See basic button: [[ToolbarButton]]
+ */
 export default class ToolbarIcon extends React.Component<ToolbarIconProps> {
   public render() {
     const { className, ...props } = this.props;

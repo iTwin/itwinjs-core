@@ -41,7 +41,7 @@ export default class Footer extends React.Component {
             >
               <StatusLayout
                 label={
-                  <Label>Processing - 25% completed.</Label>
+                  <Label text="Processing - 25% completed." />
                 }
                 buttons={
                   <>
@@ -69,7 +69,7 @@ export default class Footer extends React.Component {
             >
               <StatusLayout
                 label={
-                  <Label>Processing completed.</Label>
+                  <Label text="Processing completed." />
                 }
                 buttons={
                   <>
@@ -91,7 +91,7 @@ export default class Footer extends React.Component {
             >
               <StatusLayout
                 label={
-                  <Label>Processing failed.</Label>
+                  <Label text="Processing failed." />
                 }
                 buttons={
                   <>

@@ -73,6 +73,34 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/presentation-common",
+      "projectFolder": "presentation/common",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/presentation-backend",
+      "projectFolder": "presentation/backend",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/presentation-frontend",
+      "projectFolder": "presentation/frontend",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/presentation-components",
+      "projectFolder": "presentation/components",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/ui-core",
       "projectFolder": "ui/core",
       "reviewCategory": "frontend",
@@ -127,6 +155,18 @@
     {
       "packageName": "testbed",
       "projectFolder": "test-apps/testbed",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "presentation-test-app",
+      "projectFolder": "test-apps/presentation-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "presentation-integration-tests",
+      "projectFolder": "test-apps/presentation-integration-tests",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

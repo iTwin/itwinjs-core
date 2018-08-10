@@ -2,34 +2,34 @@
 
 exports[`<Toolbar /> renders correctly 1`] = `
 <div
-  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal"
+  className="nz-toolbar-toolbar nz-direction-left nz-vertical"
 >
-  <Items
-    className="nz-items"
-    direction={1}
-  />
   <div
     className="nz-expanded nz-history"
   />
   <div
     className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
   />
 </div>
 `;
 
 exports[`<Toolbar /> renders vertical with expands to direction 1`] = `
 <div
-  className="nz-toolbar-toolbar nz-direction-left nz-vertical"
+  className="nz-toolbar-toolbar nz-direction-right nz-vertical"
 >
-  <Items
-    className="nz-items"
-    direction={0}
-  />
   <div
     className="nz-expanded nz-history"
   />
   <div
     className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
   />
 </div>
 `;

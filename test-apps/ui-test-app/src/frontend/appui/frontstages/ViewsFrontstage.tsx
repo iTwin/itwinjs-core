@@ -7,7 +7,7 @@ import { Id64Props } from "@bentley/bentleyjs-core";
 
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
-import { FrontstageProps } from "@bentley/ui-framework";
+import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
 import { ToolButton, ToolItemDef } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
@@ -137,24 +137,19 @@ export class ViewsFrontstage {
         ],
       },
       bottomRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "NavigationTreeWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
+            id: "VerticalPropertyGrid",
             classId: "VerticalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
+            defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
             classId: "HorizontalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
+            defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
@@ -185,6 +180,30 @@ export class ViewsFrontstage {
     IModelApp.tools.run("View.Rotate", ViewportManager.getActiveViewport());
   }
 
+  private tool1 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControl.setWidgetState(WidgetState.Open);
+      }
+    }
+  }
+
+  private tool2 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControl.setWidgetState(WidgetState.Off);
+      }
+    }
+  }
+
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
    */
   private getToolWidget(): React.ReactNode {
@@ -196,27 +215,37 @@ export class ViewsFrontstage {
     });
 
     const horizontalToolbar =
-      <Toolbar>
-        <ToolButton toolId="Select" iconClass="icon-zoom" />
-        <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this.fitToViewCommand} />
-        <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this.windowAreaCommand} />
-        <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this.toggleCameraCommand} />
-        <ToolButton toolId="walk" iconClass="icon-walk" execute={this.walkCommand} />
-        <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this.rotateCommand} />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="Select" iconClass="icon-zoom" />
+            <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this.fitToViewCommand} />
+            <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this.windowAreaCommand} />
+            <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this.toggleCameraCommand} />
+            <ToolButton toolId="walk" iconClass="icon-walk" execute={this.walkCommand} />
+            <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this.rotateCommand} />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Right}>
-        <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-        <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
-        <GroupButton
-          labelKey="SampleApp:buttons.anotherGroup"
-          iconClass="icon-placeholder"
-          items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
-          direction={Direction.Right}
-        />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this.tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this.tool2} />
+            <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+            <GroupButton
+              labelKey="SampleApp:buttons.anotherGroup"
+              iconClass="icon-placeholder"
+              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+              direction={Direction.Right}
+            />
+          </>
+        }
+      />;
 
     return (
       <ToolWidget
@@ -238,16 +267,26 @@ export class ViewsFrontstage {
    */
   private getNavigationWidget(): React.ReactNode {
     const horizontalToolbar =
-      <Toolbar>
-        <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
-        <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-      </Toolbar>;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
+            <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-      <Toolbar expandsTo={Direction.Right}>
-        <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-        <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
-      </Toolbar >;
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+            <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+          </>
+        }
+      />;
 
     return (
       <NavigationWidget

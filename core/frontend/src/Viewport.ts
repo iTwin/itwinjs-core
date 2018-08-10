@@ -400,7 +400,7 @@ export class ViewFrustum {
   /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
    *  modifies the point and vector given
    */
-  private adjustAspectRatio(origin: Point3d, delta: Vector3d) {
+  protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
     const windowAspect = this.viewRect.aspect * this.view.getAspectRatioSkew();
     const viewAspect = delta.x / delta.y;
 
@@ -1825,6 +1825,7 @@ export class Viewport {
 export class OffScreenViewport extends Viewport {
   public constructor(viewState: ViewState) {
     super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+    this.sync.setValidDecorations();  // decorations are not incorporated offscreen
   }
 
   public get viewRect(): ViewRect { return this.target.viewRect; }

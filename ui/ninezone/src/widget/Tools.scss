@@ -22,19 +22,19 @@
     grid-template-areas: "htools button" "  .    vtools";
   }
 
-  & > * {
+  > * {
     pointer-events: auto;
   }
 
-  & > .nz-app-button {
+  > .nz-app-button {
     grid-area: button;
   }
 
-  & > .nz-horizontal-toolbar {
+  > .nz-horizontal-toolbar {
     grid-area: htools;
   }
 
-  & > .nz-vertical-toolbar {
+  > .nz-vertical-toolbar {
     grid-area: vtools;
   }
 }

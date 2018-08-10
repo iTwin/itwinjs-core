@@ -63,9 +63,13 @@ export class MessageItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 }
@@ -101,9 +105,13 @@ export class PageItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 }
@@ -152,9 +160,14 @@ export class ToolItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon isActive={FrontstageManager.activeToolId === this.toolId} key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        isActive={FrontstageManager.activeToolId === this.toolId}
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 
@@ -202,9 +215,13 @@ export class CommandItemDef extends ItemDefBase {
     const key = (index !== undefined) ? index.toString() : this.id;
 
     return (
-      <ToolbarIcon key={key} onClick={this.execute}>
-        <Icon iconInfo={this.iconInfo} />
-      </ToolbarIcon>
+      <ToolbarIcon
+        key={key}
+        onClick={this.execute}
+        icon={
+          <Icon iconInfo={this.iconInfo} />
+        }
+      />
     );
   }
 }
@@ -218,6 +235,7 @@ export interface ItemButtonState {
  */
 export class CommandButton extends React.Component<CommandItemProps, ItemButtonState> {
 
+  /** hidden */
   public readonly state: Readonly<ItemButtonState>;
 
   constructor(commandItemProps: CommandItemProps) {
@@ -244,6 +262,8 @@ export class CommandButton extends React.Component<CommandItemProps, ItemButtonS
 /** Message Button React Component.
  */
 export class MessageButton extends React.Component<MessageItemProps, ItemButtonState> {
+
+  /** hidden */
   public readonly state: Readonly<ItemButtonState>;
 
   constructor(messageItemProps: MessageItemProps) {
@@ -270,6 +290,8 @@ export class MessageButton extends React.Component<MessageItemProps, ItemButtonS
 /** Page Button React Component.
  */
 export class PageButton extends React.Component<PageItemProps, ItemButtonState> {
+
+  /** hidden */
   public readonly state: Readonly<ItemButtonState>;
 
   constructor(pageItemProps: PageItemProps) {
@@ -301,6 +323,8 @@ export interface ToolItemButtonState {
 /** Tool Button React Component.
  */
 export class ToolButton extends React.Component<ToolItemProps, ToolItemButtonState> {
+
+  /** hidden */
   public readonly state: Readonly<ToolItemButtonState>;
 
   constructor(props: ToolItemProps) {
