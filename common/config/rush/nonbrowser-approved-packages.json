@@ -3,7 +3,7 @@
   "packages": [
     {
       "name": "@bentley/bemetalsmith",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/bentleyjs-tools",
