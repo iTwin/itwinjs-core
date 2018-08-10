@@ -662,15 +662,15 @@ export namespace Attachments {
         return State.Empty;
 
       viewedModel.getOrLoadTileTree();
-      if (viewedModel.tileTree !== undefined)
-        attachment.tree = new Tree2d(viewedModel, attachment, view, viewedModel.tileTree);
-
-      if (viewedModel.loadStatus === TileTree.LoadStatus.Loaded)
+      const loadStatus = viewedModel.loadStatus;
+      if (loadStatus === TileTree.LoadStatus.Loaded) {
+        attachment.tree = new Tree2d(viewedModel, attachment, view, viewedModel.tileTree!);
         return State.Ready;
-      else if (viewedModel.loadStatus === TileTree.LoadStatus.Loading)
+      } else if (loadStatus === TileTree.LoadStatus.Loading) {
         return State.Loading;
-      else
+      } else {
         return State.Empty;
+      }
     }
   }
 

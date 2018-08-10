@@ -27,6 +27,7 @@ The rules are broken into the different parts of the Schema they are validated a
   - Each version component must be zero-padded to two digits (e.g. 01.02.00)
 - A schema reference must specify a three-part version number (in the same format described above)
 - If the schema contains 'dynamic' (case-insensitive) in its name it must apply the **CoreCA:DynamicSchema** custom attribute
+- Classes within the same schema cannot have the same display label
 
 ### Mixin Rules
 
@@ -66,3 +67,7 @@ The rules are broken into the different parts of the Schema they are validated a
 
 - Kind Of Quantities must not use 'PERCENTAGE' or other unitless ratios.
 - Kind Of Quantities must use an SI Unit for their persistence unit.
+
+### Properties
+
+- Properties within the same class and category cannot have the same display label.
