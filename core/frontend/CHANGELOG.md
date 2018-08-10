@@ -1,6 +1,18 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 07 Aug 2018 12:19:22 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Aug 2018 05:06:20 GMT and should not be manually modified.
+
+## 0.113.0
+Fri, 10 Aug 2018 05:06:20 GMT
+
+### Updates
+
+- Fixed bugs in ClipMaskVolume constructor.
+- Fix for 2d views attachments modifying transform of their root view
+- Code cleanup
+- Fix number of varying vectors exceeding maximum on iOS.
+- Fix quantization errors with world decorations located far from the origin.
+- WIP: Turn on stenciling for use in classification of reality meshes.
 
 ## 0.112.0
 Tue, 07 Aug 2018 12:19:22 GMT
