@@ -272,7 +272,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     // NOTE: Non-element hits are only handled by a manipulator that specifically requested them, can be ignored here
-    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
+    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit !== undefined && hit.isElementHit) {
       switch (this.getSelectionMode()) {
         case SelectionMode.Replace:
@@ -313,7 +313,7 @@ export class SelectionTool extends PrimitiveTool {
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
       if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
         const response = new LocateResponse();
-        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport);
+        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
