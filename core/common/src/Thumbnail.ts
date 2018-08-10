@@ -3,23 +3,21 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { ImageSourceFormat } from "./Image";
-
 /**
  * Metadata about a thumbnail. Often this is redundant with information in the image itself, but is held
  * outside of the image so it can be obtained without having to decode the image data.
  */
 export interface ThumbnailFormatProps {
-  /** x size of the image */
+  /** X size of the image */
   width: number;
-  /** y size of image */
+  /** Y size of image */
   height: number;
-  /** format of the image */
-  format: ImageSourceFormat;
+  /** Format of the image */
+  format: "jpeg" | "png";
 }
 
 /** Properties of a thumbnail in an iModel. */
 export interface ThumbnailProps extends ThumbnailFormatProps {
-  /** image data */
+  /** Image data */
   image: Uint8Array;
 }

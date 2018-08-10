@@ -7,7 +7,7 @@ import { Logger, Id64Set, assert, BeDuration } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken,
-  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData,
+  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
@@ -169,5 +169,24 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
     const el = IModelDb.find(iModelToken).elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
+  }
+
+  public async getViewThumbnail(iModelToken: IModelToken, viewId: string): Promise<Uint8Array> {
+    const thumbnail = IModelDb.find(iModelToken).views.getThumbnail(viewId);
+    if (undefined === thumbnail)
+      return Promise.reject(new Error("no thumbnail"));
+
+    // include the metadata in the binary transfer by allocating a new buffer 8 bytes larger
+    const thumbBytes = Math.ceil(thumbnail.image.length / 2) * 2; // must be a multiple of 2.
+    const val = new Uint8Array(thumbBytes + 8);
+    const image = new Uint8Array(val.buffer, 8); // put the image data at offset 8
+    image.set(thumbnail.image);
+
+    const intVals = new Uint16Array(val.buffer); // create a 16 bit array mapped to the val buffer
+    intVals[0] = thumbnail.image.length;
+    intVals[1] = thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png;
+    intVals[2] = thumbnail.width;
+    intVals[3] = thumbnail.height;
+    return val;
   }
 }

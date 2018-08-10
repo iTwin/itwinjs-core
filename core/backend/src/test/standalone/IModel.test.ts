@@ -13,7 +13,7 @@ import {
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement, EntityMetaData, PrimitiveTypeCode, ImageSourceFormat,
+  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement, EntityMetaData, PrimitiveTypeCode,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -572,14 +572,14 @@ describe("iModel", () => {
     assert.exists(thumbnail);
     if (!thumbnail)
       return;
-    assert.equal(thumbnail.format, ImageSourceFormat.Jpeg);
+    assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
     assert.equal(thumbnail.width, 768);
     assert.equal(thumbnail.image!.length, 18062);
 
     thumbnail.width = 100;
     thumbnail.height = 200;
-    thumbnail.format = ImageSourceFormat.Png;
+    thumbnail.format = "png";
     thumbnail.image = new Uint8Array(200);
     thumbnail.image.fill(12);
     const stat = imodel5.views.saveThumbnail(viewId, thumbnail);
@@ -588,7 +588,7 @@ describe("iModel", () => {
     assert.exists(thumbnail2);
     if (!thumbnail2)
       return;
-    assert.equal(thumbnail2.format, ImageSourceFormat.Png);
+    assert.equal(thumbnail2.format, "png");
     assert.equal(thumbnail2.height, 200);
     assert.equal(thumbnail2.width, 100);
     assert.equal(thumbnail2.image!.length, 200);

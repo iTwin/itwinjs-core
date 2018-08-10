@@ -72,4 +72,5 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public cancelSnap(_iModelToken: IModelToken, _connectionId: string): Promise<void> { return this.forward.apply(this, arguments); }
   public loadNativeAsset(_iModelToken: IModelToken, _assetName: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
   public getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward.apply(this, arguments); }
+  public getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
 }
