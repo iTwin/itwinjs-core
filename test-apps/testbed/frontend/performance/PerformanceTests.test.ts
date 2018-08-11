@@ -20,7 +20,7 @@ const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/tes
 //   return new Promise((resolve) => setTimeout(resolve, ms));
 // }
 
-function resolveAfter5Seconds(ms: number) { // must call await before this function!!!
+function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
@@ -35,7 +35,7 @@ function createWindow() {
 }
 
 async function waitForTilesToLoad() {
-  theViewport!.continuousRendering = false; // true;
+  theViewport!.continuousRendering = false; // false; // true;
   const viewManager = IModelApp.viewManager;
   // Start timer for tile loading time
   const timer = new StopWatch(undefined, true);
@@ -51,20 +51,27 @@ async function waitForTilesToLoad() {
     await theViewport!.renderFrame(plan);
     // viewport.RenderQueue().WaitForIdle(); // viewManager.processIdle();
     console.log("----waiting for tiles to load, finished renderFrame"); // tslint:disable-line
-    haveNewTiles = viewManager.sceneInvalidated && activeViewState.viewState!.areAllTileTreesLoaded;
-    if (!haveNewTiles || viewManager.numTilesLoading === 0) {
-      console.log("----haveNewTiles = " + haveNewTiles); // tslint:disable-line
-      console.log("----numTilesLoading = " + viewManager.numTilesLoading); // tslint:disable-line
-      // sleep(10000);
-      haveNewTiles = viewManager.sceneInvalidated;
-    }
+    // haveNewTiles = viewManager.sceneInvalidated && activeViewState.viewState!.areAllTileTreesLoaded;
+    // if (!haveNewTiles || viewManager.numTilesLoading === 0) {
+    //   console.log("----haveNewTiles = " + haveNewTiles); // tslint:disable-line
+    //   console.log("----numTilesLoading = " + viewManager.numTilesLoading); // tslint:disable-line
+    //   // sleep(10000);
+    //   haveNewTiles = viewManager.sceneInvalidated;
+    // }
+    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.1) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    // await resolveAfterXMilSeconds(20000);
+    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.1) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+
     const requests = new TileRequests();
     const sceneContext = new SceneContext(theViewport!, requests);
     activeViewState.viewState!.createScene(sceneContext);
     requests.requestMissing();
+    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    // await resolveAfterXMilSeconds(20000);
+    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles; // || viewManager.numTilesLoading > 0;
     // savePng();
     console.log("---------Are all tiles loaded???? " + !haveNewTiles); // tslint:disable-line
 
@@ -80,11 +87,11 @@ async function waitForTilesToLoad() {
     // // for (let i = 0; i < 21; ++i) {
     // await theViewport!.sync.setRedrawPending;
     // await theViewport!.renderFrame(plan);
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
-    await resolveAfter5Seconds(10000);
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.3) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    await resolveAfterXMilSeconds(2000);
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.3) " + BeTimePoint.now().milliseconds); // tslint:disable-line
     // await sleep(10000);
-    await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
+    // await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
   }
   theViewport!.continuousRendering = false;
   const plan = new UpdatePlan();
@@ -339,14 +346,16 @@ async function mainBody() {
 
   await console.log("///////////////////////////////// start extra renderFrames"); // tslint:disable-line
 
-  for (let i = 0; i < 21; ++i) {
+  for (let i = 0; i < 20; ++i) {
     await console.log("///////////////////////////////// extra renderFrames " + i); // tslint:disable-line
+    (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
     await theViewport!.sync.setRedrawPending;
+    await theViewport!.sync.invalidateScene();
     await theViewport!.renderFrame(plan);
     await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
   }
 
-  savePng();
+  // savePng();
 
   await console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
@@ -495,11 +504,11 @@ describe("PerformanceTests - 1", () => {
 
     mainBody().then((_result) => {
       console.log("/////////////////////////////////  -- inside .then() function"); // tslint:disable-line
+      done();
     }).catch((_error) => {
       console.log("/////////////////////////////////  -- error happened!!"); // tslint:disable-line
     });
     console.log("/////////////////////////////////  -- after async"); // tslint:disable-line
-    done();
   });
 
 });
