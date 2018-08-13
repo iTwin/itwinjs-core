@@ -163,7 +163,7 @@ export class WidgetDef {
   public get widgetControl(): WidgetControl | undefined {
     // TODO - should call getConfigurable if widget is sharable
     if (!this._widgetControl) {
-      this._widgetControl = ConfigurableUiManager.createConfigurable(this.classId, this.id) as WidgetControl;
+      this._widgetControl = ConfigurableUiManager.createConfigurable(this.classId, this.id, this.applicationData) as WidgetControl;
       if (this._widgetControl) {
         this._widgetControl.widgetDef = this;
       }

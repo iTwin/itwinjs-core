@@ -2,14 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import Group from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
+// import Group from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
 // import Title from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Title";
 import Panel from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Panel";
 import Column from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
 import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-import ExpandableItem from "@bentley/ui-ninezone/lib/toolbar/item/expandable/Expandable";
+// import ExpandableItem from "@bentley/ui-ninezone/lib/toolbar/item/expandable/Expandable";
 import WithContainInViewport from "@bentley/ui-ninezone/lib/base/WithContainInViewport";
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+// import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import * as classnames from "classnames";
 
 import "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool.scss";
@@ -18,7 +18,7 @@ import "./ListPicker.scss";
 import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line:variable-name
-const ContainedGroup = WithContainInViewport(Group);
+// const ContainedGroup = WithContainInViewport(Group);
 
 export enum ListItemType {
   Item = 0,
@@ -34,7 +34,7 @@ export interface ListItem {
   children?: ListItem[];
 }
 
-export interface ListPickerProps {
+export interface ListPickerWidgetProps {
   title: string;
   items: ListItem[];
   iconClass?: string;
@@ -42,13 +42,13 @@ export interface ListPickerProps {
   onExpanded?: (expand: boolean) => void;
 }
 
-export interface ListPickerState {
+export interface ListPickerWidgetState {
   expanded: boolean;
 }
 
-let lastOpenedPicker: ListPickerBase | undefined;
+let lastOpenedPicker: ListPickerWidgetBase | undefined;
 
-export interface ListPickerItemProps extends CommonProps {
+export interface ListPickerWidgetItemProps extends CommonProps {
   key: any;
   isActive?: boolean;
   isFocused?: boolean;
@@ -56,10 +56,10 @@ export interface ListPickerItemProps extends CommonProps {
   label?: string;
 }
 
-export class ListPickerItem extends React.Component<ListPickerItemProps> {
+export class ListPickerWidgetItem extends React.Component<ListPickerWidgetItemProps> {
   public render() {
     const itemClassName = classnames(
-      "ListPicker-item",
+      "ListPickerWidget-item",
       this.props.isActive && "is-active",
       this.props.isFocused && "is-focused",
       this.props.className,
@@ -98,7 +98,7 @@ export class ExpandableSection extends React.Component<ExpandableSectionProps, a
     const icon = this.state.expanded ? <i className="icon icon-chevron-down" /> : <i className="icon icon-chevron-right" />;
 
     return (
-      <Panel className={className} style={this.props.style} key={this.props.title}>
+      <Panel className={className} style={this.props.style} key={this.props.title} >
         <div onClick={onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
           <div className="ListPickerInnerContainer-header-content">
             <div className="ListPickerInnerContainer-expander">{icon}</div>
@@ -108,9 +108,9 @@ export class ExpandableSection extends React.Component<ExpandableSectionProps, a
         {this.state.expanded ?
           <Column>
             {this.props.children}
-          </Column> : <div />
+          </Column > : <div />
         }
-      </Panel>
+      </Panel >
     );
   }
 }
@@ -120,7 +120,7 @@ const ContainedExpandableSection = WithContainInViewport(ExpandableSection);
 
 // List picker class
 // Used to provide an expandable list of items to enable/disable items
-export class ListPickerBase extends React.Component<ListPickerProps, ListPickerState> {
+export class ListPickerWidgetBase extends React.Component<ListPickerWidgetProps, ListPickerWidgetState> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -166,29 +166,28 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
 
   public render() {
     return (
-      <ExpandableItem
-        {...this.props}
-        panel={this.getExpandedContent()}>
-        <ToolbarIcon onClick={this.toggleIsExpanded}
-          icon={
-            <i className={"icon " + (this.props.iconClass ? this.props.iconClass : "icon-list")} />
-          }
-        />
-      </ExpandableItem>
+      <div
+        children={
+          <div>
+            <div className="ListPickerWidget-title" >{this.props.title}</div>
+            {this.getExpandedContent()}
+          </div>
+        }
+      />
     );
   }
 
   // Returns the list with the items
   public getExpandedContent() {
-    if (!this.state.expanded)
-      return undefined;
+    // if (!this.state.expanded)
+    //   return undefined;
 
     let listItemToElement: (item: ListItem, itemIndex: number) => any;
     listItemToElement = (item: ListItem, itemIndex: number) => {
       switch (item.type) {
         case ListItemType.Item:
           return (
-            <ListPickerItem
+            <ListPickerWidgetItem
               {...this.props}
               key={itemIndex.toString()}
               ref={itemIndex.toString()}
@@ -202,38 +201,34 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
             <div key={itemIndex.toString()} className="ListPicker-seperator" />
           );
         case ListItemType.Container:
-          if (item.children!.length !== 0) {
-            return (
-              <ContainedExpandableSection
-                title={item.name}
-                className="ListPickerInnerContainer"
-                noVerticalContainment={true}>
-                <Column>
-                  {item.children!.map(listItemToElement)}
-                </Column>
-              </ContainedExpandableSection>
-            );
-          } else {
-            return (<div />);
-          }
+          return (
+            <ContainedExpandableSection
+              title={item.name}
+              className="ListPickerInnerContainer"
+              noVerticalContainment={true}>
+              <Column>
+                {item.children!.map(listItemToElement)}
+              </Column>
+            </ContainedExpandableSection>
+          );
       }
     };
 
     return (
-      <ContainedGroup
+      <div
         title={this.props.title}
-        className="ListPickerContainer"
-        noVerticalContainment={true}
-        columns={
-          <Column className="ListPicker-column">
+        // noVerticalContainment={true}
+        children={
+          <Column>
             {this.props.items.map(listItemToElement)}
-          </Column>}
+          </Column>
+        }
       />
     );
   }
 }
 
-export interface ListPickerPropsExtended extends ListPickerProps {
+export interface ListPickerPropsExtended extends ListPickerWidgetProps {
   enableAllFunc?: () => void;
   disableAllFunc?: () => void;
   invertFunc?: () => void;
@@ -316,7 +311,7 @@ export default class ListPicker extends React.Component<ListPickerPropsExtended,
     };
 
     return (
-      <ListPickerBase
+      <ListPickerWidgetBase
         {...this.props}
         title={this.props.title}
         setEnabled={setEnabled}

@@ -1,8 +1,22 @@
 import * as React from "react";
-import ListPicker, { ListItem, ListItemType } from "./ListPicker";
+import ListPickerWidget, { ListItem, ListItemType } from "./ListPickerWidget";
 import { IModelApp, Viewport, ViewState } from "@bentley/imodeljs-frontend/lib/frontend";
 import { UiFramework } from "../UiFramework";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { WidgetControl } from "../configurableui/WidgetControl";
 
+export class CategorySelectorDemoWidget extends WidgetControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    const thing = options.iModel;
+    this.reactElement = <CategorySelectorWidget widgetControl={this} imodel={thing} />;
+  }
+}
+
+// Select categories in a viewport or all viewports of the current selected type (e.g. 3D/2D)
+// Pass 'allViewports' property to ripple category changes to all viewports
 export class CategorySelectorWidget extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
@@ -12,6 +26,12 @@ export class CategorySelectorWidget extends React.Component<any, any> {
       title: UiFramework.i18n.translate("UiFramework:categoriesModels.categories"),
       initialized: false,
     };
+
+    const viewportChanged = (_previous: Viewport | undefined, _current: Viewport | undefined) => {
+      if (_current)
+        this.updateStateWithViewport(_current);
+    };
+    IModelApp.viewManager.onSelectedViewportChanged.addListener(viewportChanged);
 
     this.updateState();
   }
@@ -43,7 +63,7 @@ export class CategorySelectorWidget extends React.Component<any, any> {
   }
 
   public async updateState() {
-    const vp = IModelApp.viewManager.getFirstOpenView();
+    const vp = IModelApp.viewManager.selectedView;
     if (vp)
       this.updateStateWithViewport(vp);
   }
@@ -54,18 +74,24 @@ export class CategorySelectorWidget extends React.Component<any, any> {
 
     // Change the category
     const setEnabled = (item: ListItem, enabled: boolean) => {
-      IModelApp.viewManager.forEachViewport((vp: Viewport) => {
-        const view: ViewState = vp.view.clone();
-        view.categorySelector.changeCategoryDisplay(item.key, enabled);
-        vp.changeView(view);
-      });
-
-      this.updateState();
-    };
-
-    // Hook on the category selector being expanded so that we may initialize if needed
-    const onExpanded = (_expand: boolean) => {
-      this.updateState();
+      if (!IModelApp.viewManager.selectedView)
+        return;
+      const updateViewport = (vp: Viewport) => {
+        // Only act on viewports that are both 3D or both 2D. Important if we have multiple viewports opened and we
+        // are using 'allViewports' property
+        if (IModelApp.viewManager.selectedView && IModelApp.viewManager.selectedView.view.is3d() === vp.view.is3d()) {
+          const view: ViewState = vp.view.clone();
+          view.categorySelector.changeCategoryDisplay(item.key, enabled);
+          vp.changeView(view);
+        }
+      };
+      // This property let us act on all viewports or just on the selected one, configurable by the app
+      if (this.props.allViewports) {
+        IModelApp.viewManager.forEachViewport(updateViewport);
+      } else if (IModelApp.viewManager.selectedView) {
+        updateViewport(IModelApp.viewManager.selectedView);
+      }
+      this.updateStateWithViewport(IModelApp.viewManager.selectedView);
     };
 
     const self = this;
@@ -112,13 +138,12 @@ export class CategorySelectorWidget extends React.Component<any, any> {
     };
 
     return (
-      <ListPicker
+      <ListPickerWidget
         {...this.props}
         title={this.state.title}
         setEnabled={setEnabled}
         items={this.state.items}
         iconClass={"icon-layers"}
-        onExpanded={onExpanded}
         enableAllFunc={enableAll}
         disableAllFunc={disableAll}
         invertFunc={invert}
@@ -126,3 +151,5 @@ export class CategorySelectorWidget extends React.Component<any, any> {
     );
   }
 }
+
+ConfigurableUiManager.registerControl("CategorySelectorWidget", CategorySelectorDemoWidget);

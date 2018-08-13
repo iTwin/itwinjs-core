@@ -25,6 +25,11 @@ import { AppUi } from "../AppUi";
 import { ViewportManager } from "@bentley/ui-components";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
+import { SampleAppIModelApp } from "../../../frontend/index";
+import ViewListWidget from "@bentley/ui-framework/lib/pickers/ViewList";
+// import ModelSelectorWidget from "@bentley/ui-framework/lib/pickers/ModelSelector";
+// import { CategorySelectorWidget } from "@bentley/ui-framework/lib/pickers/CategorySelector";
+
 export class ViewsFrontstage {
 
   constructor(public viewIds: Id64Props[], private _iModelConnection: IModelConnection) {
@@ -92,7 +97,7 @@ export class ViewsFrontstage {
         ],
       },
       centerRight: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
@@ -106,6 +111,20 @@ export class ViewsFrontstage {
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
+          },
+          {
+            classId: "ModelSelectorWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-3d-cube",
+            labelKey: "SampleApp:Test.my-label",
+            applicationData: { iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection },
+          },
+          {
+            classId: "CategorySelectorWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-layers",
+            labelKey: "SampleApp:Test.my-label",
+            applicationData: { iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection },
           },
         ],
       },
@@ -273,6 +292,9 @@ export class ViewsFrontstage {
           <>
             <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
             <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+            <ViewListWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
+            {/* <ModelSelectorWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
+             <CategorySelectorWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} /> */}
           </>
         }
       />;

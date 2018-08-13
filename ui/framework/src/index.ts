@@ -13,6 +13,9 @@ export * from "./clientservices/LoginServices";
 export * from "./clientservices/ProjectServices";
 export * from "./clientservices/IModelServices";
 export * from "./configurableui";
+export * from "./pickers/ViewList";
+export * from "./pickers/ModelSelector";
+export * from "./pickers/CategorySelector";
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,

@@ -1,8 +1,20 @@
 import * as React from "react";
-import ListPicker, { ListItem, ListItemType } from "./ListPicker";
+import ListPickerWidget, { ListItem, ListItemType } from "./ListPickerWidget";
 import { IModelApp, Viewport, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend/lib/frontend";
 import { ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
 import { UiFramework } from "../UiFramework";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { WidgetControl } from "../configurableui/WidgetControl";
+
+export class ModelSelectorDemoWidget extends WidgetControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    const thing = options.iModel;
+    this.reactElement = <ModelSelectorWidget widgetControl={this} imodel={thing} />;
+  }
+}
 
 export default class ModelSelectorWidget extends React.Component<any, any> {
   constructor(props: any) {
@@ -13,6 +25,13 @@ export default class ModelSelectorWidget extends React.Component<any, any> {
       title: UiFramework.i18n.translate("UiFramework:categoriesModels.models"),
       initialized: false,
     };
+
+    // Update viewed models on selected viewport changed
+    const viewportChanged = (_previous: Viewport | undefined, _current: Viewport | undefined) => {
+      if (_current)
+        this.updateStateWithViewport(_current);
+    };
+    IModelApp.viewManager.onSelectedViewportChanged.addListener(viewportChanged);
 
     this.updateState();
   }
@@ -78,11 +97,6 @@ export default class ModelSelectorWidget extends React.Component<any, any> {
       this.updateState();
     };
 
-    // Hook on the category selector being expanded so that we may initialize if needed
-    const onExpanded = (_expand: boolean) => {
-      this.updateState();
-    };
-
     const self = this;
     // Enable all categories
     const enableAll = () => {
@@ -127,13 +141,12 @@ export default class ModelSelectorWidget extends React.Component<any, any> {
     };
 
     return (
-      <ListPicker
+      <ListPickerWidget
         {...this.props}
         title={this.state.title}
         setEnabled={setEnabled}
         items={this.state.items}
         iconClass={"icon-3d-cube"}
-        onExpanded={onExpanded}
         enableAllFunc={enableAll}
         disableAllFunc={disableAll}
         invertFunc={invert}
@@ -141,3 +154,5 @@ export default class ModelSelectorWidget extends React.Component<any, any> {
     );
   }
 }
+
+ConfigurableUiManager.registerControl("ModelSelectorWidget", ModelSelectorDemoWidget);

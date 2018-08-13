@@ -56,6 +56,8 @@
   "savedViews": {
     "views": "Views",
     "spatialViews": "Spatial Views",
-    "drawings": "Drawings"
+    "drawings": "Drawings",
+    "sheets": "Sheets",
+    "others": "Others"
   }
 }
