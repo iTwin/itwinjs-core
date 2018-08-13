@@ -5,13 +5,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import "./Indicator.scss";
 
 /** Properties of [[SnapModeIndicator]] component. */
 export interface SnapModeIndicatorProps extends CommonProps, NoChildrenProps {
-  /** Dialog that is opened when indicator is clicked. */
+  /** Dialog that is opened when indicator is clicked. See [[SnapModeDialog]] */
   dialog?: React.ReactChild;
   /** Indicator icon. I.e. [[SnapModeIcon]] */
   icon?: React.ReactNode;
@@ -19,8 +18,8 @@ export interface SnapModeIndicatorProps extends CommonProps, NoChildrenProps {
   isLabelVisible?: boolean;
   /** Indicator label. */
   label?: string;
-  /** Function called when label is clicked. */
-  onIndicatorClick?: () => void;
+  /** Function called when indicator is clicked. */
+  onClick?: () => void;
 }
 
 /** One of [[Footer]] indicators. */
@@ -57,6 +56,6 @@ export default class SnapModeIndicator extends React.Component<SnapModeIndicator
   }
 
   private handleOnIndicatorClick = () => {
-    this.props.onIndicatorClick && this.props.onIndicatorClick();
+    this.props.onClick && this.props.onClick();
   }
 }

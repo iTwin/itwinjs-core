@@ -1,0 +1,75 @@
+{
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "getFilteredNodePaths",
+  "rules": [{
+    "ruleType": "RootNodes",
+    "specifications": [{
+      "specType": "CustomNode",
+      "label": "filter r1",
+      "type": "nodeType",
+      "imageId": "imageId",
+      "description": "description",
+      "nestedRules": [{
+        "ruleType": "ChildNodes",
+        "specifications": [{
+          "specType": "CustomNode",
+          "label": "filter ch1",
+          "type": "nodeType",
+          "imageId": "imageId",
+          "description": "description"
+          }, {
+          "specType": "CustomNode",
+          "label": "other ch2",
+          "type": "nodeType",
+          "imageId": "imageId",
+          "description": "description"
+          }, {
+          "specType": "CustomNode",
+          "label": "other ch3",
+          "type": "nodeType",
+          "imageId": "imageId",
+          "description": "description",
+          "nestedRules": [{
+            "ruleType": "ChildNodes",
+            "specifications": [{
+              "specType": "CustomNode",
+              "label": "filter ch4",
+              "type": "nodeType",
+              "imageId": "imageId",
+              "description": "description"
+            }]
+          }]
+        }]
+      }]
+    },
+    {
+      "specType": "CustomNode",
+      "label": "other r2",
+      "type": "nodeType",
+      "imageId": "imageId",
+      "description": "description"
+    },{
+      "specType": "CustomNode",
+      "label": "other r3",
+      "type": "nodeType",
+      "imageId": "imageId",
+      "description": "description",
+      "nestedRules": [{
+        "ruleType": "ChildNodes",
+        "specifications": [{
+          "specType": "CustomNode",
+          "label": "other ch5",
+          "type": "nodeType",
+          "imageId": "imageId",
+          "description": "description"
+        },{
+          "specType": "CustomNode",
+          "label": "filter ch6",
+          "type": "nodeType",
+          "imageId": "imageId",
+          "description": "description"
+        }]
+      }]
+    }]
+  }]
+}

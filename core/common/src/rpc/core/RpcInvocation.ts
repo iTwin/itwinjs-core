@@ -77,6 +77,12 @@ export class RpcInvocation {
     try {
       try {
         this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
+
+        const backend = this.operation.interfaceVersion;
+        const frontend = this.request.operation.interfaceVersion;
+        if (backend !== frontend) {
+          throw new IModelError(BentleyStatus.ERROR, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
+        }
       } catch (error) {
         if (this.handleUnknownOperation(error)) {
           this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
@@ -117,7 +123,7 @@ export class RpcInvocation {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
 
-    if (value instanceof ArrayBuffer) {
+    if (value instanceof Uint8Array) {
       return this.fulfill(value, RpcResponseType.Binary);
     } else {
       const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
@@ -147,7 +153,7 @@ export class RpcInvocation {
     return this.fulfill(result, RpcResponseType.Text);
   }
 
-  private fulfill(result: string | ArrayBuffer, type: RpcResponseType): RpcRequestFulfillment {
+  private fulfill(result: string | Uint8Array, type: RpcResponseType): RpcRequestFulfillment {
     const fulfillment = {
       result,
       status: this.protocol.getCode(this.status),

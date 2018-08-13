@@ -25,7 +25,7 @@ import MessageLabel from "@bentley/ui-ninezone/lib/footer/message/content/Label"
 import MessageButton from "@bentley/ui-ninezone/lib/footer/message/content/Button";
 import MessageStatus from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
 // import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
-import Button from "@bentley/ui-ninezone/lib/buttons/Button";
+import { BlueButton as Button } from "@bentley/bwc/lib/buttons/BlueButton";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend/lib/frontend";
 
 import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
@@ -68,6 +68,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     return MessageStatus.Information;
   }
 
+  /** hidden */
   public readonly state: Readonly<StatusBarState> = {
     openWidget: null,
     visibleMessage: StatusBarMessageType.None,
@@ -149,25 +150,28 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
               <ModalMessageDialog
                 content={
                   <DialogButtonsContent
-                    content={
-                      <DialogScrollableContent>
-                        <MessageContainer severity={severity} >
-                          {this.state.messageDetails.briefMessage}
-                          {
-                            this.state.messageDetails.detailedMessage && (
-                              <p>
-                                {this.state.messageDetails.detailedMessage}
-                              </p>
-                            )
-                          }
-                        </MessageContainer>
-                      </DialogScrollableContent>
+                    buttons={
+                      <Button onClick={this.hideMessages}>
+                        {UiFramework.i18n.translate("UiCore:dialog.close")}
+                      </Button>
                     }
-                  >
-                    <Button onClick={this.hideMessages}>
-                      {UiFramework.i18n.translate("UiCore:dialog.close")}
-                    </Button>
-                  </DialogButtonsContent>
+                    content={
+                      <DialogScrollableContent
+                        content={
+                          <MessageContainer severity={severity} >
+                            {this.state.messageDetails.briefMessage}
+                            {
+                              this.state.messageDetails.detailedMessage && (
+                                <p>
+                                  {this.state.messageDetails.detailedMessage}
+                                </p>
+                              )
+                            }
+                          </MessageContainer>
+                        }
+                      />
+                    }
+                  />
                 }
               />
             }
@@ -184,28 +188,29 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
             onStageChange={(stage: ToastMessageStage) => {
               this.setState((_prevState) => ({ toastMessageStage: stage }));
             }}
-          >
-            <StatusMessageContent
-              status={StatusBar.severityToStatus(severity)}
-              icon={
-                <i className={`icon ${MessageContainer.getIconClassName(severity)}`} />
-              }
-            >
-              <StatusMessageLayout
-                label={
-                  <>
-                    <MessageLabel>{this.state.messageDetails.briefMessage}</MessageLabel>
-                    {this.state.messageDetails.detailedMessage &&
-                      <>
-                        <br />
-                        <MessageLabel>{this.state.messageDetails.detailedMessage}</MessageLabel>
-                      </>
-                    }
-                  </>
+            content={
+              <StatusMessageContent
+                status={StatusBar.severityToStatus(severity)}
+                icon={
+                  <i className={`icon ${MessageContainer.getIconClassName(severity)}`} />
                 }
-              />
-            </StatusMessageContent>
-          </ToastMessage>
+              >
+                <StatusMessageLayout
+                  label={
+                    <>
+                      <MessageLabel text={this.state.messageDetails.briefMessage} />
+                      {this.state.messageDetails.detailedMessage &&
+                        <>
+                          <br />
+                          <MessageLabel text={this.state.messageDetails.detailedMessage} />
+                        </>
+                      }
+                    </>
+                  }
+                />
+              </StatusMessageContent>
+            }
+          />
         );
       }
       case (StatusBarMessageType.Sticky): {
@@ -220,11 +225,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
               <StatusMessageLayout
                 label={
                   <>
-                    <MessageLabel>{this.state.messageDetails.briefMessage}</MessageLabel>
+                    <MessageLabel text={this.state.messageDetails.briefMessage} />
                     {this.state.messageDetails.detailedMessage &&
                       <>
                         <br />
-                        <MessageLabel>{this.state.messageDetails.detailedMessage}</MessageLabel>
+                        <MessageLabel text={this.state.messageDetails.detailedMessage} />
                       </>
                     }
                   </>

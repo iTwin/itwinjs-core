@@ -3,46 +3,32 @@
 exports[`<Tray /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-tray nz-direction-left"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
 >
   <div
     className="nz-items"
   />
   <div
-    className="nz-tab"
-  >
-    <div
-      className="nz-triangle"
-    />
-  </div>
+    className="nz-extend-indicator"
+  />
 </div>
 `;
 
-exports[`<Tray /> renders expanded 1`] = `
+exports[`<Tray /> renders extended 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
 >
   <div
     className="nz-items"
   />
   <div
-    className="nz-tab"
-  >
-    <div
-      className="nz-triangle"
-    />
-  </div>
+    className="nz-extend-indicator"
+  />
 </div>
 `;
 
-exports[`<Tray /> renders tabs 1`] = `
+exports[`<Tray /> renders items 1`] = `
 <div
-  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-tab-is-visible"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
 >
   <div
     className="nz-items"
@@ -51,11 +37,7 @@ exports[`<Tray /> renders tabs 1`] = `
     <br />
   </div>
   <div
-    className="nz-tab"
-  >
-    <div
-      className="nz-triangle"
-    />
-  </div>
+    className="nz-extend-indicator"
+  />
 </div>
 `;

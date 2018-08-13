@@ -7,8 +7,9 @@ import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   RotMatrix, Transform, Map4d, Point4d, Constant, XYAndZ,
 } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -345,51 +346,18 @@ export class DecorationAnimator implements ViewportAnimator {
 }
 
 /**
- * A Viewport renders one or more Models onto an `HTMLCanvasElement`.
- *
- * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
- * modify the ViewState object. Changes to the ViewState are only reflected in a Viewport after the
- * [[synchWithView]] method is called.
- *
- * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
- * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
+ * A ViewFrustum holds information about a frustum used by a Viewport.
  */
-export class Viewport {
-  private _doContinuousRendering = false;
-  private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
+export class ViewFrustum {
+  private static get2dFrustumDepth() { return Constant.oneMeter; }
+
   private readonly viewCorners: Range3d = new Range3d();
-  private animator?: Animator;
-  /** Time the current flash started */
-  public flashUpdateTime?: BeTimePoint;
-  /** Current flash intensity from [0..1] */
-  public flashIntensity = 0;
-  /** The length of time that the flash intensity will increase (in seconds) */
-  public flashDuration = 0;
-  private flashedElem?: string;         // id of currently flashed element
-  /** Id of last flashed element */
-  public lastFlashedElem?: string;
-  private _viewCmdTargetCenter?: Point3d;
+  private readonly _aspectRatioLocked: boolean;
   /** @hidden */
   public frustFraction: number = 1.0;
-  /** The number of entries in the view undo/redo buffer. */
-  public maxUndoSteps = 20;
-  private readonly forwardStack: ViewState[] = [];
-  private readonly backStack: ViewState[] = [];
-  private currentBaseline?: ViewState;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
   public static nearScale24 = 0.0003;
-  /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
-  public static undoDelay = BeDuration.fromSeconds(.5);
-  private _evController?: EventController;
-  private _view!: ViewState;
-  private _addFeatureOverrides?: AddFeatureOverrides;
-  private _wantTileBoundingBoxes: boolean = false;
 
-  /** @hidden */
-  public readonly target: RenderTarget;
-  private static get2dFrustumDepth() { return Constant.oneMeter; }
-  /** @hidden */
-  public readonly sync = new SyncFlags();
   /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
   /** View delta, potentially expanded */
@@ -404,6 +372,492 @@ export class Viewport {
   public readonly worldToViewMap = Map4d.createIdentity();
   /** @hidden */
   public readonly worldToNpcMap = Map4d.createIdentity();
+
+  public readonly zClipAdjusted: boolean = false;    // were the view z clip planes adjusted due to front/back clipping off?
+  public readonly invalidFrustum: boolean = false;
+
+  private _view: ViewState;
+
+  /** The ViewState for this Viewport */
+  public get view(): ViewState { return this._view; }
+  public set view(view: ViewState) { this._view = view; }
+
+  private readonly _viewRange: ViewRect = new ViewRect();
+
+  private readonly _clientWidth: number;
+  private readonly _clientHeight: number;
+
+  private readonly _displayedPlane: Plane3dByOriginAndUnitNormal | undefined;
+
+  /** Get the rectangle of this Viewport in ViewCoordinates. */
+  private get viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
+
+  private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
+  /** @hidden */
+  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(ViewFrustum.copyOutput(from, to)); }
+  /** @hidden */
+  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(ViewFrustum.copyOutput(from, to)); }
+
+  /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
+   *  modifies the point and vector given
+   */
+  protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
+    if (this._aspectRatioLocked)
+      return;
+
+    const windowAspect = this.viewRect.aspect * this.view.getAspectRatioSkew();
+    const viewAspect = delta.x / delta.y;
+
+    if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
+      return;
+
+    const oldDelta = delta.clone();
+    if (viewAspect > windowAspect)
+      delta.y = delta.x / windowAspect;
+    else
+      delta.x = delta.y * windowAspect;
+
+    const newOrigin = origin.clone();
+    this.toView(newOrigin);
+    newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
+    newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
+    this.fromView(newOrigin, origin);
+  }
+
+  /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
+  private alignWithRootZ() {
+    const zUp = Vector3d.unitZ();
+    if (zUp.isAlmostEqual(this.rotMatrix.rowZ()))
+      return;
+    const r = this.rotMatrix.transpose();
+    r.setColumn(2, zUp);
+    RotMatrix.createRigidFromRotMatrix(r, AxisOrder.ZXY, r);
+    r.transpose(this.rotMatrix);
+    this.view.setRotation(this.rotMatrix); // Don't let viewState and viewport rotation be different.
+  }
+
+  private validateCamera() {
+    const view = this.view;
+    if (!view.is3d())
+      return;
+
+    const camera = view.camera;
+    camera.validateLens();
+    if (camera.isFocusValid())
+      return;
+
+    const vDelta = view.getExtents();
+    const maxDelta = vDelta.x > vDelta.y ? vDelta.x : vDelta.y;
+    let focusDistance = maxDelta / (2.0 * Math.tan(camera.getLensAngle().radians / 2.0));
+
+    if (focusDistance < vDelta.z / 2.0)
+      focusDistance = vDelta.z / 2.0;
+
+    const eyePoint = new Point3d(vDelta.x / 2.0, vDelta.y / 2.0, (vDelta.z / 2.0) + focusDistance);
+
+    this.fromView(eyePoint);
+    eyePoint.plus(view.getOrigin(), eyePoint);
+    camera.setEyePoint(eyePoint);
+    camera.setFocusDistance(focusDistance);
+  }
+
+  /** Adjust the front and back planes to encompass the entire viewed volume */
+  private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
+    const view = this.view;
+    if (!view.is3d()) // only necessary for 3d views
+      return;
+
+    let extents = view.getViewedExtents() as Range3d;
+
+    this.extendRangeForDisplayedPlane(extents);
+
+    if (extents.isNull())
+      return;
+
+    // convert viewed extents in world coordinates to min/max in view aligned coordinates
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
+    const extFrust = Frustum.fromRange(extents);
+    extFrust.multiply(viewTransform);
+    extents = extFrust.toRange();
+
+    this.rotMatrix.multiplyVectorInPlace(origin);       // put origin in view coordinates
+    origin.z = extents.low.z;           // set origin to back of viewed extents
+    delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
+    this.rotMatrix.multiplyTransposeVectorInPlace(origin);
+
+    if (!view.isCameraOn())
+      return;
+
+    // if the camera is on, we need to make sure that the viewed volume is not behind the eye
+    const eyeOrg = view.camera.getEyePoint().minus(origin);
+    this.rotMatrix.multiplyVectorInPlace(eyeOrg);
+
+    // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
+    // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
+    if (eyeOrg.z < 1.0) {
+      this.rotMatrix.multiplyVectorInPlace(origin);
+      origin.z -= (2.0 - eyeOrg.z);
+      this.rotMatrix.multiplyTransposeVectorInPlace(origin);
+      delta.z = 1.0;
+      return;
+    }
+
+    // if part of the viewed extents are behind the eye, don't include that.
+    if (delta.z > eyeOrg.z)
+      delta.z = eyeOrg.z;
+  }
+  private extendRangeForDisplayedPlane(extents: Range3d) {
+    const view = this.view;
+    if (!view.is3d()) // only necessary for 3d views
+      return;
+
+    if (this._displayedPlane === undefined)
+      return;
+
+    const planeNormal = this._displayedPlane.getNormalRef();
+    const viewZ = this.rotMatrix.getRow(2);
+    const onPlane = viewZ.crossProduct(planeNormal);   // vector on display plane.
+    if (onPlane.magnitude() > 1.0E-8) {
+      const intersect = new Point3d();
+      const frustum = new Frustum();
+      let includeHorizon = false;
+      const worldToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOrigin, this.viewDelta).map as Map4d;
+      const minimumEyeDistance = 10.0;
+      const horizonDistance = 10000;
+      worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
+
+      for (let i = 0; i < 4; i++) {
+        const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
+        const intersectDistance = frustumRay.intersectionWithPlane(this._displayedPlane, intersect);
+        if (intersectDistance !== undefined && (!view.isCameraOn() || intersectDistance > 0.0))
+          extents.extend(intersect);
+        else includeHorizon = true;
+      }
+      if (includeHorizon) {
+        const rangeCenter = extents.fractionToPoint(.5, .5, .5);
+        const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
+        extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
+      }
+      if (view.isCameraOn()) {
+        extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
+      }
+
+    } else {
+      // display plane parallel to view....
+      extents.extend(this._displayedPlane.getOriginRef().plusScaled(planeNormal, -1.0));
+      extents.extend(this._displayedPlane.getOriginRef().plusScaled(planeNormal, 1.0));
+    }
+  }
+  private calcNpcToView(): Map4d {
+    const corners = this.getViewCorners();
+    const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
+    assert(undefined !== map, "undefined npcToViewMap");
+    return undefined === map ? Map4d.createIdentity() : map;
+  }
+
+  /* Get the extents of this view, in ViewCoordinates, as a Range3d */
+  public getViewCorners(): Range3d {
+    const corners = this.viewCorners;
+    const viewRect = this.viewRect;
+    corners.high.x = viewRect.right;
+    corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
+    corners.low.x = 0;
+    corners.high.y = 0;
+    corners.low.z = -32767;
+    corners.high.z = 32767;
+    return corners;
+  }
+
+  private constructor(view: ViewState, clientWidth: number, clientHeight: number, aspectRatioLocked: boolean, displayedPlane?: Plane3dByOriginAndUnitNormal) {
+    this._view = view;
+    this._clientWidth = clientWidth;
+    this._clientHeight = clientHeight;
+    this._displayedPlane = displayedPlane;
+    this._aspectRatioLocked = aspectRatioLocked;
+
+    const origin = this.view.getOrigin().clone();
+    const delta = this.view.getExtents().clone();
+    this.rotMatrix.setFrom(this.view.getRotation());
+
+    // first, make sure none of the deltas are negative
+    delta.x = Math.abs(delta.x);
+    delta.y = Math.abs(delta.y);
+    delta.z = Math.abs(delta.z);
+
+    const limits = this.view.getExtentLimits();
+    const clampRange = (val: number) => Math.min(Math.max(limits.min, val), limits.max);
+    delta.x = clampRange(delta.x);
+    delta.y = clampRange(delta.y);
+
+    this.adjustAspectRatio(origin, delta);
+
+    this.viewOriginUnexpanded.setFrom(origin);
+    this.viewDeltaUnexpanded.setFrom(delta);
+    this.viewOrigin.setFrom(origin);
+    this.viewDelta.setFrom(delta);
+    this.zClipAdjusted = false;
+
+    if (this.view.is3d()) {  // 3d viewport
+      if (!this.view.allow3dManipulations()) {
+        // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
+        this.alignWithRootZ(); // make sure we're in a z Up view
+
+        const extents = this.view.getViewedExtents();
+        if (extents.isNull()) {
+          extents.low.z = -ViewFrustum.get2dFrustumDepth();
+          extents.high.z = ViewFrustum.get2dFrustumDepth();
+        }
+
+        let zMax = Math.max(Math.abs(extents.low.z), Math.abs(extents.high.z));
+        zMax = Math.max(zMax, 1.0); // make sure we have at least +-1m. Data may be purely planar
+        delta.z = 2.0 * zMax;
+        origin.z = -zMax;
+      } else {
+        if (this.view.isCameraOn())
+          this.validateCamera();
+
+        this.adjustZPlanes(origin, delta); // make sure view volume includes entire volume of view
+
+        // if the camera is on, don't allow front plane behind camera
+        if (this.view.isCameraOn()) {
+          const eyeOrg = this.view.camera.getEyePoint().minus(origin); // vector from eye to origin
+          this.toView(eyeOrg);
+
+          const frontDist = eyeOrg.z - delta.z; // front distance is backDist - delta.z
+
+          // allow ViewState to specify a minimum front dist, but in no case less than 6 inches
+          const minFrontDist = Math.max(15.2 * Constant.oneCentimeter, this.view.forceMinFrontDist);
+          if (frontDist < minFrontDist) {
+            // camera is too close to front plane, move origin away from eye to maintain a minimum front distance.
+            this.toView(origin);
+            origin.z -= (minFrontDist - frontDist);
+            this.fromView(origin);
+          }
+        }
+
+        // if we moved the z planes, set the "zClipAdjusted" flag.
+        if (!origin.isExactEqual(this.viewOriginUnexpanded) || !delta.isExactEqual(this.viewDeltaUnexpanded))
+          this.zClipAdjusted = true;
+      }
+    } else { // 2d viewport
+      this.alignWithRootZ();
+      delta.z = 2 * ViewFrustum.get2dFrustumDepth();
+      origin.z = -ViewFrustum.get2dFrustumDepth();
+    }
+
+    this.viewOrigin.setFrom(origin);
+    this.viewDelta.setFrom(delta);
+
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, origin, delta);
+    if (newRootToNpc.map === undefined) { // invalid frustum
+      this.invalidFrustum = true;
+      return;
+    }
+
+    this.worldToNpcMap.setFrom(newRootToNpc.map);
+    this.frustFraction = newRootToNpc.frustFraction;
+    this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
+  }
+
+  public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
+    return new ViewFrustum(view !== undefined ? view : vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked);
+  }
+
+  public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
+    const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked, plane);
+    return vf.invalidFrustum ? undefined : vf;
+  }
+
+  /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
+  public viewToNpcArray(pts: Point3d[]): void {
+    const corners = this.getViewCorners();
+    const scrToNpcTran = Transform.createIdentity();
+    Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
+    scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
+  }
+  /** Convert an array of points from CoordSystem.Npc to CoordSystem.View */
+  public npcToViewArray(pts: Point3d[]): void {
+    const corners = this.getViewCorners();
+    for (const p of pts)
+      corners.fractionToPoint(p.x, p.y, p.z, p);
+  }
+  /**
+   * Convert a point from CoordSystem.View to CoordSystem.Npc
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
+  public viewToNpc(pt: Point3d, out?: Point3d): Point3d {
+    const corners = this.getViewCorners();
+    const scrToNpcTran = Transform.createIdentity();
+    Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
+    return scrToNpcTran.multiplyPoint3d(pt, out);
+  }
+  /**
+   * Convert a point from CoordSystem.Npc to CoordSystem.View
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
+  public npcToView(pt: Point3d, out?: Point3d): Point3d {
+    const corners = this.getViewCorners();
+    return corners.fractionToPoint(pt.x, pt.y, pt.z, out);
+  }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
+  public worldToNpcArray(pts: Point3d[]): void { this.worldToNpcMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.Npc to CoordSystem.World */
+  public npcToWorldArray(pts: Point3d[]): void { this.worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.View */
+  public worldToViewArray(pts: Point3d[]): void { this.worldToViewMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.World to CoordSystem.View, as Point4ds */
+  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.worldToViewMap.transform0.multiplyPoint3dArray(worldPts, viewPts); }
+  /** Convert an array of points from CoordSystem.View to CoordSystem.World */
+  public viewToWorldArray(pts: Point3d[]) { this.worldToViewMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
+  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.Npc
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
+  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  /**
+   * Convert a point from CoordSystem.Npc to CoordSystem.World
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
+  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.View
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
+  public worldToView(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  /**
+   * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
+   * @param input the point to convert
+   * @param out optional location for result. If undefined, a new Point4d is created.
+   */
+  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
+  /**
+   * Convert a point from CoordSystem.View to CoordSystem.World
+   * @param pt the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
+  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  /**
+   * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
+   * @param input the point to convert
+   * @param out optional location for result. If undefined, a new Point3d is created.
+   */
+  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
+
+  /**
+   * Get an 8-point Frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
+   *
+   * There are two sets of corners that may be of interest.
+   * The "adjusted" box is the one that is computed by examining the "viewed extents" and moving
+   * the front and back planes to enclose everything in the view.
+   * The "unadjusted" box is the one that is stored in the ViewState.
+   * @param sys Coordinate system for points
+   * @param adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
+   * @param box optional Frustum for return value
+   * @return the view frustum
+   * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
+   */
+  public getFrustum(sys: CoordSystem = CoordSystem.World, adjustedBox: boolean = true, box?: Frustum): Frustum {
+    box = box ? box.initNpc() : new Frustum();
+
+    // if they are looking for the "unexpanded" (that is before f/b clipping expansion) box, we need to get the npc
+    // coordinates that correspond to the unexpanded box in the npc space of the Expanded view (that's the basis for all
+    // of the root-based maps.)
+    if (!adjustedBox && this.zClipAdjusted) {
+      // to get unexpanded box, we have to go recompute rootToNpc from original View.
+      const ueRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
+      if (undefined === ueRootToNpc.map)
+        return box; // invalid frustum
+
+      // get the root corners of the unexpanded box
+      const ueRootBox = new Frustum();
+      ueRootToNpc.map.transform1.multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
+
+      // and convert them to npc coordinates of the expanded view
+      this.worldToNpcArray(ueRootBox.points);
+      box.setFrom(ueRootBox);
+    }
+
+    // now convert from NPC space to the specified coordinate system.
+    switch (sys) {
+      case CoordSystem.View:
+        this.npcToViewArray(box.points);
+        break;
+
+      case CoordSystem.World:
+        this.npcToWorldArray(box.points);
+        break;
+    }
+    return box;
+  }
+
+  public getPixelSizeAtPoint(inPoint?: Point3d) {
+    const viewPt = !!inPoint ? this.worldToView(inPoint) : this.npcToView(new Point3d(0.5, 0.5, 0.5));
+    const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
+    return this.viewToWorld(viewPt).distance(this.viewToWorld(viewPt2));
+  }
+}
+
+/**
+ * A Viewport renders one or more Models onto an `HTMLCanvasElement`.
+ *
+ * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
+ * modify the ViewState object. Changes to the ViewState are only reflected in a Viewport after the
+ * [[synchWithView]] method is called.
+ *
+ * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
+ * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
+ */
+export class Viewport {
+  private _doContinuousRendering = false;
+  private animator?: Animator;
+  /** Time the current flash started */
+  public flashUpdateTime?: BeTimePoint;
+  /** Current flash intensity from [0..1] */
+  public flashIntensity = 0;
+  /** The length of time that the flash intensity will increase (in seconds) */
+  public flashDuration = 0;
+  private flashedElem?: string;         // id of currently flashed element
+  /** Id of last flashed element */
+  public lastFlashedElem?: string;
+  private _viewCmdTargetCenter?: Point3d;
+  /** The number of entries in the view undo/redo buffer. */
+  public maxUndoSteps = 20;
+  private readonly forwardStack: ViewState[] = [];
+  private readonly backStack: ViewState[] = [];
+  private currentBaseline?: ViewState;
+  /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
+  public static nearScale24 = 0.0003;
+  /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
+  public static undoDelay = BeDuration.fromSeconds(.5);
+  private _evController?: EventController;
+  private _addFeatureOverrides?: AddFeatureOverrides;
+  private _wantTileBoundingBoxes: boolean = false;
+  private _viewFrustum!: ViewFrustum;
+
+  public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
+
+  public get rotMatrix(): RotMatrix { return this._viewFrustum.rotMatrix; }
+  public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
+  public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
+  public get frustFraction(): number { return this._viewFrustum.frustFraction; }
+
+  private readonly _viewRange: ViewRect = new ViewRect();
+
+  /** Get the rectangle of this Viewport in ViewCoordinates. */
+  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
+  public get isAspectRatioLocked(): boolean { return false; }
+
+  /** @hidden */
+  public readonly target: RenderTarget;
+  /** @hidden */
+  public readonly sync = new SyncFlags();
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   /** The settings that control how elements are hilited in this Viewport. */
@@ -462,11 +916,12 @@ export class Viewport {
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
   /** The ViewState for this Viewport */
-  public get view(): ViewState { return this._view; }
+  public get view(): ViewState { return this._viewFrustum.view; }
   /** @hidden */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
+  public get backgroundMapPlane() { return this.view.displayStyle.getBackgroundMapPlane(); }
 
   /**
    * Sets a function which can customize the appearance of features within a viewport.
@@ -516,79 +971,10 @@ export class Viewport {
   public getAuxCoordRotation(result?: RotMatrix) { return this.auxCoordSystem.getRotation(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
 
-  private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   /** @hidden */
-  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(Viewport.copyOutput(from, to)); }
+  public toView(from: XYZ, to?: XYZ) { this._viewFrustum.toView(from, to); }
   /** @hidden */
-  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(Viewport.copyOutput(from, to)); }
-
-  /** Adjust the front and back planes to encompass the entire viewed volume */
-  private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
-    const view = this.view;
-    if (!view.is3d()) // only necessary for 3d views
-      return;
-
-    let extents = view.getViewedExtents() as Range3d;
-    if (extents.isNull())
-      return;
-
-    // convert viewed extents in world coordinates to min/max in view aligned coordinates
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
-    const extFrust = Frustum.fromRange(extents);
-    extFrust.multiply(viewTransform);
-    extents = extFrust.toRange();
-
-    this.rotMatrix.multiplyVectorInPlace(origin);       // put origin in view coordinates
-    origin.z = extents.low.z;           // set origin to back of viewed extents
-    delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
-    this.rotMatrix.multiplyTransposeVectorInPlace(origin);
-
-    if (!view.isCameraOn())
-      return;
-
-    // if the camera is on, we need to make sure that the viewed volume is not behind the eye
-    const eyeOrg = view.camera.getEyePoint().minus(origin);
-    this.rotMatrix.multiplyVectorInPlace(eyeOrg);
-
-    // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
-    // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
-    if (eyeOrg.z < 1.0) {
-      this.rotMatrix.multiplyVectorInPlace(origin);
-      origin.z -= (2.0 - eyeOrg.z);
-      this.rotMatrix.multiplyTransposeVectorInPlace(origin);
-      delta.z = 1.0;
-      return;
-    }
-
-    // if part of the viewed extents are behind the eye, don't include that.
-    if (delta.z > eyeOrg.z)
-      delta.z = eyeOrg.z;
-  }
-
-  private validateCamera() {
-    const view = this.view;
-    if (!view.is3d())
-      return;
-
-    const camera = view.camera;
-    camera.validateLens();
-    if (camera.isFocusValid())
-      return;
-
-    const vDelta = view.getExtents();
-    const maxDelta = vDelta.x > vDelta.y ? vDelta.x : vDelta.y;
-    let focusDistance = maxDelta / (2.0 * Math.tan(camera.getLensAngle().radians / 2.0));
-
-    if (focusDistance < vDelta.z / 2.0)
-      focusDistance = vDelta.z / 2.0;
-
-    const eyePoint = new Point3d(vDelta.x / 2.0, vDelta.y / 2.0, (vDelta.z / 2.0) + focusDistance);
-
-    this.fromView(eyePoint);
-    eyePoint.plus(view.getOrigin(), eyePoint);
-    camera.setEyePoint(eyePoint);
-    camera.setFocusDistance(focusDistance);
-  }
+  public fromView(from: XYZ, to?: XYZ) { this._viewFrustum.fromView(from, to); }
 
   /**
    * Change the ViewState of this Viewport
@@ -596,8 +982,7 @@ export class Viewport {
    */
   public changeView(view: ViewState) {
     this.clearUndo();
-    this._view = view;
-    this.setupFromView();
+    this.doSetupFromView(view);
     this.saveViewUndo();
 
     this.invalidateScene();
@@ -696,64 +1081,6 @@ export class Viewport {
     return view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
   }
 
-  /* Get the extents of this view, in ViewCoordinates, as a Range3d */
-  private getViewCorners(): Range3d {
-    const corners = this.viewCorners;
-    const viewRect = this.viewRect;
-    corners.high.x = viewRect.right;
-    corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
-    corners.low.x = viewRect.left;
-    corners.high.y = viewRect.top;
-    corners.low.z = -32767;
-    corners.high.z = 32767;
-    return corners;
-  }
-
-  private calcNpcToView(): Map4d {
-    const corners = this.getViewCorners();
-    return Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high)!;
-  }
-
-  /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
-   *  modifies the point and vector given
-   */
-  private adjustAspectRatio(origin: Point3d, delta: Vector3d) {
-    const windowAspect = this.viewRect.aspect * this.view.getAspectRatioSkew();
-    const viewAspect = delta.x / delta.y;
-
-    if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
-      return;
-
-    const oldDelta = delta.clone();
-    if (viewAspect > windowAspect)
-      delta.y = delta.x / windowAspect;
-    else
-      delta.x = delta.y * windowAspect;
-
-    const newOrigin = origin.clone();
-    this.toView(newOrigin);
-    newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
-    newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
-    this.fromView(newOrigin, origin);
-  }
-
-  /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
-  private alignWithRootZ() {
-    const zUp = Vector3d.unitZ();
-    if (zUp.isAlmostEqual(this.rotMatrix.rowZ()))
-      return;
-    const r = this.rotMatrix.transpose();
-    r.setColumn(2, zUp);
-    RotMatrix.createRigidFromRotMatrix(r, AxisOrder.ZXY, r);
-    r.transpose(this.rotMatrix);
-    this.view.setRotation(this.rotMatrix); // Don't let viewState and viewport rotation be different.
-  }
-
-  private readonly _viewRange: ViewRect = new ViewRect();
-
-  /** Get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
-
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this.backStack.length; }
 
@@ -772,92 +1099,11 @@ export class Viewport {
     this.setupFromView();
   }
 
-  /** Establish the parameters of this Viewport from the current information in its ViewState */
-  public setupFromView(): ViewStatus {
-    const view = this.view;
-    if (!view)
+  private doSetupFromView(view: ViewState) {
+    const vf = ViewFrustum.createFromViewport(this, view);
+    if (undefined === vf)
       return ViewStatus.InvalidViewport;
-
-    const origin = view.getOrigin().clone();
-    const delta = view.getExtents().clone();
-    this.rotMatrix.setFrom(view.getRotation());
-
-    // first, make sure none of the deltas are negative
-    delta.x = Math.abs(delta.x);
-    delta.y = Math.abs(delta.y);
-    delta.z = Math.abs(delta.z);
-
-    const limits = this.view.getExtentLimits();
-    const clampRange = (val: number) => Math.min(Math.max(limits.min, val), limits.max);
-    delta.x = clampRange(delta.x);
-    delta.y = clampRange(delta.y);
-
-    this.adjustAspectRatio(origin, delta);
-
-    this.viewOriginUnexpanded.setFrom(origin);
-    this.viewDeltaUnexpanded.setFrom(delta);
-    this.viewOrigin.setFrom(origin);
-    this.viewDelta.setFrom(delta);
-    this.zClipAdjusted = false;
-
-    if (view.is3d()) {  // 3d viewport
-      if (!view.allow3dManipulations()) {
-        // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
-        this.alignWithRootZ(); // make sure we're in a z Up view
-
-        const extents = view.getViewedExtents();
-        if (extents.isNull()) {
-          extents.low.z = -Viewport.get2dFrustumDepth();
-          extents.high.z = Viewport.get2dFrustumDepth();
-        }
-
-        let zMax = Math.max(Math.abs(extents.low.z), Math.abs(extents.high.z));
-        zMax = Math.max(zMax, 1.0); // make sure we have at least +-1m. Data may be purely planar
-        delta.z = 2.0 * zMax;
-        origin.z = -zMax;
-      } else {
-        if (view.isCameraOn())
-          this.validateCamera();
-
-        this.adjustZPlanes(origin, delta); // make sure view volume includes entire volume of view
-
-        // if the camera is on, don't allow front plane behind camera
-        if (view.isCameraOn()) {
-          const eyeOrg = view.camera.getEyePoint().minus(origin); // vector from eye to origin
-          this.toView(eyeOrg);
-
-          const frontDist = eyeOrg.z - delta.z; // front distance is backDist - delta.z
-
-          // allow ViewState to specify a minimum front dist, but in no case less than 6 inches
-          const minFrontDist = Math.max(15.2 * Constant.oneCentimeter, view.forceMinFrontDist);
-          if (frontDist < minFrontDist) {
-            // camera is too close to front plane, move origin away from eye to maintain a minimum front distance.
-            this.toView(origin);
-            origin.z -= (minFrontDist - frontDist);
-            this.fromView(origin);
-          }
-        }
-
-        // if we moved the z planes, set the "zClipAdjusted" flag.
-        if (!origin.isExactEqual(this.viewOriginUnexpanded) || !delta.isExactEqual(this.viewDeltaUnexpanded))
-          this.zClipAdjusted = true;
-      }
-    } else { // 2d viewport
-      this.alignWithRootZ();
-      delta.z = 2 * Viewport.get2dFrustumDepth();
-      origin.z = -Viewport.get2dFrustumDepth();
-    }
-
-    this.viewOrigin.setFrom(origin);
-    this.viewDelta.setFrom(delta);
-
-    const newRootToNpc = view.computeWorldToNpc(this.rotMatrix, origin, delta);
-    if (newRootToNpc.map === undefined) // invalid frustum
-      return ViewStatus.InvalidViewport;
-
-    this.worldToNpcMap.setFrom(newRootToNpc.map);
-    this.frustFraction = newRootToNpc.frustFraction;
-    this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
+    this._viewFrustum = vf;
 
     this.sync.invalidateRenderPlan();
     this.sync.setValidController();
@@ -866,12 +1112,17 @@ export class Viewport {
     return ViewStatus.Success;
   }
 
+  /** Establish the parameters of this Viewport from the current information in its ViewState */
+  public setupFromView(): ViewStatus {
+    return this.doSetupFromView(this.view);
+  }
+
   /**
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
    * If so, save a *copy* of the **previous** state in the view undo stack for future View Undo.
    */
   public saveViewUndo(): void {
-    if (!this._view)
+    if (!this.view)
       return;
 
     // the first time we're called we need to establish the baseline
@@ -907,86 +1158,69 @@ export class Viewport {
   }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
-  public viewToNpcArray(pts: Point3d[]): void {
-    const corners = this.getViewCorners();
-    const scrToNpcTran = Transform.createIdentity();
-    Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
-    scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
-  }
+  public viewToNpcArray(pts: Point3d[]): void { this._viewFrustum.viewToNpcArray(pts); }
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.View */
-  public npcToViewArray(pts: Point3d[]): void {
-    const corners = this.getViewCorners();
-    for (const p of pts)
-      corners.fractionToPoint(p.x, p.y, p.z, p);
-  }
+  public npcToViewArray(pts: Point3d[]): void { this._viewFrustum.npcToViewArray(pts); }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.Npc
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public viewToNpc(pt: Point3d, out?: Point3d): Point3d {
-    const corners = this.getViewCorners();
-    const scrToNpcTran = Transform.createIdentity();
-    Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
-    return scrToNpcTran.multiplyPoint3d(pt, out);
-  }
+  public viewToNpc(pt: Point3d, out?: Point3d): Point3d { return this._viewFrustum.viewToNpc(pt, out); }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public npcToView(pt: Point3d, out?: Point3d): Point3d {
-    const corners = this.getViewCorners();
-    return corners.fractionToPoint(pt.x, pt.y, pt.z, out);
-  }
+  public npcToView(pt: Point3d, out?: Point3d): Point3d { return this._viewFrustum.npcToView(pt, out); }
   /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
-  public worldToNpcArray(pts: Point3d[]): void { this.worldToNpcMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToNpcArray(pts: Point3d[]): void { this._viewFrustum.worldToNpcArray(pts); }
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.World */
-  public npcToWorldArray(pts: Point3d[]): void { this.worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public npcToWorldArray(pts: Point3d[]): void { this._viewFrustum.npcToWorldArray(pts); }
   /** Convert an array of points from CoordSystem.World to CoordSystem.View */
-  public worldToViewArray(pts: Point3d[]): void { this.worldToViewMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToViewArray(pts: Point3d[]): void { this._viewFrustum.worldToViewArray(pts); }
   /** Convert an array of points from CoordSystem.World to CoordSystem.View, as Point4ds */
-  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.worldToViewMap.transform0.multiplyPoint3dArray(worldPts, viewPts); }
+  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this._viewFrustum.worldToView4dArray(worldPts, viewPts); }
   /** Convert an array of points from CoordSystem.View to CoordSystem.World */
-  public viewToWorldArray(pts: Point3d[]) { this.worldToViewMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public viewToWorldArray(pts: Point3d[]) { this._viewFrustum.viewToWorldArray(pts); }
   /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
-  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this._viewFrustum.view4dToWorldArray(viewPts, worldPts); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.Npc
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d { return this._viewFrustum.worldToNpc(pt, out); }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d { return this._viewFrustum.npcToWorld(pt, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToView(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView(input: XYAndZ, out?: Point3d): Point3d { return this._viewFrustum.worldToView(input, out); }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
    * @param input the point to convert
    * @param out optional location for result. If undefined, a new Point4d is created.
    */
-  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
+  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d { return this._viewFrustum.worldToView4d(input, out); }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d { return this._viewFrustum.viewToWorld(input, out); }
   /**
    * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
    * @param input the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
+  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this._viewFrustum.view4dToWorld(input, out); }
 
   /** Converts inches to pixels based on screen DPI.
    * @Note this information may not be accurate in some browsers.
@@ -1008,39 +1242,7 @@ export class Viewport {
    * @return the view frustum
    * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
    */
-  public getFrustum(sys: CoordSystem = CoordSystem.World, adjustedBox: boolean = true, box?: Frustum): Frustum {
-    box = box ? box.initNpc() : new Frustum();
-
-    // if they are looking for the "unexpanded" (that is before f/b clipping expansion) box, we need to get the npc
-    // coordinates that correspond to the unexpanded box in the npc space of the Expanded view (that's the basis for all
-    // of the root-based maps.)
-    if (!adjustedBox && this.zClipAdjusted) {
-      // to get unexpanded box, we have to go recompute rootToNpc from original View.
-      const ueRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
-      if (undefined === ueRootToNpc.map)
-        return box; // invalid frustum
-
-      // get the root corners of the unexpanded box
-      const ueRootBox = new Frustum();
-      ueRootToNpc.map.transform1.multiplyPoint3dArrayQuietNormalize(ueRootBox.points);
-
-      // and convert them to npc coordinates of the expanded view
-      this.worldToNpcArray(ueRootBox.points);
-      box.setFrom(ueRootBox);
-    }
-
-    // now convert from NPC space to the specified coordinate system.
-    switch (sys) {
-      case CoordSystem.View:
-        this.npcToViewArray(box.points);
-        break;
-
-      case CoordSystem.World:
-        this.npcToWorldArray(box.points);
-        break;
-    }
-    return box;
-  }
+  public getFrustum(sys: CoordSystem = CoordSystem.World, adjustedBox: boolean = true, box?: Frustum): Frustum { return this._viewFrustum.getFrustum(sys, adjustedBox, box); }
 
   /** Get a copy of the current (adjusted) frustum of this viewport, in world coordinates. */
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
@@ -1139,7 +1341,9 @@ export class Viewport {
    * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
   public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
+    const vf = this._viewFrustum;
+
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), vf.rotMatrix);
     const elemRange = Array.isArray(placements) ? placements : [placements];
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
 
@@ -1238,7 +1442,7 @@ export class Viewport {
   /** @hidden */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
-    this._view = val.clone<ViewState>();
+    this._viewFrustum.view = val.clone<ViewState>();
     this.synchWithView(false);
     if (animationTime)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
@@ -1286,7 +1490,7 @@ export class Viewport {
     if (this.view.is3d() && this.isCameraOn())
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
-      eyeVec = this.rotMatrix.getRow(2).clone();
+      eyeVec = this._viewFrustum.rotMatrix.getRow(2).clone();
 
     eyeVec.normalizeInPlace();
     LegacyMath.linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
@@ -1505,16 +1709,17 @@ export class Viewport {
     if (!sync.isValidScene) {
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
+      view.createTerrain(context);
       context.requests.requestMissing();
       target.changeScene(context.graphics);
-      target.changeTerrain(context.terrain);
+      target.changeTerrain(context.backgroundMap);
 
       isRedrawNeeded = true;
       sync.setValidScene();
     }
 
     if (!sync.isValidRenderPlan) {
-      target.changeRenderPlan(new RenderPlan(this));
+      target.changeRenderPlan(RenderPlan.createFromViewport(this));
       sync.setValidRenderPlan();
       isRedrawNeeded = true;
     }
@@ -1588,12 +1793,14 @@ export class Viewport {
     if (z <= 0.0)
       return undefined;
 
+    const vf = this._viewFrustum;
+
     const result = undefined !== out ? out : new Point3d();
     const viewRect = this.viewRect;
     result.x = (x + 0.5 - viewRect.left) / viewRect.width;
     result.y = 1.0 - (y + 0.5 - viewRect.top) / viewRect.height;
-    if (this.frustFraction < 1.0)
-      result.z = z * this.frustFraction / (1.0 + z * (this.frustFraction - 1.0)); // correct to npc if camera on.
+    if (vf.frustFraction < 1.0)
+      result.z = z * vf.frustFraction / (1.0 + z * (vf.frustFraction - 1.0)); // correct to npc if camera on.
     else
       result.z = z;
 
@@ -1630,12 +1837,14 @@ export class Viewport {
 export class OffScreenViewport extends Viewport {
   public constructor(viewState: ViewState) {
     super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+    this.sync.setValidDecorations();  // decorations are not incorporated offscreen
   }
 
   public get viewRect(): ViewRect { return this.target.viewRect; }
 
   public setRect(rect: ViewRect, temporary: boolean = false) {
     this.target.setViewRect(rect, temporary);
+    this.changeView(this.view);
   }
 
   /** @hidden */

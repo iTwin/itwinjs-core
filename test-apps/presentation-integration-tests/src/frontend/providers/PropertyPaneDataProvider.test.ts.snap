@@ -1,0 +1,134 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PropertyDataProvider creates property data 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Mìsçêllãñéòús",
+      "name": "Miscellaneous",
+    },
+  ],
+  "description": "Functional Model",
+  "label": "Functional Model-0-H",
+  "records": Object {
+    "Miscellaneous": Array [
+      PropertyRecord {
+        "description": "Functional Model-0-H",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "£ábêl",
+          "name": "DisplayLabel",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "Functional Model-0-H",
+          "value": "Functional Model-0-H",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Functional-Tag",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "name": "FunctionalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Functional-Tag",
+          "value": 17,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider favorites properties 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "Fàvórîtë",
+      "name": "Favorite",
+    },
+    Object {
+      "expand": false,
+      "label": "Mìsçêllãñéòús",
+      "name": "Miscellaneous",
+    },
+  ],
+  "description": "Functional Model",
+  "label": "Functional Model-0-H",
+  "records": Object {
+    "Favorite": Array [
+      PropertyRecord {
+        "description": "Functional Model-0-H",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "£ábêl",
+          "name": "DisplayLabel",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "Functional Model-0-H",
+          "value": "Functional Model-0-H",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Functional-Tag",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "name": "FunctionalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Functional-Tag",
+          "value": 17,
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "Miscellaneous": Array [
+      PropertyRecord {
+        "description": "Functional Model-0-H",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "£ábêl",
+          "name": "DisplayLabel",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "Functional Model-0-H",
+          "value": "Functional Model-0-H",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Functional-Tag",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "name": "FunctionalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Functional-Tag",
+          "value": 17,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;

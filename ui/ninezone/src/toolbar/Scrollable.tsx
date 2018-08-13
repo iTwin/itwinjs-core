@@ -5,53 +5,63 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import Direction, { OrthogonalDirection } from "../utilities/Direction";
+import Indicator from "./scroll/Indicator";
 import Toolbar, { ToolbarProps } from "./Toolbar";
 import Items from "./Items";
-import Indicator from "./scroll/Indicator";
 import "./Scrollable.scss";
 
+/** Properties of [[Scrollable]] component. See [[ScrollableDefaultProps]] */
 export interface ScrollableProps extends ToolbarProps {
-  children?: React.ReactNode;
-  visibleItemThreshold?: number; // defaults to 5
+  /** Describes number of visible elements. Should not be lower than 3. */
+  visibleItemThreshold?: number;
+  /** Function called when component scrolls. */
   onScroll?: () => void;
 }
 
+/** Default properties of [[ScrollableProps]] used in [[Scrollable]] component. */
+export interface ScrollableDefaultProps extends ScrollableProps {
+  /** Defaults to 5. */
+  visibleItemThreshold: number;
+}
+
+/** State of [[Scrollable]] component. */
 export interface ScrollableState {
+  /** Describes component scroll offset. */
   scrollOffset: number;
 }
 
+/** A [[Toolbar]] with scroll overflow strategy. */
 export default class Scrollable extends React.Component<ScrollableProps, ScrollableState> {
-  public static readonly DEFAULT_VISIBLE_ITEM_COUNT = 5;
   private static readonly DESKTOP_ITEM_WIDTH = 40;
   private static readonly DESKTOP_ITEM_HEIGHT = Scrollable.DESKTOP_ITEM_WIDTH;
   private static readonly BORDER_WIDTH = 1;
+
+  public static readonly defaultProps: Partial<ScrollableDefaultProps> = {
+    visibleItemThreshold: 5,
+  };
 
   public readonly state: Readonly<ScrollableState> = {
     scrollOffset: 0,
   };
 
-  public static getVisibleItemThreshold(props: ScrollableProps) {
-    if (props.visibleItemThreshold)
-      return props.visibleItemThreshold;
-    return Scrollable.DEFAULT_VISIBLE_ITEM_COUNT;
+  /** @returns True if props is [[ScrollableDefaultProps]] */
+  public static isWithDefaultProps(props: ScrollableProps): props is ScrollableDefaultProps {
+    if (props.visibleItemThreshold === undefined)
+      return false;
+    return true;
   }
 
-  public static getItemCount(props: ScrollableProps) {
-    if (props.children)
-      return React.Children.count(props.children);
-    return 0;
-  }
-
-  public static getVisibleItemCount(props: ScrollableProps) {
-    const threshold = Scrollable.getVisibleItemThreshold(props);
-    const itemCount = Scrollable.getItemCount(props);
+  private getVisibleItemCount() {
+    if (!Scrollable.isWithDefaultProps(this.props))
+      throw new TypeError();
+    const threshold = this.props.visibleItemThreshold;
+    const itemCount = Toolbar.getItemCount(this.props);
     return Math.min(threshold, itemCount);
   }
 
-  public getViewportLength(itemLength: number) {
-    let length = Scrollable.getVisibleItemCount(this.props) * itemLength;
+  private getViewportLength(itemLength: number) {
+    let length = this.getVisibleItemCount() * itemLength;
     if (this.isLeftMostScrolled())
       length += Scrollable.BORDER_WIDTH;
     if (this.isRightMostScrolled())
@@ -59,12 +69,7 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     return length;
   }
 
-  public get expandsTo() {
-    return Toolbar.getExpandsToDirection(this.props);
-  }
-
-  public getViewportStyle() {
-    const direction = Toolbar.getToolbarDirection(this.expandsTo);
+  private getViewportStyle(direction: OrthogonalDirection) {
     switch (direction) {
       case OrthogonalDirection.Vertical: {
         const verticalStyle: React.CSSProperties = {
@@ -81,8 +86,8 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     }
   }
 
-  public getHistoryViewportLength(itemLength: number) {
-    let length = Scrollable.getVisibleItemCount(this.props) * itemLength;
+  private getHistoryViewportLength(itemLength: number) {
+    let length = this.getVisibleItemCount() * itemLength;
     if (this.isLeftScrollIndicatorVisible()) {
       length -= itemLength;
     }
@@ -91,7 +96,7 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     return length;
   }
 
-  public getHistoryViewportOffset(itemLength: number) {
+  private getHistoryViewportOffset(itemLength: number) {
     let top = 0;
     if (this.isLeftScrollIndicatorVisible()) {
       top += itemLength - Scrollable.BORDER_WIDTH;
@@ -102,8 +107,7 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     return top;
   }
 
-  public getHistoryViewportStyle(): React.CSSProperties {
-    const direction = Toolbar.getToolbarDirection(this.expandsTo);
+  private getHistoryViewportStyle(direction: OrthogonalDirection): React.CSSProperties {
     switch (direction) {
       case OrthogonalDirection.Vertical: {
         const height = this.getHistoryViewportLength(Scrollable.DESKTOP_ITEM_HEIGHT);
@@ -124,8 +128,7 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     }
   }
 
-  public getHistoryScrolledStyle(): React.CSSProperties {
-    const direction = Toolbar.getToolbarDirection(this.expandsTo);
+  private getHistoryScrolledStyle(direction: OrthogonalDirection): React.CSSProperties {
     const isLeftScrollIndicatorVisible = this.isLeftScrollIndicatorVisible();
     switch (direction) {
       case OrthogonalDirection.Vertical: {
@@ -153,7 +156,7 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     }
   }
 
-  public getScrollOffset(itemLength: number) {
+  private getScrollOffset(itemLength: number) {
     let offset = this.state.scrollOffset * itemLength;
     if (this.isLeftScrollIndicatorVisible())
       offset += Scrollable.BORDER_WIDTH;
@@ -162,8 +165,7 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     return -offset;
   }
 
-  private getScrolledStyle() {
-    const direction = Toolbar.getToolbarDirection(this.expandsTo);
+  private getScrolledStyle(direction: OrthogonalDirection) {
     switch (direction) {
       case OrthogonalDirection.Vertical: {
         const marginTop = this.getScrollOffset(Scrollable.DESKTOP_ITEM_HEIGHT);
@@ -195,9 +197,9 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
   private handleRightScroll = () => {
     this.setState(
       (prevState, props) => {
-        const childrenCnt = Scrollable.getItemCount(props);
+        const itemCnt = Toolbar.getItemCount(props);
         let scrollOffset = prevState.scrollOffset + 1;
-        scrollOffset = Math.min(childrenCnt - Scrollable.getVisibleItemCount(props), scrollOffset);
+        scrollOffset = Math.min(itemCnt - this.getVisibleItemCount(), scrollOffset);
         return {
           ...prevState,
           scrollOffset,
@@ -207,34 +209,35 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     );
   }
 
-  public isLeftScrollIndicatorVisible() {
+  private isLeftScrollIndicatorVisible() {
     return this.state.scrollOffset > 0;
   }
 
-  public isRightScrollIndicatorVisible() {
-    const itemCnt = Scrollable.getItemCount(this.props);
-    return itemCnt - Scrollable.getVisibleItemCount(this.props) - this.state.scrollOffset > 0;
+  private isRightScrollIndicatorVisible() {
+    const itemCnt = Toolbar.getItemCount(this.props);
+    return itemCnt - this.getVisibleItemCount() - this.state.scrollOffset > 0;
   }
 
-  public isLeftMostScrolled() {
+  private isLeftMostScrolled() {
     return this.state.scrollOffset === 0;
   }
 
-  public isRightMostScrolled() {
-    const itemCnt = Scrollable.getItemCount(this.props);
-    return itemCnt - Scrollable.getVisibleItemCount(this.props) - this.state.scrollOffset === 0;
+  private isRightMostScrolled() {
+    const itemCnt = Toolbar.getItemCount(this.props);
+    return itemCnt - this.getVisibleItemCount() - this.state.scrollOffset === 0;
   }
 
   public render() {
     const isLeftScrollIndicatorVisible = this.isLeftScrollIndicatorVisible();
     const isRightScrollIndicatorVisible = this.isRightScrollIndicatorVisible();
+    const direction = Toolbar.getToolbarDirection(this.props);
 
-    const direction = Toolbar.getToolbarDirection(this.expandsTo);
-    const className = classnames(
+    const { className, ...props } = this.props;
+    const scrollableClassName = classnames(
       "nz-toolbar-scrollable",
       isLeftScrollIndicatorVisible && !isRightScrollIndicatorVisible && "nz-scroll-indicator-left-only",
       !isLeftScrollIndicatorVisible && isRightScrollIndicatorVisible && "nz-scroll-indicator-right-only",
-      this.props.className);
+      className);
 
     const leftScrollIndicatorClassName = classnames(
       "nz-left",
@@ -245,12 +248,11 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
       isRightScrollIndicatorVisible && "nz-is-visible",
     );
 
-    const viewportStyle = this.getViewportStyle();
-    const scrolledStyle = this.getScrolledStyle();
+    const viewportStyle = this.getViewportStyle(direction);
+    const scrolledStyle = this.getScrolledStyle(direction);
     return (
       <Toolbar
-        className={className}
-        style={this.props.style}
+        className={scrollableClassName}
         renderItems={(items) => (
           <div
             className="nz-items-viewport"
@@ -266,12 +268,12 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
             <Indicator
               className={leftScrollIndicatorClassName}
               direction={direction === OrthogonalDirection.Vertical ? Direction.Top : Direction.Left}
-              onScroll={this.handleLeftScroll}
+              onClick={this.handleLeftScroll}
             />
             <Indicator
               className={rightScrollIndicatorClassName}
               direction={direction === OrthogonalDirection.Vertical ? Direction.Bottom : Direction.Right}
-              onScroll={this.handleRightScroll}
+              onClick={this.handleRightScroll}
             />
           </div>
         )}
@@ -281,11 +283,11 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
           >
             <div
               className="nz-viewport"
-              style={this.getHistoryViewportStyle()}
+              style={this.getHistoryViewportStyle(direction)}
             >
               <div
                 className="nz-container"
-                style={this.getHistoryScrolledStyle()}
+                style={this.getHistoryScrolledStyle(direction)}
               >
                 {historyItems}
               </div>
@@ -300,7 +302,7 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
             {panelItems}
           </div>
         )}
-        {...this.props}
+        {...props}
       />
     );
   }

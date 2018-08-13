@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InputCollector, BeButton, BeGestureEvent, EventHandled } from "./Tool";
+import { BeButtonEvent, InputCollector, BeButton, EventHandled } from "./Tool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
@@ -101,7 +101,7 @@ export namespace EditManipulator {
       return EventHandled.No;
     }
 
-    public async onGestureEvent(_ev: BeGestureEvent): Promise<EventHandled> { return EventHandled.No; }
+    //    public async onGestureEvent(_ev: BeGestureEvent): Promise<EventHandled> { return EventHandled.No; }
     public onManipulatorEvent(_eventType: EventType): void { this.updateControls(); }
     public onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void { if (this.iModel === iModel) this.onManipulatorEvent(EventType.Synch); }
 

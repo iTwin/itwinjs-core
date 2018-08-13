@@ -5,14 +5,16 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
 import "./Title.scss";
 
-export interface DialogTitleProps extends CommonProps {
-  children?: string;
+/** Properties of [[DialogTitle]] component. */
+export interface DialogTitleProps extends CommonProps, NoChildrenProps {
+  /** Actual title. */
+  text?: string;
 }
 
+/** Title used in [[TitleBar]] component. */
 // tslint:disable-next-line:variable-name
 export const DialogTitle: React.StatelessComponent<DialogTitleProps> = (props) => {
   const className = classnames(
@@ -24,7 +26,7 @@ export const DialogTitle: React.StatelessComponent<DialogTitleProps> = (props) =
       className={className}
       style={props.style}
     >
-      {props.children}
+      {props.text}
     </div>
   );
 };

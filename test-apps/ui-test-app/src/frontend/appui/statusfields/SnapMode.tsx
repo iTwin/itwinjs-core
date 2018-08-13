@@ -35,46 +35,46 @@ export class SnapModeField extends React.Component<SnapModeProps> {
       <SnapModeIndicator
         label={IModelApp.i18n.translate("SampleApp:snapMode.snapMode")}
         isLabelVisible={this.props.isInFooterMode}
-        onIndicatorClick={this.handleSnapModeIndicatorClick}
+        onClick={this.handleSnapModeIndicatorClick}
         icon={
           <SnapModeIcon text="k" />
         }
         dialog={
-          <SnapModeDialog
-            isOpen={this.props.openWidget === this._className}
-            title="Snap Mode"
-            snaps={[
-              <SnapRow
-                key="1"
-                isActive
-                label={IModelApp.i18n.translate("SampleApp:snapMode.keypoint")}
-                icon={
-                  <SnapModeIcon isActive text="k" />
-                }
-              />,
-              <SnapRow
-                key="2"
-                label={IModelApp.i18n.translate("SampleApp:snapMode.intersection")}
-                icon={
-                  <SnapModeIcon text="i" />
-                }
-              />,
-              <SnapRow
-                key="3"
-                label={IModelApp.i18n.translate("SampleApp:snapMode.center")}
-                icon={
-                  <SnapModeIcon text="c" />
-                }
-              />,
-              <SnapRow
-                key="4"
-                label={IModelApp.i18n.translate("SampleApp:snapMode.nearest")}
-                icon={
-                  <SnapModeIcon text="n" />
-                }
-              />,
-            ]}
-          />
+          this.props.openWidget !== this._className ? undefined :
+            <SnapModeDialog
+              title="Snap Mode"
+              snaps={[
+                <SnapRow
+                  key="1"
+                  isActive
+                  label={IModelApp.i18n.translate("SampleApp:snapMode.keypoint")}
+                  icon={
+                    <SnapModeIcon isActive text="k" />
+                  }
+                />,
+                <SnapRow
+                  key="2"
+                  label={IModelApp.i18n.translate("SampleApp:snapMode.intersection")}
+                  icon={
+                    <SnapModeIcon text="i" />
+                  }
+                />,
+                <SnapRow
+                  key="3"
+                  label={IModelApp.i18n.translate("SampleApp:snapMode.center")}
+                  icon={
+                    <SnapModeIcon text="c" />
+                  }
+                />,
+                <SnapRow
+                  key="4"
+                  label={IModelApp.i18n.translate("SampleApp:snapMode.nearest")}
+                  icon={
+                    <SnapModeIcon text="n" />
+                  }
+                />,
+              ]}
+            />
         }
       />
     );

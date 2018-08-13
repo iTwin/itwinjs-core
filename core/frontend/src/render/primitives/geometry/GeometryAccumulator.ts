@@ -6,12 +6,14 @@
 import { Transform, Range3d, Loop, Path, IndexedPolyface, Point3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../../../IModelConnection";
 import { GeometryOptions } from "../Primitives";
-import { RenderSystem, RenderGraphic } from "../../System";
+import { RenderSystem, RenderGraphic, GraphicBranch } from "../../System";
 import { DisplayParams } from "../DisplayParams";
 import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 import { GeometryList } from "./GeometryList";
+import { Id64, assert } from "@bentley/bentleyjs-core";
+import { FeatureTable } from "@bentley/imodeljs-common";
 
 export class GeometryAccumulator {
   private _transform: Transform;
@@ -114,22 +116,21 @@ export class GeometryAccumulator {
    * note  : removed featureTable, ViewContext
    * @param tolerance should derive from Viewport.getPixelSizeAtPoint
    */
-  public toMeshBuilderMap(options: GeometryOptions, tolerance: number): MeshBuilderMap {
+  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickableId?: Id64): MeshBuilderMap {
     const { geometries } = this; // declare internal dependencies
     const { wantSurfacesOnly, wantPreserveOrder } = options;
 
     const range = geometries.computeRange();
     const is2d = !range.isNull() && range.isAlmostZeroZ();
 
-    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, wantSurfacesOnly, wantPreserveOrder);
+    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, wantSurfacesOnly, wantPreserveOrder, pickableId);
   }
 
-  /** removed ViewContext */
-  public toMeshes(options: GeometryOptions, tolerance: number): MeshList {
+  public toMeshes(options: GeometryOptions, tolerance: number, pickableId?: Id64): MeshList {
     if (this.geometries.isEmpty)
       return new MeshList();
 
-    const builderMap = this.toMeshBuilderMap(options, tolerance);
+    const builderMap = this.toMeshBuilderMap(options, tolerance, pickableId);
     return builderMap.toMeshes();
   }
 
@@ -137,13 +138,39 @@ export class GeometryAccumulator {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number): void {
-    const meshes = this.toMeshes(options, tolerance);
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: Id64): FeatureTable | undefined {
+    const meshes = this.toMeshes(options, tolerance, pickableId);
+    if (0 === meshes.length)
+      return undefined;
+
     const args = new MeshGraphicArgs();
+
+    // All of the meshes are quantized to the same range.
+    // If that range is small relative to the distance from the origin, quantization errors can produce display artifacts.
+    // Remove the translation from the quantization parameters and apply it in the transform instead.
+    const branch = new GraphicBranch(true);
+    const qorigin = new Point3d();
+
     for (const mesh of meshes) {
+      const verts = mesh.points;
+      if (branch.isEmpty) {
+        qorigin.setFrom(verts.params.origin);
+      } else {
+        assert(verts.params.origin.isAlmostEqual(qorigin));
+      }
+
+      verts.params.origin.setZero();
+
       const graphic = mesh.getGraphics(args, this.system);
       if (undefined !== graphic)
-        graphics.push(graphic);
+        branch.add(graphic);
     }
+
+    if (!branch.isEmpty) {
+      const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+      graphics.push(this.system.createBranch(branch, transform));
+    }
+
+    return meshes.features;
   }
 }

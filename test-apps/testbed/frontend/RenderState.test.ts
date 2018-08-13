@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { GL, RenderState, System } from "@bentley/imodeljs-frontend/lib/rendering";
+import { GL, RenderState, System, DepthType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
@@ -119,40 +119,39 @@ describe("RenderState API", () => {
     assert.isTrue(a.equals(b), "expected same blend function dst alpha to compare as !equal");
 
     // Test Stencil
-    /* Stenciling commented out for now since it is not used
     b.stencilMask = 0xF0;
     assert.isFalse(a.equals(b), "expected different stnecilMask to compare as !equal");
     b.stencilMask = 0xFFFFFFFF;
     assert.isTrue(a.equals(b), "expected same stnecilMask to compare as equal");
 
-    b.stencil.frontFunction = GL.StencilFunction.Greater;
+    b.stencil.frontFunction.function = GL.StencilFunction.Greater;
     assert.isFalse(a.equals(b), "expected different stencil frontFunction to compare as !equal");
-    b.stencil.frontFunction = GL.StencilFunction.Always;
+    b.stencil.frontFunction.function = GL.StencilFunction.Always;
     assert.isTrue(a.equals(b), "expected same stencil frontFunction to compare as equal");
 
-    b.stencil.backFunction = GL.StencilFunction.Greater;
+    b.stencil.backFunction.function = GL.StencilFunction.Greater;
     assert.isFalse(a.equals(b), "expected different stencil backFunction to compare as !equal");
-    b.stencil.backFunction = GL.StencilFunction.Always;
+    b.stencil.backFunction.function = GL.StencilFunction.Always;
     assert.isTrue(a.equals(b), "expected same stencil backFunction to compare as equal");
 
-    b.stencil.frontRef = 0x08;
+    b.stencil.frontFunction.ref = 0x08;
     assert.isFalse(a.equals(b), "expected different stencil frontRef to compare as !equal");
-    b.stencil.frontRef = 0;
+    b.stencil.frontFunction.ref = 0;
     assert.isTrue(a.equals(b), "expected same stencil frontRef to compare as equal");
 
-    b.stencil.backRef = 0x08;
+    b.stencil.backFunction.ref = 0x08;
     assert.isFalse(a.equals(b), "expected different stencil backRef to compare as !equal");
-    b.stencil.backRef = 0;
+    b.stencil.backFunction.ref = 0;
     assert.isTrue(a.equals(b), "expected same stencil backRef to compare as equal");
 
-    b.stencil.frontMask = 0x08;
+    b.stencil.frontFunction.mask = 0x08;
     assert.isFalse(a.equals(b), "expected different stencil fronMask to compare as !equal");
-    b.stencil.frontMask = 0xFFFFFFFF;
+    b.stencil.frontFunction.mask = 0xFFFFFFFF;
     assert.isTrue(a.equals(b), "expected same stencil fronMask to compare as equal");
 
-    b.stencil.backMask = 0x08;
+    b.stencil.backFunction.mask = 0x08;
     assert.isFalse(a.equals(b), "expected different stencil backMask to compare as !equal");
-    b.stencil.backMask = 0xFFFFFFFF;
+    b.stencil.backFunction.mask = 0xFFFFFFFF;
     assert.isTrue(a.equals(b), "expected same stencil backMask to compare as equal");
 
     b.stencil.frontOperation.fail = GL.StencilOperation.IncrWrap;
@@ -184,7 +183,6 @@ describe("RenderState API", () => {
     assert.isFalse(a.equals(b), "expected different stencil backOperation zPass to compare as !equal");
     b.stencil.backOperation.zPass = GL.StencilOperation.Keep;
     assert.isTrue(a.equals(b), "expected same stencil backOperation zPass to compare as equal");
-    */
 
     // Test constructor, clone and coppy
     a = new RenderState(b);
@@ -218,19 +216,18 @@ describe("RenderState API", () => {
     b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
     b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.AlphaSaturate);
     b.stencilMask = 0xF0;
-    /* Stenciling commented out for now since it is not used */
-    // b.stencil.frontFunction = GL.StencilFunction.Greater;
-    // b.stencil.backFunction = GL.StencilFunction.Greater;
-    // b.stencil.frontRef = 0x08;
-    // b.stencil.backRef = 0x08;
-    // b.stencil.frontMask = 0x08;
-    // b.stencil.backMask = 0x08;
-    // b.stencil.frontOperation.fail = GL.StencilOperation.IncrWrap;
-    // b.stencil.frontOperation.zFail = GL.StencilOperation.IncrWrap;
-    // b.stencil.frontOperation.zPass = GL.StencilOperation.IncrWrap;
-    // b.stencil.backOperation.fail = GL.StencilOperation.IncrWrap;
-    // b.stencil.backOperation.zFail = GL.StencilOperation.IncrWrap;
-    // b.stencil.backOperation.zPass = GL.StencilOperation.IncrWrap;
+    b.stencil.frontFunction.function = GL.StencilFunction.Greater;
+    b.stencil.backFunction.function = GL.StencilFunction.Greater;
+    b.stencil.frontFunction.ref = 0x08;
+    b.stencil.backFunction.ref = 0x08;
+    b.stencil.frontFunction.mask = 0x08;
+    b.stencil.backFunction.mask = 0x08;
+    b.stencil.frontOperation.fail = GL.StencilOperation.IncrWrap;
+    b.stencil.frontOperation.zFail = GL.StencilOperation.IncrWrap;
+    b.stencil.frontOperation.zPass = GL.StencilOperation.IncrWrap;
+    b.stencil.backOperation.fail = GL.StencilOperation.IncrWrap;
+    b.stencil.backOperation.zFail = GL.StencilOperation.IncrWrap;
+    b.stencil.backOperation.zPass = GL.StencilOperation.IncrWrap;
     a = new RenderState(b);
     assert.isTrue(a.equals(b), "expected constructor copied non-default RenderState to compare as equal");
     a = b.clone();
@@ -276,19 +273,18 @@ describe("RenderState.apply()", () => {
     assert.isTrue(gl.getParameter(GL.Capability.BlendDstRgb) === GL.BlendFactor.Zero, "BlendDstRGB should be Zero by default");
     assert.isTrue(gl.getParameter(GL.Capability.BlendDstAlpha) === GL.BlendFactor.Zero, "BlendDstAlpha should be Zero by default");
 
-    /* Stenciling commented out for now since it is not used */
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilFrontFunc) === GL.StencilFunction.Always, "StencilFrontFunc should be Always by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilFrontRef) === 0, "StencilFrontRef should be 0 by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilFrontWriteMask) === 0xFFFFFFFF, "StencilFrontWriteMask should be 0xFFFFFFFF by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpFail) === GL.StencilOperation.Keep, "StencilFrontOpFail should be Keep by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpZFail) === GL.StencilOperation.Keep, "StencilFrontOpZFail should be Keep by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpZPass) === GL.StencilOperation.Keep, "StencilFrontOpZPass should be Keep by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilBackFunc) === GL.StencilFunction.Always, "StencilBackFunc should be Always by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilBackRef) === 0, "StencilBackRef should be 0 by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilBackWriteMask) === 0xFFFFFFFF, "StencilBackWriteMask should be 0xFFFFFFFF by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpFail) === GL.StencilOperation.Keep, "StencilBackOpFail should be Keep by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpZFail) === GL.StencilOperation.Keep, "StencilBackOpZFail should be Keep by default");
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpZPass) === GL.StencilOperation.Keep, "StencilBackOpZPass should be Keep by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontFunc) === GL.StencilFunction.Always, "StencilFrontFunc should be Always by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontRef) === 0, "StencilFrontRef should be 0 by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontWriteMask) === 0xFFFFFFFF, "StencilFrontWriteMask should be 0xFFFFFFFF by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpFail) === GL.StencilOperation.Keep, "StencilFrontOpFail should be Keep by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpZFail) === GL.StencilOperation.Keep, "StencilFrontOpZFail should be Keep by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpZPass) === GL.StencilOperation.Keep, "StencilFrontOpZPass should be Keep by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilBackFunc) === GL.StencilFunction.Always, "StencilBackFunc should be Always by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilBackRef) === 0, "StencilBackRef should be 0 by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilBackWriteMask) === 0xFFFFFFFF, "StencilBackWriteMask should be 0xFFFFFFFF by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpFail) === GL.StencilOperation.Keep, "StencilBackOpFail should be Keep by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpZFail) === GL.StencilOperation.Keep, "StencilBackOpZFail should be Keep by default");
+    assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpZPass) === GL.StencilOperation.Keep, "StencilBackOpZPass should be Keep by default");
 
     // Test setting WebGL state via RenderState apply.
     const prevState = new RenderState();
@@ -309,12 +305,12 @@ describe("RenderState.apply()", () => {
     newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.Blend) === true, "blend flag should now be enabled");
 
-    /* Stenciling commented out for now since it is not used */
-    /* This stencil test actually does not work.  Perhaps because no stencil target is set up? */
-    // prevState.copyFrom(newState);
-    // newState.flags.stencilTest = true;
-    // newState.apply(gl, prevState);
-    // assert.isTrue(gl.getParameter(GL.Capability.StencilTest) === true, "stencilTest flag should now be enabled");
+    if (true || DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
+      prevState.copyFrom(newState);
+      newState.flags.stencilTest = true;
+      newState.apply(prevState);
+      assert.isTrue(gl.getParameter(GL.Capability.StencilTest) === true, "stencilTest flag should now be enabled");
+    }
 
     newState.frontFace = GL.FrontFace.Clockwise;
     newState.apply(prevState);

@@ -1,0 +1,8 @@
+{
+  "$schema" : "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+  "alias" : "d",
+  "description" : "This is a test Schema.",
+  "label" : "SchemaD",
+  "name" : "SchemaD",
+  "version" : "04.04.04"
+}

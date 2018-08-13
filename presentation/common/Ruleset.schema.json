@@ -1,0 +1,2152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "AllInstanceNodesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns all available instance nodes filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
+      "properties": {
+        "alwaysReturnsChildren": {
+          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "AllInstanceNodes"
+          ],
+          "type": "string"
+        },
+        "supportedSchemas": {
+          "$ref": "#/definitions/SchemasSpecification",
+          "description": "Specification of schemas whose instances should be returned."
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "AllRelatedInstanceNodesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns all related instance nodes for parent ECInstance node.\n\nPrecondition: can be used only if parent node is ECInstance node. If there is\nno immediate parent instance node it will go up until it finds one.",
+      "properties": {
+        "alwaysReturnsChildren": {
+          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        },
+        "skipRelatedLevel": {
+          "description": "Skips defined level of related items and shows next level related items.\n\nExample: lets say we have relationship hierarchy A->B->C, but we want\nto show A->C. In this case we need to set this property to 1 - the engine will\nquery all direct relationships and all nested relationships and only nested\nones will be used to create content.\n\nDefaults to `0`.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "AllRelatedInstanceNodes"
+          ],
+          "type": "string"
+        },
+        "supportedSchemas": {
+          "$ref": "#/definitions/SchemasSpecification",
+          "description": "Specification of schemas whose instances should be returned."
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "CalculatedPropertiesSpecification": {
+      "additionalProperties": false,
+      "description": "Sub-specification to include additional calculated properties into the content.",
+      "properties": {
+        "label": {
+          "description": "Label of the calculated property. May be localized.",
+          "type": "string"
+        },
+        "priority": {
+          "description": "Priority of the property. Determines the position of this property in UI\ncomponents - higher priority means the property should be more visible.\nDefaults to `1000`.",
+          "type": "integer"
+        },
+        "value": {
+          "description": "ECExpression used to calculate the value. The\nfollowing symbol sets are available:\n- ECInstance ECExpression context\n- Ruleset variables",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "type": "object"
+    },
+    "CheckBoxRule": {
+      "additionalProperties": false,
+      "description": "Rule that allows configuring check boxes for certain nodes.\n\nIs also allows binding check box state with boolean properties by setting `propertyName` parameter.\nIf `propertyName` is not set, then `defaultValue` is used for default check box state.",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value to use for the check box state",
+          "type": "boolean"
+        },
+        "isEnabled": {
+          "description": "Indicates whether check box is enabled or disabled.\n\nNote: Only makes sense when not bound to an ECProperty.",
+          "type": [
+            "string",
+            "boolean"
+          ]
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertyName": {
+          "description": "Name of boolean type ECProperty which is bound with the check box state. When set,\nproperty value gets bound to checkbox state.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "CheckBox"
+          ],
+          "type": "string"
+        },
+        "useInversedPropertyValue": {
+          "description": "Should property value be inversed for the check box state.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "ChildNodeRule": {
+      "additionalProperties": false,
+      "description": "Child node rules define nodes that are displayed at\neach child hierarchy level.",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "customizationRules": {
+          "description": "Customization rules that are applied for the content returned by\nthis rule.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/CheckBoxRule"
+              },
+              {
+                "$ref": "#/definitions/GroupingRule"
+              },
+              {
+                "$ref": "#/definitions/ImageIdOverride"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverride"
+              },
+              {
+                "$ref": "#/definitions/LabelOverride"
+              },
+              {
+                "$ref": "#/definitions/PropertySortingRule"
+              },
+              {
+                "$ref": "#/definitions/DisabledSortingRule"
+              },
+              {
+                "$ref": "#/definitions/StyleOverride"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ChildNodes"
+          ],
+          "type": "string"
+        },
+        "specifications": {
+          "description": "Specifications that define what content the rule returns.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/AllInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/AllRelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/CustomNodeSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "stopFurtherProcessing": {
+          "description": "Stop processing rules that have lower priority. Used in cases when recursion\nsuppression is needed.\n\nNote: If this flag is set, `specifications` and `subConditions` are not processed.",
+          "type": "boolean"
+        },
+        "subConditions": {
+          "description": "Specifies child node rules which are only used when specific condition\nis satisfied.",
+          "items": {
+            "$ref": "#/definitions/SubCondition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "ClassGroup": {
+      "additionalProperties": false,
+      "description": "Allows grouping ECInstance nodes by their base class.",
+      "properties": {
+        "baseClass": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the base ECClass to group by. Defaults to rule's class."
+        },
+        "createGroupForSingleItem": {
+          "description": "Should the grouping node be created if there is only one item in that group.",
+          "type": "boolean"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Class"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "ContentInstancesOfSpecificClassesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns ECInstance(s) of specified classes.\n\nNote: this specification doesn't rely on selection. It always returns instances no matter\nwhat the selection is, so pre-filtering should be done in `ContentRule` condition and `instanceFilter`.",
+      "properties": {
+        "arePolymorphic": {
+          "description": "Should all `classes` be treated polymorphically.",
+          "type": "boolean"
+        },
+        "calculatedProperties": {
+          "description": "Specifications for including calculated properties",
+          "items": {
+            "$ref": "#/definitions/CalculatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "classes": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "List of ECClass specifications whose ECInstances should be selected."
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions available in instance filter",
+          "type": "string"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertiesDisplay": {
+          "description": "Specifications for customizing property display by hiding / showing them",
+          "items": {
+            "$ref": "#/definitions/PropertiesDisplaySpecification"
+          },
+          "type": "array"
+        },
+        "propertyEditors": {
+          "description": "Specifications for assigning property editors",
+          "items": {
+            "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "relatedInstances": {
+          "description": "Specifications for joining related instances",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "relatedProperties": {
+          "description": "Specifications for including properties of related instances",
+          "items": {
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "showImages": {
+          "description": "Should each content record be assigned an image id",
+          "type": "boolean"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ContentInstancesOfSpecificClasses"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "classes",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "ContentModifier": {
+      "additionalProperties": false,
+      "description": "Rule that allows supplementing content with additional\nspecifications for certain ECClasses.",
+      "properties": {
+        "calculatedProperties": {
+          "description": "Specifications for including calculated properties",
+          "items": {
+            "$ref": "#/definitions/CalculatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of ECClass whose content should be supplemented.\nThe modifier is applied to all ECClasses if this property\nis not specified."
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertiesDisplay": {
+          "description": "Specifications for customizing property display by hiding / showing them",
+          "items": {
+            "$ref": "#/definitions/PropertiesDisplaySpecification"
+          },
+          "type": "array"
+        },
+        "propertyEditors": {
+          "description": "Specifications for assigning property editors",
+          "items": {
+            "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "relatedProperties": {
+          "description": "Specifications for including properties of related instances",
+          "items": {
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ContentModifier"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "ContentRelatedInstancesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns ECInstance(s) related to current selection.\n\nNote: Use `ContentRule.condition` to apply specification on correct selection.",
+      "properties": {
+        "calculatedProperties": {
+          "description": "Specifications for including calculated properties",
+          "items": {
+            "$ref": "#/definitions/CalculatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances of defined related classes.\n\nSee: ECExpressions available in instance filter",
+          "type": "string"
+        },
+        "isRecursive": {
+          "description": "Walks the specified relationships recursively to find related instances.\n\nNote: Can't be used together with `skipRelatedLevel`.\n\nWarning: Using this specification has significant negative performance impact.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertiesDisplay": {
+          "description": "Specifications for customizing property display by hiding / showing them",
+          "items": {
+            "$ref": "#/definitions/PropertiesDisplaySpecification"
+          },
+          "type": "array"
+        },
+        "propertyEditors": {
+          "description": "Specifications for assigning property editors",
+          "items": {
+            "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "relatedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "List of related instance ECClass specifications. Optional if `relationships` is specified."
+        },
+        "relatedInstances": {
+          "description": "Specifications for joining related instances",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "relatedProperties": {
+          "description": "Specifications for including properties of related instances",
+          "items": {
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "relationships": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "List of ECRelationship specifications to follow when looking for related instances.\nOptional if `relatedClasses` is specified."
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        },
+        "showImages": {
+          "description": "Should each content record be assigned an image id",
+          "type": "boolean"
+        },
+        "skipRelatedLevel": {
+          "description": "Skips defined level of related items and shows next level related items. Defaults to `0`.\n\nNote: Can't be used together with `isRecursive`.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ContentRelatedInstances"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "ContentRule": {
+      "additionalProperties": false,
+      "description": "Defines content that's displayed in content controls (table view,\nproperty pane, etc.) and the content that's selected in\nunified selection controls",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Content"
+          ],
+          "type": "string"
+        },
+        "specifications": {
+          "description": "Specifications that define content returned by the rule",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/ContentInstancesOfSpecificClassesSpecification"
+              },
+              {
+                "$ref": "#/definitions/ContentRelatedInstancesSpecification"
+              },
+              {
+                "$ref": "#/definitions/SelectedNodeInstancesSpecification"
+              }
+            ]
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "ruleType",
+        "specifications"
+      ],
+      "type": "object"
+    },
+    "CustomNodeSpecification": {
+      "additionalProperties": false,
+      "description": "Returns a custom-defined node.",
+      "properties": {
+        "alwaysReturnsChildren": {
+          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description of the node. May be localized.",
+          "type": "string"
+        },
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "imageId": {
+          "description": "Id of the image to use for this custom node.",
+          "type": "string"
+        },
+        "label": {
+          "description": "Label of the node. May be localized.",
+          "type": "string"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "CustomNode"
+          ],
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of the node.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "specType",
+        "type"
+      ],
+      "type": "object"
+    },
+    "CustomQueryInstanceNodesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns nodes for instances which are returned by an ECSQL query.\n\nNote: this specification is formerly known as `SearchResultInstanceNodesSpecification`.",
+      "properties": {
+        "alwaysReturnsChildren": {
+          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "queries": {
+          "description": "Specifications of queries used to create the content.\n\nNote: if more than one search query is specified, the results get merged.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/StringQuerySpecification"
+              },
+              {
+                "$ref": "#/definitions/ECPropertyValueQuerySpecification"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "CustomQueryInstanceNodes"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "DisabledSortingRule": {
+      "additionalProperties": false,
+      "description": "Rule to disable sorting for certain ECInstances in the hierarchy and/or content.\n\nNote: Disabling sorting increases performance\n\nNote: This rule is not meant to be used to sort grouping nodes, custom nodes or\nother non ECInstance type of nodes.",
+      "properties": {
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of ECClass whose ECInstances should be sorted by this rule.\nDefaults to all classes in current context if not specified."
+        },
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "isPolymorphic": {
+          "description": "Should `class` defined in this rule be handled polymorphically.",
+          "type": "boolean"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "DisabledSorting"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "ECPropertyValueQuerySpecification": {
+      "additionalProperties": false,
+      "description": "Specification which specifies the name of the parent instance property whose\nvalue is the ECSQL used to query for instances.\n\nPrecondition: can be used only if parent node is ECInstance node.\nIf there is no immediate parent instance node it will go up until it finds one.",
+      "properties": {
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of ECClass whose instances the query returns."
+        },
+        "parentPropertyName": {
+          "description": "Specifies name of the parent instance property whose value\ncontains the ECSQL query.\n\nWarning: the property whose name is specified must be of string type.",
+          "type": "string"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ECPropertyValue"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "class",
+        "parentPropertyName",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "GroupingRule": {
+      "additionalProperties": false,
+      "description": "Grouping rule is an advanced way to configure node grouping.\n\nIt allows to define these types of groupings:\n- Group by base class.\n- Group by any property of the instance by a common value or a range of values.\n- Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these\ninstances represent the same object for the user.\n\nThe rule works in conjunction with other grouping options available in navigation specifications `ChildNodeSpecification`:\n`groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:\n- Base ECClass grouping node (specified by base class grouping specification `ClassGroup`)\n   - ECClass grouping node (specified by `groupByClass` property)\n     - ECProperty grouping node 1 (specified by 1st `PropertyGroup`)\n       - ECProperty grouping node 2 (specified by 2nd `PropertyGroup`)\n         - ECProperty grouping node n (specified by n-th `PropertyGroup`)\n           - Display label grouping node (specified by `groupByLabel` property)\n             - ECInstance nodes (may be grouped under a single node by `SameLabelInstanceGroup`)",
+      "properties": {
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of ECClass which should be grouped using this rule"
+        },
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "groups": {
+          "description": "Specifications of grouping which should be applied to maching ECInstances",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/ClassGroup"
+              },
+              {
+                "$ref": "#/definitions/PropertyGroup"
+              },
+              {
+                "$ref": "#/definitions/SameLabelInstanceGroup"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Grouping"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "class",
+        "groups",
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "ImageIdOverride": {
+      "additionalProperties": false,
+      "description": "Rule that allows overriding default icon and dynamically define an icon\nfor a particular node based on the context.",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "imageIdExpression": {
+          "description": "Defines an image ID that should be used for nodes that meet rule condition. This is\nan ECExpression, so ID can be\ndefined/formatted dynamically based on the context - for example ECInstance property value.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ImageIdOverride"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "imageIdExpression",
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverride": {
+      "additionalProperties": false,
+      "description": "Rule to override labels for instances of specific ECClasses.\n\nImportant: Prefer this rule over `LabelOverride` when possible as it\nhas better performance.",
+      "properties": {
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the ECClass to apply this rule to."
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertyNames": {
+          "description": "Names of properties which should be used as instance label. The\nfirst property that has a value is used as the actual label.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "InstanceLabelOverride"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "class",
+        "propertyNames",
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "InstanceNodesOfSpecificClassesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns all instance nodes of specified ECClasses.",
+      "properties": {
+        "alwaysReturnsChildren": {
+          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "arePolymorphic": {
+          "description": "Should all `classes` be handled polymorphically.",
+          "type": "boolean"
+        },
+        "classes": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Specifications of ECClasses whose instances should be returned."
+        },
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions Available in InstanceFilter.",
+          "type": "string"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "InstanceNodesOfSpecificClasses"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "classes",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "LabelOverride": {
+      "additionalProperties": false,
+      "description": "Rule to override labels and descriptions of nodes which pass rule's\ncondition.\n\nImportant: Prefer `InstanceLabelOverride` over this rule when possible as it\nhas better performance.",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "description": {
+          "description": "Defines the description that should be used for node. This is\nan ECExpression, so\ndescription can be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "label": {
+          "description": "Defines the label that should be used for node. This is\nan ECExpression, so label\ncan be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "LabelOverride"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "MultiSchemaClassesSpecification": {
+      "additionalProperties": false,
+      "description": "Specification for multiple ECClasses that belong to\nthe same ECSchema.",
+      "properties": {
+        "classNames": {
+          "description": "List of ECClass names.\n\nEach class name may be prefixed with:\n- `E:` to exclude class from results\n- `PE:` to exclude class and all its sublasses from results\nSo generally the list may contain `[\"base_class_name\", \"PE:derived_class_name\"]` to\ninclude all instances of `base_class_name` except all polymorphic instances of\n`derived_class_name`.",
+          "items": {
+            "type": "string"
+          },
+          "pattern": "^(E:|PE:)?[\\w\\d]+$",
+          "type": "array"
+        },
+        "schemaName": {
+          "description": "Name of ECSchema",
+          "pattern": "^[\\w\\d]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "classNames",
+        "schemaName"
+      ],
+      "type": "object"
+    },
+    "PropertiesDisplaySpecification": {
+      "additionalProperties": false,
+      "description": "Sub-specification to hide / display specified ECInstance properties.",
+      "properties": {
+        "isDisplayed": {
+          "description": "Should property be displayed. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Controls priority of the specification. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertyNames": {
+          "description": "List of ECProperty names which should be hidden or shown",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "propertyNames"
+      ],
+      "type": "object"
+    },
+    "PropertyEditorJsonParameters": {
+      "additionalProperties": false,
+      "description": "Arbitrary JSON parameters for custom property editors",
+      "properties": {
+        "json": {
+          "description": "Arbitrary JSON that can be handled by a property editor"
+        },
+        "paramsType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Json"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "json",
+        "paramsType"
+      ],
+      "type": "object"
+    },
+    "PropertyEditorMultilineParameters": {
+      "additionalProperties": false,
+      "description": "Multiline parameters for property editors that support multiline display",
+      "properties": {
+        "height": {
+          "description": "Number of lines. Defaults to `1`.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "paramsType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Multiline"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "paramsType"
+      ],
+      "type": "object"
+    },
+    "PropertyEditorRangeParameters": {
+      "additionalProperties": false,
+      "description": "Range parameters for property editors that support ranges",
+      "properties": {
+        "max": {
+          "description": "Maximum value of the range.",
+          "type": "number"
+        },
+        "min": {
+          "description": "Minimum value of the range.",
+          "type": "number"
+        },
+        "paramsType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Range"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "paramsType"
+      ],
+      "type": "object"
+    },
+    "PropertyEditorSliderParameters": {
+      "additionalProperties": false,
+      "description": "Slider parameters for property editors that support slider display",
+      "properties": {
+        "intervalsCount": {
+          "description": "Count of intervals. Defaults to `1`.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "isVertical": {
+          "description": "Is slider vertical.",
+          "type": "boolean"
+        },
+        "max": {
+          "description": "Maximum value that can be set.",
+          "type": "number"
+        },
+        "min": {
+          "description": "Minimum value that can be set.",
+          "type": "number"
+        },
+        "paramsType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Slider"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "max",
+        "min",
+        "paramsType"
+      ],
+      "type": "object"
+    },
+    "PropertyEditorsSpecification": {
+      "additionalProperties": false,
+      "description": "Sub-specification to specify custom property editor",
+      "properties": {
+        "editorName": {
+          "description": "Name of the custom editor",
+          "type": "string"
+        },
+        "parameters": {
+          "description": "Parameters for the editor",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/PropertyEditorJsonParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorMultilineParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorRangeParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorSliderParameters"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "propertyName": {
+          "description": "Name of the property which custom editor should be used for",
+          "type": "string"
+        }
+      },
+      "required": [
+        "editorName",
+        "propertyName"
+      ],
+      "type": "object"
+    },
+    "PropertyGroup": {
+      "additionalProperties": false,
+      "description": "Allows grouping by property of the instance\nby a common value or by range of values.",
+      "properties": {
+        "createGroupForSingleItem": {
+          "description": "Should the grouping node be created if there is only one item in that group",
+          "type": "boolean"
+        },
+        "createGroupForUnspecifiedValues": {
+          "description": "Should a separate grouping node be created for nodes whose grouping value is not set. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupingValue": {
+          "description": "Should the instances be grouped on display label or the grouping property value.\nDefaults to `PropertyGroupingValue.DisplayLabel`.\n\nNote: Grouping by property value is required if the display label is\noverridden to display grouped instances count.\n\nWarning: Grouping by label and sorting by property value is not possible.",
+          "enum": [
+            "DisplayLabel",
+            "PropertyValue"
+          ],
+          "type": "string"
+        },
+        "imageId": {
+          "description": "ID of an image to use for the grouping node",
+          "minLength": 1,
+          "type": "string"
+        },
+        "propertyName": {
+          "description": "Name of the ECProperty which is used for grouping.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "ranges": {
+          "description": "Ranges into which the grouping values are divided",
+          "items": {
+            "$ref": "#/definitions/PropertyRangeGroupSpecification"
+          },
+          "type": "array"
+        },
+        "sortingValue": {
+          "description": "Should the nodes be sorted by display label or the grouping property value. In most\ncases the result is the same, unless `LabelOverride` rule is used to change the display label.\nDefaults to `PropertyGroupingValue.DisplayLabel`.\n\nNote: Sorting by property value only makes sense when instances are grouped by\nproperty value as well.\n\nWarning: Grouping by label and sorting by property value is not possible.",
+          "enum": [
+            "DisplayLabel",
+            "PropertyValue"
+          ],
+          "type": "string"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "Property"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "propertyName",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "PropertyRangeGroupSpecification": {
+      "additionalProperties": false,
+      "description": "Describes a grouping range",
+      "properties": {
+        "fromValue": {
+          "description": "Value that defines the range start (inclusive)",
+          "minLength": 1,
+          "type": "string"
+        },
+        "imageId": {
+          "description": "ID of an image to use for the grouping node. Defaults to `PropertyGroup.imageId` specified in `PropertyGroup`.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "label": {
+          "description": "Grouping node label. May be localized.\nDefaults to `{from value} - {to value}`",
+          "minLength": 1,
+          "type": "string"
+        },
+        "toValue": {
+          "description": "Value that defines the range end (inclusive)",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "fromValue",
+        "toValue"
+      ],
+      "type": "object"
+    },
+    "PropertySortingRule": {
+      "additionalProperties": false,
+      "description": "Rule to configure sorting for certain ECInstances in the hierarchy and/or content.\nIt is possible to configure different sorting for different types of ECInstances.\n\nMultiple sorting rules may be applied for the same instances - in this case the\ninstances are first sorted by the highest priority rule and then the lower priority ones.\n\nNote: This rule is not meant to be used to sort grouping nodes, custom nodes or\nother non ECInstance type of nodes.",
+      "properties": {
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of ECClass whose ECInstances should be sorted by this rule.\nDefaults to all classes in current context if not specified."
+        },
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "isPolymorphic": {
+          "description": "Should `class` defined in this rule be handled polymorphically.",
+          "type": "boolean"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertyName": {
+          "description": "Name of the property which should be used for sorting",
+          "minLength": 1,
+          "type": "string"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "PropertySorting"
+          ],
+          "type": "string"
+        },
+        "sortAscending": {
+          "description": "Will sort in ascending order if set to true, otherwise descending. Defaults to `true`.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "propertyName",
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "RelatedInstanceNodesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns related instance nodes of specified related ECClasses.\n\nPrecondition: can be used only if parent node is ECInstance\nnode. If there is no immediate parent instance node it will go up until it finds one.",
+      "properties": {
+        "alwaysReturnsChildren": {
+          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions Available in InstanceFilter",
+          "type": "string"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Related classes whose instances should be returned as content.\nOptional if `relationships` is specified."
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "relationships": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Relationships that should be followed when gathering content.\nOptional if `relatedClasses` is specified."
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        },
+        "skipRelatedLevel": {
+          "description": "Skips defined level of related items and shows next level related items.\n\nExample: lets say we have relationship hierarchy A->B->C, but we want\nto show A->C. In this case we need to set this property to 1 - the engine will\nquery all direct relationships and all nested relationships and only nested\nones will be used to create content.\n\nDefaults to `0`.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "RelatedInstanceNodes"
+          ],
+          "type": "string"
+        },
+        "supportedSchemas": {
+          "description": "Names of ECSchemas used to look up relationships and classes when `relationships`\nor `relatedClasses` are not specified.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "RelatedInstanceSpecification": {
+      "additionalProperties": false,
+      "description": "This sub-specification allows joining the primary node instance with any number of related instances and creating\nhierarchies based on a mix of those related instances.\n\nThe related instance property values can be accessed from multiple different places:\n- Instance filter\n- Customization rule value\n- Grouping rule\n\nExample:\n```JSON\n{\n   \"id\": \"related_instance_example\",\n   \"rules\": [{\n     \"ruleType\": \"LabelOverride\",\n     \"condition\": \"ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\\\"Model\\\", \\\"BisCore\\\")\",\n     \"label\": \"modeledElement.UserLabel\"\n   }, {\n     \"ruleType\": \"Grouping\",\n     \"condition\": \"ParentNode.IsNull\",\n     \"class\": {\n       \"schemaName\": \"BisCore\",\n       \"className\": \"Element\"\n     },\n     \"groups\": [{\n       \"specType\": \"Property\",\n       \"propertyName\": \"CodeValue\",\n       \"createGroupForSingleItem\": true\n     }]\n   }, {\n     \"ruleType\": \"RootNodes\",\n     \"specifications\": [{\n       \"specType\": \"InstanceNodesOfSpecificClasses\",\n       \"classes\": { \"schemaName\": \"BisCore\", \"classNames\": [\"GeometricModel\"] },\n       \"arePolymorphic\": true,\n       \"instanceFilter\": \"modeledElement.CodeNamespace = 1\",\n       \"relatedInstances\": [{\n         \"relationship\": { \"schemaName\": \"BisCore\", \"className\": \"ModelModelsElement\" },\n         \"requiredDirection\": \"Forward\",\n         \"class\": { \"schemaName\": \"BisCore\", \"className\": \"Element\" },\n         \"alias\": \"modeledElement\"\n       }]\n     }]\n   }]\n}\n```\nHere `BisCore:GeometricModel` instances are joined with `BisCore:Element` instances to create the hierarchy. This allows:\n- Related `BisCore:Element` properties to be accessed in `InstanceFilter` using `modeledElement` alias.\n- The `LabelOverride` rule to use `modeledElement` alias to access properties of the joined related instance.\n- The `GroupingRule` to be applied because it's grouping `BisCore:Element` which is now part of the generated nodes.",
+      "properties": {
+        "alias": {
+          "description": "The alias to give for the joined related instance. Used to reference the related instance in\ninstance filter and customization rules.\n\n**The value must be unique per-specification!**",
+          "pattern": "^\\w[\\w\\d]*$",
+          "type": "string"
+        },
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the related instance class."
+        },
+        "isRequired": {
+          "description": "Is the related instance required to exist. If yes, primary instance won't be returned\nif the related instance doesn't exist. If not, primary instance will be returned, but related\ninstance will be null.\n\nIn SQL terms in can be compared to INNER JOIN vs OUTER JOIN.",
+          "type": "boolean"
+        },
+        "relationship": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the relationship to use for joining the related instance"
+        },
+        "requiredDirection": {
+          "description": "Direction of the relationship",
+          "enum": [
+            "Backward",
+            "Forward"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "alias",
+        "class",
+        "relationship",
+        "requiredDirection"
+      ],
+      "type": "object"
+    },
+    "RelatedPropertiesSpecification": {
+      "additionalProperties": false,
+      "description": "Sub-specification to include additional related instance properties",
+      "properties": {
+        "isPolymorphic": {
+          "description": "Should `relationships` and `relatedClasses` be handled polymorphically.",
+          "type": "boolean"
+        },
+        "nestedRelatedProperties": {
+          "description": "Specifications for nested related properties",
+          "items": {
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "propertyNames": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "List of names of related class properties that should be included in the content.\nAll properties are included if not specified."
+        },
+        "relatedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Specifications of related ECClasses. Optional if `relationships` is specified."
+        },
+        "relationshipMeaning": {
+          "description": "Meaning of the relationship. Defaults to `RelationshipMeaning.RelatedInstance`",
+          "enum": [
+            "RelatedInstance",
+            "SameInstance"
+          ],
+          "type": "string"
+        },
+        "relationships": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Specifications of ECRelationshipClasses. Optional if `relatedClasses` is specified."
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RootNodeRule": {
+      "additionalProperties": false,
+      "description": "Root node rules define the nodes that are displayed\nat the root hierarchy level.",
+      "properties": {
+        "autoExpand": {
+          "description": "Automatically expand nodes created by this rule.",
+          "type": "boolean"
+        },
+        "customizationRules": {
+          "description": "Customization rules that are applied for the content returned by\nthis rule.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/CheckBoxRule"
+              },
+              {
+                "$ref": "#/definitions/GroupingRule"
+              },
+              {
+                "$ref": "#/definitions/ImageIdOverride"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverride"
+              },
+              {
+                "$ref": "#/definitions/LabelOverride"
+              },
+              {
+                "$ref": "#/definitions/PropertySortingRule"
+              },
+              {
+                "$ref": "#/definitions/DisabledSortingRule"
+              },
+              {
+                "$ref": "#/definitions/StyleOverride"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "RootNodes"
+          ],
+          "type": "string"
+        },
+        "specifications": {
+          "description": "Specifications that define what content the rule returns.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/AllInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/AllRelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/CustomNodeSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "stopFurtherProcessing": {
+          "description": "Stop processing rules that have lower priority. Used in cases when recursion\nsuppression is needed.\n\nNote: If this flag is set, `specifications` and `subConditions` are not processed.",
+          "type": "boolean"
+        },
+        "subConditions": {
+          "description": "Specifies child node rules which are only used when specific condition\nis satisfied.",
+          "items": {
+            "$ref": "#/definitions/SubCondition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "SameLabelInstanceGroup": {
+      "additionalProperties": false,
+      "description": "Allows grouping multiple instances with the same label into one ECInstance node.\nIt can be used in cases when these instances represent the same object for the user.\n\nWhen multiple instances are grouped, an ECInstance node is created instead of a\ngrouping node and the ECInstance key for the node is assigned to key of one of grouped\ninstances.",
+      "properties": {
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "SameLabelInstance"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "SchemasSpecification": {
+      "additionalProperties": false,
+      "description": "Specification for a list of ECSchemas",
+      "properties": {
+        "isExclude": {
+          "description": "Should schemas specified in `schemaNames` be excluded rather than included.\nExclusion works by including everything except what's specified in `schemaNames`.",
+          "type": "boolean"
+        },
+        "schemaNames": {
+          "description": "ECSchema names",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "schemaNames"
+      ],
+      "type": "object"
+    },
+    "SelectedNodeInstancesSpecification": {
+      "additionalProperties": false,
+      "description": "Returns content for current selection.\n\nNote: No data is returned for selected custom nodes.",
+      "properties": {
+        "acceptableClassNames": {
+          "description": "Filter selected nodes by specified class names. All classes are\naccepted if not specified.",
+          "pattern": "^[\\w\\d]+$",
+          "type": "string"
+        },
+        "acceptablePolymorphically": {
+          "description": "Should `acceptableClassNames` property be checked polymorphically. If true, all derived\nclasses are accepted as well.",
+          "type": "boolean"
+        },
+        "acceptableSchemaName": {
+          "description": "Filter selected nodes by specified schema name. All schemas are\naccepted if not specified.",
+          "pattern": "^[\\w\\d]+$",
+          "type": "string"
+        },
+        "calculatedProperties": {
+          "description": "Specifications for including calculated properties",
+          "items": {
+            "$ref": "#/definitions/CalculatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "onlyIfNotHandled": {
+          "description": "Identifies whether we should ignore this specification if there is already existing specification\nwith higher `priority` that already provides content.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertiesDisplay": {
+          "description": "Specifications for customizing property display by hiding / showing them",
+          "items": {
+            "$ref": "#/definitions/PropertiesDisplaySpecification"
+          },
+          "type": "array"
+        },
+        "propertyEditors": {
+          "description": "Specifications for assigning property editors",
+          "items": {
+            "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "relatedInstances": {
+          "description": "Specifications for joining related instances",
+          "items": {
+            "$ref": "#/definitions/RelatedInstanceSpecification"
+          },
+          "type": "array"
+        },
+        "relatedProperties": {
+          "description": "Specifications for including properties of related instances",
+          "items": {
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "showImages": {
+          "description": "Should each content record be assigned an image id",
+          "type": "boolean"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "SelectedNodeInstances"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "SingleSchemaClassSpecification": {
+      "additionalProperties": false,
+      "description": "Specification for a single ECClass",
+      "properties": {
+        "className": {
+          "description": "Name of ECClass",
+          "pattern": "^[\\w\\d]+$",
+          "type": "string"
+        },
+        "schemaName": {
+          "description": "Name of ECSchema",
+          "pattern": "^[\\w\\d]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "className",
+        "schemaName"
+      ],
+      "type": "object"
+    },
+    "StringQuerySpecification": {
+      "additionalProperties": false,
+      "description": "Specification which contains an ECSQL query used to query for instances.",
+      "properties": {
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of ECClass whose instances the query returns."
+        },
+        "query": {
+          "description": "Specifies the search ECSQL query.",
+          "type": "string"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "String"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "class",
+        "query",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "StyleOverride": {
+      "additionalProperties": false,
+      "description": "Rule to override default node style and dynamically define a foreground/background\ncolors and a font style for a particular nodes.",
+      "properties": {
+        "backColor": {
+          "description": "Background color that should be used for node. Supports on of the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
+          "pattern": "^(\\w+|rgb\\(\\d{1,3}, *\\d{1,3}, *\\d{1,3}\\)|#[0-9a-fA-F]{6})$",
+          "type": "string"
+        },
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "fontStyle": {
+          "description": "Font style that should be used for nodes that meet the condition.\nDefaults to `FontStyle.Regular`.",
+          "enum": [
+            "Bold",
+            "Italic",
+            "Italic,Bold",
+            "Regular"
+          ],
+          "type": "string"
+        },
+        "foreColor": {
+          "description": "Foreground color that should be used for node. Supports on of the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
+          "pattern": "^(\\w+|rgb\\(\\d{1,3}, *\\d{1,3}, *\\d{1,3}\\)|#[0-9a-fA-F]{6})$",
+          "type": "string"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "StyleOverride"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleType"
+      ],
+      "type": "object"
+    },
+    "SubCondition": {
+      "additionalProperties": false,
+      "description": "Defines child node specifications which should only be handled when a condition\nis satisfied.",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "specifications": {
+          "description": "Child node specifications which are used if condition is satisfied",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/AllInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/AllRelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/CustomNodeSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "subConditions": {
+          "description": "Nested sub-conditions",
+          "items": {
+            "$ref": "#/definitions/SubCondition"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "SupplementationInfo": {
+      "additionalProperties": false,
+      "description": "Contains supplementation-related information for\nsupplemental rulesets.",
+      "properties": {
+        "supplementationPurpose": {
+          "description": "Identifies why supplementation is done and uniquely identifies particular supplemental ruleset.\nThere can be only one supplemental rule set with the same `Ruleset.id` and `supplementationPurpose`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "supplementationPurpose"
+      ],
+      "type": "object"
+    },
+    "Variable": {
+      "additionalProperties": false,
+      "description": "Definition for single user-controllable variable",
+      "properties": {
+        "defaultValue": {
+          "description": "Default value.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Id of the variable",
+          "type": "string"
+        },
+        "label": {
+          "description": "Label of the variable that is shown in the UI.\nMay be localized.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Defines value type. Defaults to `VariableValueType.YesNo`.",
+          "enum": [
+            "IntValue",
+            "ShowHide",
+            "StringValue",
+            "YesNo"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "type": "object"
+    },
+    "VariablesGroup": {
+      "additionalProperties": false,
+      "description": "Presentation rules support variables that allow having additional customization of the hierarchy\nand content based on variables whose values can change during application session.\n\nThere are special ECExpression symbols\nthat can be used to access variables by their ID, so rule conditions can check for a value and change\nthe behavior. It allows showing / hiding some nodes in the hierarchy, change the grouping, etc.",
+      "properties": {
+        "label": {
+          "description": "Group label to display in the UI.\nMay be localized.",
+          "type": "string"
+        },
+        "nestedGroups": {
+          "description": "Nested variable groups.",
+          "items": {
+            "$ref": "#/definitions/VariablesGroup"
+          },
+          "type": "array"
+        },
+        "vars": {
+          "description": "Grouped variables",
+          "items": {
+            "$ref": "#/definitions/Variable"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "vars"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Presentation ruleset is a list of rules that define tree hierarchy and content provided by\nthe presentation manager. The ruleset consists of:\n- Ruleset options\n- Navigation rules:\n   - Root node rules\n   - Child node rules\n- Content rules for content you see in content controls\n- Customization rules used for additional customizations such as styling, labeling, checkboxes, etc.\n- User-controllable variables.",
+  "properties": {
+    "id": {
+      "description": "Ruleset identifier. This ID is used to bind UI components with the specific rule set.",
+      "minLength": 1,
+      "type": "string"
+    },
+    "rules": {
+      "description": "Presentation rules used to create hierarchies and content",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/CheckBoxRule"
+          },
+          {
+            "$ref": "#/definitions/GroupingRule"
+          },
+          {
+            "$ref": "#/definitions/ImageIdOverride"
+          },
+          {
+            "$ref": "#/definitions/InstanceLabelOverride"
+          },
+          {
+            "$ref": "#/definitions/LabelOverride"
+          },
+          {
+            "$ref": "#/definitions/PropertySortingRule"
+          },
+          {
+            "$ref": "#/definitions/DisabledSortingRule"
+          },
+          {
+            "$ref": "#/definitions/StyleOverride"
+          },
+          {
+            "$ref": "#/definitions/ContentRule"
+          },
+          {
+            "$ref": "#/definitions/ContentModifier"
+          },
+          {
+            "$ref": "#/definitions/RootNodeRule"
+          },
+          {
+            "$ref": "#/definitions/ChildNodeRule"
+          }
+        ]
+      },
+      "type": "array"
+    },
+    "supplementationInfo": {
+      "$ref": "#/definitions/SupplementationInfo",
+      "description": "Supplementation-related information for this ruleset"
+    },
+    "supportedSchemas": {
+      "$ref": "#/definitions/SchemasSpecification",
+      "description": "Names of schemas which the rules should be applied for. Rules are applied to all\nschemas if this property is not set."
+    },
+    "vars": {
+      "description": "User-controllable variable definitions",
+      "items": {
+        "$ref": "#/definitions/VariablesGroup"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "rules"
+  ],
+  "type": "object"
+}

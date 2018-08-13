@@ -1,6 +1,50 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 01 Aug 2018 14:24:06 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Aug 2018 05:06:20 GMT and should not be manually modified.
+
+## 0.113.0
+Fri, 10 Aug 2018 05:06:20 GMT
+
+### Updates
+
+- Fixed bugs in ClipMaskVolume constructor.
+- Fix for 2d views attachments modifying transform of their root view
+- Code cleanup
+- Fix number of varying vectors exceeding maximum on iOS.
+- Fix quantization errors with world decorations located far from the origin.
+- WIP: Turn on stenciling for use in classification of reality meshes.
+
+## 0.112.0
+Tue, 07 Aug 2018 12:19:22 GMT
+
+### Updates
+
+- Support pickable decorations.
+- Detect tap and double tap and provide tool methods to handle these events.
+- Remove old gesture events. Added onTouchComplete event for when all fingers leave surface.
+- Moved tapCount to BeTouchEvent. Added methods to convert touch event to mouse events. Rename onModelMotion to onMouseMotion.
+- Added separate ToolSettings for touch move distance and delay.
+- Support spherical skybox image projections.
+- Support cubemap skybox images.
+
+## 0.111.0
+Mon, 06 Aug 2018 19:25:38 GMT
+
+### Updates
+
+- All 3d view attachments overlay correctly.
+- 'Fit View' in a sheet view fits to the dimensions of the sheet.
+- Fix for not selecting the first sheet tile of 3d view attachment
+
+## 0.110.0
+Thu, 02 Aug 2018 14:48:42 GMT
+
+*Version update only*
+
+## 0.109.0
+Thu, 02 Aug 2018 09:07:03 GMT
+
+*Version update only*
 
 ## 0.108.0
 Wed, 01 Aug 2018 14:24:06 GMT

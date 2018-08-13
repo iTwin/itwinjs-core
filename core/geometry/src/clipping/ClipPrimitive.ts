@@ -366,16 +366,10 @@ export class ClipShape extends ClipPrimitive {
     this._isMask = isMask;
 
     this._zLowValid = (zLow !== undefined);
-    if (false !== this._zLowValid)
-      this._zLow = zLow!;
-    else
-      this._zLow = -Number.MAX_VALUE;
+    this._zLow = zLow;
 
     this._zHighValid = (zHigh !== undefined);
-    if (false !== this._zHighValid)
-      this._zHigh = zHigh!;
-    else
-      this._zHigh = Number.MAX_VALUE;
+    this._zHigh = zHigh;
 
     this._transformValid = (transform !== undefined);
     if (false !== this._transformValid) {

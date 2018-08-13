@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Table withUnifiedSelection renders correctly 1`] = `
+<Table
+  dataProvider={null}
+  isRowSelected={[Function]}
+  onRowsDeselected={[Function]}
+  onRowsSelected={[Function]}
+  pageAmount={89645}
+/>
+`;

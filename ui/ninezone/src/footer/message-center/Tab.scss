@@ -21,26 +21,18 @@
   }
 
   &.nz-is-open {
-    border-bottom: 0;
-    color: $primary-base;
-
-    > .nz-bar {
+    &:after {
+      content: '';
       width: 100%;
       height: 2px;
       position: absolute;
       top: $bar-size;
       left: 0;
+      background: $primary-base;
       padding-left: $bar-size;
       padding-right: $bar-size;
       box-sizing: border-box;
-
-      &:after {
-        content: '';
-        width: 100%;
-        height: 100%;
-        background: currentColor;
-        display: block;
-      }
+      background-clip: content-box;
     }
   }
 }

@@ -21,6 +21,10 @@ BIS defines a data model that is shared by a growing set of applications and ser
 
  The second option has been chosen for BIS as it is the more practical solution.
 
+ The strategy and organization described in this page may seem overly complex to domain developers who *just want to model a widget network*. These developers naturally want a simple organization that has a network of widgets in the top-most PhysicalModel. The problem with this *widget-centric* data organization is that there will be users who want to model widget networks, thingamajig systems and doohickey facilities and coordinate between them; how can these users do that if the top model is dedicated to widgets?
+
+ BIS has been created to facilitate multi-discipline coordination, and that naturally adds some complexity to single-discipline use cases.
+
 ### Predictability vs Flexibility / Strong vs Weak Type Safety
 
 A choice must be made between strong type-safety and weak type-safety.

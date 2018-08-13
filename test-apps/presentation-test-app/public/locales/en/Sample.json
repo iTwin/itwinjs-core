@@ -1,0 +1,16 @@
+{
+  "welcome-message": "Welcome to iModelJs Presentation Test App",
+  "controls": {
+    "grid": "Grid Widget",
+    "properties": "Properties Widget",
+    "tree": "Tree Widget",
+    "notifications": {
+      "error": "Error",
+      "nothing-selected": "Nothing selected",
+      "no-data": "No data",
+      "select-imodel": "Select an iModel",
+      "no-available-rulesets": "No available rulesets",
+      "select-ruleset": "Select a ruleset"
+    }
+  }
+}

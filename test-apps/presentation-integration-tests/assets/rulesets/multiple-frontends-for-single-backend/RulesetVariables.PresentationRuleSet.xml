@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PresentationRuleSet RuleSetId="RulesetVariables" VersionMajor="1" VersionMinor="0" SupportedSchemas=""
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RootNodeRule>
+    <CustomNode Type="root" Label="root label" Description="root description" ImageId="root image id" />
+    <LabelOverride Condition='ThisNode.Type = "root"' Label='GetVariableStringValue("variable_id")' />
+  </RootNodeRule>
+</PresentationRuleSet>

@@ -5,13 +5,14 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../utilities/Props";
 import withTheme, { WithThemeProps } from "../../../theme/WithTheme";
 import "./Label.scss";
 
-export interface LabelProps extends CommonProps {
-  children?: string;
+/** Properties of [[Label]] component. */
+export interface LabelProps extends CommonProps, NoChildrenProps {
+  /** Label text. */
+  text?: string;
 }
 
 // tslint:disable-next-line:variable-name
@@ -25,12 +26,13 @@ const LabelComponent: React.StatelessComponent<LabelProps> = (props) => {
       className={className}
       style={props.style}
     >
-      {props.children}
+      {props.text}
     </div>
   );
 };
 
+/** Label component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name
-export const Label: React.ComponentClass<CommonProps & WithThemeProps> = withTheme(LabelComponent);
+export const Label: React.ComponentClass<LabelProps & WithThemeProps> = withTheme(LabelComponent);
 
 export default Label;

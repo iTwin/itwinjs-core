@@ -19,17 +19,16 @@ import { TestRpcInterface, TestRpcInterface2, TestRpcInterface3 } from "./TestRp
 declare var ___TESTBED_IPC_RENDERER___: any;
 
 export function testInterfaceResource() {
-  const data = new ArrayBuffer(4);
-  const view = new Uint8Array(data);
-  view[0] = 1;
-  view[1] = 2;
-  view[2] = 3;
-  view[3] = 4;
+  const data = new Uint8Array(4);
+  data[0] = 1;
+  data[1] = 2;
+  data[2] = 3;
+  data[3] = 4;
   return Promise.resolve(data);
 }
 
 class TestRpcImplDirect extends TestRpcInterface {
-  public async op12(): Promise<ArrayBuffer> {
+  public async op12(): Promise<Uint8Array> {
     return testInterfaceResource();
   }
 }

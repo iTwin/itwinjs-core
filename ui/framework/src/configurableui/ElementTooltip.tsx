@@ -37,6 +37,7 @@ export class ElementTooltip extends React.Component<{}, ElementTooltipState> {
     ElementTooltip.ElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
   }
 
+  /** hidden */
   public readonly state: Readonly<ElementTooltipState> = {
     message: "",
     isTooltipVisible: false,

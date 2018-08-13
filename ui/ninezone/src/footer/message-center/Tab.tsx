@@ -5,15 +5,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps from "../../utilities/Props";
 import "./Tab.scss";
 
+/** Properties of [[MessageCenterTab]] component. */
 export interface MessageCenterTabProps extends CommonProps {
+  /** Tab content. */
+  children?: React.ReactNode;
+  /** Describes if the tab is open. */
   isOpen?: boolean;
+  /** Function called when the tab is clicked. */
   onClick?: () => void;
 }
 
+/** Message center tab used in [[MessageCenter]] component. */
 // tslint:disable-next-line:variable-name
 export const MessageCenterTab: React.StatelessComponent<MessageCenterTabProps> = (props) => {
   const className = classnames(
@@ -28,7 +33,6 @@ export const MessageCenterTab: React.StatelessComponent<MessageCenterTabProps> =
       onClick={props.onClick}
     >
       {props.children}
-      {props.isOpen && <div className="nz-bar" />}
     </div>
   );
 };

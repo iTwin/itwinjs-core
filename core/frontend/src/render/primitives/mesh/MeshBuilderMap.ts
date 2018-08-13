@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Comparable, compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
+import { Comparable, compareNumbers, compareBooleans, Dictionary, Id64 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { PolyfacePrimitive } from "../Polyface";
 import { DisplayParams } from "../DisplayParams";
@@ -13,6 +13,7 @@ import { Mesh, MeshList } from "./MeshPrimitives";
 import { Geometry } from "../geometry/GeometryPrimitives";
 import { GeometryList } from "../geometry/GeometryList";
 import { StrokesPrimitive } from "../Strokes";
+import { Feature, FeatureTable } from "@bentley/imodeljs-common";
 
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
   public readonly range: Range3d;
@@ -21,12 +22,13 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public readonly facetAreaTolerance: number;
   public readonly tolerance: number;
   public readonly is2d: boolean;
+  public readonly features?: Mesh.Features;
 
   /** if true the order of keys created to store meshBuilders maintain order */
   private readonly preserveKeyOrder: boolean;
   private keyOrder: number = 0;
 
-  constructor(tolerance: number, range: Range3d, is2d: boolean, preserveKeyOrder: boolean = false) {
+  constructor(tolerance: number, range: Range3d, is2d: boolean, preserveKeyOrder: boolean = false, id?: Id64) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
     this.tolerance = tolerance;
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
@@ -34,24 +36,27 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     this.range = range;
     this.is2d = is2d;
     this.preserveKeyOrder = preserveKeyOrder;
+    if (undefined !== id && id.isValid) {
+      const table = new FeatureTable(1);
+      this.features = new Mesh.Features(table);
+      this.features.add(new Feature(id), 0);
+    }
   }
 
-  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, wantSurfacesOnly: boolean, wantPreserveOrder: boolean): MeshBuilderMap {
-    const map = new MeshBuilderMap(tolerance, range, is2d, wantPreserveOrder);
-
-    if (geometries.isEmpty)
-      return map;
+  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, wantSurfacesOnly: boolean, wantPreserveOrder: boolean, id?: Id64): MeshBuilderMap {
+    const map = new MeshBuilderMap(tolerance, range, is2d, wantPreserveOrder, id);
 
     for (const geom of geometries)
       map.loadGeometry(geom, wantSurfacesOnly);
+
     return map;
   }
 
   public toMeshes(): MeshList {
-    const meshes = new MeshList();
-    for (const builder of this._values) {
+    const meshes = new MeshList(undefined !== this.features ? this.features.table : undefined);
+    for (const builder of this._values)
       meshes.push(builder.mesh);
-    }
+
     return meshes;
   }
 
@@ -124,7 +129,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     const { facetAreaTolerance, tolerance, is2d, range } = this;
     const key = this.getKey(displayParams, type, hasNormals, isPlanar);
 
-    return this.getBuilderFromKey(key, { displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance: facetAreaTolerance });
+    return this.getBuilderFromKey(key, { displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance: facetAreaTolerance, features: this.features });
   }
 
   public getKey(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilderMap.Key {

@@ -10,7 +10,7 @@ import { RpcProtocolEvent, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest, RpcResponseType } from "../core/RpcRequest";
 import { WebAppRpcProtocol, HttpServerRequest, WEB_RPC_CONSTANTS } from "./WebAppRpcProtocol";
 
-const emptyBuffer = new ArrayBuffer(0);
+const emptyBuffer = new Uint8Array(0);
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
@@ -18,7 +18,7 @@ export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
   private request: RequestInit = {};
   private responseText: string = "";
-  private responseBytes: ArrayBuffer = emptyBuffer;
+  private responseBytes: Uint8Array = emptyBuffer;
   private connectionResponse: Response | undefined;
 
   /** The underlying HTTP connection object. */
@@ -83,6 +83,7 @@ export class WebAppRpcRequest extends RpcRequest {
   protected send(): void {
     this._loading = true;
     this.request.body = this.protocol.serialize(this).parameters;
+    this.setHeader(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
     this.connection = fetch(new Request(this.path, this.request));
 
     this.connection.then(async (response) => {
@@ -95,7 +96,7 @@ export class WebAppRpcRequest extends RpcRequest {
       if (this.getResponseType() === RpcResponseType.Text) {
         this.responseText = await response.text();
       } else if (this.getResponseType() === RpcResponseType.Binary) {
-        this.responseBytes = await response.arrayBuffer();
+        this.responseBytes = new Uint8Array(await response.arrayBuffer());
       } else {
         throw new IModelError(BentleyStatus.ERROR, "Unknown response type");
       }
@@ -124,7 +125,7 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Supplies response bytes. */
-  public getResponseBytes(): ArrayBuffer {
+  public getResponseBytes(): Uint8Array {
     return this.responseBytes;
   }
 

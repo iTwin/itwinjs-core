@@ -34,7 +34,7 @@ export class RpcManager {
     return RpcRegistry.instance.getClientForInterface(definition);
   }
 
-  /** Registers the RPC implementation class for the backend. */
+  /** Register the RPC implementation class for the backend. */
   public static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void {
     RpcRegistry.instance.registerImpl(definition, implementation);
   }
@@ -44,7 +44,7 @@ export class RpcManager {
     RpcRegistry.instance.supplyImplInstance(definition, instance);
   }
 
-  /** Unregisters the RPC implementation class for the backend. */
+  /** Unregister the RPC implementation class for the backend. */
   public static unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void {
     RpcRegistry.instance.unregisterImpl(definition);
   }

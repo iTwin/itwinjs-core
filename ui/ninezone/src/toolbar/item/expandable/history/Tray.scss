@@ -12,29 +12,33 @@
   > .nz-items {
     display: flex;
 
-    & > * {
+    > * {
       display: none;
     }
 
-    & > *:first-child {
+    > *:first-child {
       display: block;
     }
   }
 
   &.nz-is-extended {
     > .nz-items {
-      & > * {
+      > * {
         display: block;
       }
     }
   }
 
-  > .nz-tab {
+  > .nz-extend-indicator {
     display: none;
     width: $extend-tool-history-tab-width;
     background: $background-4;
     align-items: center;
     justify-content: center;
+
+    &:after {
+      content: '';
+    }
   }
 
   &.nz-direction-left {
@@ -43,18 +47,18 @@
     > .nz-items {
       flex-direction: row-reverse;
 
-      & > *:last-child {
+      > *:last-child {
         border-top-left-radius: $border-radius;
         border-bottom-left-radius: $border-radius;
       }
     }
 
-    > .nz-tab {
+    > .nz-extend-indicator {
       border-radius: 0;
       border-top-left-radius: $border-radius;
       border-bottom-left-radius: $border-radius;
 
-      > .nz-triangle {
+      &:after {
         @include triangle-left($width: $triangle-width, $color: $triangle-color);
       }
     }
@@ -66,21 +70,21 @@
     > .nz-items {
       flex-direction: column-reverse;
 
-      & > *:last-child {
+      > *:last-child {
         border-radius: 0;
         border-top-left-radius: $border-radius;
         border-top-right-radius: $border-radius;
       }
     }
 
-    > .nz-tab {
+    > .nz-extend-indicator {
       width: auto;
       height: $extend-tool-history-tab-width;
       border-radius: 0;
       border-top-left-radius: $border-radius;
       border-top-right-radius: $border-radius;
 
-      > .nz-triangle {
+      &:after {
         @include triangle-top($width: $triangle-width, $color: $triangle-color);
       }
     }
@@ -92,19 +96,19 @@
     > .nz-items {
       flex-direction: row;
 
-      & > *:last-child {
+      > *:last-child {
         border-radius: 0;
         border-top-right-radius: $border-radius;
         border-bottom-right-radius: $border-radius;
       }
     }
 
-    > .nz-tab {
+    > .nz-extend-indicator {
       border-radius: 0;
       border-top-right-radius: $border-radius;
       border-bottom-right-radius: $border-radius;
 
-      > .nz-triangle {
+      &:after {
         @include triangle-right($width: $triangle-width, $color: $triangle-color);
       }
     }
@@ -116,33 +120,33 @@
     > .nz-items {
       flex-direction: column;
 
-      & > *:last-child {
+      > *:last-child {
         border-radius: 0;
         border-bottom-left-radius: $border-radius;
         border-bottom-right-radius: $border-radius;
       }
     }
 
-    > .nz-tab {
+    > .nz-extend-indicator {
       width: auto;
       height: $extend-tool-history-tab-width;
       border-radius: 0;
       border-bottom-left-radius: $border-radius;
       border-bottom-right-radius: $border-radius;
 
-      > .nz-triangle {
+      &:after {
         @include triangle-bottom($width: $triangle-width, $color: $triangle-color);
       }
     }
   }
 
-  &.nz-tab-is-visible {
-    > .nz-tab {
+  &.nz-extend-is-visible {
+    > .nz-extend-indicator {
       display: flex;
     }
 
     > .nz-items {
-      & > *:last-child {
+      > *:last-child {
         border-radius: 0;
       }
     }

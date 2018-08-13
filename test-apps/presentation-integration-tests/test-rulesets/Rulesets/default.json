@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "default",
+  "rules": [{
+    "ruleType": "RootNodes",
+    "specifications": [{
+      "specType": "CustomNode",
+      "type": "type",
+      "label": "label"
+    }]
+  }]
+}

@@ -5,15 +5,14 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
 import "./ResizeHandle.scss";
 
-export interface MessageResizeHandleProps extends CommonProps {
-  title?: React.ReactNode;
-  buttons?: React.ReactNode;
+/** Properties of [[MessageResizeHandle]] component. */
+export interface MessageResizeHandleProps extends CommonProps, NoChildrenProps {
 }
 
+/** Resize handle of [[Dialog]] component. */
 // tslint:disable-next-line:variable-name
 export const MessageResizeHandle: React.StatelessComponent<MessageResizeHandleProps> = (props) => {
   const className = classnames(
@@ -25,7 +24,7 @@ export const MessageResizeHandle: React.StatelessComponent<MessageResizeHandlePr
       className={className}
       style={props.style}
     >
-      <div className="dot" />
+      <div className="nz-dot" />
     </div>
   );
 };

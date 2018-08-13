@@ -5,12 +5,17 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import Props from "../../../../utilities/Props";
-
+import CommonProps from "../../../../utilities/Props";
 import "./Column.scss";
 
-export default class Column extends React.Component<Props> {
+/** Properties of [[Column]] component. */
+export interface ColumnProps extends CommonProps {
+  /** Actual content. I.e. tool items: [[Expander]], [[Tool]] */
+  children?: React.ReactNode;
+}
+
+/** Tool group column. Used in [[Group]], [[NestedGroup]] components. */
+export default class Column extends React.Component<ColumnProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-column",

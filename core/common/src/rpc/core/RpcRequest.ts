@@ -15,7 +15,7 @@ import { aggregateLoad, RpcNotFoundResponse } from "./RpcControl";
 import { IModelToken } from "../../IModel";
 import { IModelError } from "../../IModelError";
 
-const emptyBuffer = new ArrayBuffer(0);
+const emptyBuffer = new Uint8Array(0);
 
 /** Supplies an IModelToken for an RPC request. */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
@@ -203,7 +203,7 @@ export class RpcRequest<TResponse = any> {
   public getResponseText(): string { return ""; }
 
   /** Override to supply response bytes. */
-  public getResponseBytes(): ArrayBuffer { return emptyBuffer; }
+  public getResponseBytes(): Uint8Array { return emptyBuffer; }
 
   /** Override to supply response type. */
   public getResponseType(): RpcResponseType { return RpcResponseType.Unknown; }

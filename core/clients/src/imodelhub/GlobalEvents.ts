@@ -196,7 +196,7 @@ export class GlobalEventSubscriptionHandler {
     Logger.logInfo(loggingCategory, `Updating global event subscription with instance id: ${subscription.wsgId} and subscription id: ${subscription.subscriptionId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.defined("subscription", subscription);
-    ArgumentCheck.validGuid("subscription.wsgId", subscription.wsgId);
+    ArgumentCheck.defined("subscription.wsgId", subscription.wsgId);
 
     const updatedSubscription = await this._handler.postInstance<GlobalEventSubscription>(GlobalEventSubscription, token, this.getRelativeUrl(subscription.wsgId), subscription);
 
@@ -217,7 +217,7 @@ export class GlobalEventSubscriptionHandler {
   public async delete(token: AccessToken, subscriptionId: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting global event subscription with instance id: ${subscriptionId}`);
     ArgumentCheck.defined("token", token);
-    ArgumentCheck.validGuid("subscriptionId", subscriptionId);
+    ArgumentCheck.defined("subscriptionId", subscriptionId);
 
     await this._handler.delete(token, this.getRelativeUrl(subscriptionId));
 
@@ -314,7 +314,7 @@ export class GlobalEventHandler extends EventBaseHandler {
     Logger.logInfo(loggingCategory, `Getting global event from subscription with instance id: ${subscriptionId}`);
     ArgumentCheck.defined("sasToken", sasToken);
     ArgumentCheck.defined("baseAddress", baseAddress);
-    ArgumentCheck.validGuid("subscriptionId", subscriptionId);
+    ArgumentCheck.defined("subscriptionId", subscriptionId);
 
     let options: RequestOptions;
     if (getOperation === GetEventOperationType.Destructive)
@@ -348,7 +348,7 @@ export class GlobalEventHandler extends EventBaseHandler {
    * or has an invalid value.
    */
   public createListener(authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
-    ArgumentCheck.validGuid("subscriptionId", subscriptionId);
+    ArgumentCheck.defined("subscriptionId", subscriptionId);
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
     subscription.getEvent = (sasToken: string, baseAddress: string, id: string, timeout?: number) =>

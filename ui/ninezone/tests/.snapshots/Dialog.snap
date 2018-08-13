@@ -1,17 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Dialog /> renders correctly 1`] = `
-<IndicatorDialog
+<Component
   className="nz-footer-snapMode-dialog"
   content={
-    <Unknown>
+    <UNDEFINED>
       <div
         className="nz-title"
       />
       <div
         className="nz-snaps"
       />
-    </Unknown>
+    </UNDEFINED>
   }
+  direction={1}
 />
 `;

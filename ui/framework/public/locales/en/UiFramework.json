@@ -42,5 +42,22 @@
     "TwoHalvesVertical": "Two Halves Vertical",
     "ThreeRightStacked": "Three Right Stacked",
     "FourQuadrants": "Four Quadrants"
+  },
+  "pickerButtons": {
+    "all": "All",
+    "none": "None",
+    "invert": "Invert",
+    "seperator": "Seperator"
+  },
+  "categoriesModels": {
+    "categories": "Categories",
+    "models": "Models"
+  },
+  "savedViews": {
+    "views": "Views",
+    "spatialViews": "Spatial Views",
+    "drawings": "Drawings",
+    "sheets": "Sheets",
+    "others": "Others"
   }
 }

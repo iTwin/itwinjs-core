@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Backstage <Backstage /> renders correctly 1`] = `
-<React.Fragment>
+<Fragment>
   <Backstage
     className="backstageOpen"
     isOpen={true}
@@ -21,11 +21,11 @@ exports[`Backstage <Backstage /> renders correctly 1`] = `
       }
     }
   />
-</React.Fragment>
+</Fragment>
 `;
 
 exports[`Backstage <Backstage /> with child items 1`] = `
-<React.Fragment>
+<Fragment>
   <Backstage
     className="backstageOpen"
     isOpen={true}
@@ -33,29 +33,29 @@ exports[`Backstage <Backstage /> with child items 1`] = `
       Array [
         <CommandLaunchBackstageItem
           commandHandler={
-              Object {
-                  "execute": [Function],
-                  "messageId": "",
-                  "parameters": null,
-                }
+            Object {
+              "execute": [Function],
+              "messageId": "",
+              "parameters": null,
+            }
           }
           commandId="my-command-id"
           iconClass="icon-placeholder"
           labelKey="UiFramework:tests.label"
-      />,
+        />,
         <SeparatorBackstageItem />,
         <FrontstageLaunchBackstageItem
           frontstageId="Test1"
           iconClass="icon-placeholder"
           labelKey="UiFramework:tests.label"
-      />,
+        />,
         <SeparatorBackstageItem />,
         <TaskLaunchBackstageItem
           iconClass="icon-placeholder"
           labelKey="UiFramework:tests.label"
           taskId="Task1"
           workflowId="ExampleWorkflow"
-      />,
+        />,
       ]
     }
   />
@@ -74,5 +74,5 @@ exports[`Backstage <Backstage /> with child items 1`] = `
       }
     }
   />
-</React.Fragment>
+</Fragment>
 `;

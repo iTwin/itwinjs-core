@@ -200,7 +200,7 @@
       "request": "launch",
       "name": "SimpleViewTest Browser (backend)",
       "cwd": "${workspaceRoot}/test-apps/simpleviewtest",
-      "program": "${workspaceRoot}/test-apps/simpleviewtest/lib/backend/public/WebMain.js",
+      "program": "${workspaceRoot}/test-apps/simpleviewtest/lib/backend/WebMain.js",
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
@@ -208,6 +208,134 @@
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ],
       "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Common",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/common",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Backend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/backend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Frontend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/frontend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Components",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "-r",
+        "ignore-styles",
+        "-r",
+        "jsdom-global/register",
+        "--full-trace",
+        "--file",
+        "tests/index.test.ts",
+        "tests/**/*.ts"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Integration",
+      "program": "${workspaceFolder}/test-apps/presentation-integration-tests/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/test-apps/presentation-integration-tests",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--no-timeouts",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "source-map-support/register",
+        "--full-trace",
+        "--file",
+        "src/index.test.ts",
+        "src/**/*.ts"
+      ],
+      "console": "integratedTerminal"
     }
   ],
   "compounds": [

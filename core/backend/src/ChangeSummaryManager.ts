@@ -466,13 +466,23 @@ export class ChangeSummaryManager {
    * @param instanceChangeInfo InstanceChange to query the property value changes for
    *        changedInstance.className must be fully qualified and schema and class name must be escaped with square brackets if they collide with reserved ECSQL words: `[schema name].[class name]`
    * @param changedValueState The Changed State to query the values for. This must correspond to the [InstanceChange.OpCode]($backend) of the InstanceChange.
+   * @param changedPropertyNames List of the property names for which values have changed for the specified instance change.
+   *        The list can be obtained by calling [ChangeSummaryManager.getChangedPropertyValueNames]($imodeljs-backend).
+   *        If omitted, the method will call the above method by itself. The parameter allows for checking first whether
+   *        an instance change has any property value changes at all. If there are no property value changes, this method
+   *        should not be called, as it will throw an error.
    * @returns Returns the ECSQL that will retrieve the property value changes
-   * @throws [IModelError]($common) if instance change does not exist, or if the
-   * change cache file hasn't been attached, or in case of other errors.
+   * @throws [IModelError]($common) if instance change does not exist, if there are not property value changes for the instance change,
+   *        if the change cache file hasn't been attached, or in case of other errors.
    */
-  public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState): string {
-    // query property value changes just to build a SELECT statement against the class of the changed instance
-    const selectClauseItems: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModel, instanceChangeInfo.id);
+  public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string {
+    let selectClauseItems: string[];
+    if (!changedPropertyNames) {
+      // query property value changes just to build a SELECT statement against the class of the changed instance
+      selectClauseItems = ChangeSummaryManager.getChangedPropertyValueNames(iModel, instanceChangeInfo.id);
+    } else
+      selectClauseItems = changedPropertyNames;
+
     if (selectClauseItems.length === 0)
       throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChangeInfo.id.value}.`);
 

@@ -1,0 +1,321 @@
+{
+  "name": "@bentley/presentation-components",
+  "entries": [
+    {
+      "version": "0.113.0",
+      "tag": "@bentley/presentation-components_v0.113.0",
+      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Rename `ECPresentation` to `Presentation`"
+          },
+          {
+            "comment": "Rename package to `presentation-components`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.5.1",
+      "tag": "@bentley/ecpresentation-controls_v0.5.1",
+      "date": "Thu, 02 Aug 2018 17:56:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependency versions to 0.109.0"
+          },
+          {
+            "comment": "Specify `main` and `typings` in package.json"
+          },
+          {
+            "comment": "Exclude .scss files from npmignore"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.5.0` to `^0.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.5.0` to `^0.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.5.0` to `^0.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.5.0` to `^0.5.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.5.0",
+      "tag": "@bentley/ecpresentation-controls_v0.5.0",
+      "date": "Tue, 24 Jul 2018 13:20:35 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Move Omit & Subtract definitions from `controls` to `common`"
+          },
+          {
+            "comment": "React to changed request options format."
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Display current selection content when unified selection component mounts"
+          },
+          {
+            "comment": "Added HOC with filtering support."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.4.1` to `^0.5.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.0",
+      "tag": "@bentley/ecpresentation-controls_v0.4.0",
+      "date": "Fri, 22 Jun 2018 10:25:30 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Remove ecpresentation component implementations"
+          },
+          {
+            "comment": "Prefix data providers with ECPresentation"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Provide withUnifiedSelection HOCs for each type of CPUB component to create a unified selection component from any base class that uses an ecpresentation-driven data provider"
+          },
+          {
+            "comment": "Update package dependencies"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.0` to `^0.4.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.4.0` to `^0.4.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.0",
+      "tag": "@bentley/ecpresentation-controls_v0.3.0",
+      "date": "Thu, 14 Jun 2018 12:12:59 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "TFS#901835: TreeView control"
+          },
+          {
+            "comment": "TFS#901837: PropertyPane control"
+          },
+          {
+            "comment": "TFS#901836: TableView control"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.3.1` to `^0.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.3.1` to `^0.4.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.1",
+      "tag": "@bentley/ecpresentation-controls_v0.2.1",
+      "date": "Wed, 23 May 2018 10:15:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependencies to 0.88"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.3.0` to `^0.3.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.3.0` to `^0.3.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.0",
+      "tag": "@bentley/ecpresentation-controls_v0.2.0",
+      "date": "Fri, 18 May 2018 14:15:29 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix documentation errors"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "ContentDataProvider may return no content or descriptor if there is none with the specified parameters."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.2.0` to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.2.0` to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.4",
+      "tag": "@bentley/ecpresentation-controls_v0.1.4",
+      "date": "Fri, 11 May 2018 06:57:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.2` to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.1.2` to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.3",
+      "tag": "@bentley/ecpresentation-controls_v0.1.3",
+      "date": "Tue, 08 May 2018 07:05:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix: Configured descriptor must be of Descriptor class."
+          },
+          {
+            "comment": "Update imodeljs-core dependencies to 0.80"
+          },
+          {
+            "comment": "Update bentleyjs-core dependency to 8"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.1` to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.1.1` to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.2",
+      "tag": "@bentley/ecpresentation-controls_v0.1.2",
+      "date": "Sun, 29 Apr 2018 08:07:40 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed packaging."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.1.0` to `~0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `~0.1.0` to `~0.1.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.1",
+      "tag": "@bentley/ecpresentation-controls_v0.1.1",
+      "date": "Thu, 26 Apr 2018 15:17:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed TS2349 which consumers get when using data providers."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.0",
+      "tag": "@bentley/ecpresentation-controls_v0.1.0",
+      "date": "Thu, 26 Apr 2018 09:27:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "PresentationManager now accepts keys as KeySets"
+          },
+          {
+            "comment": "ECPresentationManager can now be accessed as singleton through ECPresentation static class"
+          },
+          {
+            "comment": "Selection manager now uses KeySet"
+          },
+          {
+            "comment": "React to ecpresentation API changes"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.5` to `~0.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `~0.0.21` to `~0.1.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.2",
+      "tag": "@bentley/ecpresentation-controls_v0.0.2",
+      "date": "Fri, 20 Apr 2018 13:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Created a new package for ecpresentation-driven controls (moved from @bentley/ecpresentation-frontend)"
+          },
+          {
+            "comment": "Updated package dependencies"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.4` to `~0.0.5`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `~0.0.20` to `~0.0.21`"
+          }
+        ]
+      }
+    }
+  ]
+}
