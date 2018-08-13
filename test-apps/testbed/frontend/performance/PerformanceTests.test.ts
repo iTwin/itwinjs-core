@@ -16,9 +16,11 @@ import { StopWatch, BeTimePoint } from "@bentley/bentleyjs-core";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
 
-// function sleep(ms: number) {
-//   return new Promise((resolve) => setTimeout(resolve, ms));
-// }
+const wantConsoleOutput: boolean = true;
+function debugPrint(msg: string): void {
+  if (wantConsoleOutput)
+    console.log(msg); // tslint:disable-line
+}
 
 function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
   return new Promise((resolve) => {
@@ -40,65 +42,35 @@ async function waitForTilesToLoad() {
   // Start timer for tile loading time
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
-  // for (let haveNewTiles = true; haveNewTiles;) { // !(activeViewState.viewState!.areAllTileTreesLoaded);) { // haveNewTiles /*|| viewManager.numTilesLoading > 0*/;) {
+  const plan = new UpdatePlan();
   while (haveNewTiles) {
-    console.log("----------------------------------------START OF WHILE LOOP"); // tslint:disable-line
-    const plan = new UpdatePlan();
-    // plan.quitTime = BeTimePoint.fromNow(BeDuration.fromSeconds(100000));
-    console.log("----waiting for tiles to load, about to renderFrame"); // tslint:disable-line
+    debugPrint("----------------------------------------START OF WHILE LOOP");
+    debugPrint("----waiting for tiles to load, about to renderFrame");
     await theViewport!.sync.setRedrawPending;
     await theViewport!.sync.invalidateScene();
     await theViewport!.renderFrame(plan);
-    // viewport.RenderQueue().WaitForIdle(); // viewManager.processIdle();
-    console.log("----waiting for tiles to load, finished renderFrame"); // tslint:disable-line
-    // haveNewTiles = viewManager.sceneInvalidated && activeViewState.viewState!.areAllTileTreesLoaded;
-    // if (!haveNewTiles || viewManager.numTilesLoading === 0) {
-    //   console.log("----haveNewTiles = " + haveNewTiles); // tslint:disable-line
-    //   console.log("----numTilesLoading = " + viewManager.numTilesLoading); // tslint:disable-line
-    //   // sleep(10000);
-    //   haveNewTiles = viewManager.sceneInvalidated;
-    // }
-    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.1) " + BeTimePoint.now().milliseconds); // tslint:disable-line
-    // await resolveAfterXMilSeconds(20000);
-    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.1) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    debugPrint("----waiting for tiles to load, finished renderFrame");
 
     const requests = new TileRequests();
     const sceneContext = new SceneContext(theViewport!, requests);
     activeViewState.viewState!.createScene(sceneContext);
     requests.requestMissing();
-    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
-    // await resolveAfterXMilSeconds(20000);
-    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.2) " + BeTimePoint.now().milliseconds); // tslint:disable-line
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
     haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles; // || viewManager.numTilesLoading > 0;
-    // savePng();
-    console.log("---------Are all tiles loaded???? " + !haveNewTiles); // tslint:disable-line
+    debugPrint("---------Are all tiles loaded???? " + !haveNewTiles);
 
-    console.log("----numTilesLoading = " + viewManager.numTilesLoading); // tslint:disable-line
+    debugPrint("----numTilesLoading = " + viewManager.numTilesLoading);
 
-    //////////////////////////////////////////
-    // const plan2 = new UpdatePlan();
-    // await theViewport!.renderFrame(plan2);
-
-    // await theViewport!.sync.setRedrawPending;
-    // await theViewport!.renderFrame(plan2);
-
-    // // for (let i = 0; i < 21; ++i) {
-    // await theViewport!.sync.setRedrawPending;
-    // await theViewport!.renderFrame(plan);
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.3) " + BeTimePoint.now().milliseconds); // tslint:disable-line
+    debugPrint("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.3) " + BeTimePoint.now().milliseconds);
     await resolveAfterXMilSeconds(2000);
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.3) " + BeTimePoint.now().milliseconds); // tslint:disable-line
-    // await sleep(10000);
-    // await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
+    debugPrint("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.3) " + BeTimePoint.now().milliseconds);
   }
   theViewport!.continuousRendering = false;
-  const plan = new UpdatePlan();
   await theViewport!.renderFrame(plan);
   timer.stop();
   curTileLoadingTime = timer.current.milliseconds;
-  console.log("----end of wait for tiles to load"); // tslint:disable-line
+  debugPrint("----end of wait for tiles to load");
 }
 
 class PerformanceEntryData {
@@ -158,7 +130,7 @@ async function printResults(tileLoadingTime: number, frameTimes: number[]) {
 function savePng() {
   const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
   const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
-  // console.log("&&&&&&&&&&&&&URL: " + tempUrl); // tslint:disable-line
+  // debugPrint("&&&&&&&&&&&&&URL: " + tempUrl);
   // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
   const newlink = document.createElement("a");
   // newlink.innerHTML = "Google";
@@ -208,25 +180,25 @@ async function openView(state: SimpleViewState) {
   await document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
-    console.log("openView - htmlCanvas exists"); // tslint:disable-line
-    console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("htmlCanvas: " + htmlCanvas); // tslint:disable-line
-    // console.log("theViewport.view: " + theViewport!.view); // tslint:disable-line
+    debugPrint("openView - htmlCanvas exists");
+    debugPrint("theViewport: " + theViewport);
+    debugPrint("htmlCanvas: " + htmlCanvas);
+    // debugPrint("theViewport.view: " + theViewport!.view);
     theViewport = await new Viewport(htmlCanvas, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
-    console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("state.viewState: " + state.viewState); // tslint:disable-line
+    debugPrint("theViewport: " + theViewport);
+    debugPrint("state.viewState: " + state.viewState);
     await _changeView(state.viewState!);
-    console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("theViewport.view: " + theViewport!.view); // tslint:disable-line
-    console.log("iModel: " + theViewport.iModel === undefined); // tslint:disable-line
-    console.log("_changeView Finished"); // tslint:disable-line
-    console.log("viewManager: " + IModelApp.viewManager); // tslint:disable-line
-    console.log("iModel: " + theViewport.iModel); // tslint:disable-line
+    debugPrint("theViewport: " + theViewport);
+    debugPrint("theViewport.view: " + theViewport!.view);
+    debugPrint("iModel: " + (theViewport.iModel === undefined));
+    debugPrint("_changeView Finished");
+    debugPrint("viewManager: " + IModelApp.viewManager);
+    debugPrint("iModel: " + theViewport.iModel);
     IModelApp.viewManager.addViewport(theViewport);
-    console.log("Finished IModelApp.viewManager.addViewport"); // tslint:disable-line
+    debugPrint("Finished IModelApp.viewManager.addViewport");
   }
 }
 // selects the configured view.
@@ -235,12 +207,12 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
   // const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
   const viewSpecs: IModelConnection.ViewSpec[] = await state.iModelConnection!.views.getViewList(viewQueryParams);
-  console.log("config.viewName: " + config.viewName); // tslint:disable-line
+  debugPrint("config.viewName: " + config.viewName);
   for (const viewSpec of viewSpecs) {
-    console.log("----------\nviewSpec: " + viewSpec); // tslint:disable-line
-    console.log("viewSpec.name: " + viewSpec.name); // tslint:disable-line
+    debugPrint("----------\nviewSpec: " + viewSpec);
+    debugPrint("viewSpec.name: " + viewSpec.name);
     if (viewSpec.name === config.viewName) {
-      console.log("viewSpec.name: " + viewSpec.name); // tslint:disable-line
+      debugPrint("viewSpec.name: " + viewSpec.name);
       // viewList!.value = viewSpec.name;
       const viewState = await state.iModelConnection!.views.load(viewSpec.id);
       // viewMap.set(viewSpec.name, viewState);
@@ -252,14 +224,14 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   try {
     configuration.standalone = true;
-    console.log("Filename: " + filename); // tslint:disable-line
+    debugPrint("Filename: " + filename);
     state.iModelConnection = await IModelConnection.openStandalone(filename);
-    console.log("openStandalone succeeded"); // tslint:disable-line
-    console.log("88888888888888configuration.iModelName: " + configuration.iModelName); // tslint:disable-line
+    debugPrint("openStandalone succeeded");
+    debugPrint("88888888888888configuration.iModelName: " + configuration.iModelName);
     // configuration.iModelName = state.iModelConnection.name;
-    console.log("99999999999999configuration.iModelName: " + configuration.iModelName); // tslint:disable-line
+    debugPrint("99999999999999configuration.iModelName: " + configuration.iModelName);
   } catch (err) {
-    console.log("openStandaloneIModel failed: " + err); // tslint:disable-line
+    debugPrint("openStandaloneIModel failed: " + err);
     throw err;
   }
 }
@@ -274,9 +246,9 @@ interface SVTConfiguration {
 }
 
 async function mainBody() {
-  console.log("---Just started mainBody!!!!"); // tslint:disable-line
+  debugPrint("---Just started mainBody!!!!");
   await PerformanceWriterClient.startup();
-  console.log("---Just started mainBody2!!!!"); // tslint:disable-line ////////////MUST FIGUREOUT WHY THIS FUNCTION ISN'T GETTIING CALLED
+  debugPrint("---Just started mainBody2!!!!");
 
   // this is the default configuration
   configuration = {
@@ -289,47 +261,47 @@ async function mainBody() {
   // retrieveConfigurationOverrides(configuration);
   // applyConfigurationOverrides(configuration);
 
-  console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
+  debugPrint("Configuration: " + JSON.stringify(configuration));
 
   // Start the backend
   // const config = new IModelHostConfiguration();
   // config.hubDeploymentEnv = "QA";
   // await IModelHost.startup(config);
-  console.log("Starting create Window"); // tslint:disable-line
+  debugPrint("Starting create Window");
 
   await createWindow();
 
   // start the app.
   await IModelApp.startup();
-  console.log("IModelApp Started up"); // tslint:disable-line
+  debugPrint("IModelApp Started up");
 
   // initialize the Project and IModel Api
-  console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
+  debugPrint("Initialize ProjectApi and ImodelApi");
   await ProjectApi.init();
   await IModelApi.init();
-  console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
+  debugPrint("Finished Initializing ProjectApi and ImodelApi");
 
   activeViewState = new SimpleViewState();
 
   // showStatus("Opening", configuration.iModelName);
-  console.log("Opening standaloneImodel"); // tslint:disable-line
+  debugPrint("Opening standaloneImodel");
   await openStandaloneIModel(activeViewState, configuration.iModelName);
 
   // open the specified view
   // showStatus("opening View", configuration.viewName);
-  console.log("Build the view list"); // tslint:disable-line
+  debugPrint("Build the view list");
   await buildViewList(activeViewState, configuration);
 
   // now connect the view to the canvas
-  console.log("Open the view"); // tslint:disable-line
+  debugPrint("Open the view");
   await openView(activeViewState);
-  console.log("This is from frontend/main"); // tslint:disable-line
+  debugPrint("This is from frontend/main");
 
   // Load all tiles ???
   // await waitForTilesToLoad().then(savePng);
-  await console.log("1111111111111111111111 - waitForTilesToLoad has STARTED"); // tslint:disable-line
+  await debugPrint("1111111111111111111111 - waitForTilesToLoad has STARTED");
   await waitForTilesToLoad();
-  await console.log("1111111111111111111111 - waitForTilesToLoad has FINISHED"); // tslint:disable-line
+  await debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
   savePng();
 
   // savePng();
@@ -342,12 +314,12 @@ async function mainBody() {
   const target = (theViewport!.target as Target);
   const frameTimes = target.frameTimings;
   for (let i = 0; i < 11 && frameTimes.length; ++i)
-    await console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
+    await debugPrint("frameTimes[" + i + "]: " + frameTimes[i]);
 
-  await console.log("///////////////////////////////// start extra renderFrames"); // tslint:disable-line
+  await debugPrint("///////////////////////////////// start extra renderFrames");
 
   for (let i = 0; i < 20; ++i) {
-    await console.log("///////////////////////////////// extra renderFrames " + i); // tslint:disable-line
+    await debugPrint("///////////////////////////////// extra renderFrames " + i);
     (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
     await theViewport!.sync.setRedrawPending;
     await theViewport!.sync.invalidateScene();
@@ -357,436 +329,26 @@ async function mainBody() {
 
   // savePng();
 
-  await console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
+  await debugPrint("/////////////////////////////////  -- b4 shutdown");
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   await IModelApp.shutdown();
   await PerformanceWriterClient.finishSeries();
   // WebGLTestContext.shutdown();
   // TestApp.shutdown();
-  await console.log("//" + (theViewport!.target as Target).frameTimings); // tslint:disable-line
-  console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
+  await debugPrint("//" + (theViewport!.target as Target).frameTimings);
+  debugPrint("/////////////////////////////////  -- after shutdown");
 
 }
 
-
 describe("PerformanceTests - 1", () => {
-  // let imodel: IModelConnection;
-  // let spatialView: SpatialViewState;
-
-  // before(async () => {
-  //   PerformanceWriterClient.startup();
-  // });
-  // after(async () => {
-  //   console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-  //   PerformanceWriterClient.finishSeries();
-  //   IModelApp.shutdown();
-  //   // WebGLTestContext.shutdown();
-  //   // TestApp.shutdown();
-  //   console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
-
-  // });
-
-  // it("Test 1 - Wraith Model - W0", async () => {
-  //   await PerformanceWriterClient.startup();
-
-  //   // this is the default configuration
-  //   configuration = {
-  //     userName: "bistroDEV_pmadm1@mailinator.com",
-  //     password: "pmadm1",
-  //     iModelName: path.join(iModelLocation, "Wraith.ibim"), // path.join("../../", __dirname, "Wraith.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
-  //     viewName: "W0", // "Physical-Tag",
-  //   } as SVTConfiguration;
-  //   // override anything that's in the configuration
-  //   // retrieveConfigurationOverrides(configuration);
-  //   // applyConfigurationOverrides(configuration);
-
-  //   console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
-
-  //   // Start the backend
-  //   // const config = new IModelHostConfiguration();
-  //   // config.hubDeploymentEnv = "QA";
-  //   // await IModelHost.startup(config);
-  //   console.log("Starting create Window"); // tslint:disable-line
-
-  //   await createWindow();
-
-  //   // start the app.
-  //   await IModelApp.startup();
-  //   console.log("IModelApp Started up"); // tslint:disable-line
-
-  //   // initialize the Project and IModel Api
-  //   console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
-  //   await ProjectApi.init();
-  //   await IModelApi.init();
-  //   console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
-
-  //   activeViewState = new SimpleViewState();
-
-  //   // showStatus("Opening", configuration.iModelName);
-  //   console.log("Opening standaloneImodel"); // tslint:disable-line
-  //   await openStandaloneIModel(activeViewState, configuration.iModelName);
-
-  //   // open the specified view
-  //   // showStatus("opening View", configuration.viewName);
-  //   console.log("Build the view list"); // tslint:disable-line
-  //   await buildViewList(activeViewState, configuration);
-
-  //   // now connect the view to the canvas
-  //   console.log("Open the view"); // tslint:disable-line
-  //   await openView(activeViewState);
-  //   console.log("This is from frontend/main"); // tslint:disable-line
-
-  //   // Load all tiles ???
-  //   await waitForTilesToLoad();
-
-  //   const plan = new UpdatePlan();
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   const target = (theViewport!.target as Target);
-  //   const frameTimes = target.frameTimings;
-  //   for (let i = 0; i < 11 && frameTimes.length; ++i)
-  //     console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-
-  //   await printResults(frameTimes);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   for (let i = 0; i < 11 && frameTimes.length; ++i)
-  //     console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-  //   theViewport!.sync.setRedrawPending;
-  //   await theViewport!.renderFrame(plan);
-  //   await printResults((theViewport!.target as Target).frameTimings);
-
-  //   console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-  //   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-  //   await IModelApp.shutdown();
-  //   await PerformanceWriterClient.finishSeries();
-  //   // WebGLTestContext.shutdown();
-  //   // TestApp.shutdown();
-  //   console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
-
-  // });
-
   it("Test 2 - Wraith_MultiMulti Model - V0", (done) => {
-    console.log("/////////////////////////////////  -- b4 async"); // tslint:disable-line
-    // (async () => {
-    //   console.log("/////////////////////////////////  -- b4 mainBody"); // tslint:disable-line
-    //   await mainBody();
-    //   console.log("/////////////////////////////////  -- after mainBody"); // tslint:disable-line
-    // })();
-
-
-    // MOCHA Done
-
+    debugPrint("/////////////////////////////////  -- b4 async");
     mainBody().then((_result) => {
-      console.log("/////////////////////////////////  -- inside .then() function"); // tslint:disable-line
+      debugPrint("/////////////////////////////////  -- inside .then() function");
       done();
     }).catch((_error) => {
-      console.log("/////////////////////////////////  -- error happened!!"); // tslint:disable-line
+      debugPrint("/////////////////////////////////  -- error happened!!");
     });
-    console.log("/////////////////////////////////  -- after async"); // tslint:disable-line
+    debugPrint("/////////////////////////////////  -- after async");
   });
-
 });
-
-// /*---------------------------------------------------------------------------------------------
-// |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
-//  *--------------------------------------------------------------------------------------------*/
-// import { WebGLTestContext } from "../WebGLTestContext";
-// import { PerformanceWriterClient } from "./PerformanceWriterClient";
-
-// describe("PerformanceTests", () => {
-//   before(() => {
-//     WebGLTestContext.startup();
-//   });
-//   after(() => WebGLTestContext.shutdown());
-
-//   it("/////////////////////////////////////////////////////////////////", () => {
-//     if (WebGLTestContext.isInitialized) {
-//       // testCreateGeometry();
-//     }
-//     // const fileName = "C:\\Files\\test.xlsx";
-//     // const sheetName = "Sheet1";
-//     // const app = Sys.OleObject("Excel.Application")
-//     // app.Visible = "True";
-
-//     // const excel = new ActiveXObject("Excel.Application");
-//     // excel.Visible = true;
-//     // excel.Workbooks.Open("test.xlsx");
-//   });
-// });
-
-// import { assert, expect } from "chai";
-// import { ColorMap } from "@bentley/imodeljs-frontend/lib/rendering";
-// import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
-
-// describe("ColorMap", () => {
-//   it("create a new ColorMap", async () => {
-//     // console.log(response); //tslint:disable-line
-//     async function run() {
-//       try {
-//         await PerformanceWriterClient.startup();
-//         await PerformanceWriterClient.addEntry({
-//           imodelName: "test",
-//           viewName: "test",
-//           viewFlags: "test",
-//           data: {
-//             tileLoadingTime: 1,
-//             scene: 2,
-//             garbageExecute: 3,
-//             initCommands: 4,
-//             backgroundDraw: 5,
-//             setClips: 6,
-//             opaqueDraw: 7,
-//             translucentDraw: 8,
-//             hiliteDraw: 9,
-//             compositeDraw: 10,
-//             overlayDraw: 11,
-//             renderFrameTime: 12,
-//             glFinish: 13,
-//             totalTime: 14,
-//           },
-//         });
-//         await PerformanceWriterClient.addEntry({
-//           imodelName: "test",
-//           viewName: "test",
-//           viewFlags: "test",
-//           data: {
-//             tileLoadingTime: 11,
-//             scene: 12,
-//             garbageExecute: 13,
-//             initCommands: 14,
-//             backgroundDraw: 15,
-//             setClips: 16,
-//             opaqueDraw: 17,
-//             translucentDraw: 18,
-//             hiliteDraw: 19,
-//             compositeDraw: 110,
-//             overlayDraw: 111,
-//             renderFrameTime: 112,
-//             glFinish: 113,
-//             totalTime: 1411,
-//           },
-//         });
-//         await PerformanceWriterClient.addEntry({
-//           imodelName: "test",
-//           viewName: "test",
-//           viewFlags: "test",
-//           data: {
-//             tileLoadingTime: 21,
-//             scene: 22,
-//             garbageExecute: 23,
-//             initCommands: 24,
-//             backgroundDraw: 25,
-//             setClips: 26,
-//             opaqueDraw: 27,
-//             translucentDraw: 28,
-//             hiliteDraw: 29,
-//             compositeDraw: 20,
-//             overlayDraw: 121,
-//             renderFrameTime: 122,
-//             glFinish: 213,
-//             totalTime: 124,
-//           },
-//         });
-//       } catch (ex) {
-//         console.log(ex); // tslint:disable-line
-//       }
-
-//       await PerformanceWriterClient.finishSeries();
-//     }
-
-//     await run();
-
-//     /** Test creating a ColorMap */
-//     const a: ColorMap = new ColorMap();
-//     expect(a.length).to.equal(0);
-//     expect(a.hasTransparency).to.be.false;
-//   });
-
-//   it("test insert function", () => {
-//     /** Test static getMaxIndex function */
-//     const a: ColorMap = new ColorMap();
-//     assert.isTrue(a.insert(0xFF0000) === 0);
-//     assert.isTrue(a.length === 1);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0x0000FF) === 1);
-//     assert.isTrue(a.length === 2);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0x0000FF) === 1);
-//     assert.isTrue(a.length === 2);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFF0000) === 0);
-//     assert.isTrue(a.length === 2);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFFFFFF) === 2);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0x0000FF) === 1);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFF0000) === 0);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFFFFFF) === 2);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//   });
-
-//   it("test simple return functions", () => {
-//     /** Test hasTransparency function */
-//     let a: ColorMap = new ColorMap();
-//     assert.isFalse(a.hasTransparency);
-//     a.insert(0x01000000);
-//     assert.isTrue(a.hasTransparency);
-//     a.insert(0xFF000000);
-//     assert.isTrue(a.hasTransparency);
-//     a.insert(0x7FFFFFFF);
-//     assert.isTrue(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0xFF000000);
-//     assert.isTrue(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0x7FFFFFFF);
-//     assert.isTrue(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0x00000000);
-//     assert.isFalse(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0x00FFFFFF);
-//     assert.isFalse(a.hasTransparency);
-//     let inserted = false;
-//     try { // try to insert a translucent color into a table which does not have transparency.
-//       a.insert(0x0F000000);
-//       inserted = true;
-//     } catch (err) {
-//       expect(err).is.not.undefined;
-//     }
-//     expect(inserted).to.be.false;
-
-//     /** Test isUniform function */
-//     a = new ColorMap();
-//     assert.isFalse(a.isUniform);
-//     a.insert(0xFF0000);
-//     assert.isTrue(a.isUniform);
-//     a.insert(0x00FF00);
-//     assert.isFalse(a.isUniform);
-//     a.insert(0x0000FF);
-//     assert.isFalse(a.isUniform);
-
-//     /** Test isFull function */
-//     a = new ColorMap();
-//     assert.isFalse(a.isFull);
-//     for (let i = 0; a.length !== 0xffff; i++) {
-//       assert.isFalse(a.isFull);
-//       a.insert(i);
-//     }
-//     assert.isTrue(a.length === 0xffff);
-//     assert.isTrue(a.isFull);
-
-//     /** Test getNumIndices function */
-//     a = new ColorMap();
-//     assert.isTrue(a.length === 0);
-//     for (let i = 0; a.length !== 0xffff; i++) {
-//       assert.isTrue(a.length === i);
-//       a.insert(i);
-//     }
-//     assert.isTrue(a.length === 0xffff);
-
-//     /** Test size function */
-//     a = new ColorMap();
-//     assert.isTrue(a.length === 0);
-//     for (let i = 0; a.length !== 0xffff; i++) {
-//       assert.isTrue(a.length === i);
-//       a.insert(i);
-//     }
-//     assert.isTrue(a.length === 0xffff);
-
-//     /** Test empty function */
-//     a = new ColorMap();
-//     assert.isTrue(a.isEmpty);
-//     a.insert(0x00FFFF);
-//     assert.isFalse(a.isEmpty);
-//     a.insert(0xFFFF00);
-//     assert.isFalse(a.isEmpty);
-//     a.insert(0xFFFFFF);
-//     assert.isFalse(a.isEmpty);
-//   });
-
-//   it("test toColorIndex function", () => {
-//     /** Test toColorIndex function */
-//     let a: ColorMap = new ColorMap();
-//     const uint16: Uint16Array = new Uint16Array(2);
-//     let colorIndex = new ColorIndex();
-
-//     a.insert(0xFFFFFF);
-//     a.toColorIndex(colorIndex, uint16);
-//     expect(colorIndex.uniform!.tbgr).to.equal(0xFFFFFF);
-//     assert.isTrue(colorIndex.numColors === 1);
-
-//     a = new ColorMap();
-//     colorIndex = new ColorIndex();
-//     expect(colorIndex.uniform!.tbgr).to.equal(ColorDef.white.tbgr);
-//     assert.isTrue(colorIndex.numColors === 1);
-//     a.insert(0x0000FFFF);
-//     a.toColorIndex(colorIndex, uint16);
-//     expect(colorIndex.isUniform).to.equal(true);
-//     assert.isTrue(colorIndex.uniform!.tbgr === 0x0000FFFF);
-//     assert.isTrue(colorIndex.numColors === 1);
-
-//     a = new ColorMap();
-//     a.insert(0x0000FFFF);
-//     a.insert(0x000000FF);
-//     colorIndex = new ColorIndex();
-//     colorIndex.initUniform(0x00FF00FF);
-//     assert.isTrue(colorIndex.numColors === 1);
-//     a.toColorIndex(colorIndex, uint16);
-//     assert.isFalse(colorIndex.isUniform);
-//     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 2);
-//     let values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
-//     assert.isTrue(values && values.next().value === 0x0000FFFF);
-//     assert.isTrue(values && values.next().value === 0x000000FF);
-//     assert.isTrue(values && values.next().done);
-//     assert.isTrue(colorIndex.numColors === 2);
-
-//     a = new ColorMap();
-//     a.insert(0x00000000);
-//     a.insert(0x0000FFFF);
-//     a.insert(0x000000FF);
-//     colorIndex = new ColorIndex();
-//     assert.isTrue(colorIndex.numColors === 1);
-//     a.toColorIndex(colorIndex, uint16);
-//     assert.isFalse(colorIndex.isUniform);
-//     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 3);
-//     values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
-//     assert.isTrue(values && values.next().value === 0x00000000);
-//     assert.isTrue(values && values.next().value === 0x0000FFFF);
-//     assert.isTrue(values && values.next().value === 0x000000FF);
-//     assert.isTrue(values && values.next().done);
-//     assert.isTrue(colorIndex.numColors === 3);
-//   });
-// });
