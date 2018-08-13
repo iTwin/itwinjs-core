@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common"; // tslint:disable-line
+import { ViewDefinitionProps } from "@bentley/imodeljs-common"; // tslint:disable-line
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
@@ -202,24 +202,16 @@ async function openView(state: SimpleViewState) {
   }
 }
 // selects the configured view.
-async function buildViewList(state: SimpleViewState, configurations?: { viewName?: string }) {
+async function loadView(state: SimpleViewState, configurations?: { viewName?: string }) {
   const config = undefined !== configurations ? configurations : {};
-  // const viewList = document.getElementById("viewList") as HTMLSelectElement;
-  const viewQueryParams: ViewQueryParams = { wantPrivate: false };
-  const viewSpecs: IModelConnection.ViewSpec[] = await state.iModelConnection!.views.getViewList(viewQueryParams);
-  debugPrint("config.viewName: " + config.viewName);
-  for (const viewSpec of viewSpecs) {
-    debugPrint("----------\nviewSpec: " + viewSpec);
-    debugPrint("viewSpec.name: " + viewSpec.name);
-    if (viewSpec.name === config.viewName) {
-      debugPrint("viewSpec.name: " + viewSpec.name);
-      // viewList!.value = viewSpec.name;
-      const viewState = await state.iModelConnection!.views.load(viewSpec.id);
-      // viewMap.set(viewSpec.name, viewState);
-      state.viewState = viewState;
-    }
-  }
+  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.sqlName, where: "CodeValue = '" + config.viewName + "'" });
+  if (1 === viewIds.size)
+    state.viewState = await state.iModelConnection!.views.load(viewIds.values().next().value);
+
+  if (undefined === state.viewState)
+    debugPrint("Error: failed to load view by name");
 }
+
 // opens the configured iModel from disk
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   try {
@@ -290,7 +282,7 @@ async function mainBody() {
   // open the specified view
   // showStatus("opening View", configuration.viewName);
   debugPrint("Build the view list");
-  await buildViewList(activeViewState, configuration);
+  await loadView(activeViewState, configuration);
 
   // now connect the view to the canvas
   debugPrint("Open the view");
@@ -346,8 +338,8 @@ describe("PerformanceTests - 1", () => {
     mainBody().then((_result) => {
       debugPrint("/////////////////////////////////  -- inside .then() function");
       done();
-    }).catch((_error) => {
-      debugPrint("/////////////////////////////////  -- error happened!!");
+    }).catch((error) => {
+      debugPrint("Exception in mainBody: " + error.toString());
     });
     debugPrint("/////////////////////////////////  -- after async");
   });
