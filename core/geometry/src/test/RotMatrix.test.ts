@@ -4,7 +4,7 @@
 import { Point2d, Vector3d, Point3d } from "../PointVector";
 import { RotMatrix } from "../Transform";
 import { Transform } from "../Transform";
-import { Angle, AxisOrder, Geometry } from "../Geometry";
+import { Angle, AxisOrder, Geometry, AxisIndex } from "../Geometry";
 import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "./Checker";
 // import { prettyPrint } from "./testFunctions";
@@ -320,12 +320,28 @@ describe("RotMatrix.ViewConstructions", () => {
       RotMatrix.createRotationAroundVector(Vector3d.unitX(), Angle.createDegrees(90))!, "Rotate 90 X");
     ck.testRotMatrix(
       RotMatrix.create90DegreeRotationAroundAxis(1),
-      RotMatrix.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(90))!, "Rotate 90 X");
+      RotMatrix.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(90))!, "Rotate 90 Y");
     ck.testRotMatrix(
       RotMatrix.create90DegreeRotationAroundAxis(2),
-      RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(90))!, "Rotate 90 X");
+      RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(90))!, "Rotate 90 Z");
     ck.checkpoint("RotateAroundAxis");
     expect(ck.getNumErrors()).equals(0);
+
+    for (const degrees of [0.0, 10.0, -40.0]) {
+      const theta = Angle.createDegrees (degrees);
+      ck.testRotMatrix(
+        RotMatrix.createRotationAroundAxisIndex (AxisIndex.X, theta),
+        RotMatrix.createRotationAroundVector(Vector3d.unitX(), theta)!, "Rotate theta X");
+      ck.testRotMatrix(
+        RotMatrix.createRotationAroundAxisIndex (AxisIndex.Y, theta),
+        RotMatrix.createRotationAroundVector(Vector3d.unitY(), theta)!, "Rotate 90 Y");
+      ck.testRotMatrix(
+        RotMatrix.createRotationAroundAxisIndex (AxisIndex.Z, theta),
+        RotMatrix.createRotationAroundVector(Vector3d.unitZ(), theta)!, "Rotate 90 Z");
+      ck.checkpoint("RotateAroundAxis");
+    }
+    expect(ck.getNumErrors()).equals(0);
+
   });
 
   it("RowColumn", () => {
@@ -559,13 +575,13 @@ describe("SkewFactorization", () => {
       const scaleX = 3, scaleY = 2, scaleZ = 7;
       // inverse first, then scale:
       const matrixA = matrix.clone();
-      matrixA.computeCachedInverse (true);
+      matrixA.computeCachedInverse(true);
       matrixA.scaleColumnsInPlace(scaleX, scaleY, scaleZ);
 
       // scale, then inverse
       const matrixB = matrix.clone();
       matrixB.scaleColumnsInPlace(scaleX, scaleY, scaleZ);
-      matrixB.computeCachedInverse (true);
+      matrixB.computeCachedInverse(true);
       ck.testNumberArray(matrixA.inverseCoffs, matrixB.inverseCoffs);
     }
     expect(ck.getNumErrors()).equals(0);

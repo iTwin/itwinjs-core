@@ -4,7 +4,7 @@
 
 /** @module CartesianGeometry */
 
-import { Geometry, Angle, AxisOrder, BeJSONFunctions } from "./Geometry";
+import { Geometry, Angle, AxisOrder, AxisIndex, BeJSONFunctions } from "./Geometry";
 import { Point4d } from "./numerics/Geometry4d";
 import { Range3d } from "./Range";
 import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
@@ -412,6 +412,38 @@ export class RotMatrix implements BeJSONFunctions {
       return retVal;
     }
     return undefined;
+  }
+
+  /** @returns return a rotation of specified angle around an axis
+   * @param axisIndex index of axis (AxisIndex.X, AxisIndex.Y, AxisIndex.Z) kept fixed by the rotation.
+   * @param angle angle of rotation
+   * @param result optional result matrix.
+  */
+  public static createRotationAroundAxisIndex(axisIndex: AxisIndex, angle: Angle, result?: RotMatrix): RotMatrix {
+    const c = angle.cos();
+    const s = angle.sin();
+    let myResult;
+    if (axisIndex === AxisIndex.X) {
+      myResult = RotMatrix.createRowValues(
+        1, 0, 0,
+        0, c, -s,
+        0, s, c,
+        result);
+    } else if (axisIndex === AxisIndex.Y) {
+      myResult = RotMatrix.createRowValues(
+        c, 0, s,
+        0, 1, 0,
+        -s, 0, c,
+        result);
+    } else {
+      myResult = RotMatrix.createRowValues(
+        c, -s, 0,
+        s, c, 0,
+        0, 0, 1,
+        result);
+    }
+    myResult.setupInverseTranspose();
+    return myResult;
   }
 
   /*
