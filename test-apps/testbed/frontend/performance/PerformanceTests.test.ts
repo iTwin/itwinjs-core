@@ -38,7 +38,6 @@ function createWindow() {
 
 async function waitForTilesToLoad() {
   theViewport!.continuousRendering = false; // false; // true;
-  const viewManager = IModelApp.viewManager;
   // Start timer for tile loading time
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
@@ -57,10 +56,8 @@ async function waitForTilesToLoad() {
     requests.requestMissing();
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles; // || viewManager.numTilesLoading > 0;
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
     debugPrint("---------Are all tiles loaded???? " + !haveNewTiles);
-
-    debugPrint("----numTilesLoading = " + viewManager.numTilesLoading);
 
     debugPrint("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.3) " + BeTimePoint.now().milliseconds);
     await resolveAfterXMilSeconds(2000);

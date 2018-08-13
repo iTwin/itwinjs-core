@@ -146,7 +146,6 @@ export class RealityModelTileTree {
       modelState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => modelState.loadStatus = TileTree.LoadStatus.NotFound);
-    IModelApp.viewManager.numTilesLoading += 1;
   }
 
   private static async getTileTreeProps(url: string, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {

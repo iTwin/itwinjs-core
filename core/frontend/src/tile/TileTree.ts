@@ -18,9 +18,6 @@ import { B3dmTileIO } from "./B3dmTileIO";
 import { PntsTileIO } from "./PntsTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 
-function debugPrint(_str: string): void {
-  // console.log(_str); // tslint:disable-line:no-console
-}
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);
   return 0 === diff ? compareStrings(lhs.id, rhs.id) : diff;
@@ -224,7 +221,6 @@ export class Tile implements IDisposable {
     if (Tile.Visibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
       if (!this.isReady && !this.isQueued) {
-        debugPrint("Inserting Missing: " + this.id);
         args.insertMissing(this);
       }
 
@@ -366,7 +362,6 @@ export class Tile implements IDisposable {
 
         IModelApp.viewManager.onNewTilesReady();
       }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; this._children = undefined; });
-      IModelApp.viewManager.numTilesLoading += 1;
     }
 
     return this._childrenLoadStatus;
@@ -512,11 +507,10 @@ export class TileTree implements IDisposable {
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
-    debugPrint("Selecting Tiles");
     const selected: Tile[] = [];
     if (undefined !== this._rootTile)
       this._rootTile.selectTiles(selected, args);
-    debugPrint("Tiles Selected: " + selected.length);
+
     return selected;
   }
 

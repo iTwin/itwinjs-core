@@ -24,7 +24,6 @@ import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewSta
 export class ViewManager {
   public inDynamicsMode = false;
   public cursor?: BeCursor;
-  public numTilesLoading = 0;
   private readonly _viewports: Viewport[] = [];
   private _selectedView?: Viewport;
   private _invalidateScenes = false;
@@ -189,12 +188,11 @@ export class ViewManager {
 
   public invalidateScenes(): void { this._invalidateScenes = true; }
   public get sceneInvalidated(): boolean { return this._invalidateScenes; }
-  public onNewTilesReady(): void { this.invalidateScenes(); this.numTilesLoading -= 1; }
+  public onNewTilesReady(): void { this.invalidateScenes(); }
 
   // Invoked by ToolAdmin event loop.
   public renderLoop(): void {
     if (0 === this._viewports.length) return;
-    console.log("*******************************************************************"); // tslint:disable-line
     if (this._skipSceneCreation)
       this.validateViewportScenes();
     else if (this._invalidateScenes)
@@ -204,18 +202,11 @@ export class ViewManager {
 
     const cursorVp = IModelApp.toolAdmin.getCursorView();
     const plan = new UpdatePlan();
-    console.log("***cursorVp === undefined : " + (undefined === cursorVp)); // tslint:disable-line
 
     if (undefined === cursorVp || cursorVp.renderFrame(plan))
       for (const vp of this._viewports)
         if (vp !== cursorVp && !vp.renderFrame(plan))
           break;
-
-    this.processIdle();
-  }
-
-  private processIdle(): void {
-    // ###TODO: pre-compile shaders?
   }
 
   /** Called when rendering a frame to allow decorations to be added */

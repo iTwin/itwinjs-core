@@ -77,27 +77,21 @@ export abstract class GeometricModelState extends ModelState {
 
   /** @hidden */
   public loadTileTree(): TileTree.LoadStatus {
-    console.log("----loadTileTree 1"); // tslint:disable-line
     if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
       return this._loadStatus;
 
     this._loadStatus = TileTree.LoadStatus.Loading;
-    console.log("----loadTileTree 2"); // tslint:disable-line
 
     if (this.jsonProperties.tilesetUrl !== undefined) {
       RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this);
       return this._loadStatus;
     }
-    console.log("----loadTileTree 3"); // tslint:disable-line
 
     const ids = Id64.toIdSet(this.id);
     this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
       this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
-      console.log("----loadTileTree 4?"); // tslint:disable-line
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
-    IModelApp.viewManager.numTilesLoading += 1;
-    console.log("----loadTileTree 5"); // tslint:disable-line
 
     return this._loadStatus;
   }

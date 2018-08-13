@@ -124,7 +124,7 @@ export namespace EditManipulator {
 export class TestEditManipulatorTool extends EditManipulator.Tool {
   protected init(): void { super.init(); this.beginDynamics(); }
   protected accept(_ev: BeButtonEvent): boolean { return true; }
-  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { /* console.log("Dynamics"); */ }
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
 }
 
 /** @hidden */
@@ -140,11 +140,8 @@ export class TestEditManipulatorProvider extends EditManipulator.Provider {
     const manipTool = new TestEditManipulatorTool(this);
     return manipTool.run();
   }
-  protected drawControls(_context: DecorateContext): void {
-    /* console.log("Decorate"); */
-  }
+  protected drawControls(_context: DecorateContext): void { }
   public onManipulatorEvent(eventType: EditManipulator.EventType): void {
     super.onManipulatorEvent(eventType);
-    /* console.log("Event " + eventType); */
   }
 }

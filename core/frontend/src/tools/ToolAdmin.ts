@@ -603,7 +603,7 @@ export class ToolAdmin {
     if (undefined === event)
       return; // nothing in queue
 
-    console.log(">>> " + event.ev.type);
+    // console.log(">>> " + event.ev.type);
 
     switch (event.ev.type) {
       case "mousedown": return this.onMouseButton(event, true);
@@ -636,7 +636,7 @@ export class ToolAdmin {
       await this.onTimerEvent();     // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
       await this.processNextEvent();
     } catch (error) {
-      console.log("error in event processing ", error);
+      // console.log("error in event processing ", error);
       throw error; // enable this in debug only.
     } finally {
       this._processingEvent = false; // this event is now finished. Allow processing next time through.
