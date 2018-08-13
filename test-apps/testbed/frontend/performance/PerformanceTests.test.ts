@@ -1,18 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { ViewDefinitionProps } from "@bentley/imodeljs-common"; // tslint:disable-line
-import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
+import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-frontend";
+import { ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
-import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
+import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend";
 import { Target, UpdatePlan, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
-import { IModelApi } from "./IModelApi"; // @ts-ignore
-import { ProjectApi } from "./ProjectApi"; // @ts-ignore
+import { IModelApi } from "./IModelApi";
+import { ProjectApi } from "./ProjectApi";
 import { CONSTANTS } from "../../common/Testbed";
 import * as path from "path";
-// import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core/lib/Time";
-import { StopWatch, BeTimePoint } from "@bentley/bentleyjs-core";
+import { StopWatch } from "@bentley/bentleyjs-core";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
 
@@ -37,18 +36,16 @@ function createWindow() {
 }
 
 async function waitForTilesToLoad() {
-  theViewport!.continuousRendering = false; // false; // true;
+  theViewport!.continuousRendering = false;
+
   // Start timer for tile loading time
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
   const plan = new UpdatePlan();
   while (haveNewTiles) {
-    debugPrint("----------------------------------------START OF WHILE LOOP");
-    debugPrint("----waiting for tiles to load, about to renderFrame");
     theViewport!.sync.setRedrawPending;
     theViewport!.sync.invalidateScene();
     theViewport!.renderFrame(plan);
-    debugPrint("----waiting for tiles to load, finished renderFrame");
 
     const requests = new TileRequests();
     const sceneContext = new SceneContext(theViewport!, requests);
@@ -57,17 +54,14 @@ async function waitForTilesToLoad() {
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
     haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
-    debugPrint("---------Are all tiles loaded???? " + !haveNewTiles);
+    debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
 
-    debugPrint("@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE sleep (v.3) " + BeTimePoint.now().milliseconds);
     await resolveAfterXMilSeconds(2000);
-    debugPrint("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.3) " + BeTimePoint.now().milliseconds);
   }
   theViewport!.continuousRendering = false;
   theViewport!.renderFrame(plan);
   timer.stop();
   curTileLoadingTime = timer.current.milliseconds;
-  debugPrint("----end of wait for tiles to load");
 }
 
 class PerformanceEntryData {
@@ -124,10 +118,9 @@ async function printResults(tileLoadingTime: number, frameTimes: number[]) {
   await PerformanceWriterClient.addEntry(new PerformanceEntry(tileLoadingTime, frameTimes, configuration.iModelName, configuration.viewName));
 }
 
-function savePng() {
+export function savePng() {
   const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
   const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
-  // debugPrint("&&&&&&&&&&&&&URL: " + tempUrl);
   // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
   const newlink = document.createElement("a");
   // newlink.innerHTML = "Google";
@@ -166,35 +159,24 @@ async function _changeView(view: ViewState) {
   theViewport!.changeView(view);
   activeViewState.viewState = view;
 }
+
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
-  const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement; // await document.createElement("htmlCanvas") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
+  const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
   htmlCanvas!.width = htmlCanvas!.height = 500;
   document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
-    debugPrint("openView - htmlCanvas exists");
-    debugPrint("theViewport: " + theViewport);
-    debugPrint("htmlCanvas: " + htmlCanvas);
-    // debugPrint("theViewport.view: " + theViewport!.view);
     theViewport = new Viewport(htmlCanvas, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
-    debugPrint("theViewport: " + theViewport);
-    debugPrint("state.viewState: " + state.viewState);
     await _changeView(state.viewState!);
-    debugPrint("theViewport: " + theViewport);
-    debugPrint("theViewport.view: " + theViewport!.view);
-    debugPrint("iModel: " + (theViewport.iModel === undefined));
-    debugPrint("_changeView Finished");
-    debugPrint("viewManager: " + IModelApp.viewManager);
-    debugPrint("iModel: " + theViewport.iModel);
     IModelApp.viewManager.addViewport(theViewport);
-    debugPrint("Finished IModelApp.viewManager.addViewport");
   }
 }
+
 // selects the configured view.
 async function loadView(state: SimpleViewState, configurations?: { viewName?: string }) {
   const config = undefined !== configurations ? configurations : {};
@@ -210,14 +192,9 @@ async function loadView(state: SimpleViewState, configurations?: { viewName?: st
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   try {
     configuration.standalone = true;
-    debugPrint("Filename: " + filename);
     state.iModelConnection = await IModelConnection.openStandalone(filename);
-    debugPrint("openStandalone succeeded");
-    debugPrint("88888888888888configuration.iModelName: " + configuration.iModelName);
-    // configuration.iModelName = state.iModelConnection.name;
-    debugPrint("99999999999999configuration.iModelName: " + configuration.iModelName);
   } catch (err) {
-    debugPrint("openStandaloneIModel failed: " + err);
+    debugPrint("openStandaloneIModel failed: " + err.toString());
     throw err;
   }
 }
@@ -232,65 +209,38 @@ interface SVTConfiguration {
 }
 
 async function mainBody() {
-  debugPrint("---Just started mainBody!!!!");
   await PerformanceWriterClient.startup();
-  debugPrint("---Just started mainBody2!!!!");
 
   // this is the default configuration
   configuration = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
-    iModelName: path.join(iModelLocation, "Wraith_MultiMulti.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
-    viewName: "V0", // "Physical-Tag",
+    iModelName: path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
+    viewName: "V0",
   } as SVTConfiguration;
-  // override anything that's in the configuration
-  // retrieveConfigurationOverrides(configuration);
-  // applyConfigurationOverrides(configuration);
-
-  debugPrint("Configuration: " + JSON.stringify(configuration));
 
   // Start the backend
-  // const config = new IModelHostConfiguration();
-  // config.hubDeploymentEnv = "QA";
-  // await IModelHost.startup(config);
-  debugPrint("Starting create Window");
-
   createWindow();
 
   // start the app.
   IModelApp.startup();
-  debugPrint("IModelApp Started up");
 
   // initialize the Project and IModel Api
-  debugPrint("Initialize ProjectApi and ImodelApi");
   await ProjectApi.init();
   await IModelApi.init();
-  debugPrint("Finished Initializing ProjectApi and ImodelApi");
 
   activeViewState = new SimpleViewState();
 
-  // showStatus("Opening", configuration.iModelName);
-  debugPrint("Opening standaloneImodel");
   await openStandaloneIModel(activeViewState, configuration.iModelName);
 
   // open the specified view
-  // showStatus("opening View", configuration.viewName);
-  debugPrint("Build the view list");
   await loadView(activeViewState, configuration);
 
   // now connect the view to the canvas
-  debugPrint("Open the view");
   await openView(activeViewState);
-  debugPrint("This is from frontend/main");
 
   // Load all tiles ???
-  // await waitForTilesToLoad().then(savePng);
-  debugPrint("1111111111111111111111 - waitForTilesToLoad has STARTED");
   await waitForTilesToLoad();
-  debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
-  savePng();
-
-  // savePng();
 
   const plan = new UpdatePlan();
   theViewport!.renderFrame(plan);
@@ -302,10 +252,7 @@ async function mainBody() {
   for (let i = 0; i < 11 && frameTimes.length; ++i)
     debugPrint("frameTimes[" + i + "]: " + frameTimes[i]);
 
-  debugPrint("///////////////////////////////// start extra renderFrames");
-
   for (let i = 0; i < 20; ++i) {
-    debugPrint("///////////////////////////////// extra renderFrames " + i);
     (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
     theViewport!.sync.setRedrawPending;
     theViewport!.sync.invalidateScene();
@@ -313,28 +260,19 @@ async function mainBody() {
     await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
   }
 
-  // savePng();
-
-  debugPrint("/////////////////////////////////  -- b4 shutdown");
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
   await PerformanceWriterClient.finishSeries();
-  // WebGLTestContext.shutdown();
-  // TestApp.shutdown();
-  debugPrint("//" + (theViewport!.target as Target).frameTimings);
-  debugPrint("/////////////////////////////////  -- after shutdown");
 
+  debugPrint("//" + (theViewport!.target as Target).frameTimings);
 }
 
 describe("PerformanceTests - 1", () => {
   it("Test 2 - Wraith_MultiMulti Model - V0", (done) => {
-    debugPrint("/////////////////////////////////  -- b4 async");
     mainBody().then((_result) => {
-      debugPrint("/////////////////////////////////  -- inside .then() function");
       done();
     }).catch((error) => {
       debugPrint("Exception in mainBody: " + error.toString());
     });
-    debugPrint("/////////////////////////////////  -- after async");
   });
 });
