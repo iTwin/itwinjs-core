@@ -46,9 +46,9 @@ async function waitForTilesToLoad() {
   while (haveNewTiles) {
     debugPrint("----------------------------------------START OF WHILE LOOP");
     debugPrint("----waiting for tiles to load, about to renderFrame");
-    await theViewport!.sync.setRedrawPending;
-    await theViewport!.sync.invalidateScene();
-    await theViewport!.renderFrame(plan);
+    theViewport!.sync.setRedrawPending;
+    theViewport!.sync.invalidateScene();
+    theViewport!.renderFrame(plan);
     debugPrint("----waiting for tiles to load, finished renderFrame");
 
     const requests = new TileRequests();
@@ -67,7 +67,7 @@ async function waitForTilesToLoad() {
     debugPrint("@@@@@@@@@@@@@@@@@@@@@@@@@@ AFTER  sleep (v.3) " + BeTimePoint.now().milliseconds);
   }
   theViewport!.continuousRendering = false;
-  await theViewport!.renderFrame(plan);
+  theViewport!.renderFrame(plan);
   timer.stop();
   curTileLoadingTime = timer.current.milliseconds;
   debugPrint("----end of wait for tiles to load");
@@ -166,25 +166,22 @@ let activeViewState: SimpleViewState = new SimpleViewState();
 let curTileLoadingTime = 0;
 
 async function _changeView(view: ViewState) {
-  await theViewport!.changeView(view);
+  theViewport!.changeView(view);
   activeViewState.viewState = view;
-  // await buildModelMenu(activeViewState);
-  // buildCategoryMenu(activeViewState);
-  // updateRenderModeOptionsMap();
 }
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement; // await document.createElement("htmlCanvas") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
   htmlCanvas!.width = htmlCanvas!.height = 500;
-  await document.body.appendChild(htmlCanvas!);
+  document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
     debugPrint("openView - htmlCanvas exists");
     debugPrint("theViewport: " + theViewport);
     debugPrint("htmlCanvas: " + htmlCanvas);
     // debugPrint("theViewport.view: " + theViewport!.view);
-    theViewport = await new Viewport(htmlCanvas, state.viewState!);
+    theViewport = new Viewport(htmlCanvas, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
@@ -261,10 +258,10 @@ async function mainBody() {
   // await IModelHost.startup(config);
   debugPrint("Starting create Window");
 
-  await createWindow();
+  createWindow();
 
   // start the app.
-  await IModelApp.startup();
+  IModelApp.startup();
   debugPrint("IModelApp Started up");
 
   // initialize the Project and IModel Api
@@ -291,43 +288,43 @@ async function mainBody() {
 
   // Load all tiles ???
   // await waitForTilesToLoad().then(savePng);
-  await debugPrint("1111111111111111111111 - waitForTilesToLoad has STARTED");
+  debugPrint("1111111111111111111111 - waitForTilesToLoad has STARTED");
   await waitForTilesToLoad();
-  await debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
+  debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
   savePng();
 
   // savePng();
 
   const plan = new UpdatePlan();
-  await theViewport!.renderFrame(plan);
+  theViewport!.renderFrame(plan);
 
-  await theViewport!.sync.setRedrawPending;
-  await theViewport!.renderFrame(plan);
+  theViewport!.sync.setRedrawPending;
+  theViewport!.renderFrame(plan);
   const target = (theViewport!.target as Target);
   const frameTimes = target.frameTimings;
   for (let i = 0; i < 11 && frameTimes.length; ++i)
-    await debugPrint("frameTimes[" + i + "]: " + frameTimes[i]);
+    debugPrint("frameTimes[" + i + "]: " + frameTimes[i]);
 
-  await debugPrint("///////////////////////////////// start extra renderFrames");
+  debugPrint("///////////////////////////////// start extra renderFrames");
 
   for (let i = 0; i < 20; ++i) {
-    await debugPrint("///////////////////////////////// extra renderFrames " + i);
+    debugPrint("///////////////////////////////// extra renderFrames " + i);
     (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
-    await theViewport!.sync.setRedrawPending;
-    await theViewport!.sync.invalidateScene();
-    await theViewport!.renderFrame(plan);
+    theViewport!.sync.setRedrawPending;
+    theViewport!.sync.invalidateScene();
+    theViewport!.renderFrame(plan);
     await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
   }
 
   // savePng();
 
-  await debugPrint("/////////////////////////////////  -- b4 shutdown");
+  debugPrint("/////////////////////////////////  -- b4 shutdown");
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-  await IModelApp.shutdown();
+  IModelApp.shutdown();
   await PerformanceWriterClient.finishSeries();
   // WebGLTestContext.shutdown();
   // TestApp.shutdown();
-  await debugPrint("//" + (theViewport!.target as Target).frameTimings);
+  debugPrint("//" + (theViewport!.target as Target).frameTimings);
   debugPrint("/////////////////////////////////  -- after shutdown");
 
 }
