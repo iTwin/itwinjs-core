@@ -12,10 +12,10 @@ import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, Mesh
 import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, RotMatrix, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
-import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ImageUtil } from "../ImageUtil";
+import { IModelConnection } from "../IModelConnection";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -240,7 +240,9 @@ export namespace GltfTileIO {
     protected readonly images: any;
     protected readonly samplers: any;
     protected readonly binaryData: Uint8Array;
-    protected readonly model: GeometricModelState;
+    protected readonly iModel: IModelConnection;
+    protected readonly is3d: boolean;
+    protected readonly modelId: Id64;
     protected readonly system: RenderSystem;
     protected readonly returnToCenter: number[] | undefined;
     protected readonly yAxisUp: boolean;
@@ -248,7 +250,6 @@ export namespace GltfTileIO {
 
     public async abstract read(): Promise<ReaderResult>;
 
-    public get modelId(): Id64 { return this.model.id; }
     protected get isCanceled(): boolean { return undefined !== this._isCanceled && this._isCanceled(this); }
     protected get hasBakedLighting(): boolean { return false; }
 
@@ -334,7 +335,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: IsCanceled) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
@@ -350,7 +351,9 @@ export namespace GltfTileIO {
       this.renderMaterials = props.scene.renderMaterials;
       this.namedTextures = props.scene.namedTextures;
 
-      this.model = model;
+      this.iModel = iModel;
+      this.modelId = modelId;
+      this.is3d = is3d;
       this.system = system;
       this._isCanceled = isCanceled;
     }
@@ -398,7 +401,7 @@ export namespace GltfTileIO {
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
         type: primitiveType,
         range: Range3d.createNull(),
-        is2d: this.model.is2d,
+        is2d: !this.is3d,
         isPlanar,
         hasBakedLighting,
       });
@@ -715,7 +718,7 @@ export namespace GltfTileIO {
 
         const textureParams = new RenderTexture.Params(undefined, textureType);
         return ImageUtil.extractImage(imageSource)
-          .then((image) => this.isCanceled ? undefined : this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.model.iModel, textureParams))
+          .then((image) => this.isCanceled ? undefined : this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {
         return undefined;

@@ -1,6 +1,21 @@
-# Change Log - @bentley/ecpresentation-common
+# Change Log - @bentley/presentation-common
 
-This log was last generated on Thu, 02 Aug 2018 17:56:36 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Aug 2018 05:06:20 GMT and should not be manually modified.
+
+## 0.113.0
+Fri, 10 Aug 2018 05:06:20 GMT
+
+### Minor changes
+
+- Rename `ECPresentation` to `Presentation`
+- Refactor PresentationRuleSet JSON schema to make it clearer and less ambiguous
+- IRulesetManager API changes
+- User Settings rename to Ruleset Variables and related API changes
+
+### Patches
+
+- Generate JSON schema for Ruleset data structure
+- RegisteredRuleset now contains ruleset's hash which helps us verify ruleset integrity
 
 ## 0.5.1
 Thu, 02 Aug 2018 17:56:36 GMT

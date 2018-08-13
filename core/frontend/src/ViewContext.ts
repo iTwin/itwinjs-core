@@ -31,10 +31,7 @@ export class ViewContext {
   }
 
   public getPixelSizeAtPoint(inPoint?: Point3d): number {
-    const vp = this.viewport;
-    const viewPt = !!inPoint ? vp.worldToView(inPoint) : vp.npcToView(new Point3d(0.5, 0.5, 0.5));
-    const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
-    return vp.viewToWorld(viewPt).distance(vp.viewToWorld(viewPt2));
+    return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint);
   }
 }
 
@@ -474,14 +471,15 @@ export class DecorateContext extends RenderContext {
 
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
-  public readonly terrain: RenderGraphic[] = [];
+  public readonly backgroundMap: RenderGraphic[] = [];
   public readonly requests: TileRequests;
+  public backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined = undefined;
 
   public constructor(vp: Viewport, requests: TileRequests) {
     super(vp);
     this.requests = requests;
   }
 
-  public outputGraphic(graphic: RenderGraphic): void { this.graphics.push(graphic); }
-  public outputTerrain(graphic: RenderGraphic): void { this.terrain.push(graphic); }
+  public setBackgroundMapPlane(plane: Plane3dByOriginAndUnitNormal): void { this.backgroundMapPlane = plane; }
+  public outputGraphic(graphic: RenderGraphic): void { undefined !== this.backgroundMapPlane ? this.backgroundMap.push(graphic) : this.graphics.push(graphic); }
 }

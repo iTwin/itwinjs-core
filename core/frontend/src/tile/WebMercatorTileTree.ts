@@ -10,11 +10,12 @@ import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Vector3d, An
 import { TileLoader, TileTree, Tile, MissingNodes } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
-import { SpatialModelState } from "../ModelState";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
-import { GeometricModelState } from "../ModelState";
 import { RenderSystem } from "../render/System";
+import { IModelConnection } from "../IModelConnection";
+import { SceneContext } from "../ViewContext";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }
 function latitudeToMercator(latitude: number) {
@@ -111,12 +112,12 @@ class WebMercatorTileProps implements TileProps {
 class WebMercatorTileLoader extends TileLoader {
   private providerInitialized: boolean = false;
   public mercatorToDb: Transform;
-  constructor(private imageryProvider: ImageryProvider, private modelState: GeometricModelState, groundBias: number) {
+  constructor(private imageryProvider: ImageryProvider, private iModel: IModelConnection, groundBias: number) {
     super();
-    const ecefLocation = modelState.iModel.ecefLocation as EcefLocation;
+    const ecefLocation = iModel.ecefLocation as EcefLocation;
     const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
 
-    const projectExtents = modelState.iModel.projectExtents;
+    const projectExtents = iModel.projectExtents;
     const projectCenter = projectExtents.getCenter();
     const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
     const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
@@ -154,7 +155,7 @@ class WebMercatorTileLoader extends TileLoader {
         if (undefined === imageSource) {
           missingTile.setNotFound();
         } else {
-          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this.modelState, IModelApp.renderSystem);
+          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this.iModel, IModelApp.renderSystem);
           textureLoad.catch((_err) => missingTile.setNotFound());
           textureLoad.then((result) => {
             missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
@@ -164,12 +165,12 @@ class WebMercatorTileLoader extends TileLoader {
     }));
   }
 
-  private async loadTextureImage(imageSource: ImageSource, model: GeometricModelState, system: RenderSystem): Promise<RenderTexture | undefined> {
+  private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem): Promise<RenderTexture | undefined> {
     try {
       const isCanceled = false;  // Tbd...
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
       return ImageUtil.extractImage(imageSource)
-        .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, model.iModel, textureParams))
+        .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {
       return undefined;
@@ -460,37 +461,57 @@ class MapBoxProvider extends ImageryProvider {
 }
 
 /** @hidden */
-export class WebMercatorModelState extends SpatialModelState {
+export class BackgroundMapState {
+  private _tileTree?: TileTree;
+  private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  private providerName: string;
+  /// private providerData: string;
+  private groundBias: number;
+  private mapType: MapType;
 
-  public useRangeForFit(): boolean { return false; }    // The webmercator range should not be included for fit...
+  public setTileTree(props: TileTreeProps, loader: TileLoader) {
+    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this.iModel, true, loader));
+    this._loadStatus = TileTree.LoadStatus.Loaded;
+  }
+  public getPlane(): Plane3dByOriginAndUnitNormal {
+    return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this.groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
+  }
+  public constructor(json: any, private iModel: IModelConnection) {
+    this.providerName = JsonUtils.asString(json.providerName, "BingProvider");
+    // this.providerData = JsonUtils.asString(json.providerData, "aerial");
+    this.groundBias = JsonUtils.asDouble(json.groundBias, 0.0);
+    this.mapType = JsonUtils.asInt(json.mapType, MapType.Hybrid);
+  }
 
-  public loadTileTree(): TileTree.LoadStatus {
+  private loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
       return this._loadStatus;
 
-    if (this.iModel.ecefLocation === undefined)
-      throw new BentleyError(IModelStatus.BadModel, "WebMercator not valid without ecefLocation");
+    if (this.iModel.ecefLocation === undefined) {
+      return this._loadStatus;
+    }
 
-    const webMercatorProperties = this.jsonProperties.webMercatorModel;
     let provider: ImageryProvider | undefined;
 
-    if (undefined !== webMercatorProperties && webMercatorProperties.hasOwnProperty("providerName") && webMercatorProperties.hasOwnProperty("providerData")) {
-      const providerName: string = webMercatorProperties.providerName;
-      const providerData: any = webMercatorProperties.providerData;
-      if (("BingProvider" === providerName) && (providerData.hasOwnProperty("mapType"))) {
-        const mapType: number = Number(providerData.mapType);
-        provider = new BingMapProvider(mapType);
-      } else if (("MapBoxProvider" === providerName) && (providerData.hasOwnProperty("mapType"))) {
-        const mapType: number = Number(providerData.mapType);
-        provider = new MapBoxProvider(mapType);
-      }
+    if ("BingProvider" === this.providerName) {
+      provider = new BingMapProvider(this.mapType);
+    } else if ("MapBoxProvider" === this.providerName) {
+      provider = new MapBoxProvider(this.mapType);
     }
     if (provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this, JsonUtils.asDouble(webMercatorProperties.groundBias, 0.0));
+    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this.iModel, JsonUtils.asDouble(this.groundBias, 0.0));
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
+  }
+  public addToScene(context: SceneContext) {
+    if (!context.viewFlags.backgroundMap)
+      return;
+
+    this.loadTileTree();
+    if (undefined !== this._tileTree)
+      this._tileTree.drawScene(context);
   }
 }

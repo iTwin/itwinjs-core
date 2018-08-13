@@ -1,6 +1,21 @@
 {
-  "name": "@bentley/ecpresentation-components",
+  "name": "@bentley/presentation-components",
   "entries": [
+    {
+      "version": "0.113.0",
+      "tag": "@bentley/presentation-components_v0.113.0",
+      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Rename `ECPresentation` to `Presentation`"
+          },
+          {
+            "comment": "Rename package to `presentation-components`"
+          }
+        ]
+      }
+    },
     {
       "version": "0.5.1",
       "tag": "@bentley/ecpresentation-controls_v0.5.1",

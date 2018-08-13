@@ -12,7 +12,6 @@ import { IModelConnection } from "./IModelConnection";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
-import { WebMercatorModelState } from "./tile/WebMercatorTileTree";
 import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
 
 /**
@@ -36,7 +35,6 @@ export class ViewManager {
     IModelConnection.registerClass(DrawingModelState.getClassFullName(), DrawingModelState);
     IModelConnection.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
     IModelConnection.registerClass(SheetModelState.getClassFullName(), SheetModelState);
-    IModelConnection.registerClass(WebMercatorModelState.getClassFullName(), WebMercatorModelState);
     IModelConnection.registerClass(OrthographicViewState.getClassFullName(), OrthographicViewState as any); // the "as any" is to get around problem with abstract base classes
     IModelConnection.registerClass(SpatialViewState.getClassFullName(), SpatialViewState as any);
     IModelConnection.registerClass(DrawingViewState.getClassFullName(), DrawingViewState as any);

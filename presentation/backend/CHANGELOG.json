@@ -1,6 +1,27 @@
 {
-  "name": "@bentley/ecpresentation-backend",
+  "name": "@bentley/presentation-backend",
   "entries": [
+    {
+      "version": "0.113.0",
+      "tag": "@bentley/presentation-backend_v0.113.0",
+      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Rename `ECPresentation` to `Presentation`"
+          },
+          {
+            "comment": "React to Ruleset data structure changes"
+          },
+          {
+            "comment": "React to IRulesetManager API changes"
+          },
+          {
+            "comment": "User Settings rename to Ruleset Variables and related API changes"
+          }
+        ]
+      }
+    },
     {
       "version": "0.5.1",
       "tag": "@bentley/ecpresentation-backend_v0.5.1",

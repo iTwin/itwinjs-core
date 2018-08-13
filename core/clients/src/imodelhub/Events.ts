@@ -280,7 +280,7 @@ export class EventSubscriptionHandler {
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
     ArgumentCheck.defined("subscription", subscription);
-    ArgumentCheck.validGuid("subscription.wsgId", subscription.wsgId);
+    ArgumentCheck.defined("subscription.wsgId", subscription.wsgId);
 
     const updatedSubscription = await this._handler.postInstance<EventSubscription>(EventSubscription, token, this.getRelativeUrl(imodelId, subscription.wsgId), subscription);
 
@@ -303,7 +303,7 @@ export class EventSubscriptionHandler {
     Logger.logInfo(loggingCategory, `Deleting event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
-    ArgumentCheck.validGuid("eventSubscriptionId", eventSubscriptionId);
+    ArgumentCheck.defined("eventSubscriptionId", eventSubscriptionId);
 
     await this._handler.delete(token, this.getRelativeUrl(imodelId, eventSubscriptionId));
 
@@ -394,7 +394,7 @@ export class EventHandler extends EventBaseHandler {
     Logger.logInfo(loggingCategory, `Getting event from subscription ${subscriptionId}`);
     ArgumentCheck.defined("sasToken", sasToken);
     ArgumentCheck.defined("baseAddress", baseAddress);
-    ArgumentCheck.validGuid("subscriptionId", subscriptionId);
+    ArgumentCheck.defined("subscriptionId", subscriptionId);
 
     const options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
 
@@ -422,7 +422,7 @@ export class EventHandler extends EventBaseHandler {
    */
   public createListener(authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: string, listener: (event: IModelHubEvent) => void): () => void {
     ArgumentCheck.defined("authenticationCallback", authenticationCallback);
-    ArgumentCheck.validGuid("subscriptionId", subscriptionId);
+    ArgumentCheck.defined("subscriptionId", subscriptionId);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     const subscription = new ListenerSubscription();

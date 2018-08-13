@@ -1,6 +1,14 @@
-# Change Log - @bentley/ecpresentation-components
+# Change Log - @bentley/presentation-components
 
-This log was last generated on Thu, 02 Aug 2018 17:56:36 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Aug 2018 05:06:20 GMT and should not be manually modified.
+
+## 0.113.0
+Fri, 10 Aug 2018 05:06:20 GMT
+
+### Minor changes
+
+- Rename `ECPresentation` to `Presentation`
+- Rename package to `presentation-components`
 
 ## 0.5.1
 Thu, 02 Aug 2018 17:56:36 GMT
@@ -111,3 +119,4 @@ Fri, 20 Apr 2018 13:57:47 GMT
 
 - Created a new package for ecpresentation-driven controls (moved from @bentley/ecpresentation-frontend)
 - Updated package dependencies
+

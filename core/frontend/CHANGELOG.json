@@ -2,6 +2,33 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.113.0",
+      "tag": "@bentley/imodeljs-frontend_v0.113.0",
+      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed bugs in ClipMaskVolume constructor."
+          },
+          {
+            "comment": "Fix for 2d views attachments modifying transform of their root view"
+          },
+          {
+            "comment": "Code cleanup"
+          },
+          {
+            "comment": "Fix number of varying vectors exceeding maximum on iOS."
+          },
+          {
+            "comment": "Fix quantization errors with world decorations located far from the origin."
+          },
+          {
+            "comment": "WIP: Turn on stenciling for use in classification of reality meshes."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.112.0",
       "tag": "@bentley/imodeljs-frontend_v0.112.0",
       "date": "Tue, 07 Aug 2018 12:19:22 GMT",

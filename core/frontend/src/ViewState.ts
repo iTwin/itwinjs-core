@@ -393,6 +393,13 @@ export abstract class ViewState extends ElementState {
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
+  public createTerrain(context: SceneContext): void {
+    const backgroundMapPlane = this.displayStyle.getBackgroundMapPlane();
+    if (undefined !== backgroundMapPlane) {
+      context.setBackgroundMapPlane(backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+      this.displayStyle.getBackgroundMap().addToScene(context);
+    }
+  }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -1624,7 +1631,7 @@ export abstract class ViewState2d extends ViewState {
 
   public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
-    super.load();
+    await super.load();
     return this.iModel.models.load(this.baseModelId);
   }
 
@@ -1709,24 +1716,17 @@ export class SheetViewState extends ViewState2d {
     this.debugFilterAttachments();
     // --------------------------------
 
-    // Query the attachments using the id list, and grab all of their corresponding view ids
-    const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
-    const attachmentViewIds: Id64Array = [];
-    for (const attachment of attachments)
-      attachmentViewIds.push(attachment.view.id.toString());
+    // Query all of the attachment properties using their ids
+    const attachmentPropList = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
 
-    // Load each view state corresponding to each attachment in the attachments array
-    // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
-    const attachmentViews: ViewState[] = [];
-    for (const viewId of attachmentViewIds)
-      attachmentViews.push(await this.iModel.views.load(viewId));
-
-    // Create the attachment objects and store them on this SheetViewState
-    for (let i = 0; i < attachments.length; i++) {
-      if (attachmentViews[i].is3d())
-        this._attachments.add(new Attachments.Attachment3d(attachments[i], attachmentViews[i] as ViewState3d));
-      else
-        this._attachments.add(new Attachments.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
+    // For each ViewAttachmentProps, load the view that the attachment references. Once the view is loaded, officially construct the attachment & add it to the array.
+    for (const attachmentProps of attachmentPropList) {
+      this.iModel.views.load(attachmentProps.view.id).then((view: ViewState) => {
+        if (view.is3d())
+          this._attachments.add(new Attachments.Attachment3d(attachmentProps, view as ViewState3d));
+        else
+          this._attachments.add(new Attachments.Attachment2d(attachmentProps, view as ViewState2d));
+      });
     }
   }
 

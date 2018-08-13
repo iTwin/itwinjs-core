@@ -1923,6 +1923,7 @@ export class ViewChangeRenderModeTool extends ViewTool {
     viewflags.weights = this.renderOptions.get("weights")!;
     viewflags.styles = this.renderOptions.get("styles")!;
     viewflags.clipVolume = this.renderOptions.get("clipVolume")!;
+    viewflags.backgroundMap = this.renderOptions.get("backgroundMap")!;
 
     const lights = this.renderOptions.get("lights")!;
     viewflags.sourceLights = lights;

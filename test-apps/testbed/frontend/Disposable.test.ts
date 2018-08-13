@@ -209,7 +209,7 @@ describe("Disposal of WebGL Resources", () => {
     // Get a render graphic from tile reader
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
     const stream = new TileIO.StreamBuffer(TileData.triangles.buffer);
-    const reader = IModelTileIO.Reader.create(stream, model, system);
+    const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
     const readerRes = await reader!.read();
     const tileGraphic = readerRes.renderGraphic!;
     assert.isDefined(tileGraphic);

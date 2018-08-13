@@ -4,13 +4,13 @@
 /** @module Tile */
 import { TileIO } from "./TileIO";
 import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable } from "@bentley/imodeljs-common";
-import { assert } from "@bentley/bentleyjs-core";
+import { Id64, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../render/System";
-import { GeometricModelState } from "../ModelState";
 import { utf8ToString } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Transform, Point3d, RotMatrix, Angle, Vector3d } from "@bentley/geometry-core";
+import { IModelConnection } from "../IModelConnection";
 
 /** Deserializes an Pnts tile. */
 export namespace PntsTileIO {
@@ -31,7 +31,7 @@ export namespace PntsTileIO {
       this.batchTableBinaryLength = stream.nextUint32;
     }
   }
-  export function readPointCloud(stream: TileIO.StreamBuffer, model: GeometricModelState, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
+  export function readPointCloud(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
     const header: Header = new Header(stream);
 
     if (!header.isValid)
@@ -66,11 +66,11 @@ export namespace PntsTileIO {
     }
 
     // ###TODO? Do we expect a batch table? not currently handled...
-    const featureTable = new FeatureTable(1, model.id);
+    const featureTable = new FeatureTable(1, modelId);
     const features = new Mesh.Features(featureTable);
-    features.add(new Feature(model.id), 1);
+    features.add(new Feature(modelId), 1);
 
-    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features), model.iModel);
+    let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features), iModel);
     renderGraphic = system.createBatch(renderGraphic!, featureTable, range);
 
     if (yAxisUp) {

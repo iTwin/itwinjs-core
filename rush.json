@@ -129,6 +129,20 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ecschema-metadata",
+      "projectFolder": "core/ecschema-metadata",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/webpack-tools",
+      "projectFolder": "tools/webpack",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "bemetalsmith",
       "projectFolder": "tools/bemetalsmith",
       "reviewCategory": "internal",

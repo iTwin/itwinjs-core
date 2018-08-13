@@ -2,5 +2,6 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+lib/test
 !package.json
 !*.md
