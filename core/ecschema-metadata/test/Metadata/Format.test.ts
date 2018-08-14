@@ -2172,7 +2172,7 @@ describe("Format tests", () => {
       expect(formatSerialization.precision).equals(4);
       expect(formatSerialization.decimalSeparator).equals(".");
       expect(formatSerialization.roundFactor).equals(0);
-      expect(formatSerialization.showSignOption).equals("onlyNegative");
+      expect(formatSerialization.showSignOption).equals("OnlyNegative");
       expect(formatSerialization.stationSeparator).equals("+");
       expect(formatSerialization.thousandSeparator).equals(",");
       expect(formatSerialization.uomSeparator).equals(" ");
