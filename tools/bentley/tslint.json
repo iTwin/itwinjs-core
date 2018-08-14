@@ -12,9 +12,7 @@
       false,
       "ignore-same-line"
     ],
-    "max-classes-per-file": [
-      false
-    ],
+    "max-classes-per-file": false,
     "ordered-imports": [
       false
     ],
@@ -56,6 +54,10 @@
     "member-ordering": [
       false
     ]
-  },
-  "rulesDirectory": []
+    // Custom rules from tslint-rules directory ===========================================
+    // "prefer-get": true
+  }
+  // "rulesDirectory": [
+  //  "tslint-rules"
+  // ]
 }

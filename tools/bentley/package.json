@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {},
   "scripts": {
-    "build": "",
+    "build": "tsc 1>&2",
     "clean": "",
     "docs": "",
     "lint": ""
