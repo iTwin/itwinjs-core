@@ -4,15 +4,15 @@
 @import "@bentley/bwc/lib/index.scss";
 
 $cube-outer-width: 96px;
-$cube-width: 60px;
-$cube-side-width: 14px;
+$cube-width: 64px;
+$cube-side-width: 12px;
 $button-width: 14px;
 
-$grad-start: $bwc-gray-9;
-$grad-end: $bwc-gray-5;
+$grad-start: $bwc-gray-c;
+$grad-end: $bwc-gray-9;
 
-$grad-start-highlight: $bwc-gray-c;
-$grad-end-highlight: $bwc-gray-8;
+$grad-start-highlight: $bwc-gray-a;
+$grad-end-highlight: $bwc-gray-7;
 
 .cube-container {
   position: relative;
@@ -41,7 +41,8 @@ $grad-end-highlight: $bwc-gray-8;
         height: 100%;
         position: absolute;
         backface-visibility: inherit;
-        font-size: $bwc-font-size-small;
+        font-size: $bwc-cap-size;
+        font-weight: $bwc-font-weight-bold;
         color: $bwc-text-color;
         box-shadow: 0px 0px .0px 1px #000;
         .face-row {

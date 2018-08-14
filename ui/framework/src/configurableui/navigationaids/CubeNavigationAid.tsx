@@ -4,16 +4,17 @@
 /** @module NavigationAids */
 
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
 import * as classnames from "classnames";
-import { Geometry, Point3d, Point2d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Geometry, RotMatrix, Point3d, Point2d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 
 import "./CubeNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";
 
-// import { ViewportManager, ViewRotationChangeEventArgs } from "@bentley/ui-components";
+import { ViewportManager, ViewRotationChangeEventArgs } from "@bentley/ui-components";
 
 /** NavigationAid that displays an interactive rotation cube that synchonizes with the rotation of the iModel Viewport */
 export class CubeNavigationAidControl extends NavigationAidControl {
@@ -26,8 +27,8 @@ export class CubeNavigationAidControl extends NavigationAidControl {
 
 export enum HitBoxX {
   None = 0,
-  Right = 1,
-  Left = 2,
+  Left = 1,
+  Right = 2,
 }
 export enum HitBoxY {
   None = 0,
@@ -85,6 +86,7 @@ export interface CubeNavigationState {
 /** A Cube Navigation Aid */
 export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> {
 
+  public static loopMs = 10;
   private start: Point2d = Point2d.createZero();
 
   public readonly state: Readonly<CubeNavigationState> = {
@@ -94,6 +96,37 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     startRot: YawPitchRollAngles.createRadians(0, 0, 0),
     animTime: 0,
   };
+
+  public ComponentDidMount() {
+    ViewportManager.ViewRotationChangeEvent.addListener(this.handleViewRotationChangeEvent);
+  }
+
+  public componentWillUnmount() {
+    ViewportManager.ViewRotationChangeEvent.removeListener(this.handleViewRotationChangeEvent);
+  }
+
+  /** Converts from threeJS Euler angles to iModelJS YawPitchRollAngles */
+  public static cubeToIModelJS = (a: YawPitchRollAngles) => {
+    return YawPitchRollAngles.createRadians(-a.yaw.radians, -a.pitch.radians + Math.PI / 2, 0);
+  }
+
+  /** Converts from iModelJS YawPitchRollAngles to threeJS Euler angles */
+  public static iModelJSToCube = (a: YawPitchRollAngles) => {
+    return YawPitchRollAngles.createRadians(a.yaw.radians, -a.pitch.radians - Math.PI / 2, 0);
+  }
+
+  // Synchronize with rotation coming from the Viewport
+  private handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
+    const v = CubeNavigationAid.iModelJSToCube(args.rotation);
+    const c = this.state.rotation;
+
+    if (!v.isAlmostEqual(c) && this.state.animTime === 0 && !this.state.dragging) {
+      this.setState({
+        startRot: v, rotation: v,
+        currentFace: Face.None,
+      });
+    }
+  }
 
   public render(): React.ReactNode {
     const visible = this.state.currentFace !== Face.None && this.state.animTime === 0;
@@ -106,7 +139,9 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
             rotation={this.state.rotation}
             onFaceCellClick={this.handleFaceCellClick}
             onTransitionEnd={this.handleTransitionEnd}
-            animTime={this.state.animTime} />
+            onRotationTransitionUpdate={this.handleRotationTransitionUpdate}
+            animTime={this.state.animTime}
+            animInterval={CubeNavigationAid.loopMs}/>
         </div>
         <PointerButton visible={visible} pointerType={Pointer.Up} onArrowClick={this.onArrowClick} />
         <PointerButton visible={visible} pointerType={Pointer.Down} onArrowClick={this.onArrowClick} />
@@ -116,8 +151,8 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     );
   }
 
-  private posToRot = (point: Point3d) => {
-    const m = [0, 1, -1];
+  private posToRot = (point: Point3d) => { // Determine rotation for a given rotation
+    const m = [0, 1, -1]; // map enum indices into [-1, 0, 1] values
     const x = m[point.x], y = m[point.y], z = m[point.z];
     const p = YawPitchRollAngles.createRadians(0, 0, 0);
     let n = 0;
@@ -126,31 +161,34 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     if (z) n++;
     if (n >= 1) {
       switch (n) {
-        case 1:
+        case 1: // 1 face connection, must be face
           if (x)
-            p.yaw.setRadians(-x * Math.PI / 2);
+            p.yaw.setRadians(x * Math.PI / 2);
           if (y)
             p.pitch.setRadians(y * Math.PI / 2);
-          if (z)
-            p.yaw.setRadians((-z + 1) * Math.PI / 2);
+          if (z) // 0 when z = 1, pi when z = -1
+            p.yaw.setRadians((z - 1) * Math.PI / 2);
           break;
-        case 2:
+        case 2: // 2 face connection, must be edge
           p.pitch.setRadians(y * Math.PI / 4);
-          if (x)
-            p.yaw.setRadians(-x * (2 - z) * Math.PI / 4);
-          else
-            p.yaw.setRadians((-z + 1) * Math.PI / 2);
+          if (x) // x must be non-zero to determine angle sign for [-pi, pi] angle
+            p.yaw.setRadians(x * (2 - z) * Math.PI / 4);
+          else // else, use same yaw as front/back (z) configuration
+            p.yaw.setRadians((z - 1) * Math.PI / 2);
           break;
-        case 3:
+        case 3: // 3 face connection, must be corner
+          // pitch = +/- pi/5, depending on top/bottom corner location.
+          // use pi/5 instead of pi/4 because it visually looks better for corners.
           p.pitch.setRadians(y * Math.PI / 5);
-          p.yaw.setRadians(-x * (2 - z) * Math.PI / 4);
+          // x(left/right) determines angle sign.
+          // (2 - z)pi/4 translates to pi/2 +/- pi/4;
+          // Start at 90deg either side(according to left/right), add or subtract 45deg(according to front/back)
+          p.yaw.setRadians(x * (2 - z) * Math.PI / 4);
           break;
       }
     }
     return p;
   }
-
-  private static wrapZero = (x: number, max: number) => ((x % max) + max) % max; // max exclusive, zero inclusive
 
   /**
    * Rotates RotationMap object 90 degrees for every index increment.
@@ -161,10 +199,10 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     const a = [up, right, down, left];
     const l = a.length;
     return {
-      up:    a[CubeNavigationAid.wrapZero(0 + index, l)],
-      right: a[CubeNavigationAid.wrapZero(1 + index, l)],
-      down:  a[CubeNavigationAid.wrapZero(2 + index, l)],
-      left:  a[CubeNavigationAid.wrapZero(3 + index, l)],
+      up:    a[Geometry.modulo(0 + index, l)],
+      right: a[Geometry.modulo(1 + index, l)],
+      down:  a[Geometry.modulo(2 + index, l)],
+      left:  a[Geometry.modulo(3 + index, l)],
     };
   }
 
@@ -261,7 +299,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     let rot = this.posToRot(pos);
 
     const startRot = this.state.rotation.clone();
-    if ((face === Face.Top || face === Face.Bottom) && CubeNavigationAid.wrapZero(rotation.yaw.radians, Math.PI / 2) !== 0) {
+    if ((face === Face.Top || face === Face.Bottom) && Geometry.modulo(rotation.yaw.radians, Math.PI / 2) !== 0) {
       const yaw = Math.round(rotation.yaw.radians / (Math.PI / 2)) * (Math.PI / 2);
       const pitch = rot.pitch.radians;
       rot = YawPitchRollAngles.createRadians(yaw, pitch, 0);
@@ -279,58 +317,37 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     this.setState({animTime: 0});
   }
 
-  public componentWillUnmount() {
-    // ViewportManager.ViewRotationChangeEvent.removeListener(this.handleViewRotationChangeEvent);
+  private handleRotationTransitionUpdate = (rotation: YawPitchRollAngles) => {
+    ViewportManager.setCubeRotation(CubeNavigationAid.cubeToIModelJS(rotation));
   }
 
   private animateRotation = (animTime: number, startRot: YawPitchRollAngles, rotation: YawPitchRollAngles, currentFace: Face = Face.None) => {
-    // set animation variables, let this.animate process it.
+    const time = rotation.isAlmostEqual(this.state.rotation) ? 0 : animTime;
+    // set animation variables, let css transitions animate it.
     this.setState({
       startRot, rotation,
-      animTime,
+      animTime: time,
       currentFace, // only set visible when currentFace is an actual face
     });
   }
   private setRotation = (rot: YawPitchRollAngles, startRot?: YawPitchRollAngles, currentFace: Face = Face.None) => {
-    // set variables, with animPercent at 1 to prevent animation.
+    ViewportManager.setCubeRotation(CubeNavigationAid.cubeToIModelJS(rot));
+    // set variables, with animTime at 0 to prevent animation.
     this.setState({
       startRot: startRot || rot, rotation: rot,
       animTime: 0,
       currentFace, // only set visible when currentFace is an actual face
     });
   }
-
-  /** Converts from threeJS Euler angles to iModelJS YawPitchRollAngles */
-  // public static threeJSToIModelJS = (a: THREE.Euler) => {
-  //   return YawPitchRollAngles.createRadians(a.y, a.x + Math.PI / 2, 0);
-  // }
-
-  /** Converts from iModelJS YawPitchRollAngles to threeJS Euler angles */
-  // public static iModelJSToThreeJS = (a: YawPitchRollAngles) => {
-  //   return new THREE.Euler(-a.pitch.radians - Math.PI / 2, a.yaw.radians, 0, "ZYX");
-  // }
-
-  // Synchronize with rotation coming from the Viewport
-  // private handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
-  //   const v = CubeNavigationAid.iModelJSToThreeJS(args.rotation);
-  //   const c = this.state.rotation;
-
-  //   if (!CubeNavigationAid.almostEqual(v, c) && this.state.animPercent >= 1.0 && !this.state.dragging) {
-  //     this.cameraGroup.rotation.copy(v);
-  //     this.setState({
-  //       startRot: v, rotation: v,
-  //       animPercent: 1.0, animTime: 0,
-  //       currentFace: Face.None, visible: false,
-  //     });
-  //   }
-  // }
 }
 
 interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement> {
   dragging: boolean;
   rotation: YawPitchRollAngles;
   onFaceCellClick: (position: Point3d, face?: Face) => void;
+  onRotationTransitionUpdate: (rotation: YawPitchRollAngles) => void;
   animTime: number;
+  animInterval: number;
 }
 
 enum Hover {
@@ -344,25 +361,88 @@ interface CubeState {
 }
 
 class Cube extends React.Component<CubeProps, CubeState> {
+  private frontComputedStyle: CSSStyleDeclaration | undefined;
+  private timer: any = null;
   public readonly state: CubeState = {
     hoverMap: {},
   };
   public render(): React.ReactNode {
-    const {dragging, rotation, onFaceCellClick, animTime, ...props} = this.props;
+    const {dragging, rotation, onFaceCellClick, onRotationTransitionUpdate, animTime, animInterval, ...props} = this.props;
     const {hoverMap} = this.state;
     const animationStyle: React.CSSProperties = {
       transition: `${this.props.animTime}ms`,
     };
     return (
       <div className={classnames("cube-nav-cube", {dragging})} style={animationStyle} {...props}>
-        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Front} />
-        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Back} />
-        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Right} />
-        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Left} />
-        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Top} />
-        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Bottom} />
+        {[Face.Front, Face.Back, Face.Right, Face.Left, Face.Top, Face.Bottom]
+        .map((face: Face) => {
+          const ref = face === Face.Front ? (el: CubeFace) => {
+            const div = ReactDOM.findDOMNode(el) as HTMLDivElement;
+            if (div instanceof HTMLDivElement) {
+              const computedStyle = window.getComputedStyle(div);
+              if (computedStyle instanceof CSSStyleDeclaration) {
+                this.frontComputedStyle = computedStyle;
+              }
+            }
+          } : undefined;
+          const onTransitionEnd = face === Face.Front ? this.handleTransitionEnd : undefined;
+          return (
+            <CubeFace
+              key={face}
+              rotation={rotation}
+              onFaceCellClick={onFaceCellClick}
+              onFaceCellHoverChange={this.handleCellHoverChange}
+              onTransitionEnd={onTransitionEnd}
+              hoverMap={hoverMap}
+              ref={ref}
+              face={face} />
+          );
+        })}
       </div>
     );
+  }
+
+  public componentDidUpdate(prevProps: CubeProps) {
+    if (prevProps.animTime !== this.props.animTime && this.props.animTime > 0) {
+      this.timer = setInterval(this.rotationUpdate, this.props.animInterval);
+    }
+  }
+
+  public handleTransitionEnd = () => {
+    clearInterval(this.timer);
+    this.rotationUpdate();
+  }
+
+  private static parse3DMatrix = (matrix: string) => {
+    const out: number[] = [];
+    if (/matrix3d/.test(matrix)) {
+      const str = matrix.substring(8); // length of "matrix3d".
+      const mat = str.match(/[-+]?\d*\.?\d+/g); // Match only valid floats
+      if (mat)
+        for (const n of mat)
+          out.push(parseFloat(n));
+    }
+    return out;
+  }
+
+  private rotationUpdate = () => {
+    if (this.frontComputedStyle !== undefined && this.frontComputedStyle.transform !== null) {
+      const transform = this.frontComputedStyle.transform;
+      const v = Cube.parse3DMatrix(transform);
+      if (v.length > 0) {
+        // Extract rotMatrix from transformation matrix
+        const matrix = RotMatrix.createRowValues(
+          v[0], v[1], v[2],
+          v[8], v[9], v[10],
+          v[4], v[5], v[6],
+        );
+        const rotation = YawPitchRollAngles.createFromRotMatrix(matrix);
+        console.log(matrix.toJSON(), rotation && rotation.toJSON());
+        if (rotation) {
+          this.props.onRotationTransitionUpdate(rotation);
+        }
+      }
+    }
   }
 
   private handleCellHoverChange = (pos: Point3d, state: Hover) => {
@@ -386,7 +466,7 @@ const faceNames: {[key: number]: string} = {
   [Face.Bottom]: "bottom",
 };
 
-interface CubeFaceProps {
+interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
   rotation: YawPitchRollAngles;
   face: Face;
   hoverMap: {[key: string]: Hover};
@@ -394,22 +474,10 @@ interface CubeFaceProps {
   onFaceCellHoverChange: (position: Point3d, state: Hover) => void;
 }
 
-  /* function parse3DMatrix(matrix) {
-  const out = [];
-  if(/matrix3d/.test(matrix)) {
-    const str = matrix.substring(8); // length of "matrix3d".
-    const mat = str.match(/[-+]\d*.?\d+/g); // Match only valid floats
-    for (const n of mat) {
-      out.push(parseFloat(n));
-    }
-  }
-  return out;
-} */
-
 class CubeFace extends React.Component<CubeFaceProps> {
   private _faceWidth: number = 0;
   public render(): React.ReactNode {
-    const {rotation, face, onFaceCellHoverChange, onFaceCellClick, hoverMap} = this.props;
+    const {rotation, face, hoverMap, onFaceCellClick, onFaceCellHoverChange, style, ...props} = this.props;
     if (face === Face.None)
       return null;
     const name = faceNames[face];
@@ -434,14 +502,18 @@ class CubeFace extends React.Component<CubeFaceProps> {
         rot = " rotateX(-.25turn)";
         break;
     }
-    const transform = `rotateX(${-rotation.pitch.radians}rad) rotateY(${rotation.yaw.radians}rad) ${rot} translateZ(${this._faceWidth}px)`;
-    const style: React.CSSProperties = {
+    const transform = `translateZ(-${this._faceWidth}px) rotateX(${-rotation.pitch.radians}rad) rotateY(${rotation.yaw.radians}rad) ${rot} translateZ(${this._faceWidth}px)`;
+    const s: React.CSSProperties = {
       transform,
       WebkitTransform: transform,
+      ...style,
     };
 
     return (
-      <div style={style} className={classes} ref={(e) => { this._faceWidth = (e && e.clientWidth / 2) || 0; }}>
+      <div style={s}
+        className={classes}
+        ref={(e) => { this._faceWidth = (e && e.clientWidth / 2) || 0; }}
+        {...props}>
         {[-1, 0, 1].map((y: number) => {
           return (
             <FaceRow key={y} center={y === 0}>
