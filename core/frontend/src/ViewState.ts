@@ -1760,22 +1760,18 @@ export class SheetViewState extends ViewState2d {
     if (!this._attachments.allLoaded) {
       let i = 0;
       while (i < this._attachments.length) {
-        const attachmentState = this._attachments.load(i, this, context);
+        const loadStatus = this._attachments.load(i, this, context);
 
         // If load fails, attachment gets dropped from the list
-        if (attachmentState !== Attachments.State.Empty && attachmentState !== Attachments.State.NotLoaded)
+        if (loadStatus === Attachments.State.Ready || loadStatus === Attachments.State.Loading)
           i++;
       }
     }
 
     // Draw all attachments that have a status of ready
-    for (const attachment of this._attachments.list) {
-      if (attachment.state === Attachments.State.Ready) {
-        if (attachment.is2d)
-          assert(attachment.tree !== undefined);  // 2d attachments must have fully-loaded tile tree before being drawn
+    for (const attachment of this._attachments.list)
+      if (attachment.isReady)
         attachment.tree!.drawScene(context);
-      }
-    }
   }
 
   private _pickableBorder = false; // ###TODO: Remove - testing pickable decorations
