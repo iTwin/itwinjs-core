@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -45,8 +45,8 @@ class OvrUniform {
     // NB: To be consistent with the lookup table approach for non-uniform feature tables and share shader code, we pass
     // the override data as two RGBA values - hence all the conversions to floating point range [0.0..1.0]
     const kvp = map.getArray()[0];
-    const isFlashed = flashedElemId.isValid && kvp.value.elementId.value === flashedElemId.value;
-    const isHilited = hilites.has(kvp.value.elementId.value);
+    const isFlashed = flashedElemId.isValid && kvp.value.elementId === flashedElemId.value;
+    const isHilited = hilites.has(kvp.value.elementId);
 
     if (undefined === ovrs) {
       // We only need to update the 'flashed' and 'hilited' flags
@@ -171,7 +171,7 @@ class OvrNonUniform {
       }
 
       let flags = OvrFlags.None;
-      if (hilites.has(feature.elementId.value)) {
+      if (hilites.has(feature.elementId)) {
         flags |= OvrFlags.Hilited;
         this.anyHilited = true;
       }
@@ -211,7 +211,7 @@ class OvrNonUniform {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (flashedElemId.isValid() && feature.elementId.value === flashedElemId.value)
+      if (flashedElemId.isValid && feature.elementId === flashedElemId.value)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);
@@ -239,8 +239,8 @@ class OvrNonUniform {
         continue;
       }
 
-      const isFlashed = feature.elementId.value === flashedElemId.value;
-      const isHilited = hilites.has(feature.elementId.value);
+      const isFlashed = feature.elementId === flashedElemId.value;
+      const isHilited = hilites.has(feature.elementId);
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
@@ -370,10 +370,10 @@ function uint32ToFloatArray(value: number): Float32Array {
   return floats;
 }
 
-function createUniformPickTable(elemId: Id64): UniformPickTable {
+function createUniformPickTable(elemId: Id64String): UniformPickTable {
   return {
-    elemId0: uint32ToFloatArray(elemId.getLowUint32()),
-    elemId1: uint32ToFloatArray(elemId.getHighUint32()),
+    elemId0: uint32ToFloatArray(Id64.getLowUint32(elemId)),
+    elemId1: uint32ToFloatArray(Id64.getHighUint32(elemId)),
   };
 }
 
@@ -392,8 +392,8 @@ function createNonUniformPickTable(features: FeatureTable): NonUniformPickTable 
   for (const entry of features.getArray()) {
     const elemId = entry.value.elementId;
     const index = entry.index;
-    ids[index * 2] = elemId.getLowUint32();
-    ids[index * 2 + 1] = elemId.getHighUint32();
+    ids[index * 2] = Id64.getLowUint32(elemId);
+    ids[index * 2 + 1] = Id64.getHighUint32(elemId);
   }
 
   return TextureHandle.createForData(dims.width, dims.height, bytes);
@@ -416,6 +416,7 @@ export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
 
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
+  public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
@@ -454,6 +455,7 @@ export class Batch extends Graphic {
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
+  public get isPickable(): boolean { return true; }
 
   public getOverrides(target: Target): FeatureOverrides {
     let ret: FeatureOverrides | undefined;
@@ -510,7 +512,7 @@ export class Branch extends Graphic {
       branch.setViewFlags(viewFlags);
   }
 
-  public dispose() { }
+  public dispose() { this.branch.dispose(); }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public assignUniformFeatureIndices(index: number): void {

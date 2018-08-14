@@ -1,6 +1,8 @@
-@import "./_variables";
+@import "_variables";
 
 .nz-toolbar-item-expandable-group-nested {
+  position: relative;
+
   .nz-back-arrow-container {
     width: 15px;
     height: 20px;

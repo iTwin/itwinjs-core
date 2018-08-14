@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -442,6 +442,8 @@ export class ViewFlags {
   public monochrome: boolean = false;
   /** Ignore geometry maps */
   public noGeometryMap: boolean = false;
+  /** Display background map */
+  public backgroundMap: boolean = false;
   /** Use material colors for hidden lines */
   public hLineMaterialColors: boolean = false;
   /** 0=none, 1=generate mask, 2=use mask */
@@ -474,6 +476,7 @@ export class ViewFlags {
       val.monochrome = other.monochrome;
       val.noGeometryMap = other.noGeometryMap;
       val.hLineMaterialColors = other.hLineMaterialColors;
+      val.backgroundMap = other.backgroundMap;
       val.edgeMask = other.edgeMask;
     }
     return val;
@@ -513,6 +516,7 @@ export class ViewFlags {
     if (this.clipVolume) out.clipVol = true;
     if (this.hLineMaterialColors) out.hlMatColors = true;
     if (this.monochrome) out.monochrome = true;
+    if (this.backgroundMap) out.backgroundMap = true;
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
 
     out.renderMode = this.renderMode;
@@ -545,6 +549,7 @@ export class ViewFlags {
     val.monochrome = JsonUtils.asBool(json.monochrome);
     val.edgeMask = JsonUtils.asInt(json.edgeMask);
     val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
+    val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
 
     const renderModeValue = JsonUtils.asInt(json.renderMode);
     if (renderModeValue < RenderMode.HiddenLine)
@@ -581,6 +586,7 @@ export class ViewFlags {
       && this.monochrome === other.monochrome
       && this.noGeometryMap === other.noGeometryMap
       && this.hLineMaterialColors === other.hLineMaterialColors
+      && this.backgroundMap === other.backgroundMap
       && this.edgeMask === other.edgeMask;
   }
 }
@@ -610,6 +616,7 @@ export namespace ViewFlag {
     kGeometryMap,
     kHlineMaterialColors,
     kEdgeMask,
+    kBackgroundMap,
   }
 
   /**
@@ -639,7 +646,7 @@ export namespace ViewFlag {
       return result;
     }
     public copyFrom(other: Overrides): void {
-      this.values.clone(other.values);
+      other.values.clone(this.values);
       this.present = other.present;
     }
 
@@ -661,6 +668,7 @@ export namespace ViewFlag {
     public setShowConstructions(val: boolean) { this.values.constructions = val; this.setPresent(PresenceFlag.kConstructions); }
     public setMonochrome(val: boolean) { this.values.monochrome = val; this.setPresent(PresenceFlag.kMonochrome); }
     public setIgnoreGeometryMap(val: boolean) { this.values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
+    public setShowBackgroundMap(val: boolean) { this.values.backgroundMap = val; this.setPresent(PresenceFlag.kBackgroundMap); }
     public setUseHlineMaterialColors(val: boolean) { this.values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
     public setEdgeMask(val: number) { this.values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
     public setRenderMode(val: RenderMode) { this.values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
@@ -690,6 +698,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kConstructions)) base.constructions = this.values.constructions;
       if (this.isPresent(PresenceFlag.kMonochrome)) base.monochrome = this.values.monochrome;
       if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this.values.noGeometryMap;
+      if (this.isPresent(PresenceFlag.kBackgroundMap)) base.backgroundMap = this.values.backgroundMap;
       if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this.values.hLineMaterialColors;
       if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this.values.edgeMask;
       if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this.values.renderMode;
@@ -1317,7 +1326,7 @@ export class GeometryParams {
   public gradient?: Gradient.Symb; // gradient fill settings.
   public pattern?: AreaPattern.Params; // area pattern settings.
 
-  constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid()) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
+  constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
 
   public clone(): GeometryParams {
     const retVal = new GeometryParams(this.categoryId, this.subCategoryId);
@@ -1503,17 +1512,17 @@ export namespace Hilite {
  * FeatureTable associated with the primitive.
  */
 export class Feature implements Comparable<Feature> {
-  public readonly elementId: Id64;
-  public readonly subCategoryId: Id64;
+  public readonly elementId: string;
+  public readonly subCategoryId: string;
   public readonly geometryClass: GeometryClass;
 
-  public constructor(elementId: Id64 = Id64.invalidId, subCategoryId: Id64 = Id64.invalidId, geometryClass: GeometryClass = GeometryClass.Primary) {
-    this.elementId = elementId;
-    this.subCategoryId = subCategoryId;
+  public constructor(elementId: Id64String = Id64.invalidId, subCategoryId: Id64String = Id64.invalidId, geometryClass: GeometryClass = GeometryClass.Primary) {
+    this.elementId = elementId.toString();
+    this.subCategoryId = subCategoryId.toString();
     this.geometryClass = geometryClass;
   }
 
-  public get isDefined(): boolean { return this.elementId.isValid() || this.subCategoryId.isValid() || this.geometryClass !== GeometryClass.Primary; }
+  public get isDefined(): boolean { return !Id64.isInvalidId(this.elementId) || !Id64.isInvalidId(this.subCategoryId) || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
 
   public equals(other: Feature): boolean { return 0 === this.compare(other); }
@@ -1523,9 +1532,9 @@ export class Feature implements Comparable<Feature> {
 
     let cmp = compareNumbers(this.geometryClass, rhs.geometryClass);
     if (0 === cmp) {
-      cmp = compareStrings(this.elementId.value, rhs.elementId.value);
+      cmp = compareStrings(this.elementId, rhs.elementId);
       if (0 === cmp) {
-        cmp = compareStrings(this.subCategoryId.value, rhs.subCategoryId.value);
+        cmp = compareStrings(this.subCategoryId, rhs.subCategoryId);
       }
     }
 

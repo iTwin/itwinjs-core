@@ -6,10 +6,6 @@
 
   @include nz-z-index(tooltip);
 
-  &:not(.nz-is-open) {
-    display: none;
-  }
-
   &.nz-direction-left {
     top: 0;
     transform: translateX(-100%);

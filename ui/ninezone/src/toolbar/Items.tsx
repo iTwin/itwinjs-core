@@ -5,16 +5,19 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps from "../utilities/Props";
-import "./Items.scss";
 import { OrthogonalDirectionHelpers, OrthogonalDirection } from "../utilities/Direction";
+import "./Items.scss";
 
+/** Properties of [[Items]] component. */
 export interface ItemsProps extends CommonProps {
+  /** Toolbar items. */
   children?: React.ReactNode;
+  /** Toolbar items direction. */
   direction: OrthogonalDirection;
 }
 
+/** Toolbar items container. Used in [[Toolbar]] and [[Scrollable]] components. */
 export default class Items extends React.Component<ItemsProps> {
   public render() {
     const className = classnames(

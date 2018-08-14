@@ -37,6 +37,8 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Controls the version number and package dependencies for **@bentley/imodeljs-frontend**
 * `core/i18n/package.json`
   * Controls the version number and package dependencies for **@bentley/imodeljs-i18n**
+* `core/ecschema-metadata`
+  * Comprehensive ECSchema library
 * `example-code`
   * Example code snippets are extracted from these packages
 * `test-apps/simpleviewtest/package.json`
@@ -55,6 +57,11 @@ Each package will have its own **node_modules** directory which will contain sym
 * [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
 * [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 2.7.2
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
+
+### Linux
+
+You must install the following on a Linux computer before attempting to run imodeljs-backend:
+* libc++abi1
 
 ## (Bentley Developers only) Authentication
 
@@ -119,5 +126,6 @@ Use these instructions to update dependencies and devDependencies on external pa
 
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `npm run docs`
+3. Build and run local TypeDoc documentation server: `npm run buildDocSite`
 
 The full list of npm scripts can be found in the root `package.json` file.

@@ -9,13 +9,13 @@ import { Triangle } from "../render/primitives/Primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair, ElementAlignedBox3d, TextureMapping, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
+import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, RotMatrix, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
-import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ImageUtil } from "../ImageUtil";
+import { IModelConnection } from "../IModelConnection";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -189,6 +189,7 @@ export namespace GltfTileIO {
       public readonly meshes: any,
       public readonly materials: any,
       public readonly extensions: any,
+      public readonly samplers: any,
       public readonly yAxisUp: boolean) { }
 
     public static create(buffer: TileIO.StreamBuffer, yAxisUp: boolean = false): ReaderProps | undefined {
@@ -199,7 +200,7 @@ export namespace GltfTileIO {
       const binaryData = new Uint8Array(buffer.arrayBuffer, buffer.curPos + header.sceneStrLength);
 
       const sceneStrData = buffer.nextBytes(header.sceneStrLength);
-      const sceneStr = StringUtils.utf8ToString(sceneStrData);
+      const sceneStr = utf8ToString(sceneStrData);
       if (undefined === sceneStr)
         return undefined;
 
@@ -210,11 +211,12 @@ export namespace GltfTileIO {
         const accessors = JsonUtils.asObject(sceneValue.accessors);
         const bufferViews = JsonUtils.asObject(sceneValue.bufferViews);
         const extensions = JsonUtils.asObject(sceneValue.extensions);
+        const samplers = JsonUtils.asObject(sceneValue.samplers);
 
         if (undefined === materialValues || undefined === meshes || undefined === accessors || undefined === bufferViews)
           return undefined;
 
-        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, yAxisUp);
+        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, samplers, yAxisUp);
       } catch (e) {
         return undefined;
       }
@@ -236,8 +238,11 @@ export namespace GltfTileIO {
     protected readonly renderMaterials: any;  // Materials that may be deserialized and created directly
     protected readonly namedTextures: any;    // Textures that may be deserialized and created directly
     protected readonly images: any;
+    protected readonly samplers: any;
     protected readonly binaryData: Uint8Array;
-    protected readonly model: GeometricModelState;
+    protected readonly iModel: IModelConnection;
+    protected readonly is3d: boolean;
+    protected readonly modelId: Id64;
     protected readonly system: RenderSystem;
     protected readonly returnToCenter: number[] | undefined;
     protected readonly yAxisUp: boolean;
@@ -245,7 +250,6 @@ export namespace GltfTileIO {
 
     public async abstract read(): Promise<ReaderResult>;
 
-    public get modelId(): Id64 { return this.model.id; }
     protected get isCanceled(): boolean { return undefined !== this._isCanceled && this._isCanceled(this); }
     protected get hasBakedLighting(): boolean { return false; }
 
@@ -331,13 +335,14 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: IsCanceled) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
       this.bufferViews = props.bufferViews;
       this.meshes = props.meshes;
       this.materialValues = props.materials;
+      this.samplers = props.samplers;
       this.yAxisUp = props.yAxisUp;
       this.returnToCenter = this.extractReturnToCenter(props.extensions);
       this.textures = props.scene.textures;
@@ -346,7 +351,9 @@ export namespace GltfTileIO {
       this.renderMaterials = props.scene.renderMaterials;
       this.namedTextures = props.scene.namedTextures;
 
-      this.model = model;
+      this.iModel = iModel;
+      this.modelId = modelId;
+      this.is3d = is3d;
       this.system = system;
       this._isCanceled = isCanceled;
     }
@@ -394,7 +401,7 @@ export namespace GltfTileIO {
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
         type: primitiveType,
         range: Range3d.createNull(),
-        is2d: this.model.is2d,
+        is2d: !this.is3d,
         isPlanar,
         hasBakedLighting,
       });
@@ -692,7 +699,7 @@ export namespace GltfTileIO {
       return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
     }
 
-    protected async loadTextureImage(imageJson: any): Promise<RenderTexture | undefined> {
+    protected async loadTextureImage(imageJson: any, samplerJson: any): Promise<RenderTexture | undefined> {
       try {
         const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
         const bufferView = this.bufferViews[binaryImageJson.bufferView];
@@ -704,9 +711,14 @@ export namespace GltfTileIO {
         const offset = bufferView.byteOffset;
         const bytes = this.binaryData.subarray(offset, offset + bufferView.byteLength);
         const imageSource = new ImageSource(bytes, format);
+        let textureType = RenderTexture.Type.Normal;
+        if (undefined !== samplerJson &&
+          (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapS))
+          textureType = RenderTexture.Type.TileSection;
 
+        const textureParams = new RenderTexture.Params(undefined, textureType);
         return ImageUtil.extractImage(imageSource)
-          .then((image) => this.isCanceled ? undefined : this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.model.iModel, RenderTexture.Params.defaults))
+          .then((image) => this.isCanceled ? undefined : this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {
         return undefined;
@@ -717,7 +729,7 @@ export namespace GltfTileIO {
       if (undefined === textureJson)
         return Promise.resolve();
 
-      return this.loadTextureImage(this.images[textureJson.source]).then((texture) => {
+      return this.loadTextureImage(this.images[textureJson.source], undefined === this.samplers ? undefined : this.samplers[textureJson.sampler]).then((texture) => {
         textureJson.renderTexture = texture;
       });
     }

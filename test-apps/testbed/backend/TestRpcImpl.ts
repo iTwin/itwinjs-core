@@ -5,6 +5,7 @@ import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, 
 import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, IModelToken, RpcInvocation } from "@bentley/imodeljs-common";
 import { BentleyError, BentleyStatus, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { testInterfaceResource } from "../common/TestbedConfig";
 
 let op8Initializer = 0;
@@ -16,14 +17,6 @@ export const resetOp8Initializer = () => {
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
-  }
-
-  public _loadResource(name: string): Promise<ArrayBuffer> {
-    if (name === "test") {
-      return testInterfaceResource();
-    } else {
-      return super._loadResource(name);
-    }
   }
 
   public async op1(params: TestOp1Params): Promise<number> {
@@ -63,8 +56,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     }
   }
 
-  public async extractChangeSummaries(iModelToken: IModelToken, options: any): Promise<void> {
-    await ChangeSummaryManager.extractChangeSummaries(IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
+  public async extractChangeSummaries(accessToken: AccessToken, iModelToken: IModelToken, options: any): Promise<void> {
+    await ChangeSummaryManager.extractChangeSummaries(accessToken, IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(iModelToken: IModelToken): Promise<void> {
@@ -99,6 +92,18 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       }
     } else {
       throw new Error("Invalid.");
+    }
+  }
+
+  public async op12(): Promise<Uint8Array> {
+    return testInterfaceResource();
+  }
+
+  public async op13(data: Uint8Array): Promise<void> {
+    if (data[0] === 1 && data[1] === 2 && data[2] === 3 && data[3] === 4) {
+      return;
+    } else {
+      throw new Error();
     }
   }
 }

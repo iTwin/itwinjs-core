@@ -172,18 +172,16 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     return ClipPlaneContainment.StronglyOutside;
   }
 
-  /** Clip a polygon using this ClipPlaneSet, returning a new polygon boundary. */
-  public polygonClip(input: Point3d[], output: Point3d[]) {
+  /** Clip a polygon using this ClipPlaneSet, returning new polygon boundaries. Note that each polygon may lie next to the previous, or be disconnected. */
+  public polygonClip(input: Point3d[], output: Point3d[][]) {
     output.length = 0;
-    const convexClipOutput: Point3d[] = [];
 
     for (const convexSet of this._convexSets) {
-      convexSet.polygonClip(input, convexClipOutput, []);
-      input = convexClipOutput.slice();   // input of next convex set is the output from the previous
-      convexClipOutput.length = 0;
+      const convexSetOutput: Point3d[] = [];
+      convexSet.polygonClip(input, convexSetOutput, []);
+      if (convexSetOutput.length !== 0)
+        output.push(convexSetOutput);
     }
-    for (const point of input)
-      output.push(point);
   }
 
   /**

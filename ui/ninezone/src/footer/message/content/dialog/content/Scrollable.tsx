@@ -5,11 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Props from "../../../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../../../utilities/Props";
 import "./Scrollable.scss";
 
+/** Properties of [[ScrollableContent]] component. */
+export interface ScrollableContentProps extends CommonProps, NoChildrenProps {
+  /** Actual content. */
+  content?: React.ReactNode;
+}
+
+/** Scrollable content of [[Dialog]] component. */
 // tslint:disable-next-line:variable-name
-export const ScrollableMessage: React.StatelessComponent<Props> = (props) => {
+export const ScrollableContent: React.StatelessComponent<ScrollableContentProps> = (props) => {
   const className = classnames(
     "nz-footer-message-content-dialog-content-scrollable",
     props.className);
@@ -19,11 +26,11 @@ export const ScrollableMessage: React.StatelessComponent<Props> = (props) => {
       className={className}
       style={props.style}
     >
-      <div>
-        {props.children}
+      <div className="nz-content">
+        {props.content}
       </div>
     </div>
   );
 };
 
-export default ScrollableMessage;
+export default ScrollableContent;

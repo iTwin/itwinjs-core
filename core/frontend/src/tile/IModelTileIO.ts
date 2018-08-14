@@ -7,9 +7,8 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { JsonUtils, assert } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
-import { GeometricModelState } from "../ModelState";
 import { ImageUtil } from "../ImageUtil";
 import {
   Feature,
@@ -26,6 +25,7 @@ import {
   RenderMaterial,
   Gradient,
 } from "@bentley/imodeljs-common";
+import { IModelConnection } from "../IModelConnection";
 
 /** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
@@ -68,7 +68,7 @@ export namespace IModelTileIO {
 
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -79,7 +79,7 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream);
-      return undefined !== props ? new Reader(props, model, system, isCanceled) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, isCanceled) : undefined;
     }
 
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }  // Original IModel Tile creator set RTC unnecessarily and incorrectly.
@@ -116,8 +116,8 @@ export namespace IModelTileIO {
         return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled) {
-      super(props, model, system, isCanceled);
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, iModel, modelId, is3d, system, isCanceled);
     }
 
     protected readFeatureTable(): FeatureTable | undefined {
@@ -185,7 +185,7 @@ export namespace IModelTileIO {
           const gradientProps = json.gradient as Gradient.SymbProps;
           const gradient = undefined !== gradientProps ? Gradient.Symb.fromJSON(gradientProps) : undefined;
           if (undefined !== gradient) {
-            const texture = this.system.getGradientTexture(gradient, this.model.iModel);
+            const texture = this.system.getGradientTexture(gradient, this.iModel);
             if (undefined !== texture) {
               // ###TODO: would be better if DisplayParams created the TextureMapping - but that requires an IModelConnection and a RenderSystem...
               textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
@@ -205,7 +205,7 @@ export namespace IModelTileIO {
       if (this.renderMaterials === undefined || this.renderMaterials[key] === undefined)
         return undefined;
 
-      let material = this.system.findMaterial(key, this.model.iModel);
+      let material = this.system.findMaterial(key, this.iModel);
       if (!material) {
         const materialJson = this.renderMaterials[key];
 
@@ -231,7 +231,7 @@ export namespace IModelTileIO {
         if (undefined !== materialJson.textureMapping)
           materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
-        material = this.system.createMaterial(materialParams, this.model.iModel);
+        material = this.system.createMaterial(materialParams, this.iModel);
       }
 
       return material;
@@ -279,8 +279,7 @@ export namespace IModelTileIO {
       if (undefined === namedTex)
         return Promise.resolve();
 
-      const imodel = this.model.iModel;
-      const texture = this.system.findTexture(name, imodel);
+      const texture = this.system.findTexture(name, this.iModel);
       if (undefined !== texture)
         return Promise.resolve();
 
@@ -312,7 +311,7 @@ export namespace IModelTileIO {
           textureType = RenderTexture.Type.TileSection;
 
         const params = new RenderTexture.Params(name, textureType);
-        return this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.model.iModel, params);
+        return this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.iModel, params);
       });
     }
   }

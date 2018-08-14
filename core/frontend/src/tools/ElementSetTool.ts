@@ -96,7 +96,7 @@ export interface GroupMark {
 export class ElementAgenda {
   public readonly elements: string[] = [];
   public readonly groupMarks: GroupMark[] = [];
-  /** whether elements are flagged as hilited when added to the agenda. */
+  /** Whether elements are flagged as hilited when added to the agenda. */
   public hiliteOnAdd = true;
   public hilitedState = HilitedState.Unknown;
   public constructor(public iModel: IModelConnection) { }

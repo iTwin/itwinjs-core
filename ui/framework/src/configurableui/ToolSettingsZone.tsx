@@ -18,6 +18,7 @@ import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 /** State for the ToolSettingsZone content.
  */
@@ -46,6 +47,7 @@ export interface ToolSettingsZoneProps extends CommonProps {
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
 
+  /** hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
     isPopoverOpen: false,
@@ -76,10 +78,13 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   private getToolSettingsWidget() {
     const toolbar = (
-      <Toolbar>
-        {this.getToolSettingsButton()}
-        {/* {this.getToolAssistanceButton()} */}
-      </Toolbar>
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          this.getToolSettingsButton()
+          /* {this.getToolAssistanceButton()} */
+        }
+      />
     );
     switch (this.state.toolSettingsZoneContent) {
       case ToolSettingsZoneContent.ToolAssistance: {
@@ -194,9 +199,10 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
               });
             }
           }
-        >
-          <i className="icon icon-settings" />
-        </ToolbarIcon>
+          icon={
+            <i className="icon icon-settings" />
+          }
+        />
       );
     }
 

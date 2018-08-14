@@ -1,21 +1,23 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module OtherServices */
+
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { DeploymentEnv, UrlDescriptor } from "./Client";
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
 
 /** RealityData */
-@ECJsonTypeMap.classToJson("wsg", "TileDataAccess.InstanceData", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "TileDataAccess.InstanceData", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class InstanceData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Content")
   public content?: string;
 }
 
- /**
-  * Client wrapper to Tile Data Access Service
-  */
+/**
+ * Client wrapper to Tile Data Access Service
+ */
 export class TileDataAccessClient extends WsgClient {
   public static readonly searchKey: string = "tilesdataaccess";
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
@@ -57,7 +59,7 @@ export class TileDataAccessClient extends WsgClient {
    * @returns an array of RealityData
    */
   public async getPropertyData(token: AccessToken, dataId: string, elemId: string): Promise<InstanceData[]> {
-     return this.getInstances<InstanceData>(InstanceData, token, `/Repositories/BentleyCONNECT--${dataId}/TileDataAccess/InstanceData/${elemId}`);
+    return this.getInstances<InstanceData>(InstanceData, token, `/Repositories/BentleyCONNECT--${dataId}/TileDataAccess/InstanceData/${elemId}`);
   }
 
 }

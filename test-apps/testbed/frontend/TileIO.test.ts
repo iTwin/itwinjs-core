@@ -78,7 +78,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
-      const reader = IModelTileIO.Reader.create(stream, model, System.instance, (_) => true);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance, (_) => true);
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();
@@ -90,7 +90,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
-      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance);
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
@@ -128,8 +128,8 @@ describe("TileIO", () => {
         const feature = features.findFeature(0);
         expect(feature).not.to.be.undefined;
         expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-        expect(feature!.elementId.value).to.equal("0x4e");
-        expect(feature!.subCategoryId.value).to.equal("0x18");
+        expect(feature!.elementId).to.equal("0x4e");
+        expect(feature!.subCategoryId).to.equal("0x18");
 
         // Validate mesh data
         const mesh = meshes[0];
@@ -196,7 +196,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(triangles);
-      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance);
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
@@ -236,8 +236,8 @@ describe("TileIO", () => {
           const feature = features.findFeature(i);
           expect(feature).not.to.be.undefined;
           expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-          expect(feature!.elementId.value).to.equal(expectedElementId[i]);
-          expect(feature!.subCategoryId.value).to.equal("0x18");
+          expect(feature!.elementId).to.equal(expectedElementId[i]);
+          expect(feature!.subCategoryId).to.equal("0x18");
         }
 
         // Validate mesh data for first mesh (3 triangles).
@@ -414,7 +414,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineString);
-      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance);
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
@@ -452,8 +452,8 @@ describe("TileIO", () => {
         const feature = features.findFeature(0);
         expect(feature).not.to.be.undefined;
         expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-        expect(feature!.elementId.value).to.equal("0x4e");
-        expect(feature!.subCategoryId.value).to.equal("0x18");
+        expect(feature!.elementId).to.equal("0x4e");
+        expect(feature!.subCategoryId).to.equal("0x18");
 
         // Validate mesh data for first mesh (1 polyline).
         const mesh = meshes[0];
@@ -532,7 +532,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineStrings);
-      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance);
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
@@ -572,8 +572,8 @@ describe("TileIO", () => {
           const feature = features.findFeature(i);
           expect(feature).not.to.be.undefined;
           expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-          expect(feature!.elementId.value).to.equal(expectedElementId[i]);
-          expect(feature!.subCategoryId.value).to.equal("0x18");
+          expect(feature!.elementId).to.equal(expectedElementId[i]);
+          expect(feature!.subCategoryId).to.equal("0x18");
         }
 
         // Validate mesh data for first mesh (1 polyline).
@@ -733,7 +733,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(cylinder);
-      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance);
       expect(reader).not.to.be.undefined;
 
       if (undefined !== reader) {
@@ -771,8 +771,8 @@ describe("TileIO", () => {
         const feature = features.findFeature(0);
         expect(feature).not.to.be.undefined;
         expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-        expect(feature!.elementId.value).to.equal("0x4e");
-        expect(feature!.subCategoryId.value).to.equal("0x18");
+        expect(feature!.elementId).to.equal("0x4e");
+        expect(feature!.subCategoryId).to.equal("0x18");
 
         // Validate mesh data
         const mesh = meshes[0];

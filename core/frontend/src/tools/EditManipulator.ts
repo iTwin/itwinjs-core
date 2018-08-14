@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InputCollector, BeButton, BeGestureEvent } from "./Tool";
+import { BeButtonEvent, InputCollector, BeButton, EventHandled } from "./Tool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
@@ -23,16 +23,16 @@ export namespace EditManipulator {
     public constructor(public manipulator: Provider) { super(); }
 
     /** Setup tool for press, hold, drag or click+click modification.
-     * To support drag operation, request up event be sent to this tool even though it would not have received the down event.
      * By default a vertex type manipulator should honor all locks and support AccuSnap.
+     * @note We set this.receivedDownEvent to get up events for this tool even though it was the primitive tool that installed this instance that was sent the down event.
      */
-    protected init(): void { IModelApp.toolAdmin.currentInputState.buttonDownTool = this; IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None; IModelApp.accuSnap.enableLocate(false); IModelApp.accuSnap.enableSnap(true); }
+    protected init(): void { this.receivedDownEvent = true; IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None; IModelApp.accuSnap.enableLocate(false); IModelApp.accuSnap.enableSnap(true); }
     protected cancel(_ev: BeButtonEvent): boolean { return true; }
     protected abstract accept(_ev: BeButtonEvent): boolean;
 
     public onPostInstall(): void { super.onPostInstall(); this.init(); }
-    public onDataButtonDown(ev: BeButtonEvent): boolean { if (!this.accept(ev)) return false; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Accept); return true; }
-    public onResetButtonUp(ev: BeButtonEvent): boolean { if (!this.cancel(ev)) return false; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Cancel); return true; }
+    public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (!this.accept(ev)) return EventHandled.No; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Accept); return EventHandled.Yes; }
+    public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (!this.cancel(ev)) return EventHandled.No; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Cancel); return EventHandled.Yes; }
   }
 
   export abstract class Provider {
@@ -74,33 +74,34 @@ export namespace EditManipulator {
     protected drawControls(_context: DecorateContext): void { }
     protected abstract selectControls(_ev: BeButtonEvent): boolean;
     protected abstract modifyControls(_ev: BeButtonEvent): boolean; // run EditManipulator.Tool to handle interactive drag/click modification.
-    protected onDoubleClick(_ev: BeButtonEvent): boolean { return false; } // IModelApp.locateManager.currHit holds located element or pickable decoration
+    protected async onDoubleClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; } // IModelApp.locateManager.currHit holds located element or pickable decoration
 
-    public onButtonEvent(ev: BeButtonEvent): boolean {
+    public async onButtonEvent(ev: BeButtonEvent): Promise<EventHandled> {
       if (ev.isDoubleClick)
         return this.onDoubleClick(ev);
 
       if (!this.isActive)
-        return false;
+        return EventHandled.No;
 
       if (BeButton.Data !== ev.button)
-        return false;
+        return EventHandled.No;
 
-      const isDragging = ev.isDown && IModelApp.toolAdmin.currentInputState.isDragging(BeButton.Data);
+      if (ev.isDragging && ev.isControlKey)
+        return EventHandled.No; // Don't select or modify controls with ctrl+drag...
 
-      if (isDragging && ev.isControlKey)
-        return false; // Don't select or modify controls with ctrl+drag...
-
-      if ((ev.isDown && !isDragging) || !this.selectControls(ev))
-        return false; // Select controls on up event or down event only after drag started...
+      if ((ev.isDown && !ev.isDragging) || !this.selectControls(ev))
+        return EventHandled.No; // Select controls on up event or down event only after drag started...
 
       if (ev.isControlKey)
-        return true; // Support ctrl+click to select multiple controls...
+        return EventHandled.Yes; // Support ctrl+click to select multiple controls...
 
-      return this.modifyControls(ev); // Handle modification. Install InputCollector to modify using hold+drag, release or click+click.
+      if (this.modifyControls(ev))
+        return EventHandled.Yes; // Handle modification. Install InputCollector to modify using hold+drag, release or click+click.
+
+      return EventHandled.No;
     }
 
-    public onGestureEvent(_ev: BeGestureEvent): boolean { return false; }
+    //    public async onGestureEvent(_ev: BeGestureEvent): Promise<EventHandled> { return EventHandled.No; }
     public onManipulatorEvent(_eventType: EventType): void { this.updateControls(); }
     public onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void { if (this.iModel === iModel) this.onManipulatorEvent(EventType.Synch); }
 
@@ -123,7 +124,7 @@ export namespace EditManipulator {
 export class TestEditManipulatorTool extends EditManipulator.Tool {
   protected init(): void { super.init(); this.beginDynamics(); }
   protected accept(_ev: BeButtonEvent): boolean { return true; }
-  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { /* console.log("Dynamics");*/ }
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { /* console.log("Dynamics"); */ }
 }
 
 /** @hidden */

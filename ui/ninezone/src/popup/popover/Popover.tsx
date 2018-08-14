@@ -5,23 +5,24 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import Direction, { DirectionHelpers } from "../../utilities/Direction";
 import CommonProps from "../../utilities/Props";
-
 import "./Popover.scss";
 
+/** Properties of [[Popover]] component. */
 export interface PopoverProps extends CommonProps {
-  direction?: Direction;
-  isOpen?: boolean;
+  /** Popover content. */
+  children?: React.ReactNode;
+  /** Direction to which the popover is expanded. */
+  direction: Direction;
 }
 
+/** Popover component. */
 // tslint:disable-next-line:variable-name
 export const Popover: React.StatelessComponent<PopoverProps> = (props) => {
   const className = classnames(
     "nz-popup-popover-popover",
-    props.isOpen && "nz-is-open",
-    DirectionHelpers.getCssClassName(props.direction || Direction.Left),
+    DirectionHelpers.getCssClassName(props.direction),
     props.className);
 
   return (

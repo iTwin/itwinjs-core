@@ -35,7 +35,7 @@ const rpcInterfaces = [IModelTileRpcInterface, IModelReadRpcInterface];
 if (ElectronRpcConfiguration.isElectron)
   rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
 else
-  rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "sampleApp", version: "v1.0" } }, rpcInterfaces);
+  rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" } }, rpcInterfaces);
 
 // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
 for (const definition of rpcConfiguration.interfaces())
@@ -119,15 +119,15 @@ export class SampleAppIModelApp extends IModelApp {
   }
 
   public static handleIModelViewsSelected(_project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64Props[]): void {
+    const payload = { iModelConnection };
+    SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
+
     // we create a FrontStage that contains the views that we want.
     const frontstageProps: FrontstageProps | undefined = new ViewsFrontstage(viewIdsSelected, iModelConnection).defineProps();
     if (frontstageProps) {
       ConfigurableUiManager.loadFrontstage(frontstageProps);
       const frontstageDef = FrontstageManager.findFrontstageDef(frontstageProps.id);
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
-
-      const payload = { iModelConnection };
-      SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
     }
   }
 }

@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Indicator /> renders correctly 1`] = `
+<div
+  className="nz-toolbar-scroll-indicator nz-direction-left"
+>
+  <Chevron
+    direction={0}
+  />
+</div>
+`;

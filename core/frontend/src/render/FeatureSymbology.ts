@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride } from "@bentley/imodeljs-common";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 
 export namespace FeatureSymbology {
@@ -153,7 +153,7 @@ export namespace FeatureSymbology {
       const { elementId, subCategoryId, geometryClass } = feature;
       let elemApp, alwaysDrawn = false;
 
-      if (elementId.isValid()) {
+      if (!Id64.isInvalidId(elementId)) {
         if (this.isNeverDrawn(elementId))
           return undefined;
 
@@ -167,7 +167,7 @@ export namespace FeatureSymbology {
           app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
       }
 
-      if (subCategoryId.isValid()) {
+      if (!Id64.isInvalidId(subCategoryId)) {
         if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
           return undefined;
 
@@ -199,7 +199,7 @@ export namespace FeatureSymbology {
       // TFS#808986: Navigator puts some elements into both the 'never' and 'always' lists which is weird but
       // the docs for ViewController::GetNeverDrawn() assert that in that case the 'never' list wins.
       const { elementId, subCategoryId, geometryClass } = feature;
-      const isValidElemId = elementId.isValid();
+      const isValidElemId = !Id64.isInvalidId(elementId);
 
       if (isValidElemId && this.isNeverDrawn(elementId))
         return false;

@@ -5,14 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps from "../../utilities/Props";
 import "./Button.scss";
 
+/** Properties of [[ToolbarButton]] component. */
 export interface ToolbarButtonProps extends CommonProps {
+  /** Button content. */
+  children?: React.ReactNode;
+  /** Function called when the button is clicked. */
   onClick?: () => void;
 }
 
+/** Basic toolbar button. Used in [[Toolbar]] component. */
 export default class ToolbarButton extends React.Component<ToolbarButtonProps> {
   public render() {
     const className = classnames(

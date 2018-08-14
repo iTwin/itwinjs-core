@@ -40,7 +40,8 @@ export interface StackedWidgetProps {
 
 /** Stacked Widget React component.
  */
-export default class StackedWidget extends React.Component<StackedWidgetProps> {
+export class StackedWidget extends React.Component<StackedWidgetProps> {
+
   public render(): React.ReactNode {
     let tabs: JSX.Element[] = new Array<JSX.Element>();
     for (let i = 0; i < this.props.widgets.length; i++) {
@@ -53,6 +54,7 @@ export default class StackedWidget extends React.Component<StackedWidgetProps> {
     }
 
     const isWidgetOpen = this.props.widgets.some((w) => w.tabs.some((t) => t.isActive));
+
     return (
       <NZ_StackedWidget
         anchor={this.props.anchor}
@@ -101,3 +103,5 @@ export default class StackedWidget extends React.Component<StackedWidgetProps> {
     this.props.widgetChangeHandler.handleWidgetTabDrag(dragged as Point);
   }
 }
+
+export default StackedWidget;

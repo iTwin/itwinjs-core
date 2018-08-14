@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "",
-    "buildDocSite": "node buildDocSite --rootDir=../.. --ignorePackage=@bentley/bentleyjs-tools",
+    "buildDocSite": "node buildDocSite --rootDir=../.. --ignorePackage=@bentley/bentleyjs-tools --ignorePackage=@bentley/ui-components --ignorePackage=@bentley/ui-core --ignorePackage=@bentley/ui-framework --ignorePackage=@bentley/ui-ninezone",
     "clean": "",
     "docs": "",
     "lint": ""

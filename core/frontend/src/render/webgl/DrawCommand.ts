@@ -48,7 +48,7 @@ export class DrawParams extends ShaderProgramParams {
   public readonly viewMatrix: Matrix4;
 
   private static readonly _scratchTransform = Transform.createIdentity();
-  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = System.identityTransform, pass: RenderPass = RenderPass.OpaqueGeneral) {
+  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity, pass: RenderPass = RenderPass.OpaqueGeneral) {
     super(target, pass);
     this.geometry = geometry;
     this.modelMatrix = Matrix4.fromTransform(modelMatrix);
@@ -192,7 +192,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], [], []];
+  private readonly _commands: DrawCommands[];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -220,8 +220,8 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Hilite))
       flags |= CompositeFlags.Hilite;
 
-    assert(4 === RenderPass.Translucent);
-    assert(6 === RenderPass.Hilite);
+    assert(5 === RenderPass.Translucent);
+    assert(7 === RenderPass.Hilite);
 
     return flags;
   }
@@ -232,12 +232,21 @@ export class RenderCommands {
   constructor(target: Target, stack: BranchStack) {
     this.target = target;
     this._stack = stack;
-    assert(RenderPass.COUNT === this._commands.length);
+    this._commands = Array<DrawCommands>(RenderPass.COUNT);
+    for (let i = 0; i < RenderPass.COUNT; ++i)
+      this._commands[i] = [];
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
     scene.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    this._forcedRenderPass = RenderPass.None;
+  }
+
+  /** Add terrain graphics to their own render pass. */
+  public addTerrain(terrain: GraphicList): void {
+    this._forcedRenderPass = RenderPass.Terrain;
+    terrain.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -258,6 +267,29 @@ export class RenderCommands {
         this.addDecoration(world.branch.entries[i] as Graphic, world.overrides[i]);
       }
     });
+  }
+
+  private addPickableDecorations(decs: Decorations): void {
+    if (undefined !== decs.normal) {
+      for (const normal of decs.normal) {
+        const gf = normal as Graphic;
+        if (gf.isPickable)
+          gf.addCommands(this);
+      }
+    }
+
+    if (undefined !== decs.world) {
+      const world = this.target.getWorldDecorations(decs.world);
+      this.pushAndPopBranch(world, () => {
+        for (let i = 0; i < world.branch.entries.length; i++) {
+          const gf = (world.branch.entries[i] as Graphic);
+          if (gf.isPickable)
+            this.addDecoration(gf, world.overrides[i]);
+        }
+      });
+    }
+
+    // ###TODO: overlays
   }
 
   public addBackground(gf?: Graphic): void {
@@ -345,7 +377,7 @@ export class RenderCommands {
         // Want these items to draw in general opaque pass so they are not in pick data.
         if (FeatureIndexType.Empty === command.featureIndexType)
           pass = RenderPass.OpaqueGeneral;
-        /* falls through */
+      /* falls through */
       case RenderPass.OpaqueGeneral:
         if (this._translucentOverrides && haveFeatureOverrides && !this._addTranslucentAsOpaque)
           this.getCommands(RenderPass.Translucent).push(command);
@@ -421,20 +453,42 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
-  public init(scene: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
+  public initForPickOverlays(overlays: DecorationList): void {
+    this.clear();
+
+    this._addTranslucentAsOpaque = true;
+    this._stack.pushState(this.target.decorationState);
+
+    for (const overlay of overlays.list) {
+      const gf = overlay.graphic as Graphic;
+      if (gf.isPickable)
+        this.addDecoration(gf, overlay.overrides);
+    }
+
+    this._stack.pop();
+    this._addTranslucentAsOpaque = false;
+  }
+
+  public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
       // Set flag to force translucent gometry to be put into the opaque pass.
       this._addTranslucentAsOpaque = true;
+
       // Add the scene graphics.
       this.addGraphics(scene);
-      // TODO: also may want to add pickable decorations.
+
+      // Also add any pickable decorations.
+      if (undefined !== dec)
+        this.addPickableDecorations(dec);
+
       this._addTranslucentAsOpaque = false;
       return;
     }
 
     this.addGraphics(scene);
+    this.addTerrain(terrain);
 
     if (undefined !== dynamics && 0 < dynamics.list.length) {
       this.addDecorations(dynamics);
@@ -488,7 +542,8 @@ export class RenderCommands {
   public addBatch(batch: Batch): void {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
-    assert(RenderPass.None === this._forcedRenderPass);
+    // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?
+    // assert(RenderPass.None === this._forcedRenderPass);
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
 
@@ -497,7 +552,7 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes) {
+    if (undefined !== this._frustumPlanes && !batch.range.isNull()) {
       let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
       frustum = frustum.transformBy(this.target.currentTransform, frustum);
       if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {

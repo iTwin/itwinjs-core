@@ -148,25 +148,18 @@ export function addAlpha(vert: VertexShaderBuilder): void {
 }
 
 export namespace GLSLVertex {
-  export const earlyDiscard = `
-  if (checkForEarlyDiscard(rawPosition)) {
-    // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
-    // Also place it outside NDC range (for GL_POINTS)
+  // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
+  // Also place it outside NDC range (for GL_POINTS)
+  const discardVertex = `
+    {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     return;
-  }
-
+    }
 `;
 
-  export const discard = `
-  if (checkForDiscard()) {
-    // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
-    // Also place it outside NDC range (for GL_POINTS)
-    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-    return;
-  }
-
-`;
+  export const earlyDiscard = `  if (checkForEarlyDiscard(rawPosition)) ` + discardVertex;
+  export const discard = `  if (checkForDiscard()) ` + discardVertex;
+  export const lateDiscard = `  if (checkForLateDiscard()) ` + discardVertex;
 
   export const computeLineWeight = "\nfloat ComputeLineWeight() { return u_lineWeight; }\n";
   export const computeLineCode = "\nfloat ComputeLineCode() { return u_lineCode; }\n";

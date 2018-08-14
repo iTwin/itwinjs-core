@@ -5,18 +5,24 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import "./Indicator.scss";
 
+/** Properties of [[MessageCenterIndicator]] component. */
 export interface MessageCenterIndicatorProps extends CommonProps, NoChildrenProps {
-  balloonText?: string;
+  /** Label of balloon icon. */
+  balloonLabel?: string;
+  /** Dialog that is opened when indicator is clicked. See [[MessageCenter]] */
   dialog?: React.ReactChild;
+  /** Describes if the indicator label is visible. */
   isLabelVisible?: boolean;
+  /** Indicator label. */
   label?: string;
-  onIndicatorClick?: () => void;
+  /** Function called when indicator is clicked. */
+  onClick?: () => void;
 }
 
+/** One of [[Footer]] indicators. */
 export default class MessageCenterIndicator extends React.Component<MessageCenterIndicatorProps> {
   public render() {
     const className = classnames(
@@ -44,7 +50,7 @@ export default class MessageCenterIndicator extends React.Component<MessageCente
           >
             <div className="nz-arrow" />
             <div className="nz-content">
-              {this.props.balloonText}
+              {this.props.balloonLabel}
             </div>
           </div>
         </div>
@@ -53,6 +59,6 @@ export default class MessageCenterIndicator extends React.Component<MessageCente
   }
 
   private handleOnIndicatorClick = () => {
-    this.props.onIndicatorClick && this.props.onIndicatorClick();
+    this.props.onClick && this.props.onClick();
   }
 }

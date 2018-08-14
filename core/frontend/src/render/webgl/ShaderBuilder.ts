@@ -221,6 +221,58 @@ export class ShaderVariables {
   }
 
   public get length(): number { return this._list.length; }
+
+  // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
+  public exceedsMaxVaryingVectors(): boolean {
+    // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
+    // The packing rules are defined by the standard. Specifically each row can contain one of:
+    //  vec4
+    //  vec3 (+ float)
+    //  vec2 (+ vec2)
+    //  vec2 (+ float (+ float))
+    //  float (+ float (+ float (+ float)))
+    const registers = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
+    for (const variable of this._list) {
+      if (VariableScope.Varying !== variable.scope)
+        continue;
+
+      let variableSize = 0;
+      switch (variable.type) {
+        case VariableType.Int:
+        case VariableType.Float:
+          variableSize = 1;
+          break;
+        case VariableType.Vec2:
+          variableSize = 2;
+          break;
+        case VariableType.Vec3:
+          variableSize = 3;
+          break;
+        case VariableType.Vec4:
+          variableSize = 4;
+          break;
+        default:
+          assert(false, "Invalid varying variable type");
+          continue;
+      }
+
+      // Find the first available slot into which to insert this variable
+      let slotAvailable = false;
+      for (let i = 0; i < 8; i++) {
+        const newSize = registers[i] + variableSize;
+        if (newSize <= 4) {
+          registers[i] = newSize;
+          slotAvailable = true;
+          break;
+        }
+      }
+
+      if (!slotAvailable)
+        return true;
+    }
+
+    return false;
+  }
 }
 
 /** Convenience API for assembling glsl source code. */
@@ -268,7 +320,7 @@ export class SourceBuilder {
  * plus a set of code snippets which can be concatenated together to form the shader source.
  */
 export class ShaderBuilder extends ShaderVariables {
-  public readonly _components: string[] = new Array<string>();
+  public readonly _components = new Array<string | undefined>();
   public readonly _functions: string[] = new Array<string>();
   public readonly _extensions: string[] = new Array<string>();
   public headerComment: string = "";
@@ -283,6 +335,10 @@ export class ShaderBuilder extends ShaderVariables {
 
     // assume if caller is replacing an existing component, they know what they're doing...
     this._components[index] = component;
+  }
+  protected removeComponent(index: number) {
+    assert(index < this._components.length);
+    this._components[index] = undefined;
   }
 
   protected getComponent(index: number): string | undefined {
@@ -413,6 +469,9 @@ export const enum VertexShaderComponent {
   // (Optional) Add the element id to the vertex shader.
   // void computeElementId()
   AddComputeElementId,
+  // (Optional) After all output (varying) values have been computed, return true if this vertex should be discarded.
+  // bool checkForLateDiscard()
+  CheckForLateDiscard,
 
   COUNT,
 }
@@ -432,8 +491,9 @@ export class VertexShaderBuilder extends ShaderBuilder {
     addPosition(this, positionFromLUT);
   }
 
-  public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
+  public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
+  public unset(id: VertexShaderComponent) { this.removeComponent(id); }
 
   public addInitializer(initializer: string): void { this._initializers.push(initializer); }
   public addComputedVarying(name: string, type: VariableType, computation: string): void {
@@ -493,6 +553,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     for (const comp of this._computedVarying) {
       main.addline("  " + comp);
+    }
+
+    const checkForLateDiscard = this.get(VertexShaderComponent.CheckForLateDiscard);
+    if (undefined !== checkForLateDiscard) {
+      prelude.addFunction("bool checkForLateDiscard()", checkForLateDiscard);
+      main.addline(GLSLVertex.lateDiscard);
     }
 
     prelude.addMain(main.source);
@@ -556,8 +622,9 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     super(FragmentShaderComponent.COUNT);
   }
 
-  public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
+  public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
+  public unset(id: FragmentShaderComponent) { this.removeComponent(id); }
 
   public addDrawBuffersExtension(): void {
     assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
@@ -784,6 +851,9 @@ export class ProgramBuilder {
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
+    if (this.vert.exceedsMaxVaryingVectors())
+      assert(false, "GL_MAX_VARYING_VECTORS exceeded");
+
     const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);

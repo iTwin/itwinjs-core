@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken, RpcNotFoundResponse } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
 
 export class TestOp1Params {
   public a: number;
@@ -45,6 +46,8 @@ export abstract class TestRpcInterface extends RpcInterface {
     Map,
     Set,
     TestNotFoundResponse,
+    IModelToken,
+    AccessToken,
   ]
 
   public static getClient(): TestRpcInterface {
@@ -84,7 +87,7 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   /** exposed in test RPC interface so that this functionality can be tested from the frontend perspective */
-  public async extractChangeSummaries(_iModelToken: IModelToken, _options: any): Promise<void> {
+  public async extractChangeSummaries(_accessToken: AccessToken, _iModelToken: IModelToken, _options: any): Promise<void> {
     return this.forward.apply(this, arguments);
   }
   public async deleteChangeCache(_iModelToken: IModelToken): Promise<void> {
@@ -100,6 +103,14 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public op11(_input: string, _call: number): Promise<string> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public op12(): Promise<Uint8Array> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public op13(_data: Uint8Array): Promise<void> {
     return this.forward.apply(this, arguments);
   }
 }

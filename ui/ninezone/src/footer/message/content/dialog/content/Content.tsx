@@ -5,12 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import Props from "../../../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../../../utilities/Props";
 import "./Content.scss";
 
+/** Properties of [[DialogContent]] component. */
+export interface DialogContentProps extends CommonProps, NoChildrenProps {
+  /** Actual content. */
+  content?: React.ReactNode;
+}
+
+/** Content of [[Dialog]] component. */
 // tslint:disable-next-line:variable-name
-export const DialogContent: React.StatelessComponent<Props> = (props) => {
+export const DialogContent: React.StatelessComponent<DialogContentProps> = (props) => {
   const className = classnames(
     "nz-footer-message-content-dialog-content-content",
     props.className);
@@ -20,8 +26,8 @@ export const DialogContent: React.StatelessComponent<Props> = (props) => {
       className={className}
       style={props.style}
     >
-      <div>
-        {props.children}
+      <div className="nz-content">
+        {props.content}
       </div>
     </div>
   );

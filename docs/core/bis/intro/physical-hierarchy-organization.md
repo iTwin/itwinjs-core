@@ -2,12 +2,13 @@
 
 <!-- Responsible for this page: Allan Bommer -->
 
+![Preliminary Documentation Warning](./media/preliminary-documentation-see-discussion.png)
+
 ## Introduction
 
-Each `Subject` in a BIS Repository can have a `PhysicalPartition` child Element, under which the `PhysicalModel`s pertaining to the `Subject` will be organized using mechanisms described in [Model Hierarchy](model-hierarchy.md). The Model Hierarchy is constrained by [Modeling Perspective](modeling-perspective.md), but within the Physical Perspective, it is desirable to further organize Models according to Sites, Facilities, Systems, and Components in order to make the hierarchy of Models understandable by software and users. This section describes “Model Affinity” (a way of specifying “constraints” on the `ModelContainsElements` relationship) and the best-practice for using them to organize the Physical Model Hierarchy.
+Each `Subject` in a BIS Repository can have one `PhysicalPartition` child Element, under which the `PhysicalModel`s pertaining to the `Subject` will be organized using mechanisms described in [Model Hierarchy](model-hierarchy.md). The Model Hierarchy is constrained by [Modeling Perspective](modeling-perspective.md), but within the Physical Perspective, it is desirable to further organize Models according to Sites, Facilities, Systems, and Components in order to make the hierarchy of Models understandable by software and users. This section describes “Model Affinity” (a way of specifying “constraints” on the `ModelContainsElements` relationship) and the best-practice for using them to organize the Physical Model Hierarchy.
 
 ![Top of the PhysicalModel Hierarchy](./media/physical-hierarchy-organization-top-of-the-world.png)
-
 
 
 ## Organization Strategy
@@ -19,6 +20,10 @@ BIS defines a data model that is shared by a growing set of applications and ser
  - Specify a data organization which applications and services should read and write.
 
  The second option has been chosen for BIS as it is the more practical solution.
+
+ The strategy and organization described in this page may seem overly complex to domain developers who *just want to model a widget network*. These developers naturally want a simple organization that has a network of widgets in the top-most PhysicalModel. The problem with this *widget-centric* data organization is that there will be users who want to model widget networks, thingamajig systems and doohickey facilities and coordinate between them; how can these users do that if the top model is dedicated to widgets?
+
+ BIS has been created to facilitate multi-discipline coordination, and that naturally adds some complexity to single-discipline use cases.
 
 ### Predictability vs Flexibility / Strong vs Weak Type Safety
 
@@ -117,11 +122,21 @@ When an ancestor class has already defined a `ModelAffinity`, it only makes sens
 
 `ModelAffinity` custom attribute instances can *refer* to mixin classes, but cannot be *applied* to mixin classes.
 
-The mixin classes `IFacility` and `ISystem` are used in the `ModelAffinity` custom attribute for many key `PhysicalModel` hierarchy classes.
+The mixin classes `ISite`, `IFacility` and `ISystem` are used in the `ModelAffinity` custom attribute for many key `PhysicalModel` hierarchy classes.
+
+## Top PhysicalModel
+
+The top `PhysicalModel` (the one directly owned by the `PhysicalPartition`) should contain a single `PhysicalElement` that corresponds to the `Subject` (that owns the `PhysicalPartition`). As Subjects define their subject in text only, the subject may be vague (*Is "Burj Khalifa" only the building, or is it the building and the surrounding site?"*). This vagueness is clarified by the PhysicalElement that is in the top `PhysicalModel`.
+
+The top `PhysicalModel` most often contains an `ISite`, `IFacility`, or `ISystem` `PhysicalElement`.
+
+### Top PhysicalModels with More than One PhysicalElement
+
+There is no strict requirement limiting the top `PhysicalModel` to contain only a single `PhysicalElement`. iModels that are generated from other repositories will sometimes have top `PhysicalModel`s with multiple `PhysicalElement`s as that best matches the organization of the source data. Legacy data may also have a non-standard organization.
 
 ## PhysicalModel Hierarchy Strategy
 
-While `ModelAffinity` provides a mechanism to declare and enforce a PhysicalModel hierarchy, it does does not define a coordinated strategy. The strategy for organizing the hierarchy relies on classifying PhysicalElements into five types:
+While `ModelAffinity` provides a mechanism to declare and enforce a PhysicalModel hierarchy, it does not define a coordinated strategy. The strategy for organizing the hierarchy relies on classifying PhysicalElements into five types:
  - *Site* - An area of land and its contents.
  - *Facility* - A cross-disciplinary Entity such as a building, bridge, tunnel, wharf, etc.
  - *System* - A single discipline physical system, such as structural system, electrical system, sewer system, etc.
@@ -134,27 +149,27 @@ The overall `PhysicalModel` hierarchy strategy is defined in the following table
 
 | Classification | Affinity to  | Example Classes |
 |----------------|----------------|--------------|----------|
-| Site           | PhysicalPartition, Site | Site     |
-| IFacility       | PhysicalPartition, Site, IFacility, ISystem  *(declared in implementing classes)*           | Building, Bridge, Tunnel     |
-| ISystem         | PhysicalPartition, Site, IFacility, ISystem *(declared in implementing classes)*           | SewerSystem, StructuralSystem, etc.     |
-| *System | PhysicalPartition, Site, IFacility, ISystem        | SewerSystem, StructuralSystem     |
+| ISite           | ISite *(declared in implementing classes)* | Site     |
+| IFacility       | ISite, IFacility, ISystem  *(declared in implementing classes)*           | Building, Bridge, Tunnel     |
+| ISystem         | ISite, IFacility, ISystem *(declared in implementing classes)*           | SewerSystem, StructuralSystem, etc.     |
+| *System | ISite, IFacility, ISystem        | SewerSystem, StructuralSystem     |
 | *SystemComponent| *System         | SewerPipe, Beam     |
 | General-Use Component   | (none)          | Bolt, Chair    |
 
 
 These types and their behaviors are explained below, along with the behaviors of their breakdown `PhysicalModel`s if they have breakdown `Model`s.
 
-### Site
+### ISite
 
-`Site` is a `PhysicalElement` subclass that represents a region of land and all that is contained on, above and below that land.
+`ISite` is mixin class that represents an region of land and all that is contained on, above and below that land. The `ISite` mixin applies only to `PhysicalElement` classes.
 
-<!-- Should Site be Sealed? -->
+In conversation (and writing) the `Model`s that break down `Site` `Element`s are referred to as `Site` `Model`s, even thought there is not a strongly-typed `SiteModel` class. By convention, the top-most `Model` in a `PhysicalModel` hierarchy is considered a Site `Model`, even though it breaks down `PhysicalPartition`.
 
-In conversation (and writing) the `Model`s that break down `Site` `Element`s are referred to as `Site` `Model`s, even thought there is not a strongly-typed `SiteModel` class. By convention, the top-most `Model` in a `PhysicalModel` hierarchy is considered a Site `Model`, even though it breaks down `PhysicalPartition`. The top `Model` is considered as a `Site` `Model` as nearly all infrastructure that is modeled with BIS can benefit from having a site context.
+`ISite` `Model`s typically contain `ISite`, `IFacility`, `ISystem` and General-Use `PhysicalElement`s.
 
-`Site` `Model`s typically contain `Site`, `IFacility`, `ISystem` and General-Use `PhysicalElement`s.
+`ISite` `Elements` should only be placed in `ISite` `Model`s (and the top `PhysicalModel`). `ISite` `Elements` placed in any other `Model` will generate validation warnings.
 
-`Site` `Elements` should only be placed in `Site` `Model`s (and `PhysicalPartition` `Model`s). `Site` `Elements` placed in any other `Model` will generate validation warnings.
+*To implement this behavior every class that includes the `ISite` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition` and `ISite`.*
 
 ### IFacility
 
@@ -164,9 +179,9 @@ In conversation (and writing) the `Model`s that break down `IFacility` `Element`
 
 `IFacility` `Model`s typically contain `IFacility`, `ISystem` and `General-Use` `PhysicalElement`s.
 
-`IFacility` `Elements` may be placed in `Site`, `IFacility` and `ISystem` `Model`s. `IFacility` `Element`s placed in any other `Model` will generate validation warnings.
+`IFacility` `Elements` may be placed in `ISite`, `IFacility` and `ISystem` `Model`s. `IFacility` `Element`s placed in any other `Model` will generate validation warnings.
 
-*To implement this behavior every class that includes the `IFacility` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `Site`, `IFacility` and `ISystem`.*
+*To implement this behavior every class that includes the `IFacility` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `ISite`, `IFacility` and `ISystem`.*
 
 ### ISystem
 
@@ -178,9 +193,9 @@ In conversation (and writing) the `Model`s that break down `ISystem` `Element`s 
 
 `ISystem` `Model`s may contain `IFacility`, `ISystem` and General-Use `PhysicalElement`s, as well as components specific to the particular `ISystem` (e.g. `SewerPipe` in `SewerSystem`)
 
-`ISystem` `Elements` may be placed in `Site`, `IFacility` and `ISystem` `Model`s. `ISystem` `Element`s placed in any other `Model` will generate validation warnings.
+`ISystem` `Elements` may be placed in `ISite`, `IFacility` and `ISystem` `Model`s. `ISystem` `Element`s placed in any other `Model` will generate validation warnings.
 
-*To implement this behavior every class that includes the `ISystem` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `Site`, `IFacility` and `ISystem`.*
+*To implement this behavior every class that includes the `ISystem` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `ISite`, `IFacility` and `ISystem`.*
 
 ### System Components
 
@@ -210,5 +225,26 @@ The following diagram illustrates all variations of the PhysicalModel hierarchy 
 
 ![Example Organization](./media/physical-hierarchy-organization-example.png)
 
+---
+---
+---
+# Discussion
+This section is for discussion of both the content of the documentation and the BIS strategies and policies that back that content.
 
+## Changes Since June 22 2018
+Site has been changed to ISite. Resulting in moderated changes (including one image change).
+
+The top PhysicalModel has been given its own behavior, recommended use and clarified relationship to its Subject.
+
+
+## Site Class
+We need a Site class that implements ISite. Should it be Sealed?
+
+## Implementation Tasks
+
+1. Create ModelAffinity Custom Attribute
+2. Create schema that defines ISite, IFacility and ISystem.
+3. Create Site class
+4. Provide validation of ModelAffinity usage?
+5. Provide validation code/capability that uses ModelAffinity data.
 

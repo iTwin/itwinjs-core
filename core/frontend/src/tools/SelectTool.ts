@@ -8,7 +8,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKey } from "./Tool";
+import { BeButtonEvent, BeButton, BeCursor, BeModifierKeys, EventHandled } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -40,7 +40,7 @@ export const enum SelectionMode {
 export const enum SelectionProcessing {
   AddElementToSelection,
   RemoveElementFromSelection,
-  /** (if element is in selection remove it else add it.) */
+  /** If element is in selection remove it, else add it. */
   InvertElementInSelection,
   ReplaceSelectionWithElement,
 }
@@ -156,11 +156,11 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMethod.Box === method) {
       const outline = overlap ? undefined : new Set<string>();
       const offset = range.clone();
-      offset.expandInPlace(-2); // NEEDWORK: Why doesn't -1 work?!?
+      offset.expandInPlace(-2); // NEEDSWORK: Why doesn't -1 work?!?
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
             continue; // no geometry at this location...
           if (undefined !== outline && !offset.containsPoint(testPoint))
             outline.add(pixel.elementId.toString());
@@ -178,7 +178,7 @@ export class SelectionTool extends PrimitiveTool {
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
+          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
             continue; // no geometry at this location...
           const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
           pts[0].interpolate(fraction, pts[1], closePoint);
@@ -226,7 +226,7 @@ export class SelectionTool extends PrimitiveTool {
       return false;
 
     const vp = ev.viewport;
-    if (!vp) {
+    if (vp === undefined) {
       this.initSelectTool();
       return false;
     }
@@ -243,38 +243,37 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  public onModelStartDrag(ev: BeButtonEvent): boolean {
-    if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return false;
-    this.selectByPointsStart(ev);
-    return false;
+  public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+    if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
+      return EventHandled.Yes;
+    return this.selectByPointsStart(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public onModelEndDrag(ev: BeButtonEvent): boolean {
-    // NOTE: If manipulator installed an input collector, it would get the end drag event directly...
-    this.selectByPointsEnd(ev);
-    return false;
+  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
+    // NOTE: If manipulator installed an `input collector, it would get the end drag event directly
+    return this.selectByPointsEnd(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public onDataButtonUp(ev: BeButtonEvent): boolean {
-    if (!ev.viewport)
-      return false;
+  public async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport === undefined)
+      return EventHandled.No;
 
-    if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return false;
+    if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
+      return EventHandled.Yes;
 
     if (SelectionMethod.Pick !== this.getSelectionMethod()) {
-      if (!this.selectByPointsEnd(ev)) { // If line/box selection active, end it...otherwise start it...
+      if (!this.selectByPointsEnd(ev)) { // If line/box selection active, end it...otherwise start it
         if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
           this.iModel.selectionSet.emptyAll();
         this.selectByPointsStart(ev);
+        return EventHandled.Yes;
       }
-      return false;
+      return EventHandled.No;
     }
 
-    // NOTE: Non-element hits are only handled by a manipulator that specificially requested them, can be ignored here...
-    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
-    if (hit && hit.isElementHit()) {
+    // NOTE: Non-element hits are only handled by a manipulator that specifically requested them, can be ignored here
+    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+    if (hit !== undefined && hit.isElementHit) {
       switch (this.getSelectionMode()) {
         case SelectionMode.Replace:
           this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
@@ -288,80 +287,86 @@ export class SelectionTool extends PrimitiveTool {
           this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
           break;
       }
-      return false;
+      return EventHandled.No;
     }
 
     if (!ev.isControlKey && 0 !== this.iModel.selectionSet.size && this.wantSelectionClearOnMiss(ev))
       this.iModel.selectionSet.emptyAll();
 
-    return false;
+    return EventHandled.No;
   }
 
-  public onResetButtonUp(ev: BeButtonEvent): boolean {
+  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.isSelectByPoints) {
       this.initSelectTool();
-      return false;
+      return EventHandled.No;
     }
 
-    if (this.manipulator && this.manipulator.onButtonEvent(ev))
-      return false;
+    if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
+      return EventHandled.Yes;
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : IModelApp.locateManager.currHit;
     if (lastHit && this.iModel.selectionSet.has(lastHit.sourceId)) {
       const autoHit = IModelApp.accuSnap.currHit;
 
-      // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit...
+      // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
       if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
         const response = new LocateResponse();
-        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport);
+        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
 
-        // remove element(s) previously selected if in replace mode, or if we have a next element in add mode...
+        // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
           this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
           this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
-        return false;
+        return EventHandled.No;
       }
     }
 
     IModelApp.accuSnap.resetButton();
-    return false;
+    return EventHandled.No;
   }
 
-  public onSingleTap(ev: BeGestureEvent): boolean {
-    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool send data button down/up events if not handled by manipulator...
-  }
+  // public onSingleTap(_ev: BeGestureEvent): boolean {
+  // ### TODO Touch events...
+  //    if (undefined !== this.manipulator)
+  //      return this.manipulator.onGestureEvent(ev);
+  // return false;
+  // Let idle tool send data button down/up events if not handled by manipulator
+  // }
 
-  public onSingleFingerMove(ev: BeGestureEvent): boolean {
-    if (this.isSelectByPoints) {
-      IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
-      return true;
-    }
-    if (0 !== ev.gestureInfo!.previousNumberTouches)
-      return false; // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool...
+  // public onSingleFingerMove(ev: BeGestureEvent): boolean {
+  //    if (this.isSelectByPoints) {
+  //      IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
+  //      return true;
+  //    }
+  //    if (0 !== ev.gestureInfo!.previousNumberTouches)
+  //      return false; // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool
 
-    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator...
-  }
+  // ### TODO Touch events...
+  //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+  //    return false;
+  //  }
 
-  public onEndGesture(ev: BeGestureEvent): boolean {
-    if (GestureId.SingleFingerMove !== ev.gestureInfo!.gestureId)
-      return false;
+  //  public onEndGesture(ev: BeGestureEvent): boolean {
+  //    if (GestureId.SingleFingerMove !== ev.gestureInfo!.gestureId)
+  //      return false;
 
-    if (this.isSelectByPoints)
-      return this.selectByPointsEnd(ev);
+  // if (this.isSelectByPoints)
+  //      return this.selectByPointsEnd(ev);
 
-    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator...
-  }
+  // ### TODO Touch events...
+  //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+  //    return false;
+  //  }
 
-  public decorate(context: DecorateContext): void {
-    this.selectByPointsDecorate(context);
-  }
+  public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 
-  public onModifierKeyTransition(_wentDown: boolean, key: BeModifierKey): boolean {
-    return key === BeModifierKey.Shift && this.isSelectByPoints;
+  public async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> {
+    return (modifier === BeModifierKeys.Shift && this.isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onPostLocate(hit: HitDetail, _out?: LocateResponse): boolean {
@@ -369,7 +374,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMode.Replace === mode)
       return true;
 
-    const elementId = (hit.isElementHit() ? hit.sourceId : undefined);
+    const elementId = (hit.isElementHit ? hit.sourceId : undefined);
     if (!elementId)
       return true; // Don't reject transients...
 
@@ -377,9 +382,7 @@ export class SelectionTool extends PrimitiveTool {
     return (SelectionMode.Add === mode ? !isSelected : isSelected);
   }
 
-  public onRestartTool(): void {
-    this.exitTool();
-  }
+  public onRestartTool(): void { this.exitTool(); }
 
   public onCleanup(): void {
     super.onCleanup();
@@ -399,9 +402,5 @@ export class SelectionTool extends PrimitiveTool {
     this.initSelectTool();
   }
 
-  public static startTool(): boolean {
-    const tool = new SelectionTool();
-    return tool.run();
-  }
-
+  public static startTool(): boolean { return new SelectionTool().run(); }
 }

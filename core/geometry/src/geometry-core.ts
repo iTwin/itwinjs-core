@@ -119,6 +119,7 @@
 // doc:export class TopologyDoc { }
 
 export * from "./PointVector";
+export * from "./PointHelpers";
 export * from "./Geometry";
 export * from "./Transform";
 export * from "./Range";

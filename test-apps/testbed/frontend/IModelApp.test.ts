@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, Tool, AccuDraw, IdleTool, RotateTool, PanTool, SelectionTool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool, AccuDraw, IdleTool, RotateViewTool, PanViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { MaybeRenderApp } from "./WebGLTestContext";
@@ -34,7 +34,7 @@ class FourthImmediate extends Tool {
   public static toolId = "Test.FourthImmediate";
 }
 
-class TestRotateTool extends RotateTool { }
+class TestRotateTool extends RotateViewTool { }
 class TestSelectTool extends SelectionTool { }
 
 class TestApp extends MaybeRenderApp {
@@ -75,7 +75,7 @@ describe("IModelApp", () => {
     assert.equal(testVal2, "test2", "arg2 was correct");
     assert.isFalse(IModelApp.tools.run("Not.Found"), "toolId is not registered");
     assert.isTrue(IModelApp.tools.run("View.Pan"), "run view pan");
-    assert.instanceOf(IModelApp.toolAdmin.activeViewTool, PanTool, "pan tool is active");
+    assert.instanceOf(IModelApp.toolAdmin.viewTool, PanViewTool, "pan tool is active");
 
     assert.isUndefined(IModelApp.features.check("feature1.test1"));
     assert.isTrue(IModelApp.features.check("feature2.a"));

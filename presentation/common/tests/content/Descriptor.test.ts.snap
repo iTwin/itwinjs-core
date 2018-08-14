@@ -1,0 +1,535 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Descriptor createDescriptorOverrides creates a valid object with default parameters 1`] = `
+Object {
+  "contentFlags": 0,
+  "displayType": "quis ut corporis",
+  "filterExpression": undefined,
+  "hiddenFieldNames": Array [],
+  "sortDirection": undefined,
+  "sortingFieldName": undefined,
+}
+`;
+
+exports[`Descriptor createDescriptorOverrides creates a valid object with sorting field 1`] = `
+Object {
+  "contentFlags": 0,
+  "displayType": "quibusdam sed id",
+  "filterExpression": undefined,
+  "hiddenFieldNames": Array [],
+  "sortDirection": undefined,
+  "sortingFieldName": "Centralized",
+}
+`;
+
+exports[`Descriptor fromJSON creates valid Descriptor from valid JSON 1`] = `
+Descriptor {
+  "connectionId": "ec0f6245-d969-46fd-b1fe-64d24189e0d4",
+  "contentFlags": 0,
+  "contentOptions": "bar",
+  "displayType": "incidunt magnam autem",
+  "fields": Array [
+    Field {
+      "category": Object {
+        "description": "Error consequuntur voluptatum unde.",
+        "expand": true,
+        "label": "Brazilian Real",
+        "name": "Cotton",
+        "priority": 89044,
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "navigating solution CSS",
+      "name": "Ameliorated",
+      "priority": 24839,
+      "type": Object {
+        "typeName": "varchar",
+        "valueFormat": "Primitive",
+      },
+    },
+    Field {
+      "category": Object {
+        "description": "Debitis provident totam quia velit voluptates itaque.",
+        "expand": true,
+        "label": "instruction set",
+        "name": "sensor",
+        "priority": 37834,
+      },
+      "editor": Object {
+        "name": "array",
+      },
+      "isReadonly": true,
+      "label": "Human Borders Small Cotton Soap",
+      "name": "bypassing",
+      "priority": 64307,
+      "type": Object {
+        "typeName": "double",
+        "valueFormat": "Primitive",
+      },
+    },
+    Field {
+      "category": Object {
+        "description": "Et officiis in ipsam.",
+        "expand": true,
+        "label": "XML port deposit",
+        "name": "CFP Franc",
+        "priority": 91748,
+      },
+      "editor": undefined,
+      "isReadonly": true,
+      "label": "Berkshire RAM indexing",
+      "name": "virtual",
+      "priority": 22418,
+      "type": Object {
+        "typeName": "binary",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "inputKeysHash": "54787b28-1e98-49de-8921-c8c51abd8be6",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": false,
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x18008000001616d",
+            "label": "Centers Mouse",
+            "name": "ability",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x17ff20000008039",
+            "label": "drive",
+            "name": "Paradigm",
+          },
+          "targetClassInfo": Object {
+            "id": "0x13cd5000000267e",
+            "label": "Cotton",
+            "name": "turn-key",
+          },
+        },
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x169410000017a8b",
+            "label": "Kansas Diverse",
+            "name": "fault-tolerant",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xf6e2000000ad93",
+            "label": "Toys",
+            "name": "Checking Account",
+          },
+          "targetClassInfo": Object {
+            "id": "0xcc3b0000015531",
+            "label": "e-commerce Forward magnetic",
+            "name": "Electronics",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0x172c60000004caf",
+              "label": "Malagasy Ariary Gorgeous",
+              "name": "access",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x120540000008fb4",
+              "label": "neutral",
+              "name": "Qatari Rial",
+            },
+            "targetClassInfo": Object {
+              "id": "0x10c700000009333",
+              "label": "Research Games override",
+              "name": "Synergistic",
+            },
+          },
+        ],
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0xff46000000b3f7",
+              "label": "Michigan",
+              "name": "Unbranded Metal Shoes",
+            },
+            "sourceClassInfo": Object {
+              "id": "0xf8a00000179b8",
+              "label": "Integration digital Rubber",
+              "name": "Frozen",
+            },
+            "targetClassInfo": Object {
+              "id": "0x3b0000003ef3",
+              "label": "seize deploy Comoro Franc",
+              "name": "Sleek",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0xffec0000007f41",
+        "label": "Cambridgeshire",
+        "name": "microchip",
+      },
+    },
+    Object {
+      "isSelectPolymorphic": true,
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0xf8dd0000017346",
+            "label": "Croatia Roads payment",
+            "name": "JBOD",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x6dd0000000de5a",
+            "label": "eyeballs Streamlined national",
+            "name": "JSON",
+          },
+          "targetClassInfo": Object {
+            "id": "0xd3fa000000e441",
+            "label": "Rubber Consultant bypass",
+            "name": "mindshare",
+          },
+        },
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x15b4c0000000361",
+            "label": "calculating",
+            "name": "Consultant",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x11ea0000000534",
+            "label": "copying Chair",
+            "name": "Bedfordshire",
+          },
+          "targetClassInfo": Object {
+            "id": "0x41c6000000c0bc",
+            "label": "mission-critical",
+            "name": "parsing",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0xb58100000011b0",
+              "label": "data-warehouse",
+              "name": "Dobra",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x36180000012d5c",
+              "label": "Concrete card Buckinghamshire",
+              "name": "Licensed",
+            },
+            "targetClassInfo": Object {
+              "id": "0x12aa7000000ada2",
+              "label": "Steel productivity Practical",
+              "name": "Refined",
+            },
+          },
+        ],
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "relationshipInfo": Object {
+              "id": "0x1524e0000004dac",
+              "label": "Books Small Connecticut",
+              "name": "Reverse-engineered",
+            },
+            "sourceClassInfo": Object {
+              "id": "0xa379000000a5a1",
+              "label": "Sports",
+              "name": "Home Loan Account",
+            },
+            "targetClassInfo": Object {
+              "id": "0x1713f0000003ff9",
+              "label": "Chief cyan e-commerce",
+              "name": "Fields",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0x148050000017254",
+        "label": "Montana 1080p Sports",
+        "name": "JSON",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Descriptor fromJSON creates valid Descriptor from valid serialized JSON 1`] = `
+Descriptor {
+  "connectionId": "b93a4d4a-1ba6-471b-b77e-af299431011f",
+  "contentFlags": 0,
+  "contentOptions": "car",
+  "displayType": "eius asperiores est",
+  "fields": Array [
+    Field {
+      "category": Object {
+        "description": "Aut consequuntur voluptatem.",
+        "expand": true,
+        "label": "magnetic Focused",
+        "name": "Angola",
+        "priority": 36436,
+      },
+      "editor": Object {
+        "name": "Credit Card Account",
+      },
+      "isReadonly": true,
+      "label": "Tasty",
+      "name": "plum",
+      "priority": 64444,
+      "type": Object {
+        "typeName": "decimal",
+        "valueFormat": "Primitive",
+      },
+    },
+    Field {
+      "category": Object {
+        "description": "Ducimus et et perferendis.",
+        "expand": false,
+        "label": "index",
+        "name": "protocol",
+        "priority": 31739,
+      },
+      "editor": Object {
+        "name": "Extended",
+      },
+      "isReadonly": true,
+      "label": "FTP Health",
+      "name": "compress",
+      "priority": 29224,
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+    Field {
+      "category": Object {
+        "description": "Dolor cupiditate deserunt possimus minima eos molestiae.",
+        "expand": false,
+        "label": "Australian Dollar green lime",
+        "name": "Republic of Korea",
+        "priority": 75668,
+      },
+      "editor": Object {
+        "name": "system",
+      },
+      "isReadonly": true,
+      "label": "Managed",
+      "name": "Estate",
+      "priority": 36748,
+      "type": Object {
+        "typeName": "boolean",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "inputKeysHash": "0bdc607b-2246-4663-931d-df86f20b5719",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": false,
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x85150000007a82",
+            "label": "redundant Principal",
+            "name": "District",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x12baa0000010999",
+            "label": "Outdoors explicit bus",
+            "name": "SSL",
+          },
+          "targetClassInfo": Object {
+            "id": "0xf8290000002ce7",
+            "label": "CSS hacking",
+            "name": "logistical",
+          },
+        },
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x1057e000000661c",
+            "label": "Borders",
+            "name": "CFA Franc BEAC",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x1d58000000d7df",
+            "label": "partnerships Tasty Metal Hat",
+            "name": "payment",
+          },
+          "targetClassInfo": Object {
+            "id": "0x1c760000012e6d",
+            "label": "feed",
+            "name": "mission-critical",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0xd9f6000000d8ec",
+              "label": "Fall structure",
+              "name": "Gorgeous Fresh Salad",
+            },
+            "sourceClassInfo": Object {
+              "id": "0xccbd0000009c9a",
+              "label": "Customer Beauty",
+              "name": "Generic Soft Chair",
+            },
+            "targetClassInfo": Object {
+              "id": "0xca4600000000cc",
+              "label": "Fresh Argentine Peso Automotive",
+              "name": "Niger",
+            },
+          },
+        ],
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0xa6760000000cc1",
+              "label": "invoice Handcrafted Metal Chicken Coordinator",
+              "name": "Liaison",
+            },
+            "sourceClassInfo": Object {
+              "id": "0xa44e00000061be",
+              "label": "Argentina Lead tan",
+              "name": "Home Loan Account",
+            },
+            "targetClassInfo": Object {
+              "id": "0x9b490000009fbd",
+              "label": "Multi-lateral hacking",
+              "name": "sticky",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0x17663000000e023",
+        "label": "Security Music sticky",
+        "name": "transform",
+      },
+    },
+    Object {
+      "isSelectPolymorphic": false,
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0xfeef000000f96d",
+            "label": "National Investor Morocco",
+            "name": "Automotive",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xbfaa000000012c",
+            "label": "world-class Future",
+            "name": "Steel",
+          },
+          "targetClassInfo": Object {
+            "id": "0x122ef000001487a",
+            "label": "Checking Account",
+            "name": "Awesome",
+          },
+        },
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0xd02400000023d7",
+            "label": "quantify payment Mills",
+            "name": "payment",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x167f500000041d6",
+            "label": "morph override",
+            "name": "indigo",
+          },
+          "targetClassInfo": Object {
+            "id": "0x12938000001742a",
+            "label": "Wooden compress Pike",
+            "name": "Savings Account",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0x5f9b000000a9a7",
+              "label": "Tonga e-enable Rubber",
+              "name": "invoice",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x11ed600000052bd",
+              "label": "quantify",
+              "name": "Credit Card Account",
+            },
+            "targetClassInfo": Object {
+              "id": "0x16cdb000000473b",
+              "label": "Avon",
+              "name": "rich",
+            },
+          },
+        ],
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0x46500000016220",
+              "label": "deposit Bolivar Fuerte Borders",
+              "name": "Saudi Arabia",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x8f250000014e46",
+              "label": "software driver navigate",
+              "name": "deposit",
+            },
+            "targetClassInfo": Object {
+              "id": "0xd84b000000f7ac",
+              "label": "Squares benchmark bifurcated",
+              "name": "back-end",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0xaabe0000008a18",
+        "label": "South Carolina",
+        "name": "integrated",
+      },
+    },
+  ],
+}
+`;

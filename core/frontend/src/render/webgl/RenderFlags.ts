@@ -10,12 +10,14 @@ export const enum RenderPass {
     OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
     OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
     OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
+    StencilVolume,
     Translucent,
     HiddenEdge,
     Hilite,
     WorldOverlay,
     ViewOverlay,
     SkyBox,
+    Terrain,
     COUNT,
 }
 

@@ -5,18 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
+import { OmitChildrenProp, NoChildrenProps } from "../../utilities/Props";
 import Popover, { PopoverProps } from "./Popover";
 import "./Triangle.scss";
-import { NoChildrenProps } from "../../utilities/Props";
 
-export interface TriangleProps extends PopoverProps, NoChildrenProps {
+/** Properties of [[Triangle]] component. */
+export interface TrianglePopoverProps extends OmitChildrenProp<PopoverProps>, NoChildrenProps {
   content?: React.ReactNode;
-  triangleClassName?: string;
 }
 
+/** Popover with triangle connection. */
 // tslint:disable-next-line:variable-name
-export const Triangle: React.StatelessComponent<TriangleProps> = (props) => {
+export const TrianglePopover: React.StatelessComponent<TrianglePopoverProps> = (props) => {
   const className = classnames(
     "nz-popup-popover-triangle",
     props.className);
@@ -29,14 +29,9 @@ export const Triangle: React.StatelessComponent<TriangleProps> = (props) => {
       <div className="nz-content">
         {props.content}
       </div>
-      <div className={
-        classnames(
-          "nz-triangle",
-          props.triangleClassName,
-        )}
-      />
+      <div className="nz-triangle" />
     </Popover>
   );
 };
 
-export default Triangle;
+export default TrianglePopover;

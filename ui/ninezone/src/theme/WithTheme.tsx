@@ -9,10 +9,16 @@ import ThemeContext from "./Context";
 import { ClassNameProps } from "../utilities/Props";
 import Theme from "./Theme";
 
+/** Properties supplemented to components that are enhanced with [[withTheme]] HOC. */
 export interface WithThemeProps {
+  /** Explicit theme used by component. Takes precedence over [[ThemeContext]] */
   theme?: Theme;
 }
 
+/**
+ * HOC which will supplement component with theme capabilities.
+ * @note Component will be injected with class name: nz-theme-[[Theme.name]]
+ */
 export const withTheme = <ComponentProps extends ClassNameProps>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,

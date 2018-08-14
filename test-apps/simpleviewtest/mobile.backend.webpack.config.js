@@ -1,10 +1,12 @@
 const path = require("path");
 
 module.exports = {
+  mode: "development",
   entry: "./lib/backend/MobileMain.js",
   output: {
     path: path.resolve(__dirname, "./lib/mobile"),
-    filename: "MobileMain.js"
+    filename: "MobileMain.js",
+    pathinfo: true,
   },
   target: "webworker",
   devtool: "source-map",

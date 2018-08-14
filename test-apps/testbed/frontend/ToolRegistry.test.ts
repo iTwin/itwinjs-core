@@ -150,8 +150,10 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
 
 function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
   (class extends Tool {
-    public static toolId = id; protected static _keyin = keyin;
-    public run(): boolean { lastCommand = this.keyin; return true; }
+    public static toolId = id;
+    public run(): boolean { lastCommand = keyin; return true; }
+    public static get keyin(): string { return keyin; }
+
   }).register(ns);
 }
 

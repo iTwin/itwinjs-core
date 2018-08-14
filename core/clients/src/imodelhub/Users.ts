@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { InstanceIdQuery } from "./Query";
-import { IModelHubRequestError } from "./Errors";
+import { ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -38,14 +40,15 @@ export class UserInfoQuery extends InstanceIdQuery {
    * Query User info by user ids.
    * @param ids Ids of the users.
    * @returns This query.
+   * @throws [[IModelHubClientError]] if ids array is empty.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains non-Guid values.
    */
   public byIds(ids: string[]) {
-    if (ids.length < 1) {
-      throw IModelHubRequestError.invalidArgument("ids");
-    }
+    ArgumentCheck.nonEmptyArray("ids", ids);
 
     let filter = "$id+in+[";
     ids.forEach((id, index) => {
+      ArgumentCheck.validGuid(`id[${index}]`, id);
       if (index > 0)
         filter += ",";
       filter += `'${id}'`;
@@ -91,9 +94,12 @@ export class UserInfoHandler {
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel
    * @param query Object used to modify results of this query.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
     Logger.logInfo(loggingCategory, `Querying users for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     let users: UserInfo[];
     if (query.isQueriedByIds()) {

@@ -142,6 +142,7 @@ export class PerformanceMetrics {
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
+  private _terrain: GraphicList = [];
   private _decorations?: Decorations;
   private _dynamics?: DecorationList;
   private _worldDecorations?: WorldDecorations;
@@ -183,6 +184,7 @@ export abstract class Target extends RenderTarget {
   private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
+  public plan?: RenderPlan;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -363,6 +365,9 @@ export abstract class Target extends RenderTarget {
     this._scene = scene;
     this._activeClipVolume = _activeVolume;
   }
+  public changeTerrain(terrain: GraphicList) {
+    this._terrain = terrain;
+  }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
     // See IModelConnection.transientIds
@@ -397,89 +402,7 @@ export abstract class Target extends RenderTarget {
     hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
   };
 
-  public changeRenderPlan(plan: RenderPlan): void {
-    if (this._dcAssigned && plan.is3d !== this.is3d) {
-      // changed the dimensionality of the Target. World decorations no longer valid.
-      // (lighting is enabled or disabled based on 2d vs 3d).
-      dispose(this._worldDecorations);
-      this._worldDecorations = undefined;
-    }
-
-    if (!this.assignDC()) {
-      assert(false);
-      return;
-    }
-
-    this.bgColor.setFrom(plan.bgColor);
-    this.monoColor.setFrom(plan.monoColor);
-    this.hiliteSettings.copyFrom(plan.hiliteSettings);
-    this._transparencyThreshold = 0.0;
-
-    let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
-    if (plan.activeVolume !== undefined)
-      if (plan.activeVolume.type === ClippingType.Planes)
-        clipVolume = plan.activeVolume as ClipPlanesVolume;
-      else if (plan.activeVolume.type === ClippingType.Mask)
-        clipVolume = plan.activeVolume as ClipMaskVolume;
-
-    this._activeClipVolume = clipVolume;
-
-    const scratch = Target._scratch;
-    const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
-    const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
-
-    const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
-
-    let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
-    switch (vf.renderMode) {
-      case RenderMode.Wireframe: {
-        // Edge overrides never apply in wireframe mode
-        vf.visibleEdges = false;
-        vf.hiddenEdges = false;
-        forceEdgesOpaque = false;
-        break;
-      }
-      case RenderMode.SmoothShade: {
-        // Hidden edges require visible edges
-        if (!vf.visibleEdges) {
-          vf.hiddenEdges = false;
-        }
-
-        break;
-      }
-      case RenderMode.SolidFill: {
-        // In solid fill, if the edge color is not overridden, the edges do not use the element's line color
-        if (undefined !== visEdgeOvrs && !visEdgeOvrs.ovrColor) {
-          // ###TODO? Probably supposed to be contrast with fill and/or background color...
-          assert(undefined !== hidEdgeOvrs);
-          visEdgeOvrs.color.setFrom(ColorDef.white);
-          hidEdgeOvrs!.color.setFrom(ColorDef.white);
-          visEdgeOvrs.ovrColor = hidEdgeOvrs!.ovrColor = true;
-        }
-      }
-      /* falls through */
-      case RenderMode.HiddenLine: {
-        // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
-        vf.visibleEdges = true;
-
-        assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
-        if (undefined !== plan.hline) {
-          // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
-          // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
-          let threshold = plan.hline.transparencyThreshold;
-          threshold = Math.min(1.0, Math.max(0.0, threshold));
-          this._transparencyThreshold = 1.0 - threshold;
-        }
-
-        break;
-      }
-    }
-
-    this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
-    this._hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
-
-    this._stack.setViewFlags(vf);
-
+  public changeFrustum(plan: RenderPlan): void {
     plan.frustum.clone(this.planFrustum);
 
     const farLowerLeft = plan.frustum.getCorner(Npc.LeftBottomRear);
@@ -491,6 +414,7 @@ export abstract class Target extends RenderTarget {
     const nearUpperLeft = plan.frustum.getCorner(Npc.LeftTopFront);
     const nearUpperRight = plan.frustum.getCorner(Npc.RightTopFront);
 
+    const scratch = Target._scratch;
     const nearCenter = nearLowerLeft.interpolate(0.5, nearUpperRight, scratch.nearCenter);
 
     const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, scratch.viewX);
@@ -545,6 +469,93 @@ export abstract class Target extends RenderTarget {
       this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
       this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
     }
+  }
+
+  public changeRenderPlan(plan: RenderPlan): void {
+    this.plan = plan;
+
+    if (this._dcAssigned && plan.is3d !== this.is3d) {
+      // changed the dimensionality of the Target. World decorations no longer valid.
+      // (lighting is enabled or disabled based on 2d vs 3d).
+      dispose(this._worldDecorations);
+      this._worldDecorations = undefined;
+    }
+
+    if (!this.assignDC()) {
+      assert(false);
+      return;
+    }
+
+    this.bgColor.setFrom(plan.bgColor);
+    this.monoColor.setFrom(plan.monoColor);
+    this.hiliteSettings.copyFrom(plan.hiliteSettings);
+    this._transparencyThreshold = 0.0;
+
+    let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
+    if (plan.activeVolume !== undefined)
+      if (plan.activeVolume.type === ClippingType.Planes)
+        clipVolume = plan.activeVolume as ClipPlanesVolume;
+      else if (plan.activeVolume.type === ClippingType.Mask)
+        clipVolume = plan.activeVolume as ClipMaskVolume;
+
+    this._activeClipVolume = clipVolume;
+
+    const scratch = Target._scratch;
+    const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
+    const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
+
+    const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
+
+    let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
+    switch (vf.renderMode) {
+      case RenderMode.Wireframe: {
+        // Edge overrides never apply in wireframe mode
+        vf.visibleEdges = false;
+        vf.hiddenEdges = false;
+        forceEdgesOpaque = false;
+        break;
+      }
+      case RenderMode.SmoothShade: {
+        // Hidden edges require visible edges
+        if (!vf.visibleEdges)
+          vf.hiddenEdges = false;
+        break;
+      }
+      case RenderMode.SolidFill: {
+        // In solid fill, if the edge color is not overridden, the edges do not use the element's line color
+        if (undefined !== visEdgeOvrs && !visEdgeOvrs.ovrColor) {
+          // ###TODO? Probably supposed to be contrast with fill and/or background color...
+          assert(undefined !== hidEdgeOvrs);
+          visEdgeOvrs.color.setFrom(ColorDef.white);
+          hidEdgeOvrs!.color.setFrom(ColorDef.white);
+          visEdgeOvrs.ovrColor = hidEdgeOvrs!.ovrColor = true;
+        }
+      }
+      /* falls through */
+      case RenderMode.HiddenLine: {
+        // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
+        vf.visibleEdges = true;
+
+        assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
+        if (undefined !== plan.hline) {
+          // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
+          // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
+          let threshold = plan.hline.transparencyThreshold;
+          threshold = Math.min(1.0, Math.max(0.0, threshold));
+          this._transparencyThreshold = 1.0 - threshold;
+        }
+
+        break;
+      }
+    }
+
+    this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
+    this._hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
+
+    this._stack.setViewFlags(vf);
+
+    this.changeFrustum(plan);
+
     // this.shaderlights.clear // ###TODO : Lighting
     this._fStop = 0.0;
     this._ambientLight[0] = 0.2;
@@ -633,19 +644,45 @@ export abstract class Target extends RenderTarget {
     const rect = this.viewRect;
     gl.viewport(0, 0, rect.width, rect.height);
 
-    this.setFrameTime();
-    this._renderCommands.init(this._scene, this._decorations, this._dynamics);
+    // Set this to true to visualize the output of readPixels()...useful for debugging pick.
+    const drawForReadPixels = false;
+    if (drawForReadPixels) {
+      const vf = this.currentViewFlags.clone(this._scratchViewFlags);
+      vf.transparency = false;
+      vf.textures = false;
+      vf.sourceLights = false;
+      vf.cameraLights = false;
+      vf.solarLight = false;
+      vf.shadows = false;
+      vf.noGeometryMap = true;
+      vf.acsTriad = false;
+      vf.grid = false;
+      vf.monochrome = false;
+      vf.materials = false;
 
-    this.setFrameTime();
-    this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
+      const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
+      this.pushState(state);
 
-    this.setFrameTime();
-    this._stack.pushState(this.decorationState);
-    this.drawPass(RenderPass.WorldOverlay);
-    this.drawPass(RenderPass.ViewOverlay);
-    this._stack.pop();
+      this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
+      this.compositor.drawForReadPixels(this._renderCommands);
 
-    this.setFrameTime();
+      this._stack.pop();
+    } else {
+      this.setFrameTime();
+      this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
+
+      this.setFrameTime();
+      this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
+
+      this.setFrameTime();
+      this._stack.pushState(this.decorationState);
+      this.drawPass(RenderPass.WorldOverlay);
+      this.drawPass(RenderPass.ViewOverlay);
+      this._stack.pop();
+
+      this.setFrameTime();
+    }
+
     this._endPaint();
 
     if (this.performanceMetrics) {
@@ -772,17 +809,11 @@ export abstract class Target extends RenderTarget {
     // ###TODO: Handle pickable decorations.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
-    this._renderCommands.init(this._scene, this._decorations, this._dynamics, true);
+    this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
 
-    // Don't bother rendering + reading if we know there's nothing to draw.
-    if (this._renderCommands.isEmpty) {
-      this._stack.pop(); // ensure state is restored!
-      return undefined;
-    }
-
     // Draw the scene
-    this.compositor.drawForReadPixels(this._renderCommands);  // compositor gets disposed and re-initialized... target remains undisposed
+    this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
 
     // Restore the state
     this._stack.pop();
@@ -887,7 +918,6 @@ export abstract class Target extends RenderTarget {
     }
     if (isEmptyImage)
       return undefined;
-
     return image;
   }
 

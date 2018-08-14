@@ -16,13 +16,13 @@ export interface CodeProps {
   value?: string;
 }
 
-/** A three part [BIS Code]($docs/bis/intro/codes) that identifies an Element */
+/** A three-part structure containing information about the [Code]($docs/bis/intro/codes) of an Element */
 export class Code implements CodeProps {
-  /** The id of the [[CodeSpec]] for this Code */
+  /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
   public spec: Id64;
-  /** the [CodeScope]($docs/bis/intro/glossary.md#codescope) of this Code */
+  /** the [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
   public scope: string;
-  /** the [CodeValue]($docs/bis/intro/glossary.md#codevalue) of this Code */
+  /** the [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element */
   public value?: string;
 
   constructor(val: CodeProps) {
@@ -107,7 +107,9 @@ export namespace CodeScopeSpec {
  * A CodeSpec can identify an external system that maintains and/or assigns Codes.
  */
 export class CodeSpec {
+  /** The iModel holding this CodeSpec. */
   public iModel: IModel;
+  /** The id of this CodeSpec. */
   public id: Id64;
   public name: string;
   public specScopeType: CodeScopeSpec.Type;
@@ -123,5 +125,5 @@ export class CodeSpec {
     this.properties = properties;
   }
 
-  public isValid(): boolean { return this.id.isValid(); }
+  public isValid(): boolean { return this.id.isValid; }
 }

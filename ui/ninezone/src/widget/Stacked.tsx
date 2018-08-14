@@ -20,7 +20,7 @@ export enum Anchor {
 
 /** Properties of [[Stacked]] component. */
 export interface StackedProps extends CommonProps, NoChildrenProps {
-  /** Describes to which side the widget is anchored. Content is ltr or rtl aligned respectively. */
+  /** Describes to which side the widget is anchored. */
   anchor?: Anchor;
   /** Content of this widget. */
   content?: React.ReactNode;
@@ -50,9 +50,8 @@ export const Stacked: React.StatelessComponent<StackedProps> = (props: StackedPr
         <Content
           className="nz-content"
           anchor={props.anchor}
-        >
-          {props.content}
-        </Content>
+          content={props.content}
+        />
         <ResizeGrip
           className="nz-bottom-grip"
           direction={ResizeDirection.NorthSouth}

@@ -1,13 +1,17 @@
+
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelHub */
+
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
+import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
 import { ThumbnailSize } from "./Thumbnails";
-import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -45,8 +49,10 @@ export class VersionQuery extends InstanceIdQuery {
    * Query version by its name.
    * @param name Name of the version.
    * @returns This query.
+   * @throws [IModelRequestError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
    */
   public byName(name: string) {
+    ArgumentCheck.defined("name", name);
     this.addFilter(`Name+eq+'${name}'`);
     return this;
   }
@@ -55,8 +61,10 @@ export class VersionQuery extends InstanceIdQuery {
    * Query version by its changeSet id.
    * @param changesetId Id of the changeSet.
    * @returns This query.
+   * @throws [IModelRequestError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or not a valid [[ChangeSet.id]] format.
    */
   public byChangeSet(changesetId: string) {
+    ArgumentCheck.validChangeSetId("changesetId", changesetId);
     this.addFilter(`ChangeSetId+eq+'${changesetId}'`);
     return this;
   }
@@ -64,8 +72,10 @@ export class VersionQuery extends InstanceIdQuery {
   /**
    * Query will additionally select given sizes ids of thumbnails.
    * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if sizes array is undefined or empty.
    */
   public selectThumbnailId(...sizes: ThumbnailSize[]): this {
+    ArgumentCheck.nonEmptyArray("sizes", sizes);
     if (!this._query.$select)
       this._query.$select = "*";
 
@@ -100,14 +110,18 @@ export class VersionHandler {
   }
 
   /**
-   * Gets (the named) versions of an iModel.
+   * Gets the named [[Version]]s of an iModel.
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel
    * @param query Object used to modify results of this query.
    * @returns Resolves to array of versions.
+   * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[Version]] with the specified id could not be found.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
     Logger.logInfo(loggingCategory, `Querying named versions for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
 
     const versions = await this._handler.getInstances<Version>(Version, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
 
@@ -124,9 +138,18 @@ export class VersionHandler {
    * @param name Version name.
    * @param description Version description.
    * @returns Created Version instance.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have ManageVersions permission.
+   * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetDoesNotExist]($bentley) if the [[ChangeSet]] with specified changeSetId does not exist.
+   * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
+   * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetAlreadyHasVersion]($bentley) if the [[ChangeSet]] with specified changeSetId already has a named [[Version]] associated with it.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(token: AccessToken, imodelId: string, changeSetId: string, name: string, description?: string): Promise<Version> {
     Logger.logInfo(loggingCategory, `Creating named version for iModel ${imodelId}, changeSet id: ${changeSetId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
+    ArgumentCheck.defined("name", name);
 
     let version = new Version();
     version.changeSetId = changeSetId;
@@ -146,9 +169,15 @@ export class VersionHandler {
    * @param imodelId Id of the iModel.
    * @param version Named version.
    * @returns Updated Version instance.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have ManageVersions permission.
+   * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
+   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(token: AccessToken, imodelId: string, version: Version): Promise<Version> {
     Logger.logInfo(loggingCategory, `Updating named version for iModel ${imodelId}, changeSet id: ${version.changeSetId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("version.wsgId", version.wsgId);
 
     const updatedVersion = await this._handler.postInstance<Version>(Version, token, this.getRelativeUrl(imodelId, version.wsgId), version);
 

@@ -6,21 +6,24 @@
       "commandKind": "bulk",
       "summary": "Cleans build output within each package",
       "description": "Iterates through each package in the monorepo and runs the 'clean' script",
-      "enableParallelism": true
+      "enableParallelism": true,
+      "ignoreMissingScript": true
     },
     {
       "name": "docs",
       "commandKind": "bulk",
       "summary": "Builds the API reference docs for each package",
       "description": "Iterates through each package in the monorepo and runs the 'docs' script",
-      "enableParallelism": true
+      "enableParallelism": true,
+      "ignoreMissingScript": true
     },
     {
       "name": "lint",
       "commandKind": "bulk",
       "summary": "Run lint rules on each package",
       "description": "Iterates through each package in the monorepo and runs the 'lint' script",
-      "enableParallelism": true
+      "enableParallelism": true,
+      "ignoreMissingScript": true
     }
   ]
 }

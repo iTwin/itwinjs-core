@@ -26,9 +26,10 @@ export function addRenderPass(builder: ShaderBuilder) {
   builder.addGlobal("kRenderPass_OpaqueLinear", VariableType.Float, "1.0", true);
   builder.addGlobal("kRenderPass_OpaquePlanar", VariableType.Float, "2.0", true);
   builder.addGlobal("kRenderPass_OpaqueGeneral", VariableType.Float, "3.0", true);
-  builder.addGlobal("kRenderPass_Translucent", VariableType.Float, "4.0", true);
-  builder.addGlobal("kRenderPass_HiddenEdge", VariableType.Float, "5.0", true);
-  builder.addGlobal("kRenderPass_Hilite", VariableType.Float, "6.0", true);
-  builder.addGlobal("kRenderPass_WorldOverlay", VariableType.Float, "7.0", true);
-  builder.addGlobal("kRenderPass_ViewOverlay", VariableType.Float, "8.0", true);
+  builder.addGlobal("kRenderPass_StencilVolume", VariableType.Float, "4.0", true);
+  builder.addGlobal("kRenderPass_Translucent", VariableType.Float, "5.0", true);
+  builder.addGlobal("kRenderPass_HiddenEdge", VariableType.Float, "6.0", true);
+  builder.addGlobal("kRenderPass_Hilite", VariableType.Float, "7.0", true);
+  builder.addGlobal("kRenderPass_WorldOverlay", VariableType.Float, "8.0", true);
+  builder.addGlobal("kRenderPass_ViewOverlay", VariableType.Float, "9.0", true);
 }

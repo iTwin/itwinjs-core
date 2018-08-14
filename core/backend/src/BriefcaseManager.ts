@@ -6,10 +6,12 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelClient, IModelRepository, IModelAccessContext,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository, IModelAccessContext,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
 import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
+import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
+import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -251,7 +253,7 @@ export class BriefcaseManager {
     if (this._lastIModelClientContext === contextId)
       return;
     this._lastIModelClientContext = contextId;
-    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId) : undefined;
+    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId, new UrlFileHandler()) : undefined;
     this.setClientFromAccessContext(iModelBankAccessContext);
   }
 

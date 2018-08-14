@@ -2,25 +2,23 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions, Map4d,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
+  GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
 import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { assert, Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
@@ -29,7 +27,7 @@ import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";
 import { Attachments, SheetBorder } from "./Sheet";
-import { TileTree, Tile } from "./tile/TileTree";
+import { TileTree } from "./tile/TileTree";
 
 export const enum GridOrientationType {
   View = 0,
@@ -239,7 +237,7 @@ export abstract class ViewState extends ElementState {
   public async load(): Promise<void> {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
-    if (acsId.isValid()) {
+    if (acsId.isValid) {
       const props = await this.iModel.elements.getProps(acsId);
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     }
@@ -260,7 +258,7 @@ export abstract class ViewState extends ElementState {
     let allLoaded = true;
     this.forEachModel((model: GeometricModelState) => {
       const loadStatus = model.loadStatus;
-      if (loadStatus === TileTree.LoadStatus.NotLoaded || loadStatus === TileTree.LoadStatus.Loading)
+      if (loadStatus !== TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
     return allLoaded;
@@ -369,7 +367,7 @@ export abstract class ViewState extends ElementState {
   public abstract decorate(context: DecorateContext): void;
 
   /** Determine whether this ViewDefinition views a given model */
-  public abstract viewsModel(modelId: Id64): boolean;
+  public abstract viewsModel(modelId: Id64String): boolean;
 
   /** Get the origin of this view */
   public abstract getOrigin(): Point3d;
@@ -395,6 +393,13 @@ export abstract class ViewState extends ElementState {
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
+  public createTerrain(context: SceneContext): void {
+    const backgroundMapPlane = this.displayStyle.getBackgroundMapPlane();
+    if (undefined !== backgroundMapPlane) {
+      context.setBackgroundMapPlane(backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+      this.displayStyle.getBackgroundMap().addToScene(context);
+    }
+  }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -913,8 +918,9 @@ export abstract class ViewState extends ElementState {
 
   private addModelToScene(model: GeometricModelState, context: SceneContext): void {
     model.loadTileTree();
-    if (undefined !== model.tileTree)
+    if (undefined !== model.tileTree) {
       model.tileTree.drawScene(context);
+    }
   }
 
   /**
@@ -1355,158 +1361,27 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
-    const useOldSkyBox: boolean = false;
-    if (useOldSkyBox)
-      this.drawSkyBox(context);
-    else
-      this.drawRealSkyBox(context);
-
+    this.drawSkyBox(context);
     this.drawGroundPlane(context);
-  }
-
-  /** Attempt to extract the eyepoint if the camera is on. Otherwise, compute the eye point from the given frustum. */
-  private computeEyePoint(frustum: Frustum): Point3d {
-    if (this.cameraOn)
-      return this.camera.eye;
-
-    const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront));
-
-    const pseudoCameraHalfAngle = 22.5;
-    const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
-    const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Constant.radiansPerDegree));
-
-    return Point3d.add3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, focalLength / delta.magnitude());
-  }
-
-  /** Calculate a UV coordinate from a vector direction, its rotation, and offset along the z axis. */
-  private static getUVForDirection(direction: Vector3d, rotation: number, zOffset: number): Point2d {
-    const radius = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
-    const zValue = direction.z - radius * zOffset;
-    const azimuth = (Math.atan2(direction.y, direction.x) + rotation) / (Math.PI * 2);
-    const altitude = Math.atan2(zValue, radius);
-
-    return Point2d.create(0.5 - altitude / (Math.PI * 2), 0.25 - azimuth);
-  }
-
-  /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
-  private drawBackgroundMesh(builder: GraphicBuilder, viewport: Viewport, rotation: number, zOffset: number) {
-    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
-    // we will use a PolyfaceBuilder here to add simple quads in the grid with manually calculated UV params, claim the polyface when finished,
-    // and then send that over to the GraphicBuilder
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.needParams = true;
-    strokeOptions.needNormals = true;
-    strokeOptions.shouldTriangulate = false;
-    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-    polyfaceBuilder.toggleReversedFacetFlag();
-
-    const meshDimension = 10;
-    const delta = 1 / (meshDimension - 1);
-
-    const frustum = viewport.getFrustum();
-    const cameraPos = this.computeEyePoint(frustum);
-
-    const points = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
-    const params = [Point2d.create(), Point2d.create(), Point2d.create(), Point2d.create()];
-
-    for (let row = 1; row < meshDimension; ++row) {
-      for (let col = 1; col < meshDimension; ++col) {
-        const low = Point2d.create((row - 1) * delta, (col - 1) * delta);
-        const high = Point2d.create(row * delta, col * delta);
-
-        const npcZ = .5;
-        Point3d.create(low.x, low.y, npcZ, points[0]);
-        Point3d.create(high.x, low.y, npcZ, points[1]);
-        Point3d.create(high.x, high.y, npcZ, points[2]);
-        Point3d.create(low.x, high.y, npcZ, points[3]);
-
-        viewport.npcToWorldArray(points);
-        for (let i = 0; i < 4; i++) {
-          const direction = Vector3d.createStartEnd(cameraPos, points[i]);
-          params[i].setFrom(ViewState3d.getUVForDirection(direction, rotation, zOffset));
-        }
-
-        // Avoid seam discontinuities by eliminating cycles
-        const paramRange = Range2d.createArray(params);
-        if ((paramRange.high.x - paramRange.low.x) > .5) {
-          for (let i = 0; i < 4; i++)
-            while (params[i].x < .5)
-              params[i].x += 1;
-        }
-        if ((paramRange.high.y - paramRange.low.y) > .5) {
-          for (let i = 0; i < 4; i++)
-            while (params[i].y < .5)
-              params[i].y += 1;
-        }
-
-        viewport.worldToViewArray(points);
-        polyfaceBuilder.addQuadFacet(points, params, undefined);
-      }
-    }
-
-    const polyface = polyfaceBuilder.claimPolyface(false);
-    builder.addPolyface(polyface, true);
-  }
-
-  /** @hidden */
-  protected drawRealSkyBox(context: DecorateContext): void {
-    const style3d = this.getDisplayStyle3d();
-    if (!style3d.getEnvironment().sky.display)
-      return;
-
-    const vp = context.viewport;
-    style3d.loadSkyBoxParams(vp.target.renderSystem);
-
-    if (undefined !== style3d.skyBoxParams) {
-      const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(style3d.skyBoxParams);
-      context.setSkyBox(skyBoxGraphic!);
-    } else {
-      // ###TODO: Skybox textures failed to load. Resort to drawing 'fake' version
-    }
   }
 
   /** @hidden */
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
-    if (!style3d.getEnvironment().sky.display)
+    if (!style3d.environment.sky.display)
       return;
 
     const vp = context.viewport;
-    style3d.loadSkyBoxMaterial(vp.target.renderSystem);
-
-    if (style3d.skyboxMaterial !== undefined) {
-      // Create a graphic for the skybox, and assign it the sky material
-      const skyGraphic = context.createViewBackground();
-      const params = new GraphicParams();
-      params.material = style3d.skyboxMaterial;
-      skyGraphic.activateGraphicParams(params);
-
-      // create a 10x10 mesh on the backplane with the sky material mapped to its UV coordinates
-      this.drawBackgroundMesh(skyGraphic, vp, 0.0, this.iModel.globalOrigin.z);
-      context.setViewBackground(skyGraphic.finish());
-    } else {
-      // Skybox material failed to load. Resort to drawing 'fake' version
-      const rect = context.viewport.viewRect;
-      const points = [new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height)];
-      const args = new MeshArgs();
-      args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
-      for (const point of points)
-        args.points.add(point);
-
-      args.vertIndices = [3, 2, 0, 2, 1, 0];
-
-      const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
-      args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
-
-      const gf = IModelApp.renderSystem.createTriMesh(args);
-      if (undefined !== gf)
-        context.setViewBackground(gf);
+    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem);
+    if (undefined !== skyBoxParams) {
+      const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
+      context.setSkyBox(skyBoxGraphic!);
     }
   }
 
   /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
   public getGroundElevation(): number {
-    const env = this.getDisplayStyle3d().getEnvironment();
+    const env = this.getDisplayStyle3d().environment;
     return env.ground.elevation + this.iModel.globalOrigin.z;
   }
 
@@ -1514,7 +1389,7 @@ export abstract class ViewState3d extends ViewState {
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (undefined !== vp && !displayStyle.getEnvironment().ground.display)
+    if (undefined !== vp && !displayStyle.environment.ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
@@ -1555,7 +1430,7 @@ export abstract class ViewState3d extends ViewState {
       return;
     }
 
-    const ground = this.getDisplayStyle3d().getEnvironment().ground;
+    const ground = this.getDisplayStyle3d().environment.ground;
     if (!ground.display)
       return;
 
@@ -1564,8 +1439,7 @@ export abstract class ViewState3d extends ViewState {
     points[3].x = extents.low.x;
 
     const aboveGround = this.isEyePointAbove(extents.low.z);
-    const colors: ColorDef[] = [];
-    const gradient = ground.getGroundPlaneTextureSymb(aboveGround, colors);
+    const gradient = ground.getGroundPlaneGradient(aboveGround);
     const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
     if (!texture)
       return;
@@ -1586,7 +1460,7 @@ export abstract class ViewState3d extends ViewState {
       return;
 
     const params = new GraphicParams();
-    params.setLineColor(colors[0]);
+    params.setLineColor(gradient.keys[0].color);
     params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
@@ -1675,7 +1549,7 @@ export class SpatialViewState extends ViewState3d {
     return val;
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
-  public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
+  public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
   public clearViewedModels() { this.modelSelector.models.clear(); }
   public addViewedModel(id: Id64Props) { this.modelSelector.addModels(id); }
   public removeViewedModel(id: Id64Props) { this.modelSelector.dropModels(id); }
@@ -1731,12 +1605,6 @@ export abstract class ViewState2d extends ViewState {
     return model;
   }
 
-  /** Create the scene for this view from a set of pre-initialized DrawArgs. */
-  public createSceneFromDrawArgs(args: Tile.DrawArgs) {
-    // ###TODO: Check for a context RenderPlan wait time in the draw arguments given
-    args.root.draw(args);
-  }
-
   public equalState(other: ViewState2d): boolean {
     return this.baseModelId.equals(other.baseModelId) &&
       this.origin.isAlmostEqual(other.origin) &&
@@ -1763,7 +1631,7 @@ export abstract class ViewState2d extends ViewState {
 
   public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
-    super.load();
+    await super.load();
     return this.iModel.models.load(this.baseModelId);
   }
 
@@ -1774,7 +1642,7 @@ export abstract class ViewState2d extends ViewState {
   public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
-  public viewsModel(modelId: Id64) { return this.baseModelId.equals(modelId); }
+  public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId.value);
     if (undefined !== model && model.isGeometricModel)
@@ -1798,6 +1666,10 @@ export class DrawingViewState extends ViewState2d {
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
+  /** DEBUG ONLY - A list of attachment Ids that are the only ones that should be loaded. If this member is left undefined, all attachments will be loaded. */
+  private static DEBUG_FILTER_ATTACHMENTS?: Id64Array;
+  // ------------------------------------------------------------------------------------------
+
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
@@ -1815,18 +1687,23 @@ export class SheetViewState extends ViewState2d {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
       this._attachmentIds = [];
       attachments.forEach((idProp) => this._attachmentIds.push(idProp));
+      this._attachments = new Attachments.AttachmentList();
     }
   }
 
   public static get className() { return "SheetViewDefinition"; }
   public readonly sheetSize: Point2d;
   private _attachmentIds: Id64Array;
-  private _attachments = new Attachments.AttachmentList();
+  private _attachments: Attachments.AttachmentList;
   private all3dAttachmentTilesLoaded: boolean = true;
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  /** Manually mark this SheetViewState as having to re-create its scene due to incomplete 3d attachments. Called from attachment tile "select" methods. */
-  public markAttachment3dSceneIncomplete() { this.all3dAttachmentTilesLoaded = false; }
+  /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles. */
+  public markAttachment3dSceneIncomplete() {
+    // NB: 2d attachments will draw to completion once they have a tile tree... but 3d attachments create new tiles for each
+    // depth, and therefore report directly to the ViewState whether or not new tiles are being loaded
+    this.all3dAttachmentTilesLoaded = false;
+  }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
   public async load(): Promise<void> {
@@ -1839,70 +1716,74 @@ export class SheetViewState extends ViewState2d {
 
     this._attachments.clear();
 
-    // Query the attachments using the id list, and grab all of their corresponding view ids
-    const attachments = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
-    const attachmentViewIds: Id64Array = [];
-    for (const attachment of attachments)
-      attachmentViewIds.push(attachment.view.id.toString());
+    // DEBUG ONLY ---------------------
+    this.debugFilterAttachments();
+    // --------------------------------
 
-    // Load each view state corresponding to each attachment in the attachments array
-    // ###TODO: It would be nice to not have to make these asynchronous requests in a loop......
-    const attachmentViews: ViewState[] = [];
-    for (const viewId of attachmentViewIds)
-      attachmentViews.push(await this.iModel.views.load(viewId));
+    // Query all of the attachment properties using their ids
+    const attachmentPropList = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
 
-    // Create the attachment objects and store them on this SheetViewState
-    for (let i = 0; i < attachments.length; i++) {
-      if (attachmentViews[i].is3d())
-        this._attachments.add(new Attachments.Attachment3d(attachments[i], attachmentViews[i] as ViewState3d));
-      else
-        this._attachments.add(new Attachments.Attachment2d(attachments[i], attachmentViews[i] as ViewState2d));
+    // For each ViewAttachmentProps, load the view that the attachment references. Once the view is loaded, officially construct the attachment & add it to the array.
+    for (const attachmentProps of attachmentPropList) {
+      this.iModel.views.load(attachmentProps.view.id).then((view: ViewState) => {
+        if (view.is3d())
+          this._attachments.add(new Attachments.Attachment3d(attachmentProps, view as ViewState3d));
+        else
+          this._attachments.add(new Attachments.Attachment2d(attachmentProps, view as ViewState2d));
+      });
     }
   }
 
-  /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
+  /**
+   * DEBUG ONLY - Filter the attachments such that only attachments with ids in the DEBUG_FILTER_ATTACHMENTS list will be loaded.
+   * If the static array is undefined, all attachments will be loaded.
+   */
+  private debugFilterAttachments() {
+    const newAttachmentIds: Id64Array = [];
+    for (const id of this._attachmentIds)
+      if (SheetViewState.DEBUG_FILTER_ATTACHMENTS === undefined)
+        newAttachmentIds.push(id);
+      else if (SheetViewState.DEBUG_FILTER_ATTACHMENTS.indexOf(id) !== -1)
+        newAttachmentIds.push(id);
+    this._attachmentIds = newAttachmentIds;
+  }
+
+  /** If any attachments have not yet been loaded or are waiting on tiles, invalidate the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allLoaded || !this.all3dAttachmentTilesLoaded)
+    if (!this._attachments.allReady || !this.all3dAttachmentTilesLoaded)
       _viewport.sync.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
   public createScene(context: SceneContext) {
-    // This will be reset to false by the end of the function if any 3d attachments are waiting on tiles...
+    // This will be set to false by the end of the function if any 3d attachments are waiting on tiles...
     this.all3dAttachmentTilesLoaded = true;
 
     super.createScene(context);
 
-    if (!this._attachments.allLoaded) {
+    if (!this._attachments.allReady) {
       let i = 0;
       while (i < this._attachments.length) {
-        const attachmentState = this._attachments.load(i, this, context);
+        const loadStatus = this._attachments.load(i, this, context);
 
         // If load fails, attachment gets dropped from the list
-        if (attachmentState !== Attachments.State.Empty && attachmentState !== Attachments.State.NotLoaded)
+        if (loadStatus === Attachments.State.Ready || loadStatus === Attachments.State.Loading)
           i++;
       }
     }
 
-    /*
-    DEBUG ONLY
-    for (const attachment of this._attachments.list)
-      attachment.drawDebugBorder();
-    */
-
     // Draw all attachments that have a status of ready
     for (const attachment of this._attachments.list)
-      if (attachment.state === Attachments.State.Ready) {
-        if (attachment.is2d)
-          assert(attachment.tree !== undefined);  // 2d attachments must have fully-loaded tile tree before being drawn
+      if (attachment.isReady)
         attachment.tree!.drawScene(context);
-      }
   }
+
+  private _pickableBorder = false; // ###TODO: Remove - testing pickable decorations
 
   /** Create a sheet border decoration graphic. */
   private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, viewContext);
-    const builder: GraphicBuilder = viewContext.createViewBackground();
+    const border = SheetBorder.create(width, height, this._pickableBorder ? undefined : viewContext);
+    const builder: GraphicBuilder = this._pickableBorder ? viewContext.createPickableDecoration(new Id64("0xffffff0000000001")) : viewContext.createViewBackground();
     border.addToBuilder(builder);
     return builder.finish();
   }
@@ -1910,7 +1791,18 @@ export class SheetViewState extends ViewState2d {
   public decorate(context: DecorateContext): void {
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
-      context.setViewBackground(border);
+      if (this._pickableBorder)
+        context.addWorldDecoration(border);
+      else
+        context.setViewBackground(border);
     }
+  }
+
+  public computeFitRange(): Range3d {
+    const size = this.sheetSize;
+    if (0 >= size.x || 0 >= size.y)
+      return super.computeFitRange();
+    else
+      return new Range3d(0, 0, -1, size.x, size.y, 1);
   }
 }

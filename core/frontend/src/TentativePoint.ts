@@ -6,7 +6,7 @@
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Viewport } from "./Viewport";
-import { BeButtonEvent } from "./tools/Tool";
+import { BeButtonEvent, BeButton } from "./tools/Tool";
 import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, HitSource, HitDetailType } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { HitListHolder } from "./ElementLocateManager";
@@ -28,11 +28,10 @@ export class TentativePoint {
   public viewport?: Viewport;
 
   public onInitialized() { }
-  private isSnappedToIntersectionCandidate(): boolean { return undefined !== this.currSnap && SnapMode.Intersection === this.currSnap.snapMode && HitDetailType.Intersection !== this.currSnap.getHitType(); }
   public setHitList(list?: HitList<HitDetail>) { this.tpHits = list; }
 
   /** @return true if the tentative point is currently active and snapped to an element. */
-  public isSnapped(): boolean { return !!this.currSnap; }
+  public get isSnapped(): boolean { return undefined !== this.currSnap; }
 
   /** @return The current snap path when TentativePoint.isSnapped or undefined. */
   public getCurrSnap(): SnapDetail | undefined { return this.currSnap; }
@@ -78,7 +77,7 @@ export class TentativePoint {
   }
 
   public showTentative(): void {
-    if (this.isSnapped()) {
+    if (this.isSnapped) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
       IModelApp.accuSnap.displayToolTip(this.viewPt, this.viewport!, undefined);
     } else {
@@ -100,15 +99,26 @@ export class TentativePoint {
     return hit;
   }
 
-  public onButtonEvent(): void {
+  public onButtonEvent(ev: BeButtonEvent): void {
+    switch (ev.button) {
+      case BeButton.Data:
+        if (!ev.isDown)
+          return; // cleared on down...
+        break;
+      case BeButton.Reset:
+        if (ev.isDown)
+          return; // cleared on up...
+        break;
+      case BeButton.Middle:
+        return;
+    }
+
     this.removeTentative();
     IModelApp.accuSnap.synchSnapMode();
     this.snapList.empty();
     this.setCurrSnap(undefined);
     this.tpHits = undefined;
   }
-
-  public isView3d(): boolean { return this.viewport!.view.is3d(); }
 
   /** draw the cross as 4 lines rather than 2, so that there's no hole in the middle when drawn in dashed symbology */
   private drawTpCross(graphic: GraphicBuilder, tpSize: number, x: number, y: number): void {
@@ -158,10 +168,7 @@ export class TentativePoint {
   }
 
   public getNextSnap(): SnapDetail | undefined {
-    const snap = this.snapList.getNextHit();
-    if (!snap || !snap.isSnapDetail())
-      return undefined;
-    return snap;
+    return this.snapList.getNextHit();
   }
 
   /** find an intersection between the current snap path and one of the other paths in the current hitList. */
@@ -293,11 +300,11 @@ export class TentativePoint {
     const currHit = IModelApp.accuSnap.getHitAndList(this);
 
     // use existing AccuSnap hit list if one exists...
-    if (!currHit) {
+    if (currHit === undefined) {
       // search for elements around the current raw point (search should not be affected by locks!)
-      const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+      const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
       const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
-      const picker = IModelApp.locateManager.getElementPicker();
+      const picker = IModelApp.locateManager.picker;
       picker.empty();
       options.hitSource = HitSource.TentativeSnap;
 
@@ -309,14 +316,13 @@ export class TentativePoint {
 
     // Construct each active point snap mode
     const snaps = IModelApp.accuSnap.getActiveSnapModes();
-    for (const snap of snaps) {
+    for (const snap of snaps)
       await this.testHitsForSnapMode(snap);
-    }
 
     this.optimizeHitList();
 
     // if something is AccuSnapped, make that the current tp snap
-    if (currHit && currHit.isSnapDetail() && currHit.sourceId && HitDetailType.Snap <= currHit.getHitType()) {
+    if (currHit && currHit.sourceId && currHit instanceof SnapDetail) {
       // now we have to remove that path from the tp list.
       this.snapList.removeHitsFrom(currHit.sourceId);
       this.snapList.resetCurrentHit();
@@ -326,16 +332,12 @@ export class TentativePoint {
     return this.getNextSnap();
   }
 
-  private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean {
-    const aperture = pixelDistance + 1.5;
-    return pt1.distance(pt2) < aperture;
-  }
-
+  private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean { return pt1.distance(pt2) < (pixelDistance + 1.5); }
   public async process(ev: BeButtonEvent): Promise<void> {
     // remove the TP cross if it is already on the screen
+    const wasActive = this.isActive;
     this.removeTentative();
-
-    const lastPtView = this.viewPt;
+    const lastPtView = this.viewPt.clone();
 
     this.viewport = ev.viewport!;
     this.point.setFrom(ev.point);
@@ -344,26 +346,25 @@ export class TentativePoint {
     this.qualifierMask = ev.keyModifiers;
 
     let snap: SnapDetail | undefined;
-    const snapAgain = (this.isSnapped() && TentativePoint.arePointsCloseEnough(lastPtView, this.viewPt, this.viewport!.pixelsFromInches(IModelApp.locateManager.getApertureInches())));
-
+    const snapAgain = (this.isSnapped && TentativePoint.arePointsCloseEnough(lastPtView, this.viewPt, this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches)));
     snap = snapAgain ? this.getNextSnap() : await this.getSnaps();
 
-    // If the the previous snap was done in intersection mode,
-    // we now want to try to find intersections with the previous snap.
-    if (this.isSnappedToIntersectionCandidate()) {
+    // If the the previous snap was done in intersection mode, we now want to try to find intersections with the previous snap.
+    if (undefined !== this.currSnap && SnapMode.Intersection === this.currSnap.snapMode && HitDetailType.Intersection !== this.currSnap.getHitType()) {
       // (If the mouse didn't move, then keep the previous "first" path and try to find more intersections with it.)
       const intersectSnap = this.doTPIntersectSnap(this.findNextIntersectionCandidate(snap), !snapAgain);
-
       //  If we can't create an intersection, then move on to the next active snap
       if (intersectSnap)
         snap = intersectSnap;
     }
 
-    this.setCurrSnap(snap); //  Adopt the snap as current
+    this.setCurrSnap(snap); // Adopt the snap as current
     IModelApp.accuSnap.clear(); // make sure there's no AccuSnap active after a tentative point (otherwise we continually snap to it).
 
-    if (this.isSnapped())
+    if (this.isSnapped)
       this.point.setFrom(this.currSnap!.snapPoint);
+    else if (wasActive && !snapAgain)
+      this.point.setFrom(ev.rawPoint);
 
     this.showTentative(); // show the TP cross
   }

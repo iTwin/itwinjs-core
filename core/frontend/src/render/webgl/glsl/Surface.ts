@@ -336,3 +336,12 @@ export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
 
   return builder;
 }
+
+// Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
+// We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
+// non-transparent pixel of it.
+const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha == 0.0;`;
+
+export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {
+  frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
+}

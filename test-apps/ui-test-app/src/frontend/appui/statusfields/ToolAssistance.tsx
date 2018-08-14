@@ -6,7 +6,7 @@ import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { IStatusBar, StatusBarFieldId } from "@bentley/ui-framework";
 import ToolAssistanceIndicator from "@bentley/ui-ninezone/lib/footer/tool-assistance/Indicator";
-import IndicatorDialog from "@bentley/ui-ninezone/lib/footer/indicator-dialog/Dialog";
+import ToolAssistanceDialog from "@bentley/ui-ninezone/lib/footer/tool-assistance/Dialog";
 
 export interface ToolAssistanceProps {
   statusBar: IStatusBar;
@@ -31,7 +31,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
     return (
       <ToolAssistanceIndicator
         dialog={
-          <IndicatorDialog isOpen={this.props.openWidget === this._className} />
+          this.props.openWidget !== this._className ? undefined : <ToolAssistanceDialog />
         }
         icons={
           <>
@@ -40,7 +40,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
           </>
         }
         isStepStringVisible={this.props.isInFooterMode}
-        onIndicatorClick={this.handleToolAssistanceIndicatorClick}
+        onClick={this.handleToolAssistanceIndicatorClick}
         stepString={IModelApp.i18n.translate("SampleApp:toolAssist.startPoint")}
       />
     );

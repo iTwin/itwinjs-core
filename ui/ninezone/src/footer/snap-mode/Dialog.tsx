@@ -5,25 +5,29 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Dialog, { DialogProps } from "../indicator-dialog/Dialog";
+import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import TrianglePopover from "../../popup/popover/Triangle";
 import "./Dialog.scss";
+import { Direction } from "../../utilities/Direction";
 
-export interface SnapModeDialogProps extends DialogProps {
+/** Properties of [[SnapModeDialog]] component. */
+export interface SnapModeDialogProps extends CommonProps, NoChildrenProps {
+  /** Dialog title. */
   title?: string;
+  /** Actual snap rows. See [[Snap]] component. */
   snaps?: React.ReactNode;
-  isOpen?: boolean;
 }
 
+/** Dialog used in [[SnapModeIndicator]] component. */
 export default class SnapModeDialog extends React.Component<SnapModeDialogProps> {
   public render() {
-    const { children, ...props } = this.props;
     const dialogClassName = classnames(
       "nz-footer-snapMode-dialog",
       this.props.className);
 
     return (
-      <Dialog
-        {...props}
+      <TrianglePopover
+        direction={Direction.Top}
         className={dialogClassName}
         content={
           <>

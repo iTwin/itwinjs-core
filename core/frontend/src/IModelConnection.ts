@@ -9,7 +9,7 @@ import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps,
+  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -250,10 +250,7 @@ export class IModelConnection extends IModel {
   /** Load a file from the native asset directory of the backend.
    * @param assetName Name of the asset file, with path relative to the *Assets* directory
    */
-  public async loadNativeAsset(assetName: string): Promise<Uint8Array> {
-    const val = await IModelReadRpcInterface.getClient().loadNativeAsset(this.iModelToken, assetName);
-    return new Uint8Array(atob(val).split("").map((c) => c.charCodeAt(0)));
-  }
+  public async loadNativeAsset(assetName: string): Promise<Uint8Array> { return IModelReadRpcInterface.getClient().loadNativeAsset(this.iModelToken, assetName); }
 
   /**
    * Execute an ECSQL query against the iModel.
@@ -276,7 +273,7 @@ export class IModelConnection extends IModel {
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
-    return await IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
+    return IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
   /** Query for a set of element ids that satisfy the supplied query params  */
@@ -291,7 +288,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
-    await IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
+    return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
 
   /**
@@ -303,7 +300,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
-    return await IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
+    return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
 
   /**
@@ -341,39 +338,11 @@ export class IModelConnection extends IModel {
    */
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
-  private _snapPending = false;
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
-    if (this._snapPending)
-      throw Error("busy");
+  /** Request a snap from the backend. */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
 
-    this._snapPending = true; // save flag indicating we're in the process of generating a snap
-    const response = IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props);
-    await response; // after snap completes, turn off flag
-    this._snapPending = false;
-    return response; // return fulfilled promise
-  }
-  public _cancelPending = false;
-  public async cancelSnap(): Promise<void> {
-    if (this._cancelPending)
-      throw Error("busy");
-
-    this._cancelPending = true; // save flag indicating we're in the process of generating a snap
-    if (this._snapPending) { // if we're waiting for a snap, cancel it.
-      await IModelReadRpcInterface.getClient().cancelSnap(this.iModelToken, this.connectionId); // this will throw an exception in previous stack.
-      this._snapPending = false;
-    }
-    this._cancelPending = false;
-  }
-
-  private _locateMsgPending = false;
-  public async getLocateMessage(id: string): Promise<string[]> {
-    if (this._locateMsgPending)
-      throw Error("busy");
-    this._locateMsgPending = true;
-    const val = await IModelReadRpcInterface.getClient().getLocateMessage(this.iModelToken, id);
-    this._locateMsgPending = false;
-    return val;
-  }
+  /** Request a tooltip from the backend.  */
+  public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
 }
 
 export namespace IModelConnection {
@@ -401,7 +370,7 @@ export namespace IModelConnection {
 
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-      return await IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
+      return IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     }
 
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
@@ -442,7 +411,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsTemplate=FALSE ";
       }
-      return await IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
+      return IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
     }
 
     /** Code to run when the IModelConnection has closed. */
@@ -466,17 +435,17 @@ export namespace IModelConnection {
 
     /** Get an array of [[ElementProps]] given one or more element ids. */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-      return await IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
+      return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-      return await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
+      return IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
     }
 
     /** Ask the backend to format (for presentation) the specified list of element ids. */
     public async formatElements(elementIds: Id64Arg): Promise<any[]> {
-      return await IModelReadRpcInterface.getClient().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
+      return IModelReadRpcInterface.getClient().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
     }
   }
 
@@ -505,7 +474,7 @@ export namespace IModelConnection {
      * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
      */
     public async getById(codeSpecId: Id64): Promise<CodeSpec> {
-      if (!codeSpecId.isValid())
+      if (!codeSpecId.isValid)
         return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory, () => ({ codeSpecId })));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
@@ -544,7 +513,7 @@ export namespace IModelConnection {
       const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
       params.where = queryParams.where || "";
-      if (!queryParams.wantPrivate) {
+      if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsPrivate=FALSE ";
       }
@@ -587,6 +556,33 @@ export namespace IModelConnection {
       const viewState = ctor.createFromStateData(viewStateData, categorySelectorState, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
       return viewState;
+    }
+
+    /** Get a thumbnail for a view.
+     * @param viewId The id of the view of the thumbnail.
+     * @returns A Promise of the ThumbnailProps.
+     * @throws `Error` exception if no thumbnail exists.
+     */
+    public async getThumbnail(viewId: Id64Props): Promise<ThumbnailProps> {
+      const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken, viewId.toString());
+      const intVals = new Uint16Array(val.buffer);
+      return { format: intVals[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intVals[2], height: intVals[3], image: new Uint8Array(val.buffer, 8, intVals[0]) };
+    }
+
+    /** Save a thumbnail for a view.
+     * @param viewId The id of the view for the thumbnail.
+     * @param thumbnail The thumbnail data to save.
+     * @returns A void Promise
+     * @throws `Error` exception if the thumbnail wasn't successfully saved.
+     */
+    public async saveThumbnail(viewId: Id64Props, thumbnail: ThumbnailProps): Promise<void> {
+      const id = new Id64(viewId);
+      const thumbBytes = Math.ceil(thumbnail.image.length / 2) * 2; // must be a multiple of 2.
+      const val = new Uint8Array(thumbBytes + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
+      new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
+      new Uint32Array(val.buffer, 8).set([id.getLowUint32(), id.getHighUint32()]); // viewId is 8 bytes starting at offset 8
+      new Uint8Array(val.buffer, 16).set(thumbnail.image); // image data at offset 16
+      return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken, val);
     }
   }
 

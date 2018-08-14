@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
-import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, IDisposable, dispose, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -24,8 +24,9 @@ import {
   QPoint3dList,
   ImageSource,
   ImageSourceFormat,
+  isValidImageSourceFormat,
 } from "@bentley/imodeljs-common";
-import { Viewport, ViewRect } from "../Viewport";
+import { Viewport, ViewRect, ViewFrustum } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -33,15 +34,15 @@ import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
+import { SkyBox } from "../DisplayStyleState";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
-/**
- * A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
- */
+/* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
 export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
-  public readonly frustum: Frustum;
-  public readonly fraction: number;
+  public readonly viewFrustum: ViewFrustum;
+  public readonly terrainFrustum: ViewFrustum | undefined;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -50,29 +51,46 @@ export class RenderPlan {
   public readonly activeVolume?: RenderClipVolume;
   public readonly hline?: HiddenLine.Params;
   public readonly lights?: SceneLights;
+  private _curFrustum: ViewFrustum;
 
-  public constructor(vp: Viewport) {
+  public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
+  public get fraction(): number { return this._curFrustum.frustFraction; }
+
+  public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
+  public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
+
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Params, lights?: SceneLights) {
+    this.is3d = is3d;
+    this.viewFlags = viewFlags;
+    this.bgColor = bgColor;
+    this.monoColor = monoColor;
+    this.hiliteSettings = hiliteSettings;
+    this.aaLines = aaLines;
+    this.aaText = aaText;
+    this.activeVolume = activeVolume;
+    this.hline = hline;
+    this.lights = lights;
+    this._curFrustum = this.viewFrustum = viewFrustum;
+    this.terrainFrustum = terrainFrustum;
+  }
+
+  public static createFromViewport(vp: Viewport): RenderPlan {
     const view = vp.view;
     const style = view.displayStyle;
 
-    this.is3d = view.is3d();
-    this.viewFlags = style.viewFlags;
-    this.frustum = vp.getFrustum()!;
-    this.fraction = vp.frustFraction;
-    this.bgColor = view.backgroundColor;
-    this.monoColor = style.getMonochromeColor();
-    this.hiliteSettings = vp.hilite;
-    this.aaLines = vp.wantAntiAliasLines;
-    this.aaText = vp.wantAntiAliasText;
-    this.hline = style.is3d() ? style.getHiddenLineParams() : undefined;
-    this.lights = undefined; // view.is3d() ? view.getLights() : undefined
-
+    const hline = style.is3d() ? style.getHiddenLineParams() : undefined;
+    const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
-    this.activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
+    const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
+    const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.getMonochromeColor(), vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights);
+
+    return rp;
   }
 }
 
-/** A renderer-specific object that can be placed into a display list. */
+/** A renderer-specific object that can be placed into a display list. Must have a `dispose` method. */
 export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
@@ -120,9 +138,7 @@ export class DecorationList implements IDisposable {
     this.list.length = 0;
   }
 
-  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) {
-    this.list.push(new Decoration(graphic, ovrs));
-  }
+  public add(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) { this.list.push(new Decoration(graphic, ovr)); }
 }
 
 /**
@@ -184,28 +200,33 @@ export class Decorations implements IDisposable {
   }
 }
 
-export class GraphicBranch {
+export class GraphicBranch implements IDisposable {
   public readonly entries: RenderGraphic[] = [];
+  public readonly ownsEntries: boolean;
   private _viewFlagOverrides = new ViewFlag.Overrides();
   public symbologyOverrides?: FeatureSymbology.Overrides;
 
-  public constructor() { }
+  public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
 
-  public add(graphic: RenderGraphic): void {
-    this.entries.push(graphic);
-  }
-  public addRange(graphics: RenderGraphic[]): void {
-    graphics.forEach(this.add);
-  }
+  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
+  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
-  public clear() {
-    this.entries.length = 0;
-  }
+  public clear() { this.entries.length = 0; }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
+
+  public dispose(): void {
+    if (this.ownsEntries) {
+      for (const entry of this.entries) {
+        entry.dispose();
+      }
+    }
+
+    this.clear();
+  }
 }
 
 /** Describes aspects of a pixel as read from a RenderTarget. */
@@ -273,9 +294,12 @@ export abstract class RenderTarget implements IDisposable {
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
   public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
-  public static get displayPriorityFactor(): number { return this.frustumDepth2d / (this.maxDisplayPriority + 1); }
+  public static get minDisplayPriority(): number { return -this.maxDisplayPriority; }
 
-  public static depthFromDisplayPriority(priority: number): number { return this.displayPriorityFactor * priority; }
+  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d. */
+  public static depthFromDisplayPriority(priority: number): number {
+    return (priority - this.minDisplayPriority) / (this.maxDisplayPriority - this.minDisplayPriority) * this.frustumDepth2d;
+  }
 
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
@@ -287,6 +311,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract dispose(): void;
   public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
+  public abstract changeTerrain(_scene: GraphicList): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -302,63 +327,9 @@ export abstract class RenderTarget implements IDisposable {
   public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
-export enum SkyboxSphereType {
-  Gradient2Color,
-  Gradient4Color,
-  Texture,
-}
-
-export class SkyBoxCreateParams {
-  private _isSphere: boolean;
-
-  public readonly texture?: RenderTexture;
-  public readonly sphereType?: SkyboxSphereType;
-  public readonly zOffset?: number;
-  public readonly rotation?: number;
-  public readonly zenithColor?: ColorDef;
-  public readonly skyColor?: ColorDef;
-  public readonly groundColor?: ColorDef;
-  public readonly nadirColor?: ColorDef;
-  public readonly skyExponent?: number;
-  public readonly groundExponent?: number;
-
-  public get isTexturedCube() { return !this._isSphere; }
-  public get isSphere() { return this._isSphere; }
-
-  private constructor(_isSphere: boolean, texture?: RenderTexture, sphereType?: SkyboxSphereType, zOffset?: number, rotation?: number, zenithColor?: ColorDef, nadirColor?: ColorDef, skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
-    this._isSphere = _isSphere;
-    this.texture = texture;
-    this.sphereType = sphereType;
-    this.zOffset = zOffset;
-    this.rotation = rotation;
-    this.zenithColor = zenithColor;
-    this.skyColor = skyColor;
-    this.groundColor = groundColor;
-    this.nadirColor = nadirColor;
-    this.skyExponent = skyExponent;
-    this.groundExponent = groundExponent;
-  }
-
-  public static createForTexturedCube(cube: RenderTexture) {
-    return new SkyBoxCreateParams(false, cube);
-  }
-
-  public static createForGradientSphere(sphereType: SkyboxSphereType, zOffset: number, zenithColor: ColorDef, nadirColor: ColorDef,
-    skyColor?: ColorDef, groundColor?: ColorDef, skyExponent?: number, groundExponent?: number) {
-    // Check arguments.
-    assert(SkyboxSphereType.Texture !== sphereType);
-    if (SkyboxSphereType.Gradient4Color !== sphereType) {
-      assert(undefined !== skyColor);
-      assert(undefined !== groundColor);
-      assert(undefined !== skyExponent);
-      assert(undefined !== groundExponent);
-    }
-    return new SkyBoxCreateParams(true, undefined, sphereType, zOffset, 0, zenithColor, nadirColor, skyColor, groundColor, skyExponent, groundExponent);
-  }
-
-  public static createForTexturedSphere(texture: RenderTexture, zOffset: number, rotation: number) {
-    return new SkyBoxCreateParams(true, texture, SkyboxSphereType.Texture, zOffset, rotation);
-  }
+export interface TextureImage {
+  image: HTMLImageElement | undefined;
+  format: ImageSourceFormat | undefined;
 }
 
 /**
@@ -408,7 +379,7 @@ export abstract class RenderSystem implements IDisposable {
   public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
 
   /** Create a sheet tile primitive from polyfaces. */
-  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[]): GraphicList { return []; }
+  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
@@ -437,8 +408,8 @@ export abstract class RenderSystem implements IDisposable {
     return this.createTriMesh(rasterTile);
   }
 
-  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBoxCreateParams. */
-  public createSkyBox(_params: SkyBoxCreateParams): RenderGraphic | undefined { return undefined; }
+  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams. */
+  public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
@@ -452,8 +423,41 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of batched Features. */
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
-  /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
+  /** Locate a previously-created Texture given its key. */
   public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+
+  /** Find or create a texture from a texture element. */
+  public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
+    let texture = this.findTexture(id.toString(), iModel);
+    if (undefined === texture) {
+      const image = await this.loadTextureImage(id, iModel);
+      if (undefined !== image) {
+        // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
+        texture = this.createTextureFromImage(image.image!, ImageSourceFormat.Png === image.format!, iModel, new RenderTexture.Params(id.toString()));
+      }
+    }
+
+    return texture;
+  }
+
+  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
+    // ###TODO: We need a way in our callbacks to determine if the iModel has been closed...
+    const elemProps = await iModel.elements.getProps(id);
+    if (1 !== elemProps.length)
+      return undefined;
+
+    const textureProps = elemProps[0];
+    if (undefined === textureProps.data || "string" !== typeof (textureProps.data) || undefined === textureProps.format || "number" !== typeof (textureProps.format))
+      return undefined;
+
+    const format = textureProps.format as ImageSourceFormat;
+    if (!isValidImageSourceFormat(format))
+      return undefined;
+
+    const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
+    const imagePromise = ImageUtil.extractImage(imageSource);
+    return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
+  }
 
   /** Create a new Texture from gradient symbology. */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }

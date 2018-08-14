@@ -325,7 +325,7 @@ export class PolyfaceData {
   /** Will return 0 if no faces were specified during construction. */
   public get faceCount() { return this.face.length; }
 
-  /** return indexed point. This is a copy of the coordinates, not a referenc. */
+  /** return indexed point. This is a copy of the coordinates, not a reference. */
   public getPoint(i: number): Point3d { return this.point.getPoint3dAt(i); }
   /** return indexed normal. This is the REFERENCE to the normal, not a copy. */
   public getNormal(i: number): Vector3d { return this.normal ? this.normal[i] : Vector3d.create(); }

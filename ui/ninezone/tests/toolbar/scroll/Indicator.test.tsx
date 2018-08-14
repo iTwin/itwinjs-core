@@ -5,13 +5,14 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 
 import Indicator from "@src/toolbar/scroll/Indicator";
+import { Direction } from "@src/utilities/Direction";
 
 describe("<Indicator />", () => {
   it("should render", () => {
-    mount(<Indicator />);
+    mount(<Indicator direction={Direction.Left} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Indicator />).should.matchSnapshot();
+    shallow(<Indicator direction={Direction.Left} />).should.matchSnapshot();
   });
 });

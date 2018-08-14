@@ -1,0 +1,35 @@
+{
+  "extends": "./common/node_modules/@bentley/bentleyjs-tools/tslint.json",
+  "rulesDirectory": ["./common/node_modules/tslint-consistent-codestyle/rules"],
+  "rules": {
+    "align": [
+      true,
+      "statements",
+      "members"
+    ],
+    "naming-convention": [
+      true,
+      // forbid leading and trailing underscores and enforce camelCase on EVERY name. will be overridden by subtypes if needed
+      {"type": "default", "format": "camelCase", "leadingUnderscore": "forbid", "trailingUnderscore": "forbid"},
+      // allow leading underscores for unused parameters, because `tsc --noUnusedParameters` will not flag underscore prefixed parameters
+      // all other rules (trailingUnderscore: forbid, format: camelCase) still apply
+      {"type": "parameter", "modifiers": "unused", "leadingUnderscore": "allow"},
+      // require leading underscores for private properties and methods, all other rules still apply
+      {"type": "property", "modifiers": "private", "leadingUnderscore": "require"},
+      // enforce UPPER_CASE for all static readonly properties
+      {"type": "property", "modifiers": ["private", "static", "const"], "leadingUnderscore": "forbid", "format": "UPPER_CASE"},
+      {"type": "property", "modifiers": ["public", "static", "const"], "leadingUnderscore": "forbid", "format": "UPPER_CASE"},
+      // require all global constants to be camelCase or UPPER_CASE
+      // all other variables and functions still need to be camelCase
+      {"type": "variable", "modifiers": ["global", "const"], "format": ["camelCase","UPPER_CASE"]},
+      // override the above format option for exported constants to allow only UPPER_CASE
+      {"type": "variable", "modifiers": ["export", "const"], "format": "UPPER_CASE"},
+      // require exported constant variables that are initialized with functions to be camelCase
+      {"type": "functionVariable", "modifiers": ["export", "const"], "format": "camelCase"},
+      // enforce PascalCase for classes, interfaces, enums, etc. Remember, there are still no underscores allowed.
+      {"type": "type", "format": "PascalCase"},
+      // enum members must be in PascalCase. Without this config, enumMember would inherit UPPER_CASE from public static const property
+      {"type": "enumMember", "format": "PascalCase"}
+    ]
+  }
+}

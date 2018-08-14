@@ -2,21 +2,21 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { StringUtils } from "../bentleyjs-core";
+import { utf8ToString } from "../bentleyjs-core";
 
 function expectString(utf8: number[], expected: string) {
   const bytes = new Uint8Array(utf8);
-  const result = StringUtils.utf8ToString(bytes);
+  const result = utf8ToString(bytes);
   expect(result).not.to.be.undefined;
   expect(result).to.equal(expected);
 }
 
 function expectUndefined(utf8: number[]) {
   const bytes = new Uint8Array(utf8);
-  expect(StringUtils.utf8ToString(bytes)).to.be.undefined;
+  expect(utf8ToString(bytes)).to.be.undefined;
 }
 
-describe("StringUtils.utf8ToString", () => {
+describe("utf8ToString", () => {
   it("converts ascii", () => {
     const utf8 = [0x69, 0x4d, 0x6f, 0x64, 0x65, 0x6C, 0x4a, 0x73];
     expectString(utf8, "iModelJs");

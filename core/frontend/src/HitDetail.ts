@@ -5,11 +5,11 @@
 import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d, Path } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { Sprite, IconSprites } from "./Sprites";
-import { DecorateContext } from "./frontend";
 import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { DecorateContext } from "./ViewContext";
 
-export const enum SnapMode { // NEEDSWORK: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
+export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,
   NearestKeypoint = 1 << 1,
   MidPoint = 1 << 2,
@@ -93,17 +93,14 @@ export class HitDetail {
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
 
   /** Get the *hit point* for this HitDetail. If this is a HitDetail, it returns the approximate point on the element that cause the hit.
-   * If this is a SnapDetail, and if the snap is *hot*, retuns the *exact* point on the Element for the snap mode.
+   * If this is a SnapDetail, and if the snap is *hot*, returns the *exact* point on the Element for the snap mode.
    */
   public getPoint(): Point3d { return this.hitPoint; }
-
-  /** Type guard for SnapDetail. */
-  public isSnapDetail(): this is SnapDetail { return false; }
 
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
-  public isElementHit(): boolean { const id = new Id64(this.sourceId); return (id.isValid() && (0xffffffff !== id.getHigh())); }
+  public get isElementHit(): boolean { return !Id64.isInvalidId(this.sourceId) && !Id64.isTransientId(this.sourceId); }
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
 
@@ -112,14 +109,18 @@ export class HitDetail {
 
   /**
    * Get the tooltip string for this HitDetail.
-   * Calls the backend method [Element.getLocateMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
+   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<string> {
-    const msg: string[] = await this.viewport.iModel.getLocateMessage(this.sourceId); // wait for the locate message(s) from the backend
+    if (!this.isElementHit) {
+      return Promise.resolve(""); // ###TODO: Ask PickableDecoration to supply tooltip...
+    }
+
+    const msg: string[] = await this.viewport.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
     // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
     // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
     let out = "";
-    msg.forEach((line) => out += line.replace(/\%\{(.+?)\}/g, (_match, tag) => IModelApp.i18n.translate(tag)) + "<br>");
+    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
     return out;
   }
 }
@@ -157,13 +158,11 @@ export class SnapDetail extends HitDetail {
   /** Returns `HitDetailType.Snap` */
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
-  /** Type guard for SnapDetail. */
-  public isSnapDetail(): this is SnapDetail { return true; }
+  public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
   /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
-  public isHot(): boolean { return this.heat !== SnapHeat.None; }
+  public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
-  public isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+  public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
 

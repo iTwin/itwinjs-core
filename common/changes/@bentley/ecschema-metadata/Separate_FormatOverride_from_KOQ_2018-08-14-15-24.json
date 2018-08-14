@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Split the functionality of overriding Formats within a KindOfQuantity into a separate class.",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Caleb.Shafer@bentley.com"
+}

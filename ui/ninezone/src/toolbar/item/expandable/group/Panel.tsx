@@ -5,16 +5,16 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps from "../../../../utilities/Props";
-
 import "./Panel.scss";
-import withContainIn, { WithContainInProps } from "../../../../base/WithContainIn";
 
+/** Properties of [[Panel]] component. */
 export interface PanelProps extends CommonProps {
-  title?: string;
+  /** Panel content. */
+  children?: React.ReactNode;
 }
 
+/** Basic panel. Used as base for [[Group]] and [[NestedGroup]] components. */
 export default class Panel extends React.Component<PanelProps> {
   public render() {
     const className = classnames(
@@ -31,6 +31,3 @@ export default class Panel extends React.Component<PanelProps> {
     );
   }
 }
-
-// tslint:disable-next-line:variable-name
-export const PanelWithContainIn: React.ComponentClass<PanelProps & WithContainInProps> = withContainIn(Panel);
