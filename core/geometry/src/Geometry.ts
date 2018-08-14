@@ -24,10 +24,24 @@ export const enum AxisOrder {
   /** Left handed system, Z then Y then X */
   ZYX = 6,
 }
+/* Enumeration of the 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z */
 export const enum AxisIndex {
   X = 0,
   Y = 1,
   Z = 2,
+}
+
+/* Standard views.   Used in `RotMatrix.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+*/
+export const enum StandardViewIndex {
+  Top = 1,
+  Bottom = 2,
+  Left = 3,
+  Right = 4,
+  Front = 5,
+  Back = 6,
+  Iso = 7,
+  RightIso = 8,
 }
 
 /** Enumeration among choice for how a coordinate transformation should incorporate scaling. */

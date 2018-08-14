@@ -7,22 +7,96 @@
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 // import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Point3d } from "../PointVector";
-// import { RotMatrix } from "../Transform";
-// import { Transform } from "../Transform";
+import { Point3d, Vector3d } from "../PointVector";
+import { RotMatrix } from "../Transform";
+import { Transform } from "../Transform";
 // import { Range3d } from "../Range";
 // import { SolidPrimitive } from "../solid/SolidPrimitive";
 // import { LineString3d } from "../curve/LineString3d";
-// import { ParityRegion, Loop } from "../curve/CurveChain";
+import { Loop } from "../curve/CurveChain";
 // import { SweepContour } from "../solid/SweepContour";
-// import { Checker } from "./Checker";
+import { Checker } from "./Checker";
 // import { expect } from "chai";
 // import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GeometryQuery } from "../curve/CurvePrimitive";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Arc3d } from "../curve/Arc3d";
+import { AngleSweep, StandardViewIndex } from "../Geometry";
+// import { Transform } from "stream";
 // import { AxisIndex } from "../Geometry";
 // import { StrokeOptions } from "../geometry-core";
 // import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
+/* Create an XYZ triad with arcs to clarify XY and XYZ planes
+*/
+function MakeViewableGeometry(): GeometryQuery[] {
+  const geometry = [];
+  geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0)));
+  geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 1, 0)));
+  geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1)));
+  geometry.push(LineString3d.create(
+    [Point3d.create(-1, -1, -1),
+    Point3d.create(1, -1, -1),
+    Point3d.create(1, -1, 1),
+    Point3d.create(-1, -1, 1),
+    Point3d.create(-1, -1, -1),
+    Point3d.create(-1, -1, -1)]));
+  geometry.push(LineString3d.create(
+    [Point3d.create(-1, 1, -1),
+    Point3d.create(1, 1, -1),
+    Point3d.create(1, 1, 1),
+    Point3d.create(-1, 1, 1),
+    Point3d.create(-1, 1, -1),
+    Point3d.create(-1, 1, -1)]));
+
+  geometry.push(LineSegment3d.createXYZXYZ(1, -1, -1, 1, 1, -1));
+  geometry.push(LineSegment3d.createXYZXYZ(1, -1, 1, 1, 1, 1));
+
+  geometry.push(LineSegment3d.createXYZXYZ(-1, -1, -1, -1, 1, -1));
+  geometry.push(LineSegment3d.createXYZXYZ(-1, -1, 1, -1, 1, 1));
+
+  const a = 0.5;
+  geometry.push(Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(a, 0, 0), Vector3d.create(0, a, 0), AngleSweep.createStartSweepDegrees(0, 105)));
+  const b = 0.25;
+  // triangle in xz plane
+  geometry.push(Loop.createPolygon([
+    Point3d.create(0, 0, 0),
+    Point3d.create(b, 0, 0),
+    Point3d.create(0, 0, b)]));
+  // skinnier triangle in yz plane -- to higher z
+  geometry.push(Loop.createPolygon([
+    Point3d.create(0, 0, 0),
+    Point3d.create(0, b * 0.5, 0),
+    Point3d.create(0, 0, 1.5 * b)]));
+  return geometry;
+}
+// Gather viewable geometry from MakeViewAbleGeometry
+// create viewing setup from given vectors local Z, Y rotations.
+// append the (rotated) geometry to the GeometryQuery[].
+//
+function CollectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex) {
+  const geometry0 = MakeViewableGeometry();
+  const axes0 = RotMatrix.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
+  if (expectedIndex !== 0) {
+    const standardAxes = RotMatrix.createStandardWorldToView(expectedIndex, true);
+    ck.testRotMatrix(axes0, standardAxes, "standard view axis check");
+  }
+  const axes1 = axes0.transpose();
+  /*
+  const frame0 = Transform.createOriginAndMatrix(Point3d.create(xShift, yShift - 4, 0), axes0);
+
+  for (const g of geometry0) {
+    geometry.push(g.cloneTransformed(frame0)!);
+  }
+*/
+  const frame1 = Transform.createOriginAndMatrix(Point3d.create(xShift, yShift, 0), axes1);
+  for (const g of geometry0) {
+    geometry.push(g.cloneTransformed(frame1)!);
+  }
+
+}
 
 class PointLattice {
   public xCoordinates: number[] = [];
@@ -124,5 +198,49 @@ describe("ViewWidget", () => {
     }
     if (geometry)
       GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "CubeGeometry");
+  });
+
+  it("StandardViews", () => {
+    const ck = new Checker();
+    const geometry: GeometryQuery[] = [];
+
+    const b = 30;
+    const a = b * 0.5;
+    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitY(), 0, 0, 0, b, StandardViewIndex.Top);  // TOP
+
+    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 0, 0, 0, 0, StandardViewIndex.Front);  // FRONT
+    CollectViewableGeometry(ck, geometry, Vector3d.unitY(), Vector3d.unitZ(), 0, 0, b, 0, StandardViewIndex.Right); // RIGHT
+    CollectViewableGeometry(ck, geometry, Vector3d.unitX(-1), Vector3d.unitZ(), 0, 0, 2 * b, 0, StandardViewIndex.Back); // BACK
+    CollectViewableGeometry(ck, geometry, Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0, -b, 0, StandardViewIndex.Left); // LEFT
+
+    CollectViewableGeometry(ck, geometry, Vector3d.unitX(1), Vector3d.unitY(-1), 0, 0, 0, -b, StandardViewIndex.Bottom); // BOTTOM
+// full iso views
+    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, 1, a, a, StandardViewIndex.RightIso);  // RIGHT FRONT ISO (bottom to top)
+    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, 1, -a, a, StandardViewIndex.Iso);  // LEFT FRONT ISO (bottom to top)
+
+    // incremental iso views based on front
+    for (const isoFactor of [0.5, -0.25, 0, 0.25, 0.5]) {
+      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, isoFactor, a, isoFactor * a, 0);  // RIGHT FRONT ISO (bottom to top)
+      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, isoFactor, -a, isoFactor * a, 0);  // LEFT FRONT ISO (bottom to top)
+    }
+
+    for (const cornerFactor of [-0.75, -0.5, -0.25, 0.25, 0.5, 0.75]) {
+      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0);  // left to right swings from front
+    }
+
+    // lay out the unfolded box
+    for (const origin of [
+      Point3d.create(-a, -3 * a),
+      Point3d.create(-3 * a, -a),
+      Point3d.create(-a, -a),
+      Point3d.create(a, -a),
+      Point3d.create(3 * a, -a),
+      Point3d.create(5 * a, -a),
+      Point3d.create(-a, a),
+    ]) {
+      geometry.push(LineString3d.createRectangleXY(origin, b, b, true));
+    }
+
+    GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "StandardViews");
   });
 });
