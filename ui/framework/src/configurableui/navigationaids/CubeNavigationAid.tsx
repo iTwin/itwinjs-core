@@ -8,13 +8,12 @@ import * as React from "react";
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
 import * as classnames from "classnames";
-import * as THREE from "three";
-import { YawPitchRollAngles } from "@bentley/geometry-core";
+import { Geometry, Point3d, Point2d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 
 import "./CubeNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";
 
-import { ViewportManager, ViewRotationChangeEventArgs } from "@bentley/ui-components";
+// import { ViewportManager, ViewRotationChangeEventArgs } from "@bentley/ui-components";
 
 /** NavigationAid that displays an interactive rotation cube that synchonizes with the rotation of the iModel Viewport */
 export class CubeNavigationAidControl extends NavigationAidControl {
@@ -25,619 +24,568 @@ export class CubeNavigationAidControl extends NavigationAidControl {
   public getSize(): string | undefined { return "96px"; }
 }
 
-export enum HitBox {
-  None = -1,
-  /** faces */
-  Front, Back, Left, Right, Top, Bottom,
-  /** edges */
-  FrontLeft, FrontRight, FrontTop, FrontBottom,
-  BackLeft, BackRight, BackTop, BackBottom,
-  LeftTop, LeftBottom, RightTop, RightBottom,
-  /** corners */
-  FrontLeftTop, FrontLeftBottom, FrontRightTop, FrontRightBottom,
-  BackLeftTop, BackLeftBottom, BackRightTop, BackRightBottom,
+export enum HitBoxX {
+  None = 0,
+  Right = 1,
+  Left = 2,
+}
+export enum HitBoxY {
+  None = 0,
+  Top = 1,
+  Bottom = 2,
+}
+export enum HitBoxZ {
+  None = 0,
+  Front = 1,
+  Back = 2,
 }
 
-interface HitboxData {
-  geometry: THREE.BoxGeometry;
-  position: THREE.Vector3;
-  rotation: THREE.Euler;
-  boxRotation: THREE.Euler;
+export enum Face {
+    None = 0,
+    Left,
+    Right,
+    Back,
+    Front,
+    Bottom,
+    Top,
 }
 
-enum Arrow {
-  Up, Down, Left, Right,
+interface RotationMap {
+  up: Face;
+  down: Face;
+  left: Face;
+  right: Face;
 }
+const faceLocations: {[key: number]: Point3d} = {
+  [Face.Right]: Point3d.create(HitBoxX.Right, HitBoxY.None, HitBoxZ.None),
+  [Face.Left]: Point3d.create(HitBoxX.Left, HitBoxY.None, HitBoxZ.None),
+  [Face.Top]: Point3d.create(HitBoxX.None, HitBoxY.Top, HitBoxZ.None),
+  [Face.Bottom]: Point3d.create(HitBoxX.None, HitBoxY.Bottom, HitBoxZ.None),
+  [Face.Front]: Point3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Front),
+  [Face.Back]: Point3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Back),
+};
 
-interface Direction {
-  up: HitBox;
-  down: HitBox;
-  left: HitBox;
-  right: HitBox;
-}
+// data relating Up/Down/Left/Right directions relative to every surface
+const routes: {[key: number]: RotationMap} = {
+  [Face.Front]: { up: Face.Top, down: Face.Bottom, left: Face.Left, right: Face.Right },
+  [Face.Back]: { up: Face.Top, down: Face.Bottom, left: Face.Right, right: Face.Left },
+  [Face.Top]: { up: Face.Back, down: Face.Front, left: Face.Left, right: Face.Right },
+  [Face.Bottom]: { up: Face.Front, down: Face.Back, left: Face.Left, right: Face.Right },
+  [Face.Right]: { up: Face.Top, down: Face.Bottom, left: Face.Front, right: Face.Back },
+  [Face.Left]: { up: Face.Top, down: Face.Bottom, left: Face.Back, right: Face.Front },
+};
 export interface CubeNavigationState {
-  visible: boolean;
-  currentFace: HitBox;
+  currentFace: Face;
   dragging: boolean;
-  endRot: THREE.Euler;
-  startRot: THREE.Euler;
-  animPercent: number;
+  rotation: YawPitchRollAngles;
+  startRot: YawPitchRollAngles;
   animTime: number;
 }
 
 /** A Cube Navigation Aid */
 export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> {
-  private _renderContainer: HTMLCanvasElement | null = null;
 
-  private camera!: THREE.PerspectiveCamera;
-  private scene!: THREE.Scene;
-  private hitboxMaterial!: THREE.MeshBasicMaterial;
-  private hitboxActiveMaterial!: THREE.MeshBasicMaterial;
-  private renderer!: THREE.WebGLRenderer;
-  private cameraGroup!: THREE.Group;
-  private box!: THREE.Mesh;
-  private hitboxes: THREE.Mesh[] = [];
-  private hitboxData: HitboxData[] = [];
-  private raycaster!: THREE.Raycaster;
-  private mouse: THREE.Vector2 = new THREE.Vector2(-1, -1);
-
-  private start: THREE.Vector2 = new THREE.Vector2();
-  private then: number = 0;
+  private start: Point2d = Point2d.createZero();
 
   public readonly state: Readonly<CubeNavigationState> = {
-    visible: true,
-    currentFace: HitBox.Front,
+    currentFace: Face.Front,
     dragging: false,
-    endRot: new THREE.Euler(0, 0, 0, "ZYX"),
-    startRot: new THREE.Euler(0, 0, 0, "ZYX"),
-    animPercent: 1.0,
-    animTime: 1000,
+    rotation: YawPitchRollAngles.createRadians(0, 0, 0),
+    startRot: YawPitchRollAngles.createRadians(0, 0, 0),
+    animTime: 0,
   };
 
   public render(): React.ReactNode {
+    const visible = this.state.currentFace !== Face.None && this.state.animTime === 0;
     return (
       <div className={"cube-container"}
-        onMouseDown={this.onMouseStartDrag}
-        onMouseMove={this.onCanvasMouseMove} >
-        <div
-          className={"cube-canvas-container"}
-          ref={(element: any) => { this._renderContainer = element; }} />
-        <div className={classnames("cube-pointer-container", { visible: this.state.visible })}>
-          <div className={"cube-row"}>
-            <span className={"cube-pointer icon icon-caret-down"}
-              onClick={(_e) => { this.onArrowClick(Arrow.Up); }} />
-          </div>
-          <div className={"cube-row cube-pointer-center"}>
-            <span className={"cube-pointer icon icon-caret-right"}
-              onClick={(_e) => { this.onArrowClick(Arrow.Left); }} />
-            <span className={"cube-pointer icon icon-caret-left"}
-              onClick={(e) => { e.preventDefault(); this.onArrowClick(Arrow.Right); }} />
-          </div>
-          <div className={"cube-row"}>
-            <span className={"cube-pointer icon icon-caret-up"}
-              onClick={(e) => { e.preventDefault(); this.onArrowClick(Arrow.Down); }} />
-          </div>
+        onMouseDown={this.handleBoxClick} >
+        <div className={"cube-element-container"}>
+          <Cube
+            dragging={this.state.dragging}
+            rotation={this.state.rotation}
+            onFaceCellClick={this.handleFaceCellClick}
+            onTransitionEnd={this.handleTransitionEnd}
+            animTime={this.state.animTime} />
         </div>
+        <PointerButton visible={visible} pointerType={Pointer.Up} onArrowClick={this.onArrowClick} />
+        <PointerButton visible={visible} pointerType={Pointer.Down} onArrowClick={this.onArrowClick} />
+        <PointerButton visible={visible} pointerType={Pointer.Left} onArrowClick={this.onArrowClick} />
+        <PointerButton visible={visible} pointerType={Pointer.Right} onArrowClick={this.onArrowClick} />
       </div>
     );
   }
 
-  private isFace(hitbox: HitBox) {
-    return hitbox === HitBox.Front || hitbox === HitBox.Back ||
-      hitbox === HitBox.Right || hitbox === HitBox.Left ||
-      hitbox === HitBox.Top || hitbox === HitBox.Bottom;
+  private posToRot = (point: Point3d) => {
+    const m = [0, 1, -1];
+    const x = m[point.x], y = m[point.y], z = m[point.z];
+    const p = YawPitchRollAngles.createRadians(0, 0, 0);
+    let n = 0;
+    if (x) n++;
+    if (y) n++;
+    if (z) n++;
+    if (n >= 1) {
+      switch (n) {
+        case 1:
+          if (x)
+            p.yaw.setRadians(-x * Math.PI / 2);
+          if (y)
+            p.pitch.setRadians(y * Math.PI / 2);
+          if (z)
+            p.yaw.setRadians((-z + 1) * Math.PI / 2);
+          break;
+        case 2:
+          p.pitch.setRadians(y * Math.PI / 4);
+          if (x)
+            p.yaw.setRadians(-x * (2 - z) * Math.PI / 4);
+          else
+            p.yaw.setRadians((-z + 1) * Math.PI / 2);
+          break;
+        case 3:
+          p.pitch.setRadians(y * Math.PI / 5);
+          p.yaw.setRadians(-x * (2 - z) * Math.PI / 4);
+          break;
+      }
+    }
+    return p;
   }
 
-  private onArrowClick = (arrow: Arrow) => {
-    // data relating Up/Down/Left/Right directions relative to every surface
-    const routes: Direction[] = [];
-    routes[HitBox.Front] = { up: HitBox.Top, down: HitBox.Bottom, left: HitBox.Left, right: HitBox.Right };
-    routes[HitBox.Back] = { up: HitBox.Top, down: HitBox.Bottom, left: HitBox.Right, right: HitBox.Left };
-    routes[HitBox.Top] = { up: HitBox.Back, down: HitBox.Front, left: HitBox.Left, right: HitBox.Right };
-    routes[HitBox.Bottom] = { up: HitBox.Front, down: HitBox.Back, left: HitBox.Left, right: HitBox.Right };
-    routes[HitBox.Right] = { up: HitBox.Top, down: HitBox.Bottom, left: HitBox.Front, right: HitBox.Back };
-    routes[HitBox.Left] = { up: HitBox.Top, down: HitBox.Bottom, left: HitBox.Back, right: HitBox.Front };
+  private static wrapZero = (x: number, max: number) => ((x % max) + max) % max; // max exclusive, zero inclusive
 
-    if (this.isFace(this.state.currentFace)) {
-      // integer value representing integer orientations. Finds closest orientation to allow for slight rounding errors in this.state.endRot.y
-      let rotation = 0;
-      if (this.state.currentFace === HitBox.Top)
-        rotation = this.state.endRot.y;
-      if (this.state.currentFace === HitBox.Bottom)
-        rotation = -this.state.endRot.y;
-      rotation = Math.round(CubeNavigationAid.normalizeAngle(rotation) * 2 / Math.PI) + 1;
+  /**
+   * Rotates RotationMap object 90 degrees for every index increment.
+   * 0 = 0deg, 1 = 90deg, 2 = 180deg, -1 = -90deg, etc.
+   */
+  private static indexRotateRoute = (route: RotationMap, index: number): RotationMap => {
+    const {up, right, down, left} = route;
+    const a = [up, right, down, left];
+    const l = a.length;
+    return {
+      up:    a[CubeNavigationAid.wrapZero(0 + index, l)],
+      right: a[CubeNavigationAid.wrapZero(1 + index, l)],
+      down:  a[CubeNavigationAid.wrapZero(2 + index, l)],
+      left:  a[CubeNavigationAid.wrapZero(3 + index, l)],
+    };
+  }
 
-      const direction = routes[this.state.currentFace];
-      let toHitbox: HitBox = HitBox.None;
+  private onArrowClick = (arrow: Pointer) => {
+    // integer value representing integer orientations. Finds closest orientation to allow for slight rounding errors in this.state.rotation.y
+    let r = 0;
+    if (this.state.currentFace === Face.Top)
+      r = this.state.rotation.yaw.radians;
+    if (this.state.currentFace === Face.Bottom)
+      r = -this.state.rotation.yaw.radians;
+    r = Math.round(Angle.adjustRadiansMinusPiPlusPi(r) * 2 / Math.PI); // regularize to 90deg = 1 etc.
 
-      // map different directions to particular rotation orientations
-      switch (arrow) {
-        case Arrow.Up:
-          switch (rotation) {
-            case 0:
-              toHitbox = direction.right;
-              break;
-            case 1:
-              toHitbox = direction.up;
-              break;
-            case 2:
-              toHitbox = direction.left;
-              break;
-            case 3:
-              toHitbox = direction.down;
-              break;
-          }
-          break;
-        case Arrow.Down:
-          toHitbox = direction.down;
-          switch (rotation) {
-            case 0:
-              toHitbox = direction.right;
-              break;
-            case 1:
-              toHitbox = direction.down;
-              break;
-            case 2:
-              toHitbox = direction.left;
-              break;
-            case 3:
-              toHitbox = direction.up;
-              break;
-          }
-          break;
-        case Arrow.Right:
-          switch (rotation) {
-            case 0:
-              toHitbox = direction.down;
-              break;
-            case 1:
-              toHitbox = direction.left;
-              break;
-            case 2:
-              toHitbox = direction.up;
-              break;
-            case 3:
-              toHitbox = direction.right;
-              break;
-          }
-          break;
-        case Arrow.Left:
-          switch (rotation) {
-            case 0:
-              toHitbox = direction.up;
-              break;
-            case 1:
-              toHitbox = direction.right;
-              break;
-            case 2:
-              toHitbox = direction.down;
-              break;
-            case 3:
-              toHitbox = direction.left;
-              break;
-          }
-          break;
+    const direction = CubeNavigationAid.indexRotateRoute(routes[this.state.currentFace], r);
+    let faceTo: Face = Face.None;
+
+    // map different directions to particular rotation orientations
+    switch (arrow) {
+      case Pointer.Up:
+        faceTo = direction.up;
+        break;
+      case Pointer.Down:
+        faceTo = direction.down;
+        break;
+      case Pointer.Left:
+        faceTo = direction.left;
+        break;
+      case Pointer.Right:
+        faceTo = direction.right;
+        break;
+    }
+    if (faceTo !== Face.None) {
+      const pos = faceLocations[faceTo];
+      let rot = this.posToRot(pos);
+
+      const startRot = this.state.rotation.clone();
+      const {rotation} = this.state;
+
+      if (faceTo === Face.Top || faceTo === Face.Bottom) {
+        const yaw = Math.round(rotation.yaw.radians / (Math.PI / 2)) * (Math.PI / 2);
+        const pitch = rot.pitch.radians;
+        rot = YawPitchRollAngles.createRadians(yaw, pitch, 0);
+      } else {
+        const yaw = rotation.yaw.radians;
+        const yawDiff = Angle.adjustRadiansMinusPiPlusPi(rot.yaw.radians - yaw);
+        const pitch = rot.pitch.radians;
+        rot = YawPitchRollAngles.createRadians(yaw + yawDiff, pitch, 0);
       }
-      const data = this.hitboxData[toHitbox];
-      if (toHitbox !== HitBox.None && data && data.boxRotation) {
-        const startRot = this.cameraGroup.rotation.clone();
-        let endRot = new THREE.Euler(0, 0, 0, "ZYX");
-        if (toHitbox === HitBox.Top || toHitbox === HitBox.Bottom) {
-          endRot = new THREE.Euler(data.boxRotation.x, Math.round(this.state.endRot.y / (Math.PI / 2)) * (Math.PI / 2), data.boxRotation.y, "ZYX");
-        } else {
-          endRot = data.boxRotation.clone();
-        }
-        this.animateRotation(500, startRot, endRot, toHitbox);
-      }
+      this.animateRotation(500, startRot, rot, faceTo);
     }
   }
 
-  private onMouseStartDrag = (event: any) => {
+  private handleBoxClick = (event: any) => {
     event.preventDefault();
 
-    if (!this._renderContainer)
-      return;
+    // only start listening after drag is confirmed. Ie. the 3D box is clicked.
+    window.addEventListener("mousemove", this.onMouseDrag, false);
+    window.addEventListener("mouseup", this.onMouseStopDrag, false);
 
-    const rect = this._renderContainer.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersection = this.raycaster.intersectObjects(this.hitboxes);
-    if (intersection.length > 0) {
-      // only start listening after drag is confirmed. Ie. the 3D box is clicked.
-      window.addEventListener("mousemove", this.onMouseDrag, false);
-      window.addEventListener("mouseup", this.onMouseStopDrag, false);
+    this.start.x = event.clientX;
+    this.start.y = event.clientY;
 
-      this.start.x = event.clientX;
-      this.start.y = event.clientY;
-
-      const rot = this.cameraGroup.rotation.clone();
-      this.setState({
-        startRot: rot,
-        endRot: rot,
-        dragging: true,
-      });
-    }
-  }
-
-  private onGlobalMouseMove = (event: any) => {
-    if (!this._renderContainer)
-      return;
-    const rect = this._renderContainer.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
-  }
-
-  private onCanvasMouseMove = () => {
-    this.updateHover();
-  }
-
-  private onMouseOutOfWindow = (event: any) => {
-    if (!event.relatedTarget) {
-      this.mouse = new THREE.Vector2(-1, -1);
-      this.updateHover();
-    }
+    const rot = this.state.rotation.clone();
+    this.setState({
+      startRot: rot,
+    });
   }
 
   private onMouseDrag = (event: any) => {
-    const scale = 0.05;
+    if (this.start.x !== event.clientX || this.start.y !== event.clientY) {
+      const scale = 0.05;
 
-    const rot = new THREE.Euler(0, 0, 0, "ZYX");
-    rot.y = this.state.startRot.y + (this.start.x - event.clientX) * scale;
-    rot.x = this.state.startRot.x + (this.start.y - event.clientY) * scale;
-    if (rot.x > Math.PI / 2)
-      rot.x = Math.PI / 2;
-    if (rot.x < -Math.PI / 2)
-      rot.x = -Math.PI / 2;
+      const yaw = this.state.startRot.yaw.radians - (this.start.x - event.clientX) * scale;
+      const pitch = Geometry.clampToStartEnd(
+        this.state.startRot.pitch.radians - (this.start.y - event.clientY) * scale,
+        -Math.PI / 2, Math.PI / 2);
 
-    this.setRotation(rot, this.state.startRot);
+      const rot = YawPitchRollAngles.createRadians(yaw, pitch, 0);
+
+      this.setRotation(rot, this.state.startRot);
+      if (!this.state.dragging)
+        this.setState({dragging: true});
+    }
   }
 
-  private updateHover = () => {
-    if (!this.state.dragging) {
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersection = this.raycaster.intersectObjects(this.hitboxes);
-      if (intersection.length > 0) {
-        for (const hitbox of this.hitboxes) {
-          if (intersection[0].object === hitbox) {
-            hitbox.material = this.hitboxActiveMaterial;
-          } else {
-            hitbox.material = this.hitboxMaterial;
-          }
-        }
-      } else {
-        for (const hitbox of this.hitboxes) {
-          hitbox.material = this.hitboxMaterial;
-        }
-      }
-    }
-
-  }
-
-  private onMouseStopDrag = (event: any) => {
-    if (!this._renderContainer)
-      return;
-
-    if (this.start.x === event.clientX && this.start.y === event.clientY) {
-      const rect = this._renderContainer.getBoundingClientRect();
-      this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      this.mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersection = this.raycaster.intersectObjects(this.hitboxes);
-      if (intersection.length > 0) {
-        for (let key = 0; key < this.hitboxes.length; key++) {
-          const hitbox = this.hitboxes[key];
-          if (intersection[0].object === hitbox) {
-            const data = this.hitboxData[key];
-            if (data && data.boxRotation) {
-
-              let currentFace = HitBox.None;
-              if (this.isFace(key))
-                currentFace = key;
-              const startRot = this.cameraGroup.rotation.clone();
-              let endRot = new THREE.Euler(0, 0, 0, "ZYX");
-
-              if ((key === HitBox.Top || key === HitBox.Bottom) && key !== this.state.currentFace) {
-                endRot = new THREE.Euler(data.boxRotation.x, Math.round(this.state.endRot.y / (Math.PI / 2)) * (Math.PI / 2), data.boxRotation.z, "ZYX");
-              } else {
-                endRot = data.boxRotation.clone();
-              }
-              this.animateRotation(500, startRot, endRot, currentFace);
-              break;
-            }
-          }
-        }
-      }
-    }
-    this.setState({ dragging: false }, () => { this.updateHover(); });
-
+  private onMouseStopDrag = () => {
+    this.setState({ dragging: false });
     // remove so event only triggers after this.on this.onMousStartDrag
     window.removeEventListener("mousemove", this.onMouseDrag);
     window.removeEventListener("mouseup", this.onMouseStopDrag);
   }
 
-  public componentDidMount() {
-    if (!this._renderContainer)
-      return;
+  private handleFaceCellClick = (pos: Point3d, face: Face = Face.None) => {
+    const {rotation} = this.state;
+    let rot = this.posToRot(pos);
 
-    const { width, height } = this._renderContainer.getBoundingClientRect();
-
-    // enum maps specifically to three.js materials list
-    enum TextureSides {
-      Right,
-      Left,
-      Top,
-      Bottom,
-      Front,
-      Back,
+    const startRot = this.state.rotation.clone();
+    if ((face === Face.Top || face === Face.Bottom) && CubeNavigationAid.wrapZero(rotation.yaw.radians, Math.PI / 2) !== 0) {
+      const yaw = Math.round(rotation.yaw.radians / (Math.PI / 2)) * (Math.PI / 2);
+      const pitch = rot.pitch.radians;
+      rot = YawPitchRollAngles.createRadians(yaw, pitch, 0);
+    } else {
+      const yaw = rotation.yaw.radians;
+      const yawDiff = Angle.adjustRadiansMinusPiPlusPi(rot.yaw.radians - yaw);
+      const pitch = rot.pitch.radians;
+      rot = YawPitchRollAngles.createRadians(yaw + yawDiff, pitch, 0);
     }
+    this.animateRotation(500, startRot, rot, face);
+    window.removeEventListener("mousemove", this.onMouseDrag);
+  }
 
-    const labels = [];
-    try {
-      labels[TextureSides.Right] = UiFramework.i18n.translate("UiFramework:cube.right");
-      labels[TextureSides.Left] = UiFramework.i18n.translate("UiFramework:cube.left");
-      labels[TextureSides.Top] = UiFramework.i18n.translate("UiFramework:cube.top");
-      labels[TextureSides.Bottom] = UiFramework.i18n.translate("UiFramework:cube.bottom");
-      labels[TextureSides.Front] = UiFramework.i18n.translate("UiFramework:cube.front");
-      labels[TextureSides.Back] = UiFramework.i18n.translate("UiFramework:cube.back");
-    } catch (error) {
-      labels[TextureSides.Right] = "Right";
-      labels[TextureSides.Left] = "Left";
-      labels[TextureSides.Top] = "Top";
-      labels[TextureSides.Bottom] = "Bottom";
-      labels[TextureSides.Front] = "Front";
-      labels[TextureSides.Back] = "Back";
-    }
-
-    const materials: THREE.MeshBasicMaterial[] = [];
-    labels.forEach((label, index) => {
-      const texture = document.createElement("canvas");
-      texture.width = texture.height = 1024;
-      const textureContext = texture.getContext("2d");
-      if (textureContext) {
-        textureContext.imageSmoothingEnabled = false;
-        switch (index) {
-          case TextureSides.Top:
-            textureContext.fillStyle = "#EFEFEF";
-            break;
-          case TextureSides.Left:
-          case TextureSides.Right:
-          case TextureSides.Front:
-          case TextureSides.Back:
-            const gradient = textureContext.createLinearGradient(0, 0, 0, texture.height);
-            gradient.addColorStop(0, "#EFEFEF");
-            gradient.addColorStop(1, "#AAAAAA");
-            textureContext.fillStyle = gradient;
-            break;
-          case TextureSides.Bottom:
-            textureContext.fillStyle = "#AAAAAA";
-            break;
-        }
-        textureContext.fillRect(0, 0, texture.width, texture.height);
-
-        textureContext.fillStyle = "black";
-        textureContext.font = "normal bold 220px sans-serif";
-        textureContext.textBaseline = "middle";
-        textureContext.textAlign = "center";
-        const x = texture.width / 2;
-        const y = texture.height / 2;
-        textureContext.fillText(label, x, y);
-      }
-
-      const material = new THREE.MeshBasicMaterial({ map: new THREE.Texture(texture) });
-      material.map.needsUpdate = true;
-      material.map.anisotropy = 64;
-
-      materials.push(material);
-    });
-
-    this.camera = new THREE.PerspectiveCamera(20, width / height, 0.01, 100);
-    this.camera.position.z = 5;
-    this.cameraGroup = new THREE.Group();
-    this.cameraGroup.add(this.camera);
-    this.cameraGroup.rotation.order = "ZYX";
-
-    this.scene = new THREE.Scene();
-    this.raycaster = new THREE.Raycaster();
-
-    const boxSize = 1;
-
-    // edge hitbox covers 20% of box width
-    const edgeSize = boxSize * 0.2;
-    // face hitbox covers 60% of box width
-    const faceSize = boxSize * 0.6;
-
-    // amount hitboxes protrude from box
-    const depth = 0.01;
-    const dist = boxSize / 2 - edgeSize / 2 + depth;
-
-    const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
-    this.box = new THREE.Mesh(geometry, materials);
-    this.hitboxMaterial = new THREE.MeshBasicMaterial({ color: 0x0089FF, transparent: true, opacity: 0.0 });
-    this.hitboxActiveMaterial = new THREE.MeshBasicMaterial({ color: 0x0089FF, transparent: true, opacity: 0.3 });
-
-    const faceGeometry = new THREE.BoxGeometry(faceSize, edgeSize, faceSize);
-    const edgeGeometry = new THREE.BoxGeometry(faceSize, edgeSize, edgeSize);
-    const cornerGeometry = new THREE.BoxGeometry(edgeSize, edgeSize, edgeSize);
-
-    // initialize all hitbox data
-
-    // faces
-    this.hitboxData[HitBox.Front] = { geometry: faceGeometry, position: new THREE.Vector3(0, 0, dist), rotation: new THREE.Euler(Math.PI / 2, 0, 0), boxRotation: new THREE.Euler(0, 0, 0, "ZYX") };
-    this.hitboxData[HitBox.Back] = { geometry: faceGeometry, position: new THREE.Vector3(0, 0, -dist), rotation: new THREE.Euler(Math.PI / 2, 0, 0), boxRotation: new THREE.Euler(0, -Math.PI, 0, "ZYX") };
-    this.hitboxData[HitBox.Left] = { geometry: faceGeometry, position: new THREE.Vector3(dist, 0, 0), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.Right] = { geometry: faceGeometry, position: new THREE.Vector3(-dist, 0, 0), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.Top] = { geometry: faceGeometry, position: new THREE.Vector3(0, dist, 0), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 2, 0, 0, "ZYX") };
-    this.hitboxData[HitBox.Bottom] = { geometry: faceGeometry, position: new THREE.Vector3(0, -dist, 0), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 2, 0, 0, "ZYX") };
-    // edges
-    this.hitboxData[HitBox.FrontLeft] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, 0, dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontRight] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, 0, dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontTop] = { geometry: edgeGeometry, position: new THREE.Vector3(0, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 4, 0, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(0, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 4, 0, 0, "ZYX") };
-
-    this.hitboxData[HitBox.BackLeft] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, 0, -dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, 3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackRight] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, 0, -dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackTop] = { geometry: edgeGeometry, position: new THREE.Vector3(0, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 4, Math.PI, 0, "ZYX") };
-    this.hitboxData[HitBox.BackBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(0, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 4, Math.PI, 0, "ZYX") };
-
-    this.hitboxData[HitBox.LeftTop] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(-Math.PI / 4, Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.LeftBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, -dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(Math.PI / 4, Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.RightTop] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(-Math.PI / 4, -Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.RightBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, -dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(Math.PI / 4, -Math.PI / 2, 0, "ZYX") };
-    // corners
-    this.hitboxData[HitBox.FrontLeftTop] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontLeftBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontRightTop] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, -Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontRightBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, -Math.PI / 4, 0, "ZYX") };
-
-    this.hitboxData[HitBox.BackLeftTop] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, 3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackLeftBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, 3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackRightTop] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, -3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackRightBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, -3 * Math.PI / 4, 0, "ZYX") };
-
-    // turn data into three.js objects
-    for (const key of Object.keys(this.hitboxData)) {
-      const i = parseInt(key, 10);
-      const data = this.hitboxData[i];
-      const hitbox = new THREE.Mesh(data.geometry, this.hitboxMaterial);
-      hitbox.position.copy(data.position);
-      hitbox.rotation.copy(data.rotation);
-      this.scene.add(hitbox);
-      this.hitboxes[i] = hitbox;
-    }
-
-    // box edge lines
-    const wireframe = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 1), new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 3 }));
-
-    this.box.add(wireframe);
-
-    this.scene.add(this.box);
-    this.scene.add(this.cameraGroup);
-
-    this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    this.renderer.setSize(width, height);
-    this._renderContainer.appendChild(this.renderer.domElement);
-
-    this.then = Date.now();
-    requestAnimationFrame(this.animate);
-
-    ViewportManager.ViewRotationChangeEvent.addListener(this.handleViewRotationChangeEvent);
-    window.addEventListener("mousemove", this.onGlobalMouseMove, false);
-    window.addEventListener("mouseout", this.onMouseOutOfWindow, false);
+  private handleTransitionEnd = () => {
+    this.setState({animTime: 0});
   }
 
   public componentWillUnmount() {
-    ViewportManager.ViewRotationChangeEvent.removeListener(this.handleViewRotationChangeEvent);
-    window.removeEventListener("mousemove", this.onGlobalMouseMove, false);
-    window.removeEventListener("mouseout", this.onMouseOutOfWindow, false);
+    // ViewportManager.ViewRotationChangeEvent.removeListener(this.handleViewRotationChangeEvent);
   }
 
-  private animateRotation = (animTime: number, startRot: THREE.Euler, endRot: THREE.Euler, currentFace: HitBox = HitBox.None) => {
-    // Uncomment these lines to use imodeljs-core animations
-    // if (!this.almostEqual(endRot, this.state.endRot))
-    //   ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToImodelJS(endRot), animTime);
-
+  private animateRotation = (animTime: number, startRot: YawPitchRollAngles, rotation: YawPitchRollAngles, currentFace: Face = Face.None) => {
     // set animation variables, let this.animate process it.
     this.setState({
-      startRot, endRot,
-      animPercent: 0, animTime,
-      currentFace, visible: currentFace !== HitBox.None, // only set visible when currentFace is an actual face
+      startRot, rotation,
+      animTime,
+      currentFace, // only set visible when currentFace is an actual face
     });
   }
-  private setRotation = (rot: THREE.Euler, startRot?: THREE.Euler, currentFace: HitBox = HitBox.None) => {
-    // update viewport only if rotation changes
-    if (!CubeNavigationAid.almostEqual(rot, this.state.endRot))
-      ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToIModelJS(rot), 0);
+  private setRotation = (rot: YawPitchRollAngles, startRot?: YawPitchRollAngles, currentFace: Face = Face.None) => {
     // set variables, with animPercent at 1 to prevent animation.
     this.setState({
-      startRot: startRot || rot, endRot: rot,
-      animPercent: 1.0, animTime: 0,
-      currentFace, visible: currentFace !== HitBox.None, // only set visible when currentFace is an actual face
-    }, () => {
-      this.cameraGroup.rotation.copy(this.state.endRot);
+      startRot: startRot || rot, rotation: rot,
+      animTime: 0,
+      currentFace, // only set visible when currentFace is an actual face
     });
-  }
-
-  private animate = (timestamp: number) => {
-    requestAnimationFrame(this.animate);
-    const delta = timestamp - this.then;
-    this.then = timestamp;
-
-    let { animPercent } = this.state;
-
-    if (animPercent >= 1.0) { // no animation occuring
-      this.updateHover();
-
-      this.cameraGroup.rotation.x = this.state.endRot.x;
-      this.cameraGroup.rotation.y = this.state.endRot.y;
-    } else { // animation in progress
-      // delta adjusts for variable frame rates
-      animPercent += delta / this.state.animTime;
-      // normalize to ensure closest animation transition
-      const diffX = CubeNavigationAid.normalizeAngle(this.state.endRot.x - this.state.startRot.x);
-      const diffZ = CubeNavigationAid.normalizeAngle(this.state.endRot.y - this.state.startRot.y);
-      const fn = CubeNavigationAid.easeFn(animPercent);
-      this.cameraGroup.rotation.set(this.state.startRot.x + diffX * fn, this.state.startRot.y + diffZ * fn, 0);
-      ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToIModelJS(this.cameraGroup.rotation), 0); // Comment this line to use imodeljs-core animations
-      if (animPercent >= 1.0) { // animation ends
-        animPercent = 1.0;
-        this.cameraGroup.rotation.copy(this.state.endRot);
-        ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToIModelJS(this.state.endRot), -1);
-      }
-    }
-    if (animPercent !== this.state.animPercent)
-      this.setState({ animPercent });
-    this.renderer.render(this.scene, this.camera);
   }
 
   /** Converts from threeJS Euler angles to iModelJS YawPitchRollAngles */
-  public static threeJSToIModelJS = (a: THREE.Euler) => {
-    return YawPitchRollAngles.createRadians(a.y, a.x + Math.PI / 2, 0);
-  }
+  // public static threeJSToIModelJS = (a: THREE.Euler) => {
+  //   return YawPitchRollAngles.createRadians(a.y, a.x + Math.PI / 2, 0);
+  // }
 
   /** Converts from iModelJS YawPitchRollAngles to threeJS Euler angles */
-  public static iModelJSToThreeJS = (a: YawPitchRollAngles) => {
-    return new THREE.Euler(-a.pitch.radians - Math.PI / 2, a.yaw.radians, 0, "ZYX");
-  }
-
-  /** function used to animate cube rotation */
-  /** @hidden */
-  public static easeFn(t: number) {
-    // sinusoidal ease-in-ease-out
-    return -(Math.cos(t * Math.PI) - 1) / 2;
-  }
-
-  // normalizes any radian angle to (-pi, pi]
-  /** @hidden */
-  public static normalizeAngle(angle: number) {
-    while (angle <= -Math.PI)
-      angle += 2 * Math.PI;
-    while (angle > Math.PI)
-      angle -= 2 * Math.PI;
-
-    return angle;
-  }
-
-  // equal, discounting rounding errors (high tolerance to filter only visually significant changes)
-  /** @hidden */
-  public static almostEqual = (a1: THREE.Euler, a2: THREE.Euler) => {
-    const dx = a2.x - a1.x, dy = a2.y - a1.y, dz = a2.z - a1.z;
-    const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    return Math.abs(CubeNavigationAid.normalizeAngle(d)) < 0.001;
-  }
+  // public static iModelJSToThreeJS = (a: YawPitchRollAngles) => {
+  //   return new THREE.Euler(-a.pitch.radians - Math.PI / 2, a.yaw.radians, 0, "ZYX");
+  // }
 
   // Synchronize with rotation coming from the Viewport
-  private handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
-    const v = CubeNavigationAid.iModelJSToThreeJS(args.rotation);
-    const c = this.state.endRot;
+  // private handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
+  //   const v = CubeNavigationAid.iModelJSToThreeJS(args.rotation);
+  //   const c = this.state.rotation;
 
-    if (!CubeNavigationAid.almostEqual(v, c) && this.state.animPercent >= 1.0 && !this.state.dragging) {
-      this.cameraGroup.rotation.copy(v);
-      this.setState({
-        startRot: v, endRot: v,
-        animPercent: 1.0, animTime: 0,
-        currentFace: HitBox.None, visible: false,
-      });
+  //   if (!CubeNavigationAid.almostEqual(v, c) && this.state.animPercent >= 1.0 && !this.state.dragging) {
+  //     this.cameraGroup.rotation.copy(v);
+  //     this.setState({
+  //       startRot: v, rotation: v,
+  //       animPercent: 1.0, animTime: 0,
+  //       currentFace: Face.None, visible: false,
+  //     });
+  //   }
+  // }
+}
+
+interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  dragging: boolean;
+  rotation: YawPitchRollAngles;
+  onFaceCellClick: (position: Point3d, face?: Face) => void;
+  animTime: number;
+}
+
+enum Hover {
+  None = 0,
+  Hover,
+  Active,
+}
+
+interface CubeState {
+  hoverMap: {[key: string]: Hover};
+}
+
+class Cube extends React.Component<CubeProps, CubeState> {
+  public readonly state: CubeState = {
+    hoverMap: {},
+  };
+  public render(): React.ReactNode {
+    const {dragging, rotation, onFaceCellClick, animTime, ...props} = this.props;
+    const {hoverMap} = this.state;
+    const animationStyle: React.CSSProperties = {
+      transition: `${this.props.animTime}ms`,
+    };
+    return (
+      <div className={classnames("cube-nav-cube", {dragging})} style={animationStyle} {...props}>
+        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Front} />
+        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Back} />
+        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Right} />
+        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Left} />
+        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Top} />
+        <CubeFace rotation={rotation} onFaceCellClick={onFaceCellClick} onFaceCellHoverChange={this.handleCellHoverChange} hoverMap={hoverMap} face={Face.Bottom} />
+      </div>
+    );
+  }
+
+  private handleCellHoverChange = (pos: Point3d, state: Hover) => {
+    let hoverMap = this.state.hoverMap;
+    if (!this.props.dragging) {
+      hoverMap[pos.x + "-" + pos.y + "-" + pos.z] = state;
+    } else {
+      hoverMap = {};
     }
+    this.setState({hoverMap});
+  }
+}
+
+const faceNames: {[key: number]: string} = {
+  [Face.None]: "",
+  [Face.Front]: "front",
+  [Face.Back]: "back",
+  [Face.Right]: "right",
+  [Face.Left]: "left",
+  [Face.Top]: "top",
+  [Face.Bottom]: "bottom",
+};
+
+interface CubeFaceProps {
+  rotation: YawPitchRollAngles;
+  face: Face;
+  hoverMap: {[key: string]: Hover};
+  onFaceCellClick: (position: Point3d, face?: Face) => void;
+  onFaceCellHoverChange: (position: Point3d, state: Hover) => void;
+}
+
+  /* function parse3DMatrix(matrix) {
+  const out = [];
+  if(/matrix3d/.test(matrix)) {
+    const str = matrix.substring(8); // length of "matrix3d".
+    const mat = str.match(/[-+]\d*.?\d+/g); // Match only valid floats
+    for (const n of mat) {
+      out.push(parseFloat(n));
+    }
+  }
+  return out;
+} */
+
+class CubeFace extends React.Component<CubeFaceProps> {
+  private _faceWidth: number = 0;
+  public render(): React.ReactNode {
+    const {rotation, face, onFaceCellHoverChange, onFaceCellClick, hoverMap} = this.props;
+    if (face === Face.None)
+      return null;
+    const name = faceNames[face];
+    const classes = classnames("face", name);
+    const label = UiFramework.i18n.translate(`UiFramework:cube.${name}`);
+
+    let rot = "";
+    switch (this.props.face) {
+      case Face.Back:
+        rot = " rotateY(.5turn)";
+        break;
+      case Face.Right:
+        rot = " rotateY(.25turn)";
+        break;
+      case Face.Left:
+        rot = " rotateY(-.25turn)";
+        break;
+      case Face.Top:
+        rot = " rotateX(.25turn)";
+        break;
+      case Face.Bottom:
+        rot = " rotateX(-.25turn)";
+        break;
+    }
+    const transform = `rotateX(${-rotation.pitch.radians}rad) rotateY(${rotation.yaw.radians}rad) ${rot} translateZ(${this._faceWidth}px)`;
+    const style: React.CSSProperties = {
+      transform,
+      WebkitTransform: transform,
+    };
+
+    return (
+      <div style={style} className={classes} ref={(e) => { this._faceWidth = (e && e.clientWidth / 2) || 0; }}>
+        {[-1, 0, 1].map((y: number) => {
+          return (
+            <FaceRow key={y} center={y === 0}>
+              {[-1, 0, 1].map((x: number) => {
+                return (
+                  <FaceCell
+                    key={x}
+                    onFaceCellHoverChange={onFaceCellHoverChange}
+                    onFaceCellClick={onFaceCellClick}
+                    hoverMap={hoverMap}
+                    position={this.faceCellToPos(face, x, y)}
+                    face={(x === 0 && y === 0 && face) || Face.None}
+                    center={x === 0}>
+                  {x === 0 && y === 0 &&
+                    label}
+                </FaceCell>
+                );
+              })}
+            </FaceRow>
+          );
+        })}
+      </div>
+    );
+  }
+  private faceCellToPos = (face: Face, x: number, y: number) => {
+    const facePos = faceLocations[face];
+    const route = routes[face];
+
+    const faceX = x < 0 ? route.left : x > 0 ? route.right : Face.None;
+    const xPoint = faceX !== Face.None ? faceLocations[faceX] : Point3d.createZero();
+
+    const faceY = y < 0 ? route.up : y > 0 ? route.down : Face.None;
+    const yPoint = faceY !== Face.None ? faceLocations[faceY] : Point3d.createZero();
+
+    const position = facePos.plus(xPoint).plus(yPoint);
+    // const newFace = faceX === Face.None && faceY === Face.None ? this.props.face : Face.None;
+    return position;
+  }
+}
+
+interface FaceRowProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  center?: boolean;
+}
+
+class FaceRow extends React.Component<FaceRowProps> {
+  public render(): React.ReactNode {
+    const {center, children, ...props} = this.props;
+    return <div className={classnames("face-row", {center})} {...props}>{children}</div>;
+  }
+}
+
+interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  center?: boolean;
+  onFaceCellClick: (position: Point3d, face?: Face) => void;
+  onFaceCellHoverChange: (position: Point3d, state: Hover) => void;
+  hoverMap: {[key: string]: Hover};
+  position: Point3d;
+  face?: Face;
+}
+
+class FaceCell extends React.Component<FaceCellProps> {
+  private _startMouse: Point2d | undefined;
+  public render(): React.ReactNode {
+    const {center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, position, ...props} = this.props;
+    const {x, y, z} = position;
+    const hover = hoverMap[x + "-" + y + "-" + z] === Hover.Hover;
+    const active = hoverMap[x + "-" + y + "-" + z] === Hover.Active;
+    return <div
+      onMouseDown={this.handleMouseDown}
+      onMouseUp={this.handleMouseUp}
+      onMouseOver={this.handleMouseOver}
+      onMouseOut={this.handleMouseOut}
+      className={classnames("face-cell", {center, hover, active})}
+      {...props}>{children}</div>;
+  }
+  private handleMouseOver = () => {
+    const {position} = this.props;
+    this.props.onFaceCellHoverChange(position, Hover.Hover);
+  }
+  private handleMouseOut = () => {
+    const {position} = this.props;
+    this.props.onFaceCellHoverChange(position, Hover.None);
+  }
+  private handleMouseDown = (event: React.MouseEvent) => {
+    const {position} = this.props;
+    const {clientX, clientY} = event;
+    this._startMouse = Point2d.create(clientX, clientY);
+    this.props.onFaceCellHoverChange(position, Hover.Active);
+  }
+  private handleMouseUp = (event: React.MouseEvent) => {
+    const {position, face} = this.props;
+    const {clientX, clientY} = event;
+    this.props.onFaceCellHoverChange(position, Hover.None);
+    const mouse = Point2d.create(clientX, clientY);
+    if (this._startMouse && this._startMouse.isAlmostEqual(mouse))
+      this.props.onFaceCellClick(position, face);
+  }
+}
+
+enum Pointer {
+  None = 0,
+  Up,
+  Down,
+  Left,
+  Right,
+}
+
+const pointerIconClass: {[key: number]: string} = {
+  [Pointer.Up]: "icon-caret-down",
+  [Pointer.Down]: "icon-caret-up",
+  [Pointer.Left]: "icon-caret-right",
+  [Pointer.Right]: "icon-caret-left",
+};
+
+const pointerClass: {[key: number]: string} = {
+  [Pointer.Up]: "up",
+  [Pointer.Down]: "down",
+  [Pointer.Left]: "left",
+  [Pointer.Right]: "right",
+};
+
+interface PointerProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  visible: boolean;
+  pointerType: Pointer;
+  onArrowClick(pointer: Pointer): void;
+}
+
+class PointerButton extends React.Component<PointerProps> {
+  public render(): React.ReactNode {
+    const {visible, pointerType, onArrowClick, ...props} = this.props;
+    const classes = classnames(
+      "cube-pointer", "icon",
+      pointerClass[pointerType],
+      pointerIconClass[pointerType],
+      {visible},
+    );
+    return (
+      <div className={classes} {...props}
+        onClick={this.handleClick}/>
+    );
+  }
+  private handleClick = (event: React.MouseEvent) => {
+    const {pointerType} = this.props;
+    event.preventDefault();
+    this.props.onArrowClick(pointerType);
   }
 }
