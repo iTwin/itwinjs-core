@@ -34,4 +34,5 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward.apply(this, arguments); }
   public saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> { return this.forward.apply(this, arguments); }
   public updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> { return this.forward.apply(this, arguments); }
+  public saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void> { return this.forward.apply(this, arguments); }
 }

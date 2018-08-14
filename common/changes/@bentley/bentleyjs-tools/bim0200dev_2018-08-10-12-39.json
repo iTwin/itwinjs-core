@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "added declarationMap: true",
+      "packageName": "@bentley/bentleyjs-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-tools",
+  "email": "keith.bentley@bentley.com"
+}

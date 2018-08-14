@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Implemented Look, Scroll, Zoom, and Fly ViewManip handles.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

@@ -66,13 +66,35 @@ describe("ModelState", () => {
     const modelProps = await imodel.models.queryProps({ from: SpatialModelState.sqlName });
     assert.isAtLeast(modelProps.length, 2);
 
-    // TODO: Re-enable when new version is available
-    // await imodel2.models.load(["0x28", "0x1c"]);
-    // assert.equal(imodel2.models.loaded.size, 2);
-    // const scalableMesh = imodel2.models.getLoaded("0x28");
-    // assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
-    // assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
-
+    await imodel2.models.load(["0x28", "0x1c"]);
+    assert.equal(imodel2.models.loaded.size, 2);
+    const scalableMesh = imodel2.models.getLoaded("0x28");
+    assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
+    assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
   });
 
+  it("view thumbnails", async () => {
+    const thumbnail = await imodel2.views.getThumbnail("0x24");
+    assert.equal(thumbnail.format, "jpeg");
+    assert.equal(thumbnail.height, 768);
+    assert.equal(thumbnail.width, 768);
+    assert.equal(thumbnail.image.length, 18062);
+    assert.equal(thumbnail.image[3], 224);
+    assert.equal(thumbnail.image[18061], 217);
+
+    try {
+      await imodel2.views.getThumbnail("0x25");
+      assert.fail("getThumbnail should not return");
+    } catch (_err) { } // thumbnail doesn't exist
+
+    thumbnail.format = "png";
+    thumbnail.height = 100;
+    thumbnail.width = 200;
+    thumbnail.image = new Uint8Array(300);
+    thumbnail.image.fill(33);
+
+    // TODO: this needs support from Steve Wilson for sending binary from frontend to backend.
+    // await imodel2.views.saveThumbnail("0x24", thumbnail);
+
+  });
 });

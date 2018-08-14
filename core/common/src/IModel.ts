@@ -85,8 +85,8 @@ export interface CreateIModelProps extends IModelProps {
 export interface FilePropertyProps {
   namespace: string;
   name: string;
-  id?: number;
-  subId?: number;
+  id?: number | string;
+  subId?: number | string;
 }
 
 /** Represents an iModel in JavaScript. */

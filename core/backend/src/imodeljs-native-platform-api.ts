@@ -475,14 +475,14 @@ export declare class NativeDgnDb {
    * @param wantString true to query the string property, false for the blob property
    * @returns requested value or undefined if property does not exist
    */
-  public queryFileProperty(props: string, wantString: boolean): string | ArrayBuffer | undefined;
+  public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
 
   /** save or delete a file property.
    * @param props the stringified version of the FilePropertyProps
    * @param value the value to save. If undefined, the file property is deleted.
    * @returns 0 if property was saved (or deleted), error status otherwise
    */
-  public saveFileProperty(props: string, value: string | ArrayBuffer | undefined): number;
+  public saveFileProperty(props: string, strValue: string | undefined, blobVal: Uint8Array | undefined): number;
 
   /** query the next available major id for the given file property. If no properties yet exist, will return 0. */
   public queryNextAvailableFileProperty(props: string): number;

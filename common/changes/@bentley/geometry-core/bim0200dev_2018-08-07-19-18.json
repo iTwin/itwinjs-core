@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Export PolygonOps and PointHelpers.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Brien.Bastings@Bentley.com"
+}
