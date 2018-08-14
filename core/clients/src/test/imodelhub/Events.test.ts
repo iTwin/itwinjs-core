@@ -149,16 +149,16 @@ describe("iModelHub EventHandler", () => {
     chai.expect(error.status).to.be.equal(401);
   });
 
-  it("should fail receiving event with invalid subscription id", async () => {
-    mockGetEvent(iModelId, "InvalidSubscriptionId", {}, undefined, undefined, 404);
+  it("should fail receiving event with undefined subscription id", async () => {
+    mockGetEvent(iModelId, "", {}, undefined, undefined, 404);
     let error;
     try {
-      await imodelHubClient.Events().getEvent(sasToken.sasToken!, sasToken.baseAddress!, "InvalidSubscriptionId");
+      await imodelHubClient.Events().getEvent(sasToken.sasToken!, sasToken.baseAddress!, "");
     } catch (err) {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber!).to.be.equal(IModelHubStatus.UndefinedArgumentError);
   });
 
   it("should return undefined when no event is available", async () => {

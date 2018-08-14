@@ -199,7 +199,7 @@
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "common", "frontend", "tools" ]
     },
     {
       "name": "sinon-chai",

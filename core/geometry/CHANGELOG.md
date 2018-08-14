@@ -1,6 +1,14 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 10 Aug 2018 05:06:20 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Aug 2018 12:04:18 GMT and should not be manually modified.
+
+## 0.114.0
+Tue, 14 Aug 2018 12:04:18 GMT
+
+### Updates
+
+- Added Transform.identity
+- Export PolygonOps and PointHelpers.
 
 ## 0.113.0
 Fri, 10 Aug 2018 05:06:20 GMT

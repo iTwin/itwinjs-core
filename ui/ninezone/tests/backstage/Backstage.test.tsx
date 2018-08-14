@@ -36,6 +36,6 @@ describe("<Backstage />", () => {
 
     items.simulate("click");
 
-    handler.should.not.have.been.called();
+    handler.should.not.have.been.called;
   });
 });

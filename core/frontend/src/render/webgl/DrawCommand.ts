@@ -48,7 +48,7 @@ export class DrawParams extends ShaderProgramParams {
   public readonly viewMatrix: Matrix4;
 
   private static readonly _scratchTransform = Transform.createIdentity();
-  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = System.identityTransform, pass: RenderPass = RenderPass.OpaqueGeneral) {
+  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity, pass: RenderPass = RenderPass.OpaqueGeneral) {
     super(target, pass);
     this.geometry = geometry;
     this.modelMatrix = Matrix4.fromTransform(modelMatrix);

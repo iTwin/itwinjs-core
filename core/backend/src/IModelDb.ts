@@ -9,6 +9,7 @@ import {
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
   IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback, ViewStateData, CategorySelectorProps, ModelSelectorProps, SheetProps,
+  ThumbnailProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -36,17 +37,10 @@ const loggingCategory = "imodeljs-backend.IModelDb";
 export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
-export enum SyncMode {
-  FixedVersion = 1,
-  PullOnly = 2,
-  PullAndPush = 3,
-}
+export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 
 /** Mode to access the IModelDb */
-export enum AccessMode {
-  Shared = 1,
-  Exclusive = 2,
-}
+export enum AccessMode { Shared = 1, Exclusive = 2 }
 
 /** Parameters to open the iModelDb */
 export class OpenParams {
@@ -83,24 +77,16 @@ export class OpenParams {
   }
 
   /** Create parameters to open the Db as of a fixed version in a readonly mode */
-  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared): OpenParams {
-    return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion);
-  }
+  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion); }
 
   /** Create parameters to open the Db to allow only pulls from the Hub */
-  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive): OpenParams {
-    return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly);
-  }
+  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly); }
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
-  public static pullAndPush(): OpenParams {
-    return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush);
-  }
+  public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db */
-  public static standalone(openMode: OpenMode) {
-    return new OpenParams(openMode);
-  }
+  public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
 }
 
 /**
@@ -675,14 +661,13 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if an open IModelDb matching the token is not found.
    */
   public static find(iModelToken: IModelToken): IModelDb {
-    Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    // Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry) {
-      Logger.logTrace(loggingCategory, "IModelDb not found - throwing a not found response", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+      Logger.logError(loggingCategory, "IModelDb not found", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       throw new IModelNotFoundResponse();
     }
-    Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-    assert(!!briefcaseEntry.iModelDb);
+    // Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     return briefcaseEntry.iModelDb!;
   }
 
@@ -838,20 +823,20 @@ export class IModelDb extends IModel {
   /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
-  public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
+  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as Uint8Array | undefined; }
 
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, value: string | ArrayBuffer): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), value); }
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), strValue, blobVal); }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
+  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined, undefined); }
 
   /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
@@ -890,10 +875,9 @@ export class IModelDb extends IModel {
   /** Load a file from the *Assets* directory of imodeljs-native
    * @param assetName The asset file name with path relative to the *Assets* directory.
    */
-  public static loadNativeAsset(assetName: string): string {
+  public static loadNativeAsset(assetName: string): Uint8Array {
     const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
-    const fileData = IModelJsFs.readFileSync(fileName) as Buffer;
-    return fileData.toString("base64");
+    return IModelJsFs.readFileSync(fileName) as Buffer;
   }
 
   /** Execute a test from native code
@@ -1221,6 +1205,37 @@ export namespace IModelDb {
         }));
       }
       return viewStateData;
+    }
+
+    private getViewThumbnailArg(viewDefinitionId: Id64Arg): string {
+      const viewProps: FilePropertyProps = { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId.toString() };
+      return JSON.stringify(viewProps);
+    }
+
+    /** Get the thumbnail for a view.
+     * @param viewDefinitionId The Id of the view for thumbnail
+     * @return the ThumbnailProps, or undefined if no thumbnail exists.
+     */
+    public getThumbnail(viewDefinitionId: Id64Props): ThumbnailProps | undefined {
+      const viewArg = this.getViewThumbnailArg(viewDefinitionId);
+      const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
+      if (undefined === sizeProps)
+        return undefined;
+
+      const out = JSON.parse(sizeProps) as ThumbnailProps;
+      out.image = this._iModel.nativeDb.queryFileProperty(viewArg, false) as Uint8Array;
+      return out;
+    }
+
+    /** Save a thumbnail for a view.
+     * @param viewDefinitionId The Id of the view for thumbnail
+     * @param thumbnail The thumbnail data.
+     * @returns 0 if successful
+     */
+    public saveThumbnail(viewDefinitionId: Id64Props, thumbnail: ThumbnailProps): number {
+      const viewArg = this.getViewThumbnailArg(viewDefinitionId);
+      const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
+      return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
     }
   }
 

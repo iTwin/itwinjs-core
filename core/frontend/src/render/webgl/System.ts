@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, StrokeOptions, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator, StrokeOptions } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -351,8 +351,6 @@ export class System extends RenderSystem {
   private _lineCodeTexture?: TextureHandle;
   private _techniques?: Techniques;
 
-  public static identityTransform = Transform.createIdentity();
-
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public get lineCodeTexture() { return this._lineCodeTexture; }
@@ -589,7 +587,7 @@ export class System extends RenderSystem {
         polyfaceBuilder.addQuadFacet(polygon, params);
 
       } else {
-        // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
+        // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
         const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
@@ -670,5 +668,3 @@ export class System extends RenderSystem {
     return sheetTileGraphics;
   }
 }
-
-Object.freeze(System.identityTransform);

@@ -119,15 +119,15 @@ export class SampleAppIModelApp extends IModelApp {
   }
 
   public static handleIModelViewsSelected(_project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64Props[]): void {
+    const payload = { iModelConnection };
+    SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
+
     // we create a FrontStage that contains the views that we want.
     const frontstageProps: FrontstageProps | undefined = new ViewsFrontstage(viewIdsSelected, iModelConnection).defineProps();
     if (frontstageProps) {
       ConfigurableUiManager.loadFrontstage(frontstageProps);
       const frontstageDef = FrontstageManager.findFrontstageDef(frontstageProps.id);
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
-
-      const payload = { iModelConnection };
-      SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
     }
   }
 }

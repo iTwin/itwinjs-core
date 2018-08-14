@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="SchemaD" alias="d" version="4.4.4" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1" displayLabel="SchemaD" description="This is a test Schema.">
+</ECSchema>

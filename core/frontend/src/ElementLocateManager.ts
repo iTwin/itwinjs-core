@@ -9,6 +9,7 @@ import { Viewport, ViewRect } from "./Viewport";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
+import { InputSource } from "./tools/Tool";
 
 /** The possible actions for which a locate filter can be called. */
 export const enum LocateAction {
@@ -207,6 +208,7 @@ export class ElementLocateManager {
   public static getFailureMessageKey(key: string) { return "LocateFailure." + key; }
   public onInitialized() { }
   public get apertureInches() { return 0.11; }
+  public get touchApertureInches() { return 0.22; }
 
   public clear(): void { this.setCurrHit(undefined); }
   public setHitList(list?: HitList<HitDetail>) { this.hitList = list; }
@@ -257,7 +259,7 @@ export class ElementLocateManager {
     IModelApp.tentativePoint.clear(true);
   }
 
-  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, filterHits: boolean): HitDetail | undefined {
+  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, source: InputSource, filterHits: boolean): HitDetail | undefined {
     if (!vp)
       return;
 
@@ -274,7 +276,7 @@ export class ElementLocateManager {
       }
 
       this.picker.empty();
-      this.picker.doPick(vp, testPoint, (vp.pixelsFromInches(this.apertureInches) / 2.0) + 1.5, this.options);
+      this.picker.doPick(vp, testPoint, (vp.pixelsFromInches(InputSource.Touch === source ? this.touchApertureInches : this.apertureInches) / 2.0) + 1.5, this.options);
 
       const hitList = this.picker.getHitList(true);
       this.setHitList(hitList);
@@ -290,11 +292,11 @@ export class ElementLocateManager {
     return undefined;
   }
 
-  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, filterHits = true): HitDetail | undefined {
+  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, source: InputSource, filterHits = true): HitDetail | undefined {
     response.reason = ElementLocateManager.getFailureMessageKey("NoElements");
     response.explanation = "";
 
-    const hit = this._doLocate(response, newSearch, testPoint, view, filterHits);
+    const hit = this._doLocate(response, newSearch, testPoint, view, source, filterHits);
     this.setCurrHit(hit);
 
     // if we found a hit, remove it from the list of remaining hits near the current search point.

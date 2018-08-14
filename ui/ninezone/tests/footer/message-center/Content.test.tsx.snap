@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Content /> renders correctly 1`] = `
+<div
+  className="nz-footer-messageCenter-content"
+>
+  <div
+    className="nz-tabs"
+  />
+  <div
+    className="nz-messages"
+  />
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;

@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Tab /> renders correctly 1`] = `
+<div
+  className="nz-footer-messageCenter-tab"
+/>
+`;
