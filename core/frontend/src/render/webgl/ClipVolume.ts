@@ -308,7 +308,7 @@ export class ClipMaskVolume implements RenderClipVolume {
 
     // Render clip geometry as a mask
     System.instance.frameBufferStack.execute(this._fbo, true, () => {
-      const prevState = System.instance.currentRenderState;
+      const prevState = System.instance.currentRenderState.clone();
       const target = exec.target;
       System.instance.applyRenderState(state);
 

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "0.114.0",
+  "version": "0.115.0",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {},

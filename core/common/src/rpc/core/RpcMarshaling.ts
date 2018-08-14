@@ -37,10 +37,6 @@ export class RpcMarshaling {
       return "";
     }
 
-    if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot serialize binary data.");
-    }
-
     marshalingScope = typeof (operation) === "string" ? operation : operation.interfaceDefinition.name;
     return JSON.stringify(value, RpcMarshaling.marshal);
   }
@@ -56,6 +52,10 @@ export class RpcMarshaling {
 
   /** JSON.stringify replacer callback that marshals JavaScript class instances. */
   private static marshal(this: any, key: string, value: any) {
+    if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+      throw new IModelError(BentleyStatus.ERROR, "Cannot serialize binary data.");
+    }
+
     if (key === RpcMarshalingDirective.Name || key === RpcMarshalingDirective.Undefined || key === RpcMarshalingDirective.Unregistered) {
       delete this[key];
     }
