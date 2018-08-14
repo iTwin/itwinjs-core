@@ -31,7 +31,7 @@
     "lint": "tslint -p ./src",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register -r ignore-styles -r jsdom-global/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.{ts,tsx}",
-    "watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
     "lodash": "^4.17.10",

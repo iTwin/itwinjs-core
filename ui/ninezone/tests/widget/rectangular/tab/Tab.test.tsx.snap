@@ -2,12 +2,6 @@
 
 exports[`<Tab /> renders correctly 1`] = `
 <div
-  className="nz-footer-messageCenter-tab"
-/>
-`;
-
-exports[`<Tab /> renders correctly 2`] = `
-<div
   className="nz-widget-rectangular-tab-tab"
   onClick={[Function]}
 />

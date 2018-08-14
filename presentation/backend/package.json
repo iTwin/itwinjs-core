@@ -28,7 +28,7 @@
     "lint": "tslint -p ./src",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.ts",
-    "watch": "npm test -- --reporter min --watch-extensions ts --watch"
+    "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "0.113.0",
