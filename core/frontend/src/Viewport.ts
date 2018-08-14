@@ -1103,6 +1103,7 @@ export class Viewport {
     const vf = ViewFrustum.createFromViewport(this, view);
     if (undefined === vf)
       return ViewStatus.InvalidViewport;
+
     this._viewFrustum = vf;
 
     this.sync.invalidateRenderPlan();

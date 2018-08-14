@@ -1756,7 +1756,7 @@ export class SheetViewState extends ViewState2d {
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
   public createScene(context: SceneContext) {
-    // This will be reset to false by the end of the function if any 3d attachments are waiting on tiles...
+    // This will be set to false by the end of the function if any 3d attachments are waiting on tiles...
     this.all3dAttachmentTilesLoaded = true;
 
     super.createScene(context);
