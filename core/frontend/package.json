@@ -9,7 +9,7 @@
     "build": "tsc 1>&2 && npm run copy:public",
     "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
     "copy:public": "cpx ./src/public/**/* ./lib/public",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend/json/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2"
   },
   "repository": {},
