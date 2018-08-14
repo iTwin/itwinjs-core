@@ -23,6 +23,7 @@ export * from "./QPoint";
 export * from "./SubCategoryAppearance";
 export * from "./Snapping";
 export * from "./TileProps";
+export * from "./Thumbnail";
 export * from "./ViewProps";
 export * from "./Render";
 export * from "./geometry/AreaPattern";

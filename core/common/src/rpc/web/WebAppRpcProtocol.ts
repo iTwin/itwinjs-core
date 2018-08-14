@@ -23,7 +23,7 @@ export const WEB_RPC_CONSTANTS = {
 
 /** An http server request object. */
 export interface HttpServerRequest {
-  body: string;
+  body: string | Buffer;
   path: string;
   method: string;
   header: (field: string) => string | undefined;

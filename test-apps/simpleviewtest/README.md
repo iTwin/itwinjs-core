@@ -19,7 +19,7 @@ The application contained within this directory provides a test environment for 
 
 ## Getting Started
 
-The application may be ran either as an Electron app, or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
+The application may be ran as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
 * In order to gain access to SimpleViewTest, one must clone, prepare, and build all of imodeljs-core. Instructions for doing so are contained within the build instructions for imodeljs-core, located [here](../README.md#Build\ Instructions).
 
@@ -34,6 +34,7 @@ The application may be ran either as an Electron app, or within a browser. The f
   ```
   npm run start:web
   ```
+*  [Running/Building on iOS](#build_ios)
 
 ## Using SimpleViewTest
 
@@ -70,3 +71,106 @@ Debugging SimpleViewTest can be accomplished using the following procedures, dep
   * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels (browser only).
 * SVT_STANDALONE_VIEWNAME
   * The view to open by default within an iModel. This may only be used in conjunction with SVT_STANDALONE_FILENAME.
+
+
+## Running/Building on iOS <a name="build_ios"></a>
+
+This tutorial presume you already followed instruction for [Get and build bim on iOS and MacOS](http://bsw-wiki.bentley.com/bin/view.pl/Main/GetAndBuildBim2Dcs#iOSOnMacOS)
+
+* Create directory to place source in
+
+```
+mkdir -p ~/iModelJSDev/src
+```
+
+* Bootstrap the stream `Bim0200` or `Bim0200Dev`
+
+```
+python ~/scripts/BentleyBootstrap/BentleyBootstrap.py Bim0200 ~/iModelJsDev/src
+```
+
+* Create a build shell script.
+
+Past following into a file `~/scripts/iModelJsDev.sh`
+```
+#!/bin/bash
+
+#----------------------------------------------------------------------------------
+# Basic configuration
+
+export SrcRoot=~/iModelJsDev/src/
+export OutRoot=~/iModelJsDev/out/debug/
+export BuildStrategy='iModelJsDev;BuildAll'
+export BuildArchitecture=iOSARM 64
+
+# Set either DEBUG or NDEBUG (debug vs. optimized), NOT both.
+export DEBUG='1'
+# -or-
+# export NDEBUG='1'
+
+# Opt-in to generate debug symbols. Increases build time and size, but allows you to debug code.
+export LLVM_DEBUG='1'
+
+#----------------------------------------------------------------------------------
+# Required pieces of the shared shell
+
+export BMAKE_OPT=-I$SrcRoot'bsicommon/PublicSDK/'
+export BMAKE_PYTHON_SCRIPTS_DIR=$SrcRoot'bsicommon/build/'
+export BSI='1'
+
+#----------------------------------------------------------------------------------
+# Helpful tricks
+
+alias bb=python\ $SrcRoot'bentleybuild/BentleyBuild.py'
+
+export CDPATH=$CDPATH:$SrcRoot:$SrcRoot/libsrc:$SrcRoot/bsitools
+
+cd $SrcRoot
+```
+
+* Pull source code for the stream
+
+Run `~/scripts/hgproxy.sh` if not already running.
+```
+source ~/scripts/iModelJsDev.sh
+bb pull
+bb build
+```
+* Open *iModelJsApp* project in Code
+```
+~/iModelJsDev/src/iModelJs/nonport/iOS/iModelJsApp.xcodproj
+```
+* Add `iModelJsApp.xcconfig` to your project using XCode and then past following
+
+```
+SrcRoot = /home/<user-name>/iModelJsDev/src/
+OutRoot = /home/<user-name>iModelJsDev/out/debug/
+AssetRoot = /home/<user-name/mobile
+BuildArchitecture = iOSARM64
+```
+* Updating `lib` path.
+  * Select and remove all lib* from Frameworks node in the xcode navigation.
+  * Then right click on the Framework node and do 'Add Files to "iModelJsApp"... and select all the libs from  `~/iModelJsDev/out/debug/iOSARM64/Product/iModelJS-Tests/Libs`
+* Getting the content for `~/mobile` folder.
+  * On window system pull build iModelJsCore *bim0200dev/master*
+
+```
+> git clone https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core
+> cd imodeljs-core
+> rush install
+> rush build
+> cd test-apps/simpleviewtest
+> npm run mobile
+```
+* Above will create folder `test-apps/simpleviewtest/lib/mobile/`
+
+Copy this folder content over to Mac and put it into `~/mobile`.
+
+'mobile' folder should have
+  1. ./assets
+  2. ./public
+  3. MobileMain.js
+  4. MobileMain.js.map
+
+
+* On MacOS now build the app using xcode and click run to deploy it on iPad.

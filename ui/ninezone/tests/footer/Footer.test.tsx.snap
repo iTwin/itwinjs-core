@@ -12,17 +12,3 @@ exports[`<Footer /> renders correctly 1`] = `
   />
 </div>
 `;
-
-exports[`<Footer /> renders correctly 2`] = `
-<Component
-  bounds={
-    Object {
-      "bottom": 10,
-      "left": 0,
-      "right": 10,
-      "top": 0,
-    }
-  }
-  className="nz-zones-footer"
-/>
-`;

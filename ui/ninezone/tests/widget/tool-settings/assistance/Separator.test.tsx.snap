@@ -2,18 +2,6 @@
 
 exports[`<Separator /> renders correctly 1`] = `
 <div
-  className="nz-backstage-separator"
-/>
-`;
-
-exports[`<Separator /> renders correctly 2`] = `
-<div
-  className="nz-widget-rectangular-tab-separator"
-/>
-`;
-
-exports[`<Separator /> renders correctly 3`] = `
-<div
   className="nz-widget-toolSettings-assistance-separator"
 >
   <div

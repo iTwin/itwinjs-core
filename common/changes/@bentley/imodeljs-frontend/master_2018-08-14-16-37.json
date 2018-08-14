@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Sheet view state no longer waits for attachment views to load",
+      "comment": "Documentation",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "First revision of ecschema-metadata (formerly called ecjs)",
+      "comment": "Split the functionality of overriding Formats within a KindOfQuantity into a separate class.",
       "packageName": "@bentley/ecschema-metadata",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ecschema-metadata",
-  "email": "Robert.Schili@bentley.com"
+  "email": "Caleb.Shafer@bentley.com"
 }
