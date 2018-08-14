@@ -106,7 +106,13 @@ export class RpcInvocation {
   }
 
   private resolve(): Promise<any> {
-    const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
+    let parameters: any[];
+    if (typeof (this.request.parameters) === "string") {
+      parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
+    } else {
+      parameters = [this.request.parameters];
+    }
+
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
