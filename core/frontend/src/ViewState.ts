@@ -1698,8 +1698,12 @@ export class SheetViewState extends ViewState2d {
   private all3dAttachmentTilesLoaded: boolean = true;
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  /** Manually mark this SheetViewState as having to re-create its scene due to incomplete 3d attachments. Called from attachment tile "select" methods. */
-  public markAttachment3dSceneIncomplete() { this.all3dAttachmentTilesLoaded = false; }
+  /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles. */
+  public markAttachment3dSceneIncomplete() {
+    // NB: 2d attachments will draw to completion once they have a tile tree... but 3d attachments create new tiles for each
+    // depth, and therefore report directly to the ViewState whether or not new tiles are being loaded
+    this.all3dAttachmentTilesLoaded = false;
+  }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
   public async load(): Promise<void> {
@@ -1744,9 +1748,9 @@ export class SheetViewState extends ViewState2d {
     this._attachmentIds = newAttachmentIds;
   }
 
-  /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
+  /** If any attachments have not yet been loaded or are waiting on tiles, invalidate the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allLoaded || !this.all3dAttachmentTilesLoaded)
+    if (!this._attachments.allReady || !this.all3dAttachmentTilesLoaded)
       _viewport.sync.invalidateScene();
   }
 
@@ -1757,7 +1761,7 @@ export class SheetViewState extends ViewState2d {
 
     super.createScene(context);
 
-    if (!this._attachments.allLoaded) {
+    if (!this._attachments.allReady) {
       let i = 0;
       while (i < this._attachments.length) {
         const loadStatus = this._attachments.load(i, this, context);

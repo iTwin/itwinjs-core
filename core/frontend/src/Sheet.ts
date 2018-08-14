@@ -976,8 +976,8 @@ export namespace Attachments {
     /** The number of attachments in this list. */
     public get length(): number { return this.list.length; }
 
-    /** Returns true if all 2d attachment tile trees are fully loaded, and all 3d attachment tile trees are defined. */
-    public get allLoaded(): boolean { return this._allReady; }
+    /** Returns true if all attachments in this list have defined tile trees. */
+    public get allReady(): boolean { return this._allReady; }
 
     /** Clear this list of attachments. */
     public clear() {
