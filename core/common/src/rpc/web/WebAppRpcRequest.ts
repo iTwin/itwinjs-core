@@ -83,7 +83,7 @@ export class WebAppRpcRequest extends RpcRequest {
   protected send(): void {
     this._loading = true;
     this.request.body = this.protocol.serialize(this).parameters;
-    this.setHeader(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
+    this.setHeader(WEB_RPC_CONSTANTS.CONTENT, typeof (this.request.body) === "string" ? WEB_RPC_CONSTANTS.TEXT : WEB_RPC_CONSTANTS.BINARY);
     this.connection = fetch(new Request(this.path, this.request));
 
     this.connection.then(async (response) => {

@@ -2,6 +2,45 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.115.0",
+      "tag": "@bentley/imodeljs-frontend_v0.115.0",
+      "date": "Tue, 14 Aug 2018 15:21:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.114.0",
+      "tag": "@bentley/imodeljs-frontend_v0.114.0",
+      "date": "Tue, 14 Aug 2018 12:04:18 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use binary transfer for Sprites"
+          },
+          {
+            "comment": "IdleTool default touch support for pan and pinch zoom."
+          },
+          {
+            "comment": "Change some AccuSnap, TentativeSnap, and AccuDraw method to property accessors. Remove unused scrollOnNoMotion arg and update method from ViewManip."
+          },
+          {
+            "comment": "Implemented Look, Scroll, Zoom, and Fly ViewManip handles."
+          },
+          {
+            "comment": "Added IModelConnection.Views.getThumbnail"
+          },
+          {
+            "comment": "Update view zoom and scroll indicator decorations."
+          },
+          {
+            "comment": "Supply input source to ElementLocateManager.doLocate, use a larger pick aperture for touch input."
+          },
+          {
+            "comment": "Sheet view state no longer waits for attachment views to load"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.113.0",
       "tag": "@bentley/imodeljs-frontend_v0.113.0",
       "date": "Fri, 10 Aug 2018 05:06:20 GMT",

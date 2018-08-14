@@ -221,7 +221,7 @@ describe("Layout", () => {
 
       sut.tryShrinkTop(100);
 
-      spy.should.have.been.called();
+      spy.should.have.been.called;
     });
 
     it("Should move by bottom zone shrunk amount", () => {
@@ -331,7 +331,7 @@ describe("Layout", () => {
 
       sut.tryShrinkBottom(100);
 
-      spy.should.have.been.called();
+      spy.should.have.been.called;
     });
 
     it("Should move by top zone shrunk amount", () => {

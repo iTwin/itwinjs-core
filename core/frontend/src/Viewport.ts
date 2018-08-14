@@ -14,7 +14,7 @@ import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { HitDetail } from "./HitDetail";
+import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
@@ -1560,7 +1560,7 @@ export class Viewport {
     if (!context.viewport.view.is3d())
       return; // Not valuable feedback in 2d...
 
-    if (!hit.isSnapDetail() || !hit.normal || hit.isPointAdjusted())
+    if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
     const graphic = context.createWorldOverlay();

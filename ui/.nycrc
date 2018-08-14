@@ -17,6 +17,7 @@
     "**/*.test.tsx",
     "**/*.d.ts",
     "**/*.d.tsx",
+    "demo/**/*",
     "tests/**/*",
     "lib/**/*",
     "node_modules/**/*"

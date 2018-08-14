@@ -49,6 +49,7 @@ if (TestbedConfig.cloudRpc) {
   } else {
     const app = express();
     app.use(bodyParser.text());
+    app.use(bodyParser.raw());
     app.use(express.static(__dirname + "/public"));
     app.get(TestbedConfig.swaggerURI, (req, res) => TestbedConfig.cloudRpc.protocol.handleOpenApiDescriptionRequest(req, res));
 
@@ -110,12 +111,13 @@ async function handleHttp2Post(req2: http2.Http2ServerRequest, res2: http2.Http2
 }
 
 function readHttp2Body(req2: http2.Http2ServerRequest) {
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<string | Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
     req2.on("data", (chunk) => {
       chunks.push(chunk);
     }).on("end", () => {
-      resolve(Buffer.concat(chunks).toString());
+      const body = Buffer.concat(chunks);
+      resolve((req2.headers["content-type"] === "application/octet-stream") ? body : body.toString());
     }).on("error", (err) => {
       reject(err);
     });
