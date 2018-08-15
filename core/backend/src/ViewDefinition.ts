@@ -165,6 +165,11 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  *
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  *
+ * **Example: Obtaining the background color for a view**
+ * ``` ts
+ * [[include:ViewDefinition.getBackgroundColor]]
+ * ```
+ *
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {

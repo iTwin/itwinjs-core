@@ -1227,9 +1227,9 @@ export namespace IModelDb {
      * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
      * @return true if all views were iterated, false if iteration was terminated early due to callback returning false.
      *
-     * **Example:**
+     * **Example: Finding all views of a specific DrawingModel**
      * ``` ts
-     * [[include:ViewDefinition.iterateViews]]
+     * [[include:IModelDb.Views.iterateViews]]
      * ```
      */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
