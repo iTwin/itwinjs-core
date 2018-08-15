@@ -190,7 +190,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
           "dialog-open": this.props.opened,
           "dialog-hidden": !this.props.modal,
         },
-        )} style={this.props.backgroundStyle}>
+      )} style={this.props.backgroundStyle}>
         <div
           className={"dialog-container"}
           ref={(el) => { this._containerElement = el; }}
@@ -200,7 +200,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
             <div className={classnames(
               "dialog-head",
               { "dialog-movable": this.props.movable })}
-              onMouseDown={this.handleStartMove}>
+              onMouseDown={this._handleStartMove}>
               <div className={"dialog-title"}>{this.props.title}</div>
               <span
                 className={"dialog-close icon icon-close"}
@@ -216,49 +216,49 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
           </div>
           <div
             className={classnames("dialog-drag", "dialog-drag-right", { "dialog-drag-enabled": this.props.resizable })}
-            onTouchStart={this.handleStartResizeRight}
-            onMouseDown={this.handleStartResizeRight}></div>
+            onTouchStart={this._handleStartResizeRight}
+            onMouseDown={this._handleStartResizeRight}></div>
           <div
             className={classnames("dialog-drag", "dialog-drag-bottom-mid", { "dialog-drag-enabled": this.props.resizable })}
-            onTouchStart={this.handleStartResizeDown}
-            onMouseDown={this.handleStartResizeDown}></div>
+            onTouchStart={this._handleStartResizeDown}
+            onMouseDown={this._handleStartResizeDown}></div>
           <div
             className={classnames("dialog-drag", "dialog-drag-bottom-right", { "dialog-drag-enabled": this.props.resizable })}
-            onTouchStart={this.handleStartResizeDownRight}
-            onMouseDown={this.handleStartResizeDownRight}></div>
+            onTouchStart={this._handleStartResizeDownRight}
+            onMouseDown={this._handleStartResizeDownRight}></div>
         </div>
       </div>
-      );
+    );
   }
 
   public componentDidMount(): void {
-    this.setInitial();
-    window.addEventListener("mouseup", this.handleMouseUp);
-    window.addEventListener("touchend", this.handleMouseUp);
+    this._setInitial();
+    window.addEventListener("mouseup", this._handleMouseUp);
+    window.addEventListener("touchend", this._handleMouseUp);
 
-    window.addEventListener("mousemove", this.handleMouseMove);
-    window.addEventListener("touchmove", this.handleMouseMove);
+    window.addEventListener("mousemove", this._handleMouseMove);
+    window.addEventListener("touchmove", this._handleMouseMove);
 
-    window.addEventListener("keyup", this.handleKeyUp);
+    window.addEventListener("keyup", this._handleKeyUp);
   }
 
   public componentWillUnmount(): void {
-    window.removeEventListener("mouseup", this.handleMouseUp);
-    window.removeEventListener("touchend", this.handleMouseUp);
+    window.removeEventListener("mouseup", this._handleMouseUp);
+    window.removeEventListener("touchend", this._handleMouseUp);
 
-    window.removeEventListener("mousemove", this.handleMouseMove);
-    window.removeEventListener("touchmove", this.handleMouseMove);
+    window.removeEventListener("mousemove", this._handleMouseMove);
+    window.removeEventListener("touchmove", this._handleMouseMove);
 
-    window.addEventListener("keyup", this.handleKeyUp);
+    window.addEventListener("keyup", this._handleKeyUp);
   }
 
-  private handleKeyUp = (event: any) => {
+  private _handleKeyUp = (event: any) => {
     if (event.keyCode === 27 && this.props.opened && this.props.onEscape) {
       this.props.onEscape();
     }
   }
 
-  private setInitial = () => {
+  private _setInitial = () => {
     if (this._containerElement) {
       const rect = this._containerElement.getBoundingClientRect();
       this.setState((_prevState) => ({
@@ -270,21 +270,21 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }
   }
 
-  private handleStartResizeRight = (event: any): void => {
+  private _handleStartResizeRight = (event: any): void => {
     event.preventDefault();
     this.setState((_prevState) => ({
       rightResizing: true,
     }));
   }
 
-  private handleStartResizeDown = (event: any): void => {
+  private _handleStartResizeDown = (event: any): void => {
     event.preventDefault();
     this.setState((_prevState) => ({
       downResizing: true,
     }));
   }
 
-  private handleStartResizeDownRight = (event: any): void => {
+  private _handleStartResizeDownRight = (event: any): void => {
     event.preventDefault();
     this.setState((_prevState) => ({
       downResizing: true,
@@ -292,7 +292,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }));
   }
 
-  private handleStartMove = (event: any): void => {
+  private _handleStartMove = (event: any): void => {
     event.preventDefault();
     if (this._containerElement) {
       const rect = this._containerElement.getBoundingClientRect();
@@ -306,7 +306,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }
   }
 
-  private handleMouseMove = (event: any): void => {
+  private _handleMouseMove = (event: any): void => {
     if (this.state) {
       let { x, y, width, height } = this.state;
       if (this.props.resizable) {
@@ -328,7 +328,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }
   }
 
-  private handleMouseUp = (_event: any): void => {
+  private _handleMouseUp = (_event: any): void => {
     this.setState((_prevState) => ({
       rightResizing: false,
       downResizing: false,

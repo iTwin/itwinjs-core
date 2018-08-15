@@ -43,14 +43,14 @@ export default class TreeNode extends React.Component<NodeProps> {
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (
       <ExpansionToggle
         className="expansion-toggle"
-        onClick={this.onClickExpansionToggle}
+        onClick={this._onClickExpansionToggle}
         isExpanded={this.props.isExpanded}
       />
     );
 
     return (
       <div
-        onClick={this.onClick}
+        onClick={this._onClick}
         className={className}
         style={this.props.style}
       >
@@ -66,14 +66,14 @@ export default class TreeNode extends React.Component<NodeProps> {
     );
   }
 
-  private onClickExpansionToggle = (e: React.MouseEvent<HTMLDivElement>) => {
+  private _onClickExpansionToggle = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
 
     if (this.props.onClickExpansionToggle)
       this.props.onClickExpansionToggle();
   }
 
-  private onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  private _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
 
     if (this.props.onClick)
