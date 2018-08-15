@@ -68,7 +68,7 @@ class ChangeSummaryExtractContext {
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
-  private static readonly currentIModelChangeSchemaVersion = { read: 1, write: 0, minor: 1 };
+  private static readonly _currentIModelChangeSchemaVersion = { read: 1, write: 0, minor: 1 };
 
   /** Determines whether the *Change Cache file* is attached to the specified iModel or not
    * @param iModel iModel to check whether a *Change Cache file* is attached
@@ -316,9 +316,9 @@ export class ChangeSummaryManager {
         return stmt.getRow();
       });
 
-    if (actualSchemaVersion.read === ChangeSummaryManager.currentIModelChangeSchemaVersion.read &&
-      actualSchemaVersion.write === ChangeSummaryManager.currentIModelChangeSchemaVersion.write &&
-      actualSchemaVersion.minor === ChangeSummaryManager.currentIModelChangeSchemaVersion.minor)
+    if (actualSchemaVersion.read === ChangeSummaryManager._currentIModelChangeSchemaVersion.read &&
+      actualSchemaVersion.write === ChangeSummaryManager._currentIModelChangeSchemaVersion.write &&
+      actualSchemaVersion.minor === ChangeSummaryManager._currentIModelChangeSchemaVersion.minor)
       return;
 
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());

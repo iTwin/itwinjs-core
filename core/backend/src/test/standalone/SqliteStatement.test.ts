@@ -18,7 +18,7 @@ describe("SqliteStatement", () => {
 
   it("Create Table, Insert, Select with ECDb", () => {
     using(ECDbTestHelper.createECDb(_outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly());
@@ -157,7 +157,7 @@ describe("SqliteStatement", () => {
 
   it("Null values", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindnull.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly());
@@ -235,12 +235,12 @@ describe("SqliteStatement", () => {
     const fileName = "sqlitesqlagainstreadonlyconnection.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     using(ECDbTestHelper.createECDb(_outDir, fileName), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
     });
 
     using(new ECDb(), (ecdb: ECDb) => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
         let rowCount: number = 0;

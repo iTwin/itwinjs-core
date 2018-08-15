@@ -20,7 +20,7 @@ describe("ECSqlStatement", () => {
   it("Bind Ids", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb: ECDb) => {
 
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       const verify = (ecdbToVerify: ECDb, actualRes: ECSqlInsertResult, expectedECInstanceId?: Id64) => {
         if (!expectedECInstanceId) {
@@ -88,7 +88,7 @@ describe("ECSqlStatement", () => {
       <ECProperty propertyName="Description" typeName="string"/>
     </ECEntityClass>
     </ECSchema>`), (ecdb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const doubleVal: number = 3.5;
         let id: Id64 = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindDouble')", (stmt: ECSqlStatement) => {
@@ -465,7 +465,7 @@ describe("ECSqlStatement", () => {
       <ECStructProperty propertyName="Struct" typeName="MyStruct"/>
     </ECEntityClass>
     </ECSchema>`), (ecdb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const boolVal = true;
         const doubleVal = 3.5;
@@ -601,7 +601,7 @@ describe("ECSqlStatement", () => {
         <ECStructProperty propertyName="Struct" typeName="MyStruct"/>
       </ECEntityClass>
       </ECSchema>`), (ecdb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const structVal = {
           bl: { blobVal }, bo: true, d: 3.5,
@@ -675,7 +675,7 @@ describe("ECSqlStatement", () => {
         <ECStructArrayProperty propertyName="Addresses" typeName="Location"/>
       </ECEntityClass>
       </ECSchema>`), (ecdb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const intArray = [1, 2, 3];
         const dtArray = [{ type: ECSqlStringType.DateTime, value: "2018-01-23T00:00:00.000" }, { type: ECSqlStringType.DateTime, value: "2018-01-23T16:39:00.000" }];
@@ -764,7 +764,7 @@ describe("ECSqlStatement", () => {
     </ECRelationshipClass>
     </ECSchema>`), (ecdb) => {
 
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const parentId: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlStatement) => {
           const res: ECSqlInsertResult = stmt.stepForInsert();
@@ -853,7 +853,7 @@ describe("ECSqlStatement", () => {
         </ECEntityClass>
        </ECSchema>`), (ecdb) => {
 
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Range) VALUES(?)", (stmt: ECSqlStatement) => {
           stmt.bindRange3d(1, testRange);
@@ -892,7 +892,7 @@ describe("ECSqlStatement", () => {
     </ECEntityClass>
     </ECSchema>`), (ecdb) => {
 
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         let id1: Id64, id2: Id64;
 
@@ -960,7 +960,7 @@ describe("ECSqlStatement", () => {
         <ECProperty propertyName="S" typeName="string"/>
       </ECEntityClass>
       </ECSchema>`), (ecdb: ECDb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const boolVal: boolean = true;
         const doubleVal: number = 3.5;
@@ -1077,7 +1077,7 @@ describe("ECSqlStatement", () => {
           </Target>
         </ECRelationshipClass>
         </ECSchema>`), (ecdb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const parentId: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlStatement) => {
           const res: ECSqlInsertResult = stmt.stepForInsert();
@@ -1179,7 +1179,7 @@ describe("ECSqlStatement", () => {
         <ECStructProperty propertyName="Struct" typeName="MyStruct"/>
       </ECEntityClass>
       </ECSchema>`), (ecdb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const boolVal: boolean = true;
         const doubleVal: number = 3.5;
@@ -1268,7 +1268,7 @@ describe("ECSqlStatement", () => {
         <ECProperty propertyName="S" typeName="string"/>
        </ECEntityClass>
       </ECSchema>`), (ecdb) => {
-        assert.isTrue(ecdb.isOpen());
+        assert.isTrue(ecdb.isOpen);
 
         const expectedRow = {
           bl: blobVal, bo: true, d: 3.5, dt: "2018-01-23T12:24:00.000",

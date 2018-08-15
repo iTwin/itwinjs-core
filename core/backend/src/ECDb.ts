@@ -66,7 +66,7 @@ export class ECDb implements IDisposable {
   }
 
   /** Returns true if the ECDb is open */
-  public isOpen(): boolean { return this.nativeDb.isOpen(); }
+  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.

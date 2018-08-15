@@ -13,27 +13,27 @@ describe("ECDb", () => {
 
   it("should be able to create a new ECDb", () => {
     using(ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
     });
   });
 
   it("should be able to close an ECDb", () => {
     const ecdb: ECDb = ECDbTestHelper.createECDb(_outDir, "close.ecdb");
-    assert.isTrue(ecdb.isOpen());
+    assert.isTrue(ecdb.isOpen);
     ecdb.closeDb();
-    assert.isFalse(ecdb.isOpen());
+    assert.isFalse(ecdb.isOpen);
   });
 
   it("should be able to open an ECDb", () => {
     const fileName = "open.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
-      assert.isTrue(testECDb.isOpen());
+      assert.isTrue(testECDb.isOpen);
     });
 
     using(new ECDb(), (ecdb: ECDb) => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readwrite);
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
     });
   });
 
@@ -41,7 +41,7 @@ describe("ECDb", () => {
     const fileName = "open.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
-      assert.isTrue(testECDb.isOpen());
+      assert.isTrue(testECDb.isOpen);
     });
 
     using(new ECDb(), (ecdb: ECDb) => {
@@ -68,7 +68,7 @@ describe("ECDb", () => {
         <ECProperty propertyName="Age" typeName="int"/>
       </ECEntityClass>
       </ECSchema>`), (testECDb: ECDb) => {
-        assert.isTrue(testECDb.isOpen());
+        assert.isTrue(testECDb.isOpen);
 
         id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
           const res: ECSqlInsertResult = stmt.stepForInsert();
@@ -81,7 +81,7 @@ describe("ECDb", () => {
 
     using(new ECDb(), (ecdb: ECDb) => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
@@ -97,7 +97,7 @@ describe("ECDb", () => {
     const fileName = "plainseql.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
-      assert.isTrue(testECDb.isOpen());
+      assert.isTrue(testECDb.isOpen);
 
       testECDb.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -130,7 +130,7 @@ describe("ECDb", () => {
 
     using(new ECDb(), (ecdb: ECDb) => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
         for (let i: number = 1; i <= 4; i++) {

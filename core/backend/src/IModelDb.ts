@@ -61,10 +61,10 @@ export class OpenParams {
   }
 
   /** Returns true if the open params are setup to open a standalone Db */
-  public isStandalone(): boolean { return this.accessMode === undefined || this.syncMode === undefined; }
+  public get isStandalone(): boolean { return this.accessMode === undefined || this.syncMode === undefined; }
 
   private validate() {
-    if (this.isStandalone() && !(this.accessMode === undefined && this.syncMode === undefined))
+    if (this.isStandalone && !(this.accessMode === undefined && this.syncMode === undefined))
       throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
 
     if (this.openMode === OpenMode.Readonly && this.syncMode && this.syncMode !== SyncMode.FixedVersion) {
@@ -150,7 +150,7 @@ export class IModelDb extends IModel {
   public get briefcase(): BriefcaseEntry { return this._briefcase!; }
 
   /** Check if this iModel has been opened read-only or not. */
-  public isReadonly(): boolean { return this.openParams.openMode === OpenMode.Readonly; }
+  public get isReadonly(): boolean { return this.openParams.openMode === OpenMode.Readonly; }
 
   private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(iModelToken);
@@ -1299,15 +1299,15 @@ export class TxnManager {
   public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.nativeDb!.txnManagerIsTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
+  public findPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public hasUnsavedChanges(): boolean {
+  public findUnsavedChanges(): boolean {
     return this._iModel.nativeDb!.txnManagerHasUnsavedChanges();
   }
 
   /** Query if there are un-saved or un-pushed local changes. */
-  public hasLocalChanges(): boolean { return this.hasUnsavedChanges() || this.hasPendingTxns(); }
+  public findLocalChanges(): boolean { return this.findUnsavedChanges() || this.findPendingTxns(); }
 
   /** Make a description of the changeset by combining all local txn comments. */
   public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
@@ -1351,14 +1351,14 @@ class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
     });
   }
 
-  private superMemoize = this.memoize;
+  private _superMemoize = this.memoize;
   public memoize = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): QueryablePromise<IModelDb> => {
-    return this.superMemoize(accessToken, contextId, iModelId, openParams, version);
+    return this._superMemoize(accessToken, contextId, iModelId, openParams, version);
   }
 
-  private superDeleteMemoized = this.deleteMemoized;
+  private _superDeleteMemoized = this.deleteMemoized;
   public deleteMemoized = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion) => {
-    this.superDeleteMemoized(accessToken, contextId, iModelId, openParams, version);
+    this._superDeleteMemoized(accessToken, contextId, iModelId, openParams, version);
   }
 }
 
