@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { UrlDiscoveryClient } from "../Client";
-import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
+import { ImsFederatedAuthenticationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
 import { ConnectClient, RbacClient } from "../ConnectClients";
 import { IModelBaseHandler } from "..";
 import { IModelWebNavigatorClient } from "../IModelWebNavigatorClient";
@@ -109,21 +109,21 @@ describe("UrlDiscoveryClient", () => {
     chai.expect(url).equals("https://connect-imodelweb.bentley.com");
   });
 
-  it("should discover ImsFederatedAuthentiationService URLs correctly", async () => {
+  it("should discover ImsFederatedAuthenticationService URLs correctly", async () => {
     FederatedImsUrlMock.mockGetUrl("DEV");
-    let url: string = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthentiationClient.searchKey, "DEV");
+    let url: string = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthenticationClient.searchKey, "DEV");
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("QA");
-    url = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthentiationClient.searchKey, "QA");
+    url = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthenticationClient.searchKey, "QA");
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PROD");
-    url = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthentiationClient.searchKey, "PROD");
+    url = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthenticationClient.searchKey, "PROD");
     chai.expect(url).equals("https://ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PERF");
-    url = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthentiationClient.searchKey, "PERF");
+    url = await urlDiscoveryClient.discoverUrl(ImsFederatedAuthenticationClient.searchKey, "PERF");
     chai.expect(url).equals("https://qa-ims.bentley.com");
   });
 

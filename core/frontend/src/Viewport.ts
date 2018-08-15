@@ -921,7 +921,7 @@ export class Viewport {
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
-  public get backgroundMapPlane() { return this.view.displayStyle.getBackgroundMapPlane(); }
+  public get backgroundMapPlane() { return this.view.displayStyle.backgroundMapPlane; }
 
   /**
    * Sets a function which can customize the appearance of features within a viewport.

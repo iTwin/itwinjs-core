@@ -12,7 +12,7 @@ import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
 
 /** Client API for the IMS Federated Authentication Service. */
-export class ImsFederatedAuthentiationClient extends Client {
+export class ImsFederatedAuthenticationClient extends Client {
   public static readonly searchKey: string = "IMS.FederatedAuth.Url";
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://qa-ims.bentley.com",
@@ -22,7 +22,7 @@ export class ImsFederatedAuthentiationClient extends Client {
   };
 
   /**
-   * Creates an instance of ImsFederatedAuthentiationClient.
+   * Creates an instance of ImsFederatedAuthenticationClient.
    * @param deploymentEnv Deployment environment.
    */
   public constructor(public deploymentEnv: DeploymentEnv) {
@@ -34,7 +34,7 @@ export class ImsFederatedAuthentiationClient extends Client {
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
-    return ImsFederatedAuthentiationClient.searchKey;
+    return ImsFederatedAuthenticationClient.searchKey;
   }
 
   /**
@@ -42,7 +42,7 @@ export class ImsFederatedAuthentiationClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ImsFederatedAuthentiationClient.defaultUrlDescriptor[this.deploymentEnv];
+    return ImsFederatedAuthenticationClient.defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**

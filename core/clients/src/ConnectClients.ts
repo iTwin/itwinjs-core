@@ -87,10 +87,10 @@ export class Permission extends WsgInstance {
 
 /** Options to request connect projects */
 export interface ConnectRequestQueryOptions extends RequestQueryOptions {
-  /** Set to true to request the most recently used projets */
+  /** Set to true to request the most recently used projects */
   isMRU?: boolean;
 
-  /** Set to true to request the favourite projects */
+  /** Set to true to request the favorite projects */
   isFavorite?: boolean;
 }
 

@@ -114,7 +114,6 @@ public getFirstUser(): Person | undefined {
 
   if (!this.usersValidated() && !this.validateUsers())
       return undefined;
-  }
 
   return return this.getUser(0);
 }

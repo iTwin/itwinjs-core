@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
+import { ImsFederatedAuthenticationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
 import { UserProfile } from "../UserProfile";
 import { TestConfig, TestUsers, UserCredentials } from "./TestConfig";
 
@@ -25,26 +25,26 @@ export class FederatedImsUrlMock {
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(ImsFederatedAuthentiationClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(ImsFederatedAuthenticationClient.searchKey, env, this.urlDescriptor[env]);
   }
 }
 
-describe("ImsFederatedAuthentiationClient", () => {
+describe("ImsFederatedAuthenticationClient", () => {
   it("should setup its URLs correctly", async () => {
     FederatedImsUrlMock.mockGetUrl("DEV");
-    let url: string = await new ImsFederatedAuthentiationClient("DEV").getUrl();
+    let url: string = await new ImsFederatedAuthenticationClient("DEV").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("QA");
-    url = await new ImsFederatedAuthentiationClient("QA").getUrl();
+    url = await new ImsFederatedAuthenticationClient("QA").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PROD");
-    url = await new ImsFederatedAuthentiationClient("PROD").getUrl();
+    url = await new ImsFederatedAuthenticationClient("PROD").getUrl();
     chai.expect(url).equals("https://ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PERF");
-    url = await new ImsFederatedAuthentiationClient("PERF").getUrl();
+    url = await new ImsFederatedAuthenticationClient("PERF").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
   });
 });
