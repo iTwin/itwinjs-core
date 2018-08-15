@@ -88,7 +88,7 @@ export class Zone {
     return this._widgets;
   }
 
-  public isWidgetOpen(): boolean {
+  public get isWidgetOpen(): boolean {
     if (this._isWidgetOpen === undefined) {
       this._isWidgetOpen = false;
       for (const widget of this.props.widgets) {
@@ -102,18 +102,18 @@ export class Zone {
     return this._isWidgetOpen;
   }
 
-  public isFloating() {
+  public get isFloating() {
     if (this.props.floatingBounds)
       return true;
     return false;
   }
 
-  public isMergedVertically(): boolean {
+  public get isMergedVertically(): boolean {
     const widgets = this.getWidgets();
     return widgets.length > 1 && widgets[0].getDefaultZone().getCell().isColumnAlignedWith(widgets[1].getDefaultZone().getCell());
   }
 
-  public isMergedHorizontally(): boolean {
+  public get isMergedHorizontally(): boolean {
     const widgets = this.getWidgets();
     return widgets.length > 1 && widgets[0].getDefaultZone().getCell().isRowAlignedWith(widgets[1].getDefaultZone().getCell());
   }

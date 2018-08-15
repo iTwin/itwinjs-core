@@ -64,7 +64,7 @@ export default class ToolSettingsTooltip extends React.Component<ToolSettingsToo
           className="nz-tool-icon"
           startTimeout={this.props.isVisible}
           timeout={this.props.timeout}
-          onTimeout={this.handleTimeout}
+          onTimeout={this._handleTimeout}
         >
           {this.props.children}
         </DivWithTimeout>
@@ -75,7 +75,7 @@ export default class ToolSettingsTooltip extends React.Component<ToolSettingsToo
     );
   }
 
-  private handleTimeout = () => {
+  private _handleTimeout = () => {
     this.setIsVisible(false);
   }
 
