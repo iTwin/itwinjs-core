@@ -724,17 +724,18 @@ class SVTAccuSnap extends AccuSnap {
 }
 
 class SVTNotifications extends NotificationManager {
-  private toolTip?: Tooltip;
+  private _toolTip?: Tooltip;
 
   public outputPrompt(prompt: string) { showStatus(prompt); }
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  public isToolTipOpen(): boolean { return !!this.toolTip && this.toolTip._isOpen; }
+  protected toolTipIsOpen(): boolean { return !!this._toolTip && this._toolTip._isOpen; }
+
   public clearToolTip(): void {
-    if (this.isToolTipOpen())
-      this.toolTip!.hide();
+    if (this.isToolTipOpen)
+      this._toolTip!.hide();
   }
   public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
     this.clearToolTip();
@@ -743,10 +744,10 @@ class SVTNotifications extends NotificationManager {
     if (!position)
       return;
 
-    if (!this.toolTip)
-      this.toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
+    if (!this._toolTip)
+      this._toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
 
-    this.toolTip!.updateTitleContent(message);
+    this._toolTip!.updateTitleContent(message);
 
     const rect = el.getBoundingClientRect();
     if (undefined === pt) {
@@ -759,7 +760,7 @@ class SVTNotifications extends NotificationManager {
     position.style.width = width + "px";
     position.style.height = height + "px";
 
-    this.toolTip!.show();
+    this._toolTip!.show();
   }
 }
 
