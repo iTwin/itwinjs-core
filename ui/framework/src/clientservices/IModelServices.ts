@@ -26,6 +26,33 @@ export interface IModelInfo {
   status: string;
 }
 
+export interface VersionInfo {
+  name: string;
+  description: string;
+  createdDate: Date;
+  userCreated?: string;
+  changeSetId?: string;
+  smallThumbnail?: string;
+  largeThumbnail?: string;
+}
+
+export interface ChangeSetInfo {
+  name: string;
+  description: string;
+  pushDate: Date;
+  userCreated?: string;
+  changeSetId?: string;
+  smallThumbnail?: string;
+  largeThumbnail?: string;
+}
+
+export interface IModelUserInfo {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 /** Interface for iModel services */
 export interface IModelServices {
 
@@ -37,4 +64,17 @@ export interface IModelServices {
 
   // get the thumbnail for the iModel.
   getThumbnail(accessToken: AccessToken, projectId: string, iModelId: string): Promise<string | undefined>;
+
+  // get the versions for the iModel.
+  getVersions(accessToken: AccessToken, iModelId: string): Promise<VersionInfo[]>;
+
+  // get the changesets for the iModel.
+  getChangeSets(accessToken: AccessToken, iModelId: string): Promise<ChangeSetInfo[]>;
+
+  // get the users that have access to a particular iModel.
+  getUsers(accessToken: AccessToken, iModelId: string): Promise<IModelUserInfo[]>;
+
+  // get the users that have access to a particular iModel.
+  getUser(accessToken: AccessToken, iModelId: string, userId: string): Promise<IModelUserInfo[]>;
+
 }
