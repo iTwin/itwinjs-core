@@ -6,10 +6,39 @@ import * as path from "path";
 import { DbResult, Guid, Id64, BeEvent, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
-  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, GeometricModel, InformationPartitionElement, DefinitionPartition,
-  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
-  IModelDb, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType, Entity,
-  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
+  ClassRegistry,
+  BisCore,
+  Element,
+  GeometricElement2d,
+  GeometricElement3d,
+  GeometricModel,
+  InformationPartitionElement,
+  DefinitionPartition,
+  LinkPartition,
+  PhysicalPartition,
+  GroupInformationPartition,
+  DocumentPartition,
+  Subject,
+  ElementPropertyFormatter,
+  IModelDb,
+  ECSqlStatement,
+  SqliteStatement,
+  SqliteValue,
+  SqliteValueType,
+  Entity,
+  Model,
+  DictionaryModel,
+  Category,
+  SubCategory,
+  SpatialCategory,
+  ElementGroupsMembers,
+  LightLocation,
+  PhysicalModel,
+  AutoPushEventType,
+  AutoPush,
+  AutoPushState,
+  AutoPushEventHandler,
+  ViewDefinition,
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
@@ -391,6 +420,37 @@ describe("iModel", () => {
     viewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition"); // limit query to SpatialViewDefinitions
     assert.isAtLeast(viewDefinitionProps.length, 3);
     assert.exists(viewDefinitionProps[2].modelSelectorId);
+  });
+
+  it("should iterate ViewDefinitions", () => {
+    // imodel2 contains 3 SpatialViewDefinitions and no other views.
+    let numViews = 0;
+    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return true; });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(3);
+
+    // Query specifically for spatial views
+    numViews = 0;
+    result = imodel2.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
+      if (view.isSpatialView())
+        ++numViews;
+
+      return view.isSpatialView();
+    });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(3);
+
+    // Query specifically for 2d views
+    numViews = 0;
+    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => { ++numViews; return true; });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(0);
+
+    // Terminate iteration on first view
+    numViews = 0;
+    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return false; });
+    expect(result).to.be.false;
+    expect(numViews).to.equal(1);
   });
 
   it("should be children of RootSubject", () => {

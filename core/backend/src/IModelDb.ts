@@ -18,6 +18,7 @@ import {
   AxisAlignedBox3d,
   EntityQueryParams,
   EntityProps,
+  ViewQueryParams,
   ViewDefinitionProps,
   FontMap,
   FontMapProps,
@@ -1216,6 +1217,31 @@ export namespace IModelDb {
       });
 
       return props;
+    }
+
+    /** Default parameters for iterating/querying ViewDefinitions. Includes all subclasses of ViewDefinition, excluding only those marked 'private'. */
+    public static readonly defaultQueryParams: ViewQueryParams = {  from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
+
+    /** Iterate all ViewDefinitions matching the supplied query.
+     * @param params Specifies the query by which views are selected.
+     * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
+     * @return true if all views were iterated, false if iteration was terminated early due to callback returning false.
+     */
+    public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
+      const ids = this._iModel.queryEntityIds(params);
+      let finished = true;
+      for (const id of ids) {
+        try {
+          const view = this._iModel.elements.getElement(id);
+          if (undefined !== view && view instanceof ViewDefinition) {
+            finished = callback(view);
+            if (!finished)
+              break;
+          }
+        } catch (err) { }
+      }
+
+      return finished;
     }
 
     public getViewStateData(viewDefinitionId: string): ViewStateData {

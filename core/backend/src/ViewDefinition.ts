@@ -186,8 +186,12 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 
   /** Type guard for `instanceof ViewDefinition3d`  */
   public isView3d(): this is ViewDefinition3d { return this instanceof ViewDefinition3d; }
+  /** Type guard for 'instanceof ViewDefinition2d` */
+  public isView2d(): this is ViewDefinition2d { return this instanceof ViewDefinition2d; }
   /** Type guard for `instanceof SpatialViewDefinition` */
   public isSpatialView(): this is SpatialViewDefinition { return this instanceof SpatialViewDefinition; }
+  /** Type guard for 'instanceof DrawingViewDefinition' */
+  public isDrawingView(): this is DrawingViewDefinition { return this instanceof DrawingViewDefinition; }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
