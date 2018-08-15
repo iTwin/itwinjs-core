@@ -84,7 +84,7 @@ describe("CurveCollection", () => {
     const ck = new Checker();
     const counts = { nonLinearTrue: 0, nonLinearFalse: 1 };
     for (const data of Sample.createBagOfCurves())
-      if (data.hasNonLinearPrimitives())
+      if (data.checkForNonLinearPrimitives())
         counts.nonLinearTrue++;
       else
         counts.nonLinearFalse++;

@@ -568,7 +568,7 @@ export class Angle implements BeJSONFunctions {
   public tan(): number { return Math.tan(this._radians); }
 
   public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
-  public isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
+  public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
 
   /** Adjust a radians value so it is positive in 0..360 */
   public static adjustDegrees0To360(degrees: number): number {
@@ -625,8 +625,8 @@ export class Angle implements BeJSONFunctions {
   }
 
   public static zero() { return new Angle(0); }
-  public isExactZero() { return this.radians === 0; }
-  public isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
+  public get isExactZero() { return this.radians === 0; }
+  public get isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
 
   /** Create an angle object with degrees adjusted into 0..360. */
   public static createDegreesAdjustPositive(degrees: number): Angle { return Angle.createDegrees(Angle.adjustDegrees0To360(degrees)); }
@@ -843,11 +843,11 @@ export class AngleSweep implements BeJSONFunctions {
     this._radians1 = Geometry.clampToStartEnd(this._radians1, -limit, limit);
   }
   /** Ask if the sweep is counterclockwise, i.e. positive sweep */
-  public isCCW(): boolean { return this._radians1 >= this._radians0; }
+  public get isCCW(): boolean { return this._radians1 >= this._radians0; }
   /** Ask if the sweep is a full circle. */
-  public isFullCircle(): boolean { return Angle.isFullCircleRadians(this.sweepRadians); }
+  public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this.sweepRadians); }
   /** Ask if the sweep is a full sweep from south pole to north pole. */
-  public isFullLatitudeSweep(): boolean {
+  public get isFullLatitudeSweep(): boolean {
     const a = Math.PI * 0.5;
     return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians0, -a)
       && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1, a);

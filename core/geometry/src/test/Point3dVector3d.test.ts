@@ -30,7 +30,7 @@ export class MatrixTests {
       const frame = RotMatrix.createRigidFromColumns(vectorA, vectorB, AxisOrder.XYZ);
 
       if (ck.testPointer(frame, "createPerpendicularColumns") && frame
-        && ck.testBoolean(true, frame.hasPerpendicularUnitRowsAndColumns(), "UnitPerpendicularColumns")) {
+        && ck.testBoolean(true, frame.testPerpendicularUnitRowsAndColumns(), "UnitPerpendicularColumns")) {
 
         const matrixT = matrix.transpose();
         const frameT = frame.transpose();
@@ -93,7 +93,7 @@ export class MatrixTests {
     if (isIdentity !== undefined)
       ck.testBoolean(isIdentity, matrix.isIdentity(), "isIdentity");
     ck.testBoolean(isRigid, matrix.isRigid(), "isRigid");
-    ck.testBoolean(isUnitPerpendicular, matrix.hasPerpendicularUnitRowsAndColumns(), "unitPerpendicularMatrix");
+    ck.testBoolean(isUnitPerpendicular, matrix.testPerpendicularUnitRowsAndColumns(), "unitPerpendicularMatrix");
     const inverse = matrix.inverse();
     if (isInvertible) {
       if (ck.testPointer(inverse, "inverse () completed as expected")
