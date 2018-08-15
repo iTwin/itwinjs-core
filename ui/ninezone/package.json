@@ -9,7 +9,7 @@
     "clean": "rimraf lib out demo/lib package-deps.json",
     "copy:scss": "cpx src/**/*.scss lib",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ninezone/json/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2 && tslint --project ./tests/tsconfig.json 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
     "pack": "npm run build && node ../../scripts/pack.js",
     "start": "webpack-dev-server --config ./demo/webpack.dev.config.js",
