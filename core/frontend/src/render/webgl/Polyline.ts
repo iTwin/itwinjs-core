@@ -116,21 +116,21 @@ class PolylineTesselatorVertex {
 }
 
 export class PolylineTesselator {
-  private polylines: PolylineData[];
-  private points: QPoint3dList;
-  private doJoints: boolean;
-  private numIndices = 0;
-  private vertIndex: number[] = [];
-  private prevIndex: number[] = [];
-  private nextIndex: number[] = [];
-  private nextParam: number[] = [];
-  private distance: number[] = [];
-  private position: Point3d[] = [];
+  private _polylines: PolylineData[];
+  private _points: QPoint3dList;
+  private _doJoints: boolean;
+  private _numIndices = 0;
+  private _vertIndex: number[] = [];
+  private _prevIndex: number[] = [];
+  private _nextIndex: number[] = [];
+  private _nextParam: number[] = [];
+  private _distance: number[] = [];
+  private _position: Point3d[] = [];
 
   private constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
-    this.polylines = polylines;
-    this.points = points;
-    this.doJoints = doJointTriangles;
+    this._polylines = polylines;
+    this._points = points;
+    this._doJoints = doJointTriangles;
   }
 
   public static fromPolyline(args: PolylineArgs): PolylineTesselator {
@@ -144,28 +144,28 @@ export class PolylineTesselator {
   }
 
   public tesselate(): TesselatedPolyline {
-    for (const p of this.points.list)
-      this.position.push(p.unquantize(this.points.params));
+    for (const p of this._points.list)
+      this._position.push(p.unquantize(this._points.params));
     this._tesselate();
-    const vertIndex = VertexLUT.convertIndicesToTriplets(this.vertIndex);
-    const prevIndex = VertexLUT.convertIndicesToTriplets(this.prevIndex);
-    const nextIndexAndParam = new Uint8Array(this.numIndices * 4);
-    for (let i = 0; i < this.numIndices; i++) {
-      const index = this.nextIndex[i];
+    const vertIndex = VertexLUT.convertIndicesToTriplets(this._vertIndex);
+    const prevIndex = VertexLUT.convertIndicesToTriplets(this._prevIndex);
+    const nextIndexAndParam = new Uint8Array(this._numIndices * 4);
+    for (let i = 0; i < this._numIndices; i++) {
+      const index = this._nextIndex[i];
       const j = i * 4;
       nextIndexAndParam[j + 0] = index & 0x000000ff;
       nextIndexAndParam[j + 1] = (index & 0x0000ff00) >> 8;
       nextIndexAndParam[j + 2] = (index & 0x00ff0000) >> 16;
-      nextIndexAndParam[j + 3] = this.nextParam[i] & 0x000000ff;
+      nextIndexAndParam[j + 3] = this._nextParam[i] & 0x000000ff;
     }
-    const distance = new Float32Array(this.numIndices);
-    for (let i = 0; i < this.numIndices; ++i)
-      distance[i] = this.distance[i];
+    const distance = new Float32Array(this._numIndices);
+    for (let i = 0; i < this._numIndices; ++i)
+      distance[i] = this._distance[i];
     return new TesselatedPolyline(vertIndex, prevIndex, nextIndexAndParam, distance);
   }
 
   private _tesselate() {
-    for (const line of this.polylines) {
+    for (const line of this._polylines) {
       if (line.numIndices < 2)
         continue;
       let cumulativeDist = line.startDistance;
@@ -174,8 +174,8 @@ export class PolylineTesselator {
       for (let i = 0; i < last; ++i) {
         const idx0 = line.vertIndices[i];
         const idx1 = line.vertIndices[i + 1];
-        const pos0 = this.position[idx0];
-        const pos1 = this.position[idx1];
+        const pos0 = this._position[idx0];
+        const pos1 = this._position[idx1];
         const dist = pos0.distance(pos1);
         const isStart: boolean = (0 === i);
         const isEnd: boolean = (last - 1 === i);
@@ -184,8 +184,8 @@ export class PolylineTesselator {
         const v0 = new PolylineTesselatorVertex(true, isStart && !isClosed, idx0, prevIdx0, idx1, cumulativeDist);
         const v1 = new PolylineTesselatorVertex(false, isEnd && !isClosed, idx1, nextIdx1, idx0, cumulativeDist += dist);
         const maxJointDot = -0.7;
-        const jointAt0: boolean = this.doJoints && (isClosed || !isStart) && this._dotProduct(v0) > maxJointDot;
-        const jointAt1: boolean = this.doJoints && (isClosed || !isEnd) && this._dotProduct(v1) > maxJointDot;
+        const jointAt0: boolean = this._doJoints && (isClosed || !isStart) && this._dotProduct(v0) > maxJointDot;
+        const jointAt1: boolean = this._doJoints && (isClosed || !isEnd) && this._dotProduct(v1) > maxJointDot;
         if (jointAt0 || jointAt1) {
           this._addVertex(v0, v0.computeParam(true, jointAt0, false, false));
           this._addVertex(v1, v1.computeParam(false, jointAt1, false, false));
@@ -212,19 +212,19 @@ export class PolylineTesselator {
   }
 
   private _dotProduct(v: PolylineTesselatorVertex): number {
-    const pos: Point3d = this.position[v.vertexIndex];
-    const prevDir: Vector3d = Vector3d.createStartEnd(this.position[v.prevIndex], pos);
-    const nextDir: Vector3d = Vector3d.createStartEnd(this.position[v.nextIndex], pos);
+    const pos: Point3d = this._position[v.vertexIndex];
+    const prevDir: Vector3d = Vector3d.createStartEnd(this._position[v.prevIndex], pos);
+    const nextDir: Vector3d = Vector3d.createStartEnd(this._position[v.nextIndex], pos);
     return prevDir.dotProduct(nextDir);
   }
 
   private _addVertex(vertex: PolylineTesselatorVertex, param: number): void {
-    this.vertIndex[this.numIndices] = vertex.vertexIndex;
-    this.prevIndex[this.numIndices] = vertex.prevIndex;
-    this.nextIndex[this.numIndices] = vertex.nextIndex;
-    this.nextParam[this.numIndices] = param;
-    this.distance[this.numIndices] = vertex.distance;
-    this.numIndices++;
+    this._vertIndex[this._numIndices] = vertex.vertexIndex;
+    this._prevIndex[this._numIndices] = vertex.prevIndex;
+    this._nextIndex[this._numIndices] = vertex.nextIndex;
+    this._nextParam[this._numIndices] = param;
+    this._distance[this._numIndices] = vertex.distance;
+    this._numIndices++;
   }
 }
 
@@ -232,24 +232,24 @@ export class PolylineGeometry extends LUTGeometry {
   public polyline: PolylineInfo;
   public lut: VertexLUT.Data;
   public numIndices: number;
-  private buffers: PolylineBuffers;
+  private _buffers: PolylineBuffers;
 
   private constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
     super();
     this.polyline = info;
     this.lut = lut;
     this.numIndices = numIndices;
-    this.buffers = buffers;
+    this._buffers = buffers;
   }
 
   public dispose() {
     dispose(this.lut);
-    dispose(this.buffers);
+    dispose(this._buffers);
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
 
-  public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }
+  public get polylineBuffers(): PolylineBuffers | undefined { return this._buffers; }
 
   private _computeEdgePass(target: Target, colorInfo: ColorInfo): RenderPass {
     const vf = target.currentViewFlags;
@@ -292,12 +292,12 @@ export class PolylineGeometry extends LUTGeometry {
   public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
 
   public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this.buffers!.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+    attr.enableArray(this._buffers!.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
 
   public draw(): void {
     const gl = System.instance.context;
-    this.buffers!.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    this._buffers!.indices.bind(GL.Buffer.Target.ArrayBuffer);
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
   }
 

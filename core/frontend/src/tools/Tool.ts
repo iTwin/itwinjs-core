@@ -444,7 +444,7 @@ export abstract class InteractiveTool extends Tool {
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
 
   /** Call to find out if dynamics are currently active. */
-  public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
+  public get isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
 
   /** Call to initialize dynamics mode. While dynamics are active onDynamicFrame will be called. Dynamics are typically only used by a PrimitiveTool that creates or modifies geometric elements. */
   public beginDynamics(): void { IModelApp.toolAdmin.beginDynamics(); }

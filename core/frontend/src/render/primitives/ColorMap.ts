@@ -42,9 +42,9 @@ export class ColorMap extends IndexMap<number> {
     }
   }
 
-  private static scratchColorDef = new ColorDef();
+  private static _scratchColorDef = new ColorDef();
   private static isTranslucent(color: number) {
-    this.scratchColorDef.tbgr = color;
-    return 255 !== this.scratchColorDef.getAlpha();
+    this._scratchColorDef.tbgr = color;
+    return 255 !== this._scratchColorDef.getAlpha();
   }
 }

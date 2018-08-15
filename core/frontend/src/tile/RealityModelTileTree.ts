@@ -179,10 +179,10 @@ interface RDSClientProps {
 // ##TODO temporarly here for testing, needs to be moved to the clients repo
 class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
-  private baseUrl: string = "";
-  private static token?: AccessToken;
-  private static client = new RealityDataServicesClient("QA"); // ###TODO the deployementEnv needs to be customizeable
-  private static onCloseListener?: () => void;
+  private _baseUrl: string = "";
+  private static _token?: AccessToken;
+  private static _client = new RealityDataServicesClient("QA"); // ###TODO the deployementEnv needs to be customizeable
+  private static _onCloseListener?: () => void;
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   constructor(url: string) {
@@ -214,18 +214,18 @@ class RealityModelTileClient {
   // for electron apps, there will need to be a mechanism to prompt the user to sign in when opening a local imodels from the disk that has reality tiles referenced in it
   public static async setToken(token?: AccessToken) {
     if (undefined !== token) {
-      RealityModelTileClient.token = token;
-    } else if (undefined === RealityModelTileClient.token) {
+      RealityModelTileClient._token = token;
+    } else if (undefined === RealityModelTileClient._token) {
       // ###TODO for testing purposes, we are hardcoding a test user's credentials to generate a token that can access the reality tiles
       const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
-      RealityModelTileClient.token = await RealityModelTileClient.client.getAccessToken(authToken);
+      RealityModelTileClient._token = await RealityModelTileClient._client.getAccessToken(authToken);
     }
-    if (undefined === RealityModelTileClient.onCloseListener)
-      RealityModelTileClient.onCloseListener = IModelConnection.onClose.addListener(RealityModelTileClient.removeToken);
+    if (undefined === RealityModelTileClient._onCloseListener)
+      RealityModelTileClient._onCloseListener = IModelConnection.onClose.addListener(RealityModelTileClient.removeToken);
   }
 
   public static removeToken() {
-    RealityModelTileClient.token = undefined;
+    RealityModelTileClient._token = undefined;
   }
 
   // this is only used for accessing locally served reality tiles.
@@ -233,31 +233,31 @@ class RealityModelTileClient {
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     urlParts.pop();
-    this.baseUrl = urlParts.join("/") + "/";
+    this._baseUrl = urlParts.join("/") + "/";
   }
 
   public async getRootDocument(url: string): Promise<any> {
-    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient.token)
-      return RealityModelTileClient.client.getRootDocumentJson(RealityModelTileClient.token, this.rdsProps.projectId, this.rdsProps.tilesId);
+    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
+      return RealityModelTileClient._client.getRootDocumentJson(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId);
     this.setBaseUrl(url);
     return getJson(url);
   }
 
   public async getTileContent(url: string): Promise<any> {
-    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient.token)
-      return RealityModelTileClient.client.getTileContent(RealityModelTileClient.token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
-    if (undefined !== this.baseUrl) {
-      const tileUrl = this.baseUrl + url;
+    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
+      return RealityModelTileClient._client.getTileContent(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this._baseUrl) {
+      const tileUrl = this._baseUrl + url;
       return getArrayBuffer(tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
   }
 
   public async getTileJson(url: string): Promise<any> {
-    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient.token)
-      return RealityModelTileClient.client.getTileJson(RealityModelTileClient.token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
-    if (undefined !== this.baseUrl) {
-      const tileUrl = this.baseUrl + url;
+    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
+      return RealityModelTileClient._client.getTileJson(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this._baseUrl) {
+      const tileUrl = this._baseUrl + url;
       return getJson(tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");

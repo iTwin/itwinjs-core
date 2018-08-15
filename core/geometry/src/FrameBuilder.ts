@@ -100,7 +100,7 @@ export class FrameBuilder {
     return this.announceVector(this._origin.vectorTo(point));
   }
   public announceVector(vector: Vector3d): number {
-    if (vector.isAlmostZero())
+    if (vector.isAlmostZero)
       return this.savedVectorCount();
 
     if (!this._vector0) { this._vector0 = vector; return 1; }
@@ -254,7 +254,7 @@ export class FrameBuilder {
     fractionY: number = 0,
     fractionZ: number = 0,
     defaultAxisLength: number = 1.0): Transform {
-    if (range.isNull())
+    if (range.isNull)
       return Transform.createIdentity();
     let a = 1.0;
     let b = 1.0;

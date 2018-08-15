@@ -41,7 +41,7 @@ class PreferGetWalker extends Lint.RuleWalker {
   public visitMethodDeclaration(node: ts.MethodDeclaration) {
     if (node.parameters.length !== 0)
       return;
-    if (this.isPrivate(node) || this.returnsTypeGuard(node))
+    if (!this.isPublic(node) || this.returnsTypeGuard(node))
       return;
 
     const name = node.name.getText();
@@ -50,12 +50,12 @@ class PreferGetWalker extends Lint.RuleWalker {
     }
   }
 
-  private isPrivate(node: ts.MethodDeclaration): boolean {
+  private isPublic(node: ts.MethodDeclaration): boolean {
     if (node.modifiers === undefined)
-      return true;
+      return true;  // assume no modifiers means public by default
     for (const modifier of node.modifiers) {
       const modText = modifier.getText();
-      if (modText === "private")
+      if (modText === "public")
         return true;
     }
     return false;

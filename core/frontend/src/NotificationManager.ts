@@ -181,7 +181,7 @@ export class NotificationManager {
   public endActivityMessage(_reason: ActivityMessageEndReason) { return true; }
 
   /** Return true if the ToolTip is current open. */
-  public isToolTipOpen(): boolean { return false; }
+  public get isToolTipOpen(): boolean { return false; }
 
   /** Clear the ToolTip if it is current open. If not open, does nothing. */
   public clearToolTip(): void { }

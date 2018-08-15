@@ -99,17 +99,17 @@ export class IconSprites {
  * you can "see through" the Sprite.
  */
 export class SpriteLocation {
-  private viewport?: Viewport;
+  private _viewport?: Viewport;
   /** The Sprite shown by this SpriteLocation. */
   public sprite?: Sprite;
   /** The location of the sprite, in *view* coordinates. */
-  private readonly viewLocation = new Point3d();
-  private transparency = 0;
+  private readonly _viewLocation = new Point3d();
+  private _transparency = 0;
 
-  public get isActive(): boolean { return this.viewport !== undefined; }
+  public get isActive(): boolean { return this._viewport !== undefined; }
 
   /** Change the location of this SpriteLocation from a point in *world* coordinates. */
-  public setLocationWorld(location: XYAndZ) { this.viewport!.worldToView(location, this.viewLocation); }
+  public setLocationWorld(location: XYAndZ) { this._viewport!.worldToView(location, this._viewLocation); }
 
   /**
    * Activate this SpriteLocation to show a Sprite at a location in a Viewport.
@@ -123,9 +123,9 @@ export class SpriteLocation {
    */
   public activate(sprite: Sprite, viewport: Viewport, location: XYAndZ, transparency: number): void {
     viewport.invalidateDecorations();
-    this.viewport = viewport;
+    this._viewport = viewport;
     this.sprite = sprite;
-    this.transparency = transparency;
+    this._transparency = transparency;
     this.setLocationWorld(location);
   }
 
@@ -134,14 +134,14 @@ export class SpriteLocation {
     if (!this.isActive)
       return;
 
-    this.viewport!.invalidateDecorations();
-    this.viewport = undefined;
+    this._viewport!.invalidateDecorations();
+    this._viewport = undefined;
     this.sprite = undefined;
   }
 
   /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to the context at the current location. */
   public decorate(context: DecorateContext) {
-    if (context.viewport === this.viewport && this.sprite)
-      context.addSprite(this.sprite, this.viewLocation, Vector3d.unitX(), this.transparency);
+    if (context.viewport === this._viewport && this.sprite)
+      context.addSprite(this.sprite, this._viewLocation, Vector3d.unitX(), this._transparency);
   }
 }

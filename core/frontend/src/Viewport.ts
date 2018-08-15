@@ -31,31 +31,31 @@ export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewpo
 
 /** Viewport synchronization flags. */
 export class SyncFlags {
-  private decorations = false;
-  private scene = false;
-  private renderPlan = false;
-  private controller = false;
-  private rotatePoint = false;
-  private redrawPending = false;
-  public get isValidDecorations(): boolean { return this.decorations; }
-  public get isValidScene(): boolean { return this.scene; }
-  public get isValidController(): boolean { return this.controller; }
-  public get isValidRenderPlan(): boolean { return this.renderPlan; }
-  public get isValidRotatePoint(): boolean { return this.rotatePoint; }
-  public get isRedrawPending(): boolean { return this.redrawPending; }
-  public invalidateDecorations(): void { this.decorations = false; }
-  public invalidateScene(): void { this.scene = false; this.invalidateDecorations(); }
-  public invalidateRenderPlan(): void { this.renderPlan = false; this.invalidateScene(); }
-  public invalidateController(): void { this.controller = false; this.invalidateRenderPlan(); }
-  public invalidateRotatePoint(): void { this.rotatePoint = false; }
-  public invalidateRedrawPending(): void { this.redrawPending = false; }
-  public setValidDecorations(): void { this.decorations = true; }
-  public setValidScene(): void { this.scene = true; }
-  public setValidController(): void { this.controller = true; }
-  public setValidRenderPlan(): void { this.renderPlan = true; }
-  public setValidRotatePoint(): void { this.rotatePoint = true; }
-  public setRedrawPending(): void { this.redrawPending = true; }
-  public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.redrawPending = other.redrawPending; }
+  private _decorations = false;
+  private _scene = false;
+  private _renderPlan = false;
+  private _controller = false;
+  private _rotatePoint = false;
+  private _redrawPending = false;
+  public get isValidDecorations(): boolean { return this._decorations; }
+  public get isValidScene(): boolean { return this._scene; }
+  public get isValidController(): boolean { return this._controller; }
+  public get isValidRenderPlan(): boolean { return this._renderPlan; }
+  public get isValidRotatePoint(): boolean { return this._rotatePoint; }
+  public get isRedrawPending(): boolean { return this._redrawPending; }
+  public invalidateDecorations(): void { this._decorations = false; }
+  public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); }
+  public invalidateRenderPlan(): void { this._renderPlan = false; this.invalidateScene(); }
+  public invalidateController(): void { this._controller = false; this.invalidateRenderPlan(); }
+  public invalidateRotatePoint(): void { this._rotatePoint = false; }
+  public invalidateRedrawPending(): void { this._redrawPending = false; }
+  public setValidDecorations(): void { this._decorations = true; }
+  public setValidScene(): void { this._scene = true; }
+  public setValidController(): void { this._controller = true; }
+  public setValidRenderPlan(): void { this._renderPlan = true; }
+  public setValidRotatePoint(): void { this._rotatePoint = true; }
+  public setRedrawPending(): void { this._redrawPending = true; }
+  public initFrom(other: SyncFlags): void { this._decorations = other._decorations; this._scene = other._scene; this._renderPlan = other._renderPlan; this._controller = other._controller; this._rotatePoint = other._rotatePoint; this._redrawPending = other._redrawPending; }
 }
 
 /** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view.
@@ -230,8 +230,8 @@ export const enum CoordSystem {
 
 /** Object to animate a Frustum transition of a viewport. The Viewport will show as many frames as necessary during the supplied duration. */
 class Animator {
-  private readonly currFrustum = new Frustum();
-  private startTime?: BeTimePoint;
+  private readonly _currFrustum = new Frustum();
+  private _startTime?: BeTimePoint;
   private moveToTime(time: number) { this.interpolateFrustum(time / this.totalTime.milliseconds); }
 
   /** Construct a new Animator.
@@ -244,8 +244,8 @@ class Animator {
 
   private interpolateFrustum(fraction: number): void {
     for (let i = 0; i < Npc.CORNER_COUNT; ++i)
-      this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this.currFrustum.points[i]);
-    this.viewport.setupViewFromFrustum(this.currFrustum);
+      this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this._currFrustum.points[i]);
+    this.viewport.setupViewFromFrustum(this._currFrustum);
   }
 
   /**
@@ -254,11 +254,11 @@ class Animator {
    */
   public animate(): boolean {
     const currTime = BeTimePoint.now();
-    if (!this.startTime)
-      this.startTime = currTime;
+    if (!this._startTime)
+      this._startTime = currTime;
 
     const totalTimeMillis = this.totalTime.milliseconds;
-    const endTime = this.startTime.milliseconds + totalTimeMillis;
+    const endTime = this._startTime.milliseconds + totalTimeMillis;
 
     if (endTime <= currTime.milliseconds) {
       this.moveToTime(totalTimeMillis);
@@ -266,7 +266,7 @@ class Animator {
     }
 
     let done = false;
-    let index = currTime.milliseconds - this.startTime.milliseconds;
+    let index = currTime.milliseconds - this._startTime.milliseconds;
     if (index > totalTimeMillis) {
       done = true;
       index = totalTimeMillis;
@@ -278,7 +278,7 @@ class Animator {
 
   /** Abort this animation, moving to the final frame. */
   public interrupt(): void {
-    if (this.startTime)
+    if (this._startTime)
       this.moveToTime(this.totalTime.milliseconds); // We've been interrupted after animation began. Skip to the final animation state
   }
 }
@@ -313,12 +313,12 @@ export interface ViewportAnimator {
  * decorations will be re-requested and rendered.
  */
 export class DecorationAnimator implements ViewportAnimator {
-  private start: BeTimePoint;
-  private stop: BeTimePoint;
+  private _start: BeTimePoint;
+  private _stop: BeTimePoint;
 
   constructor(duration: BeDuration) {
-    this.start = BeTimePoint.now();
-    this.stop = this.start.plus(duration);
+    this._start = BeTimePoint.now();
+    this._stop = this._start.plus(duration);
   }
 
   /**
@@ -332,8 +332,8 @@ export class DecorationAnimator implements ViewportAnimator {
 
   public animate(vp: Viewport): RemoveMe {
     vp.invalidateDecorations();
-    const total = this.stop.milliseconds - this.start.milliseconds;
-    const elapsed = BeTimePoint.now().milliseconds - this.start.milliseconds;
+    const total = this._stop.milliseconds - this._start.milliseconds;
+    const elapsed = BeTimePoint.now().milliseconds - this._start.milliseconds;
     const ratio = Math.min(elapsed / total, 1.0);
     const removeMe = this.animateDecorations(vp, ratio);
     return (RemoveMe.Yes === removeMe || ratio === 1.0) ? RemoveMe.Yes : RemoveMe.No;
@@ -351,7 +351,7 @@ export class DecorationAnimator implements ViewportAnimator {
 export class ViewFrustum {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
-  private readonly viewCorners: Range3d = new Range3d();
+  private readonly _viewCorners: Range3d = new Range3d();
   private readonly _aspectRatioLocked: boolean;
   /** @hidden */
   public frustFraction: number = 1.0;
@@ -392,11 +392,11 @@ export class ViewFrustum {
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   private get viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
 
-  private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
+  private static _copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   /** @hidden */
-  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(ViewFrustum.copyOutput(from, to)); }
+  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
   /** @hidden */
-  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(ViewFrustum.copyOutput(from, to)); }
+  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(ViewFrustum._copyOutput(from, to)); }
 
   /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
    *  modifies the point and vector given
@@ -485,7 +485,7 @@ export class ViewFrustum {
     delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
     this.rotMatrix.multiplyTransposeVectorInPlace(origin);
 
-    if (!view.isCameraOn())
+    if (!view.isCameraOn)
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
@@ -529,7 +529,7 @@ export class ViewFrustum {
       for (let i = 0; i < 4; i++) {
         const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
         const intersectDistance = frustumRay.intersectionWithPlane(this._displayedPlane, intersect);
-        if (intersectDistance !== undefined && (!view.isCameraOn() || intersectDistance > 0.0))
+        if (intersectDistance !== undefined && (!view.isCameraOn || intersectDistance > 0.0))
           extents.extend(intersect);
         else includeHorizon = true;
       }
@@ -538,7 +538,7 @@ export class ViewFrustum {
         const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
         extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
       }
-      if (view.isCameraOn()) {
+      if (view.isCameraOn) {
         extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
       }
 
@@ -557,7 +557,7 @@ export class ViewFrustum {
 
   /* Get the extents of this view, in ViewCoordinates, as a Range3d */
   public getViewCorners(): Range3d {
-    const corners = this.viewCorners;
+    const corners = this._viewCorners;
     const viewRect = this.viewRect;
     corners.high.x = viewRect.right;
     corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
@@ -613,13 +613,13 @@ export class ViewFrustum {
         delta.z = 2.0 * zMax;
         origin.z = -zMax;
       } else {
-        if (this.view.isCameraOn())
+        if (this.view.isCameraOn)
           this.validateCamera();
 
         this.adjustZPlanes(origin, delta); // make sure view volume includes entire volume of view
 
         // if the camera is on, don't allow front plane behind camera
-        if (this.view.isCameraOn()) {
+        if (this.view.isCameraOn) {
           const eyeOrg = this.view.camera.getEyePoint().minus(origin); // vector from eye to origin
           this.toView(eyeOrg);
 
@@ -816,22 +816,22 @@ export class ViewFrustum {
  */
 export class Viewport {
   private _doContinuousRendering = false;
-  private animator?: Animator;
+  private _animator?: Animator;
   /** Time the current flash started */
   public flashUpdateTime?: BeTimePoint;
   /** Current flash intensity from [0..1] */
   public flashIntensity = 0;
   /** The length of time that the flash intensity will increase (in seconds) */
   public flashDuration = 0;
-  private flashedElem?: string;         // id of currently flashed element
+  private _flashedElem?: string;         // id of currently flashed element
   /** Id of last flashed element */
   public lastFlashedElem?: string;
   private _viewCmdTargetCenter?: Point3d;
   /** The number of entries in the view undo/redo buffer. */
   public maxUndoSteps = 20;
-  private readonly forwardStack: ViewState[] = [];
-  private readonly backStack: ViewState[] = [];
-  private currentBaseline?: ViewState;
+  private readonly _forwardStack: ViewState[] = [];
+  private readonly _backStack: ViewState[] = [];
+  private _currentBaseline?: ViewState;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
   public static nearScale24 = 0.0003;
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
@@ -886,11 +886,11 @@ export class Viewport {
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
-  public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
+  public get isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   /** @hidden */
-  public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
+  public get isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   /** @hidden */
-  public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
+  public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   /** Construct a new Viewport
    * @param canvas The HTMLCanvasElement for the new Viewport
@@ -936,7 +936,7 @@ export class Viewport {
   }
 
   /** True if this is a 3d view with the camera turned on. */
-  public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
+  public get isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn; }
   /** @hidden */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
   /** @hidden */
@@ -960,9 +960,9 @@ export class Viewport {
    * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]])
    */
   public setFlashed(id: string | undefined, duration: number): void {
-    if (id !== this.flashedElem) {
-      this.lastFlashedElem = this.flashedElem;
-      this.flashedElem = id;
+    if (id !== this._flashedElem) {
+      this.lastFlashedElem = this._flashedElem;
+      this._flashedElem = id;
     }
     this.flashDuration = duration;
   }
@@ -1056,7 +1056,7 @@ export class Viewport {
 
     Camera.validateLensAngle(lensAngle);
 
-    if (view.isCameraOn())
+    if (view.isCameraOn)
       return view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
 
     // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
@@ -1082,16 +1082,16 @@ export class Viewport {
   }
 
   /** True if an undoable viewing operation exists on the stack */
-  public get isUndoPossible(): boolean { return 0 < this.backStack.length; }
+  public get isUndoPossible(): boolean { return 0 < this._backStack.length; }
 
   /** True if an redoable viewing operation exists on the stack */
-  public get isRedoPossible(): boolean { return 0 < this.forwardStack.length; }
+  public get isRedoPossible(): boolean { return 0 < this._forwardStack.length; }
 
   /** Clear the view undo buffers of this Viewport. */
   public clearUndo(): void {
-    this.currentBaseline = undefined;
-    this.forwardStack.length = 0;
-    this.backStack.length = 0;
+    this._currentBaseline = undefined;
+    this._forwardStack.length = 0;
+    this._backStack.length = 0;
   }
 
   public setStandardRotation(id: StandardViewId): void {
@@ -1127,13 +1127,13 @@ export class Viewport {
       return;
 
     // the first time we're called we need to establish the baseline
-    if (!this.currentBaseline)
-      this.currentBaseline = this.view.clone<ViewState>();
+    if (!this._currentBaseline)
+      this._currentBaseline = this.view.clone<ViewState>();
 
-    if (this.view.equalState(this.currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+    if (this.view.equalState(this._currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
       return; // nothing changed, we're done
 
-    const backStack = this.backStack;
+    const backStack = this._backStack;
     if (backStack.length >= this.maxUndoSteps) // don't save more than max
       backStack.shift(); // remove the oldest entry
 
@@ -1143,12 +1143,12 @@ export class Viewport {
      */
     const now = BeTimePoint.now();
     if (backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
-      this.currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
-      this.backStack.push(this.currentBaseline); // save previous state
-      this.forwardStack.length = 0; // not possible to do redo after this
+      this._currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
+      this._backStack.push(this._currentBaseline); // save previous state
+      this._forwardStack.length = 0; // not possible to do redo after this
     }
 
-    this.currentBaseline = this.view.clone<ViewState>();
+    this._currentBaseline = this.view.clone<ViewState>();
   }
 
   /** Call [[setupFromView]] on this Viewport and save previous state in view undo stack */
@@ -1257,7 +1257,7 @@ export class Viewport {
     if (!view)
       return ViewStatus.InvalidViewport;
 
-    if (view.is3d() && view.isCameraOn()) {
+    if (view.is3d() && view.isCameraOn) {
       const offset = new Vector3d(screenDist.x, screenDist.y, 0.0);
       const frust = this.getFrustum(CoordSystem.View, false)!;
       frust.translate(offset);
@@ -1287,7 +1287,7 @@ export class Viewport {
     if (!view)
       return ViewStatus.InvalidViewport;
 
-    if (view.is3d() && view.isCameraOn()) {
+    if (view.is3d() && view.isCameraOn) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
       const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, RotMatrix.createScale(factor, factor, 1.0));
 
@@ -1398,38 +1398,38 @@ export class Viewport {
    * Reverses the most recent change to the Viewport from the undo stack.
    */
   public doUndo(animationTime?: BeDuration) {
-    if (0 === this.backStack.length)
+    if (0 === this._backStack.length)
       return;
 
-    this.forwardStack.push(this.currentBaseline!);
-    this.currentBaseline = this.backStack.pop()!;
-    this.applyViewState(this.currentBaseline, animationTime);
+    this._forwardStack.push(this._currentBaseline!);
+    this._currentBaseline = this._backStack.pop()!;
+    this.applyViewState(this._currentBaseline, animationTime);
   }
 
   /**
    * Re-applies the most recently un-done change to the Viewport from the redo stack.
    */
   public doRedo(animationTime?: BeDuration) {
-    if (0 === this.forwardStack.length)
+    if (0 === this._forwardStack.length)
       return;
 
-    this.backStack.push(this.currentBaseline!);
-    this.currentBaseline = this.forwardStack.pop()!;
-    this.applyViewState(this.currentBaseline, animationTime);
+    this._backStack.push(this._currentBaseline!);
+    this._currentBaseline = this._forwardStack.pop()!;
+    this.applyViewState(this._currentBaseline, animationTime);
   }
 
   /** @hidden */
   public animate() {
-    if (this.animator && this.animator.animate())
-      this.animator = undefined;
+    if (this._animator && this._animator.animate())
+      this._animator = undefined;
   }
 
   /** @hidden */
   public removeAnimator() { this.setAnimator(undefined); }
   private setAnimator(animator: Animator | undefined) {
-    if (this.animator)
-      this.animator.interrupt(); // will be destroyed
-    this.animator = animator;
+    if (this._animator)
+      this._animator.interrupt(); // will be destroyed
+    this._animator = animator;
   }
 
   /** @hidden */
@@ -1488,7 +1488,7 @@ export class Viewport {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
-    if (this.view.is3d() && this.isCameraOn())
+    if (this.view.is3d() && this.isCameraOn)
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
       eyeVec = this._viewFrustum.rotMatrix.getRow(2).clone();
@@ -1640,14 +1640,14 @@ export class Viewport {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this.flashedElem !== this.lastFlashedElem) {
+    if (this._flashedElem !== this.lastFlashedElem) {
       this.flashIntensity = 0.0;
       this.flashUpdateTime = BeTimePoint.now();
-      this.lastFlashedElem = this.flashedElem; // flashing has begun; this is now the previous flash
-      needsFlashUpdate = this.flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+      this.lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
+      needsFlashUpdate = this._flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this.flashedElem !== undefined && this.flashIntensity < 1.0) {
+    if (this._flashedElem !== undefined && this.flashIntensity < 1.0) {
       const flashDuration = BeDuration.fromSeconds(this.flashDuration);
       const flashElapsed = BeTimePoint.now().milliseconds - this.flashUpdateTime!.milliseconds;
       this.flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
@@ -1733,7 +1733,7 @@ export class Viewport {
     }
 
     if (this.processFlash()) {
-      target.setFlashed(new Id64(this.flashedElem!), this.flashIntensity);
+      target.setFlashed(new Id64(this._flashedElem!), this.flashIntensity);
       isRedrawNeeded = true;
     }
 

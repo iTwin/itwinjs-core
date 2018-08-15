@@ -22,8 +22,8 @@ export const enum FrameBufferBindState {
 export class FrameBuffer implements IDisposable {
   private _fbo?: WebGLFramebuffer;
   private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
-  private readonly colorTextures: TextureHandle[] = [];
-  private readonly colorAttachments: GLenum[] = [];
+  private readonly _colorTextures: TextureHandle[] = [];
+  private readonly _colorAttachments: GLenum[] = [];
   public readonly depthBuffer?: DepthBuffer;
 
   public get isDisposed(): boolean { return this._fbo === undefined; }
@@ -32,8 +32,8 @@ export class FrameBuffer implements IDisposable {
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
   public getColor(ndx: number): TextureHandle {
-    assert(ndx < this.colorTextures.length);
-    return this.colorTextures[ndx];
+    assert(ndx < this._colorTextures.length);
+    return this._colorTextures[ndx];
   }
 
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
@@ -45,8 +45,8 @@ export class FrameBuffer implements IDisposable {
     let i: number = 0;
     for (const colTex of colorTextures) {
       const attachmentEnum: GLenum = gl.COLOR_ATTACHMENT0 + i;
-      this.colorAttachments.push(attachmentEnum);
-      this.colorTextures.push(colTex);
+      this._colorAttachments.push(attachmentEnum);
+      this._colorTextures.push(colTex);
       const texHandle = colTex.getHandle();
       if (undefined !== texHandle)
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentEnum, gl.TEXTURE_2D, texHandle, 0);
@@ -88,7 +88,7 @@ export class FrameBuffer implements IDisposable {
 
   private getDebugAttachmentsString(): string {
     let str = "[";
-    for (const tx of this.colorTextures)
+    for (const tx of this._colorTextures)
       str += " " + (tx.getHandle()! as any)._debugId;
 
     return str + " ]";
@@ -106,7 +106,7 @@ export class FrameBuffer implements IDisposable {
     gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
 
     if (bindAttachments) {
-      System.instance.setDrawBuffers(this.colorAttachments);
+      System.instance.setDrawBuffers(this._colorAttachments);
       this._bindState = FrameBufferBindState.BoundWithAttachments;
 
       if (TextureHandle.wantDebugIds)
@@ -133,10 +133,10 @@ export class FrameBuffer implements IDisposable {
 
   // Chiefly for debugging currently - assumes RGBA, unsigned byte, want all pixels.
   public get debugPixels(): Uint8Array | undefined {
-    if (!this.isBound || 0 === this.colorTextures.length)
+    if (!this.isBound || 0 === this._colorTextures.length)
       return undefined;
 
-    const tex = this.colorTextures[0];
+    const tex = this._colorTextures[0];
     if (GL.Texture.Format.Rgba !== tex.format || GL.Texture.DataType.UnsignedByte !== tex.dataType)
       return undefined;
 

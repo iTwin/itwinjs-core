@@ -200,27 +200,27 @@ export class MeshGraphic extends Graphic {
 
 // Defines one aspect of the geometry of a mesh (surface or edges)
 export abstract class MeshGeometry extends LUTGeometry {
-  protected readonly mesh: MeshData;
-  protected readonly numIndices: number;
+  protected readonly _mesh: MeshData;
+  protected readonly _numIndices: number;
 
   // Convenience accessors...
-  public get edgeWidth() { return this.mesh.edgeWidth; }
-  public get edgeLineCode() { return this.mesh.edgeLineCode; }
-  public get featuresInfo(): FeaturesInfo | undefined { return this.mesh.features; }
-  public get surfaceType() { return this.mesh.type; }
-  public get fillFlags() { return this.mesh.fillFlags; }
-  public get isPlanar() { return this.mesh.isPlanar; }
-  public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
+  public get edgeWidth() { return this._mesh.edgeWidth; }
+  public get edgeLineCode() { return this._mesh.edgeLineCode; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this._mesh.features; }
+  public get surfaceType() { return this._mesh.type; }
+  public get fillFlags() { return this._mesh.fillFlags; }
+  public get isPlanar() { return this._mesh.isPlanar; }
+  public get colorInfo(): ColorInfo { return this._mesh.lut.colorInfo; }
   public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
-  public get texture() { return this.mesh.texture; }
-  public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get texture() { return this._mesh.texture; }
+  public get hasBakedLighting() { return this._mesh.hasBakedLighting; }
 
-  public get lut() { return this.mesh.lut; }
+  public get lut() { return this._mesh.lut; }
 
   protected constructor(mesh: MeshData, numIndices: number) {
     super();
-    this.numIndices = numIndices;
-    this.mesh = mesh;
+    this._numIndices = numIndices;
+    this._mesh = mesh;
   }
 
   protected computeEdgeWeight(params: ShaderProgramParams): number { return params.target.getEdgeWeight(params, this.edgeWidth); }
@@ -358,12 +358,12 @@ export class EdgeGeometry extends MeshGeometry {
   public draw(): void {
     const gl = System.instance.context;
     this._indices.bind(GL.Buffer.Target.ArrayBuffer);
-    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
+    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices);
   }
 
-  public _wantWoWReversal(_target: Target): boolean { return true; }
-  public _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
-  public _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  protected _wantWoWReversal(_target: Target): boolean { return true; }
+  protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Edge; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
@@ -495,9 +495,9 @@ export class PolylineEdgeGeometry extends MeshGeometry {
     dispose(this._buffers);
   }
 
-  public _wantWoWReversal(_target: Target): boolean { return true; }
-  public _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
-  public _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  protected _wantWoWReversal(_target: Target): boolean { return true; }
+  protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Polyline; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
@@ -510,7 +510,7 @@ export class PolylineEdgeGeometry extends MeshGeometry {
   public draw(): void {
     const gl = System.instance.context;
     this._buffers.indices.bind(GL.Buffer.Target.ArrayBuffer);
-    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
+    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices);
   }
 
   private constructor(numIndices: number, buffers: PolylineBuffers, mesh: MeshData) {

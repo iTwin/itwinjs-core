@@ -337,11 +337,11 @@ export class Tile implements IDisposable {
     }
   }
 
-  private static scratchWorldFrustum = new Frustum();
-  private static scratchRootFrustum = new Frustum();
+  private static _scratchWorldFrustum = new Frustum();
+  private static _scratchRootFrustum = new Frustum();
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
-    const box = Frustum.fromRange(range, Tile.scratchRootFrustum);
-    const worldBox = box.transformBy(args.location, Tile.scratchWorldFrustum);
+    const box = Frustum.fromRange(range, Tile._scratchRootFrustum);
+    const worldBox = box.transformBy(args.location, Tile._scratchWorldFrustum);
     const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
     const isCulled = isOutside || isClipped;
@@ -442,9 +442,9 @@ export namespace Tile {
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
-    private static scratchRange = new Range3d();
+    private static _scratchRange = new Range3d();
     public getTileRadius(tile: Tile): number {
-      let range = tile.range.clone(DrawArgs.scratchRange);
+      let range = tile.range.clone(DrawArgs._scratchRange);
       range = this.location.multiplyRange(range, range);
       return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
     }

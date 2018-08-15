@@ -57,8 +57,8 @@ export namespace B3dmTileIO {
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       // NB: For reality models with no batch table, we want the model ID in the feature table
-      const featureTable: FeatureTable = new FeatureTable(1, this.modelId);
-      const feature = new Feature(this.modelId);
+      const featureTable: FeatureTable = new FeatureTable(1, this._modelId);
+      const feature = new Feature(this._modelId);
       featureTable.insert(feature);
 
       await this.loadTextures();
@@ -68,7 +68,7 @@ export namespace B3dmTileIO {
       return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
-      const feature = new Feature(this.modelId);
+      const feature = new Feature(this._modelId);
 
       features.add(feature, 1);
       return true;

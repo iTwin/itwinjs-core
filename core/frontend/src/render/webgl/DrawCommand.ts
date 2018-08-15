@@ -150,17 +150,17 @@ class PrimitiveCommand extends DrawCommand {
 
 /** Draw a batch primitive, possibly with symbology overridden per-feature */
 class BatchPrimitiveCommand extends PrimitiveCommand {
-  private readonly batch: Batch;
+  private readonly _batch: Batch;
 
   public constructor(primitive: Primitive, batch: Batch) {
     super(primitive);
-    this.batch = batch;
+    this._batch = batch;
   }
 
   public preExecute(exec: ShaderProgramExecutor): void {
-    exec.target.currentOverrides = this.batch.getOverrides(exec.target);
+    exec.target.currentOverrides = this._batch.getOverrides(exec.target);
     assert(undefined === exec.target.currentPickTable);
-    exec.target.currentPickTable = this.batch.pickTable;
+    exec.target.currentPickTable = this._batch.pickTable;
   }
   public postExecute(exec: ShaderProgramExecutor): void {
     exec.target.currentOverrides = undefined;

@@ -33,7 +33,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.accum = new GeometryAccumulator(params.iModel, system, undefined, accumulatorTf);
   }
 
-  public _finish(): RenderGraphic {
+  protected _finish(): RenderGraphic {
     const graphic = this.finishGraphic(this.accum);
     this.accum.clear();
     return graphic;
