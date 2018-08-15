@@ -35,7 +35,7 @@ export class SnapModeField extends React.Component<SnapModeProps> {
       <SnapModeIndicator
         label={IModelApp.i18n.translate("SampleApp:snapMode.snapMode")}
         isLabelVisible={this.props.isInFooterMode}
-        onClick={this.handleSnapModeIndicatorClick}
+        onClick={this._handleSnapModeIndicatorClick}
         icon={
           <SnapModeIcon text="k" />
         }
@@ -80,7 +80,7 @@ export class SnapModeField extends React.Component<SnapModeProps> {
     );
   }
 
-  private handleSnapModeIndicatorClick = () => {
+  private _handleSnapModeIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
     if (isOpen)
       this.setOpenWidget(null);

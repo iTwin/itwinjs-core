@@ -49,10 +49,10 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
     return (
       <div className="ContentViewPane" style={divStyle}>
         <canvas className="unselectable" style={canvasStyle} ref={(element: any) => { this._htmlCanvas = element; }}
-          onMouseMove={this.onMouseMove}
-          onMouseLeave={this.onMouseLeave}
-          onMouseDown={this.onMouseDown}
-          onMouseUp={this.onMouseUp}
+          onMouseMove={this._onMouseMove}
+          onMouseLeave={this._onMouseLeave}
+          onMouseDown={this._onMouseDown}
+          onMouseUp={this._onMouseUp}
         />
       </div>
     );
@@ -78,11 +78,11 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
     }
   }
 
-  private onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     this.drawCanvas(event, ContentViewManager.isMouseDown());
   }
 
-  private onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = this._htmlCanvas;
     const ctx = canvas.getContext("2d");
     if (ctx) {
@@ -91,12 +91,12 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
     }
   }
 
-  private onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     this.drawCanvas(event, true);
     event.preventDefault();
   }
 
-  private onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     this.drawCanvas(event, false);
   }
 }
