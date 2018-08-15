@@ -1,6 +1,48 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 02 Aug 2018 14:48:42 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+
+## 0.117.0
+Wed, 15 Aug 2018 17:08:53 GMT
+
+### Updates
+
+- Flesh out DisplayStyle API; Support iteration of ViewDefinitions
+
+## 0.116.0
+Wed, 15 Aug 2018 15:13:19 GMT
+
+*Version update only*
+
+## 0.115.0
+Tue, 14 Aug 2018 15:21:27 GMT
+
+*Version update only*
+
+## 0.114.0
+Tue, 14 Aug 2018 12:04:18 GMT
+
+### Updates
+
+- Use binary transfer for loadNativeAsset
+- added IModelDb.Views.getThumbnail
+
+## 0.113.0
+Fri, 10 Aug 2018 05:06:20 GMT
+
+*Version update only*
+
+## 0.112.0
+Tue, 07 Aug 2018 12:19:22 GMT
+
+### Updates
+
+- Add GeometricModel.queryExtents
+
+## 0.111.0
+Mon, 06 Aug 2018 19:25:38 GMT
+
+*Version update only*
 
 ## 0.110.0
 Thu, 02 Aug 2018 14:48:42 GMT

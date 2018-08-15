@@ -1,0 +1,11 @@
+.GridWidget {
+  height: 100%;
+}
+
+.GridWidget h3 {
+  margin: 0;
+}
+
+.GridWidget .ContentContainer {
+  height: 100%;
+}

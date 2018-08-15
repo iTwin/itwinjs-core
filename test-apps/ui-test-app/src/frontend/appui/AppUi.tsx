@@ -25,6 +25,7 @@ import "./contentviews/TableExampleContent";
 import "./widgets/BreadcrumbDemoWidget";
 import "./widgets/TreeDemoWidget";
 import "./widgets/TableDemoWidget";
+import "./widgets/FeedbackWidget";
 import "./widgets/NavigationTreeWidget";
 import "./widgets/PropertyGridDemoWidget";
 import "./tooluiproviders/Tool1UiProvider";

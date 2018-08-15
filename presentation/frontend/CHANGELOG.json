@@ -1,0 +1,416 @@
+{
+  "name": "@bentley/presentation-frontend",
+  "entries": [
+    {
+      "version": "0.117.0",
+      "tag": "@bentley/presentation-frontend_v0.117.0",
+      "date": "Wed, 15 Aug 2018 17:08:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.116.0",
+      "tag": "@bentley/presentation-frontend_v0.116.0",
+      "date": "Wed, 15 Aug 2018 15:13:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.115.0",
+      "tag": "@bentley/presentation-frontend_v0.115.0",
+      "date": "Tue, 14 Aug 2018 15:21:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.114.0",
+      "tag": "@bentley/presentation-frontend_v0.114.0",
+      "date": "Tue, 14 Aug 2018 12:04:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.113.0",
+      "tag": "@bentley/presentation-frontend_v0.113.0",
+      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Rename `ECPresentation` to `Presentation`"
+          },
+          {
+            "comment": "React to Ruleset data structure changes"
+          },
+          {
+            "comment": "React to IRulesetManager API changes"
+          },
+          {
+            "comment": "User Settings rename to Ruleset Variables and related API changes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.5.1",
+      "tag": "@bentley/ecpresentation-frontend_v0.5.1",
+      "date": "Thu, 02 Aug 2018 17:56:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependency versions to 0.109.0"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.5.0` to `^0.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.5.0` to `^0.5.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.5.0",
+      "tag": "@bentley/ecpresentation-frontend_v0.5.0",
+      "date": "Tue, 24 Jul 2018 13:20:35 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Added api for getting distinct values."
+          },
+          {
+            "comment": "Added api for getting node paths and filtered node paths."
+          },
+          {
+            "comment": "Change the format of request options."
+          },
+          {
+            "comment": "Change the meaning of `ECPresentationManager.activeLocale`. Now it means the default locale if request options doesn't specify one."
+          },
+          {
+            "comment": "Moved ruleset management functions from ECPresentationManager to RulesetManager which is accessible from ECPresentationManager through `rulesets()` method"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Add API to get available selection levels"
+          },
+          {
+            "comment": "ECPresentationManager now has a `client id` which is used to identify the frontend"
+          },
+          {
+            "comment": "Updated dependencies."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.1` to `^0.5.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.1",
+      "tag": "@bentley/ecpresentation-frontend_v0.4.1",
+      "date": "Fri, 22 Jun 2018 10:25:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.4.0` to `^0.4.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.0",
+      "tag": "@bentley/ecpresentation-frontend_v0.4.0",
+      "date": "Thu, 14 Jun 2018 12:12:59 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Selection-related classes now work with IModelConnection instead of IModelToken."
+          },
+          {
+            "comment": "Change ECPresentation manager to work with IModelConnection instead of IModelToken."
+          },
+          {
+            "comment": "ECPresentationManager now has property settings, which can be used to access and set user setting values."
+          }
+        ],
+        "patch": [
+          {
+            "comment": "SelectionManager now clears selection of closed imodels."
+          },
+          {
+            "comment": "Add SelectionHandler.getSelection method"
+          },
+          {
+            "comment": "Add timestamp to SelectionChangeEventArgs"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.3.1` to `^0.4.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.1",
+      "tag": "@bentley/ecpresentation-frontend_v0.3.1",
+      "date": "Wed, 23 May 2018 10:15:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependencies to 0.88"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.3.0` to `^0.3.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.0",
+      "tag": "@bentley/ecpresentation-frontend_v0.3.0",
+      "date": "Fri, 18 May 2018 14:15:29 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add missing documentation"
+          },
+          {
+            "comment": "Add ability to set active locale used by presentation manager."
+          },
+          {
+            "comment": "Set active locale to IModelApp's current locale by default when initializing ECPresentation"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Implemented functionality to create presentation ruleset at runtime."
+          },
+          {
+            "comment": "ECPresentationManager.getContentDescriptor may return no descriptor if there is none with the specified parameters."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.2.0` to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.0",
+      "tag": "@bentley/ecpresentation-frontend_v0.2.0",
+      "date": "Fri, 11 May 2018 06:57:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "React to Gateway's API changes: moved ECPresentationGateway to ecpresentation-common package to be consistent with imodeljs-core."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.2` to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.2",
+      "tag": "@bentley/ecpresentation-frontend_v0.1.2",
+      "date": "Tue, 08 May 2018 07:05:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "100% unit test coverage"
+          },
+          {
+            "comment": "Update imodeljs-core dependencies to 0.80"
+          },
+          {
+            "comment": "Update bentleyjs-core dependency to 8"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.1` to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.1",
+      "tag": "@bentley/ecpresentation-frontend_v0.1.1",
+      "date": "Sun, 29 Apr 2018 08:07:40 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed packaging."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.1.0` to `~0.1.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.1.0",
+      "tag": "@bentley/ecpresentation-frontend_v0.1.0",
+      "date": "Thu, 26 Apr 2018 09:27:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added a PersistenceHelper to convert between KeySet and PersistentKeysContainer"
+          },
+          {
+            "comment": "PresentationManager now accepts keys as KeySets"
+          },
+          {
+            "comment": "Added a static ECPresentation class which provides access to singleton ECPresentationManager"
+          },
+          {
+            "comment": "Readonly-ness fixes"
+          },
+          {
+            "comment": "Selection manager now uses KeySet to store selection"
+          },
+          {
+            "comment": "Unified selection API cleanup"
+          },
+          {
+            "comment": "ECPresentation now provides access to singleton selection manager instance"
+          },
+          {
+            "comment": "React to imodeljs-core and ecpresentation-common API changes"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.5` to `~0.1.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.21",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.21",
+      "date": "Fri, 20 Apr 2018 13:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Created compound index.ts file that exports package contents so consumers don't have to import each package piece individually through \"lib\" directory."
+          },
+          {
+            "comment": "Updated package dependencies"
+          },
+          {
+            "comment": "Setup test coverage"
+          },
+          {
+            "comment": "Moved controls-related code to a separate package @bentley/ecpresentation-controls"
+          },
+          {
+            "comment": "Unified selection"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.4` to `~0.0.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.17",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.17",
+      "date": "Wed, 28 Feb 2018 13:44:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Use undefined instead of null"
+          },
+          {
+            "comment": "Return read-only objects"
+          },
+          {
+            "comment": "Use async/await instead of pure promises"
+          },
+          {
+            "comment": "Update imodeljs-frontend dependency to v.0.57.0"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.0.0` to `^0.0.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.16",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.16",
+      "date": "Tue, 20 Feb 2018 12:06:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update dependencies: bentleyjs-core@5.2.0, imodeljs-backend@0.44.3, imodeljs-nodeaddonapi@6.4.0"
+          },
+          {
+            "comment": "Change content-related classes to interfaces."
+          },
+          {
+            "comment": "Implemented support for complex properties"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.15",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.15",
+      "date": "Fri, 19 Jan 2018 11:51:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Some renaming and moving of EC-types"
+          },
+          {
+            "comment": "Use IDisposable interface provided by bentleyjs-core"
+          },
+          {
+            "comment": "Cleaned up Selection API a little"
+          },
+          {
+            "comment": "Fixed tree and content data providers to create valid request options"
+          },
+          {
+            "comment": "Use imodeljs-frontend v0.23.0"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.0.14",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.14",
+      "date": "Mon, 08 Jan 2018 14:51:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Some restructuring to make the code more maintainable.\n- Use imodeljs-frontend@0.12.0"
+          }
+        ]
+      }
+    }
+  ]
+}

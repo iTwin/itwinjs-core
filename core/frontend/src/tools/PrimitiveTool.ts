@@ -38,13 +38,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
   /** Get the iModel the tool is operating against. */
-  public get iModel(): IModelConnection { return this.targetView!.view!.iModel as IModelConnection; }
+  public get iModel(): IModelConnection { return this.targetView!.view!.iModel; }
 
   /**
    * Establish this tool as the active PrimitiveTool.
-   * @return SUCCESS if this tool is now the active PrimitiveTool.
-   * @see InteractiveTool.onInstall
-   * @see InteractiveTool.onPostInstall
+   * @return true if this tool was installed (though it may have exited too)
    */
   public run(): boolean {
     const { toolAdmin, viewManager } = IModelApp;
@@ -52,10 +50,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return false;
 
     toolAdmin.startPrimitiveTool(this);
-
-    // The tool may exit in _OnPostInstall causing "this" to be
-    // deleted so _InstallToolImplementation must not call any
-    // methods on "this" after _OnPostInstall returns.
     toolAdmin.onPostInstallTool(this);
     return true;
   }
@@ -134,7 +128,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     // We know the tool isn't doing a locate, we don't know what it will do with this point. Minimize erroneous filtering by restricting the check to when AccuSnap is tool enable (not user enabled)...
-    if (!IModelApp.accuSnap.isSnapEnabled())
+    if (!IModelApp.accuSnap.isSnapEnabled)
       return true;
 
     const extents = iModel.projectExtents;
@@ -166,7 +160,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
   /**
    * Called when active view changes. Tool may choose to restart or exit based on current view type.
-   * @param previous The previously active view.
+   * @param _previous The previously active view.
    * @param current The new active view.
    */
   public onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
@@ -179,23 +173,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Called when an external event may invalidate the current tool's state.
    * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
    * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
-   *  @note You *MUST* check the status of installTool and call exitTool if it fails!
-   * ``` ts
-   * MyTool.oOnRestartTool() {
-   * const newTool = new MyTool();
-   * if (BentleyStatus.SUCCESS !== newTool.installTool())
-   *   this.exitTool(); // Tool exits to default tool if new tool instance could not be installed.
-   * }
-   * MyTool.onRestartTool() {
-   * _this.exitTool(); // Tool always exits to default tool.
-   * }
-   * ```
    */
   public abstract onRestartTool(): void;
 
   /**
    * Called to reset tool to initial state. This method is provided here for convenience; the only
-   * external caller is ElementSetTool. PrimitiveTool implements this method to call _OnRestartTool.
+   * external caller is ElementSetTool. PrimitiveTool implements this method to call onRestartTool.
    */
   public onReinitialize(): void { this.onRestartTool(); }
 
@@ -222,24 +205,4 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.
    */
   public async saveChanges(): Promise<void> { return this.iModel.saveChanges(this.toolId); }
-
-  // //! Ensures that any locks and/or codes required for the operation are obtained from iModelServer before making any changes to the iModel.
-  // //! Default implementation invokes _PopulateRequest() and forwards request to server.
-  //  RepositoryStatus _AcquireLocks();
-
-  // //! Called from _AcquireLocks() to identify any locks and/or codes required to perform the operation
-  // virtual RepositoryStatus _PopulateRequest(IBriefcaseManager:: Request & request) { return RepositoryStatus:: Success; }
-
-  // //! Query availability of locks, potentially notifying user of result
-  //  bool AreLocksAvailable(IBriefcaseManager:: Request & request, iModelR db, bool fastQuery = true);
-
-  // //! Acquire locks on this tools behalf, potentially notifying user of result
-  //  RepositoryStatus AcquireLocks(IBriefcaseManager:: Request & request, iModelR db);
-
-  // //! Acquire a shared lock on the specified model (e.g., for placement tools which create new elements)
-  //  RepositoryStatus LockModelForPlacement(DgnModelR model);
-
-  // //! Acquires any locks and/or codes required to perform the specified operation on the element
-  // //! If your tool operates on more than one element it should batch all such requests rather than calling this convenience function repeatedly.
-  //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
 }

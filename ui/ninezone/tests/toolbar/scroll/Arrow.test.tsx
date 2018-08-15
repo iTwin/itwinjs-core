@@ -4,14 +4,15 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Arrow from "@src/toolbar/scroll/Arrow";
+import Chevron from "@src/toolbar/scroll/Chevron";
+import { Direction } from "@src/utilities/Direction";
 
-describe("<Arrow />", () => {
+describe("<Chevron />", () => {
   it("should render", () => {
-    mount(<Arrow />);
+    mount(<Chevron direction={Direction.Left} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Arrow />).should.matchSnapshot();
+    shallow(<Chevron direction={Direction.Left} />).should.matchSnapshot();
   });
 });

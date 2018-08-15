@@ -2,6 +2,144 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.117.0",
+      "tag": "@bentley/imodeljs-frontend_v0.117.0",
+      "date": "Wed, 15 Aug 2018 17:08:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WIP: Reality mesh classification via stencil volumes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.116.0",
+      "tag": "@bentley/imodeljs-frontend_v0.116.0",
+      "date": "Wed, 15 Aug 2018 15:13:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Documentation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.115.0",
+      "tag": "@bentley/imodeljs-frontend_v0.115.0",
+      "date": "Tue, 14 Aug 2018 15:21:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.114.0",
+      "tag": "@bentley/imodeljs-frontend_v0.114.0",
+      "date": "Tue, 14 Aug 2018 12:04:18 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use binary transfer for Sprites"
+          },
+          {
+            "comment": "IdleTool default touch support for pan and pinch zoom."
+          },
+          {
+            "comment": "Change some AccuSnap, TentativeSnap, and AccuDraw method to property accessors. Remove unused scrollOnNoMotion arg and update method from ViewManip."
+          },
+          {
+            "comment": "Implemented Look, Scroll, Zoom, and Fly ViewManip handles."
+          },
+          {
+            "comment": "Added IModelConnection.Views.getThumbnail"
+          },
+          {
+            "comment": "Update view zoom and scroll indicator decorations."
+          },
+          {
+            "comment": "Supply input source to ElementLocateManager.doLocate, use a larger pick aperture for touch input."
+          },
+          {
+            "comment": "Sheet view state no longer waits for attachment views to load"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.113.0",
+      "tag": "@bentley/imodeljs-frontend_v0.113.0",
+      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed bugs in ClipMaskVolume constructor."
+          },
+          {
+            "comment": "Fix for 2d views attachments modifying transform of their root view"
+          },
+          {
+            "comment": "Code cleanup"
+          },
+          {
+            "comment": "Fix number of varying vectors exceeding maximum on iOS."
+          },
+          {
+            "comment": "Fix quantization errors with world decorations located far from the origin."
+          },
+          {
+            "comment": "WIP: Turn on stenciling for use in classification of reality meshes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.112.0",
+      "tag": "@bentley/imodeljs-frontend_v0.112.0",
+      "date": "Tue, 07 Aug 2018 12:19:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support pickable decorations."
+          },
+          {
+            "comment": "Detect tap and double tap and provide tool methods to handle these events."
+          },
+          {
+            "comment": "Remove old gesture events. Added onTouchComplete event for when all fingers leave surface."
+          },
+          {
+            "comment": "Moved tapCount to BeTouchEvent. Added methods to convert touch event to mouse events. Rename onModelMotion to onMouseMotion."
+          },
+          {
+            "comment": "Added separate ToolSettings for touch move distance and delay."
+          },
+          {
+            "comment": "Support spherical skybox image projections."
+          },
+          {
+            "comment": "Support cubemap skybox images."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.111.0",
+      "tag": "@bentley/imodeljs-frontend_v0.111.0",
+      "date": "Mon, 06 Aug 2018 19:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "All 3d view attachments overlay correctly."
+          },
+          {
+            "comment": "'Fit View' in a sheet view fits to the dimensions of the sheet."
+          },
+          {
+            "comment": "Fix for not selecting the first sheet tile of 3d view attachment"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.110.0",
       "tag": "@bentley/imodeljs-frontend_v0.110.0",
       "date": "Thu, 02 Aug 2018 14:48:42 GMT",

@@ -8,7 +8,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor, BeModifierKeys, EventHandled } from "./Tool";
+import { BeButtonEvent, BeButton, BeCursor, BeModifierKeys, EventHandled } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -156,7 +156,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMethod.Box === method) {
       const outline = overlap ? undefined : new Set<string>();
       const offset = range.clone();
-      offset.expandInPlace(-2); // NEEDWORK: Why doesn't -1 work?!?
+      offset.expandInPlace(-2); // NEEDSWORK: Why doesn't -1 work?!?
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
@@ -243,13 +243,13 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  public async onModelStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
       return EventHandled.Yes;
     return this.selectByPointsStart(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     // NOTE: If manipulator installed an `input collector, it would get the end drag event directly
     return this.selectByPointsEnd(ev) ? EventHandled.Yes : EventHandled.No;
   }
@@ -272,7 +272,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     // NOTE: Non-element hits are only handled by a manipulator that specifically requested them, can be ignored here
-    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
+    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit !== undefined && hit.isElementHit) {
       switch (this.getSelectionMode()) {
         case SelectionMode.Replace:
@@ -313,7 +313,7 @@ export class SelectionTool extends PrimitiveTool {
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
       if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
         const response = new LocateResponse();
-        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport);
+        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
@@ -330,42 +330,43 @@ export class SelectionTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onSingleTap(_ev: BeGestureEvent): boolean {
-    // ### TODO Touch events...
-    //    if (undefined !== this.manipulator)
-    //      return this.manipulator.onGestureEvent(ev);
-    return false; // Let idle tool send data button down/up events if not handled by manipulator
-  }
+  // public onSingleTap(_ev: BeGestureEvent): boolean {
+  // ### TODO Touch events...
+  //    if (undefined !== this.manipulator)
+  //      return this.manipulator.onGestureEvent(ev);
+  // return false;
+  // Let idle tool send data button down/up events if not handled by manipulator
+  // }
 
-  public onSingleFingerMove(ev: BeGestureEvent): boolean {
-    if (this.isSelectByPoints) {
-      IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
-      return true;
-    }
-    if (0 !== ev.gestureInfo!.previousNumberTouches)
-      return false; // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool
+  // public onSingleFingerMove(ev: BeGestureEvent): boolean {
+  //    if (this.isSelectByPoints) {
+  //      IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev);
+  //      return true;
+  //    }
+  //    if (0 !== ev.gestureInfo!.previousNumberTouches)
+  //      return false; // Decide on first touch notification if we'll start handling this gesture instead of passing it on to the idle tool
 
-    // ### TODO Touch events...
-    //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
-    return false;
-  }
+  // ### TODO Touch events...
+  //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+  //    return false;
+  //  }
 
-  public onEndGesture(ev: BeGestureEvent): boolean {
-    if (GestureId.SingleFingerMove !== ev.gestureInfo!.gestureId)
-      return false;
+  //  public onEndGesture(ev: BeGestureEvent): boolean {
+  //    if (GestureId.SingleFingerMove !== ev.gestureInfo!.gestureId)
+  //      return false;
 
-    if (this.isSelectByPoints)
-      return this.selectByPointsEnd(ev);
+  // if (this.isSelectByPoints)
+  //      return this.selectByPointsEnd(ev);
 
-    // ### TODO Touch events...
-    //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
-    return false;
-  }
+  // ### TODO Touch events...
+  //    return (undefined !== this.manipulator && this.manipulator.onGestureEvent(ev)); // Let idle tool handle event if not handled by manipulator
+  //    return false;
+  //  }
 
   public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 
-  public async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> {
-    return modifier === BeModifierKeys.Shift && this.isSelectByPoints;
+  public async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> {
+    return (modifier === BeModifierKeys.Shift && this.isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onPostLocate(hit: HitDetail, _out?: LocateResponse): boolean {

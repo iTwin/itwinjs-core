@@ -9,8 +9,8 @@ import { Target } from "./Target";
 import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
-import { System, RenderType } from "./System";
-import { Pixel } from "../System";
+import { System, RenderType, DepthType } from "./System";
+import { Pixel, DecorationList } from "../System";
 import { ViewRect } from "../../Viewport";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
@@ -89,6 +89,7 @@ class FrameBuffers implements IDisposable {
   public opaqueAndCompositeColor?: FrameBuffer;
   public depthAndOrder?: FrameBuffer;
   public hilite?: FrameBuffer;
+  public stencilSet?: FrameBuffer;
 
   public init(textures: Textures, depth: DepthBuffer): boolean {
     const boundColor = System.instance.frameBufferStack.currentColorBuffer;
@@ -99,6 +100,9 @@ class FrameBuffers implements IDisposable {
     this.opaqueAndCompositeColor = FrameBuffer.create([textures.color!], depth);
     this.depthAndOrder = FrameBuffer.create([textures.depthAndOrder!]);
     this.hilite = FrameBuffer.create([textures.hilite!]);
+    if (DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
+      this.stencilSet = FrameBuffer.create([], depth);
+    }
 
     return undefined !== this.opaqueColor
       && undefined !== this.opaqueAndCompositeColor
@@ -111,21 +115,25 @@ class FrameBuffers implements IDisposable {
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
     this.depthAndOrder = dispose(this.depthAndOrder);
     this.hilite = dispose(this.hilite);
+    this.stencilSet = dispose(this.stencilSet);
   }
 }
 
 // Maintains the geometry used to execute screenspace operations for a SceneCompositor.
 class Geometry implements IDisposable {
   public composite?: CompositeGeometry;
+  public stencilCopy?: ViewportQuadGeometry;
 
   public init(textures: Textures): boolean {
     assert(undefined === this.composite);
     this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!);
+    this.stencilCopy = ViewportQuadGeometry.create(TechniqueId.CopyStencil);
     return undefined !== this.composite;
   }
 
   public dispose() {
     this.composite = dispose(this.composite);
+    this.stencilCopy = dispose(this.stencilCopy);
   }
 }
 
@@ -289,7 +297,7 @@ export abstract class SceneCompositor implements IDisposable {
   public abstract get currentRenderTargetIndex(): number;
   public abstract dispose(): void;
   public abstract draw(_commands: RenderCommands): void;
-  public abstract drawForReadPixels(_commands: RenderCommands): void;
+  public abstract drawForReadPixels(_commands: RenderCommands, overlays?: DecorationList): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined;
@@ -318,6 +326,10 @@ abstract class Compositor extends SceneCompositor {
   protected _opaqueRenderState = new RenderState();
   protected _translucentRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
+  protected _stencilSetRenderState = new RenderState();
+  protected _stencilCopyRenderState = new RenderState();
+  protected _debugStencilRenderState = new RenderState();
+  protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
 
   public abstract get currentRenderTargetIndex(): number;
 
@@ -342,6 +354,40 @@ abstract class Compositor extends SceneCompositor {
     this._translucentRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
 
     this._noDepthMaskRenderState.flags.depthMask = false;
+
+    this._stencilSetRenderState.flags.depthTest = true;
+    this._stencilSetRenderState.flags.depthMask = false;
+    this._stencilSetRenderState.flags.colorWrite = false;
+    this._stencilSetRenderState.flags.stencilTest = true;
+    this._stencilSetRenderState.depthFunc = GL.DepthFunc.LessOrEqual;
+    this._stencilSetRenderState.stencil.frontFunction.function = GL.StencilFunction.Always;
+    this._stencilSetRenderState.stencil.frontOperation.fail = GL.StencilOperation.Keep;
+    this._stencilSetRenderState.stencil.frontOperation.zFail = GL.StencilOperation.IncrWrap;
+    this._stencilSetRenderState.stencil.frontOperation.zPass = GL.StencilOperation.Keep;
+    this._stencilSetRenderState.stencil.backFunction.function = GL.StencilFunction.Always;
+    this._stencilSetRenderState.stencil.backOperation.fail = GL.StencilOperation.Keep;
+    this._stencilSetRenderState.stencil.backOperation.zFail = GL.StencilOperation.DecrWrap;
+    this._stencilSetRenderState.stencil.backOperation.zPass = GL.StencilOperation.Keep;
+
+    this._stencilCopyRenderState.flags.depthTest = false;
+    this._stencilCopyRenderState.flags.depthMask = false;
+    this._stencilCopyRenderState.flags.colorWrite = true;
+    this._stencilCopyRenderState.flags.stencilTest = true;
+    this._stencilCopyRenderState.stencil.frontFunction.function = GL.StencilFunction.Equal;
+    this._stencilCopyRenderState.stencil.frontOperation.zFail = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.stencil.frontOperation.zPass = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.stencil.backFunction.function = GL.StencilFunction.Equal;
+    this._stencilCopyRenderState.stencil.backOperation.zFail = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.stencil.backOperation.zPass = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.flags.blend = true;
+    this._stencilCopyRenderState.blend.setBlendFunc(GL.BlendFactor.Zero, GL.BlendFactor.ConstColor);
+    this._stencilCopyRenderState.blend.color = [0.5, 0.5, 0.5, 1.0];
+    if (this._debugStencil > 0) {
+      this._debugStencilRenderState.flags.depthTest = true;
+      this._debugStencilRenderState.flags.blend = true;
+      this._debugStencilRenderState.blend.setBlendFunc(GL.BlendFactor.OneMinusConstColor, GL.BlendFactor.ConstColor);
+      this._debugStencilRenderState.blend.color = [0.67, 0.67, 0.67, 1.0];
+    }
   }
 
   public update(): boolean {
@@ -393,6 +439,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Render opaque geometry
     this.renderOpaque(commands, needComposite, false);
+    this.renderStencilVolumes(commands, needComposite);
     this._target.setFrameTime();
 
     if (needComposite) {
@@ -411,21 +458,52 @@ abstract class Compositor extends SceneCompositor {
   }
 
   public get fullHeight(): number { return this._target.viewRect.height; }
-  public drawForReadPixels(commands: RenderCommands) {
+
+  public drawForReadPixels(commands: RenderCommands, overlays?: DecorationList) {
     if (!this.update()) {
       assert(false);
       return;
     }
 
     this.clearOpaque(false);
-    this._target.pushActiveVolume();
+
+    // On entry the RenderCommands has been initialized for all scene graphics and pickable decorations with the exception of world overlays.
+    // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
+    const haveRenderCommands = !commands.isEmpty;
+    if (haveRenderCommands) {
+      this._target.pushActiveVolume();
+      this.renderOpaque(commands, false, true);
+      this._target.popActiveVolume();
+    }
+
+    if (undefined === overlays || 0 === overlays.list.length)
+      return;
+
+    // Now populate the opaque passes with any pickable world overlays
+    commands.initForPickOverlays(overlays);
+    if (commands.isEmpty)
+      return;
+
+    // Clear the depth buffer so that overlay decorations win the depth test.
+    // (If *only* overlays exist, then clearOpaque() above already took care of this).
+    if (haveRenderCommands) {
+      const system = System.instance;
+      system.frameBufferStack.execute(this._fbos.opaqueColor!, true, () => {
+        system.applyRenderState(RenderState.defaults);
+        system.context.clearDepth(1.0);
+        system.context.clear(GL.BufferBit.Depth);
+      });
+    }
+
+    // Render overlays as opaque into the pick buffers
     this.renderOpaque(commands, false, true);
-    this._target.popActiveVolume();
   }
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     return PixelBuffer.create(rect, selector, this);
   }
+
   public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._fbos.depthAndOrder); }
+
   public readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined {
     const tex = high ? this._textures.idHigh : this._textures.idLow;
     if (undefined === tex)
@@ -438,6 +516,7 @@ abstract class Compositor extends SceneCompositor {
 
     return result;
   }
+
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
     if (undefined === fbo || !fbo.isValid)
       return undefined;
@@ -480,12 +559,18 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
+    this._target.plan!.selectTerrainFrustum();
+    this._target.changeFrustum(this._target.plan!);
+
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
       System.instance.applyRenderState(this.getRenderState(RenderPass.Terrain));
       this._target.techniques.execute(this._target, cmds, RenderPass.Terrain);
     });
+
+    this._target.plan!.selectViewFrustum();
+    this._target.changeFrustum(this._target.plan!);
   }
 
   private renderSkyBox(commands: RenderCommands, needComposite: boolean) {
@@ -518,6 +603,58 @@ abstract class Compositor extends SceneCompositor {
       this._target.techniques.execute(this._target, cmds, RenderPass.Background);
       this._target.popBranch();
     });
+  }
+
+  private renderStencilVolumes(commands: RenderCommands, needComposite: boolean) {
+    const cmds = commands.getCommands(RenderPass.StencilVolume);
+    if (0 === cmds.length) {
+      return;
+    }
+
+    if (this._debugStencil > 0) {
+      System.instance.frameBufferStack.execute(this.getBackgroundFbo(needComposite), true, () => {
+        if (1 === this._debugStencil) {
+          System.instance.applyRenderState(this.getRenderState(RenderPass.OpaqueGeneral));
+          this._target.techniques.execute(this._target, cmds, RenderPass.OpaqueGeneral);
+        } else {
+          this._target.pushState(this._target.decorationState);
+          System.instance.applyRenderState(this._debugStencilRenderState);
+          this._target.techniques.execute(this._target, cmds, RenderPass.StencilVolume);
+          this._target.popBranch();
+        }
+      });
+      return;
+    }
+
+    const fbStack = System.instance.frameBufferStack;
+    const fboSet = this._fbos.stencilSet;
+    const fboCopy = this.getBackgroundFbo(needComposite);
+    if (undefined === fboSet || undefined === fboCopy)
+      return;
+
+    // Clear the stencil.
+    fbStack.execute(fboSet!, true, () => {
+      System.instance.context.clearStencil(0);
+      System.instance.context.clear(GL.BufferBit.Stencil);
+    });
+
+    // Set the stencil using the stencil command list.
+    fbStack.execute(fboSet!, true, () => {
+      this._target.pushState(this._target.decorationState);
+      System.instance.applyRenderState(this._stencilSetRenderState);
+      this._target.techniques.execute(this._target, cmds, RenderPass.StencilVolume);
+      this._target.popBranch();
+    });
+
+    // Process the stencil volumes, blending into the current color buffer.
+    fbStack.execute(fboCopy!, true, () => {
+      this._target.pushState(this._target.decorationState);
+      System.instance.applyRenderState(this._stencilCopyRenderState);
+      const params = new DrawParams(this._target, this._geometry.stencilCopy!);
+      this._target.techniques.draw(params);
+      this._target.popBranch();
+    });
+
   }
 
   private renderHilite(commands: RenderCommands) {

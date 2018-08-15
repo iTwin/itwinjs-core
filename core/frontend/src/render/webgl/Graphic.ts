@@ -416,6 +416,7 @@ export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
 
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
+  public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
@@ -454,6 +455,7 @@ export class Batch extends Graphic {
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
+  public get isPickable(): boolean { return true; }
 
   public getOverrides(target: Target): FeatureOverrides {
     let ret: FeatureOverrides | undefined;
@@ -510,7 +512,7 @@ export class Branch extends Graphic {
       branch.setViewFlags(viewFlags);
   }
 
-  public dispose() { }
+  public dispose() { this.branch.dispose(); }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public assignUniformFeatureIndices(index: number): void {

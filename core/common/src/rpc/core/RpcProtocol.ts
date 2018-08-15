@@ -25,7 +25,7 @@ export interface SerializedRpcRequest {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
-  parameters: string;
+  parameters: string | Uint8Array;
 }
 
 /** An RPCD operation request fulfillment. */
@@ -37,7 +37,7 @@ export interface RpcRequestFulfillment {
   id: string;
 
   /** The result for the request. */
-  result: string | ArrayBuffer;
+  result: string | Uint8Array;
 
   /** A protocol-specific status code value for the request. */
   status: number;
@@ -143,6 +143,13 @@ export abstract class RpcProtocol {
 
   /** Serializes a request. */
   public serialize(request: RpcRequest): SerializedRpcRequest {
+    let parameters: string | Uint8Array;
+    if (request.parameters.length === 1 && request.parameters[0] instanceof Uint8Array) {
+      parameters = request.parameters[0];
+    } else {
+      parameters = RpcMarshaling.serialize(request.operation, request.protocol, request.parameters);
+    }
+
     return {
       id: request.id,
       authorization: this.configuration.applicationAuthorizationValue || "",
@@ -153,7 +160,7 @@ export abstract class RpcProtocol {
       },
       method: this.supplyMethodForOperation(request.operation),
       path: this.supplyPathForOperation(request.operation, request),
-      parameters: RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
+      parameters,
     };
   }
 

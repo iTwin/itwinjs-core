@@ -5,16 +5,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import "./Snap.scss";
 
-export interface SnapProps extends CommonProps {
-  icon?: React.ReactChild;
+/** Properties of [[Snap]] component.  */
+export interface SnapProps extends CommonProps, NoChildrenProps {
+  /** Icon of snap row. I.e. [[SnapModeIcon]] */
+  icon?: React.ReactNode;
+  /** Describes if the snap row is active. */
   isActive?: boolean;
+  /** Label of snap row. */
   label?: string;
 }
 
+/** Snap row used in [[SnapModeDialog]] component. */
 export default class Snap extends React.Component<SnapProps> {
   public render() {
     const dialogClassName = classnames(

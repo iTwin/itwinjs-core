@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PropertyGrid withUnifiedSelection renders correctly 1`] = `
+<PropertyGrid
+  dataProvider={null}
+  orientation={0}
+/>
+`;

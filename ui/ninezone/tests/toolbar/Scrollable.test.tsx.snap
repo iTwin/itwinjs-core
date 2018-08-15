@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Scrollable /> renders correctly 1`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={0}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  expandsTo={0}
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={3}
+/>
+`;
+
+exports[`<Scrollable /> renders vertical with overflow scrolled right most correctly 1`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  expandsTo={0}
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Scrollable /> renders with expandsTo 1`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={2}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Scrollable /> renders with visible item threshold 1`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={0}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;

@@ -1,10 +1,9 @@
-
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
+import { Point3d, Point2d, PolygonOps } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
@@ -15,12 +14,7 @@ import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
 export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
-
-export const enum BeButton {
-  Data = 0,
-  Reset = 1,
-  Middle = 2,
-}
+export const enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
 export enum BeCursor {
   Default = "default",
@@ -35,25 +29,6 @@ export enum BeCursor {
   Dynamics = "move",
 }
 
-/** The *type* of a gesture. */
-export const enum GestureId {
-  None = 0,
-  /** Two or more fingers dragging */
-  MultiFingerMove = 1,
-  /** A single finger dragging */
-  SingleFingerMove = 2,
-  /** tap with two fingers */
-  TwoFingerTap = 3,
-  /** long press followed by a tap */
-  PressAndTap = 4,
-  /** One finger down and up; implies no LongPress active */
-  SingleTap = 5,
-  /** One finger down and up, twice; implies no LongPress active */
-  DoubleTap = 6,
-  /** One finger held down for more than some threshold */
-  LongPress = 7,
-}
-
 /** The *source* that generated an event. */
 export const enum InputSource {
   /** Source not defined */
@@ -64,7 +39,7 @@ export const enum InputSource {
   Touch = 2,
 }
 
-/** The *source* that generated a point. */
+/** The *source* that generated a coordinate. */
 export const enum CoordSource {
   /** Event was created by an action from the user */
   User = 0,
@@ -165,83 +140,20 @@ export class BeButtonEvent {
   }
 }
 
-/** Describes a "gesture" input originating from a touch-input device. */
-export class GestureInfo {
-  public gestureId = GestureId.None;
-  public numberTouches = 0;
-  public previousNumberTouches = 0;    // Only meaningful for GestureId::SingleFingerMove and GestureId::MultiFingerMove
-  public touches: Point2d[] = [new Point2d(), new Point2d(), new Point2d()];
-  public ptsLocation: Point2d = new Point2d();    // Location of centroid
-  public distance = 0;                 // Only meaningful on motion with multiple touches
-  public isEndGesture = false;
-  public isFromMouse = false;
-
-  public getViewPoint(vp: Viewport) {
-    const screenRect = vp.viewRect;
-    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.top, 0.0);
-  }
-
-  public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: XAndY[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {
-    this.gestureId = gestureId;
-    this.numberTouches = Math.min(touchPoints.length, 3);
-    this.previousNumberTouches = prevNumTouches;
-    this.isEndGesture = isEnding;
-    this.isFromMouse = isFromMouse;
-
-    this.ptsLocation.x = Math.floor(centerX);
-    this.ptsLocation.y = Math.floor(centerY);
-    this.distance = distance;
-
-    for (let i = 0; i < this.numberTouches; ++i) {
-      this.touches[i].x = Math.floor(touchPoints[i].x);
-      this.touches[i].y = Math.floor(touchPoints[i].y);
-    }
-  }
-
-  public copyFrom(src: GestureInfo) {
-    this.gestureId = src.gestureId;
-    this.numberTouches = src.numberTouches;
-    this.previousNumberTouches = src.previousNumberTouches;
-    this.isEndGesture = src.isEndGesture;
-
-    this.ptsLocation.x = src.ptsLocation.x;
-    this.ptsLocation.y = src.ptsLocation.y;
-    this.distance = src.distance;
-
-    for (let i = 0; i < this.numberTouches; ++i) {
-      this.touches[i].x = src.touches[i].x;
-      this.touches[i].y = src.touches[i].y;
-    }
-
-    this.isFromMouse = src.isFromMouse;
-  }
-  public clone(result?: GestureInfo) {
-    result = result ? result : new GestureInfo();
-    result.copyFrom(this);
-    return result;
-  }
-}
-
-/** Specialization of ButtonEvent describing a gesture event originating from touch input. */
-export class BeGestureEvent extends BeButtonEvent {
-  public gestureInfo?: GestureInfo;
-  public setFrom(src: BeGestureEvent) {
-    super.setFrom(src);
-    this.gestureInfo = src.gestureInfo;
-  }
-  public clone(result?: BeGestureEvent): BeGestureEvent {
-    result = result ? result : new BeGestureEvent();
-    result.setFrom(this);
-    return result;
-  }
-}
-
 /** Specialization of ButtonEvent for touch input. */
 export class BeTouchEvent extends BeButtonEvent {
+  public get touchCount(): number { return this.touchInfo.targetTouches.length; }
+  public get isSingleTouch(): boolean { return 1 === this.touchCount; }
+  public get isTwoFingerTouch(): boolean { return 2 === this.touchCount; }
+  public tapCount: number = 0;
+  public get isSingleTap(): boolean { return 1 === this.tapCount && 1 === this.touchCount; }
+  public get isDoubleTap(): boolean { return 2 === this.tapCount && 1 === this.touchCount; }
+  public get isTwoFingerTap(): boolean { return 1 === this.tapCount && 2 === this.touchCount; }
   public constructor(public touchInfo: TouchEvent) { super(); }
   public setFrom(src: BeTouchEvent) {
     super.setFrom(src);
     this.touchInfo = src.touchInfo;
+    this.tapCount = src.tapCount;
   }
   public clone(result?: BeTouchEvent): BeTouchEvent {
     result = result ? result : new BeTouchEvent(this.touchInfo);
@@ -251,6 +163,37 @@ export class BeTouchEvent extends BeButtonEvent {
   public static getTouchPosition(touch: Touch, vp: Viewport): Point2d {
     const rect = vp.getClientRect();
     return Point2d.createFrom({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
+  }
+  public static getTouchListCentroid(list: TouchList, vp: Viewport): Point2d | undefined {
+    switch (list.length) {
+      case 0: {
+        return undefined;
+      }
+      case 1: {
+        return this.getTouchPosition(list[0], vp);
+      }
+      case 2: {
+        return this.getTouchPosition(list[0], vp).interpolate(0.5, this.getTouchPosition(list[1], vp));
+      }
+      default: {
+        const points: Point2d[] = [];
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < list.length; i++) {
+          points.push(this.getTouchPosition(list[i], vp));
+        }
+        const centroid = Point2d.createZero();
+        PolygonOps.centroidAndArea(points, centroid);
+        return centroid;
+      }
+    }
+  }
+  public static findTouchById(list: TouchList, id: number): Touch | undefined {
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < list.length; i++) {
+      if (id === list[i].identifier)
+        return list[i];
+    }
+    return undefined;
   }
 }
 
@@ -277,13 +220,13 @@ export class Tool {
   public static hidden = false;
   /** The unique string that identifies this tool. This must be overridden in every subclass. */
   public static toolId = "";
-  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool */
+  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
-  private static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
-  private static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
-  private static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
   public constructor(..._args: any[]) { }
 
+  private static _keyin?: string;
+  private static _flyover?: string;
+  private static _description?: string;
   private static get localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
   private static get keyinKey() { return this.localizeBase + ".keyin"; }
   private static get flyoverKey() { return this.localizeBase + ".flyover"; }
@@ -367,7 +310,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public onSuspend(): void { }
 
-  /** Notification of a vViewTool or InputCollector exiting and this tool is being unsuspended.
+  /** Notification of a ViewTool or InputCollector exiting and this tool is being unsuspended.
    *  @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
   public onUnsuspend(): void { }
@@ -386,97 +329,100 @@ export abstract class InteractiveTool extends Tool {
   public decorateSuspended(_context: DecorateContext): void { }
 
   /** Invoked when the reset button is pressed.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    * @note To support right-press menus, a tool should put its reset event processing in onResetButtonUp instead of onResetButtonDown.
    */
   public async onResetButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the reset button is released.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the data button is pressed.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the data button is released.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the middle mouse button is pressed.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onMiddleButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the middle mouse button is released.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onMiddleButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  /** Invoked when a mouse button is clicked.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
-   */
-  //  public async onClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
-
-  /** Invoked when a mouse button is double clicked.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
-   */
-  //  public async onDoubleClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
-
   /** Invoked when the cursor is moving */
-  public async onModelMotion(_ev: BeButtonEvent): Promise<void> { }
+  public async onMouseMotion(_ev: BeButtonEvent): Promise<void> { }
+
   /** Invoked when the cursor is not moving */
-  public async onModelNoMotion(_ev: BeButtonEvent): Promise<void> { }
+  public async onMouseNoMotion(_ev: BeButtonEvent): Promise<void> { }
+
   /** Invoked when the cursor was previously moving, and has stopped moving. */
-  public async onModelMotionStopped(_ev: BeButtonEvent): Promise<void> { }
+  public async onMouseMotionStopped(_ev: BeButtonEvent): Promise<void> { }
 
   /** Invoked when the cursor begins moving while a button is depressed.
-   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onModelStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
-  /** Invoked when the button is released after onModelStartDrag.
+  public async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+  /** Invoked when the button is released after onMouseStartDrag.
    * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onModelEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
+  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
 
   /** Invoked when the mouse wheel moves.
-   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
   public async onMouseWheel(_ev: BeWheelEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
+  /** Called when Control, Shift, or Alt modifier keys are pressed or released.
    * @param _wentDown up or down key event
    * @param _modifier The modifier key mask
    * @param _event The event that caused this call
-   * @return true to refresh view decorations or update dynamics.
+   * @return Yes to refresh view decorations or update dynamics.
    */
-  public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> { return false; }
+  public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  /** Called when keys are pressed or released.
+  /** Called when any key is pressed or released.
    * @param _wentDown up or down key event
    * @param _keyEvent The KeyboardEvent
    * @return Yes to prevent further processing of this event
-   * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
+   * @see [[onModifierKeyTransition]]
    */
   public async onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onMultiFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onTwoFingerTap(_ev: BeGestureEvent): boolean { return false; }
-  public onPressAndTap(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onLongPress(_ev: BeGestureEvent): boolean { return false; }
-  public onTouchMotionPaused(): boolean { return false; }
+  /** Called when user adds a touch point by placing a finger or stylus on the surface. */
+  public async onTouchStart(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when user removes a touch point by lifting a finger or stylus from the surface. */
+  public async onTouchEnd(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when the last touch point is removed from the surface completing the current gesture. This is a convenience event sent following onTouchEnd when no target touch points remain on the surface. */
+  public async onTouchComplete(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when a touch point is interrupted in some way and needs to be dropped from the list of target touches. */
+  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { }
+  /** Called when a touch point moves along the surface. */
+  public async onTouchMove(_ev: BeTouchEvent): Promise<void> { }
 
-  public async onTouchStart(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
-  public async onTouchEnd(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
-  public async onTouchCancel(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
-  public async onTouchMove(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
+  /** Called after at least one touch point has moved for an appreciable time and distance along the surface to not be considered a tap.
+   * @param _ev The event that caused this call
+   * @param _startEv The event from the last call to onTouchStart
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
+  public async onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
+  /** Called when touch point(s) are added and removed from a surface within a small time window without any touch point moving.
+   * @param _ev The event that caused this call
+   * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
+   * @note A double or triple tap event will not be preceded by a single tap event.
+   */
+  public async onTouchTap(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
+
+  public isCompatibleViewport(_vp: Viewport, _isSelectedViewChange: boolean): boolean { return true; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
 
   /**
@@ -487,12 +433,10 @@ export abstract class InteractiveTool extends Tool {
   public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
 
   /**
-   * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
+   * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.
    * @param hit The HitDetail whose info is needed.
-   * @param _delimiter Use this string to break lines of the description.
    * @return A Promise for the string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
-   * The default implementation shows hit description
    */
   public async getToolTip(_hit: HitDetail): Promise<string> { return _hit.getToolTip(); }
 

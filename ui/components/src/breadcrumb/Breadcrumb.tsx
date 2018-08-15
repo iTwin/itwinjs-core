@@ -380,7 +380,8 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
   public componentDidMount() {
     this.updateTree(this.props.dataProvider, this.props.current);
     this.props.path.BreadcrumbUpdateEvent.addListener(this.pathUpdate);
-    this.props.dataProvider.onTreeNodeChanged.addListener(this.treeUpdate);
+    this.props.dataProvider.onTreeNodeChanged &&
+      this.props.dataProvider.onTreeNodeChanged.addListener(this.treeUpdate);
   }
 
   private pathUpdate = (args: BreadcrumbUpdateEventArgs) => {
@@ -602,7 +603,8 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     const node = this.props.path.getCurrentNode();
     if (dataProvider) {
       this.updateTree(dataProvider, node);
-      dataProvider.onTreeNodeChanged.addListener(this.treeChange);
+      dataProvider.onTreeNodeChanged &&
+        dataProvider.onTreeNodeChanged.addListener(this.treeChange);
       this.props.path.BreadcrumbUpdateEvent.addListener(this.pathChange);
     }
   }

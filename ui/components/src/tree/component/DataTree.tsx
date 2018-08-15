@@ -71,10 +71,12 @@ export default class DataTree extends React.Component<DataTreeProps> {
   }
 
   public componentDidMount() {
-    this.props.dataProvider.onTreeNodeChanged.addListener(this.onTreeNodeChanged);
+    this.props.dataProvider.onTreeNodeChanged &&
+      this.props.dataProvider.onTreeNodeChanged.addListener(this.onTreeNodeChanged);
   }
   public componentWillUnmount() {
-    this.props.dataProvider.onTreeNodeChanged.removeListener(this.onTreeNodeChanged);
+    this.props.dataProvider.onTreeNodeChanged &&
+      this.props.dataProvider.onTreeNodeChanged.removeListener(this.onTreeNodeChanged);
   }
   private onTreeNodeChanged = () => {
     this.forceUpdate();

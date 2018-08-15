@@ -1,6 +1,46 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Thu, 02 Aug 2018 14:48:42 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Aug 2018 17:08:53 GMT and should not be manually modified.
+
+## 0.117.0
+Wed, 15 Aug 2018 17:08:53 GMT
+
+*Version update only*
+
+## 0.116.0
+Wed, 15 Aug 2018 15:13:19 GMT
+
+*Version update only*
+
+## 0.115.0
+Tue, 14 Aug 2018 15:21:27 GMT
+
+*Version update only*
+
+## 0.114.0
+Tue, 14 Aug 2018 12:04:18 GMT
+
+### Updates
+
+- Added Transform.identity
+- Export PolygonOps and PointHelpers.
+
+## 0.113.0
+Fri, 10 Aug 2018 05:06:20 GMT
+
+*Version update only*
+
+## 0.112.0
+Tue, 07 Aug 2018 12:19:22 GMT
+
+*Version update only*
+
+## 0.111.0
+Mon, 06 Aug 2018 19:25:38 GMT
+
+### Updates
+
+- ClipShape fetches planes for concave region by triangulating down to convex sets
 
 ## 0.110.0
 Thu, 02 Aug 2018 14:48:42 GMT

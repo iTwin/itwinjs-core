@@ -6,10 +6,39 @@ import * as path from "path";
 import { DbResult, Guid, Id64, BeEvent, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
-  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
-  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
-  IModelDb, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType, Entity,
-  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
+  ClassRegistry,
+  BisCore,
+  Element,
+  GeometricElement2d,
+  GeometricElement3d,
+  GeometricModel,
+  InformationPartitionElement,
+  DefinitionPartition,
+  LinkPartition,
+  PhysicalPartition,
+  GroupInformationPartition,
+  DocumentPartition,
+  Subject,
+  ElementPropertyFormatter,
+  IModelDb,
+  ECSqlStatement,
+  SqliteStatement,
+  SqliteValue,
+  SqliteValueType,
+  Entity,
+  Model,
+  DictionaryModel,
+  Category,
+  SubCategory,
+  SpatialCategory,
+  ElementGroupsMembers,
+  LightLocation,
+  PhysicalModel,
+  AutoPushEventType,
+  AutoPush,
+  AutoPushState,
+  AutoPushEventHandler,
+  ViewDefinition,
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
@@ -261,6 +290,10 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
+    const modelExtents: AxisAlignedBox3d = model.queryExtents();
+    assert.isBelow(modelExtents.low.x, modelExtents.high.x);
+    assert.isBelow(modelExtents.low.y, modelExtents.high.y);
+    assert.isBelow(modelExtents.low.z, modelExtents.high.z);
   });
 
   it("should find a tile tree for a geometric model", () => {
@@ -387,6 +420,37 @@ describe("iModel", () => {
     viewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition"); // limit query to SpatialViewDefinitions
     assert.isAtLeast(viewDefinitionProps.length, 3);
     assert.exists(viewDefinitionProps[2].modelSelectorId);
+  });
+
+  it("should iterate ViewDefinitions", () => {
+    // imodel2 contains 3 SpatialViewDefinitions and no other views.
+    let numViews = 0;
+    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return true; });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(3);
+
+    // Query specifically for spatial views
+    numViews = 0;
+    result = imodel2.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
+      if (view.isSpatialView())
+        ++numViews;
+
+      return view.isSpatialView();
+    });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(3);
+
+    // Query specifically for 2d views
+    numViews = 0;
+    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => { ++numViews; return true; });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(0);
+
+    // Terminate iteration on first view
+    numViews = 0;
+    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return false; });
+    expect(result).to.be.false;
+    expect(numViews).to.equal(1);
   });
 
   it("should be children of RootSubject", () => {
@@ -560,6 +624,35 @@ describe("iModel", () => {
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
+  });
+
+  it("read view thumbnail", () => {
+    const viewId = "0x24";
+    const thumbnail = imodel5.views.getThumbnail(viewId);
+    assert.exists(thumbnail);
+    if (!thumbnail)
+      return;
+    assert.equal(thumbnail.format, "jpeg");
+    assert.equal(thumbnail.height, 768);
+    assert.equal(thumbnail.width, 768);
+    assert.equal(thumbnail.image!.length, 18062);
+
+    thumbnail.width = 100;
+    thumbnail.height = 200;
+    thumbnail.format = "png";
+    thumbnail.image = new Uint8Array(200);
+    thumbnail.image.fill(12);
+    const stat = imodel5.views.saveThumbnail(viewId, thumbnail);
+    assert.equal(stat, 0, "save thumbnail");
+    const thumbnail2 = imodel5.views.getThumbnail(viewId);
+    assert.exists(thumbnail2);
+    if (!thumbnail2)
+      return;
+    assert.equal(thumbnail2.format, "png");
+    assert.equal(thumbnail2.height, 200);
+    assert.equal(thumbnail2.width, 100);
+    assert.equal(thumbnail2.image!.length, 200);
+    assert.equal(thumbnail2.image![0], 12);
   });
 
   it("ecefLocation for iModels", () => {
@@ -845,6 +938,9 @@ describe("iModel", () => {
     const id1 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
     const id2 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
 
+    const geometricModel = testImodel.models.getModel(newModelId) as GeometricModel;
+    assert.throws(() => geometricModel.queryExtents()); // no geometry
+
     // Create grouping relationships from 0 to 1 and from 0 to 2
     const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
     r1.memberPriority = 1;
@@ -1004,20 +1100,19 @@ describe("iModel", () => {
     assert.equal(readFromDb, myStrVal, "query string after save");
 
     const myPropsBlob: FilePropertyProps = { name: "MyBlob", namespace: "test1", id: 10 };
-    const testRange = new Uint32Array(500);
+    const testRange = new Uint8Array(500);
     testRange.fill(11);
-    const blobVal = testRange.buffer as ArrayBuffer;
-    stat = iModel.saveFileProperty(myPropsBlob, blobVal);
+    stat = iModel.saveFileProperty(myPropsBlob, undefined, testRange);
     assert.equal(stat, 0, "saveFileProperty as blob");
     const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
-    assert.deepEqual(blobFromDb, blobVal, "query blob after save");
+    assert.deepEqual(blobFromDb, testRange, "query blob after save");
 
     let next = iModel.queryNextAvailableFileProperty(myPropsBlob);
     assert.equal(11, next, "queryNextAvailableFileProperty blob");
 
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(2, next, "queryNextAvailableFileProperty str");
-    assert.equal(0, iModel.deleteFileProperty(myPropsStr));
+    assert.equal(0, iModel.deleteFileProperty(myPropsStr), "do deleteFileProperty");
     assert.equal(stat, 0, "deleteFileProperty");
     assert.isUndefined(iModel.queryFilePropertyString(myPropsStr), "property was deleted");
     next = iModel.queryNextAvailableFileProperty(myPropsStr);

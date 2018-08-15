@@ -501,10 +501,10 @@ describe("OrderedRotationAngles", () => {
           }
           const orderedAngles = OrderedRotationAngles.createDegrees(rollAngle.degrees, -pitchAngle.degrees, yawAngle.degrees, AxisOrder.XYZ);
           const orderedMatrix = orderedAngles.toRotMatrix();
-//          const orderedAnglesB = OrderedRotationAngles.createDegrees(-rollAngle.degrees, pitchAngle.degrees, -yawAngle.degrees, AxisOrder.ZYX);
-//          const orderedMatrixB = orderedAngles.toRotMatrix ();
-//         console.log ("B diff", orderedMatrixB.maxDiff (yprMatrix), orderedAnglesB);
-          orderedMatrix.transposeInPlace ();
+          //          const orderedAnglesB = OrderedRotationAngles.createDegrees(-rollAngle.degrees, pitchAngle.degrees, -yawAngle.degrees, AxisOrder.ZYX);
+          //          const orderedMatrixB = orderedAngles.toRotMatrix ();
+          //         console.log ("B diff", orderedMatrixB.maxDiff (yprMatrix), orderedAnglesB);
+          orderedMatrix.transposeInPlace();
           if (!ck.testRotMatrix(yprMatrix, orderedMatrix)) {
             const orderedMatrix1 = orderedAngles.toRotMatrix();
             ck.testRotMatrix(yprMatrix, orderedMatrix1);
@@ -733,4 +733,41 @@ describe("MiscAngles", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("AngleSweep.fromJSON", () => {
+    const ck = new Checker();
+    const sweepA = AngleSweep.createStartEndDegrees(10, 50);
+    const sweepB = AngleSweep.fromJSON({ degrees: [sweepA.startDegrees, sweepA.endDegrees] });
+    ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepB));
+    const sweepC = AngleSweep.fromJSON({ radians: [sweepA.startRadians, sweepA.endRadians] });
+    ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepC));
+    const sweepD = AngleSweep.fromJSON(sweepB);
+    ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepD));
+    const sweepZ = AngleSweep.fromJSON(undefined);
+    ck.testTrue(sweepZ.isFullCircle());
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Angle.fromJSON", () => {
+    const ck = new Checker();
+    for (const degrees of [10, 0, 45, -20]) {
+      const angleA = Angle.createDegrees(degrees);
+      const angleB = Angle.fromJSON({ degrees: angleA.degrees });
+      ck.testTrue(angleA.isAlmostEqualNoPeriodShift(angleB));
+      const angleC = Angle.fromJSON({ radians: angleA.radians });
+      ck.testTrue(angleA.isAlmostEqualNoPeriodShift(angleC));
+      const angleD = Angle.fromJSON(angleB);
+      ck.testTrue(angleA.isAlmostEqualNoPeriodShift(angleD));
+      const angleZ = Angle.fromJSON(undefined);
+      ck.testCoordinate(angleZ.degrees, 0);
+
+      // obscure . . .
+      const angleRa = Angle.fromJSON({ _radians: angleA.radians });
+      const angleDe = Angle.fromJSON({ _degrees: angleA.degrees });
+      ck.testAngleNoShift(angleA, angleRa);
+      ck.testAngleNoShift(angleA, angleDe);
+    }
+    expect(ck.getNumErrors()).equals(0);
+});
+
 });

@@ -31,7 +31,7 @@ export interface TreeNodeItem {
  * TreeDataProvider provides data to the DataTree.
  */
 export interface TreeDataProvider {
-  onTreeNodeChanged: TreeDataChangeEvent;
+  onTreeNodeChanged?: TreeDataChangeEvent;
 
   getRootNodesCount(): Promise<number>;
   getRootNodes(options?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>>;

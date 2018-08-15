@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Nested /> renders correctly 1`] = `
+<Settings
+  className="nz-widget-toolSettings-settings-nested"
+>
+  <div
+    className="nz-header"
+  >
+    <BackButton
+      className="nz-button"
+    />
+    <div
+      className="nz-label"
+    />
+  </div>
+</Settings>
+`;

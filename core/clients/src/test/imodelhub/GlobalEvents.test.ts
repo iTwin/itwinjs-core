@@ -34,11 +34,11 @@ function mockPeekLockGlobalEvent(subscriptionId: string, eventBody: object, even
     return;
 
   const headerLocationQuery = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
-  const reponseHeaderLocation = utils.defaultUrl + utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", headerLocationQuery);
+  const responseHeaderLocation = utils.defaultUrl + utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", headerLocationQuery);
 
   const headers = eventType ? {
     "content-type": eventType!,
-    "location": reponseHeaderLocation,
+    "location": responseHeaderLocation,
   } : {};
   let query = subscriptionId + "/messages/head";
   if (timeout)

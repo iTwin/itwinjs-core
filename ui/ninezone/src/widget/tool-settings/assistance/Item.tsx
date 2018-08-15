@@ -5,10 +5,17 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Props from "../../../utilities/Props";
+import CommonProps from "../../../utilities/Props";
 import "./Item.scss";
 
-export default class ToolAssistanceItem extends React.Component<Props> {
+/** Properties of [[AssistanceItem]] component. */
+export interface AssistanceItemProps extends CommonProps {
+  /** Assistance items and separators. I.e.: [[AssistanceItem]], [[Separator]] */
+  children?: React.ReactNode;
+}
+
+/** Tool assistance item. Used in [[Assistance]] component. */
+export default class AssistanceItem extends React.Component<AssistanceItemProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-assistance-item",

@@ -25,7 +25,7 @@ export abstract class RpcInterface {
     return request.response;
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public configurationSupplier: RpcConfigurationSupplier | undefined;
 }
 

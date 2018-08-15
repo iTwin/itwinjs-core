@@ -1,0 +1,37 @@
+{
+  "require": [
+    "ignore-styles",
+    "jsdom-global/register",
+    "source-map-support/register",
+    "ts-node/register",
+    "tsconfig-paths/register"
+  ],
+  "include": [
+    "src/**"
+  ],
+  "exclude": [
+    "**/*.css",
+    "**/*.scss",
+    "*.scss",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.d.ts",
+    "**/*.d.tsx",
+    "demo/**/*",
+    "tests/**/*",
+    "lib/**/*",
+    "node_modules/**/*"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "temp-directory": "./lib/test/coverage/.nyc_output",
+  "report-dir": "./lib/test/coverage",
+  "reporter": [
+    "text-summary",
+    "lcov",
+    "cobertura"
+  ],
+  "all": true
+}

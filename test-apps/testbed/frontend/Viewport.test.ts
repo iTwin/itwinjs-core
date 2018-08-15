@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
+import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanViewTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 import { MaybeRenderApp } from "./WebGLTestContext";
@@ -84,8 +84,8 @@ describe("Viewport", () => {
     assert.isFalse(vp.isRedoPossible, "after redo, redo is not possible");
     assert.isTrue(vp.isUndoPossible, "after redo, undo is possible");
 
-    const pan = IModelApp.tools.create("View.Pan", vp) as PanTool;
-    assert.instanceOf(pan, PanTool);
+    const pan = IModelApp.tools.create("View.Pan", vp) as PanViewTool;
+    assert.instanceOf(pan, PanViewTool);
     assert.equal(pan.viewport, vp);
   });
 
@@ -93,16 +93,16 @@ describe("Viewport", () => {
     const vpView = spatialView.clone<SpatialViewState>();
     const viewport = new TestViewport(canvas!, vpView);
     const accudraw = IModelApp.accuDraw;
-    assert.isTrue(accudraw.isEnabled(), "Accudraw should be enabled");
+    assert.isTrue(accudraw.isEnabled, "Accudraw should be enabled");
     const pt = new Point3d(1, 1, 1);
     accudraw.adjustPoint(pt, viewport, false);
 
     accudraw.activate();
-    assert.isTrue(accudraw.isActive(), "AccuDraw is active");
+    assert.isTrue(accudraw.isActive, "AccuDraw is active");
     accudraw.deactivate();
-    assert.isFalse(accudraw.isActive(), "not active");
+    assert.isFalse(accudraw.isActive, "not active");
     accudraw.setCompassMode(CompassMode.Polar);
-    assert.equal(accudraw.getCompassMode(), CompassMode.Polar, "polar mode");
+    assert.equal(accudraw.compassMode, CompassMode.Polar, "polar mode");
   });
 
   it("loadFontMap", async () => {
@@ -129,7 +129,7 @@ describe("Viewport", () => {
     const vp = new TestViewport(canvas!, vpView);
     let plan: RenderPlan | undefined;
     try {
-      plan = new RenderPlan(vp);
+      plan = RenderPlan.createFromViewport(vp);
     } catch (e) {
       plan = undefined;
     }

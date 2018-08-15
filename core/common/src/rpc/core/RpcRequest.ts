@@ -15,7 +15,7 @@ import { aggregateLoad, RpcNotFoundResponse } from "./RpcControl";
 import { IModelToken } from "../../IModel";
 import { IModelError } from "../../IModelError";
 
-const emptyBuffer = new ArrayBuffer(0);
+const emptyBuffer = new Uint8Array(0);
 
 /** Supplies an IModelToken for an RPC request. */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
@@ -203,7 +203,7 @@ export class RpcRequest<TResponse = any> {
   public getResponseText(): string { return ""; }
 
   /** Override to supply response bytes. */
-  public getResponseBytes(): ArrayBuffer { return emptyBuffer; }
+  public getResponseBytes(): Uint8Array { return emptyBuffer; }
 
   /** Override to supply response type. */
   public getResponseType(): RpcResponseType { return RpcResponseType.Unknown; }
@@ -270,8 +270,12 @@ export class RpcRequest<TResponse = any> {
       case RpcRequestStatus.Resolved: {
         const type = this.getResponseType();
         if (type === RpcResponseType.Text) {
-          const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-          return this.resolve(result);
+          try {
+            const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+            return this.resolve(result);
+          } catch (err) {
+            return this.reject(err);
+          }
         } else if (type === RpcResponseType.Binary) {
           const result: TResponse = this.getResponseBytes() as any; // ts bug? why necessary to cast?
           return this.resolve(result);
@@ -283,16 +287,20 @@ export class RpcRequest<TResponse = any> {
       case RpcRequestStatus.Rejected: {
         this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorReceived, this);
 
-        const localError = new Error();
-        const error = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-        localError.name = error.name;
-        localError.message = error.message;
+        try {
+          const localError = new Error();
+          const backendError = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+          localError.name = backendError.name;
+          localError.message = backendError.message;
 
-        const localStack = localError.stack;
-        const remoteStack = error.stack;
-        error.stack = `${localStack}\n${remoteStack}`;
+          const localStack = localError.stack;
+          const remoteStack = backendError.stack;
+          backendError.stack = `${localStack}\n${remoteStack}`;
 
-        return this.reject(error);
+          return this.reject(backendError);
+        } catch (err) {
+          return this.reject(err);
+        }
       }
 
       case RpcRequestStatus.Provisioning:

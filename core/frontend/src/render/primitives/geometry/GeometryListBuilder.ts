@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d } from "@bentley/geometry-core";
-import { GraphicParams, RenderTexture, Gradient } from "@bentley/imodeljs-common";
+import { GraphicParams, RenderTexture, Gradient, ElementAlignedBox3d, FeatureTable } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../../GraphicBuilder";
 import { ViewContext } from "../../../ViewContext";
@@ -154,16 +154,23 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   }
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
+    let featureTable: FeatureTable | undefined;
     if (!accum.isEmpty) {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
       // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this.params);
-      // const context = PrimitiveBuilderContext.fromPrimitiveBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      accum.saveToGraphicList(this.primitives, options, tolerance);
+      featureTable = accum.saveToGraphicList(this.primitives, options, tolerance, this.createParams.pickableId);
     }
-    return (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
+
+    let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
+    if (undefined !== featureTable) {
+      const range = new ElementAlignedBox3d(); // ###TODO compute range...
+      graphic = this.accum.system.createBatch(graphic, featureTable, range);
+    }
+
+    return graphic;
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {

@@ -3,9 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, QPoint3dList, QParams3d, QPoint3d, ColorDef } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator, StrokeOptions } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, SkyBoxCreateParams, RenderClipVolume, GraphicList } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList } from "../System";
+import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
@@ -31,6 +32,7 @@ import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "@bentley/geometry-core/lib/topology/Graph";
 
 export const enum ContextState {
   Uninitialized,
@@ -53,7 +55,7 @@ export const enum DepthType {
   RenderBufferUnsignedShort16,     // core to WebGL1
   // TextureUnsignedShort16,       // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   // TextureUnsignedInt24,         // core to WebGL2
-  // TextureUnsignedInt24Stencil8, // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
+  TextureUnsignedInt24Stencil8,    // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   TextureUnsignedInt32,            // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   // TextureFloat32,               // core to WebGL2
   // TextureFloat32Stencil8,       // core to WeBGL2
@@ -143,7 +145,8 @@ export class Capabilities {
     }
 
     // Determine the maximum depth attachment type.
-    this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
+    // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
+    this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
     return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
@@ -348,8 +351,6 @@ export class System extends RenderSystem {
   private _lineCodeTexture?: TextureHandle;
   private _techniques?: Techniques;
 
-  public static identityTransform = Transform.createIdentity();
-
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public get lineCodeTexture() { return this._lineCodeTexture; }
@@ -414,11 +415,12 @@ export class System extends RenderSystem {
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
-  public createSkyBox(params: SkyBoxCreateParams): RenderGraphic | undefined {
-    if (params.isTexturedCube) {
-      const cachedGeom = SkyBoxQuadsGeometry.create(params);
+  public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
+    if (undefined !== params.cube) {
+      const cachedGeom = SkyBoxQuadsGeometry.create(params.cube);
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     } else {
+      assert(undefined !== params.sphere || undefined !== params.gradient);
       const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
       return cachedGeom !== undefined ? new SkySpherePrimitive(cachedGeom) : undefined;
     }
@@ -437,6 +439,10 @@ export class System extends RenderSystem {
       }
       case DepthType.TextureUnsignedInt32: {
         return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
+      }
+      case DepthType.TextureUnsignedInt24Stencil8: {
+        const dtExt: WEBGL_depth_texture | undefined = this.capabilities.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
+        return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
       }
       default: {
         assert(false);
@@ -552,14 +558,16 @@ export class System extends RenderSystem {
     else
       clippedPolygons = [corners];
 
-    // The result of clipping will be several polygons, which may lie next to each other, or be detached, and can be of any length
-    for (const polygon of clippedPolygons) {
-      const strokeOptions = new StrokeOptions();
-      strokeOptions.needParams = true;
-      strokeOptions.shouldTriangulate = true;
-      const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    if (clippedPolygons.length === 0)
+      return sheetTilePolys;    // return empty
 
-      let polyface: IndexedPolyface;
+    // The result of clipping will be several polygons, which may lie next to each other, or be detached, and can be of any length. Let's stitch these into a single polyface.
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    strokeOptions.shouldTriangulate = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+
+    for (const polygon of clippedPolygons) {
       if (polygon.length < 3)
         continue;
       else if (polygon.length === 3) {
@@ -569,7 +577,6 @@ export class System extends RenderSystem {
           params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
         }
         polyfaceBuilder.addTriangleFacet(polygon, params);
-        polyface = polyfaceBuilder.claimPolyface();
 
       } else if (polygon.length === 4) {
         const params: Point2d[] = [];
@@ -578,29 +585,34 @@ export class System extends RenderSystem {
           params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
         }
         polyfaceBuilder.addQuadFacet(polygon, params);
-        polyface = polyfaceBuilder.claimPolyface();
 
       } else {
-        // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
+        // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
         const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
-        polyfaceBuilder.addGraph(triangulatedPolygon, true);
-        polyface = polyfaceBuilder.claimPolyface();
 
-        const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
-        while (visitor.moveToNextFacet()) {
-          for (let i = 0; i < 3; i++) {
-            const point = visitor.getParam(i);  // this is a reference
-            point.minus(sheetTileOrigin);
-            point.x *= sheetTileScale;
-            point.y *= sheetTileScale;
+        triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+          if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
+            const trianglePoints: Point3d[] = [];
+            const params: Point2d[] = [];
+
+            edge.collectAroundFace((node: HalfEdge) => {
+              const point = Point3d.create(node.x, node.y, 0.5);
+              trianglePoints.push(point);
+              const paramUnscaled = point.minus(sheetTileOrigin);
+              params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
+            });
+
+            assert(trianglePoints.length === 3);
+            polyfaceBuilder.addTriangleFacet(trianglePoints, params);
           }
-        }
+          return true;
+        });
       }
-
-      sheetTilePolys.push(polyfaceBuilder.claimPolyface());
     }
+
+    sheetTilePolys.push(polyfaceBuilder.claimPolyface());
     return sheetTilePolys;
   }
 
@@ -649,14 +661,10 @@ export class System extends RenderSystem {
       meshArgs.colors.initUniform(tileColor);
 
       const mesh = this.createTriMesh(meshArgs);
-      if (mesh !== undefined) {
-        (mesh as any)._primitives[0].cachedGeometry.DEBUG = true;
+      if (mesh !== undefined)
         sheetTileGraphics.push(mesh);
-      }
     }
 
     return sheetTileGraphics;
   }
 }
-
-Object.freeze(System.identityTransform);

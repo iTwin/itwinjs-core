@@ -5,17 +5,21 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import Panel, { PanelProps } from "./Panel";
-import Columns from "./Columns";
-
-import Title from "./Title";
 import withContainIn, { WithContainInProps } from "../../../../base/WithContainIn";
+import Panel from "./Panel";
+import Columns from "./Columns";
+import Title from "./Title";
+import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
 
-export interface GroupProps extends PanelProps {
+/** Properties of [[Group]] component. */
+export interface GroupProps extends CommonProps, NoChildrenProps {
+  /** Tool group title. */
   title?: string;
+  /** Columns of tool group. I.e. [[Column]]  */
+  columns?: React.ReactNode;
 }
 
+/** Tool group component. Used in [[ExpandableItem]] component.  */
 export default class Group extends React.Component<GroupProps> {
   public render() {
     const className = classnames(
@@ -28,7 +32,7 @@ export default class Group extends React.Component<GroupProps> {
           {this.props.title}
         </Title>
         <Columns>
-          {this.props.children}
+          {this.props.columns}
         </Columns>
       </Panel>
     );

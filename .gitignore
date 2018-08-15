@@ -5,6 +5,7 @@ node_modules
 .nyc_output
 /core/**/lib
 /ui/**/lib
+/presentation/**/lib
 /example-code/**/lib
 /test-apps/**/lib
 /core/geometry/src/test/output

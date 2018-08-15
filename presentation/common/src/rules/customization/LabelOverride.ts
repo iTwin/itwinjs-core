@@ -1,0 +1,38 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+/** @module PresentationRules */
+
+import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
+
+/**
+ * Rule to override labels and descriptions of nodes which pass rule's
+ * condition.
+ *
+ * **Important:** Prefer [[InstanceLabelOverride]] over this rule when possible as it
+ * has better performance.
+ */
+export interface LabelOverride extends RuleBase, ConditionContainer {
+  /** Used for serializing to JSON. */
+  ruleType: RuleTypes.LabelOverride;
+
+  /**
+   * Defines the label that should be used for node. This is
+   * an [ECExpression]($docs/learning/customization/ECExpressions.md), so label
+   * can be defined/formatted dynamically based on the context - for example
+   * ECInstance property value. May be [localized]($docs/learning/Localization.md).
+   *
+   * @minLength 1
+   */
+  label?: string;
+
+  /**
+   * Defines the description that should be used for node. This is
+   * an [ECExpression]($docs/learning/customization/ECExpressions.md), so
+   * description can be defined/formatted dynamically based on the context - for example
+   * ECInstance property value. May be [localized]($docs/learning/Localization.md).
+   *
+   * @minLength 1
+   */
+  description?: string;
+}

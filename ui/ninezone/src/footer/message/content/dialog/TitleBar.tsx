@@ -5,15 +5,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import CommonProps from "../../../../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
 import "./TitleBar.scss";
 
-export interface TitleBarProps extends CommonProps {
+/** Properties of [[TitleBar]] component. */
+export interface TitleBarProps extends CommonProps, NoChildrenProps {
+  /** Title of title bar. I.e. [[DialogTitle]] */
   title?: React.ReactNode;
+  /** Buttons of title bar. I.e. [[DialogButton]] */
   buttons?: React.ReactNode;
 }
 
+/** Title bar of [[Dialog]] component. */
 // tslint:disable-next-line:variable-name
 export const TitleBar: React.StatelessComponent<TitleBarProps> = (props) => {
   const className = classnames(

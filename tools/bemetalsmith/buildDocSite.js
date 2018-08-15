@@ -24,7 +24,7 @@ runStagingCopy();
 if (runQuick) {
   clearReference();
 }
-runBemetalsmith();
+//runBemetalsmith();
 
 //Rush docs
 function runDocs() {
@@ -60,15 +60,22 @@ function runStagingCopy() {
   const refOutputDir = path.resolve(rootDir, "generated-docs", "staging", "reference");
   if (runTypeDoc) {
     const packages = getPackages();
-    const genDocsDir = path.resolve(rootDir, "generated-docs");
+    const genDocsDir = path.resolve(rootDir, "generated-docs/core");
 
     packages.forEach(function (pkg) {
-      let packageDir = pkg.projectFolder;
-      let packageName = pkg.packageName
-      fs.copySync(
-        path.join(genDocsDir, packageDir, "json"),
-        path.join(refOutputDir, packageName)
-      );
+      let packageDir = pkg.projectFolder.split('/')[1];
+      let packageName = pkg.packageName.split('/')[1];
+
+      try {
+        fs.copySync(
+          path.join(genDocsDir, packageName),
+          path.join(refOutputDir, packageName)
+        );
+      }
+      catch(e) {
+        // We need to ignore newly added packages that do not generate docs.
+        return;
+      }
     });
   }
 }
@@ -84,15 +91,15 @@ function runBemetalsmith() {
 
 //Get the packages from rush.json
 function getPackages() {
-  const rushJson = path.resolve(rootDir, "rush.json");
-  var obj = JSON.parse(fs.readFileSync(rushJson, "utf8"));
+  var obj = JSON.parse(fs.readFileSync(path.resolve(rootDir, 'rush.json'), 'utf8'));
   let retProjects = [];
-  var projs = obj["projects"];
-  projs.forEach(function (proj) {
+
+  obj["projects"].forEach(function (proj) {
     if (proj["shouldPublish"] === true && !isPackageIgnored(proj["packageName"])) {
       retProjects.push(proj);
     }
   });
+
   return retProjects;
 }
 

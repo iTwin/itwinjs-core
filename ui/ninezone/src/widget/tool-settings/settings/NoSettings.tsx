@@ -5,10 +5,17 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Props from "../../../utilities/Props";
+import CommonProps from "../../../utilities/Props";
 import "./NoSettings.scss";
 
-export default class NoSettings extends React.Component<Props> {
+/** Properties of [[NoSettings]] component. */
+export interface NoSettingsProps extends CommonProps {
+  /** Actual content. */
+  children?: React.ReactNode;
+}
+
+/** Used as content of [[ToolSettings]] component when there are no settings to display. */
+export default class NoSettings extends React.Component<NoSettingsProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-settings-noSettings",

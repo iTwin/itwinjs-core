@@ -14,7 +14,7 @@
     @include triangle-bottom-right-color($hovered-icon-color);
   }
 
-  & > .nz-triangle {
+  > .nz-triangle {
     border-radius: 0;
     position: absolute;
     right: $margin-from-triangle-to-stroke;

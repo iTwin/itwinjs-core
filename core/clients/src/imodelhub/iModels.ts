@@ -232,36 +232,36 @@ export class IModelHandler {
 
   /**
    * Gets relative url for iModel requests.
-   * @param projectId Id of the project.
+   * @param contextId Id of the project.
    * @param imodelId Id of the iModel.
    */
-  private getRelativeUrl(projectId: string, imodelId?: string) {
-    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/iModel/${imodelId || ""}`;
+  private getRelativeUrl(contextId: string, imodelId?: string) {
+    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(contextId)}/ProjectScope/iModel/${imodelId || ""}`;
   }
 
   /**
    * Get IModels
    * @param token Delegation token of the authorized user.
-   * @param projectId Id of the connect project.
+   * @param contextId is a token of some sort that relates an imodel to the correct client (hub or a specific bank).
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found iModel. Rejects if no iModels, or more than one iModel is found.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an [[IModel]] with the specified id could not be found.
    * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, projectId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
-    Logger.logInfo(loggingCategory, `Querying iModels in project ${projectId}`);
+  public async get(token: AccessToken, contextId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
+    Logger.logInfo(loggingCategory, `Querying iModels in project ${contextId}`);
     ArgumentCheck.defined("token", token);
-    ArgumentCheck.validGuid("projectId", projectId);
+    ArgumentCheck.defined("contextId", contextId); // contextId is a GUID in iModelHub but is something very different in imodel-bank
 
-    const imodels = await this._handler.getInstances<IModelRepository>(IModelRepository, token, this.getRelativeUrl(projectId, query.getId()), query.getQueryOptions());
+    const imodels = await this._handler.getInstances<IModelRepository>(IModelRepository, token, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
 
-    Logger.logTrace(loggingCategory, `Queried ${imodels.length} iModels in project ${projectId}`);
+    Logger.logTrace(loggingCategory, `Queried ${imodels.length} iModels in project ${contextId}`);
 
     return imodels;
   }
 
   /**
-   * Delete an iModel
+   * Delete an iModel. iModelHub-specific API.
    * @param token Delegation token of the authorized user.
    * @param projectId Id of the connect project.
    * @param imodelId Id of the iModel to be deleted.
@@ -290,7 +290,7 @@ export class IModelHandler {
   }
 
   /**
-   * Creates iModel instance
+   * Creates iModel instance. iModelHub-specific API.
    * @param token Delegation token of the authorized user.
    * @param projectId Id of the connect project.
    * @param iModelName Name of the iModel on the Hub.
@@ -341,7 +341,7 @@ export class IModelHandler {
   }
 
   /**
-   * Create an iModel
+   * Create an iModel. iModelHub-specific API.
    * @param token Delegation token of the authorized user.
    * @param projectId Id of the connect project.
    * @param name Name of the iModel on the Hub.
