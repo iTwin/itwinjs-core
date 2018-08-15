@@ -750,7 +750,7 @@ export class ToolAdmin {
       return this.idleTool.onMouseEndDrag(ev);
   }
 
-  public async onMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource): Promise<any> {
+  public async onMotion(vp: Viewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -774,7 +774,7 @@ export class ToolAdmin {
     const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
     this.setIncompatibleViewportCursor(isValidLocation);
 
-    if (current.isStartDrag(ev.button)) {
+    if (forceStartDrag || current.isStartDrag(ev.button)) {
       current.onStartDrag(ev.button);
       current.changeButtonToDownPoint(ev);
       ev.isDragging = true;
@@ -1226,29 +1226,32 @@ export class ToolAdmin {
   public async convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
     const pt2d = ev.getDisplayPoint();
     await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
-    this.onButtonUp(ev.viewport!, pt2d, button, InputSource.Touch);
+    return this.onButtonUp(ev.viewport!, pt2d, button, InputSource.Touch);
   }
 
-  /** Can be called by tools that wish to emulate moving the mouse with a button depressed for onTouchMoveStart. */
-  public async convertTouchMoveStartToButtonDownAndMotion(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    const pt2d = ev.getDisplayPoint();
-    await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
-    this.onMotion(ev.viewport!, pt2d, InputSource.Touch);
+  /** Can be called by tools that wish to emulate moving the mouse with a button depressed for onTouchMoveStart.
+   * @note Calls the tool's onMouseStartDrag method from onMotion.
+   */
+  public async convertTouchMoveStartToButtonDownAndMotion(startEv: BeTouchEvent, ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
+    await this.onButtonDown(startEv.viewport!, startEv.getDisplayPoint(), button, InputSource.Touch);
+    return this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch, true);
   }
 
   /** Can be called by tools that wish to emulate pressing the mouse button for onTouchStart or onTouchMoveStart. */
   public async convertTouchStartToButtonDown(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    this.onButtonDown(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
+    return this.onButtonDown(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
   }
 
-  /** Can be called by tools that wish to emulate releasing the mouse button for onTouchEnd or onTouchComplete. */
+  /** Can be called by tools that wish to emulate releasing the mouse button for onTouchEnd or onTouchComplete.
+   * @note Calls the tool's onMouseEndDrag method if convertTouchMoveStartToButtonDownAndMotion was called for onTouchMoveStart.
+   */
   public async convertTouchEndToButtonUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    this.onButtonUp(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
+    return this.onButtonUp(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
   }
 
   /** Can be called by tools that wish to emulate a mouse motion event for onTouchMove. */
   public async convertTouchMoveToMotion(ev: BeTouchEvent): Promise<void> {
-    this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
+    return this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
   }
 
   public setIncompatibleViewportCursor(restore: boolean) {

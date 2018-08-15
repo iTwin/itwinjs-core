@@ -1747,7 +1747,7 @@ export class WindowAreaTool extends ViewTool {
   public async onMouseMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
 
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
-  public async onTouchMoveStart(_ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this.haveFirstPoint && startEv.isSingleTouch) IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv); return this.haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
+  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this.haveFirstPoint && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this.haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
   public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
   public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
   public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) this.exitTool(); }
