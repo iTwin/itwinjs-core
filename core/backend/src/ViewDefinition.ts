@@ -6,15 +6,87 @@
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps,
-  CategorySelectorProps, Camera, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, ViewAttachmentProps, LightLocationProps, RelatedElement,
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ColorDef,
+  ViewDefinitionProps,
+  ViewDefinition3dProps,
+  ViewDefinition2dProps,
+  SpatialViewDefinitionProps,
+  ModelSelectorProps,
+  CategorySelectorProps,
+  Camera,
+  AuxCoordSystemProps,
+  AuxCoordSystem2dProps,
+  AuxCoordSystem3dProps,
+  ViewAttachmentProps,
+  LightLocationProps,
+  RelatedElement,
+  DisplayStyleProps,
+  ViewFlags,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** A DisplayStyle defines the parameters for 'styling' the contents of a view. Many ViewDefinitions may share the same DisplayStyle. */
-export class DisplayStyle extends DefinitionElement {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+/** A DisplayStyle defines the parameters for 'styling' the contents of a view.
+ * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
+ * Many ViewDefinitions may share the same DisplayStyle.
+ */
+export class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+  private readonly _viewFlags: ViewFlags;
+  private readonly _background: ColorDef;
+  private readonly _monochrome: ColorDef;
+
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+
+    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
+    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
+    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
+    const monoJson = this.styles[monoName];
+    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
+  }
+
+  /** Get the flags controlling how aspects of graphics are rendered using this display style. */
+  public get viewFlags(): ViewFlags { return this._viewFlags; }
+  /** Set the flags controlling how aspects of graphics are rendered using this display style. */
+  public set viewFlags(flags: ViewFlags) {
+    flags.clone(this._viewFlags);
+    this.setStyle("viewflags", flags);
+  }
+
+  /** Get the dictionary of named styles. */
+  public get styles(): any {
+    const p = this.jsonProperties as any;
+    if (undefined === p.styles)
+      p.styles = new Object();
+
+    return p.styles;
+  }
+
+  /** Get a named style from the dictionary. */
+  public getStyle(name: string): any {
+    const style: object = this.styles[name];
+    return style ? style : {};
+  }
+
+  /** change the value of a named style on this DisplayStyle */
+  public setStyle(name: string, value: any): void { this.styles[name] = value; }
+
+  /** Remove a style from this DisplayStyle. */
+  public removeStyle(name: string) { delete this.styles[name]; }
+
+  /** Get the background color for this DisplayStyle */
+  public get backgroundColor(): ColorDef { return this._background; }
+  /** Set the background color for this DisplayStyle */
+  public set backgroundColor(val: ColorDef) { this._background.setFrom(val); this.setStyle("backgroundColor", val); }
+
+  /** Get the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
+  public get monochromeColor(): ColorDef { return this._monochrome; }
+  /** Set the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
+  public set monochromeColor(val: ColorDef) { this._monochrome.setFrom(val); this.setStyle("monochromeColor", val); }
 
   /** Create a Code for a DisplayStyle given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -29,12 +101,12 @@ export class DisplayStyle extends DefinitionElement {
 
 /** A DisplayStyle for 2d views. */
 export class DisplayStyle2d extends DisplayStyle {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A DisplayStyle for 3d views. */
 export class DisplayStyle3d extends DisplayStyle {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**

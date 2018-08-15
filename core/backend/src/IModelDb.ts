@@ -5,11 +5,41 @@
 import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
-  IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback, ViewStateData, CategorySelectorProps, ModelSelectorProps, SheetProps,
+  Code,
+  CodeSpec,
+  ElementProps,
+  ElementAspectProps,
+  IModel,
+  IModelProps,
+  IModelVersion,
+  ModelProps,
+  IModelError,
+  IModelStatus,
+  AxisAlignedBox3d,
+  EntityQueryParams,
+  EntityProps,
+  ViewDefinitionProps,
+  FontMap,
+  FontMapProps,
+  FontProps,
+  ElementLoadProps,
+  CreateIModelProps,
+  FilePropertyProps,
+  IModelToken,
+  TileTreeProps,
+  TileProps,
+  IModelNotFoundResponse,
+  EcefLocation,
+  SnapRequestProps,
+  SnapResponseProps,
+  EntityMetaData,
+  PropertyCallback,
+  ViewStateData,
+  CategorySelectorProps,
+  ModelSelectorProps,
+  SheetProps,
   ThumbnailProps,
+  DisplayStyleProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -1194,7 +1224,7 @@ export namespace IModelDb {
       const viewDefinitionElement = elements.getElement(viewDefinitionId) as ViewDefinition;
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId) as CategorySelectorProps;
-      viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
+      viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId) as DisplayStyleProps;
       if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId) as ModelSelectorProps;
       else if (viewDefinitionElement instanceof SheetViewDefinition) {
