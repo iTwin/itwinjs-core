@@ -178,8 +178,8 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
    */
   constructor() {
     super();
-    this.defaultOptions.errorCallback = WsgError.parse;
-    this.defaultOptions.retryCallback = WsgError.shouldRetry;
+    this._defaultOptions.errorCallback = WsgError.parse;
+    this._defaultOptions.retryCallback = WsgError.shouldRetry;
   }
 }
 
@@ -197,7 +197,7 @@ export interface WsgRequestOptions {
  */
 export abstract class WsgClient extends Client {
   private static _defaultWsgRequestOptionsProvider: DefaultWsgRequestOptionsProvider;
-  protected url?: string;
+  protected _url?: string;
 
   /**
    * Creates an instance of Client.
@@ -232,17 +232,17 @@ export abstract class WsgClient extends Client {
    * @returns URL for the service
    */
   public async getUrl(excludeApiVersion?: boolean): Promise<string> {
-    if (this.url) {
-      return Promise.resolve(this.url);
+    if (this._url) {
+      return Promise.resolve(this._url);
     }
 
     return super.getUrl()
       .then((url: string): Promise<string> => {
-        this.url = url;
+        this._url = url;
         if (!excludeApiVersion) {
-          this.url += "/" + this.apiVersion;
+          this._url += "/" + this.apiVersion;
         }
-        return Promise.resolve(this.url); // TODO: On the server this really needs a lifetime!!
+        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
       });
   }
 

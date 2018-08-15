@@ -33,7 +33,7 @@ export class Config {
   );
 
   /** Returns true if the code is currently executing in a browser, or false if it is executing on the server */
-  public static isBrowser(): boolean {
+  public static get isBrowser(): boolean {
     return (typeof window !== "undefined");
   }
 

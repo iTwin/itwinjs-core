@@ -17,9 +17,9 @@ import { FileHandler } from "..";
 class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this.defaultOptions.errorCallback = IModelBankError.parse;
-    this.defaultOptions.retryCallback = IModelBankError.shouldRetry;
-    this.defaultOptions.agent = agent;
+    this._defaultOptions.errorCallback = IModelBankError.parse;
+    this._defaultOptions.retryCallback = IModelBankError.shouldRetry;
+    this._defaultOptions.agent = agent;
   }
 }
 
@@ -61,13 +61,13 @@ export class IModelBankHandler extends IModelBaseHandler {
   protected getDefaultUrl(): string { return this._url; }
 
   public async getUrl(excludeApiVersion?: boolean): Promise<string> {
-    if (this.url)
-      return Promise.resolve(this.url!);
+    if (this._url)
+      return Promise.resolve(this._url!);
 
-    this.url = this.getDefaultUrl();
+    this._url = this.getDefaultUrl();
     if (!excludeApiVersion) {
-      this.url += "/" + this.apiVersion;
+      this._url += "/" + this.apiVersion;
     }
-    return Promise.resolve(this.url!);
+    return Promise.resolve(this._url!);
   }
 }

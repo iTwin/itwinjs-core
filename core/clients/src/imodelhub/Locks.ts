@@ -62,12 +62,12 @@ export interface LockUpdateOptions {
  * Provider for default LockUpdateOptions, used by LockHandler to set defaults.
  */
 export class DefaultLockUpdateOptionsProvider {
-  protected defaultOptions: LockUpdateOptions;
+  protected _defaultOptions: LockUpdateOptions;
   /**
    * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
    */
   constructor() {
-    this.defaultOptions = {
+    this._defaultOptions = {
       locksPerRequest: 2000,
     };
   }
@@ -79,7 +79,7 @@ export class DefaultLockUpdateOptionsProvider {
    */
   public async assignOptions(options: LockUpdateOptions): Promise<void> {
     const clonedOptions: LockUpdateOptions = Object.assign({}, options);
-    deepAssign(options, this.defaultOptions);
+    deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();
   }
@@ -174,7 +174,7 @@ export class LockQuery extends Query {
   /**
    * Used by the hanlder to check whether locks in query can be grouped.
    */
-  public isMultiLockQuery() {
+  public get isMultiLockQuery() {
     return this._isMultiLockQuery;
   }
 
@@ -496,7 +496,7 @@ export class LockHandler {
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let locks: Lock[];
-    if (query.isMultiLockQuery()) {
+    if (query.isMultiLockQuery) {
       const result = await this._handler.getInstances<MultiLock>(MultiLock, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
       locks = LockHandler.convertMultiLocksToLocks(result);
     } else {

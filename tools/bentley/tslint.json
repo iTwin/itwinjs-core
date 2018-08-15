@@ -53,14 +53,13 @@
     "no-conditional-assignment": false,
     "member-ordering": [
       false
-    ] /*,
-    // Custom rules from tslint-rules directory ===========================================
+    ],
+    // Custom rules ======================================================
     "prefer-get": true,
     "private-underscores": true,
     "no-public-underscores": true
-    */
-  } /*,
+  },
   "rulesDirectory": [
     "tslint-rules"
-  ] */
+  ]
 }

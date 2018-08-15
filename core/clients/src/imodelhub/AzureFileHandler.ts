@@ -39,7 +39,7 @@ class BufferedStream extends Writable {
     }
   }
 
-  public _write(chunk: any, chunkEncoding: string, callback: (err?: Error) => void) {
+  public writeAndFlush(chunk: any, chunkEncoding: string, callback: (err?: Error) => void) {
     if (chunkEncoding !== "buffer" && chunkEncoding !== "binary")
       throw new TypeError(`Encoding '${chunkEncoding}' is not supported.`);
     if (!this._buffer) {
@@ -53,7 +53,7 @@ class BufferedStream extends Writable {
     callback();
   }
 
-  public _final(callback: (err?: Error) => void) {
+  public final(callback: (err?: Error) => void) {
     this.flush(callback);
     this._stream.close();
   }

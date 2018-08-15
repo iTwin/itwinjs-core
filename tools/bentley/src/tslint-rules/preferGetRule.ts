@@ -33,7 +33,7 @@ class PreferGetWalker extends Lint.RuleWalker {
 
   private isPrivate(node: ts.MethodDeclaration): boolean {
     if (node.modifiers === undefined)
-      return false;
+      return true;
     for (const modifier of node.modifiers) {
       const modText = modifier.getText();
       if (modText === "private")

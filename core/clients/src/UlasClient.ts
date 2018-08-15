@@ -165,7 +165,7 @@ export interface LogPostingResponse {
  */
 export class UlasClient extends Client {
   public static readonly searchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
@@ -193,7 +193,7 @@ export class UlasClient extends Client {
   /**
    * @returns Default URL for the service.
    */
-  protected getDefaultUrl(): string { return UlasClient.defaultUrlDescriptor[this.deploymentEnv]; }
+  protected getDefaultUrl(): string { return UlasClient._defaultUrlDescriptor[this.deploymentEnv]; }
 
   /**
    * Gets the (delegation) access token to acess the service

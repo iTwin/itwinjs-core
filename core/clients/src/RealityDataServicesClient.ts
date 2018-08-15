@@ -118,9 +118,9 @@ export class FileAccessKey extends WsgInstance {
  */
 export class RealityDataServicesClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";
-  private blobUrl: any;
-  private blobRoot: undefined | string;
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private _blobUrl: any;
+  private _blobRoot: undefined | string;
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-realitydataservices-eus.cloudapp.net",
     QA: "https://qa-connect-realitydataservices.bentley.com",
     PROD: "https://connect-realitydataservices.bentley.com",
@@ -132,7 +132,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @param deploymentEnv Deployment environment.
    */
   public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "v2.5", RealityDataServicesClient.defaultUrlDescriptor[deploymentEnv] + "/");
+    super(deploymentEnv, "v2.5", RealityDataServicesClient._defaultUrlDescriptor[deploymentEnv] + "/");
   }
 
   /**
@@ -150,7 +150,7 @@ export class RealityDataServicesClient extends WsgClient {
 
     // if the name is already compound or the blobRoot is not set, then we do not prefix the model name as it would be redundant
     // otherwise, we return the name prefixed with that value
-    return (!isCompound && !name.includes("%2F") && undefined !== this.blobRoot) ? this.blobRoot + "/" + name : name;
+    return (!isCompound && !name.includes("%2F") && undefined !== this._blobRoot) ? this._blobRoot + "/" + name : name;
   }
 
   /**
@@ -166,7 +166,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return RealityDataServicesClient.defaultUrlDescriptor[this.deploymentEnv];
+    return RealityDataServicesClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -274,9 +274,9 @@ export class RealityDataServicesClient extends WsgClient {
    */
   public async getBlobUrl(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<URL> {
     const urlString = await this.getTileDataBlobUrl(token, projectId, tilesId, name);
-    if (typeof this.blobUrl === "undefined")
-      this.blobUrl = (Config.isBrowser()) ? new window.URL(urlString) : new URL(urlString);
-    return Promise.resolve(this.blobUrl);
+    if (typeof this._blobUrl === "undefined")
+      this._blobUrl = (Config.isBrowser) ? new window.URL(urlString) : new URL(urlString);
+    return Promise.resolve(this._blobUrl);
   }
 
   /**
@@ -288,7 +288,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns string url for blob data
    */
   public async getBlobStringUrl(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const url = undefined === this.blobUrl ? await this.getBlobUrl(token, projectId, tilesId, name) : this.blobUrl;
+    const url = undefined === this._blobUrl ? await this.getBlobUrl(token, projectId, tilesId, name) : this._blobUrl;
     const host = url.origin + url.pathname;
     const query = url.search;
     return `${host}/${this.updateModelName(name)}${query}`;
@@ -342,7 +342,7 @@ export class RealityDataServicesClient extends WsgClient {
     let root = realityData[0].rootDocument!;
 
     // reset the blob url when a root document is requested to ensure the previous blob storage key isn't reused
-    this.blobUrl = undefined;
+    this._blobUrl = undefined;
 
     // if the RootDocument is ClarkSimple/RootTile.json, then only use RootTile.json,
     // so we need to only use the last part of the RootDocument path

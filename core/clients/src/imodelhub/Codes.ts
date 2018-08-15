@@ -117,12 +117,12 @@ export interface CodeUpdateOptions {
  * Provider for default CodeUpdateOptions, used by CodeHandler to set defaults.
  */
 export class DefaultCodeUpdateOptionsProvider {
-  protected defaultOptions: CodeUpdateOptions;
+  protected _defaultOptions: CodeUpdateOptions;
   /**
    * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
    */
   constructor() {
-    this.defaultOptions = {
+    this._defaultOptions = {
       codesPerRequest: 2000,
     };
   }
@@ -134,7 +134,7 @@ export class DefaultCodeUpdateOptionsProvider {
    */
   public async assignOptions(options: CodeUpdateOptions): Promise<void> {
     const clonedOptions: CodeUpdateOptions = Object.assign({}, options);
-    deepAssign(options, this.defaultOptions);
+    deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();
   }
@@ -192,7 +192,7 @@ export class CodeQuery extends Query {
   /**
    * Used by the hanlder to check whether codes in query can be grouped.
    */
-  public isMultiCodeQuery() {
+  public get isMultiCodeQuery() {
     return this._isMultiCodeQuery;
   }
 
@@ -465,7 +465,7 @@ export class CodeHandler {
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let codes: Code[];
-    if (query.isMultiCodeQuery()) {
+    if (query.isMultiCodeQuery) {
       const multiCodes = await this._handler.getInstances<MultiCode>(MultiCode, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
       codes = CodeHandler.convertMultiCodesToCodes(multiCodes);
     } else {
