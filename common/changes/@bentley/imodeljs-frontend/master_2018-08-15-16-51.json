@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "WIP: Reality mesh classification via stencil volumes",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "marc.neely@bentley.com"
+}
