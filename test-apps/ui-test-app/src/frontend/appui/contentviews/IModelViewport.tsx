@@ -79,7 +79,7 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
   }
 
   private _onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    this.drawCanvas(event, ContentViewManager.isMouseDown());
+    this.drawCanvas(event, ContentViewManager.isMouseDown);
   }
 
   private _onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {

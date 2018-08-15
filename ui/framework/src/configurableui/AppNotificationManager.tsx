@@ -120,7 +120,7 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Clear the ToolTip if it is current open. If not open, does nothing. */
   public clearToolTip(): void {
-    if (this.isToolTipOpen())
+    if (this.isToolTipOpen)
       ElementTooltip.hideTooltip();
   }
 
