@@ -6,13 +6,32 @@
 import * as ts from "typescript";
 import * as Lint from "tslint";
 
+/** A list of file names (with extensions) that this rule should not be applied to. */
+const FILENAME_EXCEPTIONS: string[] = [
+  "imodeljs-native-platform-api.ts",
+];
+
 export class Rule extends Lint.Rules.AbstractRule {
   public static FAILURE_STRING: string = "Private properties must be prefixed with an underscore.";
 
+  // override
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
+    if (this.shouldSkipFile(sourceFile))
+      return [];
     return this.applyWithWalker(
       new PrivateUnderscoresWalker(sourceFile, this.getOptions()),
     );
+  }
+
+  private shouldSkipFile(sourceFile: ts.SourceFile): boolean {
+    const filePath = sourceFile.fileName; // sourceFile.fileName contains the full path to the file on this computer
+    for (const nameException of FILENAME_EXCEPTIONS) {
+      if (filePath.length < nameException.length)
+        continue;
+      if (nameException === filePath.slice(filePath.length - nameException.length))
+        return true;
+    }
+    return false;
   }
 }
 

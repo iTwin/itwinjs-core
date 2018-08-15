@@ -7,13 +7,32 @@
 import * as ts from "typescript";
 import * as Lint from "tslint";
 
+/** A list of file names (with extensions) that this rule should not be applied to. */
+const FILENAME_EXCEPTIONS: string[] = [
+  "imodeljs-native-platform-api.ts",
+];
+
 export class Rule extends Lint.Rules.AbstractRule {
   public static FAILURE_STRING: string = "Consider replacing this method with a property or add the 'get' modifier. If the value is expensive to compute, consider renaming the method instead.";
 
+  // override
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
+    if (this.shouldSkipFile(sourceFile))
+      return [];
     return this.applyWithWalker(
       new PreferGetWalker(sourceFile, this.getOptions()),
     );
+  }
+
+  private shouldSkipFile(sourceFile: ts.SourceFile): boolean {
+    const filePath = sourceFile.fileName; // sourceFile.fileName contains the full path to the file on this computer
+    for (const nameException of FILENAME_EXCEPTIONS) {
+      if (filePath.length < nameException.length)
+        continue;
+      if (nameException === filePath.slice(filePath.length - nameException.length))
+        return true;
+    }
+    return false;
   }
 }
 
