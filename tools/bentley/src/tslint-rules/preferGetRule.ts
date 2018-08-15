@@ -8,7 +8,7 @@ import * as ts from "typescript";
 import * as Lint from "tslint";
 
 export class Rule extends Lint.Rules.AbstractRule {
-  public static FAILURE_STRING: string = "use a get-accessor for this method based on its name";
+  public static FAILURE_STRING: string = "Consider replacing this method with a property or add the 'get' modifier. If the value is expensive to compute, consider renaming the method instead.";
 
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
     return this.applyWithWalker(
