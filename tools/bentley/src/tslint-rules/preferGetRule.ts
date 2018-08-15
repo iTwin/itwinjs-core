@@ -22,7 +22,7 @@ class PreferGetWalker extends Lint.RuleWalker {
   public visitMethodDeclaration(node: ts.MethodDeclaration) {
     if (node.parameters.length !== 0)
       return;
-    if (this.isStaticOrPrivate(node))
+    if (this.isPrivate(node))
       return;
 
     const name = node.name.getText();
@@ -31,12 +31,12 @@ class PreferGetWalker extends Lint.RuleWalker {
     }
   }
 
-  private isStaticOrPrivate(node: ts.MethodDeclaration): boolean {
+  private isPrivate(node: ts.MethodDeclaration): boolean {
     if (node.modifiers === undefined)
       return false;
     for (const modifier of node.modifiers) {
       const modText = modifier.getText();
-      if (modText === "static" || modText === "private")
+      if (modText === "private")
         return true;
     }
     return false;
