@@ -36,11 +36,11 @@ export type NodePredicate = (id: InspireTreeNode) => boolean;
 
 /** Bentley wrapper for 'inspire-tree' */
 export class BeInspireTree {
-  private tree: InspireTreeTypes.InspireTree;
-  private modelLoadedPromise: Promise<void>;
+  private _tree: InspireTreeTypes.InspireTree;
+  private _modelLoadedPromise: Promise<void>;
 
   constructor(dataProvider: InspireTreeDataProvider, renderer: InspireTreeRenderer) {
-    this.tree = new InspireTree({
+    this._tree = new InspireTree({
       data: dataProvider,
       selection: {
         multiple: true,
@@ -48,9 +48,9 @@ export class BeInspireTree {
       },
     } as InspireTreeTypes.Config);
 
-    this.modelLoadedPromise = new Promise((resolve) => {
-      this.tree.on(["model.loaded"], (nodes: InspireTreeNode[]) => { resolve(); this.prepareRootNodes(nodes); });
-      this.tree.on(["changes.applied"], () => renderer(this.tree.nodes() as any));
+    this._modelLoadedPromise = new Promise((resolve) => {
+      this._tree.on(["model.loaded"], (nodes: InspireTreeNode[]) => { resolve(); this.prepareRootNodes(nodes); });
+      this._tree.on(["changes.applied"], () => renderer(this._tree.nodes() as any));
     });
   }
 
@@ -77,21 +77,21 @@ export class BeInspireTree {
    * The default behavior of InspireTree.mute is that events *replaces* the list of currently muted events.
    */
   private mute(events: string[]) {
-    if (typeof this.tree.muted() !== "boolean")
-      this.tree.mute(events.concat(this.tree.muted() as any));
+    if (typeof this._tree.muted() !== "boolean")
+      this._tree.mute(events.concat(this._tree.muted() as any));
     else
-      this.tree.mute(events);
+      this._tree.mute(events);
   }
 
   /**
    * Wraps InspireTree.unmute (purely for consistency with this.mute).
    */
   private unmute(events: string[]) {
-    this.tree.unmute(events);
+    this._tree.unmute(events);
   }
 
   private async prepareRootNodes(nodes: InspireTreeNode[]) {
-    const shouldMute = !this.tree.isEventMuted("node.selected");
+    const shouldMute = !this._tree.isEventMuted("node.selected");
     const eventsToMute = shouldMute ? ["node.selected", "node.deselected", "node.expanded", "node.collapsed"] : [];
     this.mute(eventsToMute);
 
@@ -105,7 +105,7 @@ export class BeInspireTree {
     const loadingPromises: Array<Promise<void>> = [];
 
     // We can't ensure that any children are loaded if the model isn't loaded yet...
-    await this.modelLoadedPromise;
+    await this._modelLoadedPromise;
 
     const loadChildren = async (node: InspireTreeNode): Promise<void> => {
       const loaded = await this.loadNodeChildren(node) as any;
@@ -121,7 +121,7 @@ export class BeInspireTree {
   }
 
   public get expandedNodeIds(): string[] {
-    return this.tree.expanded().map((n: InspireTreeNode) => n.id!);
+    return this._tree.expanded().map((n: InspireTreeNode) => n.id!);
   }
 
   public async updateExpansion(nodesToExpand: ReadonlyArray<string>, muteEvents = true): Promise<void> {
@@ -130,10 +130,10 @@ export class BeInspireTree {
 
     // Collapse (deeply) only the nodes that should not be expanded
     // If we just collapse everything, we'd see a "flicker" where the tree renders collapsed and then re-renders expanded
-    this.tree.flatten((n: InspireTreeNode) => nodesToExpand.indexOf(n.id!) < 0).collapse();
+    this._tree.flatten((n: InspireTreeNode) => nodesToExpand.indexOf(n.id!) < 0).collapse();
 
-    await this.ensureChildrenLoaded(this.tree, nodesToExpand as string[]);
-    this.tree.nodes(nodesToExpand as string[]).expand();
+    await this.ensureChildrenLoaded(this._tree, nodesToExpand as string[]);
+    this._tree.nodes(nodesToExpand as string[]).expand();
 
     this.unmute(eventsToMute);
   }
@@ -158,16 +158,16 @@ export class BeInspireTree {
 
     const eventsToMute = (muteEvents) ? ["node.selected", "node.deselected"] : [];
     this.mute(eventsToMute);
-    this.tree.disableDeselection();
+    this._tree.disableDeselection();
     selectFunc(predicate);
-    this.tree.enableDeselection();
+    this._tree.enableDeselection();
     this.unmute(eventsToMute);
   }
 
   public async updateTreeSelection(nodesToSelect?: string[] | NodePredicate, muteEvents = true): Promise<void> {
     const selectFunc = (predicate: NodePredicate) => {
-      this.tree.deselectDeep();
-      this.tree.flatten(predicate).select();
+      this._tree.deselectDeep();
+      this._tree.flatten(predicate).select();
     };
     return this.updateSelection(selectFunc, nodesToSelect, muteEvents);
   }
@@ -180,7 +180,7 @@ export class BeInspireTree {
   }
 
   public reload() {
-    return this.tree.reload();
+    return this._tree.reload();
   }
 
   public pauseRendering() {
@@ -189,19 +189,19 @@ export class BeInspireTree {
 
   public resumeRendering() {
     this.unmute(["changes.applied"]);
-    this.tree.emit("changes.applied");
+    this._tree.emit("changes.applied");
   }
 
   public on(event: string, listener: (...values: any[]) => void): this {
-    this.tree.on(event, listener);
+    this._tree.on(event, listener);
     return this;
   }
 
   public removeAllListeners(event?: string | string[]): void {
-    this.tree.removeAllListeners(event);
+    this._tree.removeAllListeners(event);
   }
 
   public nodes(ids?: string[]): InspireTreeNode[] {
-    return this.tree.nodes(ids) as any;
+    return this._tree.nodes(ids) as any;
   }
 }
