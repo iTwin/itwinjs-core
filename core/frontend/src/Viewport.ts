@@ -443,7 +443,7 @@ export class ViewFrustum {
 
     const camera = view.camera;
     camera.validateLens();
-    if (camera.isFocusValid())
+    if (camera.isFocusValid)
       return;
 
     const vDelta = view.getExtents();
@@ -471,7 +471,7 @@ export class ViewFrustum {
 
     this.extendRangeForDisplayedPlane(extents);
 
-    if (extents.isNull())
+    if (extents.isNull)
       return;
 
     // convert viewed extents in world coordinates to min/max in view aligned coordinates
@@ -603,7 +603,7 @@ export class ViewFrustum {
         this.alignWithRootZ(); // make sure we're in a z Up view
 
         const extents = this.view.getViewedExtents();
-        if (extents.isNull()) {
+        if (extents.isNull) {
           extents.low.z = -ViewFrustum.get2dFrustumDepth();
           extents.high.z = ViewFrustum.get2dFrustumDepth();
         }

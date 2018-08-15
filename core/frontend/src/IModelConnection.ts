@@ -194,19 +194,19 @@ export class IModelConnection extends IModel {
       return;
 
     const iModelToken: IModelToken = request.parameters[0];
-    if (this.token.key !== iModelToken.key)
+    if (this._token.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
     try {
       Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       const openResponse: IModel = await IModelConnection.callOpen(this._openAccessToken!, iModelToken, this.openMode);
-      this.token = openResponse.iModelToken;
+      this._token = openResponse.iModelToken;
     } catch (error) {
       reject(error.message);
     }
 
     Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-    request.parameters[0] = this.token; // Modify the token of the original request before resubmitting it.
+    request.parameters[0] = this._token; // Modify the token of the original request before resubmitting it.
     resubmit();
   }
 
@@ -220,7 +220,7 @@ export class IModelConnection extends IModel {
     try {
       await IModelReadRpcInterface.getClient().close(accessToken, this.iModelToken);
     } finally {
-      (this.token as any) = undefined; // prevent closed connection from being reused
+      (this._token as any) = undefined; // prevent closed connection from being reused
     }
   }
 
@@ -243,7 +243,7 @@ export class IModelConnection extends IModel {
     try {
       await StandaloneIModelRpcInterface.getClient().closeStandalone(this.iModelToken);
     } finally {
-      (this.token as any) = undefined; // prevent closed connection from being reused
+      (this._token as any) = undefined; // prevent closed connection from being reused
     }
   }
 

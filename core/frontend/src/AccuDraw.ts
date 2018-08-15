@@ -407,7 +407,7 @@ export class AccuDraw {
     const lastWasIndexed = (0 !== this.indexed);
     let pointChanged = false, handled = false;
 
-    if (0.0 !== pointActive.z && !vp.isPointAdjustmentRequired())
+    if (0.0 !== pointActive.z && !vp.isPointAdjustmentRequired)
       pointActive.z = 0.0;
 
     if (this.isInactive) {
@@ -463,7 +463,7 @@ export class AccuDraw {
   public isZLocked(vp: Viewport): boolean {
     if (this._fieldLocked[ItemField.Z_Item])
       return true;
-    if (vp.isSnapAdjustmentRequired()) //  && TentativeOrAccuSnap.isHot())
+    if (vp.isSnapAdjustmentRequired) //  && TentativeOrAccuSnap.isHot())
       return true;
 
     return false;
@@ -491,7 +491,7 @@ export class AccuDraw {
 
   private accountForACSContextLock(vec: Vector3d): void {
     // Base rotation is relative to ACS when ACS context lock is enabled...
-    if (!this.currentView || !this.currentView.isContextRotationRequired())
+    if (!this.currentView || !this.currentView.isContextRotationRequired)
       return;
 
     const rMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, this.currentView, true);
@@ -500,10 +500,10 @@ export class AccuDraw {
 
   private static useACSContextRotation(vp: Viewport, isSnap: boolean): boolean {
     if (isSnap) {
-      if (!vp.isSnapAdjustmentRequired())
+      if (!vp.isSnapAdjustmentRequired)
         return false;
     } else {
-      if (!vp.isContextRotationRequired())
+      if (!vp.isContextRotationRequired)
         return false;
     }
     return true;
@@ -657,7 +657,7 @@ export class AccuDraw {
       newRotation = ThreeAxes.createFromRotMatrix(newRotationIn); // for animating context rotation change...
 
     const vp = this.currentView;
-    const useACS = vp ? vp.isContextRotationRequired() : false;
+    const useACS = vp ? vp.isContextRotationRequired : false;
 
     if (this.rotationMode === RotationMode.Restore) {
       newRotation = this.savedState.axes.clone();
@@ -1269,7 +1269,7 @@ export class AccuDraw {
     if (!useVp)
       return RotMatrix.createIdentity(rMatrix);
 
-    if (checkACS && useVp.isContextRotationRequired())
+    if (checkACS && useVp.isContextRotationRequired)
       return useVp.getAuxCoordRotation(rMatrix);
 
     return useVp.rotMatrix;
@@ -1418,7 +1418,7 @@ export class AccuDraw {
   private getBaseRotation(): RotMatrix {
     const vp = this.currentView;
     let baseRMatrix: RotMatrix;
-    const useAcs = vp ? vp.isContextRotationRequired() : false;
+    const useAcs = vp ? vp.isContextRotationRequired : false;
     switch (this.flags.baseRotation) {
       case RotationMode.Top: {
         baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, vp, useAcs)!;
@@ -1986,7 +1986,7 @@ export class AccuDraw {
       return;
 
     const vp = this.currentView;
-    if (!vp || vp.isCameraOn())
+    if (!vp || vp.isCameraOn)
       return;
 
     const viewZRoot = vp.rotMatrix.getRow(2);
@@ -2079,7 +2079,7 @@ export class AccuDraw {
         inPtP.plusScaled(normalVectorP, distance, outPtP);
       }
     } else {
-      const isCamera = vp.isCameraOn();
+      const isCamera = vp.isCameraOn;
       if (vp.view.is3d() && isCamera) {
         const cameraPos = vp.view.getEyePoint();
         fromPtP = cameraPos;
@@ -2107,7 +2107,7 @@ export class AccuDraw {
   }
 
   public softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
-    if (!vp.isPointAdjustmentRequired()) {
+    if (!vp.isPointAdjustmentRequired) {
       outPtP.setFrom(inPtP);
       return true;
     }
@@ -2128,7 +2128,7 @@ export class AccuDraw {
 
   /** snap projects normal, always produces point */
   public hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
-    if (!vp.isPointAdjustmentRequired()) {
+    if (!vp.isPointAdjustmentRequired) {
       outPtP.setFrom(inPtP);
       return true;
     }

@@ -106,7 +106,7 @@ export class MeshParams extends MeshInfo {
       }
     }
 
-    this.uvParams = uvRange.isNull() ? undefined : QParams2d.fromRange(uvRange);
+    this.uvParams = uvRange.isNull ? undefined : QParams2d.fromRange(uvRange);
     this.vertexParams = args.points!.params;
     this.material = args.material as Material;
     switch (this.type) {

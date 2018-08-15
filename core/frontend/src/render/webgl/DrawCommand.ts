@@ -552,7 +552,7 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes && !batch.range.isNull()) {
+    if (undefined !== this._frustumPlanes && !batch.range.isNull) {
       let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
       frustum = frustum.transformBy(this.target.currentTransform, frustum);
       if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {

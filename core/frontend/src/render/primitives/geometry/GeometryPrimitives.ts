@@ -99,12 +99,12 @@ export class PrimitivePathGeometry extends Geometry {
   public static getStrokesForLoopOrPath(loopOrPath: Loop | Path, facetOptions: StrokeOptions, params: DisplayParams, isDisjoint: boolean, transform: Transform): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
 
-    if (!loopOrPath.isAnyRegionType() || params.wantRegionOutline) {
+    if (!loopOrPath.isAnyRegionType || params.wantRegionOutline) {
       const strksPts: StrokesPrimitivePointLists = new StrokesPrimitivePointLists();
       PrimitivePathGeometry.collectCurveStrokes(strksPts, loopOrPath, facetOptions, transform);
 
       if (strksPts.length > 0) {
-        const isPlanar = loopOrPath.isAnyRegionType();
+        const isPlanar = loopOrPath.isAnyRegionType;
         assert(isPlanar === params.wantRegionOutline);
         const strksPrim: StrokesPrimitive = StrokesPrimitive.create(params, isDisjoint, isPlanar);
         strksPrim.strokes = strksPts;
@@ -186,7 +186,7 @@ export class PrimitiveLoopGeometry extends Geometry {
   }
 
   protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
-    if (!this.loop.isAnyRegionType()) {
+    if (!this.loop.isAnyRegionType) {
       return undefined;
     }
 
@@ -227,7 +227,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
       }
     }
 
-    assert(this.transform.isIdentity());
+    assert(this.transform.isIdentity);
     return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
   }
 

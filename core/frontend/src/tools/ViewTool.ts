@@ -1353,7 +1353,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
   private static _angleLimit = 0.075;
   private static _timeLimit = 500;
   private haveStaticOrientation(zVec: Vector3d, currentTime: number): boolean {
-    if (!this._orientationValid || zVec.angleTo(this._orientationZ).radians > ViewNavigate._angleLimit || this._orientationZ.isAlmostZero()) {
+    if (!this._orientationValid || zVec.angleTo(this._orientationZ).radians > ViewNavigate._angleLimit || this._orientationZ.isAlmostZero) {
       this._orientationValid = true;
       this._orientationTime = currentTime;
       this._orientationZ = zVec;

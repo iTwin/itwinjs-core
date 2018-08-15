@@ -63,12 +63,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curve = Path.create(ellipse);
     }
 
-    if (filled && !isEllipse && !ellipse.sweep.isFullCircle()) {
+    if (filled && !isEllipse && !ellipse.sweep.isFullCircle) {
       const gapSegment: CurvePrimitive = LineSegment3d.create(ellipse.startPoint(), ellipse.endPoint());
       (gapSegment as any).markerBits = 0x00010000; // Set the CURVE_PRIMITIVE_BIT_GapCurve marker bit
       curve.children.push(gapSegment);
     }
-    const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+    const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
     if (isLoop)
       this.accum.addLoop(curve, displayParams, this.localToWorldTransform, false);
     else

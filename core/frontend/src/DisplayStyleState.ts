@@ -442,7 +442,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   /** change one of the scene light specifications (Ambient, Flash, or Portrait) for this display style */
   public setSceneLight(light: Light) {
-    if (!light.isValid())
+    if (!light.isValid)
       return;
 
     const sceneLights = this.getStyle("sceneLights");
@@ -465,7 +465,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   /** change the light specification and direction of the solar light for this display style */
   public setSolarLight(light: Light, direction: Vector3d) {
     const sceneLights = this.getStyle("sceneLights");
-    if (light.lightType !== LightType.Solar || !light.isValid()) {
+    if (light.lightType !== LightType.Solar || !light.isValid) {
       delete sceneLights.sunDir;
     } else {
       sceneLights.sun = light;

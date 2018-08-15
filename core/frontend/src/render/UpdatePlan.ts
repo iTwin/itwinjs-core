@@ -93,7 +93,7 @@ export class AbortFlags {
 
 export class TileOptions {
   public get hasDeadline(): boolean { return this.deadline !== undefined; }
-  public get isTimedOut(): boolean { return this.hasDeadline && this.deadline!.isInPast(); }
+  public get isTimedOut(): boolean { return this.hasDeadline && this.deadline!.isInPast; }
   constructor(public deadline?: BeTimePoint,
     public scale: number = 1,
     public minDepth: number = 0,
@@ -116,6 +116,6 @@ export class UpdatePlan {
   public get subRect(): Range3d { return this._subRect!; }
   public set subRect(rect: Range3d) { this._subRect = rect; }
   public get hasQuitTime(): boolean { return this.quitTime !== undefined; }
-  public get isTimedOut(): boolean { return this.hasQuitTime && this.quitTime!.isInPast(); }
+  public get isTimedOut(): boolean { return this.hasQuitTime && this.quitTime!.isInPast; }
   public clearAbortFlags(): void { this.abortFlags.stopEvents = StopEvents.fromStopMask(StopMask.None); }
 }

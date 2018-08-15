@@ -898,7 +898,7 @@ export namespace Attachments {
 
     /** Returns a clone of the current clipping if it is defined and not null. Otherwise, attempt to create a new stored boundary clipping. */
     public getOrCreateClip(transform?: Transform): ClipVector {
-      if (!this.clip.isValid())
+      if (!this.clip.isValid)
         this.clip = this.createBoundaryClip();
 
       const clipReturn = this.clip.clone();

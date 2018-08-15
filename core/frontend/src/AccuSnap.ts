@@ -121,7 +121,7 @@ export class AccuSnap {
   private initializeForCheckMotion(): void {
     this._lastCursorPos.setFrom(IModelApp.toolAdmin.currentInputState.lastMotion);
     this._totalMotionSq = 0;
-    this._motionToleranceSq = IModelApp.toolAdmin.isCurrentInputSourceMouse() ? 1 : 20;
+    this._motionToleranceSq = IModelApp.toolAdmin.isCurrentInputSourceMouse ? 1 : 20;
   }
 
   public checkStopLocate(): boolean {
@@ -216,7 +216,7 @@ export class AccuSnap {
 
   public async displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d) {
     // if the tooltip is already displayed, or if user doesn't want it, quit.
-    if (IModelApp.notifications.isToolTipOpen() || !this._settings.toolTip)
+    if (IModelApp.notifications.isToolTipOpen || !this._settings.toolTip)
       return;
 
     const accuSnapHit = this.currHit;
@@ -288,7 +288,7 @@ export class AccuSnap {
 
   public clearToolTip(ev?: BeButtonEvent): void {
     this._noMotionCount = 0;
-    if (!IModelApp.notifications.isToolTipOpen())
+    if (!IModelApp.notifications.isToolTipOpen)
       return;
 
     if (ev && (5 > ev.viewPoint.distanceXY(this._toolTipPt)))
@@ -701,7 +701,7 @@ export class AccuSnap {
       snapModes.push(SnapMode.Intersection);
     } else {
       // The user's finger is likely to create unwanted AccuSnaps, so don't snap unless source is a mouse.
-      if (IModelApp.toolAdmin.isCurrentInputSourceMouse())
+      if (IModelApp.toolAdmin.isCurrentInputSourceMouse)
         snapModes = this.getActiveSnapModes();
       else
         snapModes = [];

@@ -725,7 +725,7 @@ export abstract class ViewState extends ElementState {
    * @param clip the new clipping volume. If undefined, clipping is removed from view.
    */
   public setViewClip(clip?: ClipVector) {
-    if (clip && clip.isValid())
+    if (clip && clip.isValid)
       this.setDetail("clip", clip.toJSON());
     else
       this.removeDetail("clip");
@@ -737,7 +737,7 @@ export abstract class ViewState extends ElementState {
     if (clip === undefined)
       return undefined;
     const clipVector = ClipVector.fromJSON(clip);
-    return clipVector.isValid() ? clipVector : undefined;
+    return clipVector.isValid ? clipVector : undefined;
   }
 
   /** Set the grid settings for this view */
@@ -836,7 +836,7 @@ export abstract class ViewState extends ElementState {
    * @see lookAtVolume
    */
   public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
-    if (volume.isNull()) // make sure volume is valid
+    if (volume.isNull) // make sure volume is valid
       return;
 
     const viewRot = this.getRotation();
@@ -1077,7 +1077,7 @@ export abstract class ViewState3d extends ViewState {
   public turnCameraOff() { this._cameraOn = false; }
 
   /** Determine whether the camera is valid for this view */
-  public get isCameraValid() { return this.camera.isValid(); }
+  public get isCameraValid() { return this.camera.isValid; }
 
   /** Calculate the lens angle formed by the current delta and focus distance */
   public calcLensAngle(): Angle {
@@ -1426,7 +1426,7 @@ export abstract class ViewState3d extends ViewState {
   /** @hidden */
   protected drawGroundPlane(context: DecorateContext): void {
     const extents = this.getGroundExtents(context.viewport);
-    if (extents.isNull()) {
+    if (extents.isNull) {
       return;
     }
 
@@ -1528,7 +1528,7 @@ export class SpatialViewState extends ViewState3d {
       }
     });
 
-    if (range.isNull())
+    if (range.isNull)
       range.setFrom(this.getViewedExtents());
 
     range.ensureMinLengths(1.0);

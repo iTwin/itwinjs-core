@@ -104,10 +104,10 @@ export class DecorateContext extends RenderContext {
     // Limit non-view aligned grid to project extents in spatial views...
     if (limitRange) {
       const range = vp.view.iModel.projectExtents.clone();
-      if (range.isNull())
+      if (range.isNull)
         return [];
       range.intersect(frust.toRange(), range);
-      if (range.isNull())
+      if (range.isNull)
         return [];
       frust.initFromRange(range);
     }
@@ -206,7 +206,7 @@ export class DecorateContext extends RenderContext {
       zVec = rMatrix.rowZ(),
       viewZ = vp.rotMatrix.getRow(2);
 
-    if (!vp.isCameraOn() && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
+    if (!vp.isCameraOn && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
 
     const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
@@ -384,7 +384,7 @@ export class DecorateContext extends RenderContext {
 
     const points: Point3d[] = [];
 
-    const cameraOn = vp.isCameraOn();
+    const cameraOn = vp.isCameraOn;
     let zCamera = 0.0;
     let zCameraLimit = 0.0;
     const viewZ = Vector3d.create();
