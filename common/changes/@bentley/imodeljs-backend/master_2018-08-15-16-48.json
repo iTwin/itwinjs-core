@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Flesh out DisplayStyle API; Support iteration of ViewDefinitions",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Paul.Connelly@bentley.com"
+}

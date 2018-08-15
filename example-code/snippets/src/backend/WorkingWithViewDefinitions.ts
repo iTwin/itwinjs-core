@@ -19,7 +19,7 @@ function findViewsOfDrawingModel(iModel: IModelDb, drawingModelId: Id64, include
     where += " AND IsPrivate=FALSE"; // Exclude private views if specified
 
   const views: DrawingViewDefinition[] = [];
-  const params: ViewQueryParams = { from: "BisCore.DrawingViewDefinition", where, };
+  const params: ViewQueryParams = { from: "BisCore.DrawingViewDefinition", where };
   iModel.views.iterateViews(params, (view: ViewDefinition) => {
     if (view.isDrawingView())
       views.push(view);
