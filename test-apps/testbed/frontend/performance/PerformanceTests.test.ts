@@ -247,18 +247,18 @@ async function mainBody() {
 
   // Load all tiles ???
   await waitForTilesToLoad();
-  await console.log("1111111111111111111111 - waitForTilesToLoad has FINISHED"); // tslint:disable-line
+  debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
 
   // await savePng();
   // const gl = (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl");
   // const gl: WebGLRenderingContext = System.instance.context;
-  // await console.log("gl: " + gl); // tslint:disable-line
+  // debugPrint("gl: " + gl);
   // await gl!.clearColor(0, 1, 0, 1);
   // await gl!.clear(gl!.COLOR_BUFFER_BIT);
   await resolveAfterXMilSeconds(2000);
-  await console.log("1111111111111111111111 - b4 save png " + theViewport!.continuousRendering); // tslint:disable-line
+  debugPrint("1111111111111111111111 - b4 save png " + theViewport!.continuousRendering);
   await savePng();
-  await console.log("1111111111111111111111 - after save png " + theViewport!.continuousRendering); // tslint:disable-line
+  debugPrint("1111111111111111111111 - after save png " + theViewport!.continuousRendering);
   await resolveAfterXMilSeconds(2000);
 
   // savePng();
