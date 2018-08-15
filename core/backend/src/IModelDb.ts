@@ -5,11 +5,42 @@
 import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
-  IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
-  IModelNotFoundResponse, EcefLocation, SnapRequestProps, SnapResponseProps, EntityMetaData, PropertyCallback, ViewStateData, CategorySelectorProps, ModelSelectorProps, SheetProps,
+  Code,
+  CodeSpec,
+  ElementProps,
+  ElementAspectProps,
+  IModel,
+  IModelProps,
+  IModelVersion,
+  ModelProps,
+  IModelError,
+  IModelStatus,
+  AxisAlignedBox3d,
+  EntityQueryParams,
+  EntityProps,
+  ViewQueryParams,
+  ViewDefinitionProps,
+  FontMap,
+  FontMapProps,
+  FontProps,
+  ElementLoadProps,
+  CreateIModelProps,
+  FilePropertyProps,
+  IModelToken,
+  TileTreeProps,
+  TileProps,
+  IModelNotFoundResponse,
+  EcefLocation,
+  SnapRequestProps,
+  SnapResponseProps,
+  EntityMetaData,
+  PropertyCallback,
+  ViewStateData,
+  CategorySelectorProps,
+  ModelSelectorProps,
+  SheetProps,
   ThumbnailProps,
+  DisplayStyleProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -1188,13 +1219,38 @@ export namespace IModelDb {
       return props;
     }
 
+    /** Default parameters for iterating/querying ViewDefinitions. Includes all subclasses of ViewDefinition, excluding only those marked 'private'. */
+    public static readonly defaultQueryParams: ViewQueryParams = {  from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
+
+    /** Iterate all ViewDefinitions matching the supplied query.
+     * @param params Specifies the query by which views are selected.
+     * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
+     * @return true if all views were iterated, false if iteration was terminated early due to callback returning false.
+     */
+    public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
+      const ids = this._iModel.queryEntityIds(params);
+      let finished = true;
+      for (const id of ids) {
+        try {
+          const view = this._iModel.elements.getElement(id);
+          if (undefined !== view && view instanceof ViewDefinition) {
+            finished = callback(view);
+            if (!finished)
+              break;
+          }
+        } catch (err) { }
+      }
+
+      return finished;
+    }
+
     public getViewStateData(viewDefinitionId: string): ViewStateData {
       const viewStateData: ViewStateData = {} as any;
       const elements = this._iModel.elements;
       const viewDefinitionElement = elements.getElement(viewDefinitionId) as ViewDefinition;
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId) as CategorySelectorProps;
-      viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
+      viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId) as DisplayStyleProps;
       if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId) as ModelSelectorProps;
       else if (viewDefinitionElement instanceof SheetViewDefinition) {

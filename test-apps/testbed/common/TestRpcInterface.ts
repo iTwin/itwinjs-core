@@ -46,6 +46,8 @@ export abstract class TestRpcInterface extends RpcInterface {
     Map,
     Set,
     TestNotFoundResponse,
+    IModelToken,
+    AccessToken,
   ]
 
   public static getClient(): TestRpcInterface {
@@ -105,6 +107,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public op12(): Promise<Uint8Array> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public op13(_data: Uint8Array): Promise<void> {
     return this.forward.apply(this, arguments);
   }
 }

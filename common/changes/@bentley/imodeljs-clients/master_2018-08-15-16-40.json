@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "ImsFederatedAuthentiationClient spelling corrected to ImsFederatedAuthenticationClient.",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Barry.Bentley@bentley.com"
+}

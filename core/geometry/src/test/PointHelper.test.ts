@@ -43,8 +43,11 @@ describe("FrameBuilder.HelloWorld", () => {
       const point1 = points[1];
       const point2 = points[2];
       ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
-      builder.announcePoint(point0);
+      const count0 = builder.announcePoint(point0);
+      const count1 = builder.announcePoint(point0); // exercise the quick out.
+      ck.testExactNumber(count0, count1, "repeat point ignored");
       ck.testTrue(builder.hasOrigin(), "frameBuilder.hasOrigin with point");
+      ck.testUndefined(builder.getValidatedFrame(), "no frame for minimal data");
       ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
 
       builder.announcePoint(point1);
@@ -77,11 +80,52 @@ describe("FrameBuilder.HelloWorld", () => {
     ck.checkpoint("FrameBuilder");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("FrameBuilder.HelloVectors", () => {
+    const ck = new Checker();
+    const builder = new FrameBuilder();
+    ck.testFalse(builder.hasOrigin(), "frameBuilder.hasOrigin at start");
+    builder.announcePoint(Point3d.create(0, 1, 1));
+    ck.testExactNumber(0, builder.savedVectorCount());
+    ck.testExactNumber(0, builder.savedVectorCount());
+    builder.announceVector(Vector3d.create(0, 0, 0));
+    ck.testExactNumber(0, builder.savedVectorCount());
+
+    // loop body assumes each set of points has 3 leading independent vectors
+    for (const vectors of [
+      [Vector3d.create(1, 0, 0),
+      Vector3d.create(0, 1, 0),
+      Vector3d.create(0, 0, 1)],
+    ]) {
+      builder.clear();
+      const vector0 = vectors[0];
+      const vector1 = vectors[1];
+      const vector2 = vectors[2];
+      builder.announce(Point3d.create(1, 2, 3));
+      ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
+      builder.announce(vector0);
+      ck.testExactNumber(1, builder.savedVectorCount());
+      builder.announce(vector0);
+      ck.testExactNumber(1, builder.savedVectorCount());
+
+      ck.testExactNumber(2, builder.announceVector(vector1));
+      ck.testExactNumber(2, builder.announceVector(vector1.plusScaled(vector0, 2.0)));
+
+      ck.testExactNumber(3, builder.announceVector(vector2));
+
+    }
+    ck.checkpoint("FrameBuilder");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 
-describe("FrameBuilder.HelloWorld", () => {
+describe("FrameBuilder.HelloWorldB", () => {
   it("FrameBuilder.HellowWorld", () => {
     const ck = new Checker();
+
+    const nullRangeLocalToWorld = FrameBuilder.createLocalToWorldTransformInRange(Range3d.createNull(), AxisScaleSelect.Unit, 0, 0, 0, 2.0);
+    ck.testTransform(Transform.createIdentity(), nullRangeLocalToWorld, "frame in null range");
 
     for (const range of [Range3d.createXYZXYZ(1, 2, 3, 5, 7, 9)]
     ) {
@@ -104,7 +148,7 @@ describe("FrameBuilder.HelloWorld", () => {
       }
     }
 
-    ck.checkpoint("FrameBuilder");
+    ck.checkpoint("FrameBuilder.HelloWorldB");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -256,6 +300,8 @@ describe("Point3dArray", () => {
     Sample.createGrowableArrayCirclePoints(3.5, 37, false, 1.2, 2.8, pointsA);
     const pointsB = pointsA.getPoint3dArray();
     const frame = FrameBuilder.createFrameToDistantPoints(pointsB);
+    const noFrame = FrameBuilder.createFrameToDistantPoints([Point3d.create(0, 0, 0)]);
+    ck.testUndefined(noFrame, "Expect undefined frame from 1 point");
 
     if (ck.testPointer(frame, "frame to points") && frame) {
       const origin = frame.origin;

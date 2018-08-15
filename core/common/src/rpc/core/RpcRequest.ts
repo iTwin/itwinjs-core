@@ -270,8 +270,12 @@ export class RpcRequest<TResponse = any> {
       case RpcRequestStatus.Resolved: {
         const type = this.getResponseType();
         if (type === RpcResponseType.Text) {
-          const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-          return this.resolve(result);
+          try {
+            const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+            return this.resolve(result);
+          } catch (err) {
+            return this.reject(err);
+          }
         } else if (type === RpcResponseType.Binary) {
           const result: TResponse = this.getResponseBytes() as any; // ts bug? why necessary to cast?
           return this.resolve(result);
@@ -283,16 +287,20 @@ export class RpcRequest<TResponse = any> {
       case RpcRequestStatus.Rejected: {
         this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorReceived, this);
 
-        const localError = new Error();
-        const error = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-        localError.name = error.name;
-        localError.message = error.message;
+        try {
+          const localError = new Error();
+          const backendError = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+          localError.name = backendError.name;
+          localError.message = backendError.message;
 
-        const localStack = localError.stack;
-        const remoteStack = error.stack;
-        error.stack = `${localStack}\n${remoteStack}`;
+          const localStack = localError.stack;
+          const remoteStack = backendError.stack;
+          backendError.stack = `${localStack}\n${remoteStack}`;
 
-        return this.reject(error);
+          return this.reject(backendError);
+        } catch (err) {
+          return this.reject(err);
+        }
       }
 
       case RpcRequestStatus.Provisioning:

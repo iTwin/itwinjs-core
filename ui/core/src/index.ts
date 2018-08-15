@@ -13,6 +13,7 @@ export * from "./searchbox";
 export * from "./splitbutton";
 export * from "./tree";
 export * from "./utils";
+export * from "./validationTextbox";
 
 /** @docs-package-description
  * The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.

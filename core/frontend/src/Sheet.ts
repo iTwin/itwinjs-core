@@ -235,7 +235,10 @@ export namespace Attachments {
 
     public constructor(view: ViewState) {
       super();
+
+      // ###TODO: Why do 2d views have camera lights enabled?
       this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
+      this._viewFlagOverrides.setShowCameraLights(false);
     }
 
     public get maxDepth() { return 1; }
@@ -849,8 +852,8 @@ export namespace Attachments {
 
     /** Returns true if this attachment is a 2d view attachment. */
     public abstract get is2d(): boolean;
-    /** Returns true if this attachment is ready to be drawn. */
-    public abstract get state(): State;
+    /** Returns true if this attachment has a defined tile tree and is ready to be drawn. */
+    public get isReady(): boolean { return this._tree !== undefined; }
     /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
     public get tree(): Tree | undefined { return this._tree; }
     /** @hidden - Sets the reference to the tile tree corresponding to this attachment view's model. */
@@ -872,8 +875,8 @@ export namespace Attachments {
       return new Placement2d(origin, Angle.createDegrees(0), box);
     }
 
-    /** Load the tile tree for this attachment, updating the attachment's load status. */
-    public abstract load(sheetView: SheetViewState, sceneContext: SceneContext): void;
+    /** Load the tile tree for this attachment. Returns an Attachment.State to indicate success (Ready, Loading), or failure (Empty, NotLoaded, etc). */
+    public abstract load(sheetView: SheetViewState, sceneContext: SceneContext): State;
 
     /** Remove the clip vector from this view attachment. */
     public clearClipping() { this.clip.clear(); }
@@ -925,19 +928,16 @@ export namespace Attachments {
 
   /** A 2d sheet view attachment. */
   export class Attachment2d extends Attachment {
-    /** The status of whether or not this attachment's tile tree is still attempting to load any tiles, forcing the SheetViewState to continue creating the scene. */
-    private _status: State = State.NotLoaded;
-
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }
 
     public get is2d(): boolean { return true; }
-    public get state(): State { return this._status; }
-
-    public load(_sheetView: SheetViewState, _sceneContext: SceneContext) {
+    public load(_sheetView: SheetViewState, _sceneContext: SceneContext): State {
       if (this.tree === undefined)
-        this._status = Tree2d.create(this);
+        return Tree2d.create(this);
+      else
+        return State.Ready;
     }
   }
 
@@ -952,65 +952,45 @@ export namespace Attachments {
 
     public get is2d(): boolean { return false; }
 
-    /**
-     * Always returns a state of "Ready".
-     * 3d view attachments tell the SheetViewState directly whether or not to continue creating the scene by modifying its "all3dAttachmentTilesReady" member.
-     */
-    public get state(): State { return State.Ready; }
-
     /** Returns the load state of this attachment's tile tree at a given depth. */
     public getState(depth: number): State { return depth < this.states.length ? this.states[depth] : State.NotLoaded; }
 
-    /** Sets the load state of this attachment's tile tree at a given depth. */
+    /** Sets the state of this attachment's tile tree at a given depth. */
     public setState(depth: number, state: State) {
       while (this.states.length < depth + 1)
         this.states.push(State.NotLoaded);  // Fill any gaps
       this.states[depth] = state;
     }
 
-    public load(sheetView: SheetViewState, sceneContext: SceneContext) {
+    public load(sheetView: SheetViewState, sceneContext: SceneContext): State {
       if (this._tree === undefined)
         this._tree = Tree3d.create(sheetView, this, sceneContext);
+      return State.Ready;
     }
   }
 
   /** A list of view attachments for a sheet. */
   export class AttachmentList {
     public readonly list: Attachment[] = [];
-    private _all2dReady: boolean = true;
+    private _allReady: boolean = true;
 
     public constructor() { }
 
     /** The number of attachments in this list. */
     public get length(): number { return this.list.length; }
 
-    /** Returns true if all of the 2d attachments in the list have tile trees that are fully loaded, and all 3d attachments have tile trees that are atleast not undefined. */
-    public get allLoaded(): boolean {
-      if (!this._all2dReady)
-        return false;
-      for (const attachment of this.list)
-        if (attachment.tree === undefined)
-          return false;
-      return true;
-    }
-
-    /** Given a view id, return an attachment containing that view from the list. If no attachment in the list stores that view, returns undefined. */
-    public findByViewId(viewId: Id64): Attachment | undefined {
-      for (const attachment of this.list)
-        if (attachment.view.id.equals(viewId))
-          return attachment;
-      return undefined;
-    }
+    /** Returns true if all attachments in this list have defined tile trees. */
+    public get allReady(): boolean { return this._allReady; }
 
     /** Clear this list of attachments. */
     public clear() {
       this.list.length = 0;
+      this._allReady = true;
     }
 
     /** Add an attachment to this list of attachments. */
     public add(attachment: Attachment) {
-      if (attachment.is2d)
-        this._all2dReady = this._all2dReady && (attachment.state === State.Ready);
+      this._allReady = this._allReady && attachment.isReady;
       this.list.push(attachment);
     }
 
@@ -1022,30 +1002,33 @@ export namespace Attachments {
       this.updateAllReady();
     }
 
-    /** Update the flag on this attachments list recording whether or not all 2d attachments are ready to be drawn. */
+    /** Update the flag on this attachments list recording whether or not all attachments are ready to be drawn. */
     private updateAllReady() {
-      this._all2dReady = true;
+      this._allReady = true;
       for (const attachment of this.list) {
-        if (attachment.state !== State.Ready) {
-          this._all2dReady = false;
+        if (!attachment.isReady) {
+          this._allReady = false;
           break;
         }
       }
     }
 
-    /** Load the tile tree for the attachment at the given index. Returns the state of the attachment. */
+    /**
+     * Load the tile tree for the attachment at the given index. Returns the resulting load status. If the load reported
+     * anything other than "Ready" or "Loading", the load failed and the attachment has been removed from the list.
+     */
     public load(idx: number, sheetView: SheetViewState, sceneContext: SceneContext): State {
       assert(idx < this.length);
 
       const attachment = this.list[idx];
 
-      // Load each attachment and clean out any attachments that failed to load
-      attachment.load(sheetView, sceneContext);
-      if (attachment.state === State.Empty || attachment.state === State.NotLoaded)
+      // Load the attachment. On failure, remove it from the array
+      const loadStatus = attachment.load(sheetView, sceneContext);
+      if (loadStatus !== State.Ready && loadStatus !== State.Loading)
         this.list.splice(idx, 1);
 
       this.updateAllReady();
-      return attachment.state;
+      return loadStatus;
     }
   }
 }

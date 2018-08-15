@@ -517,10 +517,8 @@ export abstract class Target extends RenderTarget {
       }
       case RenderMode.SmoothShade: {
         // Hidden edges require visible edges
-        if (!vf.visibleEdges) {
+        if (!vf.visibleEdges)
           vf.hiddenEdges = false;
-        }
-
         break;
       }
       case RenderMode.SolidFill: {
