@@ -75,7 +75,7 @@ export class ChangeSummaryManager {
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     return iModel.nativeDb.isChangeCacheAttached();
@@ -87,7 +87,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common)
    */
   public static attachChangeCache(iModel: IModelDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
@@ -111,7 +111,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     iModel.clearStatementCache();
@@ -132,7 +132,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if the iModel is standalone
    */
   public static async extractChangeSummaries(accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64[]> {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
     const ctx = new ChangeSummaryExtractContext(accessToken, iModel);

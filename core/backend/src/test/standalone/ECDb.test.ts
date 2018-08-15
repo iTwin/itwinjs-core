@@ -139,19 +139,19 @@ describe("ECDb", () => {
           const val0: SqliteValue = stmt.getValue(0);
           assert.equal(val0.columnName, "Id");
           assert.equal(val0.type, SqliteValueType.Integer);
-          assert.isFalse(val0.isNull());
+          assert.isFalse(val0.isNull);
           assert.equal(val0.getInteger(), i);
 
           const val1: SqliteValue = stmt.getValue(1);
           assert.equal(val1.columnName, "Name");
           assert.equal(val1.type, SqliteValueType.String);
-          assert.isFalse(val1.isNull());
+          assert.isFalse(val1.isNull);
           assert.equal(val1.getString(), `Dummy ${i}`);
 
           const val2: SqliteValue = stmt.getValue(2);
           assert.equal(val2.columnName, "Code");
           assert.equal(val2.type, SqliteValueType.Integer);
-          assert.isFalse(val2.isNull());
+          assert.isFalse(val2.isNull);
           assert.equal(val2.getInteger(), i * 100);
 
           const row: any = stmt.getRow();

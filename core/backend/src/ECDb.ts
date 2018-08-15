@@ -145,8 +145,8 @@ export class ECDb implements IDisposable {
   private getPreparedStatement(ecsql: string): ECSqlStatement {
     const cachedStmt = this._statementCache.find(ecsql);
     if (!!cachedStmt && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cachedStmt.statement.isShared());
-      assert(cachedStmt.statement.isPrepared());
+      assert(cachedStmt.statement.isShared);
+      assert(cachedStmt.statement.isPrepared);
       cachedStmt.useCount++;
       return cachedStmt.statement;
     }
@@ -199,8 +199,8 @@ export class ECDb implements IDisposable {
   private getPreparedSqliteStatement(sql: string): SqliteStatement {
     const cachedStmt: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
     if (!!cachedStmt && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cachedStmt.statement.isShared());
-      assert(cachedStmt.statement.isPrepared());
+      assert(cachedStmt.statement.isShared);
+      assert(cachedStmt.statement.isPrepared);
       cachedStmt.useCount++;
       return cachedStmt.statement;
     }

@@ -63,7 +63,7 @@ describe("iModel", () => {
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
-    assert(!extents.isNull());
+    assert(!extents.isNull);
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
@@ -277,7 +277,7 @@ describe("iModel", () => {
     expect(tree.rootTile).not.to.be.undefined;
 
     const tf = Transform.fromJSON(tree.location);
-    expect(tf.matrix.isIdentity()).to.be.true;
+    expect(tf.matrix.isIdentity).to.be.true;
     expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
 
     expect(tree.rootTile.id.treeId).to.equal(tree.id);
@@ -334,7 +334,7 @@ describe("iModel", () => {
       if (defaultSubCategory instanceof SubCategory) {
         assert.isTrue(defaultSubCategory.parent!.id.equals(categoryId), "defaultSubCategory id should be prescribed value");
         assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
-        assert.isTrue(defaultSubCategory.isDefaultSubCategory(), "isDefaultSubCategory should return true");
+        assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
       }
 
       // get the subcategories
@@ -1081,9 +1081,9 @@ describe("iModel", () => {
 
   // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
   it.skip("should test AutoPush", async () => {
-    let isIdle: boolean = true;
+    let idle: boolean = true;
     const activityMonitor = {
-      isIdle: () => isIdle,
+      isIdle: idle,
     };
 
     const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
@@ -1167,14 +1167,14 @@ describe("iModel", () => {
     assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
 
     // Test auto-push when isIdle returns false
-    isIdle = false;
+    idle = false;
     lastPushTimeMillis = 0;
     autoPush.autoSchedule = true; // start running AutoPush...
     await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
-    isIdle = true;
+    idle = true;
 
     // Test auto-push when Txn.hasLocalChanges returns false
     iModel.txns.hasLocalChanges = () => false;
@@ -1286,19 +1286,19 @@ describe("iModel", () => {
         const val0: SqliteValue = stmt.getValue(0);
         assert.equal(val0.columnName, "Id");
         assert.equal(val0.type, SqliteValueType.Integer);
-        assert.isFalse(val0.isNull());
+        assert.isFalse(val0.isNull);
         assert.equal(val0.getInteger(), i);
 
         const val1: SqliteValue = stmt.getValue(1);
         assert.equal(val1.columnName, "Name");
         assert.equal(val1.type, SqliteValueType.String);
-        assert.isFalse(val1.isNull());
+        assert.isFalse(val1.isNull);
         assert.equal(val1.getString(), `Dummy ${i}`);
 
         const val2: SqliteValue = stmt.getValue(2);
         assert.equal(val2.columnName, "Code");
         assert.equal(val2.type, SqliteValueType.Integer);
-        assert.isFalse(val2.isNull());
+        assert.isFalse(val2.isNull);
         assert.equal(val2.getInteger(), i * 100);
 
         const row: any = stmt.getRow();
@@ -1324,13 +1324,13 @@ describe("iModel", () => {
         const nameVal: SqliteValue = stmt.getValue(0);
         assert.equal(nameVal.columnName, "Name");
         assert.equal(nameVal.type, SqliteValueType.String);
-        assert.isFalse(nameVal.isNull());
+        assert.isFalse(nameVal.isNull);
         const name: string = nameVal.getString();
 
         const versionVal: SqliteValue = stmt.getValue(1);
         assert.equal(versionVal.columnName, "StrData");
         assert.equal(versionVal.type, SqliteValueType.String);
-        assert.isFalse(versionVal.isNull());
+        assert.isFalse(versionVal.isNull);
         const profileVersion: any = JSON.parse(versionVal.getString());
 
         assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");

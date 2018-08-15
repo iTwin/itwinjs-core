@@ -62,22 +62,22 @@ describe("PromiseMemoizer", () => {
     assert.notStrictEqual(qps[6], qps[0]);
 
     for (const qp of qps) {
-      assert.isTrue(qp.isPending());
+      assert.isTrue(qp.isPending);
     }
-    assert.isTrue(qpRej.isPending());
+    assert.isTrue(qpRej.isPending);
 
     await pause(1500);
 
     for (let ii = 0; ii < 6; ii++) {
-      assert.isTrue(qps[ii].isFulfilled());
+      assert.isTrue(qps[ii].isFulfilled);
       assert.strictEqual(qps[ii].result, expectedResults[ii]);
     }
-    assert.isTrue(qpRej.isRejected());
+    assert.isTrue(qpRej.isRejected);
     assert.strictEqual(qpRej.error.message, "TestError");
 
     deleteMemoizedTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
     const qp0 = memoizeTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.isTrue(qp0.isPending());
+    assert.isTrue(qp0.isPending);
   });
 
 });

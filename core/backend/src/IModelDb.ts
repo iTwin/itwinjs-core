@@ -257,7 +257,7 @@ export class IModelDb extends IModel {
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     IModelDb.setFirstAccessToken(imodelDb.briefcase.iModelId, accessToken);
     IModelDb.onOpened.raiseEvent(imodelDb);
-    Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb.token, ...openParams }));
+    Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
   }
 
@@ -574,7 +574,7 @@ export class IModelDb extends IModel {
     this.concurrencyControl.onMergeChanges();
     await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase, version);
     this.concurrencyControl.onMergedChanges();
-    this.token.changeSetId = this.briefcase.changeSetId;
+    this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
 
@@ -587,7 +587,7 @@ export class IModelDb extends IModel {
   public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(accessToken, this.briefcase, description);
-    this.token.changeSetId = this.briefcase.changeSetId;
+    this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
 
@@ -704,7 +704,7 @@ export class IModelDb extends IModel {
 
     const { error, result: idHexStr } = this.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, elementId }));
+      throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, elementId }));
 
     return idHexStr!;
   }
@@ -786,11 +786,11 @@ export class IModelDb extends IModel {
       return;
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
     const { error, result: metaDataJson } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
-      throw new IModelError(error.status, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
+      throw new IModelError(error.status, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -810,7 +810,7 @@ export class IModelDb extends IModel {
   public containsClass(classFullName: string): boolean {
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
     const { error } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     return (error === undefined);
   }
