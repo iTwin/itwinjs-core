@@ -128,13 +128,13 @@ export class ListPickerWidgetBase extends React.Component<ListPickerWidgetProps,
     };
   }
 
-  private toggleIsExpanded = () => {
+  private _toggleIsExpanded = () => {
     const expand = !this.state.expanded;
 
     // Minimize any other list picker that has been opened
     // This is to mimic Bimium's behavior where pickers only close when other pickers are opened
     if (expand) {
-      if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker.toggleIsExpanded())
+      if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker._toggleIsExpanded())
         lastOpenedPicker!.minimize();
 
       lastOpenedPicker = this;

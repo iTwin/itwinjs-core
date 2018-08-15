@@ -221,12 +221,12 @@ class GroupItem extends React.Component<Props, State> {
       <ExpandableItem
         {...this.props}
         key={this.state.groupItemDef.id}
-        onIsHistoryExtendedChange={(isExtended) => this.handleOnIsHistoryExtendedChange(isExtended)}
+        onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended)}
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
         <ToolbarIcon
-          onClick={() => this.toggleIsToolGroupOpen()}
+          onClick={() => this._toggleIsToolGroupOpen()}
           icon={
             <Icon iconInfo={this.state.groupItemDef.iconInfo} />
           }
@@ -235,7 +235,7 @@ class GroupItem extends React.Component<Props, State> {
     );
   }
 
-  private toggleIsToolGroupOpen = () => {
+  private _toggleIsToolGroupOpen = () => {
     this.setState((_prevState) => ({
       ..._prevState,
       isExtended: false,
@@ -243,7 +243,7 @@ class GroupItem extends React.Component<Props, State> {
     }));
   }
 
-  private handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+  private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
     this.setState((_prevState) => ({ isExtended }));
   }
 
@@ -267,7 +267,7 @@ class GroupItem extends React.Component<Props, State> {
     );
   }
 
-  private handleOnHistoryItemClick = (item: HistoryItem) => {
+  private _handleOnHistoryItemClick = (item: HistoryItem) => {
     this.setState(
       (prevState) => {
         return {
@@ -302,7 +302,7 @@ class GroupItem extends React.Component<Props, State> {
             return (
               <HistoryIcon
                 key={entry.key}
-                onClick={() => this.handleOnHistoryItemClick(entry.item)}
+                onClick={() => this._handleOnHistoryItemClick(entry.item)}
               >
                 <Icon iconInfo={item.iconInfo} />
               </HistoryIcon>

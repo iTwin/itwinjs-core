@@ -104,14 +104,14 @@ export class ModalDialogRenderer extends React.Component<ModalDialogRendererProp
   }
 
   public componentDidMount(): void {
-    ModalDialogManager.ModalDialogStackChangedEvent.addListener(this.handleModalDialogStackChangedEvent);
+    ModalDialogManager.ModalDialogStackChangedEvent.addListener(this._handleModalDialogStackChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    ModalDialogManager.ModalDialogStackChangedEvent.removeListener(this.handleModalDialogStackChangedEvent);
+    ModalDialogManager.ModalDialogStackChangedEvent.removeListener(this._handleModalDialogStackChangedEvent);
   }
 
-  private handleModalDialogStackChangedEvent = (_args: ModalDialogStackChangedEventArgs) => {
+  private _handleModalDialogStackChangedEvent = (_args: ModalDialogStackChangedEventArgs) => {
     this.setState((_prevState) => {
       return {
         modalDialogStackDepth: ModalDialogManager.ModalDialogStackDepth,

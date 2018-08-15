@@ -75,23 +75,23 @@ export class SheetNavigationAid extends React.Component<{}, SheetNavigationState
       <div className={"sheet-navigation"}>
         <div className={"gradient"}></div>
         <div className={"sheet-title"}>{sheet}</div>
-        <div className={"sheet-name"} onClick={() => this.handleOnClickSheetName()}>{this.state.dummyData[this.state.index].name}</div>
+        <div className={"sheet-name"} onClick={() => this._handleOnClickSheetName()}>{this.state.dummyData[this.state.index].name}</div>
         <div className={"sheet-container"}>
-          <div className={"sheet-caret icon icon-caret-left"} onClick={() => this.handleOnClickLeftArrow()} />
+          <div className={"sheet-caret icon icon-caret-left"} onClick={() => this._handleOnClickLeftArrow()} />
           <div>{this.state.index + 1} {ofStr} {this.state.length}</div>
-          <div className={"sheet-caret icon icon-caret-right"} onClick={() => this.handleOnClickRightArrow()} />
+          <div className={"sheet-caret icon icon-caret-right"} onClick={() => this._handleOnClickRightArrow()} />
         </div>
       </div>
     );
   }
 
-  private handleOnClickLeftArrow = () => {
+  private _handleOnClickLeftArrow = () => {
     this.setState((_prevState) => (
       { index: this.state.index <= 0 ? this.state.length - 1 : this.state.index - 1 }
     ));
   }
 
-  private handleOnClickRightArrow = () => {
+  private _handleOnClickRightArrow = () => {
     this.setState((_prevState) => (
       { index: (this.state.index + 1) % this.state.length }
     ));
@@ -99,7 +99,7 @@ export class SheetNavigationAid extends React.Component<{}, SheetNavigationState
   private modalFrontstage(): ModalFrontstageInfo {
     return new SheetsModalFrontstage();
   }
-  private handleOnClickSheetName = () => {
+  private _handleOnClickSheetName = () => {
     FrontstageManager.openModalFrontstage(this.modalFrontstage());
   }
 }

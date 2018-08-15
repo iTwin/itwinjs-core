@@ -342,16 +342,16 @@ export class ToolButton extends React.Component<ToolItemProps, ToolItemButtonSta
     return null;
   }
 
-  private handleToolActivatedEvent = (args: ToolActivatedEventArgs) => {
+  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs) => {
     this.setState((_prevState) => ({ activeTool: (this.state.itemDef.toolId === args.toolId) }));
   }
 
   public componentDidMount() {
-    FrontstageManager.ToolActivatedEvent.addListener(this.handleToolActivatedEvent);
+    FrontstageManager.ToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.ToolActivatedEvent.removeListener(this.handleToolActivatedEvent);
+    FrontstageManager.ToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   public render(): React.ReactNode {

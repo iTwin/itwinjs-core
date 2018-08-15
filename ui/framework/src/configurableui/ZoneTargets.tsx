@@ -27,12 +27,12 @@ export default class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public render(): React.ReactNode {
     return (
       <ZoneTargetsContainer>
-        {this.getTargets()}
+        {this._getTargets()}
       </ZoneTargetsContainer>
     );
   }
 
-  private getTargets = () => {
+  private _getTargets = () => {
     return this.props.targetProvider.getDropTargets(this.props.zoneId).map((dropTarget) => this.getTarget(dropTarget.widgetId, dropTarget.target));
   }
 

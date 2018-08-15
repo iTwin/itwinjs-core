@@ -114,8 +114,7 @@ export class AppNotificationManager extends NotificationManager {
     return false;
   }
 
-  /** Return true if the ToolTip is current open. */
-  public isToolTipOpen(): boolean {
+  protected toolTipIsOpen(): boolean {
     return ElementTooltip.isTooltipVisible;
   }
 

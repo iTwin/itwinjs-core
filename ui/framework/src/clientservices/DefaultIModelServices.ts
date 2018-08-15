@@ -23,11 +23,11 @@ class IModelInfoImpl implements IModelInfo {
  * Provides default [[IModelServices]]
  */
 export class DefaultIModelServices implements IModelServices {
-  private hubClient: IModelHubClient;
+  private _hubClient: IModelHubClient;
 
   /** Initialize the iModelHub Api */
   constructor() {
-    this.hubClient = new IModelHubClient(UiFramework.projectServices.deploymentEnv);
+    this._hubClient = new IModelHubClient(UiFramework.projectServices.deploymentEnv);
   }
 
   /** Get all iModels in a project */
@@ -37,9 +37,9 @@ export class DefaultIModelServices implements IModelServices {
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(top).skip(skip);
     try {
-      const iModels: IModelRepository[] = await this.hubClient.IModels().get(accessToken, projectInfo.wsgId, queryOptions);
+      const iModels: IModelRepository[] = await this._hubClient.IModels().get(accessToken, projectInfo.wsgId, queryOptions);
       for (const imodel of iModels) {
-        const versions: Version[] = await this.hubClient.Versions().get(accessToken, imodel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await this._hubClient.Versions().get(accessToken, imodel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           imodel.latestVersionName = versions[0].name;
           imodel.latestVersionChangeSetId = versions[0].changeSetId;
@@ -71,7 +71,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getThumbnail(accessToken: AccessToken, projectId: string, iModelId: string): Promise<string | undefined> {
 
     try {
-      const pngImage = await this.hubClient.Thumbnails().download(accessToken, iModelId, { projectId: projectId!, size: "Small" });
+      const pngImage = await this._hubClient.Thumbnails().download(accessToken, iModelId, { projectId: projectId!, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available
