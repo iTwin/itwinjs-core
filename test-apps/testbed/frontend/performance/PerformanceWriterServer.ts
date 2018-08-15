@@ -44,6 +44,8 @@ export function run(): Express.Application {
         garbageExecute: json.data.garbageExecute,
         initCommands: json.data.initCommands,
         backgroundDraw: json.data.backgroundDraw,
+        skybox: json.data.skybox,
+        terrain: json.data.terrain,
         setClips: json.data.setClips,
         opaqueDraw: json.data.opaqueDraw,
         translucentDraw: json.data.translucentDraw,

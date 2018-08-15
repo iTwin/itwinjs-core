@@ -336,14 +336,14 @@ export abstract class Target extends RenderTarget {
         this.performanceMetrics.frameTimes[1] = BeTimePoint.now();
         this.performanceMetrics.frameTimes[0] = this.performanceMetrics.frameTimes[1].minus(BeDuration.fromMilliseconds(sceneTime));
         this.performanceMetrics.curFrameTimeIndex = 2;
-      } else if (this.performanceMetrics.curFrameTimeIndex < 12)
+      } else if (this.performanceMetrics.curFrameTimeIndex < 14)
         this.performanceMetrics.frameTimes[this.performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
     }
   }
   public get frameTimings(): number[] {
     if (this.performanceMetrics === undefined) return [];
     const timings: number[] = [];
-    for (let i = 0; i < 11; ++i)
+    for (let i = 0; i < 13; ++i)
       timings[i] = (this.performanceMetrics.frameTimes[i + 1].milliseconds - this.performanceMetrics.frameTimes[i].milliseconds);
     return timings;
   }

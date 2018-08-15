@@ -5,7 +5,7 @@ import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-fronten
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
-import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, Viewport, OffScreenViewport } from "@bentley/imodeljs-frontend";
 import { Target, UpdatePlan, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
@@ -56,7 +56,7 @@ async function waitForTilesToLoad() {
     haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
     debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
 
-    await resolveAfterXMilSeconds(2000);
+    await resolveAfterXMilSeconds(100);
   }
   theViewport!.continuousRendering = false;
   theViewport!.renderFrame(plan);
@@ -70,6 +70,8 @@ class PerformanceEntryData {
   public garbageExecute = 999999; // This is mostly the begin paint now.
   public initCommands = 999999;
   public backgroundDraw = 999999; // This is from the begining of the draw command until after renderBackground has completed
+  public skybox = 999999;
+  public terrain = 999999;
   public setClips = 999999;
   public opaqueDraw = 999999;
   public translucentDraw = 999999;
@@ -89,7 +91,7 @@ class PerformanceEntry {
 
   public constructor(tileLoadingTime: number, frameTimes: number[], imodelName?: string, viewName?: string, viewFlags?: string) {
     let sumOfTimes = 0;
-    for (let i = 0; i < 10; i++)
+    for (let i = 0; i < 12; i++)
       sumOfTimes += frameTimes[i];
 
     const data = this.data;
@@ -98,15 +100,17 @@ class PerformanceEntry {
     data.garbageExecute = frameTimes[1]; // This is mostly the begin paint now.
     data.initCommands = frameTimes[2];
     data.backgroundDraw = frameTimes[3]; // This is from the begining of the draw command until after renderBackground has completed
-    data.setClips = frameTimes[4];
-    data.opaqueDraw = frameTimes[5];
-    data.translucentDraw = frameTimes[6];
-    data.hiliteDraw = frameTimes[7];
-    data.compositeDraw = frameTimes[8];
-    data.overlayDraw = frameTimes[9]; // The world and view overlay draw passes and the end paint
+    data.skybox = frameTimes[4];
+    data.terrain = frameTimes[5];
+    data.setClips = frameTimes[6];
+    data.opaqueDraw = frameTimes[7];
+    data.translucentDraw = frameTimes[8];
+    data.hiliteDraw = frameTimes[9];
+    data.compositeDraw = frameTimes[10];
+    data.overlayDraw = frameTimes[11]; // The world and view overlay draw passes and the end paint
     data.renderFrameTime = sumOfTimes;
-    data.glFinish = frameTimes[10];
-    data.totalTime = sumOfTimes + frameTimes[10];
+    data.glFinish = frameTimes[12];
+    data.totalTime = sumOfTimes + frameTimes[12];
 
     if (imodelName) this.imodelName = imodelName;
     if (viewName) this.viewName = viewName;
@@ -120,6 +124,7 @@ async function printResults(tileLoadingTime: number, frameTimes: number[]) {
 
 export function savePng() {
   const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
+  // const tempUrl = IModelApp.renderSystem.canvas.toDataURL("image/png");
   const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
   // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
   const newlink = document.createElement("a");
@@ -168,7 +173,8 @@ async function openView(state: SimpleViewState) {
   document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
-    theViewport = new Viewport(htmlCanvas, state.viewState!);
+    theViewport = new OffScreenViewport(state.viewState!);
+    // theViewport = new Viewport(htmlCanvas, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
@@ -241,6 +247,21 @@ async function mainBody() {
 
   // Load all tiles ???
   await waitForTilesToLoad();
+  await console.log("1111111111111111111111 - waitForTilesToLoad has FINISHED"); // tslint:disable-line
+
+  // await savePng();
+  // const gl = (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl");
+  // const gl: WebGLRenderingContext = System.instance.context;
+  // await console.log("gl: " + gl); // tslint:disable-line
+  // await gl!.clearColor(0, 1, 0, 1);
+  // await gl!.clear(gl!.COLOR_BUFFER_BIT);
+  await resolveAfterXMilSeconds(2000);
+  await console.log("1111111111111111111111 - b4 save png " + theViewport!.continuousRendering); // tslint:disable-line
+  await savePng();
+  await console.log("1111111111111111111111 - after save png " + theViewport!.continuousRendering); // tslint:disable-line
+  await resolveAfterXMilSeconds(2000);
+
+  // savePng();
 
   const plan = new UpdatePlan();
   theViewport!.renderFrame(plan);
@@ -252,12 +273,25 @@ async function mainBody() {
   for (let i = 0; i < 11 && frameTimes.length; ++i)
     debugPrint("frameTimes[" + i + "]: " + frameTimes[i]);
 
-  for (let i = 0; i < 20; ++i) {
+  debugPrint("///////////////////////////////// start extra renderFrames");
+
+  for (let i = 0; i < 10; ++i) {
+    debugPrint("///////////////////////////////// extra renderFrames " + i);
+    // await gl!.clearColor(0, 1, 0, 1);
+    // await gl!.clear(gl!.COLOR_BUFFER_BIT);
+    // await resolveAfterXMilSeconds(2000);
+    // await savePng();
     (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
     theViewport!.sync.setRedrawPending;
     theViewport!.sync.invalidateScene();
+    debugPrint("///////////--- start collecting timing data");
     theViewport!.renderFrame(plan);
+    await resolveAfterXMilSeconds(2000);
+    // render to an offscreen viewport // Nate sheet.ts has some offscreen rendering!!!!!!!!!!!!!!!!!!!!!!`
     await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
+    await savePng();
+    await resolveAfterXMilSeconds(2000);
+    debugPrint("///////////--- finish collecting timing data");
   }
 
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
