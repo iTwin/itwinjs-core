@@ -70,7 +70,7 @@ export class ElementAlignedBox3d extends Range3d {
   public get height(): number { return this.zLength(); }
   public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
-    return !this.isNull() && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
+    return !this.isNull && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
   }
 
   public static fromJSON(json?: any): ElementAlignedBox3d {
@@ -98,7 +98,7 @@ export class ElementAlignedBox2d extends Range2d {
   }
   public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
-    return !this.isNull() && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
+    return !this.isNull && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
   }
 }
 

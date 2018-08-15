@@ -138,7 +138,7 @@ export class GeometryStreamBuilder {
    * Can be called with undefined or identity transform to start appending geometry supplied in local coordinates again.
    */
   public setLocalToWorld(localToWorld?: Transform) {
-    this._worldToLocal = (undefined === localToWorld || localToWorld.isIdentity() ? undefined : localToWorld.inverse());
+    this._worldToLocal = (undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.inverse());
   }
 
   /** Supply local to world transform from Point3d and YawPitchRollAngles */
@@ -289,7 +289,7 @@ export class GeometryStreamBuilder {
     const localBrep: BRepEntity.DataProps = {
       data: brep.data,
       type: brep.type,
-      transform: localTrans.isIdentity() ? undefined : localTrans,
+      transform: localTrans.isIdentity ? undefined : localTrans,
       faceSymbology: brep.faceSymbology,
     };
     this.geometryStream.push({ brep: localBrep });
@@ -340,7 +340,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 
   /** Supply optional local to world transform. Used to transform entries that are stored relative to the element placement and return them in world coordinates. */
   public setLocalToWorld(localToWorld?: Transform) {
-    this.entry.localToWorld = (undefined === localToWorld || localToWorld.isIdentity() ? undefined : localToWorld.clone());
+    this.entry.localToWorld = (undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.clone());
   }
 
   /** Supply local to world transform from Point3d and YawPitchRollAngles of Placement3d */

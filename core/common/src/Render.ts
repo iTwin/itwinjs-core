@@ -1557,14 +1557,14 @@ export class FeatureTable extends IndexMap<Feature> {
     this.modelId = modelId;
   }
 
-  public get maxFeatures(): number { return this.maximumSize; }
-  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this.array[0].value.isDefined); }
+  public get maxFeatures(): number { return this._maximumSize; }
+  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._array[0].value.isDefined); }
   public get isUniform(): boolean { return 1 === this.length; }
-  public get uniform(): Feature | undefined { return 1 === this.length ? this.array[0].value : undefined; }
+  public get uniform(): Feature | undefined { return 1 === this.length ? this._array[0].value : undefined; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {
-    for (const entry of this.array)
+    for (const entry of this._array)
       if (entry.index === index)
         return entry.value;
 
@@ -1577,11 +1577,11 @@ export class FeatureTable extends IndexMap<Feature> {
     assert(!bound.equal);
     assert(!this.isFull);
     const entry = new IndexedValue<Feature>(feature, index);
-    this.array.splice(bound.index, 0, entry);
+    this._array.splice(bound.index, 0, entry);
   }
 
   /** @hidden */
-  public getArray(): Array<IndexedValue<Feature>> { return this.array; }
+  public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
 export class TextureMapping {

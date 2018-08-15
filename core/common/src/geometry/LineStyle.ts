@@ -106,7 +106,7 @@ export namespace LineStyle {
     }
 
     public applyTransform(transform: Transform): boolean {
-      if (transform.isIdentity())
+      if (transform.isIdentity)
         return true;
       if (this.normal) {
         transform.matrix.multiplyVector(this.normal, this.normal);
