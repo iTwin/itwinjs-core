@@ -23,6 +23,7 @@ import "./contentviews/IModelViewport";   // TODO - move to ui-framework
 import "./contentviews/CubeContent";
 import "./contentviews/TableExampleContent";
 import "./widgets/BreadcrumbDemoWidget";
+import "./widgets/FeedbackWidget";
 import "./widgets/NavigationTreeWidget";
 import "./widgets/PropertyGridDemoWidget";
 import "./tooluiproviders/Tool1UiProvider";

@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 14 Aug 2018 15:21:27 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+
+## 0.117.0
+Wed, 15 Aug 2018 17:08:54 GMT
+
+### Updates
+
+- WIP: Reality mesh classification via stencil volumes
+
+## 0.116.0
+Wed, 15 Aug 2018 15:13:19 GMT
+
+### Updates
+
+- Documentation
 
 ## 0.115.0
 Tue, 14 Aug 2018 15:21:27 GMT

@@ -165,6 +165,11 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  *
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  *
+ * **Example: Obtaining the background color for a view**
+ * ``` ts
+ * [[include:ViewDefinition.getBackgroundColor]]
+ * ```
+ *
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
@@ -172,11 +177,13 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   public categorySelectorId: Id64;
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
   public displayStyleId: Id64;
+
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
   }
+
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
@@ -192,6 +199,12 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   public isSpatialView(): this is SpatialViewDefinition { return this instanceof SpatialViewDefinition; }
   /** Type guard for 'instanceof DrawingViewDefinition' */
   public isDrawingView(): this is DrawingViewDefinition { return this instanceof DrawingViewDefinition; }
+
+  /** Load this view's DisplayStyle from the IModelDb. */
+  public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle; }
+
+  /** Load this view's CategorySelector from the IModelDb. */
+  public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement(this.categorySelectorId) as CategorySelector; }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -235,6 +248,9 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     val.camera = this.camera;
     return val;
   }
+
+  /** Load this view's DisplayStyle3d from the IModelDb. */
+  public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle3d; }
 }
 
 /**
@@ -258,6 +274,9 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
+
+  /** Load this view's ModelSelector from the IModelDb. */
+  public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement(this.modelSelectorId) as ModelSelector; }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
@@ -291,6 +310,9 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     val.angle = this.angle;
     return val;
   }
+
+  /** Load this view's DisplayStyle2d from the IModelDb. */
+  public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle2d; }
 }
 
 /** Defines a view of a [[DrawingModel]]. */

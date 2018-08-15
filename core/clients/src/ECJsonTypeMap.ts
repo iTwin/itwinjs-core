@@ -18,7 +18,7 @@
  * raw JSON that's being generated or consumed.
  *
  * #### example
- * The BriefcaseManager API requires that a briefcase be fetched from the server (based on the "wsg" ECSChema-s),
+ * The BriefcaseManager API requires that a briefcase be fetched from the server (based on the "wsg" ECSchema-s),
  * kept in memory as a strongly typed TypeScript object, and then saved locally in a ECDb cache (based on
  * the ECSchema in the ECDb). The JSON would need to be transformed between WSG, ECDb and in-memory TypeScript
  * objects. Listed below are:
@@ -304,7 +304,7 @@ export class ECJsonTypeMap {
   public static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined {
     const mappedClassEntry: ClassEntry | undefined = ECJsonTypeMap.getClassByType(typedConstructor);
     if (!mappedClassEntry) {
-      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decroator`);
+      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decorator`);
       return undefined;
     }
 
@@ -389,7 +389,7 @@ export class ECJsonTypeMap {
     return typedInstance;
   }
 
-  /** Create an untyped intance from a typed instance */
+  /** Create an untyped instance from a typed instance */
   public static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined {
     const lowCaseApplicationKey = applicationKey.toLowerCase();
     const typedConstructor = Object.getPrototypeOf(typedInstance).constructor;
@@ -488,7 +488,7 @@ export class ECJsonTypeMap {
    * Decorator function for mapping TypeScript classes to JSON
    * @param applicationKey Identifies the application for which the mapping is specified. e.g., "ecdb", "wsg", etc.
    * @param classKey Identifies the ec class backing the JSON instance. (e.g., "ServiceStore.Briefcase" (ecdb) or "iModelScope.Briefcase" (wsg))
-   * @param classKeyMapInfo Information on how the class key is persistend in the JSON instance (e.g., as two properties "schemaName" and "className")
+   * @param classKeyMapInfo Information on how the class key is persisted in the JSON instance (e.g., as two properties "schemaName" and "className")
    */
   public static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo) {
     return (typedConstructor: ConstructorType): void => {
