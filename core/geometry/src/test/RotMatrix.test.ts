@@ -328,15 +328,15 @@ describe("RotMatrix.ViewConstructions", () => {
     expect(ck.getNumErrors()).equals(0);
 
     for (const degrees of [0.0, 10.0, -40.0]) {
-      const theta = Angle.createDegrees (degrees);
+      const theta = Angle.createDegrees(degrees);
       ck.testRotMatrix(
-        RotMatrix.createRotationAroundAxisIndex (AxisIndex.X, theta),
+        RotMatrix.createRotationAroundAxisIndex(AxisIndex.X, theta),
         RotMatrix.createRotationAroundVector(Vector3d.unitX(), theta)!, "Rotate theta X");
       ck.testRotMatrix(
-        RotMatrix.createRotationAroundAxisIndex (AxisIndex.Y, theta),
+        RotMatrix.createRotationAroundAxisIndex(AxisIndex.Y, theta),
         RotMatrix.createRotationAroundVector(Vector3d.unitY(), theta)!, "Rotate 90 Y");
       ck.testRotMatrix(
-        RotMatrix.createRotationAroundAxisIndex (AxisIndex.Z, theta),
+        RotMatrix.createRotationAroundAxisIndex(AxisIndex.Z, theta),
         RotMatrix.createRotationAroundVector(Vector3d.unitZ(), theta)!, "Rotate 90 Z");
       ck.checkpoint("RotateAroundAxis");
     }
@@ -586,4 +586,5 @@ describe("SkewFactorization", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
 });

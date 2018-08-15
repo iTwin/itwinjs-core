@@ -365,7 +365,7 @@ export class RotMatrix implements BeJSONFunctions {
     if (Math.abs(vector.x) < b && Math.abs(vector.y) < b) {
       return Vector3d.createCrossProduct(vector.x, vector.y, vector.z, 0, -1, 0, result);
     }
-    return Vector3d.createCrossProduct(vector.x, vector.y, vector.z, 0, 0, 1, result);
+    return Vector3d.createCrossProduct(0, 0, 1, vector.x, vector.y, vector.z, result);
   }
 
   /**
@@ -804,6 +804,43 @@ export class RotMatrix implements BeJSONFunctions {
       this.coffs[i] = a * c + b * s;
       this.coffs[j] = -a * s + b * c;
     }
+  }
+
+  /**
+   * create a rigid coordinate frame with:
+   * * column z points from origin to x,y,z
+   * * column x is perpendicular and in the xy plane
+   * * column y is perpendicular to both.  It is the "up" vector on the view plane.
+   * * Multiplying a world vector times the transpose of this matrix transforms into the view xy
+   * * Multiplying the matrix times the an in-view vector transforms the vector to world.
+   * @param x eye x coordinate
+   * @param y eye y coordinate
+   * @param z eye z coordinate
+   * @param result
+   */
+  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: RotMatrix): RotMatrix {
+    result = RotMatrix.createIdentity(result);
+    const rxy = Geometry.hypotenuseXY(x, y);
+    if (Geometry.isSmallMetricDistance(rxy)) {
+      // special case for top or bottom view.
+      if (z < 0.0)
+        result.scaleColumnsInPlace(1.0, -1, -1.0);
+    } else {
+      //      const d = Geometry.hypotenuseSquaredXYZ(x, y, z);
+      const c = x / rxy;
+      const s = y / rxy;
+      result.setRowValues(
+        -s, 0, c,
+        c, 0, s,
+        0, 1, 0);
+      if (z !== 0.0) {
+        const r = Geometry.hypotenuseXYZ(x, y, z);
+        const s1 = z / r;
+        const c1 = rxy / r;
+        result.applyGivensColumnOp(1, 2, c1, -s1);
+      }
+    }
+    return result;
   }
   /** Rotate so columns i and j become perpendicular */
   private applyJacobiColumnRotation(i: number, j: number, matrixU: RotMatrix): number {
