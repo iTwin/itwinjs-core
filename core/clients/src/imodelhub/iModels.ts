@@ -276,7 +276,7 @@ export class IModelHandler {
     ArgumentCheck.validGuid("projectId", projectId);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
-    if (this._handler.getCustomRequestOptions().isSet()) {
+    if (this._handler.getCustomRequestOptions().isSet) {
       // In order to add custom request options, request with body is needed.
       const iModelRepository = new IModelRepository();
       iModelRepository.wsgId = imodelId;
@@ -360,7 +360,7 @@ export class IModelHandler {
     ArgumentCheck.defined("name", name);
     ArgumentCheck.defined("pathName", pathName);
 
-    if (Config.isBrowser())
+    if (Config.isBrowser)
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
@@ -424,7 +424,7 @@ export class IModelHandler {
     ArgumentCheck.validGuid("imodelId", imodelId);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
-    if (Config.isBrowser())
+    if (Config.isBrowser)
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)

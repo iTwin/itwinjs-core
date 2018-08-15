@@ -273,7 +273,7 @@ export class ChangeSetHandler {
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
     ArgumentCheck.defined("downloadToPath", downloadToPath);
 
-    if (Config.isBrowser())
+    if (Config.isBrowser)
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
@@ -327,7 +327,7 @@ export class ChangeSetHandler {
     ArgumentCheck.defined("changeSet", changeSet);
     ArgumentCheck.defined("changeSetPathname", changeSetPathname);
 
-    if (Config.isBrowser())
+    if (Config.isBrowser)
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)

@@ -27,7 +27,6 @@ class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsPr
  * This class acts as the WsgClient for other iModelBank Handlers.
  */
 export class IModelBankHandler extends IModelBaseHandler {
-  private _url: string;
   private _defaultIModelBankOptionsProvider: DefaultIModelBankRequestOptionsProvider;
 
   /**
@@ -58,7 +57,7 @@ export class IModelBankHandler extends IModelBaseHandler {
 
   protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
-  protected getDefaultUrl(): string { return this._url; }
+  protected getDefaultUrl(): string { return this._url!; }
 
   public async getUrl(excludeApiVersion?: boolean): Promise<string> {
     if (this._url)

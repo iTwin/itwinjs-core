@@ -137,7 +137,7 @@ export class IModelBaseHandler extends WsgClient {
    * @returns Promise resolves after successfully deleting instance.
    */
   public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
-    if (this._customRequestOptions.isSet()) {
+    if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
@@ -156,7 +156,7 @@ export class IModelBaseHandler extends WsgClient {
    * @returns The posted instance that's returned back from the server.
    */
   public postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
-    if (this._customRequestOptions.isSet()) {
+    if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
