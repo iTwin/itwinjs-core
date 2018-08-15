@@ -6,10 +6,10 @@
 import { Vector3d, XYAndZ } from "@bentley/geometry-core";
 
 export class OctEncodedNormal {
-  private static scratchUInt16 = new Uint16Array(1);
+  private static _scratchUInt16 = new Uint16Array(1);
   private static clamp(val: number, minVal: number, maxVal: number): number { return val < minVal ? minVal : (val > maxVal ? maxVal : val); }
   private static clampUint8(val: number): number { return this.roundUint16(0.5 + (this.clamp(val, -1, 1) * 0.5 + 0.5) * 255); }
-  private static roundUint16(val: number): number { this.scratchUInt16[0] = val; return this.scratchUInt16[0]; }
+  private static roundUint16(val: number): number { this._scratchUInt16[0] = val; return this._scratchUInt16[0]; }
   private static signNotZero(val: number): number { return val < 0.0 ? -1.0 : 1.0; }
   private static encode(vec: XYAndZ): number {
     const denom = Math.abs(vec.x) + Math.abs(vec.y) + Math.abs(vec.z);

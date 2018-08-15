@@ -68,7 +68,7 @@ export class ElementAlignedBox3d extends Range3d {
   public get width(): number { return this.xLength(); }
   public get depth(): number { return this.yLength(); }
   public get height(): number { return this.zLength(); }
-  public isValid(): boolean {
+  public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
     return !this.isNull() && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
   }
@@ -96,7 +96,7 @@ export class ElementAlignedBox2d extends Range2d {
       val.setFromJSON(json);
     return val;
   }
-  public isValid(): boolean {
+  public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
     return !this.isNull() && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
   }
@@ -121,12 +121,12 @@ export class Placement3d implements Placement3dProps {
   }
 
   /** Determine whether this Placement3d is valid. */
-  public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
+  public get isValid(): boolean { return this.bbox.isValid && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 
   public calculateRange(): AxisAlignedBox3d {
     const range = new AxisAlignedBox3d();
 
-    if (!this.isValid())
+    if (!this.isValid)
       return range;
 
     this.getTransform().multiplyRange(this.bbox, range);
@@ -147,7 +147,7 @@ export class Placement2d implements Placement2dProps {
   }
 
   /** Determine whether this Placement2d is valid. */
-  public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
+  public get isValid(): boolean { return this.bbox.isValid && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 
   public setFrom(other: Placement2d) {
     this.origin.setFrom(other.origin);
@@ -158,7 +158,7 @@ export class Placement2d implements Placement2dProps {
   public calculateRange(): AxisAlignedBox3d {
     const range = new AxisAlignedBox3d();
 
-    if (!this.isValid())
+    if (!this.isValid)
       return range;
 
     this.getTransform().multiplyRange(Range3d.createRange2d(this.bbox, 0), range);
