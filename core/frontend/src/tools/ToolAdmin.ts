@@ -621,7 +621,6 @@ export class ToolAdmin {
     return (undefined !== tool ? !tool.isCompatibleViewport(vp, false) : false);
   }
 
-  public isCurrentInputSourceMouse() { return this.currentInputState.inputSource === InputSource.Mouse; }
   public onInstallTool(tool: InteractiveTool) { this.currentInputState.onInstallTool(); return tool.onInstall(); }
   public onPostInstallTool(tool: InteractiveTool) { tool.onPostInstall(); }
 

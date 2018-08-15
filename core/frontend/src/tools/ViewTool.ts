@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton } from "./Tool";
+import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
@@ -359,6 +359,12 @@ export abstract class ViewManip extends ViewTool {
       hitHandle.noMotion(ev);
   }
 
+  public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
+  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this.inHandleModify && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this.inHandleModify ? EventHandled.Yes : EventHandled.No; }
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+
   public onPostInstall(): void {
     super.onPostInstall();
     this.onReinitialize(); // Call onReinitialize now that tool is installed.
@@ -702,7 +708,7 @@ class ViewTargetCenter extends ViewingToolHandle {
     if (ev.viewport !== this.viewTool.viewport)
       return false;
 
-    this.viewTool.setTargetCenterWorld(ev.point, !inDynamics, !inDynamics);
+    this.viewTool.setTargetCenterWorld(ev.point, !inDynamics, InputSource.Touch === ev.inputSource ? false : !inDynamics);
     ev.viewport!.invalidateDecorations();
 
     if (!inDynamics)
@@ -1750,7 +1756,7 @@ export class WindowAreaTool extends ViewTool {
   public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this.haveFirstPoint && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this.haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
   public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
   public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) this.exitTool(); }
+  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   private computeWindowCorners(): Point3d[] | undefined {
     const vp = this.viewport;

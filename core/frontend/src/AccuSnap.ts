@@ -121,7 +121,7 @@ export class AccuSnap {
   private initializeForCheckMotion(): void {
     this.lastCursorPos.setFrom(IModelApp.toolAdmin.currentInputState.lastMotion);
     this.totalMotionSq = 0;
-    this.motionToleranceSq = IModelApp.toolAdmin.isCurrentInputSourceMouse() ? 1 : 20;
+    this.motionToleranceSq = 1;
   }
 
   public checkStopLocate(): boolean {
@@ -700,11 +700,7 @@ export class AccuSnap {
       snapModes = [];
       snapModes.push(SnapMode.Intersection);
     } else {
-      // The user's finger is likely to create unwanted AccuSnaps, so don't snap unless source is a mouse.
-      if (IModelApp.toolAdmin.isCurrentInputSourceMouse())
-        snapModes = this.getActiveSnapModes();
-      else
-        snapModes = [];
+      snapModes = this.getActiveSnapModes();
     }
 
     // Consider each point snap mode and find the preferred one.
