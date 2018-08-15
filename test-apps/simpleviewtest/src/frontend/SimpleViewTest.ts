@@ -329,7 +329,7 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (StandardViewId.Top !== rotationId && !theViewport.view.allow3dManipulations())
     return;
 
-  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
+  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired);
   const inverse = rMatrix.inverse();
   if (undefined === inverse)
     return;
