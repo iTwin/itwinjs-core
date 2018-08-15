@@ -394,10 +394,10 @@ export abstract class ViewState extends ElementState {
 
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
   public createTerrain(context: SceneContext): void {
-    const backgroundMapPlane = this.displayStyle.getBackgroundMapPlane();
+    const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
     if (undefined !== backgroundMapPlane) {
       context.setBackgroundMapPlane(backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-      this.displayStyle.getBackgroundMap().addToScene(context);
+      this.displayStyle.backgroundMap.addToScene(context);
     }
   }
 
