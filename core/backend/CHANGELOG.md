@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 15 Aug 2018 15:13:19 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+
+## 0.117.0
+Wed, 15 Aug 2018 17:08:53 GMT
+
+### Updates
+
+- Flesh out DisplayStyle API; Support iteration of ViewDefinitions
 
 ## 0.116.0
 Wed, 15 Aug 2018 15:13:19 GMT
