@@ -410,7 +410,7 @@ describe("ClipPrimitive", () => {
       ck.testTrue(clipPrimitiveRange !== undefined);
       ck.testRange3d(convexSetRange, clipPrimitiveRange, "Expect range of convex set to be equal to range of ClipShape");
 
-      ck.testTrue(clipPrimitive.isValidPolygon());
+      ck.testTrue(clipPrimitive.isValidPolygon);
 
       // Test with negative box
       ConvexClipPlaneSet.createXYBox(-p - 1, -p - 1, -p, -p, convexSet);
@@ -549,7 +549,7 @@ describe("ClipPrimitive", () => {
     const maxZ = 5;
     // Test point location
     const clipPrimitive0 = ClipShape.createEmpty();
-    ck.testFalse(clipPrimitive0.isXYPolygon(), "ClipShape does not contain polygon when no points are present");
+    ck.testFalse(clipPrimitive0.isXYPolygon, "ClipShape does not contain polygon when no points are present");
     ck.testTrue(ClipShape.createShape(octogonalPoints, minZ, maxZ, undefined, true, true, clipPrimitive0) !== undefined);
     const midpoint = Point3d.create((min2D.x + max2D.x) / 2, (min2D.y + max2D.y) / 2, (minZ + maxZ) / 2);    // Is midpoint of polygon
     ck.testFalse(clipPrimitive0.pointInside(midpoint, 0), "Midpoint of polygon is not inside due to mask.");

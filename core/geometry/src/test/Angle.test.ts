@@ -73,7 +73,7 @@ class AngleTests {
     const sweep2 = AngleSweep.createStartEndDegrees(1000, -21312); // hopeful gibberish unequal to any supplied sweep.
     sweep2.setFrom(sweep);
     ck.testTrue(sweep.isAlmostEqualAllowPeriodShift(sweep2));
-    ck.testBoolean(sweep.isCCW(), !reverseSweep.isCCW(), "reversal flips ccw");
+    ck.testBoolean(sweep.isCCW, !reverseSweep.isCCW, "reversal flips ccw");
     ck.testTrue(sweep.isAlmostEqualAllowPeriodShift(sweep2));
     ck.testFalse(sweep.isAlmostEqualAllowPeriodShift(reverseSweep));
     const fractionPeriod = sweep.fractionPeriod();
@@ -112,9 +112,9 @@ describe("Angle.AlmostEqual", () => {
     const ck = new Checker();
     const source = new AngleTests(false);
     source.TestAlmostEqual(ck);
-    ck.testTrue(Angle.createDegrees(0).isExactZero());
-    ck.testTrue(Angle.createRadians(0).isExactZero());
-    ck.testFalse(Angle.createRadians(1.0e-20).isExactZero());
+    ck.testTrue(Angle.createDegrees(0).isExactZero);
+    ck.testTrue(Angle.createRadians(0).isExactZero);
+    ck.testFalse(Angle.createRadians(1.0e-20).isExactZero);
     ck.checkpoint("End Angle.AlmostEqual");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -136,7 +136,7 @@ describe("Angle.Adjust", () => {
       ck.testCoordinate(theta.cos(), Math.cos(radians));
       ck.testCoordinate(theta.sin(), Math.sin(radians));
       ck.testCoordinate(theta.tan(), Math.tan(radians));
-      ck.testFalse(theta.isFullCircle());
+      ck.testFalse(theta.isFullCircle);
     }
     ck.checkpoint("Angle.Trig");
     expect(ck.getNumErrors()).equals(0);
@@ -149,8 +149,8 @@ function testSweep(ck: Checker, sweep: AngleSweep,
   isCCW: boolean,
   isFullCircle: boolean,
   sweepDegrees: number | undefined) {
-  ck.testBoolean(sweep.isCCW(), isCCW, "sweep.isCCW");
-  ck.testBoolean(sweep.isFullCircle(), isFullCircle, "sweep.isFullCircle");
+  ck.testBoolean(sweep.isCCW, isCCW, "sweep.isCCW");
+  ck.testBoolean(sweep.isFullCircle, isFullCircle, "sweep.isFullCircle");
   if (sweepDegrees !== undefined)
     ck.testCoordinate(sweepDegrees, sweep.sweepDegrees, "sweep.sweepDegrees");
 }
@@ -428,7 +428,7 @@ describe("OrderedRotationAngles", () => {
     // No Rotation
     const angles = OrderedRotationAngles.createDegrees(x, y, z, AxisOrder.XYZ);
     const matrix = angles.toRotMatrix();
-    ck.testTrue(matrix.isIdentity());
+    ck.testTrue(matrix.isIdentity);
 
     // One Rotation (IN ROW ORDER, TRANSPOSE OF WHAT WE TYPICALLY REPRESENT)
     OrderedRotationAngles.createAngles(Angle.createDegrees(0), Angle.createDegrees(45), Angle.createDegrees(0), AxisOrder.YXZ, angles);
@@ -501,10 +501,10 @@ describe("OrderedRotationAngles", () => {
           }
           const orderedAngles = OrderedRotationAngles.createDegrees(rollAngle.degrees, -pitchAngle.degrees, yawAngle.degrees, AxisOrder.XYZ);
           const orderedMatrix = orderedAngles.toRotMatrix();
-//          const orderedAnglesB = OrderedRotationAngles.createDegrees(-rollAngle.degrees, pitchAngle.degrees, -yawAngle.degrees, AxisOrder.ZYX);
-//          const orderedMatrixB = orderedAngles.toRotMatrix ();
-//         console.log ("B diff", orderedMatrixB.maxDiff (yprMatrix), orderedAnglesB);
-          orderedMatrix.transposeInPlace ();
+          //          const orderedAnglesB = OrderedRotationAngles.createDegrees(-rollAngle.degrees, pitchAngle.degrees, -yawAngle.degrees, AxisOrder.ZYX);
+          //          const orderedMatrixB = orderedAngles.toRotMatrix ();
+          //         console.log ("B diff", orderedMatrixB.maxDiff (yprMatrix), orderedAnglesB);
+          orderedMatrix.transposeInPlace();
           if (!ck.testRotMatrix(yprMatrix, orderedMatrix)) {
             const orderedMatrix1 = orderedAngles.toRotMatrix();
             ck.testRotMatrix(yprMatrix, orderedMatrix1);
@@ -721,7 +721,7 @@ describe("MiscAngles", () => {
     ck.testCoordinate(360, fullRadiansA.sweepDegrees);
     const sweepB = AngleSweep.create360();
     const sweepC = AngleSweep.createStartEndRadians(0, 1, sweepB);
-    ck.testFalse(sweepB.isFullCircle());
+    ck.testFalse(sweepB.isFullCircle);
     ck.testTrue(sweepC === sweepB);
 
     const sweepE = AngleSweep.createStartSweepDegrees(10, 23);

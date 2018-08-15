@@ -79,7 +79,7 @@ export class MatrixTests {
     // console.log("inverse", matrixB);
     if (matrixB) {
       const AB = matrixA.multiplyMatrixMatrix(matrixB);
-      ck.testBoolean(true, AB.isIdentity(), "A * Ainverse = I");
+      ck.testBoolean(true, AB.isIdentity, "A * Ainverse = I");
     }
   }
   public static CheckProperties(
@@ -91,7 +91,7 @@ export class MatrixTests {
     isInvertible: boolean,
     isDiagonal: boolean | undefined) {
     if (isIdentity !== undefined)
-      ck.testBoolean(isIdentity, matrix.isIdentity(), "isIdentity");
+      ck.testBoolean(isIdentity, matrix.isIdentity, "isIdentity");
     ck.testBoolean(isRigid, matrix.isRigid(), "isRigid");
     ck.testBoolean(isUnitPerpendicular, matrix.testPerpendicularUnitRowsAndColumns(), "unitPerpendicularMatrix");
     const inverse = matrix.inverse();
@@ -107,7 +107,7 @@ export class MatrixTests {
     }
 
     if (isDiagonal !== undefined)
-      ck.testBoolean(isDiagonal, matrix.isDiagonal(), "isDiagonal");
+      ck.testBoolean(isDiagonal, matrix.isDiagonal, "isDiagonal");
   }
   public static CheckPointArrays(
     ck: bsiChecker.Checker, pointA: Point3d[]) {
@@ -195,7 +195,7 @@ describe("RotMatrix.factorPerpendicularColumns", () => {
           console.log("U", matrixU);
           console.log("BTB", matrixBTB);
         }
-        ck.testBoolean(true, matrixBTB.isDiagonal(), "BTB diagonal");
+        ck.testBoolean(true, matrixBTB.isDiagonal, "BTB diagonal");
         ck.testCoordinate(0, matrixA.maxDiff(matrixBU), "factorPerpendicularColumns");
         ck.testBoolean(true, matrixU.isRigid());
       }
@@ -288,10 +288,10 @@ describe("RotMatrix.cachedInverse", () => {
     RotMatrix.useCachedInverse = true;
     // first inverssion should do the calculation
     const inverseA1 = matrixA.inverse() as RotMatrix;
-    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA1).isIdentity(), "first inverse");
+    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA1).isIdentity, "first inverse");
     // second inversion should reuse.
     const inverseA2 = matrixA.inverse() as RotMatrix;
-    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA2).isIdentity(), "first inverse");
+    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA2).isIdentity, "first inverse");
 
     ck.testExactNumber(1, RotMatrix.numUseCache);
     ck.testExactNumber(1, RotMatrix.numComputeCache);
@@ -303,7 +303,7 @@ describe("RotMatrix.cachedInverse", () => {
     for (let i = 0; i < numInvert; i++) {
       matrixB.inverse(inverseB);
       const product = matrixB.multiplyMatrixMatrix(inverseB);
-      ck.testTrue(product.isIdentity());
+      ck.testTrue(product.isIdentity);
     }
 
     ck.testExactNumber(1, RotMatrix.numComputeCache);

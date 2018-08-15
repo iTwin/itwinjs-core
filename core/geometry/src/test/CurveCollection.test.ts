@@ -58,8 +58,8 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
   const path4 = collection.cloneStroked();
   ck.testPointer(path4, "clone Stroked");
 
-  ck.testFalse(collection.isOpenPath() && collection.isClosedPath(), "Collection cannot be both open and closed path");
-  ck.testFalse(collection.isOpenPath() && collection.isAnyRegionType(), "Collection cannot be both open and region");
+  ck.testFalse(collection.isOpenPath && collection.isClosedPath, "Collection cannot be both open and closed path");
+  ck.testFalse(collection.isOpenPath && collection.isAnyRegionType, "Collection cannot be both open and region");
   if (collection.children) {
     let i = 0;
     for (const child of collection.children) {
