@@ -1226,6 +1226,11 @@ export namespace IModelDb {
      * @param params Specifies the query by which views are selected.
      * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
      * @return true if all views were iterated, false if iteration was terminated early due to callback returning false.
+     *
+     * **Example:**
+     * ``` ts
+     * [[include:ViewDefinition.iterateViews]]
+     * ```
      */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
       const ids = this._iModel.queryEntityIds(params);
