@@ -27,8 +27,6 @@ import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 import ViewListWidget from "@bentley/ui-framework/lib/pickers/ViewList";
-// import ModelSelectorWidget from "@bentley/ui-framework/lib/pickers/ModelSelector";
-// import { CategorySelectorWidget } from "@bentley/ui-framework/lib/pickers/CategorySelector";
 
 export class ViewsFrontstage {
 
@@ -129,7 +127,7 @@ export class ViewsFrontstage {
         ],
       },
       bottomLeft: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
@@ -138,6 +136,12 @@ export class ViewsFrontstage {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
             isFreeform: false,
+          },
+          {
+            classId: "FeedbackWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
           },
         ],
       },

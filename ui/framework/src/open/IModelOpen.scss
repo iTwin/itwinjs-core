@@ -1,0 +1,91 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+@import "@bentley/bwc/lib/buttons/classes.scss";
+
+$appbar-height: 65px;
+$navbar-width: 72px;
+$projectpicker-min-width: 250px; /* project picker minimum width */
+$projectpicker-max-width: 450px; /* project picker maximum width */
+$open-background: #FCFDFD;
+$open-color: #6d6e77;
+$content-background: $bwc-white;
+$border-color: #e7e9ec;
+
+/* application bar*/
+.open-appbar {
+  height: $appbar-height;
+  background-color: $open-background;
+  color: $open-color;
+  display: flex;
+  align-items: center;
+  padding-right: 1em;
+  border-bottom: 1px solid $border-color;
+  box-sizing: border-box;
+  position: relative;
+
+  /* backstage icon */
+  .backstage-icon {
+    width: $navbar-width;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid $border-color;
+    box-sizing: border-box;
+    font-size: 28px;
+  }
+
+  /* projects label */
+  .project-picker-content {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: $navbar-width;
+    height: 80%;
+    margin-left: 40px;
+
+    /* "Projects" label */
+    .projects-label {
+      margin-right: 1em;
+      font-size: $bwc-font-size-subheading;
+    }
+
+    /* project picker */
+    .project-picker {
+      min-width: $projectpicker-min-width;
+      max-width: $projectpicker-max-width;
+      height: 100%;
+
+      > div {
+        height: 100%;
+      }
+    }
+  }
+
+  /* user profile */
+  .user-profile {
+    margin-left: auto;
+  }
+}
+
+/* left side navigation panel */
+.open-navbar {
+  width: $navbar-width;
+  top: $appbar-height;
+  bottom: 0;
+  position: absolute;
+  background: $open-background;
+}
+
+/* right side (content) area */
+.open-content {
+  top: $appbar-height;
+  left: $navbar-width;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+  position: absolute;
+  background: $content-background;
+}

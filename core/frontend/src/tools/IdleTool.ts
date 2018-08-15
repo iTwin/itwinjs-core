@@ -39,10 +39,10 @@ export class IdleTool extends InteractiveTool {
     const tp = IModelApp.tentativePoint;
     await tp.process(ev);
 
-    if (tp.isSnapped()) {
+    if (tp.isSnapped) {
       IModelApp.toolAdmin.adjustSnapPoint();
     } else {
-      if (IModelApp.accuDraw.isActive()) {
+      if (IModelApp.accuDraw.isActive) {
         const point = tp.point;
         const vp = ev.viewport!;
         if (vp.isSnapAdjustmentRequired()) {
@@ -79,8 +79,8 @@ export class IdleTool extends InteractiveTool {
     let toolId: string;
     let handleId: ViewHandleType;
     if (ev.isControlKey) {
-      toolId = "View." + ev.viewport.view.is3d() ? "Look" : "Scroll";
-      handleId = ev.viewport.view.is3d() ? ViewHandleType.Look : ViewHandleType.Scroll;
+      toolId = ev.viewport.view.allow3dManipulations() ? "View.Look" : "View.Scroll";
+      handleId = ev.viewport.view.allow3dManipulations() ? ViewHandleType.Look : ViewHandleType.Scroll;
     } else if (ev.isShiftKey) {
       toolId = "View.Rotate";
       handleId = ViewHandleType.Rotate;
@@ -95,7 +95,7 @@ export class IdleTool extends InteractiveTool {
         return currTool.startHandleDrag(ev, handleId); // See if current view tool can drag using this handle, leave it active regardless...
       return EventHandled.No;
     }
-    const viewTool = IModelApp.tools.create(toolId, ev.viewport, true, false, true) as ViewManip | undefined;
+    const viewTool = IModelApp.tools.create(toolId, ev.viewport, true, true) as ViewManip | undefined;
     if (viewTool && viewTool.run())
       return viewTool.startHandleDrag(ev);
     return EventHandled.Yes;
@@ -119,8 +119,8 @@ export class IdleTool extends InteractiveTool {
 
   public async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
 
-  public async onTouchMoveStart(_ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
-    const tool = new DefaultViewTouchTool(startEv, true);
+  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
+    const tool = new DefaultViewTouchTool(startEv, ev);
     return (tool.run() ? EventHandled.Yes : EventHandled.No);
   }
 

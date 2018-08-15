@@ -103,6 +103,24 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return new LineSegment3d(Point3d.create(x0, y0, z), Point3d.create(x1, y1, z));
   }
+
+  /** create a LineSegment3d from xy coordinates of start and end, with common z.
+   * @param x0 start point x coordinate.
+   * @param y0 start point y coordinate.
+   * @param x1 end point x coordinate.
+   * @param y1 end point y coordinate.
+   * @param z z coordinate to use for both points.
+   * @param result optional existing LineSegment to be reinitiazlized.
+   */
+  public static createXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d) {
+    if (result) {
+      result._point0.set(x0, y0, z0);
+      result._point1.set(x1, y1, z1);
+      return result;
+    }
+    return new LineSegment3d(Point3d.create(x0, y0, z0), Point3d.create(x1, y1, z1));
+  }
+
   /** @returns Return the point at fractional position along the line segment. */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d { return this._point0.interpolate(fraction, this._point1, result); }
   public curveLength(): number { return this._point0.distance(this._point1); }

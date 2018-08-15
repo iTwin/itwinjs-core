@@ -313,6 +313,15 @@ describe("RpcInterface", () => {
     assert.equal(data[3], 4);
   });
 
+  it("should support sending binary resources to the backend", async () => {
+    const data = new Uint8Array(4);
+    data[0] = 1;
+    data[1] = 2;
+    data[2] = 3;
+    data[3] = 4;
+    await TestRpcInterface.getClient().op13(data);
+  });
+
   it("should reject a mismatched RPC interface request", async () => {
     const realVersion = TestRpcInterface.version;
     TestRpcInterface.version = "999.999.999";

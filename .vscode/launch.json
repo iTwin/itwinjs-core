@@ -127,6 +127,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run EC Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/ecschema-metadata",
+      "args": [
+        "--testDir=${workspaceFolder}/core/ecschema-metadata/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "example-code backend snippet tests",
       "program": "${workspaceFolder}/example-code/snippets/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/snippets",

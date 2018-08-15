@@ -761,12 +761,12 @@ export class Vector3d extends XYZ {
   /** Return a vector with 000 xyz parts. */
   public static createZero(result?: Vector3d): Vector3d { return Vector3d.create(0, 0, 0, result); }
 
-  /** Return a unit X vector  */
-  public static unitX(): Vector3d { return new Vector3d(1, 0, 0); }
+  /** Return a unit X vector optionally multiplied by a scale  */
+  public static unitX(scale: number = 1): Vector3d { return new Vector3d(scale, 0, 0); }
   /** Return a unit Y vector  */
-  public static unitY(): Vector3d { return new Vector3d(0, 1, 0); }
+  public static unitY(scale: number = 1): Vector3d { return new Vector3d(0, scale, 0); }
   /** Return a unit Z vector  */
-  public static unitZ(): Vector3d { return new Vector3d(0, 0, 1); }
+  public static unitZ(scale: number = 1): Vector3d { return new Vector3d(0, 0, scale); }
 
   /** Divide by denominator, but return undefined if denominator is zero. */
   public safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined {
@@ -1776,7 +1776,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
     /* For small theta, sin^2(theta)~~theta^2 */
     return cross * cross <= Geometry.smallAngleRadiansSquared * a2 * b2;
   }
-
+/**
+ * @returns `true` if `this` vector is perpendicular to `other`.
+ * @param other second vector.
+ */
   public isPerpendicularTo(other: Vector2d): boolean {
     return Angle.isPerpendicularDotSet(this.magnitudeSquared(), other.magnitudeSquared(), this.dotProduct(other));
   }

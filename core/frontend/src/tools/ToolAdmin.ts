@@ -62,7 +62,7 @@ export class ToolSettings {
   /** Camera angle enforced for walk tool. */
   public static walkCameraAngle = Angle.createDegrees(75.6);
   /** Whether the walk tool enforces worldZ be aligned with screenY */
-  public static walkEnforceZUp = true;
+  public static walkEnforceZUp = false;
   /** Speed, in meters per second, for the walk tool. */
   public static walkVelocity = 3.5;
   /** Scale factor applied for wheel events with "per-line" modifier. */
@@ -216,7 +216,7 @@ export class CurrentInputState {
     if (useSnap) {
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (snap) {
-        from = snap.isHot() ? CoordSource.ElemSnap : CoordSource.User;
+        from = snap.isHot ? CoordSource.ElemSnap : CoordSource.User;
         uorPt.setFrom(snap.adjustedPoint); // NOTE: Updated by AdjustSnapPoint even when not hot
         vp = snap.viewport;
       } else if (IModelApp.tentativePoint.isActive) {
@@ -454,7 +454,7 @@ export class ToolAdmin {
     vp.removeAnimator();
     const ev = new BeTouchEvent(touchEv);
     const current = this.currentInputState;
-    const pos = (0 !== touchEv.targetTouches.length ? BeTouchEvent.getTouchPosition(touchEv.targetTouches[0], vp) : (0 !== touchEv.changedTouches.length ? BeTouchEvent.getTouchPosition(touchEv.changedTouches[0], vp) : Point2d.createZero()));
+    const pos = BeTouchEvent.getTouchListCentroid(0 !== touchEv.targetTouches.length ? touchEv.targetTouches : touchEv.changedTouches, vp);
 
     switch (touchEv.type) {
       case "touchstart":
@@ -463,7 +463,7 @@ export class ToolAdmin {
         break;
     }
 
-    current.fromButton(vp, pos, InputSource.Touch, true);
+    current.fromButton(vp, undefined !== pos ? pos : Point2d.createZero(), InputSource.Touch, true);
     current.toEvent(ev, false);
     const tool = this.activeTool;
 
@@ -822,7 +822,7 @@ export class ToolAdmin {
     let auxNormalRoot = auxRMatrixRoot.getRow(2);
 
     // If ACS xy plane is perpendicular to view and not snapping, project to closest xz or yz plane instead
-    if (auxNormalRoot.isPerpendicularTo(viewZRoot) && !TentativeOrAccuSnap.isHot()) {
+    if (auxNormalRoot.isPerpendicularTo(viewZRoot) && !TentativeOrAccuSnap.isHot) {
       const auxXRoot = auxRMatrixRoot.getRow(0);
       const auxYRoot = auxRMatrixRoot.getRow(1);
       auxNormalRoot = (Math.abs(auxXRoot.dotProduct(viewZRoot)) > Math.abs(auxYRoot.dotProduct(viewZRoot))) ? auxXRoot : auxYRoot;
@@ -843,7 +843,7 @@ export class ToolAdmin {
 
     let handled = false;
 
-    if (applyLocks && !(IModelApp.tentativePoint.isActive || IModelApp.accuSnap.isHot()))
+    if (applyLocks && !(IModelApp.tentativePoint.isActive || IModelApp.accuSnap.isHot))
       handled = IModelApp.accuDraw.adjustPoint(pointActive, vp, false);
 
     // NOTE: We don't need to support axis lock, it is worthless if you have AccuDraw
@@ -873,7 +873,7 @@ export class ToolAdmin {
       return;
 
     const vp = snap.viewport;
-    const isHot = snap.isHot();
+    const isHot = snap.isHot;
     const point = snap.getPoint().clone();
     const savePt = point.clone();
 
@@ -882,7 +882,7 @@ export class ToolAdmin {
 
     if (!IModelApp.accuDraw.adjustPoint(point, vp, isHot)) {
       if (vp.isSnapAdjustmentRequired())
-        this.adjustPointToACS(point, vp, perpendicular || IModelApp.accuDraw.isActive());
+        this.adjustPointToACS(point, vp, perpendicular || IModelApp.accuDraw.isActive);
     }
 
     if (!point.isExactEqual(savePt))
@@ -993,16 +993,15 @@ export class ToolAdmin {
       return;
 
     const activeTool = this.activeTool;
-    const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, modifier, event) : false;
+    const changed = activeTool ? await activeTool.onModifierKeyTransition(wentDown, modifier, event) : EventHandled.No;
 
     this.modifierKey = modifier;
     this.modifierKeyWentDown = wentDown;
 
-    if (!changed)
-      return;
-
-    IModelApp.viewManager.invalidateDecorationsAllViews();
-    this.updateDynamics();
+    if (changed === EventHandled.Yes) {
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+      this.updateDynamics();
+    }
   }
 
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
@@ -1022,11 +1021,9 @@ export class ToolAdmin {
 
     const keyEvent = event.ev as KeyboardEvent;
     this.currentInputState.setKeyQualifiers(keyEvent);
-    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
-    if (BeModifierKeys.None !== modifierKey)
-      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
 
-    return activeTool.onKeyTransition(wentDown, keyEvent);
+    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+    return (BeModifierKeys.None !== modifierKey) ? this.onModifierKeyTransition(wentDown, modifierKey, keyEvent) : activeTool.onKeyTransition(wentDown, keyEvent);
   }
 
   private onUnsuspendTool() {
@@ -1203,11 +1200,11 @@ export class ToolAdmin {
     const ev = new BeButtonEvent();
     this.fillEventFromCursorLocation(ev);
 
-    const hit = IModelApp.accuDraw.isActive() ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
-    viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn(), hit);
+    const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
+    viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
-  public isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse; }
+  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse; }
 
   public beginDynamics(): void {
     IModelApp.accuDraw.onBeginDynamics();

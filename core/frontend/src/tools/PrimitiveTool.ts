@@ -128,7 +128,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     // We know the tool isn't doing a locate, we don't know what it will do with this point. Minimize erroneous filtering by restricting the check to when AccuSnap is tool enable (not user enabled)...
-    if (!IModelApp.accuSnap.isSnapEnabled())
+    if (!IModelApp.accuSnap.isSnapEnabled)
       return true;
 
     const extents = iModel.projectExtents;

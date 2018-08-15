@@ -394,10 +394,10 @@ export abstract class ViewState extends ElementState {
 
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
   public createTerrain(context: SceneContext): void {
-    const backgroundMapPlane = this.displayStyle.getBackgroundMapPlane();
+    const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
     if (undefined !== backgroundMapPlane) {
       context.setBackgroundMapPlane(backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-      this.displayStyle.getBackgroundMap().addToScene(context);
+      this.displayStyle.backgroundMap.addToScene(context);
     }
   }
 
@@ -1698,8 +1698,12 @@ export class SheetViewState extends ViewState2d {
   private all3dAttachmentTilesLoaded: boolean = true;
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
-  /** Manually mark this SheetViewState as having to re-create its scene due to incomplete 3d attachments. Called from attachment tile "select" methods. */
-  public markAttachment3dSceneIncomplete() { this.all3dAttachmentTilesLoaded = false; }
+  /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles. */
+  public markAttachment3dSceneIncomplete() {
+    // NB: 2d attachments will draw to completion once they have a tile tree... but 3d attachments create new tiles for each
+    // depth, and therefore report directly to the ViewState whether or not new tiles are being loaded
+    this.all3dAttachmentTilesLoaded = false;
+  }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
   public async load(): Promise<void> {
@@ -1744,38 +1748,34 @@ export class SheetViewState extends ViewState2d {
     this._attachmentIds = newAttachmentIds;
   }
 
-  /** If the tiles for this view's attachments are not finished loading, invalidates the scene. */
+  /** If any attachments have not yet been loaded or are waiting on tiles, invalidate the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allLoaded || !this.all3dAttachmentTilesLoaded)
+    if (!this._attachments.allReady || !this.all3dAttachmentTilesLoaded)
       _viewport.sync.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
   public createScene(context: SceneContext) {
-    // This will be reset to false by the end of the function if any 3d attachments are waiting on tiles...
+    // This will be set to false by the end of the function if any 3d attachments are waiting on tiles...
     this.all3dAttachmentTilesLoaded = true;
 
     super.createScene(context);
 
-    if (!this._attachments.allLoaded) {
+    if (!this._attachments.allReady) {
       let i = 0;
       while (i < this._attachments.length) {
-        const attachmentState = this._attachments.load(i, this, context);
+        const loadStatus = this._attachments.load(i, this, context);
 
         // If load fails, attachment gets dropped from the list
-        if (attachmentState !== Attachments.State.Empty && attachmentState !== Attachments.State.NotLoaded)
+        if (loadStatus === Attachments.State.Ready || loadStatus === Attachments.State.Loading)
           i++;
       }
     }
 
     // Draw all attachments that have a status of ready
-    for (const attachment of this._attachments.list) {
-      if (attachment.state === Attachments.State.Ready) {
-        if (attachment.is2d)
-          assert(attachment.tree !== undefined);  // 2d attachments must have fully-loaded tile tree before being drawn
+    for (const attachment of this._attachments.list)
+      if (attachment.isReady)
         attachment.tree!.drawScene(context);
-      }
-    }
   }
 
   private _pickableBorder = false; // ###TODO: Remove - testing pickable decorations

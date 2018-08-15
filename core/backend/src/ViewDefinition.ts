@@ -6,15 +6,87 @@
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps,
-  CategorySelectorProps, Camera, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, ViewAttachmentProps, LightLocationProps, RelatedElement,
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ColorDef,
+  ViewDefinitionProps,
+  ViewDefinition3dProps,
+  ViewDefinition2dProps,
+  SpatialViewDefinitionProps,
+  ModelSelectorProps,
+  CategorySelectorProps,
+  Camera,
+  AuxCoordSystemProps,
+  AuxCoordSystem2dProps,
+  AuxCoordSystem3dProps,
+  ViewAttachmentProps,
+  LightLocationProps,
+  RelatedElement,
+  DisplayStyleProps,
+  ViewFlags,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** A DisplayStyle defines the parameters for 'styling' the contents of a view. Many ViewDefinitions may share the same DisplayStyle. */
-export class DisplayStyle extends DefinitionElement {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+/** A DisplayStyle defines the parameters for 'styling' the contents of a view.
+ * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
+ * Many ViewDefinitions may share the same DisplayStyle.
+ */
+export class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+  private readonly _viewFlags: ViewFlags;
+  private readonly _background: ColorDef;
+  private readonly _monochrome: ColorDef;
+
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+
+    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
+    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
+    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
+    const monoJson = this.styles[monoName];
+    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
+  }
+
+  /** Get the flags controlling how aspects of graphics are rendered using this display style. */
+  public get viewFlags(): ViewFlags { return this._viewFlags; }
+  /** Set the flags controlling how aspects of graphics are rendered using this display style. */
+  public set viewFlags(flags: ViewFlags) {
+    flags.clone(this._viewFlags);
+    this.setStyle("viewflags", flags);
+  }
+
+  /** Get the dictionary of named styles. */
+  public get styles(): any {
+    const p = this.jsonProperties as any;
+    if (undefined === p.styles)
+      p.styles = new Object();
+
+    return p.styles;
+  }
+
+  /** Get a named style from the dictionary. */
+  public getStyle(name: string): any {
+    const style: object = this.styles[name];
+    return style ? style : {};
+  }
+
+  /** change the value of a named style on this DisplayStyle */
+  public setStyle(name: string, value: any): void { this.styles[name] = value; }
+
+  /** Remove a style from this DisplayStyle. */
+  public removeStyle(name: string) { delete this.styles[name]; }
+
+  /** Get the background color for this DisplayStyle */
+  public get backgroundColor(): ColorDef { return this._background; }
+  /** Set the background color for this DisplayStyle */
+  public set backgroundColor(val: ColorDef) { this._background.setFrom(val); this.setStyle("backgroundColor", val); }
+
+  /** Get the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
+  public get monochromeColor(): ColorDef { return this._monochrome; }
+  /** Set the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
+  public set monochromeColor(val: ColorDef) { this._monochrome.setFrom(val); this.setStyle("monochromeColor", val); }
 
   /** Create a Code for a DisplayStyle given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -29,12 +101,12 @@ export class DisplayStyle extends DefinitionElement {
 
 /** A DisplayStyle for 2d views. */
 export class DisplayStyle2d extends DisplayStyle {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** A DisplayStyle for 3d views. */
 export class DisplayStyle3d extends DisplayStyle {
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
@@ -93,6 +165,11 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  *
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  *
+ * **Example: Obtaining the background color for a view**
+ * ``` ts
+ * [[include:ViewDefinition.getBackgroundColor]]
+ * ```
+ *
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
@@ -100,11 +177,13 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   public categorySelectorId: Id64;
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
   public displayStyleId: Id64;
+
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
   }
+
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
@@ -114,8 +193,18 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 
   /** Type guard for `instanceof ViewDefinition3d`  */
   public isView3d(): this is ViewDefinition3d { return this instanceof ViewDefinition3d; }
+  /** Type guard for 'instanceof ViewDefinition2d` */
+  public isView2d(): this is ViewDefinition2d { return this instanceof ViewDefinition2d; }
   /** Type guard for `instanceof SpatialViewDefinition` */
   public isSpatialView(): this is SpatialViewDefinition { return this instanceof SpatialViewDefinition; }
+  /** Type guard for 'instanceof DrawingViewDefinition' */
+  public isDrawingView(): this is DrawingViewDefinition { return this instanceof DrawingViewDefinition; }
+
+  /** Load this view's DisplayStyle from the IModelDb. */
+  public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle; }
+
+  /** Load this view's CategorySelector from the IModelDb. */
+  public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement(this.categorySelectorId) as CategorySelector; }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -159,6 +248,9 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     val.camera = this.camera;
     return val;
   }
+
+  /** Load this view's DisplayStyle3d from the IModelDb. */
+  public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle3d; }
 }
 
 /**
@@ -182,6 +274,9 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
+
+  /** Load this view's ModelSelector from the IModelDb. */
+  public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement(this.modelSelectorId) as ModelSelector; }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
@@ -215,6 +310,9 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     val.angle = this.angle;
     return val;
   }
+
+  /** Load this view's DisplayStyle2d from the IModelDb. */
+  public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle2d; }
 }
 
 /** Defines a view of a [[DrawingModel]]. */

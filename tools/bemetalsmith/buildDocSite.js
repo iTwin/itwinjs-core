@@ -65,10 +65,17 @@ function runStagingCopy() {
     packages.forEach(function (pkg) {
       let packageDir = pkg.projectFolder.split('/')[1];
       let packageName = pkg.packageName.split('/')[1];
-      fs.copySync(
-        path.join(genDocsDir, packageDir, "json"),
-        path.join(refOutputDir, packageName)
-      );
+
+      try {
+        fs.copySync(
+          path.join(genDocsDir, packageName),
+          path.join(refOutputDir, packageName)
+        );
+      }
+      catch(e) {
+        // We need to ignore newly added packages that do not generate docs.
+        return;
+      }
     });
   }
 }

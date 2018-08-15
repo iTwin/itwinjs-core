@@ -10,11 +10,13 @@ import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
 import { ECObjectsError } from "../../src/Exception";
 import KindOfQuantityEC32 from "../../src/Metadata/KindOfQuantityEC32";
+import OverrideFormat from "../../src/Metadata/OverrideFormat";
 import Schema from "../../src/Metadata/Schema";
 
 import Unit from "../../src/Metadata/Unit";
 import Format from "../../src/Metadata/Format";
-import { SchemaContext, DecimalPrecision } from "../../src";
+import { SchemaContext } from "../../src/Context";
+import { DecimalPrecision } from "../../src/utils/FormatEnums";
 
 describe("KindOfQuantity EC3.2", () => {
   before(() => {
@@ -195,8 +197,9 @@ describe("KindOfQuantity EC3.2", () => {
         expect(testKoQItem!.presentationUnits!.length).to.eql(3);
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
+        assert.isTrue(defaultFormat instanceof OverrideFormat);
 
-        assert.notEqual(defaultFormat, await schema.lookupItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
         expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
 
@@ -212,7 +215,7 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
         expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
 
@@ -237,7 +240,7 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = await testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.notEqual(defaultFormat, await schema.lookupItem<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
         assert.isDefined(defaultFormat!.units);
         expect(defaultFormat!.units!.length).to.eql(1);
@@ -255,7 +258,7 @@ describe("KindOfQuantity EC3.2", () => {
         const defaultFormat = testKoQItem!.defaultPresentationFormat;
         assert.isDefined(defaultFormat);
 
-        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>(defaultFormat!.key.schemaName + "." + defaultFormat!.name), "The format in the KOQ should be different than the one in the schema");
+        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
         assert.isDefined(defaultFormat!.units);
         expect(defaultFormat!.units!.length).to.eql(1);
@@ -336,21 +339,6 @@ describe("KindOfQuantity EC3.2", () => {
       testInvalidFormatStrings("should throw for invalid override string without any overrides but still has commas", "Formats.DefaultReal(,,,,,)", "");
       testInvalidFormatStrings("should throw for invalid override string with 5 unit overrides", "Formats.DefaultReal[Formats.MILE|m][Formats.YRD|yard][Formats.FT|feet][Formats.IN|in][Formats.MILLIINCH|milli]", "");
       testInvalidFormatStrings("should throw for presentationUnit having a non-existent unit as an override", "Formats.DefaultReal[Formats.NonexistentUnit]", "Unable to locate SchemaItem Formats.NonexistentUnit.");
-
-      // number of unit overrides does not match the number in the composite
-      const incorrectNumUnit = createSchemaJson({
-        precision: 4,
-        persistenceUnit: "Formats.IN",
-        presentationUnits: [
-          "Formats.SingleUnitFormat",
-        ],
-      });
-      it("async - should throw for format override with a different number of unit", async () => {
-        await expect(Schema.fromJson(incorrectNumUnit, context)).to.be.rejectedWith(ECObjectsError, `Cannot add presetantion format to KindOfQuantity 'TestKoQ' because the number of unit overrides is inconsistent with the number in the Format 'SingleUnitFormat'.`);
-      });
-      it("sync - should throw for format override with a different number of unit", () => {
-        assert.throws(() => Schema.fromJsonSync(incorrectNumUnit, context), ECObjectsError, `Cannot add presetantion format to KindOfQuantity 'TestKoQ' because the number of unit overrides is inconsistent with the number in the Format 'SingleUnitFormat'.`);
-      });
     });
   });
   describe("toJson", () => {
