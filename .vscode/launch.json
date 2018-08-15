@@ -336,7 +336,23 @@
         "src/**/*.ts"
       ],
       "console": "integratedTerminal"
-    }
+    },
+        {
+      "name": "UI Test - Browser (frontend)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "webRoot": "${workspaceFolder}/test-apps/ui-test-app",
+      "sourceMapPathOverrides": {
+        // map sources from node_modules to our source directory
+        "webpack:///../frontend/*": "${workspaceFolder}test-apps/ui-test-app/lib/frontend/*",
+        // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
+        "webpack:///./~/*": "${webRoot}/node_modules/*",
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///*": "*",
+        "webpack:///packages/*": "${webRoot}/*",
+      }
+
   ],
   "compounds": [
     {

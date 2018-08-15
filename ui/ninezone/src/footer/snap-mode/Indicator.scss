@@ -1,6 +1,5 @@
 @import "@bentley/ui-core/lib/colors";
 @import "../_variables";
-
 .nz-footer-snapMode-indicator {
   height: 100%;
   display: flex;
@@ -8,33 +7,28 @@
   position: relative;
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
-
-  > .nz-indicator {
+  >.nz-indicator {
     position: relative;
     display: flex;
     align-items: center;
-
-    > .nz-label {
+    >.nz-label {
       margin-right: $space-between-text-and-icon;
       display: none;
       font-size: $text-font-size;
-
       &.nz-is-visible {
         display: block;
       }
     }
-
-    > .nz-icon {
-      cursor: pointer;
-      background-color: $text-light;
-    }
   }
-
-  > .nz-dialog {
+  >.nz-dialog {
     height: 100%;
-    width: 100%;
     position: absolute;
     top: 0;
     left: 100%;
   }
+}
+
+.nz-footer-snapMode-indicator:hover {
+  background-color: $primary-hover;
+  cursor: pointer;
 }
