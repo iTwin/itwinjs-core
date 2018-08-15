@@ -55,7 +55,9 @@
       false
     ] /*,
     // Custom rules from tslint-rules directory ===========================================
-    "prefer-get": true
+    "prefer-get": true,
+    "private-underscores": true,
+    "no-public-underscores": true
     */
   } /*,
   "rulesDirectory": [
