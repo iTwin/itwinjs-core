@@ -90,7 +90,7 @@ export class AuthorizationToken extends Token {
   }
 
   public static clone(unTypedObj: any): AuthorizationToken {
-    const authToken = new AuthorizationToken(unTypedObj.samlAssertion);
+    const authToken = new AuthorizationToken(unTypedObj._samlAssertion);
     Object.assign(authToken, unTypedObj);
     return authToken;
   }
@@ -147,10 +147,10 @@ export class AccessToken extends Token {
   }
 
   public static fromJson(jsonObj: any): AccessToken | undefined {
-    const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj.samlAssertion);
+    const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj._samlAssertion);
     if (foreignTok !== undefined)
       return foreignTok;
-    return AccessToken.fromSamlAssertion(jsonObj.samlAssertion);
+    return AccessToken.fromSamlAssertion(jsonObj._samlAssertion);
   }
 
 }

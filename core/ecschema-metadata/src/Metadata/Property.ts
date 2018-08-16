@@ -37,11 +37,11 @@ export abstract class Property {
     this._type = type;
   }
 
-  public get isArray(): boolean { return PropertyTypeUtils.isArray(this._type); }
-  public get isPrimitive(): boolean { return PropertyTypeUtils.isPrimitive(this._type); }
-  public get isStruct(): boolean { return PropertyTypeUtils.isStruct(this._type); }
-  public get isEnumeration(): boolean { return PropertyTypeUtils.isEnumeration(this._type); }
-  public get isNavigation(): boolean { return PropertyTypeUtils.isNavigation(this._type); }
+  public isArray(): this is AnyArrayProperty { return PropertyTypeUtils.isArray(this._type); }
+  public isPrimitive(): this is AnyPrimitiveProperty { return PropertyTypeUtils.isPrimitive(this._type); }
+  public isStruct(): this is AnyStructProperty { return PropertyTypeUtils.isStruct(this._type); }
+  public isEnumeration(): this is AnyEnumerationProperty { return PropertyTypeUtils.isEnumeration(this._type); }
+  public isNavigation(): this is NavigationProperty { return PropertyTypeUtils.isNavigation(this._type); }
 
   get name() { return this._name.name; }
 
