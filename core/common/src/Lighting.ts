@@ -61,8 +61,8 @@ export class Light {
       this.color2 = ColorDef.fromJSON(opts.color2);
   }
 
-  public isValid(): boolean { return this.lightType !== LightType.Invalid; }
-  public isVisible(): boolean { return this.isValid() && this.intensity > 0.0; }
+  public get isValid(): boolean { return this.lightType !== LightType.Invalid; }
+  public get isVisible(): boolean { return this.isValid && this.intensity > 0.0; }
 }
 
 /** Properties of a [[LightType.Spot]] light. */

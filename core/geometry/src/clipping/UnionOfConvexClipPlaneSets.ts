@@ -204,9 +204,9 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     return numAnnounce > 0;
   }
 
-  private static sClipArcFractionArray = new GrowableFloat64Array();
+  private static _clipArcFractionArray = new GrowableFloat64Array();
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = UnionOfConvexClipPlaneSets.sClipArcFractionArray;
+    const breaks = UnionOfConvexClipPlaneSets._clipArcFractionArray;
     breaks.clear();
     for (const convexSet of this._convexSets) {
       for (const clipPlane of convexSet.planes) {
@@ -230,7 +230,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
       if (convexSet.getRangeOfAlignedPlanes(transform, thisRange))
         range.extendRange(thisRange);
     }
-    if (range.isNull())
+    if (range.isNull)
       return undefined;
     else
       return range;

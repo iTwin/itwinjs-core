@@ -44,11 +44,11 @@ export class IModelConnection extends IModel {
   /** A unique Id of this IModelConnection. */
   public readonly connectionId = Guid.createValue();
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static connectionTimeout: number = 5 * 60 * 1000;
-  private openAccessToken?: AccessToken;
+  private static _connectionTimeout: number = 5 * 60 * 1000;
+  private _openAccessToken?: AccessToken;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
-  public isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
+  public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
   /**
    * Event called immediately before an IModelConnection is closed.
@@ -109,7 +109,7 @@ export class IModelConnection extends IModel {
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
     this.tiles = new IModelConnection.Tiles(this);
-    this.openAccessToken = accessToken;
+    this._openAccessToken = accessToken;
   }
 
   /** Open an IModelConnection to an iModel */
@@ -124,7 +124,7 @@ export class IModelConnection extends IModel {
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
     const openResponse: IModel = await IModelConnection.callOpen(accessToken, iModelToken, openMode);
     const connection = new IModelConnection(openResponse, openMode, accessToken);
-    RpcRequest.notFoundHandlers.addListener(connection.reopenConnectionHandler);
+    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
     return connection;
   }
 
@@ -133,7 +133,7 @@ export class IModelConnection extends IModel {
      * Waits for an increasing amount of time (but within a range) before checking on the pending request again.
      */
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
-    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
+    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection._connectionTimeout);
 
     let openForReadOperation: RpcOperation | undefined;
     let openForWriteOperation: RpcOperation | undefined;
@@ -163,12 +163,12 @@ export class IModelConnection extends IModel {
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
       const connectionTimeElapsed = Date.now() - startTime;
-      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
-        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
+      if (connectionTimeElapsed > IModelConnection._connectionTimeout) {
+        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection._connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
+      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection._connectionTimeout - connectionTimeElapsed);
       if (request.retryInterval !== connectionRetryInterval) {
         request.retryInterval = connectionRetryInterval;
         Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
@@ -189,24 +189,24 @@ export class IModelConnection extends IModel {
     return openResponse;
   }
 
-  private reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: IModelNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => {
+  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: IModelNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => {
     if (!(response instanceof IModelNotFoundResponse))
       return;
 
     const iModelToken: IModelToken = request.parameters[0];
-    if (this.token.key !== iModelToken.key)
+    if (this._token.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
     try {
       Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-      const openResponse: IModel = await IModelConnection.callOpen(this.openAccessToken!, iModelToken, this.openMode);
-      this.token = openResponse.iModelToken;
+      const openResponse: IModel = await IModelConnection.callOpen(this._openAccessToken!, iModelToken, this.openMode);
+      this._token = openResponse.iModelToken;
     } catch (error) {
       reject(error.message);
     }
 
     Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-    request.parameters[0] = this.token; // Modify the token of the original request before resubmitting it.
+    request.parameters[0] = this._token; // Modify the token of the original request before resubmitting it.
     resubmit();
   }
 
@@ -214,13 +214,13 @@ export class IModelConnection extends IModel {
   public async close(accessToken: AccessToken): Promise<void> {
     if (!this.iModelToken)
       return;
-    RpcRequest.notFoundHandlers.removeListener(this.reopenConnectionHandler);
+    RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
     try {
       await IModelReadRpcInterface.getClient().close(accessToken, this.iModelToken);
     } finally {
-      (this.token as any) = undefined; // prevent closed connection from being reused
+      (this._token as any) = undefined; // prevent closed connection from being reused
     }
   }
 
@@ -243,7 +243,7 @@ export class IModelConnection extends IModel {
     try {
       await StandaloneIModelRpcInterface.getClient().closeStandalone(this.iModelToken);
     } finally {
-      (this.token as any) = undefined; // prevent closed connection from being reused
+      (this._token as any) = undefined; // prevent closed connection from being reused
     }
   }
 
@@ -309,7 +309,7 @@ export class IModelConnection extends IModel {
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
-  public async isChangeCacheAttached(): Promise<boolean> { return await IModelReadRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
+  public async changeCacheAttached(): Promise<boolean> { return await IModelReadRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
   /**
    * Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.

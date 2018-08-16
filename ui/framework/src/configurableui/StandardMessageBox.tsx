@@ -48,19 +48,19 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
     switch (this.props.messageBoxType) {
       case MessageBoxType.Ok:
       case MessageBoxType.LargeOk:
-        buttonCluster.push({ type: ButtonType.OK, onClick: () => { this.handleButton(MessageBoxValue.Ok); } });
+        buttonCluster.push({ type: ButtonType.OK, onClick: () => { this._handleButton(MessageBoxValue.Ok); } });
         break;
       case MessageBoxType.OkCancel:
       case MessageBoxType.MediumAlert:
-        buttonCluster.push({ type: ButtonType.OK, onClick: () => { this.handleButton(MessageBoxValue.Ok); } });
-        buttonCluster.push({ type: ButtonType.Cancel, onClick: () => { this.handleButton(MessageBoxValue.Cancel); } });
+        buttonCluster.push({ type: ButtonType.OK, onClick: () => { this._handleButton(MessageBoxValue.Ok); } });
+        buttonCluster.push({ type: ButtonType.Cancel, onClick: () => { this._handleButton(MessageBoxValue.Cancel); } });
         break;
       case MessageBoxType.YesNo:
       case MessageBoxType.YesNoCancel:
-        buttonCluster.push({ type: ButtonType.Yes, onClick: () => { this.handleButton(MessageBoxValue.Yes); } });
-        buttonCluster.push({ type: ButtonType.No, onClick: () => { this.handleButton(MessageBoxValue.No); } });
+        buttonCluster.push({ type: ButtonType.Yes, onClick: () => { this._handleButton(MessageBoxValue.Yes); } });
+        buttonCluster.push({ type: ButtonType.No, onClick: () => { this._handleButton(MessageBoxValue.No); } });
         if (MessageBoxType.YesNoCancel === this.props.messageBoxType)
-          buttonCluster.push({ type: ButtonType.Cancel, onClick: () => { this.handleButton(MessageBoxValue.Cancel); } });
+          buttonCluster.push({ type: ButtonType.Cancel, onClick: () => { this._handleButton(MessageBoxValue.Cancel); } });
         break;
     }
 
@@ -89,8 +89,8 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
         title={this.props.title}
         severity={severity}
         buttonCluster={buttonCluster}
-        onClose={this.handleCancel}
-        onEscape={this.handleCancel}
+        onClose={this._handleCancel}
+        onEscape={this._handleCancel}
       >
         {this.props.children}
       </MessageBox>
@@ -105,21 +105,21 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
     return null;
   }
 
-  private handleButton = (buttonType: MessageBoxValue) => {
-    this.closeDialog(() => {
+  private _handleButton = (buttonType: MessageBoxValue) => {
+    this._closeDialog(() => {
       if (this.props.onResult)
         this.props.onResult(buttonType);
     });
   }
 
-  private handleCancel = () => {
-    this.closeDialog(() => {
+  private _handleCancel = () => {
+    this._closeDialog(() => {
       if (this.props.onResult)
         this.props.onResult(MessageBoxValue.Cancel);
     });
   }
 
-  private closeDialog = (followUp: () => void) => {
+  private _closeDialog = (followUp: () => void) => {
     this.setState((_prevState) => ({
       opened: false,
     }), () => {

@@ -9,32 +9,32 @@ import { RotMatrix } from "./Transform";
 
 /** OrderedRotationAngles represents a non-trivial rotation using three simple axis rotation angles, and an order in which to apply them. */
 export class OrderedRotationAngles {
-  private x: Angle;
-  private y: Angle;
-  private z: Angle;
+  private _x: Angle;
+  private _y: Angle;
+  private _z: Angle;
   private _order: AxisOrder;
-  private static sTreatVectorsAsColumns: boolean = false;
+  private static _sTreatVectorsAsColumns: boolean = false;
 
   private constructor(x: Angle, y: Angle, z: Angle, axisOrder: AxisOrder) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
+    this._x = x;
+    this._y = y;
+    this._z = z;
     this._order = axisOrder;
   }
 
   // Getters and setters
   public get order(): AxisOrder { return this._order; }
-  public get xAngle(): Angle { return this.x.clone(); }
-  public get yAngle(): Angle { return this.y.clone(); }
-  public get zAngle(): Angle { return this.z.clone(); }
-  public get xDegrees(): number { return this.x.degrees; }
-  public get xRadians(): number { return this.x.radians; }
-  public get yDegrees(): number { return this.y.degrees; }
-  public get yRadians(): number { return this.y.radians; }
-  public get zDegrees(): number { return this.z.degrees; }
-  public get zRadians(): number { return this.z.radians; }
-  public static get treatVectorsAsColumns(): boolean { return OrderedRotationAngles.sTreatVectorsAsColumns; }
-  public static set treatVectorsAsColumns(value: boolean) { OrderedRotationAngles.sTreatVectorsAsColumns = value; }
+  public get xAngle(): Angle { return this._x.clone(); }
+  public get yAngle(): Angle { return this._y.clone(); }
+  public get zAngle(): Angle { return this._z.clone(); }
+  public get xDegrees(): number { return this._x.degrees; }
+  public get xRadians(): number { return this._x.radians; }
+  public get yDegrees(): number { return this._y.degrees; }
+  public get yRadians(): number { return this._y.radians; }
+  public get zDegrees(): number { return this._z.degrees; }
+  public get zRadians(): number { return this._z.radians; }
+  public static get treatVectorsAsColumns(): boolean { return OrderedRotationAngles._sTreatVectorsAsColumns; }
+  public static set treatVectorsAsColumns(value: boolean) { OrderedRotationAngles._sTreatVectorsAsColumns = value; }
 
   /** Create an OrderedRotationAngles from three angles and an ordering in which to apply them when rotating.
    * @param xRotation rotation around x
@@ -44,9 +44,9 @@ export class OrderedRotationAngles {
    */
   public static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
     if (result) {
-      result.x.setFrom(xRotation);
-      result.y.setFrom(yRotation);
-      result.z.setFrom(zRotation);
+      result._x.setFrom(xRotation);
+      result._y.setFrom(yRotation);
+      result._z.setFrom(zRotation);
       result._order = order;
       return result;
     }
@@ -56,9 +56,9 @@ export class OrderedRotationAngles {
   /** Create an OrderedRotationAngles from three angles (in radians) and an ordering in which to apply them when rotating. */
   public static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
     if (result) {
-      result.x.setRadians(xRadians);
-      result.y.setRadians(yRadians);
-      result.z.setRadians(zRadians);
+      result._x.setRadians(xRadians);
+      result._y.setRadians(yRadians);
+      result._z.setRadians(zRadians);
       result._order = order;
       return result;
     }
@@ -68,9 +68,9 @@ export class OrderedRotationAngles {
   /** Create an OrderedRotationAngles from three angles (in degrees) and an ordering in which to apply them when rotating. */
   public static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
     if (result) {
-      result.x.setDegrees(xDegrees);
-      result.y.setDegrees(yDegrees);
-      result.z.setDegrees(zDegrees);
+      result._x.setDegrees(xDegrees);
+      result._y.setDegrees(yDegrees);
+      result._z.setDegrees(zDegrees);
       result._order = order;
       return result;
     }

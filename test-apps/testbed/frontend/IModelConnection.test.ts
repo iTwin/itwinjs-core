@@ -131,7 +131,7 @@ describe("IModelConnection (#integration)", () => {
     expect(tree.rootTile).not.to.be.undefined;
 
     const tf = Transform.fromJSON(tree.location);
-    expect(tf.matrix.isIdentity()).to.be.true;
+    expect(tf.matrix.isIdentity).to.be.true;
     expect(tf.origin.isAlmostEqualXYZ(0.0025, 0.0025, 10.001)).to.be.true;
 
     const rootTile = tree.rootTile;

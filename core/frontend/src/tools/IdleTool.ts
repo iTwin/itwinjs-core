@@ -45,7 +45,7 @@ export class IdleTool extends InteractiveTool {
       if (IModelApp.accuDraw.isActive) {
         const point = tp.point;
         const vp = ev.viewport!;
-        if (vp.isSnapAdjustmentRequired()) {
+        if (vp.isSnapAdjustmentRequired) {
           IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
           const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
           const snap = new SnapDetail(hit);

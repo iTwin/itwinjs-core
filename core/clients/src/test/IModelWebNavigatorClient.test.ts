@@ -9,7 +9,7 @@ import { DeploymentEnv, UrlDescriptor } from "../Client";
 chai.should();
 
 export class IModelWebNavigatorUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-imodelweb.bentley.com",
     QA: "https://qa-connect-imodelweb.bentley.com",
     PROD: "https://connect-imodelweb.bentley.com",
@@ -17,11 +17,11 @@ export class IModelWebNavigatorUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(IModelWebNavigatorClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(IModelWebNavigatorClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 

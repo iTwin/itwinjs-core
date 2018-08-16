@@ -18,22 +18,22 @@ export class NonUniformColor {
 }
 
 export class ColorIndex {
-  private color: ColorDef | NonUniformColor;
+  private _color: ColorDef | NonUniformColor;
 
-  public get hasAlpha() { return !this.color.isOpaque; }
-  public get isUniform() { return this.color instanceof ColorDef; }
+  public get hasAlpha() { return !this._color.isOpaque; }
+  public get isUniform() { return this._color instanceof ColorDef; }
   public get numColors(): number { return this.isUniform ? 1 : this.nonUniform!.colors.length; }
 
-  public constructor() { this.color = ColorDef.white.clone(); }
+  public constructor() { this._color = ColorDef.white.clone(); }
 
-  public reset() { this.color = ColorDef.white.clone(); }
+  public reset() { this._color = ColorDef.white.clone(); }
 
-  public get uniform(): ColorDef | undefined { return this.isUniform ? this.color as ColorDef : undefined; }
-  public initUniform(color: ColorDef | number) { this.color = ("number" === typeof color) ? new ColorDef(color) : (color as ColorDef).clone(); }
+  public get uniform(): ColorDef | undefined { return this.isUniform ? this._color as ColorDef : undefined; }
+  public initUniform(color: ColorDef | number) { this._color = ("number" === typeof color) ? new ColorDef(color) : (color as ColorDef).clone(); }
 
-  public get nonUniform(): NonUniformColor | undefined { return !this.isUniform ? this.color as NonUniformColor : undefined; }
+  public get nonUniform(): NonUniformColor | undefined { return !this.isUniform ? this._color as NonUniformColor : undefined; }
   public initNonUniform(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean) {
-    this.color = new NonUniformColor(colors, indices, hasAlpha);
+    this._color = new NonUniformColor(colors, indices, hasAlpha);
   }
 }
 
@@ -52,7 +52,7 @@ export class FeatureIndex {
     this.reset();
   }
 
-  public isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
-  public isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
+  public get isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
+  public get isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
   public reset(): void { this.type = FeatureIndexType.Empty; this.featureID = 0; this.featureIDs = undefined; }
 }

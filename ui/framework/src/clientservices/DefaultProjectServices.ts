@@ -18,12 +18,12 @@ class ProjectInfoImpl implements ProjectInfo {
  * Provides default [[ProjectServices]]
  */
 export class DefaultProjectServices implements ProjectServices {
-  private connectClient: ConnectClient;
+  private _connectClient: ConnectClient;
   public deploymentEnv: DeploymentEnv;
 
   constructor(deploymentEnvironment: DeploymentEnv) {
     this.deploymentEnv = deploymentEnvironment;
-    this.connectClient = new ConnectClient(deploymentEnvironment);
+    this._connectClient = new ConnectClient(deploymentEnvironment);
   }
 
   private createProjectInfo(thisProject: Project): ProjectInfo {
@@ -45,7 +45,7 @@ export class DefaultProjectServices implements ProjectServices {
     let projectList: Project[];
     try {
       if (projectScope === ProjectScope.Invited) {
-        projectList = await this.connectClient.getInvitedProjects(accessToken, queryOptions);
+        projectList = await this._connectClient.getInvitedProjects(accessToken, queryOptions);
       }
 
       if (projectScope === ProjectScope.Favorites) {
@@ -54,7 +54,7 @@ export class DefaultProjectServices implements ProjectServices {
         queryOptions.isMRU = true;
       }
 
-      projectList = await this.connectClient.getProjects(accessToken, queryOptions);
+      projectList = await this._connectClient.getProjects(accessToken, queryOptions);
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);

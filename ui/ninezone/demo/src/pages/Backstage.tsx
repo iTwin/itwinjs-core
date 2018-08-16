@@ -28,7 +28,7 @@ export default class BackstagePage extends React.Component<{}, State> {
           }
           label="Item1"
           isActive={this.state.activeItem === 1}
-          onClick={() => this.handleSetActiveItem(1)}
+          onClick={() => this._handleSetActiveItem(1)}
         />
         <Item
           icon={
@@ -36,12 +36,12 @@ export default class BackstagePage extends React.Component<{}, State> {
           }
           label="Item2"
           isActive={this.state.activeItem === 2}
-          onClick={() => this.handleSetActiveItem(2)}
+          onClick={() => this._handleSetActiveItem(2)}
         />
         <Item
           label="Item3"
           isActive={this.state.activeItem === 3}
-          onClick={() => this.handleSetActiveItem(3)}
+          onClick={() => this._handleSetActiveItem(3)}
         />
         <Separator />
         <Item
@@ -50,7 +50,7 @@ export default class BackstagePage extends React.Component<{}, State> {
           }
           label="Item4"
           isActive={this.state.activeItem === 4}
-          onClick={() => this.handleSetActiveItem(4)}
+          onClick={() => this._handleSetActiveItem(4)}
         />
         <Item
           icon={
@@ -58,7 +58,7 @@ export default class BackstagePage extends React.Component<{}, State> {
           }
           label="Item5"
           isActive={this.state.activeItem === 5}
-          onClick={() => this.handleSetActiveItem(5)}
+          onClick={() => this._handleSetActiveItem(5)}
         />
       </>
     );
@@ -69,28 +69,28 @@ export default class BackstagePage extends React.Component<{}, State> {
       <>
         <button
           className="bwc-buttons-blue"
-          onClick={this.handleOpenBackstageButtonClick}
+          onClick={this._handleOpenBackstageButtonClick}
         >
           Open
         </button>
         <Backstage
           isOpen={this.state.isOpen}
           items={this.getItems()}
-          onOverlayClicked={this.handleCloseBackstageItemClick}
+          onOverlayClicked={this._handleCloseBackstageItemClick}
         />
       </>
     );
   }
 
-  private handleOpenBackstageButtonClick = () => {
+  private _handleOpenBackstageButtonClick = () => {
     this.setIsOpen(true);
   }
 
-  private handleCloseBackstageItemClick = () => {
+  private _handleCloseBackstageItemClick = () => {
     this.setIsOpen(false);
   }
 
-  private handleSetActiveItem = (activeItem: number) => {
+  private _handleSetActiveItem = (activeItem: number) => {
     this.setState((prevState) => {
       return {
         ...prevState,

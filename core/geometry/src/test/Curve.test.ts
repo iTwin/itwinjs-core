@@ -270,14 +270,14 @@ describe("CurvePrimitive.Evaluations", () => {
 });
 
 class NewtonEvaluatorClosestPointOnCurve extends NewtonEvaluatorRtoR {
-  private curve: CurvePrimitive;
-  private spacePoint: Point3d;
+  private _curve: CurvePrimitive;
+  private _spacePoint: Point3d;
   public lastFraction: number;
   public lastEvaluationA: Ray3d;
   public constructor(curve: CurvePrimitive, spacePoint: Point3d) {
     super();
-    this.spacePoint = spacePoint;
-    this.curve = curve;
+    this._spacePoint = spacePoint;
+    this._curve = curve;
     this.lastFraction = 0;
     this.lastEvaluationA = Ray3d.createZero();
     // console.log("\n**\n");
@@ -285,8 +285,8 @@ class NewtonEvaluatorClosestPointOnCurve extends NewtonEvaluatorRtoR {
   }
   public evaluate(f: number): boolean {
     this.lastFraction = f;
-    this.lastEvaluationA = this.curve.fractionToPointAndDerivative(f, this.lastEvaluationA);
-    this.currentF = this.lastEvaluationA.direction.dotProductStartEnd(this.spacePoint, this.lastEvaluationA.origin);
+    this.lastEvaluationA = this._curve.fractionToPointAndDerivative(f, this.lastEvaluationA);
+    this.currentF = this.lastEvaluationA.direction.dotProductStartEnd(this._spacePoint, this.lastEvaluationA.origin);
     // console.log("evaluate ", this.lastFraction, this.lastEvaluationA, this.currentF);
     return true;
   }
@@ -353,16 +353,16 @@ describe("CurvePrimitive.TransitionSpiral", () => {
 function testSamples(_ck: Checker, samples: any[], maxEcho: number = 0) {
   let s0 = "UNDEFINED";
   let n0 = 0;
-// whatever is in samples:
-// 1) If it has toJSON method, write that to console
-// 2) Otherwiswe try IModelJson . .
+  // whatever is in samples:
+  // 1) If it has toJSON method, write that to console
+  // 2) Otherwiswe try IModelJson . .
   for (let i = 0; i < samples.length; i++) {
     const s = samples[i];
     if (i < maxEcho) {
       if (s.toJSON)
         console.log("from toJSON(): " + JSON.stringify(s.toJSON()));
       else {
-        const json = IModelJson.Writer.toIModelJson (s);
+        const json = IModelJson.Writer.toIModelJson(s);
         if (json)
           console.log("IModelJson.Writer.toIModelJson:", prettyPrint(json));
       }

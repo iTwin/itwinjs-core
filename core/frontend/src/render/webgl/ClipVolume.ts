@@ -192,7 +192,7 @@ export class ClipMaskVolume implements RenderClipVolume {
   /** Create a new ClipMaskVolume from a clip vector. */
   public static create(clipVec: ClipVector): ClipMaskVolume | undefined {
     const range = clipVec.boundingRange;
-    if (range.isNull())
+    if (range.isNull)
       return undefined;
 
     const pts: Point3d[] = [

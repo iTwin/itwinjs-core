@@ -45,14 +45,14 @@ export default class Tools extends React.Component<{}, State> {
     direction: Direction.Right,
   };
 
-  private toggleIsPanelVisible = () => {
+  private _toggleIsPanelVisible = () => {
     this.setState((prevState) => ({
       ...prevState,
       isPanelVisible: !prevState.isPanelVisible,
     }));
   }
 
-  private toggleDirection = () => {
+  private _toggleDirection = () => {
     this.setState((prevState) => {
       let direction = prevState.direction;
       switch (direction) {
@@ -128,7 +128,7 @@ export default class Tools extends React.Component<{}, State> {
           icon={
             <i className="icon icon-2d" />
           }
-          onClick={this.toggleIsPanelVisible}
+          onClick={this._toggleIsPanelVisible}
         />
       </Expandable>,
       <Icon
@@ -203,7 +203,7 @@ export default class Tools extends React.Component<{}, State> {
           items={
             <Overflow
               key="0"
-              onClick={this.toggleIsPanelVisible}
+              onClick={this._toggleIsPanelVisible}
               panel={!this.state.isPanelVisible ? undefined :
                 <Panel>
                   Other Tools
@@ -262,10 +262,10 @@ export default class Tools extends React.Component<{}, State> {
             button={
               <IconButton
                 onClick={() => {
-                  this.toggleIsPanelVisible();
+                  this._toggleIsPanelVisible();
                   if (!this.state.isPanelVisible)
                     return;
-                  this.toggleDirection();
+                  this._toggleDirection();
                 }}
                 icon={
                   <i className="icon icon-camera-animation" />

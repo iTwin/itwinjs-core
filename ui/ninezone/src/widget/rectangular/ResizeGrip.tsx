@@ -66,15 +66,15 @@ export default class ResizeGrip extends React.Component<ResizeGripProps> {
     return (
       <PointerCaptor
         className={pointerCaptorClassName}
-        onMouseDown={this.handleMouseDown}
-        onMouseUp={this.handleMouseUp}
-        onMouseMove={this.handleMouseMove}
+        onMouseDown={this._handleMouseDown}
+        onMouseUp={this._handleMouseUp}
+        onMouseMove={this._handleMouseMove}
         {...props}
       />
     );
   }
 
-  private handleMouseDown = (e: MouseEvent) => {
+  private _handleMouseDown = (e: MouseEvent) => {
     this._isDragging = true;
     e.preventDefault();
 
@@ -82,14 +82,14 @@ export default class ResizeGrip extends React.Component<ResizeGripProps> {
     this._lastY = e.clientY;
   }
 
-  private handleMouseUp = () => {
+  private _handleMouseUp = () => {
     if (!this._isDragging)
       return;
 
     this._isDragging = false;
   }
 
-  private handleMouseMove = (e: MouseEvent) => {
+  private _handleMouseMove = (e: MouseEvent) => {
     if (!this._isDragging)
       return;
 

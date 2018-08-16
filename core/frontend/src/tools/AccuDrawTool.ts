@@ -1090,23 +1090,23 @@ export class AccuDrawShortcuts {
 
 class AccuDrawShortcutsTool extends InputCollector {
   public static toolId = "View.AccuDraw";
-  private cancel: boolean;
-  private shortcut: AccuDrawTool;
+  private _cancel: boolean;
+  private _shortcut: AccuDrawTool;
 
-  public onPostInstall(): void { super.onPostInstall(); this.shortcut.doManipulationStart(); }
-  public onCleanup(): void { this.shortcut.doManipulationStop(this.cancel); }
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this.shortcut.doManipulation(ev, false)) { this.cancel = false; this.exitTool(); } return EventHandled.No; }
-  public async onMouseMotion(ev: BeButtonEvent) { this.shortcut.doManipulation(ev, true); }
-  public decorate(context: DecorateContext) { this.shortcut.onDecorate(context); }
+  public onPostInstall(): void { super.onPostInstall(); this._shortcut.doManipulationStart(); }
+  public onCleanup(): void { this._shortcut.doManipulationStop(this._cancel); }
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this._shortcut.doManipulation(ev, false)) { this._cancel = false; this.exitTool(); } return EventHandled.No; }
+  public async onMouseMotion(ev: BeButtonEvent) { this._shortcut.doManipulation(ev, true); }
+  public decorate(context: DecorateContext) { this._shortcut.onDecorate(context); }
   public exitTool() { super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
-  public constructor(shortcut: AccuDrawTool) { super(); this.shortcut = shortcut; this.cancel = true; }
+  public constructor(shortcut: AccuDrawTool) { super(); this._shortcut = shortcut; this._cancel = true; }
 }
 
 export abstract class AccuDrawTool {
-  protected stateBuffer = new SavedState(); // Need separate state buffer since we aren't a ViewTool...
+  protected _stateBuffer = new SavedState(); // Need separate state buffer since we aren't a ViewTool...
 
   public doManipulationStart() {
-    AccuDrawShortcuts.saveToolState(false, 0, this.stateBuffer);
+    AccuDrawShortcuts.saveToolState(false, 0, this._stateBuffer);
     const toolAdmin = IModelApp.toolAdmin;
 
     // NOTE: Unlike starting a viewing tool, an input collector inherits the suspended primitive's state and must set everything...
@@ -1125,8 +1125,8 @@ export abstract class AccuDrawTool {
 
   public doManipulationStop(cancel: boolean) {
     if (!cancel)
-      this.stateBuffer.ignoreDataButton = true; // Want to ignore data point event when terminating shortcut...
-    AccuDrawShortcuts.saveToolState(true, cancel ? 0 : this.onManipulationComplete(), this.stateBuffer);
+      this._stateBuffer.ignoreDataButton = true; // Want to ignore data point event when terminating shortcut...
+    AccuDrawShortcuts.saveToolState(true, cancel ? 0 : this.onManipulationComplete(), this._stateBuffer);
   }
 
   public activateAccuDrawOnStart() { return true; }
@@ -1138,7 +1138,7 @@ export abstract class AccuDrawTool {
 }
 
 class RotateAxesTool extends AccuDrawTool {
-  constructor(private aboutCurrentZ: boolean) { super(); }
+  constructor(private _aboutCurrentZ: boolean) { super(); }
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
   public doManipulationStart(): void {
     super.doManipulationStart();
@@ -1148,7 +1148,7 @@ class RotateAxesTool extends AccuDrawTool {
     const vp = ev ? ev.viewport : IModelApp.accuDraw.currentView;
     if (!vp)
       return true;
-    AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot, this.aboutCurrentZ);
+    AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot, this._aboutCurrentZ);
     vp.invalidateDecorations();
     if (!isMotion)
       AccuDrawShortcuts.itemFieldUnlockAll();
@@ -1161,12 +1161,12 @@ class RotateElementTool extends AccuDrawTool {
 
   // RotateToElemToolHelper  rotateElmHelper;
 
-  constructor(private updateCurrentACS: boolean, private updateDynamicACS: boolean) { super(); }
+  constructor(private _updateCurrentACS: boolean, private _updateDynamicACS: boolean) { super(); }
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetOrigin | AccuDrawFlags.SetRMatrix; }
 
   public activateAccuDrawOnStart(): boolean {
     this.moveOrigin = !IModelApp.accuDraw.isActive; // Leave current origin is AccuDraw is already enabled...
-    return !this.updateDynamicACS;
+    return !this._updateDynamicACS;
   }
 
   public doManipulationStart(): void {
@@ -1237,14 +1237,14 @@ class RotateElementTool extends AccuDrawTool {
       }
     }
 
-    if (this.updateDynamicACS)
+    if (this._updateDynamicACS)
       IModelApp.viewManager.invalidateDecorationsAllViews();
 
     if (isMotion)
       return true;
 
     const accudraw = IModelApp.accuDraw;
-    if (this.updateCurrentACS) {
+    if (this._updateCurrentACS) {
 
       AccuDrawShortcuts.processPendingHints();
 
@@ -1261,12 +1261,12 @@ class RotateElementTool extends AccuDrawTool {
     }
 
     // RE enables Accudraw, so leave active regardless of state for suspended tool...
-    AccuDrawShortcuts.synchSavedStateWithCurrent(this.stateBuffer);
+    AccuDrawShortcuts.synchSavedStateWithCurrent(this._stateBuffer);
     return true;
   }
 
   public onDecorate(context: DecorateContext): void {
-    if (!this.updateDynamicACS)
+    if (!this._updateDynamicACS)
       return;
 
     const accudraw = IModelApp.accuDraw;
@@ -1280,8 +1280,8 @@ class RotateElementTool extends AccuDrawTool {
 }
 
 class DefineACSByPointsTool extends AccuDrawTool {
-  private readonly points: Point3d[] = [];
-  private acs?: AuxCoordSystemState;
+  private readonly _points: Point3d[] = [];
+  private _acs?: AuxCoordSystemState;
 
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
 
@@ -1297,7 +1297,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
     const origin = tentativePoint.getPoint().clone();
     AccuDrawTool.outputPrompt("DefineXAxis");
     IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, origin);
-    this.points.push(origin);
+    this._points.push(origin);
     tentativePoint.clear(true);
   }
 
@@ -1309,35 +1309,35 @@ class DefineACSByPointsTool extends AccuDrawTool {
     if (isMotion)
       return false;
 
-    this.points.push(ev.point.clone());
+    this._points.push(ev.point.clone());
 
     const vp = ev.viewport;
-    if (!this.acs)
-      this.acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
+    if (!this._acs)
+      this._acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
 
-    if (AccuDrawShortcuts.updateACSByPoints(this.acs, vp, this.points, false)) {
-      AccuDraw.updateAuxCoordinateSystem(this.acs, vp);
+    if (AccuDrawShortcuts.updateACSByPoints(this._acs, vp, this._points, false)) {
+      AccuDraw.updateAuxCoordinateSystem(this._acs, vp);
       AccuDrawShortcuts.rotateToACS(false);
       return true;
     }
 
-    AccuDrawTool.outputPrompt(1 === this.points.length ? "DefineXAxis" : "DefineYDir");
+    AccuDrawTool.outputPrompt(1 === this._points.length ? "DefineXAxis" : "DefineYDir");
     return false;
   }
 
   public onDecorate(context: DecorateContext): void {
     const tmpPoints: Point3d[] = [];
-    this.points.forEach((pt) => tmpPoints.push(pt));
+    this._points.forEach((pt) => tmpPoints.push(pt));
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
     tmpPoints.push(ev.point);
 
     const vp = context.viewport!;
-    if (!this.acs)
-      this.acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
+    if (!this._acs)
+      this._acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
 
-    AccuDrawShortcuts.updateACSByPoints(this.acs, vp, tmpPoints, true);
+    AccuDrawShortcuts.updateACSByPoints(this._acs, vp, tmpPoints, true);
     // this.acs -> Display(context, ACSDisplayOptions:: Active | ACSDisplayOptions:: Dynamics);
   }
 }

@@ -38,11 +38,11 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         movable={this.state.movable}
         modal={this.state.overlay}
         buttonCluster={[
-          { type: ButtonType.OK, onClick: () => { this.handleOK(); } },
-          { type: ButtonType.Cancel, onClick: () => { this.handleCancel(); } },
+          { type: ButtonType.OK, onClick: () => { this._handleOK(); } },
+          { type: ButtonType.Cancel, onClick: () => { this._handleCancel(); } },
         ]}
-        onClose={() => this.handleCancel()}
-        onEscape={() => this.handleCancel()}
+        onClose={() => this._handleCancel()}
+        onEscape={() => this._handleCancel()}
       >
         <p>Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.</p>
         <p>Deserunt perpetua intellegam ex qui. Sanctus epicuri molestiae vim ut, vix in dolorem mnesarchum. Quas tollit malorum usu id, sea dicat congue abhorreant ex. Reque tibique cu mel. Ea vix posse consequuntur, nam dicat nostrud ne. Id mea autem viderer, minim minimum adversarium ex vis, commodo malorum sea ei.</p>
@@ -57,21 +57,21 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
     );
   }
 
-  private handleOK = () => {
-    this.closeDialog(() => {
+  private _handleOK = () => {
+    this._closeDialog(() => {
       if (this.props.onResult)
         this.props.onResult(ButtonType.OK);
     });
   }
 
-  private handleCancel = () => {
-    this.closeDialog(() => {
+  private _handleCancel = () => {
+    this._closeDialog(() => {
       if (this.props.onResult)
         this.props.onResult(ButtonType.Cancel);
     });
   }
 
-  private closeDialog = (followUp: () => void) => {
+  private _closeDialog = (followUp: () => void) => {
     this.setState((_prevState) => ({
       opened: false,
     }), () => {

@@ -33,19 +33,19 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
     await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
 
-    if (qp.isPending()) {
+    if (qp.isPending) {
       Logger.logTrace(loggingCategory, "Issuing pending status in IModelReadRpcImpl.openForRead", () => (iModelToken));
       throw new RpcPendingResponse();
     }
 
     deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
-    if (qp.isFulfilled()) {
+    if (qp.isFulfilled) {
       Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => ({ ...iModelToken, pathname: qp.result!.briefcase.pathname }));
       return qp.result!;
     }
 
-    assert(qp.isRejected());
+    assert(qp.isRejected);
     Logger.logTrace(loggingCategory, "Rejected open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
     throw qp.error!;
   }

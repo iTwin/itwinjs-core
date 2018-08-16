@@ -35,7 +35,7 @@ describe("BriefcaseManager", () => {
   };
 
   const validateBriefcaseCache = () => {
-    (BriefcaseManager as any).cache.briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
+    (BriefcaseManager as any)._cache._briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
       assert.isTrue(IModelJsFs.existsSync(briefcase.pathname), `File corresponding to briefcase cache entry not found: ${briefcase.pathname}`);
       assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
       if (briefcase.isOpen) {

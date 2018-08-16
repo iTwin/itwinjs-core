@@ -266,13 +266,13 @@ describe("RpcInterface", () => {
 
   it("should describe available RPC endpoints from the frontend", async () => {
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
-    const controlInterface = (controlChannel as any).channelInterface as RpcInterfaceDefinition;
+    const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.name;
     const controlPolicy = RpcOperation.lookup(controlInterface, "describeEndpoints").policy;
 
     const simulateIncompatible = () => {
       const interfaces: string[] = [];
-      ((controlChannel as any).configuration as RpcConfiguration).interfaces().forEach((definition) => {
+      ((controlChannel as any)._configuration as RpcConfiguration).interfaces().forEach((definition) => {
         interfaces.push(definition.name === "IModelReadRpcInterface" ? `${definition.name}@0.0.0` : `${definition.name}@${definition.version}`);
       });
 

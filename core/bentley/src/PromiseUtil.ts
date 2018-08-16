@@ -26,16 +26,16 @@ class PromiseWithAbort<T> {
   private _resolve!: (val: any) => void;
 
   /** Create a PromiseWithAbort. After this call you must call [[init]] to create the underlying Promise.
-   * @param run The method that creates the underlying Promise.
-   * @param args An array of args to be passed to run when [[start]] is called.
+   * @param _run The method that creates the underlying Promise.
+   * @param _args An array of args to be passed to run when [[start]] is called.
    */
-  constructor(private run: (...args: any[]) => Promise<T>, private args: any[]) { }
+  constructor(private _run: (...args: any[]) => Promise<T>, private _args: any[]) { }
 
   /** Create a Promise that is chained to the underlying Promise, but is connected to the abort method. */
   public init(msg: string): Promise<T> { return new Promise<T>((resolve, reject) => { this.abort = () => reject(new BusyError(msg)); this._resolve = resolve; }); }
 
   /** Call the [[run]] method supplied to the ctor to start the underlying Promise. */
-  public start() { this.run(this.args).then((val) => this._resolve(val)); }
+  public start() { this._run(this._args).then((val) => this._resolve(val)); }
 }
 
 /**
@@ -54,17 +54,17 @@ export class OneAtATimePromise<T> {
   private _pending?: PromiseWithAbort<T>;
 
   /** Ctor for OneAtATimePromise.
-   * @param msg A message to be passed to the constructor of [[BusyError]] when pending requests are aborted.
-   * @param run The method that performs an action that creates the Promise.
+   * @param _msg A message to be passed to the constructor of [[BusyError]] when pending requests are aborted.
+   * @param _run The method that performs an action that creates the Promise.
    */
-  constructor(private msg: string, private run: (...args: any[]) => Promise<T>, private _allowPending = true) { }
+  constructor(private _msg: string, private _run: (...args: any[]) => Promise<T>, private _allowPending = true) { }
 
   /** Add a new request to this OneAtATimePromise. The request will only run when no other outstanding requests are active.
    * @note Callers of this method *must* handle BusyError exceptions.
    */
   public async addRequest(...args: any[]) {
-    const entry = new PromiseWithAbort<T>(this.run, args); // create an "abortable promise" object
-    const promise = entry.init(this.msg); // create the Promise from PromiseWithAbort. Note: this must be called before we call start.
+    const entry = new PromiseWithAbort<T>(this._run, args); // create an "abortable promise" object
+    const promise = entry.init(this._msg); // create the Promise from PromiseWithAbort. Note: this must be called before we call start.
 
     if (this._active !== undefined) { // is there an active request?
       if (this._pending) // yes. If there is also a pending request, this one replaces it and previous one is aborted

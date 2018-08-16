@@ -60,7 +60,7 @@ export interface ContentGroupProps {
 /** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [ContentLayout].
  */
 export class ContentGroup {
-  private static sId: number;
+  private static _sId: number;
 
   public groupId: string;
   public contentPropsList: ContentProps[];
@@ -70,8 +70,8 @@ export class ContentGroup {
     if (groupProps.id !== undefined)
       this.groupId = groupProps.id;
     else {
-      ContentGroup.sId++;
-      this.groupId = "ContentGroup-" + ContentGroup.sId;
+      ContentGroup._sId++;
+      this.groupId = "ContentGroup-" + ContentGroup._sId;
     }
 
     this.contentPropsList = groupProps.contents;

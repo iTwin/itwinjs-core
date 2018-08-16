@@ -31,21 +31,21 @@ function exericseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
   ck.testPoint3d(rangeA.high, rangeB.high);
 
   const rangeC = Range3d.create();
-  ck.testFalse(rangeC.isSinglePoint(), "Empty range is not singlepoint");
+  ck.testFalse(rangeC.isSinglePoint, "Empty range is not singlepoint");
   if (points.length > 0) {
     rangeC.extend(points[0]);
-    ck.testTrue(rangeC.isSinglePoint(), "Single point range");
+    ck.testTrue(rangeC.isSinglePoint, "Single point range");
     rangeC.extend(points[0]);
-    ck.testTrue(rangeC.isSinglePoint(), "Single point range");
-    ck.testTrue(rangeC.isAlmostZeroX(), "single point range has zero xLength");
-    ck.testTrue(rangeC.isAlmostZeroY(), "single point range has zero yLength");
-    ck.testTrue(rangeC.isAlmostZeroY(), "single point range has zero zLength");
+    ck.testTrue(rangeC.isSinglePoint, "Single point range");
+    ck.testTrue(rangeC.isAlmostZeroX, "single point range has zero xLength");
+    ck.testTrue(rangeC.isAlmostZeroY, "single point range has zero yLength");
+    ck.testTrue(rangeC.isAlmostZeroY, "single point range has zero zLength");
     // This definitely extends all directions . . .
     rangeC.extendXYZ(points[0].x + 3, points[0].y + 1, points[0].z - 4);
-    ck.testFalse(rangeC.isSinglePoint(), "not single point after expand");
-    ck.testFalse(rangeC.isAlmostZeroX(), "2 point range has nonzero xLength");
-    ck.testFalse(rangeC.isAlmostZeroY(), "2 range has nonzero yLength");
-    ck.testFalse(rangeC.isAlmostZeroZ(), "2 point range has nonzero zLength");
+    ck.testFalse(rangeC.isSinglePoint, "not single point after expand");
+    ck.testFalse(rangeC.isAlmostZeroX, "2 point range has nonzero xLength");
+    ck.testFalse(rangeC.isAlmostZeroY, "2 range has nonzero yLength");
+    ck.testFalse(rangeC.isAlmostZeroZ, "2 point range has nonzero zLength");
   }
   const unitRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
   const testLattice = Sample.createPoint3dLattice(-0.1, 0.30, 1.1);
@@ -269,7 +269,7 @@ describe("Range3d", () => {
       const r1 = rangeX.clone();
       const r2 = Range2d.createXYXY(rangeX.low, rangeY.low, rangeX.high, rangeY.high);
       const r3 = Range3d.createXYZXYZ(rangeX.low, rangeY.low, rangeZ.low, rangeX.high, rangeY.high, rangeZ.high);
-      if (!rangeB.isNull()) {
+      if (!rangeB.isNull) {
         ck.testTrue(r1.containsX(rangeX.fractionToPoint(0.5)));
         ck.testTrue(r2.containsXY(rangeX.fractionToPoint(0.5), rangeY.fractionToPoint(0.5)));
         ck.testTrue(r3.containsXYZ(rangeX.fractionToPoint(0.5), rangeY.fractionToPoint(0.5), rangeZ.fractionToPoint(0.5)));
@@ -293,7 +293,7 @@ describe("Range3d", () => {
         ck.testTrue(r2A.containsPoint(p2));
         ck.testTrue(r3A.containsPoint(p3));
 
-        const isSingle = rangeB.isSinglePoint();
+        const isSingle = rangeB.isSinglePoint;
         ck.testBoolean(isSingle, r1.containsX(p1));
         ck.testBoolean(isSingle, r2.containsXY(p2.x, p2.y));
         ck.testBoolean(isSingle, r3.containsXYZ(p3.x, p3.y, p3.z));
@@ -308,8 +308,8 @@ describe("Range3d", () => {
 
         const diagonal2 = r2.diagonal();
         const diagonal3 = r3.diagonal();
-        ck.testBoolean(diagonal2.isAlmostZero(), r2.isAlmostZeroX() && r2.isAlmostZeroY(), "2d almostZero");
-        ck.testBoolean(diagonal3.isAlmostZero(), r3.isAlmostZeroX() && r3.isAlmostZeroY() && r3.isAlmostZeroZ(), "2d almostZero");
+        ck.testBoolean(diagonal2.isAlmostZero, r2.isAlmostZeroX && r2.isAlmostZeroY, "2d almostZero");
+        ck.testBoolean(diagonal3.isAlmostZero, r3.isAlmostZeroX && r3.isAlmostZeroY && r3.isAlmostZeroZ, "2d almostZero");
       }
     }
     ck.checkpoint("Range3d.Containment1d");
@@ -330,7 +330,7 @@ describe("Range3d", () => {
       ck.testBoolean(
         intervalA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
       ck.testCoordinate(d1, d2, "distance between ranges is symmetric");
-      if (rangeAB.isNull())
+      if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
       else
         ck.testCoordinate(0, d1, "nonempty intersection must have zero distance");
@@ -371,7 +371,7 @@ describe("Range3d", () => {
       ck.testCoordinate(d1, d2, "distance between ranges is symmetric");
       ck.testBoolean(
         rangeA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
-      if (rangeAB.isNull())
+      if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
       else
         ck.testCoordinate(0, d1, "nonempty intersection must have zero distance");
@@ -414,7 +414,7 @@ describe("Range3d", () => {
       ck.testBoolean(
         rangeA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
 
-      if (rangeAB.isNull())
+      if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
       else
         ck.testCoordinate(0, d1, "nonempty intersection must have zero distance");
@@ -440,7 +440,7 @@ describe("Range3d", () => {
     const dataB = [-10, 20, 30];  // ALL are outside range of A
     const rangeA = Range1d.createArray(dataA);
     const rangeAB = rangeA.clone();
-    ck.testFalse(rangeA.isSinglePoint(), "A not single point");
+    ck.testFalse(rangeA.isSinglePoint, "A not single point");
     rangeAB.extendArray(dataB);
     for (const d of dataA) {
       ck.testTrue(rangeA.containsX(d), "A data in A");
@@ -463,25 +463,25 @@ describe("Range3d", () => {
     const delta = 0.1;
     const twoDelta = 2.0 * delta;
     const r1 = Range1d.createX(1);
-    ck.testTrue(r1.isSinglePoint(), "1d single point");
-    ck.testTrue(r1.isAlmostZeroLength(), "1d isAlmostZeroLength");
+    ck.testTrue(r1.isSinglePoint, "1d single point");
+    ck.testTrue(r1.isAlmostZeroLength, "1d isAlmostZeroLength");
     const r1A = Range1d.createNull();
     r1A.setX(4);
-    ck.testTrue(r1A.isSinglePoint(), "single point set");
+    ck.testTrue(r1A.isSinglePoint, "single point set");
     r1.expandInPlace(delta);
     ck.testCoordinate(twoDelta, r1.length(), "expand");
 
     const r2 = Range2d.createXY(1, 2);
-    ck.testTrue(r2.isSinglePoint(), "2d single point");
+    ck.testTrue(r2.isSinglePoint, "2d single point");
     const r2A = Range2d.createNull();
     r2A.setXY(4, 3);
-    ck.testTrue(r2A.isSinglePoint(), "single point set");
+    ck.testTrue(r2A.isSinglePoint, "single point set");
     r2.expandInPlace(delta);
     ck.testCoordinate(twoDelta, r2.xLength(), "expand");
     ck.testCoordinate(twoDelta, r2.yLength(), "expand");
 
     const r3 = Range3d.createXYZ(1, 2, 3);
-    ck.testTrue(r3.isSinglePoint(), "3d single point");
+    ck.testTrue(r3.isSinglePoint, "3d single point");
     ck.checkpoint("Range3d.SinglePointRanges");
     r3.expandInPlace(delta);
     ck.testCoordinate(twoDelta, r3.xLength(), "expand");

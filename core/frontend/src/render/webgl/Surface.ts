@@ -55,7 +55,7 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     this._indices.bind(GL.Buffer.Target.ArrayBuffer);
-    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
+    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices);
 
     if (offset) {
       gl.disable(GL.POLYGON_OFFSET_FILL);
@@ -64,7 +64,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getTechniqueId(_target: Target) { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
-  public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get hasBakedLighting() { return this._mesh.hasBakedLighting; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -80,7 +80,7 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public getRenderPass(target: Target): RenderPass {
-    const mat = this.isLit ? this.mesh.material : undefined;
+    const mat = this.isLit ? this._mesh.material : undefined;
     const tex = this.texture;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
     const fillFlags = this.fillFlags;
@@ -112,7 +112,7 @@ export class SurfaceGeometry extends MeshGeometry {
     return hasAlpha ? RenderPass.Translucent : opaquePass;
   }
 
-  public _wantWoWReversal(target: Target): boolean {
+  protected _wantWoWReversal(target: Target): boolean {
     const fillFlags = this.fillFlags;
     if (FillFlags.None !== (fillFlags & FillFlags.Background))
       return false; // fill color explicitly from background
@@ -130,7 +130,7 @@ export class SurfaceGeometry extends MeshGeometry {
     // Don't invert white pixels of textures...
     return !this.isTextured || !this.wantTextures(target);
   }
-  public get material(): Material | undefined { return this.mesh.material; }
+  public get material(): Material | undefined { return this._mesh.material; }
 
   public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
     const target = params.target;

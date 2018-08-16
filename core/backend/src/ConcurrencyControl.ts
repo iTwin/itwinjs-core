@@ -25,7 +25,7 @@ export class ConcurrencyControl {
 
   /** @hidden */
   public onSaveChanges() {
-    if (this.hasPendingRequests())
+    if (this.hasPendingRequests)
       throw new IModelError(IModelStatus.TransactionActive);
   }
 
@@ -34,7 +34,7 @@ export class ConcurrencyControl {
 
   /** @hidden */
   public onMergeChanges() {
-    if (this.hasPendingRequests())
+    if (this.hasPendingRequests)
       throw new IModelError(IModelStatus.TransactionActive);
   }
 
@@ -100,7 +100,7 @@ export class ConcurrencyControl {
   }
 
   /** Are there pending, unprocessed requests for locks or codes? */
-  public hasPendingRequests(): boolean {
+  public get hasPendingRequests(): boolean {
     if (!this._iModel.briefcase)
       return false;
     const reqAny: any = ConcurrencyControl.convertRequestToAny(this.pendingRequest);

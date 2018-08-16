@@ -42,7 +42,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     super(props);
 
     this._disposableListeners = new DisposableList();
-    this._disposableListeners.add(this.props.dataProvider.onDataChanged.addListener(this.onPropertyDataChanged));
+    this._disposableListeners.add(this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged));
   }
 
   public componentWillMount() {
@@ -55,11 +55,11 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this._disposableListeners.dispose();
   }
 
-  private onPropertyDataChanged = () => {
+  private _onPropertyDataChanged = () => {
     this.gatherData(this.props.dataProvider);
   }
 
-  private shouldExpandCategory = (category: PropertyCategory): boolean => {
+  private _shouldExpandCategory = (category: PropertyCategory): boolean => {
     if (category.expand)
       return true;
     return this.state.categories.some((stateCategory: PropertyGridCategory) => {
@@ -75,7 +75,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     const categories = new Array<PropertyGridCategory>();
     propertyData.categories.map((category: PropertyCategory, _index: number) => {
       const gridCategory: PropertyGridCategory = {
-        propertyCategory: { ...category, expand: this.shouldExpandCategory(category) },
+        propertyCategory: { ...category, expand: this._shouldExpandCategory(category) },
         propertyCount: propertyData.records[category.name].length,
         properties: propertyData.records[category.name],
       };
@@ -84,7 +84,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.setState({ categories });
   }
 
-  private toggleCategoryExpansion = (category: PropertyGridCategory) => {
+  private _toggleCategoryExpansion = (category: PropertyGridCategory) => {
     const index = this.state.categories.findIndex((c) => c.propertyCategory.name === category.propertyCategory.name);
     if (-1 === index)
       return;
@@ -108,7 +108,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
           {
             this.state.categories.map((gridCategory: PropertyGridCategory) => {
               const onCategoryHeaderPressed = () => {
-                this.toggleCategoryExpansion(gridCategory);
+                this._toggleCategoryExpansion(gridCategory);
               };
 
               return (

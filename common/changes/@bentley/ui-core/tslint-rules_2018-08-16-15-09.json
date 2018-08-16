@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "TSLint New Rule Enforcements",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "nate.rex@bentley.com"
+}

@@ -25,7 +25,7 @@ describe("FrameBuilder.HelloWorld", () => {
   it("FrameBuilder.HellowWorld", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
-    ck.testFalse(builder.hasOrigin(), "frameBuilder.hasOrigin at start");
+    ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
 
     for (const points of [
       [Point3d.create(0, 0, 0),
@@ -46,7 +46,7 @@ describe("FrameBuilder.HelloWorld", () => {
       const count0 = builder.announcePoint(point0);
       const count1 = builder.announcePoint(point0); // exercise the quick out.
       ck.testExactNumber(count0, count1, "repeat point ignored");
-      ck.testTrue(builder.hasOrigin(), "frameBuilder.hasOrigin with point");
+      ck.testTrue(builder.hasOrigin, "frameBuilder.hasOrigin with point");
       ck.testUndefined(builder.getValidatedFrame(), "no frame for minimal data");
       ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
 
@@ -63,7 +63,7 @@ describe("FrameBuilder.HelloWorld", () => {
         const inverse = rFrame.inverse();
         if (ck.testPointer(inverse, "invertible frame") && inverse) {
           const product = rFrame.multiplyTransformTransform(inverse);
-          ck.testBoolean(true, product.isIdentity(), "correct inverse");
+          ck.testBoolean(true, product.isIdentity, "correct inverse");
           const q0 = inverse.multiplyPoint3d(point0);
           const q1 = inverse.multiplyPoint3d(point1);
           const q2 = inverse.multiplyPoint3d(point2);
@@ -84,7 +84,7 @@ describe("FrameBuilder.HelloWorld", () => {
   it("FrameBuilder.HelloVectors", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
-    ck.testFalse(builder.hasOrigin(), "frameBuilder.hasOrigin at start");
+    ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
     builder.announcePoint(Point3d.create(0, 1, 1));
     ck.testExactNumber(0, builder.savedVectorCount());
     ck.testExactNumber(0, builder.savedVectorCount());
@@ -197,7 +197,7 @@ describe("MomentData.HelloWorld", () => {
 
     // Test undefined/empty returns
     const mData = MomentData.pointsToPrincipalAxes([]);
-    ck.testTrue(mData.origin.isAlmostZero());
+    ck.testTrue(mData.origin.isAlmostZero);
     const tempMatrix = Matrix4d.createRowValues(1, 1, 1, 0,
       1, 1, 1, 0,
       1, 1, 1, 0,

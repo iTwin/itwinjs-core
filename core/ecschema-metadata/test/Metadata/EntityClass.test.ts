@@ -283,7 +283,7 @@ describe("EntityClass", () => {
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
         const relClass = await schema.getItem<RelationshipClass>("NavPropRelationship");
-        assert.isTrue(await navProp.relationshipClass === relClass);
+        assert.isTrue(await navProp.relationshipClass === relClass);  // << For some reason type guard was failing..?
       } else {
         assert.fail();
       }
