@@ -110,7 +110,7 @@ export namespace IModelTileIO {
 
       // Textures must be loaded asynchronously first...
       await this.loadNamedTextures();
-      if (this.isCanceled)
+      if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
       else
         return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
@@ -271,7 +271,7 @@ export namespace IModelTileIO {
     }
 
     private async loadNamedTexture(name: string): Promise<void> {
-      if (this.isCanceled)
+      if (this._isCanceled)
         return Promise.resolve();
 
       const namedTex = this._namedTextures[name];
@@ -301,7 +301,7 @@ export namespace IModelTileIO {
       const imageSource = new ImageSource(bytes, format);
 
       return ImageUtil.extractImage(imageSource).then((image) => {
-        if (this.isCanceled)
+        if (this._isCanceled)
           return undefined;
 
         let textureType = RenderTexture.Type.Normal;

@@ -390,7 +390,7 @@ export class ViewFrustum {
   private readonly _displayedPlane: Plane3dByOriginAndUnitNormal | undefined;
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
-  private get viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
+  private get _viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
 
   private static _copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   /** @hidden */
@@ -405,7 +405,7 @@ export class ViewFrustum {
     if (this._aspectRatioLocked)
       return;
 
-    const windowAspect = this.viewRect.aspect * this.view.getAspectRatioSkew();
+    const windowAspect = this._viewRect.aspect * this.view.getAspectRatioSkew();
     const viewAspect = delta.x / delta.y;
 
     if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
@@ -558,7 +558,7 @@ export class ViewFrustum {
   /* Get the extents of this view, in ViewCoordinates, as a Range3d */
   public getViewCorners(): Range3d {
     const corners = this._viewCorners;
-    const viewRect = this.viewRect;
+    const viewRect = this._viewRect;
     corners.high.x = viewRect.right;
     corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
     corners.low.x = 0;

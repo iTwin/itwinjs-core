@@ -162,11 +162,11 @@ export class FrameBufferStack {
   // FrameBuffers within this array are not owned, as this is only a storage device holding references
   private readonly _stack: Binding[] = [];
 
-  private get top() { return !this.isEmpty ? this._stack[this._stack.length - 1] : undefined; }
+  private get _top() { return !this.isEmpty ? this._stack[this._stack.length - 1] : undefined; }
 
   public push(fbo: FrameBuffer, withAttachments: boolean): void {
-    if (undefined !== this.top) {
-      this.top.fbo.suspend();
+    if (undefined !== this._top) {
+      this._top.fbo.suspend();
     }
 
     assert(!fbo.isBound);
@@ -178,11 +178,11 @@ export class FrameBufferStack {
 
   public pop(): void {
     assert(!this.isEmpty);
-    if (undefined === this.top) {
+    if (undefined === this._top) {
       return;
     }
 
-    const fbo = this.top.fbo;
+    const fbo = this._top.fbo;
     this._stack.pop();
 
     assert(fbo.isBound);
@@ -192,7 +192,7 @@ export class FrameBufferStack {
     if (this.isEmpty) {
       System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
     } else {
-      const top = this.top;
+      const top = this._top;
       assert(top.fbo.isSuspended);
       top.fbo.bind(top.withAttachments);
       assert(top.fbo.isBound);
@@ -201,7 +201,7 @@ export class FrameBufferStack {
 
   public get currentColorBuffer(): TextureHandle | undefined {
     assert(!this.isEmpty);
-    return undefined !== this.top ? this.top.fbo.getColor(0) : undefined;
+    return undefined !== this._top ? this._top.fbo.getColor(0) : undefined;
   }
 
   public get isEmpty(): boolean { return 0 === this._stack.length; }

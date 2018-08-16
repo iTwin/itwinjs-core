@@ -15,19 +15,19 @@ class RootLayoutMock extends Layout {
     return this._bounds;
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this;
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this;
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this;
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this;
   }
 

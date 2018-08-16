@@ -246,15 +246,15 @@ export namespace GltfTileIO {
     protected readonly _system: RenderSystem;
     protected readonly _returnToCenter: number[] | undefined;
     protected readonly _yAxisUp: boolean;
-    private readonly _isCanceled?: IsCanceled;
+    private readonly _canceled?: IsCanceled;
 
     public async abstract read(): Promise<ReaderResult>;
 
-    protected get isCanceled(): boolean { return undefined !== this._isCanceled && this._isCanceled(this); }
-    protected get hasBakedLighting(): boolean { return false; }
+    protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
+    protected get _hasBakedLighting(): boolean { return false; }
 
     protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
-      if (this.isCanceled)
+      if (this._isCanceled)
         return { readStatus: TileIO.ReadStatus.Canceled, isLeaf };
 
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
@@ -355,7 +355,7 @@ export namespace GltfTileIO {
       this._modelId = modelId;
       this._is3d = is3d;
       this._system = system;
-      this._isCanceled = isCanceled;
+      this._canceled = isCanceled;
     }
 
     protected readBufferData(json: any, accessorName: string, type: DataType): BufferData | undefined {
@@ -395,7 +395,7 @@ export namespace GltfTileIO {
 
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
-      const hasBakedLighting = this.hasBakedLighting;
+      const hasBakedLighting = this._hasBakedLighting;
       const mesh = Mesh.create({
         displayParams,
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
@@ -718,7 +718,7 @@ export namespace GltfTileIO {
 
         const textureParams = new RenderTexture.Params(undefined, textureType);
         return ImageUtil.extractImage(imageSource)
-          .then((image) => this.isCanceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
+          .then((image) => this._canceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {
         return undefined;

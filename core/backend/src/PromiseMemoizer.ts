@@ -10,8 +10,8 @@ export class QueryablePromise<T> {
   public get isPending(): boolean { return !this.isFulfilled && !this.isRejected; }
   public get isFulfilled(): boolean { return !!this.result; }
   public get isRejected(): boolean { return !!this.error; }
-  public constructor(private readonly promise: Promise<T>) {
-    this.promise
+  public constructor(private readonly _promise: Promise<T>) {
+    this._promise
       .then((res: T) => this.result = res)
       .catch((err: any) => this.error = err);
   }
@@ -24,13 +24,13 @@ export class QueryablePromise<T> {
 export class PromiseMemoizer<T> {
   private _cachedPromises: Map<string, QueryablePromise<T>> = new Map<string, QueryablePromise<T>>();
 
-  public constructor(private readonly memoizeFn: (...args: any[]) => Promise<T>, private readonly generateKeyFn: (...args: any[]) => string) { }
+  public constructor(private readonly _memoizeFn: (...args: any[]) => Promise<T>, private readonly _generateKeyFn: (...args: any[]) => string) { }
 
   public memoize = (...args: any[]): QueryablePromise<T> => {
-    const key: string = this.generateKeyFn(...args);
+    const key: string = this._generateKeyFn(...args);
     let qp: QueryablePromise<T> | undefined = this._cachedPromises.get(key);
     if (!qp) {
-      const p = this.memoizeFn(...args);
+      const p = this._memoizeFn(...args);
       qp = new QueryablePromise<T>(p);
       this._cachedPromises.set(key, qp);
     }
@@ -38,7 +38,7 @@ export class PromiseMemoizer<T> {
   }
 
   public deleteMemoized = (...args: any[]) => {
-    const key: string = this.generateKeyFn(...args);
+    const key: string = this._generateKeyFn(...args);
     const ret = this._cachedPromises.delete(key);
     assert(ret, "Memoized function not found in cache");
   }

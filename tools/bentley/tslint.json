@@ -5,6 +5,7 @@
   ],
   "jsRules": {},
   "rules": {
+    // Standard Rules ======================================================
     "max-line-length": [
       false
     ],
@@ -54,12 +55,56 @@
     "member-ordering": [
       false
     ],
-    // Custom rules ======================================================
-    "prefer-get": true,
-    "private-underscores": true,
-    "no-public-underscores": true
+    // Naming Rules ======================================================
+    "naming-convention": [
+      true,
+      // allow leading and trailing underscores on everything. Will override for exceptions below.
+      {
+        "type": "default",
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "allow"
+      },
+      // forbid leading underscores on exported types
+      {
+        "type": "type",
+        "modifiers": "export",
+        "leadingUnderscore": "forbid"
+      },
+      // forbid leading underscores on public methods
+      {
+        "type": "method",
+        "modifiers": "public",
+        "leadingUnderscore": "forbid"
+      },
+      // forbid leading underscores on public properties
+      {
+        "type": "property",
+        "modifiers": "public",
+        "leadingUnderscore": "forbid"
+      },
+      // allow leading underscores on enum members
+      {
+        "type": "enumMember",
+        "leadingUnderscore": "allow"
+      },
+      // require leading underscores on private properties
+      {
+        "type": "property",
+        "modifiers": "private",
+        "leadingUnderscore": "require"
+      },
+      // require leading underscores on protected properties
+      {
+        "type": "property",
+        "modifiers": "protected",
+        "leadingUnderscore": "require"
+      }
+    ],
+    // Custom rules ========================================================
+    "prefer-get": true
   },
   "rulesDirectory": [
-    "tslint-rules"
+    "./node_modules/tslint-consistent-codestyle/rules",
+    "./tslint-rules"
   ]
 }

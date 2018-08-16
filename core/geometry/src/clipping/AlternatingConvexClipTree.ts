@@ -304,7 +304,7 @@ export class AlternatingCCTreeNodeCurveClipper {
 
   private popSegmentFrame() {
     if (this._stackDepth > 0) {
-      this.topOfStack.length = 0;    // formality.
+      this._topOfStack.length = 0;    // formality.
       this._stackDepth -= 1;
     }
   }
@@ -318,12 +318,12 @@ export class AlternatingCCTreeNodeCurveClipper {
     this._stackDepth += 1;
     while (this._intervalStack.length < this._stackDepth)
       this._intervalStack.push([]);
-    this.topOfStack.length = 0;
+    this._topOfStack.length = 0;
   }
 
-  private get topOfStack(): Range1d[] { return this._intervalStack[this._stackDepth - 1]; }
+  private get _topOfStack(): Range1d[] { return this._intervalStack[this._stackDepth - 1]; }
   // set the top of the stack (as defined by stackDepth -- not array length)
-  private set topOfStack(value: Range1d[]) {
+  private set _topOfStack(value: Range1d[]) {
     const n = this._stackDepth;
     if (n > 0)
       this._intervalStack[n - 1] = value;
@@ -338,7 +338,7 @@ export class AlternatingCCTreeNodeCurveClipper {
   }
 
   private isTopOfStackEmpty(): boolean {
-    return this.topOfStack.length === 0;
+    return this._topOfStack.length === 0;
   }
 
   // Is re-used by method calls
@@ -400,8 +400,8 @@ export class AlternatingCCTreeNodeCurveClipper {
    */
   private recurse(node: AlternatingCCTreeNode) {
     this.pushEmptySegmentFrame();
-    this.appendSingleClipToStack(node.planes, this.topOfStack);
-    Range1dArray.sort(this.topOfStack);
+    this.appendSingleClipToStack(node.planes, this._topOfStack);
+    Range1dArray.sort(this._topOfStack);
     if (this.isTopOfStackEmpty())
       return;
 
@@ -410,7 +410,7 @@ export class AlternatingCCTreeNodeCurveClipper {
       if (!this.isTopOfStackEmpty()) {
         const ranges = Range1dArray.differenceSorted(this.stackEntry(1), this.stackEntry(0));
         this.popSegmentFrame();
-        this.topOfStack = ranges;
+        this._topOfStack = ranges;
       } else {
         this.popSegmentFrame();
       }
@@ -431,7 +431,7 @@ export class AlternatingCCTreeNodeCurveClipper {
     if (this._stackDepth !== 1)
       return;
 
-    const intervals = this.topOfStack;
+    const intervals = this._topOfStack;
     for (const interval of intervals) {
       const f0 = interval.low;
       const f1 = interval.high;

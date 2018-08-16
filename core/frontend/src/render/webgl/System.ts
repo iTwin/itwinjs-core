@@ -149,7 +149,7 @@ export class Capabilities {
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
-    return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
+    return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
   }
 
   public static create(gl: WebGLRenderingContext): Capabilities | undefined {
@@ -178,12 +178,12 @@ export class Capabilities {
   }
 
   /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
-  private get hasRequiredFeatures(): boolean {
+  private get _hasRequiredFeatures(): boolean {
     return this.supports32BitElementIndex;
   }
 
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
-  private get hasRequiredTextureUnits(): boolean {
+  private get _hasRequiredTextureUnits(): boolean {
     return this.maxFragTextureUnits > 4 && this.maxVertTextureUnits > 5;
   }
 }

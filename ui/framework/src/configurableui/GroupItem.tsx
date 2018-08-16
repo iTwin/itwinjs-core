@@ -208,7 +208,7 @@ class GroupItem extends React.Component<Props, State> {
     return null;
   }
 
-  private get tray() {
+  private get _tray() {
     const tray = this.state.trays.get(this.state.trayId);
     if (!tray)
       throw new RangeError();
@@ -317,9 +317,9 @@ class GroupItem extends React.Component<Props, State> {
     if (!this.state.isToolGroupOpen)
       return undefined;
 
-    const tray = this.tray;
+    const tray = this._tray;
     const columns = (
-      Array.from(this.tray.columns.keys()).map((columnIndex) => {
+      Array.from(this._tray.columns.keys()).map((columnIndex) => {
         const column = tray.columns.get(columnIndex)!;
         return (
           <GroupColumn key={columnIndex}>

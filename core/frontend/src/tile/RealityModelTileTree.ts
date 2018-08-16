@@ -84,16 +84,16 @@ class FindChildResult {
   constructor(public id: string, public json: any) { }
 }
 class RealityModelTileLoader extends TileLoader {
-  constructor(private tree: RealityModelTileTreeProps) { super(); }
+  constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 
     tileIds.map(async (tileId) => {
-      const foundChild = this.findTileInJson(this.tree.tilesetJson, tileId, "");
+      const foundChild = this.findTileInJson(this._tree.tilesetJson, tileId, "");
       if (foundChild !== undefined)
-        props.push(new RealityModelTileProps(foundChild.json, foundChild.id, this.tree));
+        props.push(new RealityModelTileProps(foundChild.json, foundChild.id, this._tree));
     });
     return props;
   }
@@ -101,10 +101,10 @@ class RealityModelTileLoader extends TileLoader {
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
-        const foundChild = this.findTileInJson(this.tree.tilesetJson, missingTile.id, "");
+        const foundChild = this.findTileInJson(this._tree.tilesetJson, missingTile.id, "");
         if (foundChild !== undefined) {
           missingTile.setIsQueued();
-          const content = await this.tree.client.getTileContent(foundChild.json.content.url);
+          const content = await this._tree.client.getTileContent(foundChild.json.content.url);
           if (content !== undefined) {
             this.loadGraphics(missingTile, content);
           }
@@ -129,7 +129,7 @@ class RealityModelTileLoader extends TileLoader {
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (undefined !== foundChild.content && foundChild.content.url.endsWith("json")) {    // A child may contain a subTree...
-      this.tree.client.getTileJson(foundChild.content.url).then((subTree: any) => {
+      this._tree.client.getTileJson(foundChild.content.url).then((subTree: any) => {
         foundChild = subTree.root;
         tilesetJson.children[childIndex] = subTree.root;
       });

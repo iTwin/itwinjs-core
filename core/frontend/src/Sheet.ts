@@ -350,11 +350,11 @@ export namespace Attachments {
     }
 
     /** Get the root tile tree cast to a Tree3d. */
-    private get rootAsTree3d(): Tree3d { return this.root as Tree3d; }
+    private get _rootAsTree3d(): Tree3d { return this.root as Tree3d; }
     /** Get the load state from the owner attachment's array at this tile's depth. */
-    private getState(): State { return this.rootAsTree3d.getState(this.depth - 1); }
+    private getState(): State { return this._rootAsTree3d.getState(this.depth - 1); }
     /** Set the load state of the onwner attachment's array at this tile's depth. */
-    private setState(state: State) { this.rootAsTree3d.setState(this.depth - 1, state); }
+    private setState(state: State) { this._rootAsTree3d.setState(this.depth - 1, state); }
 
     // override
     public get hasGraphics(): boolean { return this.isReady; }
@@ -368,7 +368,7 @@ export namespace Attachments {
 
     private select(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
       if (this.depth === 1)
-        this.rootAsTree3d.viewport.rendering = false;
+        this._rootAsTree3d.viewport.rendering = false;
 
       if (this.isNotFound)
         return Tile.SelectParent.No;  // indicates no elements in this tile's range (or some unexpected error occurred during scene creation)
@@ -420,7 +420,7 @@ export namespace Attachments {
       }
 
       // Inform the sheet view state that it needs to recreate the scene next frame
-      this.rootAsTree3d.sheetView.markAttachment3dSceneIncomplete();
+      this._rootAsTree3d.sheetView.markAttachment3dSceneIncomplete();
 
       // Tell parent to render in this tile's place until it becomes ready to draw
       return Tile.SelectParent.Yes;
@@ -432,7 +432,7 @@ export namespace Attachments {
       // ### TODO: an optimization could be to make the texture non-square to save on space (make match cropped tile aspect ratio)
 
       // set up initial corner values (before cropping to clip)
-      const tree = this.rootAsTree3d;
+      const tree = this._rootAsTree3d;
 
       // Set up initial corner values (before cropping to clip). Range must already be set up (range = unclipped range)
       const east = this.range.low.x;
@@ -451,7 +451,7 @@ export namespace Attachments {
     }
 
     public createGraphics(context: SceneContext) {
-      const tree = this.rootAsTree3d;
+      const tree = this._rootAsTree3d;
       let currentState = this.getState();
 
       // "Ready" state is a valid situation. It means another tile created the scene for this level of detail. We will use that scene.
@@ -507,8 +507,8 @@ export namespace Attachments {
             if (viewport.texture === undefined) {
               this.setNotFound();
             } else {
-              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this.rootAsTree3d.tileColor));
-              this.setGraphic(system.createBatch(graphic, this.rootAsTree3d.featureTable, this.contentRange));
+              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this._rootAsTree3d.tileColor));
+              this.setGraphic(system.createBatch(graphic, this._rootAsTree3d.featureTable, this.contentRange));
             }
 
             // restore frustum
@@ -524,10 +524,10 @@ export namespace Attachments {
       if (this._children === undefined)
         this._children = [];
       if (this._children.length === 0) {
-        const childTileUL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperLeft);
-        const childTileUR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperRight);
-        const childTileLL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerLeft);
-        const childTileLR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerRight);
+        const childTileUL = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.UpperLeft);
+        const childTileUR = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.UpperRight);
+        const childTileLL = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.LowerLeft);
+        const childTileLR = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.LowerRight);
         this._children.push(childTileUL);
         this._children.push(childTileUR);
         this._children.push(childTileLL);

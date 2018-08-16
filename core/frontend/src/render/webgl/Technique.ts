@@ -91,10 +91,10 @@ export abstract class VariedTechnique implements Technique {
   }
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
-  protected abstract get debugDescription(): string;
+  protected abstract get _debugDescription(): string;
 
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
-    const descr = this.debugDescription + ": " + flags.buildDescription();
+    const descr = this._debugDescription + ": " + flags.buildDescription();
     builder.setDebugDescription(descr);
 
     const index = this.getShaderIndex(flags);
@@ -190,7 +190,7 @@ class SurfaceTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "Surface"; }
+  protected get _debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
@@ -237,7 +237,7 @@ class PolylineTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "Polyline"; }
+  protected get _debugDescription() { return "Polyline"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
@@ -284,7 +284,7 @@ class EdgeTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
+  protected get _debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = flags.isTranslucent ? EdgeTechnique._kTranslucent : EdgeTechnique._kOpaque;
@@ -326,7 +326,7 @@ class PointStringTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "PointString"; }
+  protected get _debugDescription() { return "PointString"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
@@ -358,7 +358,7 @@ class PointCloudTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "PointCloud"; }
+  protected get _debugDescription() { return "PointCloud"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index: number;

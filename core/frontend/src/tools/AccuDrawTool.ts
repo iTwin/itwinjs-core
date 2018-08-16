@@ -1138,7 +1138,7 @@ export abstract class AccuDrawTool {
 }
 
 class RotateAxesTool extends AccuDrawTool {
-  constructor(private aboutCurrentZ: boolean) { super(); }
+  constructor(private _aboutCurrentZ: boolean) { super(); }
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
   public doManipulationStart(): void {
     super.doManipulationStart();
@@ -1148,7 +1148,7 @@ class RotateAxesTool extends AccuDrawTool {
     const vp = ev ? ev.viewport : IModelApp.accuDraw.currentView;
     if (!vp)
       return true;
-    AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot, this.aboutCurrentZ);
+    AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot, this._aboutCurrentZ);
     vp.invalidateDecorations();
     if (!isMotion)
       AccuDrawShortcuts.itemFieldUnlockAll();
@@ -1161,12 +1161,12 @@ class RotateElementTool extends AccuDrawTool {
 
   // RotateToElemToolHelper  rotateElmHelper;
 
-  constructor(private updateCurrentACS: boolean, private updateDynamicACS: boolean) { super(); }
+  constructor(private _updateCurrentACS: boolean, private _updateDynamicACS: boolean) { super(); }
   public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetOrigin | AccuDrawFlags.SetRMatrix; }
 
   public activateAccuDrawOnStart(): boolean {
     this.moveOrigin = !IModelApp.accuDraw.isActive; // Leave current origin is AccuDraw is already enabled...
-    return !this.updateDynamicACS;
+    return !this._updateDynamicACS;
   }
 
   public doManipulationStart(): void {
@@ -1237,14 +1237,14 @@ class RotateElementTool extends AccuDrawTool {
       }
     }
 
-    if (this.updateDynamicACS)
+    if (this._updateDynamicACS)
       IModelApp.viewManager.invalidateDecorationsAllViews();
 
     if (isMotion)
       return true;
 
     const accudraw = IModelApp.accuDraw;
-    if (this.updateCurrentACS) {
+    if (this._updateCurrentACS) {
 
       AccuDrawShortcuts.processPendingHints();
 
@@ -1266,7 +1266,7 @@ class RotateElementTool extends AccuDrawTool {
   }
 
   public onDecorate(context: DecorateContext): void {
-    if (!this.updateDynamicACS)
+    if (!this._updateDynamicACS)
       return;
 
     const accudraw = IModelApp.accuDraw;

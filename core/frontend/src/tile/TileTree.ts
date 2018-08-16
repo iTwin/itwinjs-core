@@ -627,7 +627,7 @@ export abstract class TileLoader {
 }
 
 export class IModelTileLoader extends TileLoader {
-  constructor(private iModel: IModelConnection, private rootId: Id64) { super(); }
+  constructor(private _iModel: IModelConnection, private _rootId: Id64) { super(); }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return undefined !== params.geometry; }
@@ -636,8 +636,8 @@ export class IModelTileLoader extends TileLoader {
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {
-    const tileIds: TileId[] = ids.map((id: string) => new TileId(this.rootId, id));
-    return this.iModel.tiles.getTileProps(tileIds);
+    const tileIds: TileId[] = ids.map((id: string) => new TileId(this._rootId, id));
+    return this._iModel.tiles.getTileProps(tileIds);
   }
 
   public async loadTileContents(_missingTiles: MissingNodes): Promise<void> {
