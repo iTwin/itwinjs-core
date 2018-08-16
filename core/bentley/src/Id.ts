@@ -261,7 +261,7 @@ export class TransientIdSequence {
   private _localId: number = 0;
 
   /** Generate and return the next transient Id64 in the sequence. */
-  public get next(): Id64 { return new Id64([++this._localId, 0xffffffff]); }
+  public get next(): Id64 { return new Id64([++this._localId, 0xffffff]); }
 }
 
 /** A string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid.

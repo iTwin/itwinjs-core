@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
@@ -22,6 +22,7 @@ import {
   RgbColor,
   ColorDef,
 } from "@bentley/imodeljs-common/lib/common";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY, Transform } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
@@ -452,9 +453,69 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 }
 
+let activeExtentsDeco: ProjectExtentsDecoration | undefined;
+export class ProjectExtentsDecoration {
+  public removeDecorationListener?: () => void;
+  public boxId?: Id64;
+
+  public constructor() {
+    this.removeDecorationListener = IModelApp.viewManager.onDecorate.addListener(this.decorate, this);
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
+  protected stop(): void {
+    if (this.removeDecorationListener) {
+      this.removeDecorationListener();
+      this.removeDecorationListener = undefined;
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+    }
+  }
+
+  protected decorate(context: DecorateContext): void {
+    const vp = context.viewport;
+
+    if (!vp.view.isSpatialView())
+      return;
+
+    if (undefined === this.boxId)
+      this.boxId = vp.view.iModel.transientIds.next;
+
+    const range = vp.view.iModel.projectExtents.clone();
+    const graphic = context.createPickableDecoration(this.boxId);
+
+    const black = ColorDef.black.clone();
+    const white = ColorDef.white.clone();
+
+    graphic.setSymbology(white, black, 1);
+    graphic.addRangeBox(range);
+    context.addWorldDecoration(graphic.finish());
+  }
+
+  public static add(): void {
+    if (undefined !== activeExtentsDeco)
+      return;
+    activeExtentsDeco = new ProjectExtentsDecoration();
+  }
+
+  public static remove(): void {
+    if (undefined === activeExtentsDeco)
+      return;
+    activeExtentsDeco.stop();
+    activeExtentsDeco = undefined;
+  }
+
+  public static toggle(): void {
+    if (undefined === activeExtentsDeco)
+      this.add();
+    else
+      this.remove();
+  }
+}
+
 // starts Mesure between points tool
 function startMeasurePoints(_event: any) {
   IModelApp.tools.run("Measure.Points", theViewport!);
+  // ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions

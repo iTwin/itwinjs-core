@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix TransientIdSequence. Fix AccuSnap.findLocatableHit not setting filtered status.",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Brien.Bastings@Bentley.com"
+}

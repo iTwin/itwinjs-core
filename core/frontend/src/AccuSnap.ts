@@ -576,6 +576,7 @@ export class AccuSnap {
         return thisHit;
 
       // we only care about the status of the first hit.
+      out.snapStatus = SnapStatus.FilteredByApp;
       out = ignore;
     }
 
