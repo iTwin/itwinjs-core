@@ -744,7 +744,7 @@ describe("MiscAngles", () => {
     const sweepD = AngleSweep.fromJSON(sweepB);
     ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepD));
     const sweepZ = AngleSweep.fromJSON(undefined);
-    ck.testTrue(sweepZ.isFullCircle());
+    ck.testTrue(sweepZ.isFullCircle);
     expect(ck.getNumErrors()).equals(0);
   });
 

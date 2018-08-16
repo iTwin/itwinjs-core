@@ -98,7 +98,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getVersions(accessToken: AccessToken, iModelId: string): Promise<VersionInfo[]> {
     const versionInfos: VersionInfo[] = [];
     try {
-      const versions: Version[] = await this.hubClient.Versions().get(accessToken, iModelId, new VersionQuery().select("*").top(5));
+      const versions: Version[] = await this._hubClient.Versions().get(accessToken, iModelId, new VersionQuery().select("*").top(5));
       for (const thisVersion of versions) {
         versionInfos.push(this.createVersionInfo(thisVersion));
       }
@@ -113,7 +113,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getChangeSets(accessToken: AccessToken, iModelId: string): Promise<ChangeSetInfo[]> {
     const changeSetInfos: ChangeSetInfo[] = [];
     try {
-      const changesets: ChangeSet[] = await this.hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().top(5).latest());
+      const changesets: ChangeSet[] = await this._hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().top(5).latest());
       for (const thisChangeSet of changesets) {
         changeSetInfos.push(this.createChangeSetInfo(thisChangeSet));
       }
@@ -128,7 +128,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getUsers(accessToken: AccessToken, iModelId: string): Promise<IModelUserInfo[]> {
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: UserInfo[] = await this.hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().select("*"));
+      const users: UserInfo[] = await this._hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().select("*"));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }
@@ -142,7 +142,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getUser(accessToken: AccessToken, iModelId: string, userId: string): Promise<IModelUserInfo[]> {
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: UserInfo[] = await this.hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(userId));
+      const users: UserInfo[] = await this._hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(userId));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }

@@ -84,7 +84,7 @@ describe("FrameBuilder.HelloWorld", () => {
   it("FrameBuilder.HelloVectors", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
-    ck.testFalse(builder.hasOrigin(), "frameBuilder.hasOrigin at start");
+    ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
     builder.announcePoint(Point3d.create(0, 1, 1));
     ck.testExactNumber(0, builder.savedVectorCount());
     ck.testExactNumber(0, builder.savedVectorCount());
