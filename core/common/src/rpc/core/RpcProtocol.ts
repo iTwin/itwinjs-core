@@ -46,7 +46,7 @@ export interface RpcRequestFulfillment {
   type: RpcResponseType;
 }
 
-/** @internal @hidden */
+/** @hidden */
 export namespace RpcRequestFulfillment {
   export function forUnknownError(request: SerializedRpcRequest, error: any): RpcRequestFulfillment {
     const result = RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
@@ -170,15 +170,15 @@ export abstract class RpcProtocol {
     this.events.addListener((type, object) => RpcProtocol.events.raiseEvent(type, object));
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 }

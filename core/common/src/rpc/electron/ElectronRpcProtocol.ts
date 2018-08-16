@@ -25,10 +25,10 @@ const lookupInstance = (request: SerializedRpcRequest) => {
   return protocol;
 };
 
-/** @hidden @internal */
+/** @hidden */
 export const CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol";
 
-/** @hidden @internal */
+/** @hidden */
 export const interop = (() => {
   let electron = null;
   if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
@@ -72,22 +72,22 @@ export class ElectronRpcProtocol extends RpcProtocol {
     super(configuration);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
     this.registerInterface(definition);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
     this.registerInterface(definition);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
     this.purgeInterface(definition);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
     this.purgeInterface(definition);
   }
