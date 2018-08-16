@@ -1,0 +1,224 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+$separator-background: #F0F0F0;
+$pp-highlight-size: 4px;
+$pp-max-dropdown-width: 450px;
+
+.text-clip {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
+}
+
+/* selector to disable user selection (on double click for example) */
+.text-disable-selection {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+/* project picker */
+.pp {
+  outline: none;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &:after {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: block;
+    width: 0;
+    height: $pp-highlight-size;
+    background-color: $bwc-blue;
+    margin: auto;
+    content: '';
+    transition: width 0.4s ease;
+  }
+
+  &:hover:after {
+    width: 100%;
+  }
+}
+
+/* current project + splitter container */
+.pp-content {
+  flex: 1;
+  padding: 0 .7em;
+  background: $bwc-blue-highlight;
+  display: flex;
+  align-items: center;
+  outline: none;
+  cursor: pointer;
+
+  /* change text color on hover */
+  &:hover {
+    color: $bwc-blue;
+  }
+
+  /* current project number & name */
+  > div {
+    font-size: $bwc-font-size-leading;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+
+    /* project number */
+    .number {
+      @extend .text-clip;
+    }
+
+    /* project name font is smaller (and add some spacing between number and name) */
+    .name {
+      @extend .text-clip;
+      font-size: $bwc-font-size;
+      margin-top: .25em;
+    }
+  }
+}
+
+/* content in its opened state */
+.pp-content .opened {
+  transform: rotate(-180deg);
+}
+
+/* highlight bar below the project picker */
+.pp-highlight {
+  flex: initial;
+  height: $pp-highlight-size;
+  background: $bwc-gray-8;
+  transition: background-color .4s ease;
+}
+
+/* splitter icon */
+.pp-splitter {
+  @extend .text-disable-selection;
+  flex: initial;
+  margin-left: .75em;
+  font-size: 15px;
+  transition: transform .5s ease;
+}
+
+/* dropdown (list of projects) */
+.pp-dropdown {
+  position: absolute;
+  top: 100%;
+  color: #444;
+  background: #fff;
+  min-width: 100%;
+  max-width: $pp-max-dropdown-width;
+  z-index: 100;
+  padding-bottom: .75em;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 0px 0px 5px 5px;
+  background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+  box-shadow: 0px 6px 12px rgba(0,0,0,0.25);
+
+  /* first part of the dropdown is a list */
+  ul {
+    padding: 0px;
+    margin: 0px;
+    list-style: none;
+    overflow-y: auto;
+
+    /* line for each project */
+    li {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      flex-direction: row;
+      padding: 0px .75em 0px 1.25em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color .3s ease;
+      border-bottom: 1px solid $separator-background;
+      box-sizing: border-box;
+
+      /* project number & name */
+      .pp-details{
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        overflow: hidden;
+
+        /* clip the number & name */
+        span{
+          @extend .text-clip;
+        }
+
+        /* number is a larger font size than name */
+        span:first-child{
+          font-size: $bwc-font-size;
+          font-weight: 550;
+        }
+
+        /* name is a smaller font size and space the number/name */
+        span:last-child{
+          margin-top: .4em;
+          font-size: $bwc-font-size-small;
+          font-weight: 300;
+        }
+      }
+
+      /* hover */
+      &:hover{
+        background-color: #eee;
+      }
+    }
+  }
+}
+
+/* no project MRU's */
+.pp-no-mru {
+  display: block;
+  color: $bwc-gray;
+  font-size: $bwc-font-size;
+  padding: .25em 1.25em;
+}
+
+/* menu separator */
+.pp-separator {
+  height: 1px;
+  margin: .75em 3em;
+  background: $separator-background;
+  cursor: default;
+}
+
+/* "More" option */
+.pp-more {
+  display: flex;
+  align-items: center;
+  padding: 0 .75em 0 1.25em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color .3s ease;
+
+  &:hover {
+    background-color: #eee;
+  }
+}
+
+/* project icon */
+.pp-icon {
+  font-size: 22px;
+  margin-right: .75em;
+}
+
+/*
+ .content:hover + .highlight, .highlight:hover {
+  background-color: $bwc-gray;}
+*/
