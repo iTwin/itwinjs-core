@@ -172,7 +172,7 @@ export abstract class CurveChain extends CurveCollection {
       if (children.length === 1) {
         const ls = children[0];
         if (ls instanceof LineString3d)
-        return ls.packedPoints;
+          return ls.packedPoints;
       }
     }
     return undefined;
@@ -211,11 +211,26 @@ export class Path extends CurveChain {
   }
 
   public constructor() { super(); }
+  /**
+   * Create a path from a variable length list of curve primtiives
+   * @param curves variable length list of individual curve primitives
+   */
   public static create(...curves: CurvePrimitive[]): Path {
     const result = new Path();
     for (const curve of curves) { result.children.push(curve); }
     return result;
   }
+
+  /**
+   * Create a path from a an array of curve primtiives
+   * @param curves array of individual curve primitives
+   */
+  public static createArray(curves: CurvePrimitive[]): Path {
+    const result = new Path();
+    for (const curve of curves) { result.children.push(curve); }
+    return result;
+  }
+
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)
@@ -242,7 +257,21 @@ export class Loop extends CurveChain {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Loop; }
   public constructor() { super(); }
 
+  /**
+   * Create a loop from variable length list of CurvePrimtives
+   * @param curves array of individual curve primitives
+   */
   public static create(...curves: CurvePrimitive[]): Loop {
+    const result = new Loop();
+    for (const curve of curves) { result.children.push(curve); }
+    return result;
+  }
+
+  /**
+   * Create a loop from an array of curve primtiives
+   * @param curves array of individual curve primitives
+   */
+  public static createArray(curves: CurvePrimitive[]): Loop {
     const result = new Loop();
     for (const curve of curves) { result.children.push(curve); }
     return result;

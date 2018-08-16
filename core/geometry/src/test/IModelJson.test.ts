@@ -70,7 +70,7 @@ function savePropertiesAsSeparateFiles(folderPath: string, prefix: string, data:
   for (const property in data) {
     if (data.hasOwnProperty(property)) {
       const filename = folderPath + "/" + prefix + property + ".imjs";
-      fs.writeFileSync(filename, prettyPrint(data[property]));
+      fs.writeFileSync(filename, JSON.stringify(data[property])); // prettyPrint(data[property]));
     }
   }
 }
@@ -92,11 +92,11 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
       const g1 = IModelJson.Reader.parse(imData);
       if (!g1 || !g.isAlmostEqual(g1)) {
         ck.announceError("IModelJson round trip error", g, prettyPrint(imData), prettyPrint(g1));
-        console.log ("*********** round trip data *********");
+        console.log("*********** round trip data *********");
         console.log(prettyPrint(g));
         console.log(prettyPrint(imData));
         console.log(prettyPrint(g1));
-        console.log ("=====================================");
+        console.log("=====================================");
 
         const imData1 = IModelJson.Writer.toIModelJson(g);
         const g2 = IModelJson.Reader.parse(imData1);

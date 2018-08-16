@@ -7,6 +7,13 @@ import { Vector3d, Point3d } from "../PointVector";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { YawPitchRollAngles } from "../geometry-core";
 import { RotMatrix } from "../geometry-core";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { GeometryQuery, CoordinateXYZ } from "../curve/CurvePrimitive";
+import { LineString3d } from "../curve/LineString3d";
+import { Arc3d } from "../curve/Arc3d";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { AngleSweep } from "../Geometry";
+import { Loop, Path } from "../curve/CurveChain";
 
 /* tslint:disable:no-console */
 
@@ -21,7 +28,7 @@ function emit(...data: any[]) {
     } else {
       const imjs = geometry.IModelJson.Writer.toIModelJson(d);
       if (imjs !== undefined) {
-        stringData.push(imjs);
+        stringData.push(JSON.stringify(imjs));
       } else if (d.toJSON) {
         stringData.push(d.toJSON());
       } else {
@@ -30,6 +37,11 @@ function emit(...data: any[]) {
     }
   }
   console.log(stringData);
+}
+// emit a single geometry fragment in bare json form ...
+function emitIModelJson(s0: string, g: GeometryQuery, s1: string) {
+  const imjs = geometry.IModelJson.Writer.toIModelJson(g);
+  console.log(s0 + JSON.stringify(imjs) + s1);
 }
 // Typical snippets for sandbox windows . . . . These assume that
 // the window alwyas has
@@ -169,4 +181,43 @@ describe("Snippets", () => {
     emit("   so the fractionOnParallelRay is undefined", fractionOnParallelRay);
   });
 
+  it.only("constructorsAndImodleJson", () => {
+    const pointA = Point3d.create(0, 0, 0);
+    const pointB = Point3d.create(4, 0, 0);
+    const vectorAB = pointA.vectorTo(pointB);
+    const pointC = Point3d.create(4, 4, 0);
+    const pointD = Point3d.create(0, 4, 0);
+    const vectorAD = pointA.vectorTo(pointD);
+    const s0 = "  ";
+    const s1 = ",";
+    const s2 = "]";
+
+    // A line segment on the x axis
+    emitIModelJson("[ ", LineSegment3d.create(pointA, pointB), s1);
+
+    // A linestring along the x axis, up and back above the origin
+    emitIModelJson(s0, LineString3d.create(pointA, pointB, pointC, pointD), s1);
+    // circular arc with 3-point construction
+    emitIModelJson(s0, Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!, s1);
+
+    emitIModelJson(s0, Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(-45, 90))!, s1);
+    // a non-circular arc -- larger vector90 . . .
+    emitIModelJson(s0, Arc3d.create(pointA, vectorAB, vectorAD.scale(3), AngleSweep.createStartEndDegrees(-45, 190))!, s1);
+
+    emitIModelJson(s0, BSplineCurve3d.create(
+      [pointA, pointB, pointC, pointD],
+      [0, 0, 0, 1, 1, 1], 4)!, s1);
+
+    const upperSemiCircle = Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(0, 180));
+    emitIModelJson(s0,
+      Path.create(
+        LineSegment3d.create(pointC, upperSemiCircle.fractionToPoint(0)),
+        upperSemiCircle, LineSegment3d.create(upperSemiCircle.fractionToPoint(1), pointA)),
+      s1);
+    const closureSegment = LineSegment3d.create(upperSemiCircle.fractionToPoint(1), upperSemiCircle.fractionToPoint(0));
+    const semiCircleRegion = Loop.create(upperSemiCircle, closureSegment);
+    emitIModelJson(s0, semiCircleRegion, s1);
+    // LAST item -- with closing paren
+    emitIModelJson(s0, CoordinateXYZ.create(pointA), s2);
+  });
 });
