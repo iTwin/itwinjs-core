@@ -30,7 +30,7 @@ export default class Snap extends React.Component<SnapProps> {
 
     return (
       <div
-        onClick={this.handleOnClick}
+        onClick={this._handleOnClick}
         className={dialogClassName}
         style={this.props.style}
       >
@@ -44,7 +44,7 @@ export default class Snap extends React.Component<SnapProps> {
     );
   }
 
-  private handleOnClick = () => {
+  private _handleOnClick = () => {
     this.props.onClick && this.props.onClick();
   }
 

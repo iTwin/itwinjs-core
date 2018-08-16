@@ -459,7 +459,7 @@ function startMeasurePoints(_event: any) {
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
 function startToggleCamera(_event: any) {
-  const togglingOff = theViewport!.isCameraOn();
+  const togglingOff = theViewport!.isCameraOn;
   showStatus("Camera", togglingOff ? "off" : "on");
   IModelApp.tools.run("View.ToggleCamera", theViewport!);
 }
