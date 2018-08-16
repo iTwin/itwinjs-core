@@ -700,12 +700,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * @param points array of points.  This may contain extra points not to be used in the polygon
    * @param numPointsToUse number of points to use.
    */
-  public addPolygon(points: Point3d[], numPointsToUse: number) {
+  public addPolygon(points: Point3d[], numPointsToUse?: number) {
     // don't use trailing points that match start point.
+    if (numPointsToUse === undefined)
+      numPointsToUse = points.length;
     while (numPointsToUse > 1 && points[numPointsToUse - 1].isAlmostEqual(points[0]))
       numPointsToUse--;
     let index = 0;
-    if (this._reversed) {
+    if (!this._reversed) {
       for (let i = 0; i < numPointsToUse; i++) {
         index = this.findOrAddPoint(points[i]);
         this._polyface.addPointIndex(index);

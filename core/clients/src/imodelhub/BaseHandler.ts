@@ -63,7 +63,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * Augments request options with defaults returned by the DefaultIModelHubRequestOptionsProvider.
    * Note that the options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
@@ -90,8 +90,8 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Gets the agenet used for imodelhub connection pooling.
-   * @returns The agenet used for imodelhub connection pooling.
+   * Gets the agent used for imodelhub connection pooling.
+   * @returns The agent used for imodelhub connection pooling.
    */
   public getAgent(): https.Agent {
     return this._agent;
@@ -109,7 +109,7 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Gets the (delegation) access token to acess the service
+   * Gets the (delegation) access token to access the service
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */

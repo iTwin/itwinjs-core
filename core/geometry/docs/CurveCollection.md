@@ -67,3 +67,8 @@ Processing all 5 subtypes of `CurveCollection` initally appears quite complex.  
 * A `ParityRegion` may only contain `Loop`s.
 * A `UnionRegion` may contain only `Loop`, `ParityRegion`, or further `UnionRegion`.
 * A `BagOfCurves` is the only one with free mixture of both `CurveCollection` and `CurvePrimitive`.
+
+# IModelJson Examples
+
+![>](./figs/CurveCollections/LoopWith4Primitives.png)
+

@@ -7,13 +7,13 @@ import { MobileRpcRequest } from "./MobileRpcRequest";
 import { RpcRequestFulfillment } from "../core/RpcProtocol";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-/** @hidden @internal */
+/** @hidden */
 declare var bentley: any;
 
-/** @hidden @internal */
+/** @hidden */
 export const CHANNEL = "@bentley/imodeljs-mobilegateway";
 
-/** @hidden @internal */
+/** @hidden */
 export const interop = (() => {
   let mobilegateway = null;
 

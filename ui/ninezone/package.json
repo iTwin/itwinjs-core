@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "0.115.0",
+  "version": "0.117.0",
   "description": "IModelJs Nine-zone React UI components",
   "license": "MIT",
   "scripts": {
@@ -9,7 +9,7 @@
     "clean": "rimraf lib out demo/lib package-deps.json",
     "copy:scss": "cpx src/**/*.scss lib",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ninezone/json/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2 && tslint --project ./tests/tsconfig.json 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
     "pack": "npm run build && node ../../scripts/pack.js",
     "start": "webpack-dev-server --config ./demo/webpack.dev.config.js",
@@ -27,17 +27,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "0.115.0"
+    "@bentley/ui-core": "0.117.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.115.0",
+    "@bentley/bentleyjs-tools": "0.117.0",
     "@bentley/bwc": "^6.0.1",
     "@bentley/icons-webfont": "^6.5.0",
-    "@bentley/ui-core": "0.115.0",
+    "@bentley/ui-core": "0.117.0",
     "@bentley/svg-icons": "^6.4.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import Group from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
-// import Title from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Title";
 import Panel from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Panel";
 import Column from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
 import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";

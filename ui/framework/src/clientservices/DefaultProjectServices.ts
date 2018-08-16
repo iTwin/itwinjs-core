@@ -33,12 +33,13 @@ export class DefaultProjectServices implements ProjectServices {
   }
 
   /** Get projects accessible to the user based on various scopes/criteria */
-  public async getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number): Promise<ProjectInfo[]> {
+  public async getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]> {
 
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work
       $top: top,
       $skip: skip,
+      $filter: filter,
     };
 
     let projectList: Project[];

@@ -88,14 +88,14 @@ export class RpcOperation {
   /** The policy for this operation. */
   public policy: RpcOperationPolicy;
 
-  /** @hidden @internal */
+  /** @hidden */
   public constructor(definition: RpcInterfaceDefinition, operation: string, policy: RpcOperationPolicy) {
     this.interfaceDefinition = definition;
     this.operationName = operation;
     this.policy = policy;
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public static computeOperationName(identifier: string): string {
     const c = identifier.indexOf(":");
     if (c === -1)

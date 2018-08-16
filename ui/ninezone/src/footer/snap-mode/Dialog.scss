@@ -1,33 +1,27 @@
 @import "@bentley/ui-core/lib/colors";
 @import "../_variables";
-
 .nz-footer-snapMode-dialog {
   $bg-color: rgb(63, 72, 80);
-
   min-width: 275px;
   transform: translateX(calc(-50% - #{$snap-mode-icon-size / 2 + $nz-footer-indicator-horizontal-padding}));
   color: $bg-color;
-
-  > .nz-content {
+  >.nz-content {
     background-color: currentColor;
     border-width: 0;
     border-radius: 3px;
-
-    > .nz-title {
+    >.nz-title {
       line-height: 40px;
       font-size: 18px;
       text-align: center;
       color: $text-light;
     }
-
-    > .nz-snaps {
+    >.nz-snaps {
       display: grid;
       grid-gap: 15px;
-      padding: 15px;
+      padding: 0 0 15px 5px;
     }
   }
-
-  &.nz-direction-top > .nz-content > .nz-triangle {
+  &.nz-direction-top>.nz-content>.nz-triangle {
     border-color: $bg-color transparent transparent transparent;
   }
 }
