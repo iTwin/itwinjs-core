@@ -38,13 +38,13 @@ The stroking equation that maps  an angle to a coordinates to points around a (f
     C = center point
     U = vector from center point to 0-degere point
     V = vector from center point to 90-degree point.
-    theta = angle 
+    theta = angle
     X(theta) = C + cos (theta * U + sin(theta) * V
 ```
 
 ### True Circles
 * If the `U` and `V` vectors are (both) _perpendicular_ and _the same length_, this is a true circle.
-* In the both circles below, the `U` and `V`  are identical length and perpendicular to each other.  
+* In the both circles below, the `U` and `V`  are identical length and perpendicular to each other.
 * For the left circle, `U` and `V` happen to be in the global x and y directions.
 * For the right circle, `U` and `V` are still identical length and perpendicular, but are both rotated away from global x and y.  This still traces a circle, but the "0 degree" point is moved around the circle.
 * When the circular arc conditions are true, the angle used _in the equations_ is an the actual physical angle between the `U` vector and the vector from the center to `X(theta)`.
@@ -58,7 +58,7 @@ If the `U` and `V` vectors either (a) have different lengths or (b) are not perp
 If `U` and `V` are perpendicular, their lengths correspond to the common usage of "major" and "minor" axis lengths.   But the perpendicular condition is not required -- non-perpendicular vectors occur due to transformation and construction history.
 
 ### Angular limits
-To draw an arc that is not the complete circle or ellipse, simply limit the theta range to something other than 0 to 360 degrees. 
+To draw an arc that is not the complete circle or ellipse, simply limit the theta range to something other than 0 to 360 degrees.
 
 ```
     theta0 = angular start point
@@ -81,8 +81,11 @@ Examples of arc sweep
 | (0 to 135) | 135 | ![>](./figs/CurvePrimitives/E0to135.png) |
 | (270 to 495) | 225 | ![>](./figs/CurvePrimitives/E270to495.png) |
 | (90 to 270) | 180 | ![>](./figs/CurvePrimitives/E90to270.png) |
-| (90 to 405) | 315 | ![>](./figs/CurvePrimitives/E90to405.png) |
+| (90 to 405) | 315 | ![>](./figs/CurvePrimitives/E90to405.png) |Ex
 
-### bcurve
+Examples with json fragments
+![>](./figs/CurvePrimitives/ArcJsonFragments.png)
 
-### transitionSpiral
+![>](./figs/CurvePrimitives/EllipticAxisVariants.png)
+
+

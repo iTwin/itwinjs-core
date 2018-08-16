@@ -4,7 +4,7 @@
 
 /** @module CartesianGeometry */
 
-import { Geometry, Angle, AxisOrder, BeJSONFunctions } from "./Geometry";
+import { Geometry, Angle, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "./Geometry";
 import { Point4d } from "./numerics/Geometry4d";
 import { Range3d } from "./Range";
 import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
@@ -365,7 +365,7 @@ export class RotMatrix implements BeJSONFunctions {
     if (Math.abs(vector.x) < b && Math.abs(vector.y) < b) {
       return Vector3d.createCrossProduct(vector.x, vector.y, vector.z, 0, -1, 0, result);
     }
-    return Vector3d.createCrossProduct(vector.x, vector.y, vector.z, 0, 0, 1, result);
+    return Vector3d.createCrossProduct(0, 0, 1, vector.x, vector.y, vector.z, result);
   }
 
   /**
@@ -424,6 +424,142 @@ export class RotMatrix implements BeJSONFunctions {
     return undefined;
   }
 
+  /** @returns return a rotation of specified angle around an axis
+   * @param axisIndex index of axis (AxisIndex.X, AxisIndex.Y, AxisIndex.Z) kept fixed by the rotation.
+   * @param angle angle of rotation
+   * @param result optional result matrix.
+  */
+  public static createRotationAroundAxisIndex(axisIndex: AxisIndex, angle: Angle, result?: RotMatrix): RotMatrix {
+    const c = angle.cos();
+    const s = angle.sin();
+    let myResult;
+    if (axisIndex === AxisIndex.X) {
+      myResult = RotMatrix.createRowValues(
+        1, 0, 0,
+        0, c, -s,
+        0, s, c,
+        result);
+    } else if (axisIndex === AxisIndex.Y) {
+      myResult = RotMatrix.createRowValues(
+        c, 0, s,
+        0, 1, 0,
+        -s, 0, c,
+        result);
+    } else {
+      myResult = RotMatrix.createRowValues(
+        c, -s, 0,
+        s, c, 0,
+        0, 0, 1,
+        result);
+    }
+    myResult.setupInverseTranspose();
+    return myResult;
+  }
+
+  /** Create a matrix with
+   * * ColumnX points in the rightVector direction
+   * * ColumnY points in in the upVectorDirection
+   * * ColumnZ is a unit cross product.
+   * Optinoally rotate the standard cube by 45 to bring its left or right vertical edge to center
+   * * leftNoneRight = [-1,0,1] respectively for left edge, no rotation, or right edge
+   * * bottomNoneTop = [-1,0,1] respectively for isometric rotation to view the bottom, no isometric rotation, and isometric rotation to view the top
+   * This is expected to be used with various principal unit vectors that are perpendicular to each other.
+   *  * STANDARD TOP VIEW: (Vector3d.UnitX (), Vector3d.UnitY (), 0, 0)
+   *  * STANDARD FRONT VIEW: (Vector3d.UnitX (), Vector3d.UnitZ (), 0, 0)
+   *  * STANDARD BACK VIEW: (Vector3d.UnitX (-1), Vector3d.UnitZ (), 0, 0)
+   *  * STANDARD RIGHT VIEW: (Vector3d.UnitY (1), Vector3d.UnitZ (), 0, 0)
+   *  * STANDARD LEFT VIEW: (Vector3d.UnitY (-1), Vector3d.UnitZ (), 0, 0)
+   *  * STANDARD BOTTOM VIEW: (Vector3d.UnitX (1), Vector3d.UnitY (-1), 0, 0)
+   * @param leftNoneRight Normally one of {-1,0,1}, where (-1) indicates the left vertical is rotated to center and (1) for right.  Other numbers are used as multiplier for this 45 degree rotation
+   * @returns undefined if columNX, columnY are coplanar.
+  */
+  public static createViewedAxes(rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number = 0, topNoneBottom: number = 0): RotMatrix | undefined {
+    const columnZ = rightVector.crossProduct(upVector);
+    if (columnZ.normalizeInPlace()) {
+      const geometry = RotMatrix.createColumns(rightVector, upVector, columnZ);
+      if (leftNoneRight !== 0.0) {
+        let c = Math.sqrt(0.5);
+        let s = leftNoneRight < 0.0 ? -c : c;
+        if (Math.abs(leftNoneRight) !== 1.0) {
+          const radians = Angle.degreesToRadians(45.0 * leftNoneRight);
+          c = Math.cos(radians);
+          s = Math.sin(radians);
+        }
+        geometry.applyGivensColumnOp(2, 0, c, s);   // rotate around Y
+      }
+      if (topNoneBottom !== 0.0) {
+        const theta = topNoneBottom * Math.atan(Math.sqrt(0.5));
+        const c = Math.cos(theta);
+        const s = Math.sin(theta);
+        geometry.applyGivensColumnOp(1, 2, c, -s); // rotate around X
+      }
+      return geometry;
+    }
+    return undefined;
+  }
+  /**
+   * Create a rotation matrix for one of the 8 standard views.
+   * * With `invert === false` the return is such that `matrix.multiply(worldVector)` returns the vector as seen in the xy (projected) coordinates of the view.
+   * * With invert === true the matrix is transposed so that `matrix.mutiply(viewVector` maps the "in view" vector to a world vector.
+   *
+   * @param index standard veiw index `StandardViewIndex.Top, Bottom, LEft, Right, Front, Back, Iso, LeftIso`
+   * @param invert if false (default), the returned RotMatrix "projects" world vectors into XY view vectors.  If true, it is inverted to map view vectors to world.
+   * @param result optional result.
+   */
+  public static createStandardWorldToView(index: StandardViewIndex, invert: boolean = false, result?: RotMatrix): RotMatrix {
+    switch (index) {
+      case StandardViewIndex.Top:
+        result = RotMatrix.createIdentity(result);
+        break;
+      case StandardViewIndex.Bottom:
+        result = RotMatrix.createRowValues(
+          1, 0, 0,
+          0, -1, 0,
+          0, 0, -1);
+        break;
+      case StandardViewIndex.Left:
+        result = RotMatrix.createRowValues(
+          0, -1, 0,
+          0, 0, 1,
+          -1, 0, 0);
+        break;
+      case StandardViewIndex.Right:
+        result = RotMatrix.createRowValues(
+          0, 1, 0,
+          0, 0, 1,
+          1, 0, 0);
+        break;
+      case StandardViewIndex.Front: // 0-based 4
+        result = RotMatrix.createRowValues(
+          1, 0, 0,
+          0, 0, 1,
+          0, -1, 0);
+        break;
+      case StandardViewIndex.Back: // 0-based 5
+        result = RotMatrix.createRowValues(
+          -1, 0, 0,
+          0, 0, 1,
+          0, 1, 0);
+        break;
+      case StandardViewIndex.Iso:
+        result = RotMatrix.createRowValues(
+          0.707106781186548, -0.70710678118654757, 0.00000000000000000,
+          0.408248290463863, 0.40824829046386302, 0.81649658092772603,
+          -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+        break;
+      case StandardViewIndex.RightIso:
+        result = RotMatrix.createRowValues(
+          0.707106781186548, 0.70710678118654757, 0.00000000000000000,
+          -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
+          0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+        break;
+      default:
+        result = RotMatrix.createIdentity(result);
+    }
+    if (invert)
+      result.transposeInPlace();
+    return result;
+  }
   /*
   // this implementation has problems distinguishing failure (normalize) from small angle.
   public getAxisAndAngleOfRotation(): { axis: Vector3d, angle: Angle, error: boolean } {
@@ -668,6 +804,43 @@ export class RotMatrix implements BeJSONFunctions {
       this.coffs[i] = a * c + b * s;
       this.coffs[j] = -a * s + b * c;
     }
+  }
+
+  /**
+   * create a rigid coordinate frame with:
+   * * column z points from origin to x,y,z
+   * * column x is perpendicular and in the xy plane
+   * * column y is perpendicular to both.  It is the "up" vector on the view plane.
+   * * Multiplying a world vector times the transpose of this matrix transforms into the view xy
+   * * Multiplying the matrix times the an in-view vector transforms the vector to world.
+   * @param x eye x coordinate
+   * @param y eye y coordinate
+   * @param z eye z coordinate
+   * @param result
+   */
+  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: RotMatrix): RotMatrix {
+    result = RotMatrix.createIdentity(result);
+    const rxy = Geometry.hypotenuseXY(x, y);
+    if (Geometry.isSmallMetricDistance(rxy)) {
+      // special case for top or bottom view.
+      if (z < 0.0)
+        result.scaleColumnsInPlace(1.0, -1, -1.0);
+    } else {
+      //      const d = Geometry.hypotenuseSquaredXYZ(x, y, z);
+      const c = x / rxy;
+      const s = y / rxy;
+      result.setRowValues(
+        -s, 0, c,
+        c, 0, s,
+        0, 1, 0);
+      if (z !== 0.0) {
+        const r = Geometry.hypotenuseXYZ(x, y, z);
+        const s1 = z / r;
+        const c1 = rxy / r;
+        result.applyGivensColumnOp(1, 2, c1, -s1);
+      }
+    }
+    return result;
   }
   /** Rotate so columns i and j become perpendicular */
   private applyJacobiColumnRotation(i: number, j: number, matrixU: RotMatrix): number {

@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Documentation",
+      "comment": "TSLint New Rule Enforcements",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

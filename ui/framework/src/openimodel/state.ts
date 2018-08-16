@@ -25,6 +25,7 @@ export enum OpenIModelPage {
 /** An object with a function that creates each OpenIModelAction that can be handled by our reducer. */  // tslint:disable-next-line:variable-name
 export const OpenIModelActions = {
   setIModelPage: (newPage: OpenIModelPage) => createAction("OpenIModel:SETPAGE", newPage),
+  setAccessToken: (loggedIn: boolean, accessToken: AccessToken) => createAction("OpenIModel:SETACCESSTOKEN", { loggedIn, accessToken }),
   setLoggedIn: (loggedIn: boolean, accessToken: AccessToken) => createAction("OpenIModel:SETLOGGEDIN", { loggedIn, accessToken }),
   setProjects: (projects: ProjectInfo[]) => createAction("OpenIModel:SETPROJECTS", projects),
   setRecentProjects: (projects: ProjectInfo[]) => createAction("OpenIModel:SETRECENTPROJECTS", projects),
@@ -74,6 +75,14 @@ export function OpenIModelReducer(state: OpenIModelState = initialState, action:
   switch (action.type) {
     case "OpenIModel:SETPAGE": {
       return { ...state, currentPage: action.payload };
+    }
+    case "OpenIModel:SETACCESSTOKEN": {
+      const newState: OpenIModelState = {
+        ...state,
+        loggedIn: action.payload.loggedIn,
+        accessToken: action.payload.accessToken as AccessToken,
+      };
+      return newState;
     }
     case "OpenIModel:SETLOGGEDIN": {
       const newState: OpenIModelState = {

@@ -23,7 +23,7 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UltimateId")
   public ultimateId?: string;
 
-  /** This is typically the imodelid */
+  /** This is typically the iModelId */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContainerName")
   public containerName?: string;
 

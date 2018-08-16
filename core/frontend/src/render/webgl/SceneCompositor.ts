@@ -28,7 +28,6 @@ class Textures implements IDisposable {
   public idHigh?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public hilite?: TextureHandle;
-  public stencilResult?: TextureHandle;
 
   public dispose() {
     this.accumulation = dispose(this.accumulation);
@@ -38,7 +37,6 @@ class Textures implements IDisposable {
     this.idHigh = dispose(this.idHigh);
     this.depthAndOrder = dispose(this.depthAndOrder);
     this.hilite = dispose(this.hilite);
-    this.stencilResult = dispose(this.stencilResult);
   }
 
   public init(width: number, height: number): boolean {
@@ -74,7 +72,6 @@ class Textures implements IDisposable {
     this.idLow = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.idHigh = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.stencilResult = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     return undefined !== this.accumulation
       && undefined !== this.revealage
@@ -82,8 +79,7 @@ class Textures implements IDisposable {
       && undefined !== this.idLow
       && undefined !== this.idHigh
       && undefined !== this.depthAndOrder
-      && undefined !== this.hilite
-      && undefined !== this.stencilResult;
+      && undefined !== this.hilite;
   }
 }
 
@@ -94,7 +90,6 @@ class FrameBuffers implements IDisposable {
   public depthAndOrder?: FrameBuffer;
   public hilite?: FrameBuffer;
   public stencilSet?: FrameBuffer;
-  public stencilCopy?: FrameBuffer;
 
   public init(textures: Textures, depth: DepthBuffer): boolean {
     const boundColor = System.instance.frameBufferStack.currentColorBuffer;
@@ -107,7 +102,6 @@ class FrameBuffers implements IDisposable {
     this.hilite = FrameBuffer.create([textures.hilite!]);
     if (DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
       this.stencilSet = FrameBuffer.create([], depth);
-      this.stencilCopy = FrameBuffer.create([textures.stencilResult!], depth);
     }
 
     return undefined !== this.opaqueColor
@@ -122,7 +116,6 @@ class FrameBuffers implements IDisposable {
     this.depthAndOrder = dispose(this.depthAndOrder);
     this.hilite = dispose(this.hilite);
     this.stencilSet = dispose(this.stencilSet);
-    this.stencilCopy = dispose(this.stencilCopy);
   }
 }
 
@@ -134,6 +127,7 @@ class Geometry implements IDisposable {
   public init(textures: Textures): boolean {
     assert(undefined === this.composite);
     this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!);
+    this.stencilCopy = ViewportQuadGeometry.create(TechniqueId.CopyStencil);
     return undefined !== this.composite;
   }
 
@@ -334,6 +328,8 @@ abstract class Compositor extends SceneCompositor {
   protected _noDepthMaskRenderState = new RenderState();
   protected _stencilSetRenderState = new RenderState();
   protected _stencilCopyRenderState = new RenderState();
+  protected _debugStencilRenderState = new RenderState();
+  protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
 
   public abstract get currentRenderTargetIndex(): number;
 
@@ -377,8 +373,21 @@ abstract class Compositor extends SceneCompositor {
     this._stencilCopyRenderState.flags.depthMask = false;
     this._stencilCopyRenderState.flags.colorWrite = true;
     this._stencilCopyRenderState.flags.stencilTest = true;
-    this._stencilCopyRenderState.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
-    this._stencilCopyRenderState.stencil.backFunction.function = GL.StencilFunction.NotEqual;
+    this._stencilCopyRenderState.stencil.frontFunction.function = GL.StencilFunction.Equal;
+    this._stencilCopyRenderState.stencil.frontOperation.zFail = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.stencil.frontOperation.zPass = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.stencil.backFunction.function = GL.StencilFunction.Equal;
+    this._stencilCopyRenderState.stencil.backOperation.zFail = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.stencil.backOperation.zPass = GL.StencilOperation.Zero;
+    this._stencilCopyRenderState.flags.blend = true;
+    this._stencilCopyRenderState.blend.setBlendFunc(GL.BlendFactor.Zero, GL.BlendFactor.ConstColor);
+    this._stencilCopyRenderState.blend.color = [0.5, 0.5, 0.5, 1.0];
+    if (this._debugStencil > 0) {
+      this._debugStencilRenderState.flags.depthTest = true;
+      this._debugStencilRenderState.flags.blend = true;
+      this._debugStencilRenderState.blend.setBlendFunc(GL.BlendFactor.OneMinusConstColor, GL.BlendFactor.ConstColor);
+      this._debugStencilRenderState.blend.color = [0.67, 0.67, 0.67, 1.0];
+    }
   }
 
   public update(): boolean {
@@ -430,11 +439,11 @@ abstract class Compositor extends SceneCompositor {
 
     // Render opaque geometry
     this.renderOpaque(commands, needComposite, false);
+    this.renderStencilVolumes(commands, needComposite);
     this._target.setFrameTime();
 
     if (needComposite) {
       this._geom.composite!.update(flags);
-      this.renderStencilVolumes(commands);
       this.clearTranslucent();
       this.renderTranslucent(commands);
       this._target.setFrameTime();
@@ -596,23 +605,37 @@ abstract class Compositor extends SceneCompositor {
     });
   }
 
-  private renderStencilVolumes(commands: RenderCommands) {
+  private renderStencilVolumes(commands: RenderCommands, needComposite: boolean) {
     const cmds = commands.getCommands(RenderPass.StencilVolume);
     if (0 === cmds.length) {
       return;
     }
 
+    if (this._debugStencil > 0) {
+      System.instance.frameBufferStack.execute(this.getBackgroundFbo(needComposite), true, () => {
+        if (1 === this._debugStencil) {
+          System.instance.applyRenderState(this.getRenderState(RenderPass.OpaqueGeneral));
+          this._target.techniques.execute(this._target, cmds, RenderPass.OpaqueGeneral);
+        } else {
+          this._target.pushState(this._target.decorationState);
+          System.instance.applyRenderState(this._debugStencilRenderState);
+          this._target.techniques.execute(this._target, cmds, RenderPass.StencilVolume);
+          this._target.popBranch();
+        }
+      });
+      return;
+    }
+
     const fbStack = System.instance.frameBufferStack;
     const fboSet = this._frameBuffers.stencilSet;
-    const fboCopy = this._frameBuffers.stencilCopy;
+    const fboCopy = this.getBackgroundFbo(needComposite);
     if (undefined === fboSet || undefined === fboCopy)
       return;
 
-    // Clear the stencil and the stencil copy texture.
-    fbStack.execute(fboCopy!, true, () => {
+    // Clear the stencil.
+    fbStack.execute(fboSet!, true, () => {
       System.instance.context.clearStencil(0);
-      System.instance.context.clearColor(0, 0, 0, 0);
-      System.instance.context.clear(GL.BufferBit.Color | GL.BufferBit.Stencil);
+      System.instance.context.clear(GL.BufferBit.Stencil);
     });
 
     // Set the stencil using the stencil command list.
@@ -623,7 +646,7 @@ abstract class Compositor extends SceneCompositor {
       this._target.popBranch();
     });
 
-    // Copy the stencil to the texture for later use in the compositor.
+    // Process the stencil volumes, blending into the current color buffer.
     fbStack.execute(fboCopy!, true, () => {
       this._target.pushState(this._target.decorationState);
       System.instance.applyRenderState(this._stencilCopyRenderState);

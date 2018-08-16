@@ -10,7 +10,7 @@ import {
   ColorDefProps,
   ColorDef,
   ColorByName,
-  ElementProps,
+  DisplayStyleProps,
   RenderTexture,
   RenderMaterial,
   Gradient,
@@ -25,25 +25,25 @@ import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
-export abstract class DisplayStyleState extends ElementState {
-  private _viewFlags: ViewFlags;
-  private _background: ColorDef;
-  private _monochrome: ColorDef;
-  private _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
-  private _backgroundMap: BackgroundMapState;
+export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
+  private readonly _viewFlags: ViewFlags;
+  private readonly _background: ColorDef;
+  private readonly _monochrome: ColorDef;
+  private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  public readonly backgroundMap: BackgroundMapState;
 
-  constructor(props: ElementProps, iModel: IModelConnection) {
+  constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
     const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
-    const monoJson = this.getStyles()[monoName];
+    const monoJson = this.styles[monoName];
     this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
-    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
+    this.backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
   }
 
   public equalState(other: DisplayStyleState): boolean {
-    return JSON.stringify(this.getStyles()) === JSON.stringify(other.getStyles());
+    return JSON.stringify(this.styles) === JSON.stringify(other.styles);
   }
 
   /** Get the name of this DisplayStyle */
@@ -55,26 +55,31 @@ export abstract class DisplayStyleState extends ElementState {
     this.setStyle("viewflags", flags);
   }
 
-  public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
+  public get styles(): any {
+    const p = this.jsonProperties as any;
+    if (undefined === p.styles)
+      p.styles = new Object();
+
+    return p.styles;
+  }
   public getStyle(name: string): any {
-    const style: object = this.getStyles()[name];
+    const style: object = this.styles[name];
     return style ? style : {};
   }
   /** change the value of a style on this DisplayStyle */
-  public setStyle(name: string, value: any): void { this.getStyles()[name] = value; }
+  public setStyle(name: string, value: any): void { this.styles[name] = value; }
 
   /** Remove a Style from this DisplayStyle. */
-  public removeStyle(name: string) { delete this.getStyles()[name]; }
+  public removeStyle(name: string) { delete this.styles[name]; }
 
   /** Get the background color for this DisplayStyle */
   public get backgroundColor(): ColorDef { return this._background; }
-  public set backgroundColor(val: ColorDef) { this._background = val; this.setStyle("backgroundColor", val); }
+  public set backgroundColor(val: ColorDef) { this._background.setFrom(val); this.setStyle("backgroundColor", val); }
 
-  public getMonochromeColor(): ColorDef { return this._monochrome; }
-  public setMonochromeColor(val: ColorDef): void { this._monochrome = val; this.setStyle("monochromeColor", val); }
+  public get monochromeColor(): ColorDef { return this._monochrome; }
+  public set monochromeColor(val: ColorDef) { this._monochrome.setFrom(val); this.setStyle("monochromeColor", val); }
 
-  public getBackgroundMap(): BackgroundMapState { return this._backgroundMap; }
-  public getBackgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.getBackgroundMap().getPlane() : undefined; }
+  public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.backgroundMap.getPlane() : undefined; }
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 
   public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
@@ -95,7 +100,7 @@ export abstract class DisplayStyleState extends ElementState {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2dState extends DisplayStyleState {
-  constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
+  constructor(props: DisplayStyleProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
 export interface GroundPlaneProps {
@@ -436,7 +441,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _skyBoxParamsLoaded?: boolean;
   private _environment?: Environment;
 
-  public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
+  public constructor(props: DisplayStyleProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 

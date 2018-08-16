@@ -117,6 +117,7 @@ export class FrameBuilder {
         this._vector2 = vector;
         return 3;
       }
+      return 2;
     }
     // fall through if prior vectors are all there -- no need for the new one.
     return 3;

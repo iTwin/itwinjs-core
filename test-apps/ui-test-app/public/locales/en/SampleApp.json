@@ -66,13 +66,6 @@
   "toolAssist": {
     "startPoint": "Start Point"
   },
-  "snapMode": {
-    "snapMode": "Snap Mode",
-    "keypoint": "Keypoint",
-    "intersection": "Intersection",
-    "center": "Center",
-    "nearest": "Nearest"
-  },
   "buttons": {
     "toolGroup": "Tool Group",
     "anotherGroup": "Another Group",

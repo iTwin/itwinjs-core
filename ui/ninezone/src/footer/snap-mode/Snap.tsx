@@ -16,6 +16,8 @@ export interface SnapProps extends CommonProps, NoChildrenProps {
   isActive?: boolean;
   /** Label of snap row. */
   label?: string;
+  /** Function called when the Snap component is clicked. */
+  onClick?: () => void;
 }
 
 /** Snap row used in [[SnapModeDialog]] component. */
@@ -28,16 +30,22 @@ export default class Snap extends React.Component<SnapProps> {
 
     return (
       <div
+        onClick={this.handleOnClick}
         className={dialogClassName}
         style={this.props.style}
       >
-        <div className="nz-icon">
+        <div>
           {this.props.icon}
         </div>
-        <div className="nz-label">
+        <div>
           {this.props.label}
         </div>
       </div>
     );
   }
+
+  private handleOnClick = () => {
+    this.props.onClick && this.props.onClick();
+  }
+
 }

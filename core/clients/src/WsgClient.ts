@@ -214,7 +214,7 @@ export abstract class WsgClient extends Client {
   /**
    * Augments request options with defaults returned by the DefaultWsgRequestOptionsProvider.
    * @note that the options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
@@ -247,7 +247,7 @@ export abstract class WsgClient extends Client {
   }
 
   /**
-   * Gets the (delegation) access token to acess the service
+   * Gets the (delegation) access token to access the service
    * @param authTokenInfo Access token.
    * @returns Resolves to the (delegation) access token.
    */
@@ -363,7 +363,7 @@ export abstract class WsgClient extends Client {
   }
 
   // @todo Use lower level utilities instead of the node based Request API.
-  // @todo Deseriaize stream directly to the type, instead of creating an intermediate JSON object.
+  // @todo Deserialize stream directly to the type, instead of creating an intermediate JSON object.
   /**
    * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
    * @param typedConstructor Constructor function for the type

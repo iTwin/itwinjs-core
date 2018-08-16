@@ -18,7 +18,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 // tslint:disable:space-before-function-paren
 let obtainLock = 0;
 
-/** @hidden @internal */
+/** @hidden */
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** An RPC operation control response. */
@@ -43,13 +43,13 @@ export class RpcNotFoundResponse extends RpcControlResponse {
 
 /** Manages requests and responses for an RPC configuration. */
 export class RpcControlChannel {
-  /** @hidden @internal */
+  /** @hidden */
   public static channels: RpcControlChannel[] = [];
   private _configuration: RpcConfiguration;
   private _pendingInterval: any = undefined;
   private _disposeInterval: any = undefined;
   private _pending: RpcRequest[] = [];
-  /** @hidden @internal */
+  /** @hidden */
   public requests: Map<string, RpcRequest> = new Map();
   private _pendingLock: number = 0;
   private _initialized = false;
@@ -63,13 +63,13 @@ export class RpcControlChannel {
     RpcControlChannel.channels.push(this);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public describeEndpoints() {
     this.activateClient();
     return this._describeEndpoints();
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public static obtain(configuration: RpcConfiguration): RpcControlChannel {
     if (obtainLock)
       return undefined as any;
@@ -295,7 +295,7 @@ export class RpcControlChannel {
     this._describeEndpoints = () => client.describeEndpoints();
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public initialize() {
     if (this._initialized)
       throw new IModelError(BentleyStatus.ERROR, `Already initialized.`);
@@ -311,7 +311,7 @@ export class RpcControlChannel {
     RpcManager.initializeInterface(this._channelInterface);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean {
     const op = invocation.request.operation;
     if (op.interfaceVersion === "CONTROL" && op.operationName === "describeEndpoints") {

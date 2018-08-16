@@ -22,11 +22,6 @@ import { GeometryCoreTestIO } from "./IModelJson.test";
 import { StrokeOptions } from "../geometry-core";
 import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
-let outputFolderPath = "./src/test/output";
-// Output folder typically not tracked by git... make directory if not there
-if (!fs.existsSync(outputFolderPath))
-  fs.mkdirSync(outputFolderPath);
-outputFolderPath = outputFolderPath + "/";
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimiter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
