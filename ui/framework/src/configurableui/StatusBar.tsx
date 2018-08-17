@@ -96,14 +96,14 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   }
 
   public componentDidMount() {
-    MessageManager.MessageAddedEvent.addListener(this.handleMessageAddedEvent);
+    MessageManager.MessageAddedEvent.addListener(this._handleMessageAddedEvent);
   }
 
   public componentWillUnmount() {
-    MessageManager.MessageAddedEvent.removeListener(this.handleMessageAddedEvent);
+    MessageManager.MessageAddedEvent.removeListener(this._handleMessageAddedEvent);
   }
 
-  private handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
+  private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
     let statusbarMessageType: StatusBarMessageType = StatusBarMessageType.None;
 
     switch (args.message.msgType) {
@@ -137,7 +137,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
           <ActivityMessage>
             <i className="icon icon-activity" />
             TODO - Activity Message
-            <Button onClick={this.hideMessages}>
+            <Button onClick={this._hideMessages}>
               Cancel
             </Button>
           </ActivityMessage>
@@ -151,7 +151,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                 content={
                   <DialogButtonsContent
                     buttons={
-                      <Button onClick={this.hideMessages}>
+                      <Button onClick={this._hideMessages}>
                         {UiFramework.i18n.translate("UiCore:dialog.close")}
                       </Button>
                     }
@@ -183,7 +183,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
           <ToastMessage
             stage={this.state.toastMessageStage}
             animateOutTo={this._footerMessages}
-            onAnimatedOut={() => this.hideMessages()}
+            onAnimatedOut={() => this._hideMessages()}
             timeout={2500}
             onStageChange={(stage: ToastMessageStage) => {
               this.setState((_prevState) => ({ toastMessageStage: stage }));
@@ -235,7 +235,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                   </>
                 }
                 buttons={
-                  <MessageButton onClick={this.hideMessages}>
+                  <MessageButton onClick={this._hideMessages}>
                     <i className="icon icon-close" />
                   </MessageButton>
                 }
@@ -257,7 +257,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     });
   }
 
-  private hideMessages = () => {
+  private _hideMessages = () => {
     this.setVisibleMessage(StatusBarMessageType.None);
   }
 

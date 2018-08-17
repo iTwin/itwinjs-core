@@ -20,9 +20,9 @@ import { CustomRequestOptions } from "./CustomRequestOptions";
 class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this.defaultOptions.errorCallback = IModelHubError.parse;
-    this.defaultOptions.retryCallback = IModelHubError.shouldRetry;
-    this.defaultOptions.agent = agent;
+    this._defaultOptions.errorCallback = IModelHubError.parse;
+    this._defaultOptions.retryCallback = IModelHubError.shouldRetry;
+    this._defaultOptions.agent = agent;
   }
 }
 
@@ -30,14 +30,14 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
  * This class acts as the WsgClient for other iModel Hub Handlers.
  */
 export class IModelBaseHandler extends WsgClient {
-  protected url?: string;
+  protected _url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
   protected _agent: https.Agent;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
     QA: "https://qa-imodelhubapi.bentley.com",
     PROD: "https://imodelhubapi.bentley.com",
@@ -52,7 +52,7 @@ export class IModelBaseHandler extends WsgClient {
   public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
     this._fileHandler = fileHandler;
-    if (!Config.isBrowser())
+    if (!Config.isBrowser)
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
 
@@ -86,7 +86,7 @@ export class IModelBaseHandler extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
+    return IModelBaseHandler._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -137,7 +137,7 @@ export class IModelBaseHandler extends WsgClient {
    * @returns Promise resolves after successfully deleting instance.
    */
   public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
-    if (this._customRequestOptions.isSet()) {
+    if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
@@ -156,7 +156,7 @@ export class IModelBaseHandler extends WsgClient {
    * @returns The posted instance that's returned back from the server.
    */
   public postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
-    if (this._customRequestOptions.isSet()) {
+    if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }

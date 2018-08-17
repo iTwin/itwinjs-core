@@ -30,7 +30,7 @@ export class NativePlatformRegistry {
   }
 
   /** @hidden */
-  public static isNativePlatformLoaded(): boolean { return NativePlatformRegistry._platform !== undefined; }
+  public static get isNativePlatformLoaded(): boolean { return NativePlatformRegistry._platform !== undefined; }
 
   /** @hidden */
   public static register(platform: any): void {

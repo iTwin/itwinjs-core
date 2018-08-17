@@ -10,23 +10,23 @@ import { ProjectApi } from "./ProjectApi";
 import { IModelVersion } from "@bentley/imodeljs-common";
 
 export class IModelApi {
-  private static hubClient: IModelHubClient;
+  private static _hubClient: IModelHubClient;
 
   /** Initialize the iModelHub Api */
   public static async init(): Promise<void> {
-    IModelApi.hubClient = new IModelHubClient(ProjectApi.hubDeploymentEnv);
+    IModelApi._hubClient = new IModelHubClient(ProjectApi.hubDeploymentEnv);
   }
 
   /** Get all iModels in a project */
   public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
-    const iModels: IModelRepository[] = await IModelApi.hubClient.IModels().get(accessToken, projectId, queryOptions);
+    const iModels: IModelRepository[] = await IModelApi._hubClient.IModels().get(accessToken, projectId, queryOptions);
     if (iModels.length < 1)
       return undefined;
     for (const thisIModel of iModels) {
       if (thisIModel.name === iModelName) {
-        const versions: Version[] = await IModelApi.hubClient.Versions().get(accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await IModelApi._hubClient.Versions().get(accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           thisIModel.latestVersionName = versions[0].name;
           thisIModel.latestVersionChangeSetId = versions[0].changeSetId;

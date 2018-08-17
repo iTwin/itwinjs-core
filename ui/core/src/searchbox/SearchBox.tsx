@@ -68,21 +68,21 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         <input
           className={"searchbox-input"}
           ref={(el) => { this._inputElement = el; }}
-          onChange={this.trackChange}
-          onKeyUp={this.trackChange}
-          onPaste={this.trackChange}
-          onCut={this.trackChange}
+          onChange={this._trackChange}
+          onKeyUp={this._trackChange}
+          onPaste={this._trackChange}
+          onCut={this._trackChange}
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
           style={sizeStyle}
         ></input>
         <div
           className={iconClassName}
-          onClick={this.handleIconClick}></div>
+          onClick={this._handleIconClick}></div>
       </div>
     );
   }
 
-  private trackChange = (event?: any): void => {
+  private _trackChange = (event?: any): void => {
     let value = "";
 
     if (this._inputElement)
@@ -94,7 +94,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       };
     }, () => {
       if (this.props.valueChangedDelay) {
-        this.unsetTimeout();
+        this._unsetTimeout();
         this._timeoutId = window.setTimeout(() => { this.props.onValueChanged(this.state.value); }, this.props.valueChangedDelay);
       } else {
         this.props.onValueChanged(this.state.value);
@@ -112,17 +112,17 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     }
   }
 
-  private handleIconClick = (_event: React.MouseEvent<HTMLElement>): void => {
+  private _handleIconClick = (_event: React.MouseEvent<HTMLElement>): void => {
     if (this._inputElement) {
       const clear = this.state.value !== "";
       this._inputElement.value = "";
       if (clear && this.props.onClear) this.props.onClear();
       this._inputElement.focus();
     }
-    this.trackChange();
+    this._trackChange();
   }
 
-  private unsetTimeout = (): void => {
+  private _unsetTimeout = (): void => {
     if (this._timeoutId) {
       window.clearTimeout(this._timeoutId);
       this._timeoutId = 0;
@@ -130,7 +130,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   }
 
   public componentWillUnmount() {
-    this.unsetTimeout();
+    this._unsetTimeout();
   }
 }
 

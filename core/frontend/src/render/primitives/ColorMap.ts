@@ -32,19 +32,19 @@ export class ColorMap extends IndexMap<number> {
       assert(false, "empty color map");
       return;
     } else if (1 === this.length) {
-      index.initUniform(this.array[0].value);
+      index.initUniform(this._array[0].value);
     } else {
       const colors = new Uint32Array(this.length);
-      for (const entry of this.array)
+      for (const entry of this._array)
         colors[entry.index] = entry.value;
 
       index.initNonUniform(colors, indices, this.hasTransparency);
     }
   }
 
-  private static scratchColorDef = new ColorDef();
+  private static _scratchColorDef = new ColorDef();
   private static isTranslucent(color: number) {
-    this.scratchColorDef.tbgr = color;
-    return 255 !== this.scratchColorDef.getAlpha();
+    this._scratchColorDef.tbgr = color;
+    return 255 !== this._scratchColorDef.getAlpha();
   }
 }

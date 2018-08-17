@@ -210,7 +210,7 @@ export class RpcRequest<TResponse = any> {
 
   protected setLastUpdatedTime() { this._lastUpdated = new Date().getTime(); }
 
-  /* @hidden @internal */
+  /* @hidden */
   public submit(): void {
     if (!this._active)
       return;
@@ -365,7 +365,7 @@ export class RpcRequest<TResponse = any> {
     this.setStatus(RpcRequestStatus.Finalized);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public dispose(): void {
     this.setStatus(RpcRequestStatus.Disposed);
     this.protocol.events.removeListener(this.handleProtocolEvent, this);

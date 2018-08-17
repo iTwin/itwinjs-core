@@ -40,13 +40,13 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
           </>
         }
         isStepStringVisible={this.props.isInFooterMode}
-        onClick={this.handleToolAssistanceIndicatorClick}
+        onClick={this._handleToolAssistanceIndicatorClick}
         stepString={IModelApp.i18n.translate("SampleApp:toolAssist.startPoint")}
       />
     );
   }
 
-  private handleToolAssistanceIndicatorClick = () => {
+  private _handleToolAssistanceIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
     if (isOpen)
       this.setOpenWidget(null);

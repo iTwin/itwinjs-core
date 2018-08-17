@@ -49,7 +49,7 @@ export namespace B3dmTileIO {
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isCanceled) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
       super(props, iModel, modelId, is3d, system, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
@@ -57,18 +57,18 @@ export namespace B3dmTileIO {
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       // NB: For reality models with no batch table, we want the model ID in the feature table
-      const featureTable: FeatureTable = new FeatureTable(1, this.modelId);
-      const feature = new Feature(this.modelId);
+      const featureTable: FeatureTable = new FeatureTable(1, this._modelId);
+      const feature = new Feature(this._modelId);
       featureTable.insert(feature);
 
       await this.loadTextures();
-      if (this.isCanceled)
+      if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
 
-      return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this.range));
+      return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this._range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
-      const feature = new Feature(this.modelId);
+      const feature = new Feature(this._modelId);
 
       features.add(feature, 1);
       return true;
@@ -92,6 +92,6 @@ export namespace B3dmTileIO {
       return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
     }
 
-    protected get hasBakedLighting(): boolean { return true; } // ###TODO? currently always desired (3mx, 3sm) - may change in future.
+    protected get _hasBakedLighting(): boolean { return true; } // ###TODO? currently always desired (3mx, 3sm) - may change in future.
   }
 }

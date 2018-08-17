@@ -265,7 +265,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {
-    if (Config.isBrowser()) {
+    if (Config.isBrowser) {
       throw new Error("This option is not supported on browsers");
     }
 
@@ -290,7 +290,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   }
 
   if (options.stream) {
-    if (Config.isBrowser()) {
+    if (Config.isBrowser) {
       throw new Error("This option is not supported on browsers");
     }
 

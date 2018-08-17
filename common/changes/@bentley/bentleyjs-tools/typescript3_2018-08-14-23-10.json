@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated to use TypeScript 3.0",
+      "packageName": "@bentley/bentleyjs-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-tools",
+  "email": "Bill.Goehrig@bentley.com"
+}

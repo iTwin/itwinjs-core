@@ -28,7 +28,7 @@ export class GeometryAccumulator {
   public get surfacesOnly(): boolean { return this._surfacesOnly; }
   public get transform(): Transform { return this._transform; }
   public get isEmpty(): boolean { return this.geometries.isEmpty; }
-  public get haveTransform(): boolean { return !this._transform.isIdentity(); }
+  public get haveTransform(): boolean { return !this._transform.isIdentity; }
 
   public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform: Transform = Transform.createIdentity(), tileRange: Range3d = Range3d.createNull()) {
     this._surfacesOnly = surfacesOnly;
@@ -41,7 +41,7 @@ export class GeometryAccumulator {
   private getPrimitiveRange(pGeom: PrimitiveGeometryType): Range3d | undefined {
     const pRange: Range3d = new Range3d();
     pGeom.range(undefined, pRange);
-    if (pRange.isNull())
+    if (pRange.isNull)
       return undefined;
     return pRange;
   }
@@ -64,7 +64,7 @@ export class GeometryAccumulator {
     // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
     const range = Range3d.createNull();
     range.extendArray(pts, undefined);
-    if (range.isNull())
+    if (range.isNull)
       return false;
 
     this.calculateTransform(transform, range);
@@ -75,7 +75,7 @@ export class GeometryAccumulator {
     // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
     const range = Range3d.createNull();
     range.extendArray(pts, undefined);
-    if (range.isNull())
+    if (range.isNull)
       return false;
 
     this.calculateTransform(transform, range);
@@ -121,7 +121,7 @@ export class GeometryAccumulator {
     const { wantSurfacesOnly, wantPreserveOrder } = options;
 
     const range = geometries.computeRange();
-    const is2d = !range.isNull() && range.isAlmostZeroZ();
+    const is2d = !range.isNull && range.isAlmostZeroZ;
 
     return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, wantSurfacesOnly, wantPreserveOrder, pickableId);
   }

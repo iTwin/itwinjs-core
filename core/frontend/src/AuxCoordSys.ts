@@ -85,7 +85,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public isValidForView(view: ViewState): boolean {
     if (view.isSpatialView())
       return this instanceof AuxCoordSystemSpatialState;
-    return (view.is3d() === this.is3d());
+    return (view.is3d() === this.is3d);
   }
 
   public abstract getOrigin(result?: Point3d): Point3d;
@@ -93,7 +93,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   /** get a *copy of* the rotation matrix for this ACS. */
   public abstract getRotation(result?: RotMatrix): RotMatrix;
   public abstract setRotation(val: RotMatrix): void;
-  public is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
+  public get is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
 
   public drawGrid(context: DecorateContext): void {
     // Called for active ACS when grid orientation is GridOrientationType::ACS.

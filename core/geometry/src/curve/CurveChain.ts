@@ -44,7 +44,7 @@ export abstract class CurveCollection extends GeometryQuery {
   public maxGap(): number { return GapSearchContext.maxGap(this); }
 
   /** return true if the curve collection has any primitives other than LineSegment3d and LineString3d  */
-  public hasNonLinearPrimitives(): boolean { return CountLinearPartsSearchContext.hasNonLinearPrimitives(this); }
+  public checkForNonLinearPrimitives(): boolean { return CountLinearPartsSearchContext.hasNonLinearPrimitives(this); }
 
   public tryTransformInPlace(transform: Transform): boolean { return TransformInPlaceContext.tryTransformInPlace(this, transform); }
   public clone(): CurveCollection | undefined {
@@ -58,18 +58,18 @@ export abstract class CurveCollection extends GeometryQuery {
    * * `ParityRegion`
    * * `UnionRegion`
    */
-  public isAnyRegionType(): boolean {
+  public get isAnyRegionType(): boolean {
     return this.dgnBoundaryType() === 2 || this.dgnBoundaryType() === 5 || this.dgnBoundaryType() === 4;
   }
   /** Return true for a `Path`, i.e. a chain of curves joined head-to-tail
    */
-  public isOpenPath(): boolean {
+  public get isOpenPath(): boolean {
     return this.dgnBoundaryType() === 1;
   }
   /** Return true for a single-loop planar region type, i.e. `Loop`.
    * * This is _not- a test for physical closure of a `Path`
    */
-  public isClosedPath(): boolean {
+  public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
   }
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
@@ -172,7 +172,7 @@ export abstract class CurveChain extends CurveCollection {
       if (children.length === 1) {
         const ls = children[0];
         if (ls instanceof LineString3d)
-        return ls.packedPoints;
+          return ls.packedPoints;
       }
     }
     return undefined;

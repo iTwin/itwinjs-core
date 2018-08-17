@@ -26,7 +26,7 @@ export class ClipVector {
     }
 
     /** Returns true if this ClipVector contains a ClipShape. */
-    public isValid(): boolean { return this._clips.length > 0; }
+    public get isValid(): boolean { return this._clips.length > 0; }
 
     /** Create a ClipVector with an empty set of ClipShapes. */
     public static createEmpty(result?: ClipVector): ClipVector {
@@ -67,7 +67,7 @@ export class ClipVector {
 
     /** Parse this ClipVector into a JSON object. */
     public toJSON(): any {
-        if (!this.isValid())
+        if (!this.isValid)
             return [];
 
         const val: any = [];
@@ -132,13 +132,13 @@ export class ClipVector {
         for (const shape of this._clips) {
             const thisRange = shape.getRange(false, transform);
             if (thisRange !== undefined) {
-                if (range.isNull())
+                if (range.isNull)
                     range.setFrom(thisRange);
                 else
                     range.intersect(thisRange, range);
             }
         }
-        if (!this.boundingRange.isNull())
+        if (!this.boundingRange.isNull)
             range.intersect(this.boundingRange, range);
 
         return range;
@@ -146,7 +146,7 @@ export class ClipVector {
 
     /** Returns true if the given point lies inside all of this ClipVector's ClipShapes (by rule of intersection). */
     public pointInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
-        if (!this.boundingRange.isNull() && !this.boundingRange.containsPoint(point))
+        if (!this.boundingRange.isNull && !this.boundingRange.containsPoint(point))
             return false;
 
         for (const clip of this._clips)
@@ -161,7 +161,7 @@ export class ClipVector {
             if (clip.transformInPlace(transform) === false)
                 return false;
 
-        if (!this.boundingRange.isNull())
+        if (!this.boundingRange.isNull)
             transform.multiplyRange(this.boundingRange, this.boundingRange);
 
         return true;
@@ -308,7 +308,7 @@ export class ClipVector {
         return s;
     }
 
-    private static readonly TARGET_FRACTION_SUM = 0.99999999;
+    private static readonly _TARGET_FRACTION_SUM = 0.99999999;
     /**
      * For an array of points that make up a LineString, develops a line segment between each point pair,
      * and returns true if all segments lie inside this ClipVector.
@@ -328,10 +328,10 @@ export class ClipVector {
                 fractionSum += this.sumSizes(clipIntervals, index0, index1);
                 index0 = index1;
                 // ASSUME primitives are non-overlapping...
-                if (fractionSum >= ClipVector.TARGET_FRACTION_SUM)
+                if (fractionSum >= ClipVector._TARGET_FRACTION_SUM)
                     break;
             }
-            if (fractionSum < ClipVector.TARGET_FRACTION_SUM)
+            if (fractionSum < ClipVector._TARGET_FRACTION_SUM)
                 return false;
         }
         return true;

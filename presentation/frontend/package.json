@@ -24,7 +24,7 @@
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/frontend",
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/frontend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
-    "lint": "tslint -p ./src",
+    "lint": "tslint -p ./src 1>&2",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.ts",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
@@ -67,7 +67,7 @@
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
-    "typescript": "~2.9.1",
+    "typescript": "~3.0.0",
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {

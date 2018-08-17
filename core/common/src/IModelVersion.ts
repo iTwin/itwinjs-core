@@ -64,10 +64,10 @@ export class IModelVersion {
   }
 
   /** Returns true if this describes the first version */
-  public isFirst(): boolean { return !!this._first; }
+  public get isFirst(): boolean { return !!this._first; }
 
   /** Returns true if this describes the latest version */
-  public isLatest(): boolean { return !!this._latest; }
+  public get isLatest(): boolean { return !!this._latest; }
 
   /** Returns the last change set id to be applied to the iModel
    * to get to this specified version. @see asOfChangeSet().

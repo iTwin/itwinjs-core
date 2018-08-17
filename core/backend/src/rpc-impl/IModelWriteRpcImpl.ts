@@ -28,19 +28,19 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
     await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
 
-    if (qp.isPending()) {
+    if (qp.isPending) {
       Logger.logTrace(loggingCategory, "Issuing pending status in IModelWriteRpcImpl.openForWrite", () => (iModelToken));
       throw new RpcPendingResponse();
     }
 
     deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
-    if (qp.isFulfilled()) {
+    if (qp.isFulfilled) {
       Logger.logTrace(loggingCategory, "Completed open request in IModelWriteRpcImpl.openForWrite", () => (iModelToken));
       return qp.result!;
     }
 
-    assert(qp.isRejected());
+    assert(qp.isRejected);
     Logger.logTrace(loggingCategory, "Rejected open request in IModelWriteRpcImpl.openForWrite", () => (iModelToken));
     throw qp.error!;
   }

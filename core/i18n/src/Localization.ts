@@ -15,11 +15,11 @@ export interface I18NOptions {
 }
 
 export class I18N {
-  private i18n: i18n;
-  private namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
+  private _i18n: i18n;
+  private _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
   public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: any) {
-    this.i18n = i18next.createInstance();
+    this._i18n = i18next.createInstance();
 
     const initOptions: i18next.InitOptions = {
       interpolation: { escapeValue: true },
@@ -37,11 +37,11 @@ export class I18N {
     if (isDevelopment) {
       initOptions.debug = true;
     } else {
-      this.i18n = this.i18n.use(i18nextBrowserLanguageDetector);
+      this._i18n = this._i18n.use(i18nextBrowserLanguageDetector);
     }
 
     // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
-    this.i18n.use(i18nextXHRBackend)
+    this._i18n.use(i18nextXHRBackend)
       .init(initOptions, renderFunction)
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
   }
@@ -65,14 +65,14 @@ export class I18N {
   public translateKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.translate(tag)); }
 
   /** Return the translated value of a key. */
-  public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this.i18n.t(key, options); }
+  public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this._i18n.t(key, options); }
 
-  public loadNamespace(name: string, i18nCallback: any) { this.i18n.loadNamespaces(name, i18nCallback); }
-  public languageList(): string[] { return this.i18n.languages; }
+  public loadNamespace(name: string, i18nCallback: any) { this._i18n.loadNamespaces(name, i18nCallback); }
+  public languageList(): string[] { return this._i18n.languages; }
 
   // register a new Namespace. Must be unique in the system.
   public registerNamespace(name: string): I18NNamespace {
-    if (this.namespaceRegistry.get(name))
+    if (this._namespaceRegistry.get(name))
       throw new BentleyError(-1, "namespace '" + name + "' is not unique");
 
     const theReadPromise = new Promise<void>((resolve: any, _reject: any) => {
@@ -101,13 +101,13 @@ export class I18N {
       });
     });
     const thisNamespace = new I18NNamespace(name, theReadPromise);
-    this.namespaceRegistry.set(name, thisNamespace);
+    this._namespaceRegistry.set(name, thisNamespace);
     return thisNamespace;
   }
 
   public waitForAllRead(): Promise<void[]> {
     const namespacePromises = new Array<Promise<void>>();
-    for (const thisNamespace of this.namespaceRegistry.values()) {
+    for (const thisNamespace of this._namespaceRegistry.values()) {
       namespacePromises.push(thisNamespace.readFinished);
     }
     return Promise.all(namespacePromises);

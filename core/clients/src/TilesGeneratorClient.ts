@@ -54,7 +54,7 @@ export class Job extends WsgInstance {
 export class TilesGeneratorClient extends WsgClient {
   public static readonly searchKey: string = "3dTilesGenerator.URL";
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-3dtilesgenerator.bentley.com",
     QA: "https://qa-3dtilesgenerator.bentley.com",
     PROD: "https://3dtilesgenerator.bentley.com",
@@ -66,7 +66,7 @@ export class TilesGeneratorClient extends WsgClient {
    * @param deploymentEnv Deployment environment.
    */
   public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "v2.5", TilesGeneratorClient.defaultUrlDescriptor[deploymentEnv] + "/");
+    super(deploymentEnv, "v2.5", TilesGeneratorClient._defaultUrlDescriptor[deploymentEnv] + "/");
   }
 
   /**
@@ -82,7 +82,7 @@ export class TilesGeneratorClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return TilesGeneratorClient.defaultUrlDescriptor[this.deploymentEnv];
+    return TilesGeneratorClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**

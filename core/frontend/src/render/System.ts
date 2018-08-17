@@ -343,7 +343,7 @@ export abstract class RenderSystem implements IDisposable {
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
   public nowPainting() { this._nowPainting = undefined; }
 
-  public isValid(): boolean { return this.canvas !== undefined; }
+  public get isValid(): boolean { return this.canvas !== undefined; }
   public constructor(canvas: HTMLCanvasElement) { this.canvas = canvas; }
 
   public abstract dispose(): void;

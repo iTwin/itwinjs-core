@@ -1030,7 +1030,7 @@ export namespace IModelJson {
       if (omitIfIdentity) {
         if (matrix === undefined)
           return;
-        if (matrix.isIdentity())
+        if (matrix.isIdentity)
           return;
       }
       if (matrix)
@@ -1082,7 +1082,7 @@ export namespace IModelJson {
       };
       Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
-      if (!data.activeFractionInterval.isExact01())
+      if (!data.activeFractionInterval.isExact01)
         Object.defineProperty(value, "fractionInterval", [data.activeFractionInterval.x0, data.activeFractionInterval.x1]);
 
       // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
@@ -1158,9 +1158,9 @@ export namespace IModelJson {
         const value: SphereProps = {
           "center": data.cloneCenter().toJSON(),
         };
-        if (!(data.getConstructiveFrame()!).matrix.isIdentity())
+        if (!(data.getConstructiveFrame()!).matrix.isIdentity)
           value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
-        const fullSweep = latitudeSweep.isFullLatitudeSweep();
+        const fullSweep = latitudeSweep.isFullLatitudeSweep;
 
         if (data.capped && !fullSweep)
           value.capped = data.capped;
@@ -1196,7 +1196,7 @@ export namespace IModelJson {
         "minorRadius": radiusB,
         "xyVectors": [vectorX.toJSON(), vectorY.toJSON()],
       };
-      if (!sweep.isFullCircle()) {
+      if (!sweep.isFullCircle) {
         value.sweepAngle = sweep.degrees;
         value.capped = data.capped;
       }
@@ -1399,7 +1399,7 @@ export namespace IModelJson {
     public handleBSplineCurve3d(curve: BSplineCurve3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      if (curve.isClosable()) {
+      if (curve.isClosable) {
         const knots = curve.copyKnots(true);
         const poles = curve.copyPoints();
         const degree = curve.degree;

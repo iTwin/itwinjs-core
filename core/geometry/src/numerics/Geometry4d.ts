@@ -162,7 +162,7 @@ export class Point4d implements BeJSONFunctions {
       result);
   }
 
-  public isAlmostZero(): boolean {
+  public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.maxAbs());
   }
   public static createZero(): Point4d { return new Point4d(0, 0, 0, 0); }
@@ -318,28 +318,28 @@ export class Point4d implements BeJSONFunctions {
 } // DPoint4d
 
 export class Matrix4d implements BeJSONFunctions {
-  private coffs: Float64Array;
-  private constructor() { this.coffs = new Float64Array(16); }
+  private _coffs: Float64Array;
+  private constructor() { this._coffs = new Float64Array(16); }
   public setFrom(other: Matrix4d): void {
     for (let i = 0; i < 16; i++)
-      this.coffs[i] = other.coffs[i];
+      this._coffs[i] = other._coffs[i];
   }
   public clone(): Matrix4d {
     const result = new Matrix4d();
     for (let i = 0; i < 16; i++)
-      result.coffs[i] = this.coffs[i];
+      result._coffs[i] = this._coffs[i];
     return result;
   }
   /** zero this matrix4d in place. */
   public setZero(): void {
     for (let i = 0; i < 16; i++)
-      this.coffs[i] = 0;
+      this._coffs[i] = 0;
   }
   /** set to identity. */
   public setIdentity(): void {
     for (let i = 0; i < 16; i++)
-      this.coffs[i] = 0;
-    this.coffs[0] = this.coffs[5] = this.coffs[10] = this.coffs[15] = 1.0;
+      this._coffs[i] = 0;
+    this._coffs[0] = this._coffs[5] = this._coffs[10] = this._coffs[15] = 1.0;
   }
   private static is1000(a: number, b: number, c: number, d: number, tol: number): boolean {
     return Math.abs(a - 1.0) <= tol
@@ -349,10 +349,10 @@ export class Matrix4d implements BeJSONFunctions {
   }
   /** set to identity. */
   public isIdentity(tol: number = 1.0e-10): boolean {
-    return Matrix4d.is1000(this.coffs[0], this.coffs[1], this.coffs[2], this.coffs[3], tol)
-      && Matrix4d.is1000(this.coffs[5], this.coffs[6], this.coffs[7], this.coffs[4], tol)
-      && Matrix4d.is1000(this.coffs[10], this.coffs[11], this.coffs[8], this.coffs[9], tol)
-      && Matrix4d.is1000(this.coffs[15], this.coffs[12], this.coffs[13], this.coffs[14], tol);
+    return Matrix4d.is1000(this._coffs[0], this._coffs[1], this._coffs[2], this._coffs[3], tol)
+      && Matrix4d.is1000(this._coffs[5], this._coffs[6], this._coffs[7], this._coffs[4], tol)
+      && Matrix4d.is1000(this._coffs[10], this._coffs[11], this._coffs[8], this._coffs[9], tol)
+      && Matrix4d.is1000(this._coffs[15], this._coffs[12], this._coffs[13], this._coffs[14], tol);
   }
 
   /** create a Matrix4d filled with zeros. */
@@ -371,10 +371,10 @@ export class Matrix4d implements BeJSONFunctions {
     cwx: number, cwy: number, cwz: number, cww: number,
     result?: Matrix4d): Matrix4d {
     result = result ? result : new Matrix4d();
-    result.coffs[0] = cxx; result.coffs[1] = cxy; result.coffs[2] = cxz; result.coffs[3] = cxw;
-    result.coffs[4] = cyx; result.coffs[5] = cyy; result.coffs[6] = cyz; result.coffs[7] = cyw;
-    result.coffs[8] = czx; result.coffs[9] = czy; result.coffs[10] = czz; result.coffs[11] = czw;
-    result.coffs[12] = cwx; result.coffs[13] = cwy; result.coffs[14] = cwz; result.coffs[15] = cww;
+    result._coffs[0] = cxx; result._coffs[1] = cxy; result._coffs[2] = cxz; result._coffs[3] = cxw;
+    result._coffs[4] = cyx; result._coffs[5] = cyy; result._coffs[6] = cyz; result._coffs[7] = cyw;
+    result._coffs[8] = czx; result._coffs[9] = czy; result._coffs[10] = czz; result._coffs[11] = czw;
+    result._coffs[12] = cwx; result._coffs[13] = cwy; result._coffs[14] = cwz; result._coffs[15] = cww;
     return result;
   }
 
@@ -384,10 +384,10 @@ export class Matrix4d implements BeJSONFunctions {
    * * origin as column3, with weight 1
    */
   public setOriginAndVectors(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d) {
-    this.coffs[0] = vectorX.x; this.coffs[1] = vectorY.x; this.coffs[2] = vectorZ.x; this.coffs[3] = origin.x;
-    this.coffs[4] = vectorX.y; this.coffs[5] = vectorY.y; this.coffs[6] = vectorZ.y; this.coffs[7] = origin.y;
-    this.coffs[8] = vectorX.z; this.coffs[9] = vectorY.z; this.coffs[10] = vectorZ.z; this.coffs[11] = origin.z;
-    this.coffs[12] = 0.0; this.coffs[13] = 0.0; this.coffs[14] = 0.0; this.coffs[15] = 1.0;
+    this._coffs[0] = vectorX.x; this._coffs[1] = vectorY.x; this._coffs[2] = vectorZ.x; this._coffs[3] = origin.x;
+    this._coffs[4] = vectorX.y; this._coffs[5] = vectorY.y; this._coffs[6] = vectorZ.y; this._coffs[7] = origin.y;
+    this._coffs[8] = vectorX.z; this._coffs[9] = vectorY.z; this._coffs[10] = vectorZ.z; this._coffs[11] = origin.z;
+    this._coffs[12] = 0.0; this._coffs[13] = 0.0; this._coffs[14] = 0.0; this._coffs[15] = 1.0;
   }
 
   /** promote a transform to full Matrix4d (with 0001 in final row) */
@@ -404,22 +404,22 @@ export class Matrix4d implements BeJSONFunctions {
   /** return an identity matrix. */
   public static createIdentity(result?: Matrix4d): Matrix4d {
     result = Matrix4d.createZero(result);
-    result.coffs[0] = 1.0;
-    result.coffs[5] = 1.0;
-    result.coffs[10] = 1.0;
-    result.coffs[15] = 1.0;
+    result._coffs[0] = 1.0;
+    result._coffs[5] = 1.0;
+    result._coffs[10] = 1.0;
+    result._coffs[15] = 1.0;
     return result;
   }
   /** return matrix with translation directly inserted (along with 1 on diagonal) */
   public static createTranslationXYZ(x: number, y: number, z: number, result?: Matrix4d): Matrix4d {
     result = Matrix4d.createZero(result);
-    result.coffs[0] = 1.0;
-    result.coffs[5] = 1.0;
-    result.coffs[10] = 1.0;
-    result.coffs[15] = 1.0;
-    result.coffs[3] = x;
-    result.coffs[7] = y;
-    result.coffs[11] = z;
+    result._coffs[0] = 1.0;
+    result._coffs[5] = 1.0;
+    result._coffs[10] = 1.0;
+    result._coffs[15] = 1.0;
+    result._coffs[3] = x;
+    result._coffs[7] = y;
+    result._coffs[11] = z;
     return result;
   }
   /**
@@ -473,7 +473,7 @@ export class Matrix4d implements BeJSONFunctions {
     if (Geometry.isArrayOfNumberArray(json, 4, 4))
       for (let i = 0; i < 4; ++i) {
         for (let j = 0; j < 4; ++j)
-          this.coffs[i * 4 + j] = json![i][j];
+          this._coffs[i * 4 + j] = json![i][j];
       }
     else
       this.setZero();
@@ -485,7 +485,7 @@ export class Matrix4d implements BeJSONFunctions {
   public maxDiff(other: Matrix4d): number {
     let a = 0.0;
     for (let i = 0; i < 16; i++)
-      a = Math.max(a, Math.abs(this.coffs[i] - other.coffs[i]));
+      a = Math.max(a, Math.abs(this._coffs[i] - other._coffs[i]));
     return a;
   }
   /**
@@ -494,7 +494,7 @@ export class Matrix4d implements BeJSONFunctions {
   public maxAbs(): number {
     let a = 0.0;
     for (let i = 0; i < 16; i++)
-      a = Math.max(a, Math.abs(this.coffs[i]));
+      a = Math.max(a, Math.abs(this._coffs[i]));
     return a;
   }
 
@@ -508,7 +508,7 @@ export class Matrix4d implements BeJSONFunctions {
     const value = [];
     for (let i = 0; i < 4; ++i) {
       const row = i * 4;
-      value.push([this.coffs[row], this.coffs[row + 1], this.coffs[row + 2], this.coffs[row + 3]]);
+      value.push([this._coffs[row], this._coffs[row + 1], this._coffs[row + 2], this._coffs[row + 3]]);
     }
     return value;
   }
@@ -519,7 +519,7 @@ export class Matrix4d implements BeJSONFunctions {
   }
   public getSteppedPoint(i0: number, step: number, result?: Point4d): Point4d {
     return Point4d.create(
-      this.coffs[i0], this.coffs[i0 + step], this.coffs[i0 + 2 * step], this.coffs[i0 + 3 * step],
+      this._coffs[i0], this._coffs[i0 + step], this._coffs[i0 + 2 * step], this._coffs[i0 + 3 * step],
       result);
   }
 
@@ -542,12 +542,12 @@ export class Matrix4d implements BeJSONFunctions {
   public rowW(): Point4d { return this.getSteppedPoint(12, 1); }
 
   public diagonal(): Point4d { return this.getSteppedPoint(0, 5); }
-  public weight(): number { return this.coffs[15]; }
+  public weight(): number { return this._coffs[15]; }
   public matrixPart(): RotMatrix {
     return RotMatrix.createRowValues(
-      this.coffs[0], this.coffs[1], this.coffs[2],
-      this.coffs[4], this.coffs[5], this.coffs[6],
-      this.coffs[8], this.coffs[9], this.coffs[10]);
+      this._coffs[0], this._coffs[1], this._coffs[2],
+      this._coffs[4], this._coffs[5], this._coffs[6],
+      this._coffs[8], this._coffs[9], this._coffs[10]);
 
   }
   /** multiply this * other. */
@@ -555,11 +555,11 @@ export class Matrix4d implements BeJSONFunctions {
     result = (result && result !== this && result !== other) ? result : new Matrix4d();
     for (let i0 = 0; i0 < 16; i0 += 4) {
       for (let k = 0; k < 4; k++)
-        result.coffs[i0 + k] =
-          this.coffs[i0] * other.coffs[k] +
-          this.coffs[i0 + 1] * other.coffs[k + 4] +
-          this.coffs[i0 + 2] * other.coffs[k + 8] +
-          this.coffs[i0 + 3] * other.coffs[k + 12];
+        result._coffs[i0 + k] =
+          this._coffs[i0] * other._coffs[k] +
+          this._coffs[i0 + 1] * other._coffs[k + 4] +
+          this._coffs[i0 + 2] * other._coffs[k + 8] +
+          this._coffs[i0 + 3] * other._coffs[k + 12];
     }
     return result;
   }
@@ -570,11 +570,11 @@ export class Matrix4d implements BeJSONFunctions {
     let j = 0;
     for (let i0 = 0; i0 < 16; i0 += 4) {
       for (let k = 0; k < 16; k += 4)
-        result.coffs[j++] =
-          this.coffs[i0] * other.coffs[k] +
-          this.coffs[i0 + 1] * other.coffs[k + 1] +
-          this.coffs[i0 + 2] * other.coffs[k + 2] +
-          this.coffs[i0 + 3] * other.coffs[k + 3];
+        result._coffs[j++] =
+          this._coffs[i0] * other._coffs[k] +
+          this._coffs[i0 + 1] * other._coffs[k + 1] +
+          this._coffs[i0 + 2] * other._coffs[k + 2] +
+          this._coffs[i0 + 3] * other._coffs[k + 3];
     }
     return result;
   }
@@ -584,30 +584,30 @@ export class Matrix4d implements BeJSONFunctions {
     let j = 0;
     for (let i0 = 0; i0 < 4; i0 += 1) {
       for (let k0 = 0; k0 < 4; k0 += 1)
-        result.coffs[j++] =
-          this.coffs[i0] * other.coffs[k0] +
-          this.coffs[i0 + 4] * other.coffs[k0 + 4] +
-          this.coffs[i0 + 8] * other.coffs[k0 + 8] +
-          this.coffs[i0 + 12] * other.coffs[k0 + 12];
+        result._coffs[j++] =
+          this._coffs[i0] * other._coffs[k0] +
+          this._coffs[i0 + 4] * other._coffs[k0 + 4] +
+          this._coffs[i0 + 8] * other._coffs[k0 + 8] +
+          this._coffs[i0 + 12] * other._coffs[k0 + 12];
     }
     return result;
   }
   /** Return a transposed matrix. */
   public cloneTransposed(result?: Matrix4d): Matrix4d {
     return Matrix4d.createRowValues(
-      this.coffs[0], this.coffs[4], this.coffs[8], this.coffs[12],
-      this.coffs[1], this.coffs[5], this.coffs[9], this.coffs[13],
-      this.coffs[2], this.coffs[6], this.coffs[10], this.coffs[14],
-      this.coffs[3], this.coffs[7], this.coffs[11], this.coffs[15], result);
+      this._coffs[0], this._coffs[4], this._coffs[8], this._coffs[12],
+      this._coffs[1], this._coffs[5], this._coffs[9], this._coffs[13],
+      this._coffs[2], this._coffs[6], this._coffs[10], this._coffs[14],
+      this._coffs[3], this._coffs[7], this._coffs[11], this._coffs[15], result);
   }
   /** multiply matrix times column [x,y,z,w].  return as Point4d.   (And the returned value is NOT normalized down to unit w) */
   public multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     result = result ? result : Point4d.createZero();
     return result.set(
-      this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z + this.coffs[3] * w,
-      this.coffs[4] * x + this.coffs[5] * y + this.coffs[6] * z + this.coffs[7] * w,
-      this.coffs[8] * x + this.coffs[9] * y + this.coffs[10] * z + this.coffs[11] * w,
-      this.coffs[12] * x + this.coffs[13] * y + this.coffs[14] * z + this.coffs[15] * w);
+      this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w,
+      this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w,
+      this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w,
+      this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w);
   }
   /** multiply matrix times XYAndZ  and w. return as Point4d  (And the returned value is NOT normalized down to unit w) */
   public multiplyPoint3d(pt: XYAndZ, w: number, result?: Point4d): Point4d {
@@ -621,10 +621,10 @@ export class Matrix4d implements BeJSONFunctions {
   public multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     result = result ? result : Point4d.createZero();
     return result.set(
-      this.coffs[0] * x + this.coffs[4] * y + this.coffs[8] * z + this.coffs[12] * w,
-      this.coffs[1] * x + this.coffs[5] * y + this.coffs[9] * z + this.coffs[13] * w,
-      this.coffs[2] * x + this.coffs[6] * y + this.coffs[10] * z + this.coffs[14] * w,
-      this.coffs[3] * x + this.coffs[7] * y + this.coffs[11] * z + this.coffs[15] * w);
+      this._coffs[0] * x + this._coffs[4] * y + this._coffs[8] * z + this._coffs[12] * w,
+      this._coffs[1] * x + this._coffs[5] * y + this._coffs[9] * z + this._coffs[13] * w,
+      this._coffs[2] * x + this._coffs[6] * y + this._coffs[10] * z + this._coffs[14] * w,
+      this._coffs[3] * x + this._coffs[7] * y + this._coffs[11] * z + this._coffs[15] * w);
   }
 
   /** @returns dot product of row rowIndex of this with column columnIndex of other.
@@ -632,10 +632,10 @@ export class Matrix4d implements BeJSONFunctions {
   public rowDotColumn(rowIndex: number, other: Matrix4d, columnIndex: number): number {
     const i = rowIndex * 4;
     const j = columnIndex;
-    return this.coffs[i] * other.coffs[j]
-      + this.coffs[i + 1] * other.coffs[j + 4]
-      + this.coffs[i + 2] * other.coffs[j + 8]
-      + this.coffs[i + 3] * other.coffs[j + 12];
+    return this._coffs[i] * other._coffs[j]
+      + this._coffs[i + 1] * other._coffs[j + 4]
+      + this._coffs[i + 2] * other._coffs[j + 8]
+      + this._coffs[i + 3] * other._coffs[j + 12];
   }
 
   /** @returns dot product of row rowIndexThis of this with row rowIndexOther of other.
@@ -643,10 +643,10 @@ export class Matrix4d implements BeJSONFunctions {
   public rowDotRow(rowIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = rowIndexThis * 4;
     const j = rowIndexOther * 4;
-    return this.coffs[i] * other.coffs[j]
-      + this.coffs[i + 1] * other.coffs[j + 1]
-      + this.coffs[i + 2] * other.coffs[j + 2]
-      + this.coffs[i + 3] * other.coffs[j + 3];
+    return this._coffs[i] * other._coffs[j]
+      + this._coffs[i + 1] * other._coffs[j + 1]
+      + this._coffs[i + 2] * other._coffs[j + 2]
+      + this._coffs[i + 3] * other._coffs[j + 3];
   }
 
   /** @returns dot product of row rowIndexThis of this with row rowIndexOther of other.
@@ -654,10 +654,10 @@ export class Matrix4d implements BeJSONFunctions {
   public columnDotColumn(columnIndexThis: number, other: Matrix4d, columnIndexOther: number): number {
     const i = columnIndexThis;
     const j = columnIndexOther;
-    return this.coffs[i] * other.coffs[j]
-      + this.coffs[i + 4] * other.coffs[j + 4]
-      + this.coffs[i + 8] * other.coffs[j + 8]
-      + this.coffs[i + 12] * other.coffs[j + 12];
+    return this._coffs[i] * other._coffs[j]
+      + this._coffs[i + 4] * other._coffs[j + 4]
+      + this._coffs[i + 8] * other._coffs[j + 8]
+      + this._coffs[i + 12] * other._coffs[j + 12];
   }
 
   /** @returns dot product of column columnIndexThis of this with row rowIndexOther other.
@@ -665,16 +665,16 @@ export class Matrix4d implements BeJSONFunctions {
   public columnDotRow(columnIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = columnIndexThis;
     const j = 4 * rowIndexOther;
-    return this.coffs[i] * other.coffs[j]
-      + this.coffs[i + 4] * other.coffs[j + 1]
-      + this.coffs[i + 8] * other.coffs[j + 2]
-      + this.coffs[i + 12] * other.coffs[j + 3];
+    return this._coffs[i] * other._coffs[j]
+      + this._coffs[i + 4] * other._coffs[j + 1]
+      + this._coffs[i + 8] * other._coffs[j + 2]
+      + this._coffs[i + 12] * other._coffs[j + 3];
   }
 
   /** @returns return a matrix entry by row and column index.
    */
   public atIJ(rowIndex: number, columnIndex: number): number {
-    return this.coffs[rowIndex * 4 + columnIndex];
+    return this._coffs[rowIndex * 4 + columnIndex];
   }
 
   /** multiply matrix * [x,y,z,w]. immediately renormalize to return in a Point3d.
@@ -683,10 +683,10 @@ export class Matrix4d implements BeJSONFunctions {
   public multiplyXYZWQuietRenormalize(x: number, y: number, z: number, w: number, result?: Point3d): Point3d {
     result = result ? result : Point3d.createZero();
     result.set(
-      this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z + this.coffs[3] * w,
-      this.coffs[4] * x + this.coffs[5] * y + this.coffs[6] * z + this.coffs[7] * w,
-      this.coffs[8] * x + this.coffs[9] * y + this.coffs[10] * z + this.coffs[11] * w);
-    const w1 = this.coffs[12] * x + this.coffs[13] * y + this.coffs[14] * z + this.coffs[15] * w;
+      this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w,
+      this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w,
+      this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w);
+    const w1 = this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w;
     if (!Geometry.isSmallMetricDistance(w1)) {
       const a = 1.0 / w1;
       result.x *= a;
@@ -727,15 +727,15 @@ export class Matrix4d implements BeJSONFunctions {
   }
 
   public addMomentsInPlace(x: number, y: number, z: number, w: number) {
-    this.coffs[0] += x * x; this.coffs[1] += x * y; this.coffs[2] += x * z; this.coffs[3] += x * w;
-    this.coffs[4] += y * x; this.coffs[5] += y * y; this.coffs[6] += y * z; this.coffs[7] += y * w;
-    this.coffs[8] += z * x; this.coffs[9] += z * y; this.coffs[10] += z * z; this.coffs[11] += z * w;
-    this.coffs[12] += w * x; this.coffs[13] += w * y; this.coffs[14] += w * z; this.coffs[15] += w * w;
+    this._coffs[0] += x * x; this._coffs[1] += x * y; this._coffs[2] += x * z; this._coffs[3] += x * w;
+    this._coffs[4] += y * x; this._coffs[5] += y * y; this._coffs[6] += y * z; this._coffs[7] += y * w;
+    this._coffs[8] += z * x; this._coffs[9] += z * y; this._coffs[10] += z * z; this._coffs[11] += z * w;
+    this._coffs[12] += w * x; this._coffs[13] += w * y; this._coffs[14] += w * z; this._coffs[15] += w * w;
   }
   /** accumulate all coefficients of other to this. */
   public addScaledInPlace(other: Matrix4d, scale: number = 1.0) {
     for (let i = 0; i < 16; i++)
-      this.coffs[i] += scale * other.coffs[i];
+      this._coffs[i] += scale * other._coffs[i];
   }
 
   /**
@@ -750,7 +750,7 @@ export class Matrix4d implements BeJSONFunctions {
     let iA = rowIndexA * 4 + firstColumnIndex;
     let iB = rowIndexB * 4 + firstColumnIndex;
     for (let i = firstColumnIndex; i < 4; i++ , iA++ , iB++)
-      this.coffs[iB] += scale * this.coffs[iA];
+      this._coffs[iB] += scale * this._coffs[iA];
   }
   /** Compute an inverse matrix.
    * * This uses simple Bauss-Jordan elimination -- no pivot.
@@ -768,14 +768,14 @@ export class Matrix4d implements BeJSONFunctions {
     // Downward gaussian elimination, no pivoting:
     for (pivotRow = 0; pivotRow < 3; pivotRow++) {
       pivotIndex = pivotRow * 5;
-      pivotValue = work.coffs[pivotIndex];
+      pivotValue = work._coffs[pivotIndex];
       // console.log("** pivot row " + pivotRow + " pivotvalue " + pivotValue);
       divPivot = Geometry.conditionalDivideFraction(1.0, pivotValue);
       if (divPivot === undefined)
         return undefined;
       let indexB = pivotIndex + 4;
       for (let rowB = pivotRow + 1; rowB < 4; rowB++ , indexB += 4) {
-        const scale = -work.coffs[indexB] * divPivot;
+        const scale = -work._coffs[indexB] * divPivot;
         work.rowOperation(pivotRow, rowB, pivotRow, scale);
         inverse.rowOperation(pivotRow, rowB, 0, scale);
         // console.log(work.rowArrays());
@@ -786,14 +786,14 @@ export class Matrix4d implements BeJSONFunctions {
     // upward gaussian elimination ...
     for (pivotRow = 1; pivotRow < 4; pivotRow++) {
       pivotIndex = pivotRow * 5;
-      pivotValue = work.coffs[pivotIndex];
+      pivotValue = work._coffs[pivotIndex];
       // console.log("** pivot row " + pivotRow + " pivotvalue " + pivotValue);
       divPivot = Geometry.conditionalDivideFraction(1.0, pivotValue);
       if (divPivot === undefined)
         return undefined;
       let indexB = pivotRow;
       for (let rowB = 0; rowB < pivotRow; rowB++ , indexB += 4) {
-        const scale = -work.coffs[indexB] * divPivot;
+        const scale = -work._coffs[indexB] * divPivot;
         work.rowOperation(pivotRow, rowB, pivotRow, scale);
         inverse.rowOperation(pivotRow, rowB, 0, scale);
         // console.log("Eliminate Row " + rowB + " from pivot " + pivotRow);
@@ -802,7 +802,7 @@ export class Matrix4d implements BeJSONFunctions {
       }
     }
     // divide through by pivots (all have  beeen confirmed nonzero)
-    inverse.scaleRowsInPlace(1.0 / work.coffs[0], 1.0 / work.coffs[5], 1.0 / work.coffs[10], 1.0 / work.coffs[15]);
+    inverse.scaleRowsInPlace(1.0 / work._coffs[0], 1.0 / work._coffs[5], 1.0 / work._coffs[10], 1.0 / work._coffs[15]);
     // console.log("descaled", inverse.rowArrays());
     return inverse;
   }
@@ -812,38 +812,38 @@ export class Matrix4d implements BeJSONFunctions {
   public rowArrays(f?: (value: number) => any): any {
     if (f)
       return [
-        [f(this.coffs[0]), f(this.coffs[1]), f(this.coffs[2]), f(this.coffs[3])],
-        [f(this.coffs[4]), f(this.coffs[5]), f(this.coffs[6]), f(this.coffs[7])],
-        [f(this.coffs[8]), f(this.coffs[9]), f(this.coffs[10]), f(this.coffs[11])],
-        [f(this.coffs[12]), f(this.coffs[13]), f(this.coffs[14]), f(this.coffs[15])]];
+        [f(this._coffs[0]), f(this._coffs[1]), f(this._coffs[2]), f(this._coffs[3])],
+        [f(this._coffs[4]), f(this._coffs[5]), f(this._coffs[6]), f(this._coffs[7])],
+        [f(this._coffs[8]), f(this._coffs[9]), f(this._coffs[10]), f(this._coffs[11])],
+        [f(this._coffs[12]), f(this._coffs[13]), f(this._coffs[14]), f(this._coffs[15])]];
     else
       return [
-        [this.coffs[0], this.coffs[1], this.coffs[2], this.coffs[3]],
-        [this.coffs[4], this.coffs[5], this.coffs[6], this.coffs[7]],
-        [this.coffs[8], this.coffs[9], this.coffs[10], this.coffs[11]],
-        [this.coffs[12], this.coffs[13], this.coffs[14], this.coffs[15]]];
+        [this._coffs[0], this._coffs[1], this._coffs[2], this._coffs[3]],
+        [this._coffs[4], this._coffs[5], this._coffs[6], this._coffs[7]],
+        [this._coffs[8], this._coffs[9], this._coffs[10], this._coffs[11]],
+        [this._coffs[12], this._coffs[13], this._coffs[14], this._coffs[15]]];
   }
   public scaleRowsInPlace(ax: number, ay: number, az: number, aw: number) {
-    for (let i = 0; i < 4; i++)this.coffs[i] *= ax;
-    for (let i = 4; i < 8; i++)this.coffs[i] *= ay;
-    for (let i = 8; i < 12; i++)this.coffs[i] *= az;
-    for (let i = 12; i < 16; i++)this.coffs[i] *= aw;
+    for (let i = 0; i < 4; i++)this._coffs[i] *= ax;
+    for (let i = 4; i < 8; i++)this._coffs[i] *= ay;
+    for (let i = 8; i < 12; i++)this._coffs[i] *= az;
+    for (let i = 12; i < 16; i++)this._coffs[i] *= aw;
   }
 }
 /** Map4 carries two Matrix4d which are inverses of each other.
  */
 export class Map4d implements BeJSONFunctions {
-  private matrix0: Matrix4d;
-  private matrix1: Matrix4d;
+  private _matrix0: Matrix4d;
+  private _matrix1: Matrix4d;
 
   private constructor(matrix0: Matrix4d, matrix1: Matrix4d) {
-    this.matrix0 = matrix0;
-    this.matrix1 = matrix1;
+    this._matrix0 = matrix0;
+    this._matrix1 = matrix1;
   }
   /** @returns Return a reference to (not copy of) the "forward" Matrix4d */
-  public get transform0(): Matrix4d { return this.matrix0; }
+  public get transform0(): Matrix4d { return this._matrix0; }
   /** @returns Return a reference to (not copy of) the "reverse" Matrix4d */
-  public get transform1(): Matrix4d { return this.matrix1; }
+  public get transform1(): Matrix4d { return this._matrix1; }
 
   /** Create a Map4d, capturing the references to the two matrices. */
   public static createRefs(matrix0: Matrix4d, matrix1: Matrix4d) {
@@ -856,7 +856,7 @@ export class Map4d implements BeJSONFunctions {
    */
   public static createTransform(transform0: Transform, transform1: Transform): Map4d | undefined {
     const product = transform0.multiplyTransformTransform(transform1);
-    if (!product.isIdentity())
+    if (!product.isIdentity)
       return undefined;
     return new Map4d(Matrix4d.createTransform(transform0), Matrix4d.createTransform(transform1));
   }
@@ -877,16 +877,16 @@ export class Map4d implements BeJSONFunctions {
     return undefined;
   }
   /** Copy contents from another Map4d */
-  public setFrom(other: Map4d) { this.matrix0.setFrom(other.matrix0), this.matrix1.setFrom(other.matrix1); }
+  public setFrom(other: Map4d) { this._matrix0.setFrom(other._matrix0), this._matrix1.setFrom(other._matrix1); }
   /** @returns Return a clone of this Map4d */
-  public clone(): Map4d { return new Map4d(this.matrix0.clone(), this.matrix1.clone()); }
+  public clone(): Map4d { return new Map4d(this._matrix0.clone(), this._matrix1.clone()); }
   /** Reinitialize this Map4d as an identity. */
-  public setIdentity() { this.matrix0.setIdentity(); this.matrix1.setIdentity(); }
+  public setIdentity() { this._matrix0.setIdentity(); this._matrix1.setIdentity(); }
   /** Set this map4d from a json object that the two Matrix4d values as properties named matrix0 and matrix1 */
   public setFromJSON(json: any): void {
     if (json.matrix0 && json.matrix1) {
-      this.matrix0.setFromJSON(json.matrix0);
-      this.matrix1.setFromJSON(json.matrix1);
+      this._matrix0.setFromJSON(json.matrix0);
+      this._matrix1.setFromJSON(json.matrix1);
     } else
       this.setIdentity();
   }
@@ -897,9 +897,9 @@ export class Map4d implements BeJSONFunctions {
     return result;
   }
   /** @returns a json object `{matrix0: value0, matrix1: value1}` */
-  public toJSON(): any { return { matrix0: this.matrix0.toJSON(), matrix1: this.matrix1.toJSON() }; }
+  public toJSON(): any { return { matrix0: this._matrix0.toJSON(), matrix1: this._matrix1.toJSON() }; }
   public isAlmostEqual(other: Map4d) {
-    return this.matrix0.isAlmostEqual(other.matrix0) && this.matrix1.isAlmostEqual(other.matrix1);
+    return this._matrix0.isAlmostEqual(other._matrix0) && this._matrix1.isAlmostEqual(other._matrix1);
   }
   /** Create a map between a frustum and world coordinates.
    * @param origin lower left of frustum
@@ -950,22 +950,22 @@ export class Map4d implements BeJSONFunctions {
   }
   public multiplyMapMap(other: Map4d): Map4d {
     return new Map4d(
-      this.matrix0.multiplyMatrixMatrix(other.matrix0),
-      other.matrix1.multiplyMatrixMatrix(this.matrix1),
+      this._matrix0.multiplyMatrixMatrix(other._matrix0),
+      other._matrix1.multiplyMatrixMatrix(this._matrix1),
     );
   }
   public reverseInPlace() {
-    const temp = this.matrix0;
-    this.matrix0 = this.matrix1;
-    this.matrix1 = temp;
+    const temp = this._matrix0;
+    this._matrix0 = this._matrix1;
+    this._matrix1 = temp;
   }
   /** return a Map4d whose transform0 is
    * other.transform0 * this.transform0 * other.transform1
    */
   public sandwich0This1(other: Map4d): Map4d {
     return new Map4d(
-      other.matrix0.multiplyMatrixMatrix(this.matrix0.multiplyMatrixMatrix(other.matrix1)),
-      other.matrix0.multiplyMatrixMatrix(this.matrix1.multiplyMatrixMatrix(other.matrix1)),
+      other._matrix0.multiplyMatrixMatrix(this._matrix0.multiplyMatrixMatrix(other._matrix1)),
+      other._matrix0.multiplyMatrixMatrix(this._matrix1.multiplyMatrixMatrix(other._matrix1)),
     );
   }
 
@@ -974,8 +974,8 @@ export class Map4d implements BeJSONFunctions {
    */
   public sandwich1This0(other: Map4d): Map4d {
     return new Map4d(
-      other.matrix1.multiplyMatrixMatrix(this.matrix0.multiplyMatrixMatrix(other.matrix0)),
-      other.matrix1.multiplyMatrixMatrix(this.matrix1.multiplyMatrixMatrix(other.matrix0)));
+      other._matrix1.multiplyMatrixMatrix(this._matrix0.multiplyMatrixMatrix(other._matrix0)),
+      other._matrix1.multiplyMatrixMatrix(this._matrix1.multiplyMatrixMatrix(other._matrix0)));
   }
 } // Map4d
 

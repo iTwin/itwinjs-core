@@ -22,10 +22,10 @@ export class IndexedValue<T> {
  * The user may also supply a maximum size, beyond which insertions will fail.
  */
 export class IndexMap<T> {
-  protected array: Array<IndexedValue<T>> = [];
-  protected readonly compareValues: (lhs: T, rhs: T) => number;
-  protected readonly clone: (src: T) => T;
-  protected readonly maximumSize: number;
+  protected _array: Array<IndexedValue<T>> = [];
+  protected readonly _compareValues: (lhs: T, rhs: T) => number;
+  protected readonly _clone: (src: T) => T;
+  protected readonly _maximumSize: number;
 
   /**
    * Construct a new IndexMap<T>.
@@ -37,22 +37,22 @@ export class IndexMap<T> {
    *        The default implementation simply returns its input.
    */
   public constructor(compare: (lhs: T, rhs: T) => number, maximumSize: number = Number.MAX_SAFE_INTEGER, clone: (src: T) => T = defaultClone) {
-    this.compareValues = compare;
-    this.clone = clone;
-    this.maximumSize = maximumSize;
+    this._compareValues = compare;
+    this._clone = clone;
+    this._maximumSize = maximumSize;
   }
 
   /** The number of elements in the map. */
-  public get length(): number { return this.array.length; }
+  public get length(): number { return this._array.length; }
 
   /** Returns true if the maximum number of elements have been inserted. */
-  public get isFull(): boolean { return this.length >= this.maximumSize; }
+  public get isFull(): boolean { return this.length >= this._maximumSize; }
 
   /** Returns true if the map contains no elements. */
   public get isEmpty(): boolean { return 0 === this.length; }
 
   /** Removes all elements from the map. */
-  public clear(): void { this.array = []; }
+  public clear(): void { this._array = []; }
 
   /** Attempt to insert a new value into the map.
    * If an equivalent element already exists in the map, the corresponding index is returned.
@@ -69,16 +69,16 @@ export class IndexMap<T> {
   public insert(value: T, onInsert?: (value: T) => any): number {
     const bound = this.lowerBound(value);
     if (bound.equal)
-      return this.array[bound.index].index;
+      return this._array[bound.index].index;
     else if (this.isFull)
       return -1;
 
-    const entry = new IndexedValue<T>(this.clone(value), this.array.length);
+    const entry = new IndexedValue<T>(this._clone(value), this._array.length);
 
     if (undefined !== onInsert)
       onInsert(entry.value);
 
-    this.array.splice(bound.index, 0, entry);
+    this._array.splice(bound.index, 0, entry);
     return entry.index;
   }
 
@@ -89,8 +89,8 @@ export class IndexMap<T> {
    */
   public indexOf(value: T): number {
     const bound = this.lowerBound(value);
-    return bound.equal ? this.array[bound.index].index : -1;
+    return bound.equal ? this._array[bound.index].index : -1;
   }
 
-  protected lowerBound(value: T): { index: number, equal: boolean } { return lowerBound(value, this.array, (lhs: T, rhs: IndexedValue<T>) => this.compareValues(lhs, rhs.value)); }
+  protected lowerBound(value: T): { index: number, equal: boolean } { return lowerBound(value, this._array, (lhs: T, rhs: IndexedValue<T>) => this._compareValues(lhs, rhs.value)); }
 }

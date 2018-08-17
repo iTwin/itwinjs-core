@@ -88,7 +88,7 @@ export class XY implements XAndY {
     return Math.max(Math.abs(this.x - other.x), Math.abs(this.y - other.y));
   }
   /** @returns true if the x,y components are both small by metric metric tolerance */
-  public isAlmostZero(): boolean {
+  public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y);
   }
 
@@ -245,7 +245,7 @@ export class XYZ implements XYAndZ {
     return index;
   }
   /** Return true if the if x,y,z components are all nearly zero to tolerance Geometry.smallMetricDistance */
-  public isAlmostZero(): boolean {
+  public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y) && Geometry.isSmallMetricDistance(this.z);
   }
 
@@ -1199,7 +1199,7 @@ export class Segment1d {
   /**
    * Return true if the segment limits are (exactly) 0 and 1
    */
-  public isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
+  public get isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
 }
 
 /** The properties that define [[YawPitchRollAngles]]. */
@@ -1251,9 +1251,9 @@ export class YawPitchRollAngles {
   /** Convert to a JSON object of form { pitch: 20 , roll: 29.999999999999996 , yaw: 10 }. Any values that are exactly zero (with tolerance `Geometry.smallAngleRadians`) are omitted. */
   public toJSON(): YawPitchRollProps {
     const val: YawPitchRollProps = {};
-    if (!this.pitch.isAlmostZero()) val.pitch = this.pitch.toJSON();
-    if (!this.roll.isAlmostZero()) val.roll = this.roll.toJSON();
-    if (!this.yaw.isAlmostZero()) val.yaw = this.yaw.toJSON();
+    if (!this.pitch.isAlmostZero) val.pitch = this.pitch.toJSON();
+    if (!this.roll.isAlmostZero) val.roll = this.roll.toJSON();
+    if (!this.yaw.isAlmostZero) val.yaw = this.yaw.toJSON();
     return val;
   }
   /**
@@ -1299,7 +1299,7 @@ export class YawPitchRollAngles {
       s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2),
       s1, c1 * s2, c1 * c2,
       result,
-    );
+      );
   }
   /** @returns Return the largest angle in radians */
   public maxAbsRadians(): number {
@@ -1328,7 +1328,7 @@ export class YawPitchRollAngles {
       this.yaw.radians - other.yaw.radians,
       this.pitch.radians - other.pitch.radians,
       this.roll.radians - other.roll.radians,
-    );
+      );
   }
   /** Return the largest angle in degrees. */
   public maxAbsDegrees(): number { return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees); }

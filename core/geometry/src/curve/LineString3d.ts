@@ -56,9 +56,9 @@ function accumulateGoodUnitPerpendicular(
 }
 
 export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
-  private static s_workPointA = Point3d.create();
-  private static s_workPointB = Point3d.create();
-  private static s_workPointC = Point3d.create();
+  private static _workPointA = Point3d.create();
+  private static _workPointB = Point3d.create();
+  private static _workPointC = Point3d.create();
 
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof LineString3d; }
   private _points: GrowableXYZArray;
@@ -415,9 +415,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const initialLength = result.length;
     const n = this._points.length;
     const divisor = n === 1 ? 1.0 : n - 1;
-    const pointA = LineString3d.s_workPointA;
-    const pointB = LineString3d.s_workPointB;
-    const pointC = LineString3d.s_workPointC;
+    const pointA = LineString3d._workPointA;
+    const pointB = LineString3d._workPointB;
+    const pointC = LineString3d._workPointC;
     this._points.getPoint3dAt(0, pointA);
     let hB = 0;
     let numConsecutiveZero = 0;
@@ -493,14 +493,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** Emit strokes to caller-supplied linestring */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
     const n = this._points.length;
-    const pointA = LineString3d.s_workPointA;
-    const pointB = LineString3d.s_workPointB;
+    const pointA = LineString3d._workPointA;
+    const pointB = LineString3d._workPointB;
 
     if (n > 0) {
       // This is a linestring.
       // There is no need for chordTol and angleTol within a segment.
       // Do NOT apply minstrokes per primitive.
-      if (options && options.hasMaxEdgeLength()) {
+      if (options && options.hasMaxEdgeLength) {
         dest.appendStrokePoint(this._points.getPoint3dAt(0));
         for (let i = 1; i < n; i++) {
           this._points.getPoint3dAt(i - 1, pointA);
@@ -530,7 +530,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       // This is a linestring.
       // There is no need for chordTol and angleTol within a segment.
       // Do NOT apply minstrokes per primitive.
-      if (options && options.hasMaxEdgeLength()) {
+      if (options && options.hasMaxEdgeLength) {
         for (let i = 1; i < n; i++) {
           const numStroke = options.applyMaxEdgeLength(1, this._points.getPoint3dAt(i - 1).distance(this._points.getPoint3dAt(i)));
           handler.announceSegmentInterval(this, this._points.getPoint3dAt(i - 1), this._points.getPoint3dAt(i), numStroke, (i - 1) * df, i * df);
@@ -567,8 +567,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
           Geometry.interpolate(globalFractionA, localFraction1, globalFractionB),
           this);
     };
-    const pointA = LineString3d.s_workPointA;
-    const pointB = LineString3d.s_workPointB;
+    const pointA = LineString3d._workPointA;
+    const pointB = LineString3d._workPointB;
     this._points.getPoint3dAt(0, pointA);
     let status = false;
     for (let i = 1; i < n; i++ , pointA.setFrom(pointB), globalFractionA = globalFractionB) {
@@ -579,13 +579,13 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return status;
   }
-  private static s_indexPoint = Point3d.create();  // private point for indexAndFractionToPoint.
+  private static _indexPoint = Point3d.create();  // private point for indexAndFractionToPoint.
   private addResolvedPoint(index: number, fraction: number, dest: GrowableXYZArray) {
     const n = this._points.length;
     if (n === 0) return;
     if (n === 1) {
-      this._points.getPoint3dAt(0, LineString3d.s_indexPoint);
-      dest.push(LineString3d.s_indexPoint);
+      this._points.getPoint3dAt(0, LineString3d._indexPoint);
+      dest.push(LineString3d._indexPoint);
       return;
     }
     if (index < 0)
@@ -594,8 +594,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       index = n - 1;
       fraction += 1;
     }
-    this._points.interpolate(index, fraction, index + 1, LineString3d.s_indexPoint);
-    dest.push(LineString3d.s_indexPoint);
+    this._points.interpolate(index, fraction, index + 1, LineString3d._indexPoint);
+    dest.push(LineString3d._indexPoint);
   }
   /** Return (if possible) a LineString which is a portion of this curve.
    * @param fractionA [in] start fraction
@@ -625,8 +625,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const result = LineString3d.create();
     this.addResolvedPoint(indexA, localFractionA, result._points);
     for (let index = indexA + 1; index <= indexB; index++) {
-      this._points.getPoint3dAt(index, LineString3d.s_workPointA);
-      result._points.push(LineString3d.s_workPointA);
+      this._points.getPoint3dAt(index, LineString3d._workPointA);
+      result._points.push(LineString3d._workPointA);
     }
     if (!Geometry.isSmallRelative(localFractionB)) {
       this.addResolvedPoint(indexB, localFractionB, result._points);

@@ -40,7 +40,7 @@ export default class ScrollableArea extends React.Component<ScrollableAreaProps,
   }
 
   public componentDidMount() {
-    this.updateScrollIndicatorVisibility();
+    this._updateScrollIndicatorVisibility();
   }
 
   public render() {
@@ -56,7 +56,7 @@ export default class ScrollableArea extends React.Component<ScrollableAreaProps,
         <div
           className="nz-content"
           ref={this._content}
-          onScroll={this.updateScrollIndicatorVisibility}
+          onScroll={this._updateScrollIndicatorVisibility}
         >
           {this.props.children}
         </div>
@@ -64,7 +64,7 @@ export default class ScrollableArea extends React.Component<ScrollableAreaProps,
           <div className="nz-indicator">
             <div
               className="nz-triangle"
-              onClick={this.scrollTop}
+              onClick={this._scrollTop}
             />
           </div>
         }
@@ -72,7 +72,7 @@ export default class ScrollableArea extends React.Component<ScrollableAreaProps,
           <div className="nz-indicator nz-bottom">
             <div
               className="nz-triangle"
-              onClick={this.scrollBottom}
+              onClick={this._scrollBottom}
             />
           </div>
         }
@@ -80,7 +80,7 @@ export default class ScrollableArea extends React.Component<ScrollableAreaProps,
     );
   }
 
-  private updateScrollIndicatorVisibility = () => {
+  private _updateScrollIndicatorVisibility = () => {
     this.setState(() => {
       const content = this._content.current;
       if (!content)
@@ -94,11 +94,11 @@ export default class ScrollableArea extends React.Component<ScrollableAreaProps,
     });
   }
 
-  private scrollTop = () => {
+  private _scrollTop = () => {
     this.scroll(-1);
   }
 
-  private scrollBottom = () => {
+  private _scrollBottom = () => {
     this.scroll(1);
   }
 

@@ -14,7 +14,7 @@ describe("DisableNativeAssertions", () => {
 
   it("Prepare invalid SQLite statement with native assertions turned on", () => {
     using(ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       let hasThrown: boolean = false;
       try {
@@ -40,7 +40,7 @@ describe("DisableNativeAssertions", () => {
 
   it("Prepare invalid SQLite statement with native assertions turned off", () => {
     using(ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       using(new DisableNativeAssertions(), () => {
         let hasThrown: boolean = false;

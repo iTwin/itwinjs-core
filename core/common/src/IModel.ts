@@ -143,13 +143,13 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @hidden */
-  protected token: IModelToken;
+  protected _token: IModelToken;
 
   /** The token that can be used to find this iModel instance. */
-  public get iModelToken(): IModelToken { return this.token; }
+  public get iModelToken(): IModelToken { return this._token; }
 
   /** @hidden */
-  protected constructor(iModelToken: IModelToken) { this.token = iModelToken; }
+  protected constructor(iModelToken: IModelToken) { this._token = iModelToken; }
 
   /** @hidden */
   protected initialize(name: string, props: IModelProps) {

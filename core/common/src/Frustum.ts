@@ -147,7 +147,7 @@ export class Frustum {
   }
 
   /** Return true if this Frustum has a mirror (is not in the correct order.) */
-  public hasMirror(): boolean {
+  public get hasMirror(): boolean {
     const pts = this.points;
     const u = pts[Npc._000].vectorTo(pts[Npc._001]);
     const v = pts[Npc._000].vectorTo(pts[Npc._010]);
@@ -156,7 +156,7 @@ export class Frustum {
   }
   /** Make sure the frustum point order does not include mirroring. If so, reverse the order. */
   public fixPointOrder(): void {
-    if (!this.hasMirror())
+    if (!this.hasMirror)
       return;
 
     // frustum has mirroring, reverse points

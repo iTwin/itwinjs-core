@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "TSLint New Rule Enforcements",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "nate.rex@bentley.com"
+}

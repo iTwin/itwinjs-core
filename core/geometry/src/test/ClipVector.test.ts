@@ -152,11 +152,11 @@ describe("ClipVector", () => {
     // Test create methods and cloning/referencing
     const clipVectorTester0 = clipVector012.clone();
     const clipVectorTester1 = ClipVector.createEmpty();
-    ck.testTrue(!clipVectorTester1.isValid(), "Empty ClipVector should not be valid");
+    ck.testTrue(!clipVectorTester1.isValid, "Empty ClipVector should not be valid");
     ClipVector.createClipShapeRefs(clipVectorTester0.clips, clipVectorTester1);
-    ck.testTrue(clipVectorTester1.isValid(), "ClipVector should not be empty after copy");
+    ck.testTrue(clipVectorTester1.isValid, "ClipVector should not be empty after copy");
     ClipVector.createClipShapeClones(clipVectorTester0.clips, clipVectorTester1);
-    ck.testTrue(clipVectorTester1.isValid(), "ClipVector should not be empty after clone");
+    ck.testTrue(clipVectorTester1.isValid, "ClipVector should not be empty after clone");
     ClipVector.createEmpty(clipVectorTester1);
     const arrLen = clipVector012.clips.length;
     for (let i = 0; i < arrLen; i++) {

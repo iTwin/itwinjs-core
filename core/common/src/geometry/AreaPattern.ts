@@ -198,7 +198,7 @@ export namespace AreaPattern {
 
     public static transformPatternSpace(transform: Transform, oldSpace: number, patRot: RotMatrix, angle?: Angle): number {
       let tmpRot: RotMatrix;
-      if (angle && !angle.isAlmostZero()) {
+      if (angle && !angle.isAlmostZero) {
         const yprTriple = new YawPitchRollAngles(angle);
         const angRot = yprTriple.toRotMatrix();
         tmpRot = patRot.multiplyMatrixMatrix(angRot);
@@ -218,7 +218,7 @@ export namespace AreaPattern {
     }
 
     public applyTransform(transform: Transform): boolean {
-      if (transform.isIdentity())
+      if (transform.isIdentity)
         return true;
       const origin = this.origin ? this.origin : Point3d.createZero();
       const rMatrix = this.rotation ? this.rotation.toRotMatrix() : RotMatrix.createIdentity();

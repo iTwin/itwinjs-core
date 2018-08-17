@@ -37,7 +37,7 @@ export default class Toggle extends React.Component<ToggleProps> {
       >
         <div
           className="nz-toggle"
-          onClick={this.handleOnClick}
+          onClick={this._handleOnClick}
         >
           <div className="nz-content">
             {this.props.content}
@@ -53,7 +53,7 @@ export default class Toggle extends React.Component<ToggleProps> {
     );
   }
 
-  private handleOnClick = () => {
+  private _handleOnClick = () => {
     this.props.onClick && this.props.onClick();
   }
 }

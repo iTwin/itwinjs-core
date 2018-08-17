@@ -3,25 +3,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Newton1dUnbounded, NewtonEvaluatorRtoRD } from "../numerics/Newton";
-import {Checker} from "./Checker";
+import { Checker } from "./Checker";
 import { expect } from "chai";
 /* tslint:disable:no-console */
 
 export class HornerEvaluator extends NewtonEvaluatorRtoRD {
-  private coefficients: number[];
+  private _coefficients: number[];
   // Constructor CAPTURES the caller's array . .
   public constructor(coefficients: number[]) {
     super();
-    this.coefficients = coefficients;
+    this._coefficients = coefficients;
   }
   public evaluate(x: number): boolean {
-    let k = this.coefficients.length - 1;
-    let p = this.coefficients[k];
+    let k = this._coefficients.length - 1;
+    let p = this._coefficients[k];
     let q = 0.0;
     while (k > 0) {
       k--;
       q = p + x * q;
-      p = x * p + this.coefficients[k];
+      p = x * p + this._coefficients[k];
       this.currentF = p;
       this.currentdFdX = q;
     }
@@ -29,22 +29,22 @@ export class HornerEvaluator extends NewtonEvaluatorRtoRD {
   }
 }
 export class ClothoidCosineEvaluator extends NewtonEvaluatorRtoRD {
-  private exitRadius: number;
-  private exitLength: number;
-  private alpha: number;
-  private gamma: number;
+  private _exitRadius: number;
+  private _exitLength: number;
+  private _alpha: number;
+  private _gamma: number;
   public constructor(alpha: number, exitRadius: number, exitLength: number) {
     super();
-    this.exitRadius = exitRadius;
-    this.exitLength = exitLength;
-    this.alpha = alpha;
-    this.gamma = this.alpha / (40.0 * this.exitRadius * this.exitRadius * this.exitLength * this.exitLength);
+    this._exitRadius = exitRadius;
+    this._exitLength = exitLength;
+    this._alpha = alpha;
+    this._gamma = this._alpha / (40.0 * this._exitRadius * this._exitRadius * this._exitLength * this._exitLength);
   }
   public evaluate(x: number): boolean {
     const x2 = x * x;
     const x4 = x2 * x2;
-    this.currentF = x * (1.0 + x4 * this.gamma);
-    this.currentdFdX = 1.0 + 5.0 * x4 * this.gamma;
+    this.currentF = x * (1.0 + x4 * this._gamma);
+    this.currentdFdX = 1.0 + 5.0 * x4 * this._gamma;
     return true;
   }
 }
@@ -65,13 +65,13 @@ describe("Newton", () => {
         f.evaluate(x);
         iterator.setTarget(f.currentF);
         if (Checker.noisy.newtonRtoRD)
-          console.log ({X: x, F: f.currentF, dF: f.currentdFdX});
+          console.log({ X: x, F: f.currentF, dF: f.currentdFdX });
         // start iterator away from the root.
         iterator.setX(x + 1);
         if (ck.testTrue(iterator.runIterations())) {
           const x1 = iterator.getX();
           ck.testCoordinate(x, iterator.getX(), "newton converted to correct value");
-          ck.testLE (iterator.numIterations, 5, "Expect low newton iteration count for gentle function");
+          ck.testLE(iterator.numIterations, 5, "Expect low newton iteration count for gentle function");
           if (Checker.noisy.newtonRtoRD)
             console.log("   ", { X: x, X1: x1, n: iterator.numIterations });
         }

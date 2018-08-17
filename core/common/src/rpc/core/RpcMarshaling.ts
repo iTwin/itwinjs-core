@@ -27,7 +27,7 @@ export enum RpcMarshalingDirective {
   ErrorStack = "__error_stack__",
 }
 
-/** @hidden @internal */
+/** @hidden */
 export class RpcMarshaling {
   private constructor() { }
 

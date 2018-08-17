@@ -30,20 +30,20 @@ export default class Target extends React.Component<TargetProps> {
       <div
         className={className}
         style={this.props.style}
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}
+        onMouseEnter={this._handleMouseEnter}
+        onMouseLeave={this._handleMouseLeave}
       >
         {this.props.children}
       </div>
     );
   }
 
-  private handleMouseEnter = () => {
+  private _handleMouseEnter = () => {
     this._isTargeted = true;
     this.props.onTargetChanged && this.props.onTargetChanged(true);
   }
 
-  private handleMouseLeave = () => {
+  private _handleMouseLeave = () => {
     this._isTargeted = false;
     this.props.onTargetChanged && this.props.onTargetChanged(false);
   }
