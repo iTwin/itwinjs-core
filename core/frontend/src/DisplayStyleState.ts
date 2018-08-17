@@ -32,6 +32,10 @@ export abstract class DisplayStyleState extends ElementState {
   private _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
   private _backgroundMap: BackgroundMapState;
 
+  public syncBackgroundMapState() {
+    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), this.iModel);
+  }
+
   constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
     this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
@@ -134,7 +138,7 @@ export class GroundPlane implements GroundPlaneProps {
     const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
     const color = aboveGround ? this.aboveColor : this.belowColor;
     const alpha = aboveGround ? 0x80 : 0x85;
-    const groundColors = [ color.clone(), color.clone(), color.clone() ];
+    const groundColors = [color.clone(), color.clone(), color.clone()];
     groundColors[0].setTransparency(0xff);
     groundColors[1].setTransparency(alpha);
     groundColors[2].setTransparency(alpha);
@@ -379,7 +383,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 
   public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
-    const textureIds = new Set<string>([ this.front.value, this.back.value, this.top.value, this.bottom.value, this.right.value, this.left.value]);
+    const textureIds = new Set<string>([this.front.value, this.back.value, this.top.value, this.bottom.value, this.right.value, this.left.value]);
     const promises = new Array<Promise<TextureImage | undefined>>();
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
@@ -496,7 +500,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
       skybox.loadParams(system, this.iModel).then((params?: SkyBox.CreateParams) => {
         this._skyBoxParams = params;
         this._skyBoxParamsLoaded = true;
-        }).catch((_err) => this._skyBoxParamsLoaded = true);
+      }).catch((_err) => this._skyBoxParamsLoaded = true);
     }
 
     return this._skyBoxParams;
