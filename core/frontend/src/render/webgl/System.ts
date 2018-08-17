@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, FeatureTable, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, StrokeOptions, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator, StrokeOptions } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -149,7 +149,7 @@ export class Capabilities {
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
-    return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
+    return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
   }
 
   public static create(gl: WebGLRenderingContext): Capabilities | undefined {
@@ -178,12 +178,12 @@ export class Capabilities {
   }
 
   /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
-  private get hasRequiredFeatures(): boolean {
+  private get _hasRequiredFeatures(): boolean {
     return this.supports32BitElementIndex;
   }
 
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
-  private get hasRequiredTextureUnits(): boolean {
+  private get _hasRequiredTextureUnits(): boolean {
     return this.maxFragTextureUnits > 4 && this.maxVertTextureUnits > 5;
   }
 }
@@ -350,8 +350,6 @@ export class System extends RenderSystem {
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
   private _techniques?: Techniques;
-
-  public static identityTransform = Transform.createIdentity();
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
@@ -589,7 +587,7 @@ export class System extends RenderSystem {
         polyfaceBuilder.addQuadFacet(polygon, params);
 
       } else {
-        // ### TODO: There are a lot of innefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
+        // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
         const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
@@ -670,5 +668,3 @@ export class System extends RenderSystem {
     return sheetTileGraphics;
   }
 }
-
-Object.freeze(System.identityTransform);

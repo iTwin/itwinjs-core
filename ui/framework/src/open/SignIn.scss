@@ -1,0 +1,204 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+ @import "@bentley/bwc/lib/buttons/classes.scss";
+
+/************************************************************************
+ * SignInDialog - OIDC sign-in dialog.
+ *    The SignIn dialog has not been reviewed by the UX team, so
+ *    markup and styling are sure to change.
+ ***********************************************************************/
+
+ $signin-height: 420px;
+ $signin-width:  300px;
+
+/* sign in dialog */
+.signin {
+  overflow: hidden;
+  width:  $signin-width;
+  height: $signin-height;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 2px 4px 8px 2px rgba(0,0,0,0.25);
+
+  /* content area is twice the height for scrolling transition */
+  .signin-content {
+    display: flex;
+    flex-direction: column;
+    height: $signin-height * 2;
+    background-color: $bwc-white;
+    transform: translate3d (0px, 0px, 0px);
+    transition: transform .5s ease-in-out;
+  }
+
+  /* any form content (content that is scrolled) */
+  .signin-content > form {
+    height: $signin-height;
+  }
+
+  /* container for the OIDC page (default page) */
+  .signin-oidc-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* form content area uses a flexbox */
+  .signin-form-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0px 20px;
+  }
+
+  /* close "X" button */
+  .signin-form-close {
+    position: absolute;
+    right: 15px;
+    top: $signin-height + 5px;
+    color: $bwc-gray-1;
+    font-size: 35px;
+    font-weight: bold;
+
+    &:hover, &:focus {
+      color: $bwc-red;
+      cursor: pointer;
+    }
+  }
+
+  /* scrolling translation */
+  .signin-content-scroll{
+    transform: translate3d(0px, -$signin-height, 0px);
+  }
+
+  /* top image either user profile image or loading spinner */
+  .signin-top-image-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1; /* fill remaining space */
+
+    /* user profile image is 90 pixels */
+    .signin-profile {
+      height: 90px;
+    }
+
+    /* spinner is 90 pixels */
+    .signin-spinner {
+      @include bwc-loaders-loader($size: 90px);
+    }
+
+    /* sign in header (either Please sign in... or Signing in...) */
+    .signin-header {
+      padding: 0 10%;
+      color: #777;
+      margin-top: 30px;
+      text-align: center;
+    }
+  }
+
+  /* enter credentials link */
+  .signin-credentials-link {
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 50px;
+    //height: 16px;
+    //line-height: 16px;
+    text-decoration: none;
+    text-shadow: none;
+    border-radius: 3px;
+    box-shadow: none;
+    color: $bwc-blue-6;
+    font-size: $bwc-font-size-small;
+
+    a {
+      cursor: pointer;
+    }
+
+    a:first-child {
+      margin-right: 10px;
+    }
+
+    &:visited {
+      color: #fff;
+    }
+
+    &:hover {
+      color: $bwc-blue-5;
+    }
+
+    &:active {
+      color: #000;
+    }
+  }
+
+  /* New User? Register Now container */
+  .signin-register-div {
+    background: $bwc-gray-1;
+    font-size: $bwc-font-size;
+    color: $bwc-white;
+    margin-top: auto;
+    text-align: center;
+    width: 100%;
+
+    p a {
+      text-decoration: none;
+      margin-left: .5em;
+      cursor: pointer;
+
+      &:visited {
+        color: $bwc-white;
+      }
+
+      &:hover {
+        color: #D2D2D2;
+      }
+
+      &:active {
+        color: #777;
+      }
+    }
+  }
+
+  /* label + input */
+  .signin-control-group {
+    margin-bottom: 10px;
+
+    input {
+      width: 100%;
+      padding: 8px 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+  }
+
+  /* title for Register Now form */
+  .signin-register-title {
+    color: #777;
+    margin-top: 5px;
+    margin-bottom: 20px;
+  }
+
+  /* sign in button */
+  .signin-button {
+    @extend .bwc-buttons-primary;
+    margin: 0 10%;
+  }
+
+  /* sign in button disabled */
+  .signin-button-disabled {
+    @extend .bwc-buttons-disabled;
+  }
+
+  /* action button (Register or Credentials Sign In) */
+  .signin-action-button {
+    @extend .bwc-buttons-primary;
+    margin-top: auto;
+    margin-bottom: 10px;
+  }
+}

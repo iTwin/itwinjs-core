@@ -1,0 +1,34 @@
+@import "@bentley/bwc/lib/mixins";
+
+@-webkit-keyframes fadeIn { from { opacity:0; opacity: 1\9; /* IE9 only */ } to { opacity:1; } }
+@-moz-keyframes fadeIn { from { opacity:0; opacity: 1\9; /* IE9 only */ } to { opacity:1; } }
+@keyframes fadeIn { from { opacity:0; opacity: 1\9; /* IE9 only */ } to { opacity:1; } }
+
+.blocking-prompt {
+  display: flex;
+  font-size: 1.25em;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: auto;
+  height: auto;
+  position: absolute;
+  padding: 20px;
+  z-index: 15;
+  top: 35%;
+  left: 50%;
+  background-color: #fefefe;
+  transform: translate(-50%, -50%);
+  border: 1px solid #888;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  color: #444;
+
+  div{
+    margin-bottom: 25px;
+  }
+}
+
+.loader-large {
+  @include bwc-loaders-large;
+}

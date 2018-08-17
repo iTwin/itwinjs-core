@@ -27,8 +27,6 @@ import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 import ViewListWidget from "@bentley/ui-framework/lib/pickers/ViewList";
-// import ModelSelectorWidget from "@bentley/ui-framework/lib/pickers/ModelSelector";
-// import { CategorySelectorWidget } from "@bentley/ui-framework/lib/pickers/CategorySelector";
 
 export class ViewsFrontstage {
 
@@ -129,7 +127,7 @@ export class ViewsFrontstage {
         ],
       },
       bottomLeft: {
-        defaultState: ZoneState.Open,
+        defaultState: ZoneState.Minimized,
         allowsMerging: true,
         widgetProps: [
           {
@@ -138,6 +136,12 @@ export class ViewsFrontstage {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
             isFreeform: false,
+          },
+          {
+            classId: "FeedbackWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
           },
         ],
       },
@@ -179,27 +183,27 @@ export class ViewsFrontstage {
     return frontstageProps;
   }
 
-  private fitToViewCommand = () => {
+  private _fitToViewCommand = () => {
     IModelApp.tools.run("View.Fit", ViewportManager.getActiveViewport(), true);
   }
 
-  private windowAreaCommand = () => {
+  private _windowAreaCommand = () => {
     IModelApp.tools.run("View.WindowArea", ViewportManager.getActiveViewport());
   }
 
-  private toggleCameraCommand = () => {
+  private _toggleCameraCommand = () => {
     IModelApp.tools.run("View.ToggleCamera", ViewportManager.getActiveViewport());
   }
 
-  private walkCommand = () => {
+  private _walkCommand = () => {
     IModelApp.tools.run("View.Walk", ViewportManager.getActiveViewport());
   }
 
-  private rotateCommand = () => {
+  private _rotateCommand = () => {
     IModelApp.tools.run("View.Rotate", ViewportManager.getActiveViewport());
   }
 
-  private tool1 = () => {
+  private _tool1 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -211,7 +215,7 @@ export class ViewsFrontstage {
     }
   }
 
-  private tool2 = () => {
+  private _tool2 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -239,11 +243,11 @@ export class ViewsFrontstage {
         items={
           <>
             <ToolButton toolId="Select" iconClass="icon-zoom" />
-            <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this.fitToViewCommand} />
-            <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this.windowAreaCommand} />
-            <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this.toggleCameraCommand} />
-            <ToolButton toolId="walk" iconClass="icon-walk" execute={this.walkCommand} />
-            <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this.rotateCommand} />
+            <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this._fitToViewCommand} />
+            <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this._windowAreaCommand} />
+            <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this._toggleCameraCommand} />
+            <ToolButton toolId="walk" iconClass="icon-walk" execute={this._walkCommand} />
+            <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this._rotateCommand} />
           </>
         }
       />;
@@ -253,8 +257,8 @@ export class ViewsFrontstage {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this.tool1} />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this.tool2} />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this._tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this._tool2} />
             <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"

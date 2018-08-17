@@ -5,7 +5,7 @@
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
-import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
@@ -167,7 +167,7 @@ export class ViewHandleArray {
   }
 
   public setFocus(index: number): void {
-    if (this.focus === index && (this.focusDrag === this.viewTool.isDragging))
+    if (this.focus === index && (this.focusDrag === this.viewTool.inHandleModify))
       return;
 
     let focusHandle: ViewingToolHandle | undefined;
@@ -184,7 +184,7 @@ export class ViewHandleArray {
     }
 
     this.focus = index;
-    this.focusDrag = this.viewTool.isDragging;
+    this.focusDrag = this.viewTool.inHandleModify;
 
     if (undefined !== this.viewport)
       this.viewport.invalidateDecorations();
@@ -202,19 +202,17 @@ export abstract class ViewManip extends ViewTool {
   public viewport?: Viewport = undefined;
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
-  public alwaysLeaveLastView = false;
   public readonly targetCenterWorld = new Point3d();
+  public inHandleModify = false;
   public isDragging = false;
-  public isDragOperation = false;
   public stoppedOverHandle = false;
   public targetCenterValid = false;
   public targetCenterLocked = false;
   public nPts = 0;
-  protected forcedHandle = ViewHandleType.None;
+  protected _forcedHandle = ViewHandleType.None;
   public readonly lastFrustum = new Frustum();
 
-  constructor(viewport: Viewport | undefined, public handleMask: number, public isOneShot: boolean, public scrollOnNoMotion: boolean,
-    public isDragOperationRequired: boolean = false) {
+  constructor(viewport: Viewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
     super();
     this.viewHandles = new ViewHandleArray(this);
     this.changeViewport(viewport);
@@ -229,7 +227,7 @@ export abstract class ViewManip extends ViewTool {
     }
 
     this.nPts = 0;
-    this.isDragging = false;
+    this.inHandleModify = false;
     this.inDynamicUpdate = false;
     this.frustumValid = false;
 
@@ -238,7 +236,7 @@ export abstract class ViewManip extends ViewTool {
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     // Tool was started in "drag required" mode, don't advance tool state and wait to see if we get the start drag event.
-    if (0 === this.nPts && this.isDragOperationRequired && !this.isDragOperation)
+    if (0 === this.nPts && this.isDraggingRequired && !this.isDragging)
       return EventHandled.No;
 
     switch (this.nPts) {
@@ -254,7 +252,7 @@ export abstract class ViewManip extends ViewTool {
 
     if (this.nPts > 1) {
       this.inDynamicUpdate = false;
-      if (this.processPoint(ev, false) && this.isOneShot)
+      if (this.processPoint(ev, false) && this.oneShot)
         this.exitTool();
       else
         this.onReinitialize();
@@ -264,7 +262,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    if (this.nPts <= 1 && this.isDragOperationRequired && !this.isDragOperation && this.isOneShot)
+    if (this.nPts <= 1 && this.isDraggingRequired && !this.isDragging && this.oneShot)
       this.exitTool();
 
     return EventHandled.No;
@@ -280,22 +278,21 @@ export abstract class ViewManip extends ViewTool {
     }
 
     IModelApp.toolAdmin.processWheelEvent(ev, false);
-    this.doUpdate(true);
     return EventHandled.Yes;
   }
 
   public async startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled> {
-    if (this.isDragging)
+    if (this.inHandleModify)
       return EventHandled.No; // If already changing the view reject the request...
 
     if (undefined !== forcedHandle) {
       if (!this.viewHandles.hasHandle(forcedHandle))
         return EventHandled.No; // If requested handle isn't present reject the request...
-      this.forcedHandle = forcedHandle;
+      this._forcedHandle = forcedHandle;
     }
 
     this.receivedDownEvent = true; // Request up events even though we may not have gotten the down event...
-    this.isDragOperation = true;
+    this.isDragging = true;
 
     if (0 === this.nPts)
       this.onDataButtonDown(ev);
@@ -315,11 +312,11 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    // NOTE: To support startHandleDrag being called by IdleTool for middle button drag, check isDragging and not the button type...
-    if (!this.isDragging)
+    // NOTE: To support startHandleDrag being called by IdleTool for middle button drag, check inHandleModify and not the button type...
+    if (!this.inHandleModify)
       return EventHandled.No;
 
-    this.isDragOperation = false;
+    this.isDragging = false;
 
     if (0 === this.nPts)
       return EventHandled.Yes;
@@ -358,8 +355,8 @@ export abstract class ViewManip extends ViewTool {
       return;
 
     const hitHandle = this.viewHandles.hitHandle;
-    if (hitHandle && hitHandle.noMotion(ev))
-      this.doUpdate(false);
+    if (hitHandle)
+      hitHandle.noMotion(ev);
   }
 
   public onPostInstall(): void {
@@ -372,7 +369,7 @@ export abstract class ViewManip extends ViewTool {
 
     if (this.inDynamicUpdate) {
       this.endDynamicUpdate();
-      restorePrevious = !this.alwaysLeaveLastView;
+      restorePrevious = true;
     }
 
     const vp = this.viewport;
@@ -388,7 +385,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewport = undefined;
   }
 
-  public isSameFrustum(): boolean {
+  public frustumDidNotChange(): boolean {
     const frust = this.viewport!.getWorldFrustum();
     if (this.frustumValid && frust.equals(this.lastFrustum))
       return true;
@@ -404,7 +401,7 @@ export abstract class ViewManip extends ViewTool {
       return;
 
     if (this.targetCenterValid) {
-      if (this.isDragging)
+      if (this.inHandleModify)
         return;
       if (IModelApp.tentativePoint.isActive) {
         this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
@@ -416,7 +413,7 @@ export abstract class ViewManip extends ViewTool {
     if (IModelApp.tentativePoint.isActive)
       return this.setTargetCenterWorld(IModelApp.tentativePoint.getPoint(), true, false);
 
-    if (TentativeOrAccuSnap.isHot())
+    if (TentativeOrAccuSnap.isHot)
       return this.setTargetCenterWorld(TentativeOrAccuSnap.getCurrentPoint(), true, false);
 
     if (vp.viewCmdTargetCenter && this.isPointVisible(vp.viewCmdTargetCenter))
@@ -432,12 +429,12 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public processFirstPoint(ev: BeButtonEvent) {
-    const forcedHandle = this.forcedHandle;
-    this.forcedHandle = ViewHandleType.None;
+    const forcedHandle = this._forcedHandle;
+    this._forcedHandle = ViewHandleType.None;
     this.frustumValid = false;
 
     if (this.viewHandles.testHit(ev.viewPoint, forcedHandle)) {
-      this.isDragging = true;
+      this.inHandleModify = true;
       this.viewHandles.focusHitHandle();
       const handle = this.viewHandles.hitHandle;
       if (undefined !== handle && !handle.firstPoint(ev))
@@ -453,9 +450,6 @@ export abstract class ViewManip extends ViewTool {
       return true;
 
     const doUpdate = hitHandle.doManipulation(ev, inDynamics);
-    if (doUpdate)
-      this.doUpdate(true);
-
     return inDynamics || (doUpdate && hitHandle.checkOneShot());
   }
 
@@ -464,7 +458,7 @@ export abstract class ViewManip extends ViewTool {
     return !cameraView.is3d() ? false : Math.abs(cameraView.calcLensAngle().radians - angle.radians) < tolerance;
   }
 
-  public isZUp() {
+  public get isZUp() {
     const view = this.viewport!.view;
     const viewX = view.getXVector();
     const viewY = view.getXVector();
@@ -485,8 +479,6 @@ export abstract class ViewManip extends ViewTool {
 
     return pt.z;
   }
-
-  public doUpdate(_abortOnButton: boolean) { }  // we currently have no built-in support for dynamics, therefore nothing to update.
 
   /**
    * Set the target point for viewing operations.
@@ -525,7 +517,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   protected static _useViewAlignedVolume: boolean = false;
-  public static fitView(viewport: Viewport, doUpdate: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: Viewport, doAnimate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum();
@@ -537,7 +529,7 @@ export abstract class ViewManip extends ViewTool {
 
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
-    if (doUpdate)
+    if (doAnimate)
       viewport.animateFrustumChange(before, viewport.getFrustum());
 
     viewport.synchWithView(true);
@@ -549,10 +541,10 @@ export abstract class ViewManip extends ViewTool {
       return ViewStatus.InvalidViewport;
 
     const view = vp.view;
-    if (!view || !view.is3d())
+    if (!view || !view.is3d() || !view.allow3dManipulations())
       return ViewStatus.InvalidViewport;
 
-    const result = (retainEyePoint && view.isCameraOn()) ?
+    const result = (retainEyePoint && view.isCameraOn) ?
       view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle) :
       vp.turnCameraOn(lensAngle);
 
@@ -571,7 +563,7 @@ export abstract class ViewManip extends ViewTool {
 
   public enforceZUp(pivotPoint: Point3d) {
     const vp = this.viewport;
-    if (!vp || this.isZUp())
+    if (!vp || this.isZUp)
       return false;
 
     const view = vp.view;
@@ -606,33 +598,29 @@ export abstract class ViewManip extends ViewTool {
     this.targetCenterValid = false;
     this.updateTargetCenter();
 
-    if (this.handleMask & ViewHandleType.Rotate) {
+    if (this.handleMask & ViewHandleType.Rotate)
       this.viewHandles.add(new ViewRotate(this));
-    }
 
     if (this.handleMask & ViewHandleType.TargetCenter)
       this.viewHandles.add(new ViewTargetCenter(this));
 
-    // if (this.handleMask & ViewHandleType.ViewScroll)
-    //   this.viewHandles.add(new ViewScroll(this));
-
     if (this.handleMask & ViewHandleType.Pan)
       this.viewHandles.add(new ViewPan(this));
 
-    // if (this.handleMask & ViewHandleType.ViewZoom)
-    //   this.viewHandles.add(new ViewZoom(this));
+    if (this.handleMask & ViewHandleType.Scroll)
+      this.viewHandles.add(new ViewScroll(this));
+
+    if (this.handleMask & ViewHandleType.Zoom)
+      this.viewHandles.add(new ViewZoom(this));
 
     if (this.handleMask & ViewHandleType.Walk)
       this.viewHandles.add(new ViewWalk(this));
 
-    // if (this.handleMask & ViewHandleType.ViewWalkMobile)
-    //   this.viewHandles.add(new ViewWalkMobile(this));
+    if (this.handleMask & ViewHandleType.Fly)
+      this.viewHandles.add(new ViewFly(this));
 
-    // if (this.handleMask & ViewHandleType.ViewFly)
-    //   this.viewHandles.add(new ViewFly(this));
-
-    // if (this.handleMask & ViewHandleType.ViewLook)
-    //   this.viewHandles.add(new ViewLook(this));
+    if (this.handleMask & ViewHandleType.Look)
+      this.viewHandles.add(new ViewLook(this));
   }
 }
 
@@ -649,8 +637,8 @@ class ViewTargetCenter extends ViewingToolHandle {
   }
 
   public testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
-    if (this.viewTool.isDragOperationRequired)
-      return false; // Target center handle is not usable in this mode...
+    if (this.viewTool.isDraggingRequired)
+      return false; // Target center handle is not movable in this mode, but it's still nice to display the point we're rotating about...
 
     const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
     const distance = targetPt.distanceXY(ptScreen);
@@ -686,7 +674,7 @@ class ViewTargetCenter extends ViewingToolHandle {
       return;
 
     let sizeInches = 0.2;
-    if (!hasFocus && this.viewTool.isDragging) {
+    if (!hasFocus && this.viewTool.inHandleModify) {
       sizeInches = 0.1; // Display small target when dragging...
       hasFocus = false;
     }
@@ -726,40 +714,40 @@ class ViewTargetCenter extends ViewingToolHandle {
 
 /** ViewingToolHandle for performing the "pan view" operation */
 class ViewPan extends ViewingToolHandle {
-  private anchorPt: Point3d = new Point3d();
-  private lastPtNpc: Point3d = new Point3d();
+  private _anchorPt: Point3d = new Point3d();
+  private _lastPtNpc: Point3d = new Point3d();
   public get handleType() { return ViewHandleType.Pan; }
-  public getHandleCursor() { return this.viewTool.isDragging ? BeCursor.ClosedHand : BeCursor.OpenHand; }
+  public getHandleCursor() { return this.viewTool.inHandleModify ? BeCursor.ClosedHand : BeCursor.OpenHand; }
 
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean) {
     const vp = ev.viewport!;
     const newPtWorld = ev.point.clone();
     const thisPtNpc = vp.worldToNpc(newPtWorld);
-    const firstPtNpc = vp.worldToNpc(this.anchorPt);
+    const firstPtNpc = vp.worldToNpc(this._anchorPt);
 
     thisPtNpc.z = firstPtNpc.z;
 
-    if (this.lastPtNpc.isAlmostEqual(thisPtNpc, 1.0e-10))
+    if (this._lastPtNpc.isAlmostEqual(thisPtNpc, 1.0e-10))
       return true;
 
     vp.npcToWorld(thisPtNpc, newPtWorld);
-    this.lastPtNpc.setFrom(thisPtNpc);
+    this._lastPtNpc.setFrom(thisPtNpc);
     return this.doPan(newPtWorld);
   }
 
   public firstPoint(ev: BeButtonEvent) {
     const vp = ev.viewport!;
-    this.anchorPt.setFrom(ev.rawPoint);
+    this._anchorPt.setFrom(ev.rawPoint);
 
     // if the camera is on, we need to find the element under the starting point to get the z
-    if (CoordSource.User === ev.coordsFrom && vp.isCameraOn()) {
-      const visiblePoint = vp.pickNearestVisibleGeometry(this.anchorPt, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+    if (CoordSource.User === ev.coordsFrom && vp.isCameraOn) {
+      const visiblePoint = vp.pickNearestVisibleGeometry(this._anchorPt, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
       if (undefined !== visiblePoint) {
-        this.anchorPt.setFrom(visiblePoint);
+        this._anchorPt.setFrom(visiblePoint);
       } else {
-        const firstPtNpc = vp.worldToNpc(this.anchorPt);
+        const firstPtNpc = vp.worldToNpc(this._anchorPt);
         firstPtNpc.z = ViewManip.getFocusPlaneNpc(vp);
-        this.anchorPt = vp.npcToWorld(firstPtNpc, this.anchorPt);
+        this._anchorPt = vp.npcToWorld(firstPtNpc, this._anchorPt);
       }
     }
 
@@ -783,7 +771,7 @@ class ViewPan extends ViewingToolHandle {
   public doPan(newPtWorld: Point3d) {
     const vp = this.viewTool.viewport!;
     const view = vp.view;
-    const dist = newPtWorld.vectorTo(this.anchorPt);
+    const dist = newPtWorld.vectorTo(this._anchorPt);
 
     if (view.is3d()) {
       if (ViewStatus.Success !== view.moveCameraWorld(dist))
@@ -797,11 +785,12 @@ class ViewPan extends ViewingToolHandle {
   }
 }
 
+/** ViewingToolHandle for performing the "rotate view" operation */
 class ViewRotate extends ViewingToolHandle {
-  private lastPtNpc = new Point3d();
-  private firstPtNpc = new Point3d();
-  private frustum = new Frustum();
-  private activeFrustum = new Frustum();
+  private _lastPtNpc = new Point3d();
+  private _firstPtNpc = new Point3d();
+  private _frustum = new Frustum();
+  private _activeFrustum = new Frustum();
   public get handleType() { return ViewHandleType.Rotate; }
   public getHandleCursor() { return BeCursor.Rotate; }
 
@@ -825,11 +814,11 @@ class ViewRotate extends ViewingToolHandle {
     const pickPt = ev.rawPoint.clone();
     const pickPtOrig = pickPt.clone();
 
-    vp.worldToNpc(pickPtOrig, this.firstPtNpc);
-    this.lastPtNpc.setFrom(this.firstPtNpc);
+    vp.worldToNpc(pickPtOrig, this._firstPtNpc);
+    this._lastPtNpc.setFrom(this._firstPtNpc);
 
-    vp.getWorldFrustum(this.activeFrustum);
-    this.frustum.setFrom(this.activeFrustum);
+    vp.getWorldFrustum(this._activeFrustum);
+    this._frustum.setFrom(this._activeFrustum);
 
     tool.beginDynamicUpdate();
     return true;
@@ -839,30 +828,30 @@ class ViewRotate extends ViewingToolHandle {
     const tool = this.viewTool;
     const viewport = tool.viewport!;
     const ptNpc = viewport.worldToNpc(ev.point);
-    if (this.lastPtNpc.isAlmostEqual(ptNpc, 1.0e-10)) // no movement since last point
+    if (this._lastPtNpc.isAlmostEqual(ptNpc, 1.0e-10)) // no movement since last point
       return true;
 
-    if (this.firstPtNpc.isAlmostEqual(ptNpc, 1.0e-2)) // too close to anchor pt
-      ptNpc.setFrom(this.firstPtNpc);
+    if (this._firstPtNpc.isAlmostEqual(ptNpc, 1.0e-2)) // too close to anchor pt
+      ptNpc.setFrom(this._firstPtNpc);
 
-    this.lastPtNpc.setFrom(ptNpc);
+    this._lastPtNpc.setFrom(ptNpc);
     const currentFrustum = viewport.getWorldFrustum();
-    const frustumChange = !currentFrustum.equals(this.activeFrustum);
+    const frustumChange = !currentFrustum.equals(this._activeFrustum);
     if (frustumChange)
-      this.frustum.setFrom(currentFrustum);
-    else if (!viewport.setupViewFromFrustum(this.frustum))
+      this._frustum.setFrom(currentFrustum);
+    else if (!viewport.setupViewFromFrustum(this._frustum))
       return false;
 
     const currPt = viewport.npcToView(ptNpc);
     if (frustumChange)
-      this.firstPtNpc.setFrom(ptNpc);
+      this._firstPtNpc.setFrom(ptNpc);
 
     let radians: Angle;
     let worldAxis: Vector3d;
     const worldPt = tool.targetCenterWorld;
     if (!viewport.view.allow3dManipulations()) {
       const centerPt = viewport.worldToView(worldPt);
-      const firstPt = viewport.npcToView(this.firstPtNpc);
+      const firstPt = viewport.npcToView(this._firstPtNpc);
       const vector0 = Vector2d.createStartEnd(centerPt, firstPt);
       const vector1 = Vector2d.createStartEnd(centerPt, currPt);
       radians = vector0.angleTo(vector1);
@@ -873,7 +862,7 @@ class ViewRotate extends ViewingToolHandle {
       const yExtent = viewRect.height;
 
       viewport.npcToView(ptNpc, currPt);
-      const firstPt = viewport.npcToView(this.firstPtNpc);
+      const firstPt = viewport.npcToView(this._firstPtNpc);
 
       const xDelta = (currPt.x - firstPt.x);
       const yDelta = (currPt.y - firstPt.y);
@@ -893,7 +882,7 @@ class ViewRotate extends ViewingToolHandle {
     }
 
     this.rotateViewWorld(worldPt, worldAxis, radians);
-    viewport.getWorldFrustum(this.activeFrustum);
+    viewport.getWorldFrustum(this._activeFrustum);
 
     return true;
   }
@@ -903,12 +892,324 @@ class ViewRotate extends ViewingToolHandle {
     if (!worldMatrix)
       return;
     const worldTransform = Transform.createFixedPointAndMatrix(worldOrigin, worldMatrix!);
-    const frustum = this.frustum.clone();
-    frustum.multiply(worldTransform);
+    const frustum = this._frustum.transformBy(worldTransform);
     this.viewTool.viewport!.setupViewFromFrustum(frustum);
   }
 }
 
+/** ViewingToolHandle for performing the "look view" operation */
+class ViewLook extends ViewingToolHandle {
+  private _eyePoint = new Point3d();
+  private _firstPtView = new Point3d();
+  private _rotation = new RotMatrix();
+  private _frustum = new Frustum();
+  public get handleType() { return ViewHandleType.Look; }
+  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+
+  public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
+    out.distance = 0.0;
+    out.priority = ViewManipPriority.Low;
+    return true;
+  }
+
+  public firstPoint(ev: BeButtonEvent) {
+    const tool = this.viewTool;
+    const vp = ev.viewport!;
+    const view = vp.view;
+    if (!view || !view.is3d() || !view.allow3dManipulations())
+      return false;
+
+    this._firstPtView.setFrom(ev.viewPoint);
+    this._eyePoint.setFrom(view.getEyePoint());
+    this._rotation.setFrom(vp.rotMatrix);
+
+    vp.getWorldFrustum(this._frustum);
+    tool.beginDynamicUpdate();
+    return true;
+  }
+
+  public doManipulation(ev: BeButtonEvent, _inDynamics: boolean): boolean {
+    const tool = this.viewTool;
+    const viewport = tool.viewport!;
+
+    if (ev.viewport !== viewport)
+      return false;
+
+    const worldTransform = this.getLookTransform(viewport, this._firstPtView, ev.viewPoint);
+    const frustum = this._frustum.transformBy(worldTransform);
+    this.viewTool.viewport!.setupViewFromFrustum(frustum);
+
+    return true;
+  }
+
+  private getLookTransform(vp: Viewport, firstPt: Point3d, currPt: Point3d): Transform {
+    const viewRect = vp.viewRect;
+    const xExtent = viewRect.width;
+    const yExtent = viewRect.height;
+    const xDelta = (currPt.x - firstPt.x);
+    const yDelta = (currPt.y - firstPt.y);
+    const xAngle = -(xDelta / xExtent) * Math.PI;
+    const yAngle = -(yDelta / yExtent) * Math.PI;
+
+    const inverseRotation = this._rotation.inverse();
+    const horizontalRotation = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(xAngle));
+    const verticalRotation = RotMatrix.createRotationAroundVector(Vector3d.unitX(), Angle.createRadians(yAngle));
+
+    if (undefined === inverseRotation || undefined === horizontalRotation || undefined === verticalRotation)
+      return Transform.createIdentity();
+
+    verticalRotation.multiplyMatrixMatrix(this._rotation, verticalRotation);
+    inverseRotation.multiplyMatrixMatrix(verticalRotation, verticalRotation);
+
+    const newRotation = horizontalRotation.multiplyMatrixMatrix(verticalRotation);
+    const transform = Transform.createFixedPointAndMatrix(this._eyePoint, newRotation);
+    return transform;
+  }
+}
+
+/** ViewingToolHandle for performing the "scroll view" operation */
+class ViewScroll extends ViewingToolHandle {
+  private _anchorPtView = new Point3d();
+  private _lastPtView = new Point3d();
+  public get handleType() { return ViewHandleType.Scroll; }
+  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+
+  public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
+    out.distance = 0.0;
+    out.priority = ViewManipPriority.Low;
+    return true;
+  }
+
+  public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
+    if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
+      return;
+
+    const black = ColorDef.black.clone();
+    const white = ColorDef.white.clone(); white.setAlpha(100);
+    const green = ColorDef.green.clone(); green.setAlpha(200);
+    const graphic = context.createViewOverlay();
+
+    const points = [new Point2d(this._anchorPtView.x, this._anchorPtView.y), new Point2d(this._lastPtView.x, this._lastPtView.y)];
+    graphic.setSymbology(green, green, 2);
+    graphic.addLineString2d(points, 0.0);
+
+    const radius = context.viewport.pixelsFromInches(0.15);
+    const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
+    graphic.setBlankingFill(white);
+    graphic.addArc(ellipse, true, true);
+    graphic.setSymbology(black, black, 1);
+    graphic.addArc(ellipse, false, false);
+
+    const dvec = Vector2d.createStartEnd(points[0], points[1]);
+    if (dvec.magnitude() > 0.1) {
+      const slashPts = [new Point2d(), new Point2d()];
+      dvec.normalize(dvec);
+      points[0].plusScaled(dvec, radius, slashPts[0]);
+      points[0].plusScaled(dvec, -radius, slashPts[1]);
+      graphic.setSymbology(black, black, 2);
+      graphic.addLineString2d(slashPts, 0.0);
+    }
+
+    context.addViewOverlay(graphic.finish());
+  }
+
+  public firstPoint(ev: BeButtonEvent) {
+    const tool = this.viewTool;
+    this._anchorPtView.setFrom(ev.viewPoint);
+    this._lastPtView.setFrom(ev.viewPoint);
+    tool.beginDynamicUpdate();
+    return true;
+  }
+
+  public doManipulation(ev: BeButtonEvent, _inDynamics: boolean): boolean {
+    const tool = this.viewTool;
+    const viewport = tool.viewport!;
+
+    if (ev.viewport !== viewport)
+      return false;
+
+    return this.doScroll(ev);
+  }
+
+  public noMotion(ev: BeButtonEvent): boolean {
+    if (ev.viewport !== this.viewTool.viewport)
+      return false;
+
+    this.viewTool.beginDynamicUpdate();
+    this.doScroll(ev);
+    return false;
+  }
+
+  public doScroll(ev: BeButtonEvent): boolean {
+    this._lastPtView.setFrom(ev.viewPoint);
+    // if we're resting near the anchor point, don't bother with this
+    if ((Math.abs(this._anchorPtView.x - this._lastPtView.x) < 5.0) && Math.abs(this._anchorPtView.y - this._lastPtView.y) < 5.0)
+      return false;
+
+    const scrollFactor = (-1.0 / 8.5);
+    const dist = this._anchorPtView.minus(this._lastPtView); dist.z = 0.0;
+    const viewport = ev.viewport!;
+    const view = viewport.view;
+
+    if (view.is3d() && view.isCameraOn) {
+      const points: Point3d[] = new Array<Point3d>(2);
+      points[0] = this._anchorPtView.clone();
+      points[1] = points[0].plusScaled(dist, scrollFactor);
+
+      viewport.viewToNpcArray(points);
+      points[0].z = points[1].z = ViewManip.getFocusPlaneNpc(viewport); // use the focal plane for z coordinates
+      viewport.npcToWorldArray(points);
+
+      const offset = points[1].minus(points[0]);
+      const offsetTransform = Transform.createTranslation(offset);
+
+      const frustum = viewport.getWorldFrustum();
+      frustum.transformBy(offsetTransform, frustum);
+      viewport.setupViewFromFrustum(frustum);
+    } else {
+      const iDist = Point2d.create(Math.floor(dist.x * scrollFactor), Math.floor(dist.y * scrollFactor));
+      viewport.scroll(iDist);
+    }
+
+    return true;
+  }
+}
+
+/** ViewingToolHandle for performing the "zoom view" operation */
+class ViewZoom extends ViewingToolHandle {
+  private _anchorPtView = new Point3d();
+  private _anchorPtNpc = new Point3d();
+  private _lastPtView = new Point3d();
+  private _lastZoomRatio = 1.0;
+  public get handleType() { return ViewHandleType.Zoom; }
+  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+
+  public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
+    out.distance = 0.0;
+    out.priority = ViewManipPriority.Low;
+    return true;
+  }
+
+  public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
+    if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
+      return;
+
+    const black = ColorDef.black.clone();
+    const white = ColorDef.white.clone(); white.setAlpha(100);
+    const radius = context.viewport.pixelsFromInches(0.15);
+    const plusMinus = context.viewport.pixelsFromInches(0.075);
+    const graphic = context.createViewOverlay();
+
+    const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
+    graphic.setBlankingFill(white);
+    graphic.addArc(ellipse, true, true);
+    graphic.setSymbology(black, black, 1);
+    graphic.addArc(ellipse, false, false);
+
+    const lineHorzPts = [new Point2d(), new Point2d()];
+    lineHorzPts[0].x = this._anchorPtView.x - plusMinus;
+    lineHorzPts[0].y = this._anchorPtView.y;
+    lineHorzPts[1].x = this._anchorPtView.x + plusMinus;
+    lineHorzPts[1].y = this._anchorPtView.y;
+    graphic.setSymbology(black, black, 2);
+    graphic.addLineString2d(lineHorzPts, 0.0);
+
+    if (this._lastZoomRatio < 1.0) {
+      const lineVertPts = [new Point2d(), new Point2d()];
+      lineVertPts[0].x = this._anchorPtView.x;
+      lineVertPts[0].y = this._anchorPtView.y - plusMinus;
+      lineVertPts[1].x = this._anchorPtView.x;
+      lineVertPts[1].y = this._anchorPtView.y + plusMinus;
+      graphic.addLineString2d(lineVertPts, 0.0);
+    }
+
+    context.addViewOverlay(graphic.finish());
+  }
+
+  public firstPoint(ev: BeButtonEvent) {
+    const tool = this.viewTool;
+    const viewport = tool.viewport!;
+    const view = viewport.view;
+    if (view.is3d() && view.isCameraOn) {
+      const visiblePoint = viewport.pickNearestVisibleGeometry(CoordSource.User === ev.coordsFrom ? ev.rawPoint : ev.point, viewport.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+      if (undefined !== visiblePoint) {
+        this._anchorPtView.setFrom(visiblePoint);
+        viewport.worldToView(this._anchorPtView, this._anchorPtView);
+        this._lastPtView.setFrom(this._anchorPtView);
+        tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
+        tool.beginDynamicUpdate();
+        return true;
+      }
+    }
+
+    if (CoordSource.User === ev.coordsFrom)
+      this._anchorPtView.setFrom(ev.viewPoint);
+    else
+      viewport.worldToView(ev.point, this._anchorPtView);
+    this._lastPtView.setFrom(this._anchorPtView);
+    tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
+    tool.beginDynamicUpdate();
+    return true;
+  }
+
+  public doManipulation(ev: BeButtonEvent, _inDynamics: boolean): boolean {
+    if (ev.viewport !== this.viewTool.viewport)
+      return false;
+
+    return this.doZoom(ev);
+  }
+
+  public noMotion(ev: BeButtonEvent): boolean {
+    if (ev.viewport !== this.viewTool.viewport)
+      return false;
+
+    this.viewTool.beginDynamicUpdate();
+    this.doZoom(ev);
+    return false;
+  }
+
+  public doZoom(ev: BeButtonEvent): boolean {
+    this._lastPtView.setFrom(ev.viewPoint);
+    // if we're resting near the anchor point, don't bother with this
+    if ((Math.abs(this._anchorPtView.x - this._lastPtView.x) < 5.0) && Math.abs(this._anchorPtView.y - this._lastPtView.y) < 5.0)
+      return false;
+
+    const viewport = ev.viewport!;
+    const view = viewport.view;
+
+    const thisPtNpc = viewport.viewToNpc(this._lastPtView);
+    const dist = this._anchorPtNpc.minus(thisPtNpc); dist.z = 0.0;
+    const zoomFactor = 0.35;
+    let zoomRatio = 1.0 + (dist.magnitude() * zoomFactor);
+
+    if (dist.y < 0)
+      zoomRatio = 1.0 / zoomRatio;
+
+    this._lastZoomRatio = zoomRatio;
+
+    if (view.is3d() && view.isCameraOn) {
+      const anchorPtWorld = viewport.npcToWorld(this._anchorPtNpc);
+
+      const transform = Transform.createFixedPointAndMatrix(anchorPtWorld, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
+      const oldEyePoint = view.getEyePoint();
+      const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
+      const cameraOffset = newEyePoint.minus(oldEyePoint);
+      const cameraOffsetTransform = Transform.createTranslation(cameraOffset);
+      const frustum = viewport.getWorldFrustum();
+      frustum.transformBy(cameraOffsetTransform, frustum);
+      viewport.setupViewFromFrustum(frustum);
+    } else {
+      const transform = Transform.createFixedPointAndMatrix(this._anchorPtNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1.0));
+      const frustum = viewport.getFrustum(CoordSystem.Npc, true);
+      frustum.transformBy(transform, frustum);
+      viewport.npcToWorldArray(frustum.points);
+      viewport.setupViewFromFrustum(frustum);
+    }
+    return true;
+  }
+}
+
+/** @hidden */
 class NavigateMotion {
   public deltaTime = 0;
   public transform = Transform.createIdentity();
@@ -949,21 +1250,15 @@ class NavigateMotion {
 
     let newAngle = pitchAngle + viewAngle;
     if (Math.abs(newAngle) < angleLimit)
-      return pitchAngle;  // not close to the limit
+      return pitchAngle; // not close to the limit
     if ((pitchAngle > 0) !== (viewAngle > 0) && (Math.abs(pitchAngle) < Math.PI / 2))
-      return pitchAngle;  // tilting away from the limit
+      return pitchAngle; // tilting away from the limit
     if (Math.abs(viewAngle) >= (angleLimit - angleTolerance))
-      return 0.0;         // at the limit already
+      return 0.0; // at the limit already
 
     const difference = Math.abs(newAngle) - angleLimit;
     newAngle = (pitchAngle > 0) ? pitchAngle - difference : pitchAngle + difference;
-    return newAngle;        // almost at the limit, but still can go a little bit closer
-  }
-
-  public getWorldUp(result?: Vector3d) {
-    const up = Vector3d.createFrom(Vector3d.unitZ(), result);
-    //    this.viewport.geometry.rootTransform.multiplyByPointAsVector(Cartesian3.UNIT_Z, up);
-    return up;
+    return newAngle; // almost at the limit, but still can go a little bit closer
   }
 
   public generateRotationTransform(yawRate: number, pitchRate: number, result?: Transform): Transform {
@@ -985,7 +1280,7 @@ class NavigateMotion {
     points[0] = new Point3d(0, 0, 0);
     points[1] = new Point3d(1, 0, 0);
     points[2] = new Point3d(0, 1, 0);
-    if (this.viewport.isCameraOn()) {
+    if (this.viewport.isCameraOn) {
       this.viewport.viewToNpcArray(points);
       points[0].z = points[1].z = points[2].z = ViewManip.getFocusPlaneNpc(this.viewport); // use the focal plane for z coordinates
       this.viewport.npcToViewArray(points);
@@ -999,7 +1294,7 @@ class NavigateMotion {
     const zDir = this.getViewDirection();
 
     if (isConstrainedToXY) {
-      const up = this.getWorldUp();
+      const up = Vector3d.unitZ();
       const cross = up.crossProduct(zDir);
       cross.crossProduct(up, zDir);
       zDir.normalizeInPlace();
@@ -1034,7 +1329,7 @@ class NavigateMotion {
   /** reset pitch of view to zero */
   public resetToLevel(): void {
     const view = this.viewport.view;
-    if (!view.is3d() || !view.isCameraOn())
+    if (!view.is3d() || !view.isCameraOn)
       return;
     const angles = YawPitchRollAngles.createFromRotMatrix(this.viewport.rotMatrix)!;
     angles.pitch.setRadians(0); // reset pitch to zero
@@ -1042,28 +1337,29 @@ class NavigateMotion {
   }
 }
 
+/** ViewingToolHandle for performing the "walk and fly view" operations */
 abstract class ViewNavigate extends ViewingToolHandle {
-  private anchorPtView = new Point3d();
-  private lastPtView = new Point3d();
-  private initialized = false;
-  private lastMotionTime = 0;
-  private orientationValid = false;
-  private orientationTime = 0;
-  private orientationZ = new Vector3d();
+  private _anchorPtView = new Point3d();
+  private _lastPtView = new Point3d();
+  private _initialized = false;
+  private _lastMotionTime = 0;
+  private _orientationValid = false;
+  private _orientationTime = 0;
+  private _orientationZ = new Vector3d();
   protected abstract getNavigateMotion(elapsedTime: number): NavigateMotion | undefined;
 
   constructor(viewManip: ViewManip) { super(viewManip); }
 
-  private static angleLimit = 0.075;
-  private static timeLimit = 500;
+  private static _angleLimit = 0.075;
+  private static _timeLimit = 500;
   private haveStaticOrientation(zVec: Vector3d, currentTime: number): boolean {
-    if (!this.orientationValid || zVec.angleTo(this.orientationZ).radians > ViewNavigate.angleLimit || this.orientationZ.isAlmostZero()) {
-      this.orientationValid = true;
-      this.orientationTime = currentTime;
-      this.orientationZ = zVec;
+    if (!this._orientationValid || zVec.angleTo(this._orientationZ).radians > ViewNavigate._angleLimit || this._orientationZ.isAlmostZero) {
+      this._orientationValid = true;
+      this._orientationTime = currentTime;
+      this._orientationZ = zVec;
       return false;
     }
-    return (currentTime - this.orientationTime) > ViewNavigate.timeLimit;
+    return (currentTime - this._orientationTime) > ViewNavigate._timeLimit;
   }
 
   private tryOrientationEvent(_forward: Vector3d, _ev: BeButtonEvent): { eventsEnabled: boolean, result: OrientationResult } {
@@ -1071,8 +1367,8 @@ abstract class ViewNavigate extends ViewingToolHandle {
   }
 
   private getElapsedTime(currentTime: number): number {
-    let elapsedTime = currentTime - this.lastMotionTime;
-    if (0 === this.lastMotionTime || elapsedTime < 0 || elapsedTime > 1000)
+    let elapsedTime = currentTime - this._lastMotionTime;
+    if (0 === this._lastMotionTime || elapsedTime < 0 || elapsedTime > 1000)
       elapsedTime = 100;
     return elapsedTime;
   }
@@ -1087,7 +1383,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
   public getInputVector(result?: Vector3d): Vector3d {
     const inputDeadZone = 5.0;
-    const input = this.anchorPtView.vectorTo(this.lastPtView, result);
+    const input = this._anchorPtView.vectorTo(this._lastPtView, result);
     const viewRect = this.viewTool.viewport!.viewRect;
 
     if (Math.abs(input.x) < inputDeadZone)
@@ -1124,22 +1420,23 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
   public getNavigateMode(): NavigateMode {
     const state = IModelApp.toolAdmin.currentInputState;
-    if (state.isShiftDown || !this.viewTool.viewport!.isCameraOn())
+    if (state.isShiftDown || !this.viewTool.viewport!.isCameraOn)
       return NavigateMode.Pan;
     return state.isControlDown ? NavigateMode.Look : NavigateMode.Travel;
   }
 
-  private static scratchForward = new Vector3d();
+  private static _scratchForward = new Vector3d();
   public doNavigate(ev: BeButtonEvent): boolean {
     const currentTime = Date.now();
-    const forward = ViewNavigate.scratchForward;
+    const forward = ViewNavigate._scratchForward;
     const orientationEvent = this.tryOrientationEvent(forward, ev);
     const orientationResult = orientationEvent.result;
     const elapsedTime = this.getElapsedTime(currentTime);
-    this.lastMotionTime = currentTime;
 
+    this._lastMotionTime = currentTime;
     const vp = this.viewTool.viewport!;
     const motion = this.getNavigateMotion(elapsedTime);
+
     let haveNavigateEvent: boolean = !!motion;
     if (haveNavigateEvent) {
       const frust = vp.getWorldFrustum();
@@ -1149,41 +1446,19 @@ abstract class ViewNavigate extends ViewingToolHandle {
         if (OrientationResult.NoEvent === orientationResult)
           return false;
       }
+      return true;
     }
 
-    let doFull = false;
-    let doDynamic = false;
-    if (haveNavigateEvent)
-      doDynamic = true;
-    else {
-      switch (orientationResult) {
-        case OrientationResult.Disabled:
-        case OrientationResult.NoEvent:
-          doFull = true;
-          break;
-        case OrientationResult.RejectedByController:
-          if (!this.haveStaticOrientation(forward, currentTime))
-            return false;
-
-          doFull = true;
-          break;
-        case OrientationResult.Success:
-          if (this.haveStaticOrientation(forward, currentTime))
-            doFull = true;
-          else
-            doDynamic = true;
-          break;
-      }
+    switch (orientationResult) {
+      case OrientationResult.Disabled:
+      case OrientationResult.NoEvent:
+        return true;
+      case OrientationResult.RejectedByController:
+      case OrientationResult.Success:
+        return this.haveStaticOrientation(forward, currentTime);
+      default:
+        return false;
     }
-
-    if (doFull) {
-      this.viewTool.endDynamicUpdate();
-      this.viewTool.doUpdate(true);
-      this.viewTool.beginDynamicUpdate();
-      return false;
-    }
-
-    return doDynamic;
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean {
@@ -1192,7 +1467,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     else if (ev.viewport !== this.viewTool.viewport)
       return false;
 
-    this.lastPtView.setFrom(ev.viewPoint);
+    this._lastPtView.setFrom(ev.viewPoint);
     return this.doNavigate(ev);
   }
 
@@ -1206,19 +1481,19 @@ abstract class ViewNavigate extends ViewingToolHandle {
   }
 
   public onReinitialize(): void {
-    if (this.initialized)
+    if (this._initialized)
       return;
 
-    this.initialized = true;
+    this._initialized = true;
     const tool = this.viewTool;
     const vp = tool.viewport!;
     const view = vp.view;
-    if (!view.is3d() || !view.allow3dManipulations())
+    if (!view.allow3dManipulations())
       return;
 
     const startFrust = vp.getWorldFrustum();
     const walkAngle = ToolSettings.walkCameraAngle;
-    if (!tool.lensAngleMatches(walkAngle, Angle.degreesToRadians(10)) || !tool.isZUp()) {
+    if (!tool.lensAngleMatches(walkAngle, Angle.degreesToRadians(10)) || !tool.isZUp) {
       //  This turns on the camera if its not already on. It also assures the camera is centered. Obviously this is required if
       //  the camera is not on or the lens angle is not what we want. We also want to do it if Z will be
       //  adjusted because EnforceZUp swivels the camera around what GetTargetPoint returns. If the FocusDistance is not set to something
@@ -1233,10 +1508,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     if (!startFrust.equals(endFrust))
       vp.animateFrustumChange(startFrust, endFrust);
 
-    this.getCenterPoint(this.anchorPtView);
-
-    // const that = this;
-    // this._removeEventListener = vp.cameraToggled.addEventListener(function () { if (!vp.isCameraOn) that.viewTool.exitTool(); });
+    this.getCenterPoint(this._anchorPtView);
   }
 
   public onCleanup(): void {
@@ -1246,44 +1518,40 @@ abstract class ViewNavigate extends ViewingToolHandle {
     // NB: In desktop apps we want to center the cursor in the view.
     // The browser doesn't support that, and it is more useful to be able to place the anchor point freely anyway.
     this.viewTool.beginDynamicUpdate();
-    this.lastPtView.setFrom(ev.viewPoint);
-    this.anchorPtView.setFrom(this.lastPtView);
-
-    // this.decoration = new WalkDecoration(this.viewport.canvas.parentElement, this.anchorPtView, this.viewport.getContrastToBackgroundColor());
+    this._lastPtView.setFrom(ev.viewPoint);
+    this._anchorPtView.setFrom(this._lastPtView);
     return true;
   }
 
   public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
-  public focusOut() {
-    // this.decoration = this.decoration && this.decoration.destroy();
-  }
 
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
-    const point = new Point2d(this.anchorPtView.x, this.anchorPtView.y);
+    const point = new Point2d(this._anchorPtView.x, this._anchorPtView.y);
     const points = [point];
     const black = ColorDef.black.clone();
-    let graphic = context.createViewOverlay();
+    const white = ColorDef.white.clone();
+    const graphic = context.createViewOverlay();
+
     graphic.setSymbology(black, black, 9);
     graphic.addPointString2d(points, 0.0);
-    context.addViewOverlay(graphic.finish());
 
-    const white = ColorDef.white.clone();
-    graphic = context.createViewOverlay();
     graphic.setSymbology(white, black, 5);
     graphic.addPointString2d(points, 0.0);
+
     context.addViewOverlay(graphic.finish());
   }
 }
 
+/** ViewingToolHandle for performing the "walk view" operation */
 class ViewWalk extends ViewNavigate {
-  private navigateMotion: NavigateMotion;
+  private _navigateMotion: NavigateMotion;
 
   constructor(viewManip: ViewManip) {
     super(viewManip);
-    this.navigateMotion = new NavigateMotion(this.viewTool.viewport!);
+    this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Walk; }
 
@@ -1292,8 +1560,9 @@ class ViewWalk extends ViewNavigate {
     if (0 === input.x && 0 === input.y)
       return undefined;
 
-    const motion = this.navigateMotion;
+    const motion = this._navigateMotion;
     motion.init(elapsedTime);
+
     switch (this.getNavigateMode()) {
       case NavigateMode.Pan:
         input.scale(this.getMaxLinearVelocity(), input);
@@ -1304,11 +1573,105 @@ class ViewWalk extends ViewNavigate {
         motion.look(input.x, input.y);
         break;
       case NavigateMode.Travel:
-        motion.travel(-input.x * this.getMaxAngularVelocity(), 0, -input.y * this.getMaxLinearVelocity(), true);  // ###TODO: multiplied input.x by -1 added as temporary fix for unknown bug causing inverse walk directions
+        motion.travel(-input.x * this.getMaxAngularVelocity(), 0, -input.y * this.getMaxLinearVelocity(), true);
         break;
     }
 
     return motion;
+  }
+}
+
+/** ViewingToolHandle for performing the "fly view" operation */
+class ViewFly extends ViewNavigate {
+  private _navigateMotion: NavigateMotion;
+
+  constructor(viewManip: ViewManip) {
+    super(viewManip);
+    this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
+  }
+  public get handleType(): ViewHandleType { return ViewHandleType.Fly; }
+
+  protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
+    const input = this.getInputVector();
+    const motion = this._navigateMotion;
+    motion.init(elapsedTime);
+
+    switch (this.getNavigateMode()) {
+      case NavigateMode.Pan:
+        if (0 === input.x && 0 === input.y)
+          return undefined;
+        input.scale(this.getMaxLinearVelocity(), input);
+        motion.pan(input.x, input.y);
+        break;
+      case NavigateMode.Look:
+        if (0 === input.x && 0 === input.y)
+          return undefined;
+        input.scale(-this.getMaxAngularVelocity(), input);
+        motion.look(input.x, input.y);
+        break;
+      case NavigateMode.Travel:
+        input.scale(-this.getMaxAngularVelocity() * 2.0, input);
+        motion.travel(input.x, input.y, this.getMaxLinearVelocity(), false);
+        break;
+    }
+
+    return motion;
+  }
+}
+
+/** The tool that performs a Pan view operation */
+export class PanViewTool extends ViewManip {
+  public static toolId = "View.Pan";
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
+  }
+}
+
+/** tool that performs a Rotate view operation */
+export class RotateViewTool extends ViewManip {
+  public static toolId = "View.Rotate";
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
+  }
+}
+
+/** tool that performs the look operation */
+export class LookViewTool extends ViewManip {
+  public static toolId = "View.Look";
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
+  }
+}
+
+/** tool that performs the scroll operation */
+export class ScrollViewTool extends ViewManip {
+  public static toolId = "View.Scroll";
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
+  }
+}
+
+/** tool that performs the zoom operation */
+export class ZoomViewTool extends ViewManip {
+  public static toolId = "View.Zoom";
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
+  }
+}
+
+/** tool that performs the walk operation */
+export class WalkViewTool extends ViewManip {
+  public static toolId = "View.Walk";
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
+  }
+}
+
+/** tool that performs the fly operation */
+export class FlyViewTool extends ViewManip {
+  public static toolId = "View.Fly";
+  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+    super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
 }
 
@@ -1346,59 +1709,36 @@ export class FitViewTool extends ViewTool {
   }
 }
 
-/** The tool that performs a Pan view operation */
-export class PanTool extends ViewManip {
-  public static toolId = "View.Pan";
-  constructor(vp: Viewport, oneShot = false, scrollOnNoMotion = false, isDragOperationRequired = false) {
-    super(vp, ViewHandleType.Pan, oneShot, scrollOnNoMotion, isDragOperationRequired);
-  }
-}
-
-/** tool that performs a Rotate view operation */
-export class RotateTool extends ViewManip {
-  public static toolId = "View.Rotate";
-  constructor(vp: Viewport, oneShot = false, scrollOnNoMotion = false, isDragOperationRequired = false) {
-    super(vp, isDragOperationRequired ? ViewHandleType.Rotate : ViewHandleType.TargetCenter | ViewHandleType.Pan | ViewHandleType.Rotate, oneShot, scrollOnNoMotion, isDragOperationRequired);
-  }
-}
-
-/** tool that performs the walk operation */
-export class ViewWalkTool extends ViewManip {
-  public static toolId = "View.Walk";
-  constructor(vp: Viewport) { super(vp, ViewHandleType.Walk, false, true, false); }
-}
-
 /** tool that performs a Window-area view operation */
 export class WindowAreaTool extends ViewTool {
   public static toolId = "View.WindowArea";
+  private _haveFirstPoint: boolean = false;
+  private _firstPtWorld: Point3d = Point3d.create();
+  private _secondPtWorld: Point3d = Point3d.create();
+  private _lastPtView?: Point3d;
+  private _viewport: Viewport;
+  private _corners = [new Point3d(), new Point3d()];
+  private _shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
+  private _lineHorzPts = [new Point3d(), new Point3d()];
+  private _lineVertPts = [new Point3d(), new Point3d()];
+  private _fillColor = ColorDef.from(0, 0, 255, 200);
 
-  private haveFirstPoint: boolean = false;
-  private firstPtWorld: Point3d = Point3d.create();
-  private secondPtWorld: Point3d = Point3d.create();
-  private lastPtView?: Point3d;
-  private viewport: Viewport;
-  private corners = [new Point3d(), new Point3d()];
-  private shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
-  private lineHorzPts = [new Point3d(), new Point3d()];
-  private lineVertPts = [new Point3d(), new Point3d()];
-  private fillColor = ColorDef.from(0, 0, 255, 200);
+  constructor(viewport: Viewport) { super(); this._viewport = viewport; }
 
-  constructor(viewport: Viewport) { super(); this.viewport = viewport; }
-
-  public onReinitialize() { this.haveFirstPoint = false; this.firstPtWorld.setZero(); this.secondPtWorld.setZero(); }
-  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this.haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
+  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); }
+  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    if (this.haveFirstPoint) {
-      this.secondPtWorld.setFrom(ev.point);
+    if (this._haveFirstPoint) {
+      this._secondPtWorld.setFrom(ev.point);
       this.doManipulation(ev, false);
       this.onReinitialize();
-      this.viewport.invalidateDecorations();
+      this._viewport.invalidateDecorations();
     } else {
-      this.firstPtWorld.setFrom(ev.point);
-      this.secondPtWorld.setFrom(this.firstPtWorld);
-      this.haveFirstPoint = true;
-      this.lastPtView = ev.viewPoint;
+      this._firstPtWorld.setFrom(ev.point);
+      this._secondPtWorld.setFrom(this._firstPtWorld);
+      this._haveFirstPoint = true;
+      this._lastPtView = ev.viewPoint;
     }
 
     return EventHandled.Yes;
@@ -1407,24 +1747,24 @@ export class WindowAreaTool extends ViewTool {
   public async onMouseMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
 
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
-  public async onTouchMoveStart(_ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this.haveFirstPoint && startEv.isSingleTouch) IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv); return this.haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { if (this.haveFirstPoint) this.exitTool(); }
+  public async onTouchMoveStart(_ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this._haveFirstPoint && startEv.isSingleTouch) IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv); return this._haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) this.exitTool(); }
 
   private computeWindowCorners(): Point3d[] | undefined {
-    const vp = this.viewport;
-    const corners = this.corners;
+    const vp = this._viewport;
+    const corners = this._corners;
 
-    corners[0].setFrom(this.firstPtWorld);
-    corners[1].setFrom(this.secondPtWorld);
+    corners[0].setFrom(this._firstPtWorld);
+    corners[1].setFrom(this._secondPtWorld);
     vp.worldToViewArray(corners);
 
     const delta = corners[1].minus(corners[0]);
     if (delta.magnitudeXY() < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
       return undefined;
 
-    const currentDelta = this.viewport.viewDelta;
+    const currentDelta = this._viewport.viewDelta;
     if (currentDelta.x === 0 || delta.x === 0)
       return undefined;
 
@@ -1450,64 +1790,64 @@ export class WindowAreaTool extends ViewTool {
   }
 
   public decorate(context: DecorateContext): void {
-    const color = this.viewport.getContrastToBackgroundColor();
-    if (this.haveFirstPoint) {
+    const color = this._viewport.getContrastToBackgroundColor();
+    if (this._haveFirstPoint) {
       const corners = this.computeWindowCorners();
       if (undefined === corners)
         return;
 
-      this.shapePts[0].x = this.shapePts[3].x = corners[0].x;
-      this.shapePts[1].x = this.shapePts[2].x = corners[1].x;
-      this.shapePts[0].y = this.shapePts[1].y = corners[0].y;
-      this.shapePts[2].y = this.shapePts[3].y = corners[1].y;
-      this.shapePts[0].z = this.shapePts[1].z = this.shapePts[2].z = this.shapePts[3].z = corners[0].z;
-      this.shapePts[4].setFrom(this.shapePts[0]);
-      this.viewport.viewToWorldArray(this.shapePts);
+      this._shapePts[0].x = this._shapePts[3].x = corners[0].x;
+      this._shapePts[1].x = this._shapePts[2].x = corners[1].x;
+      this._shapePts[0].y = this._shapePts[1].y = corners[0].y;
+      this._shapePts[2].y = this._shapePts[3].y = corners[1].y;
+      this._shapePts[0].z = this._shapePts[1].z = this._shapePts[2].z = this._shapePts[3].z = corners[0].z;
+      this._shapePts[4].setFrom(this._shapePts[0]);
+      this._viewport.viewToWorldArray(this._shapePts);
 
       const graphic = context.createWorldOverlay();
 
-      graphic.setBlankingFill(this.fillColor);
-      graphic.addShape(this.shapePts);
+      graphic.setBlankingFill(this._fillColor);
+      graphic.addShape(this._shapePts);
 
       graphic.setSymbology(color, color, ViewHandleWeight.Thin);
-      graphic.addLineString(this.shapePts);
+      graphic.addLineString(this._shapePts);
 
       graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
-      graphic.addPointString([this.firstPtWorld]);
+      graphic.addPointString([this._firstPtWorld]);
 
       context.addWorldOverlay(graphic.finish());
       return;
     }
 
-    if (undefined === this.lastPtView)
+    if (undefined === this._lastPtView)
       return;
 
     const gf = context.createViewOverlay();
     gf.setSymbology(color, color, ViewHandleWeight.Thin);
 
-    const viewRect = this.viewport.viewRect;
-    const cursorPt = this.lastPtView;
+    const viewRect = this._viewport.viewRect;
+    const cursorPt = this._lastPtView;
     cursorPt.z = 0;
 
-    this.lineHorzPts[0].setFrom(cursorPt);
-    this.lineHorzPts[1].setFrom(cursorPt);
-    this.lineHorzPts[0].x = viewRect.left;
-    this.lineHorzPts[1].x = viewRect.right;
-    gf.addLineString(this.lineHorzPts);
+    this._lineHorzPts[0].setFrom(cursorPt);
+    this._lineHorzPts[1].setFrom(cursorPt);
+    this._lineHorzPts[0].x = viewRect.left;
+    this._lineHorzPts[1].x = viewRect.right;
+    gf.addLineString(this._lineHorzPts);
 
-    this.lineVertPts[0].setFrom(cursorPt);
-    this.lineVertPts[1].setFrom(cursorPt);
-    this.lineVertPts[0].y = viewRect.top;
-    this.lineVertPts[1].y = viewRect.bottom;
-    gf.addLineString(this.lineVertPts);
+    this._lineVertPts[0].setFrom(cursorPt);
+    this._lineVertPts[1].setFrom(cursorPt);
+    this._lineVertPts[0].y = viewRect.top;
+    this._lineVertPts[1].y = viewRect.bottom;
+    gf.addLineString(this._lineVertPts);
 
     context.addViewOverlay(gf.finish());
   }
 
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {
-    this.secondPtWorld.setFrom(ev.point);
+    this._secondPtWorld.setFrom(ev.point);
     if (inDynamics) {
-      this.lastPtView = ev.viewPoint;
+      this._lastPtView = ev.viewPoint;
       IModelApp.viewManager.invalidateDecorationsAllViews();
       return;
     }
@@ -1517,11 +1857,11 @@ export class WindowAreaTool extends ViewTool {
       return;
 
     let delta: Vector3d;
-    const vp = this.viewport;
+    const vp = this._viewport;
     const startFrust = vp.getWorldFrustum();
     vp.viewToWorldArray(corners);
 
-    if (vp.view.is3d() && vp.view.isCameraOn()) {
+    if (vp.view.is3d() && vp.view.isCameraOn) {
       const cameraView = vp.view as ViewState3d;
 
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
@@ -1578,146 +1918,110 @@ export class WindowAreaTool extends ViewTool {
 /** @hidden */
 export class DefaultViewTouchTool extends ViewManip {
   public static toolId = ""; // touch tools installed by IdleTool are never registered
-  //  private allowZoom: boolean = true;
-  private rotatePrevented: boolean = false;
-  private doing2dRotation: boolean = false;
-  private lastPtView = new Point3d();
-  private startPtWorld = new Point3d();
-  private startPtView = new Point3d();
-  //  private startTime: number = 0;
-  private frustum = new Frustum();
-  //  private is2dRotateGestureLimit = 350;   // milliseconds
+  private _lastPtView = new Point3d();
+  private _startPtWorld = new Point3d();
+  private _startPtView = new Point3d();
+  private _startDirection = new Vector2d();
+  private _startDistance = 0.0;
+  private _startTouchCount = 0;
+  private _frustum = new Frustum();
 
-  constructor(ev: BeTouchEvent, private allowRotate: boolean) {
-    super(ev.viewport!, 0, true, false, false);
-    this.onStart(ev);
-    //    this.handleEvent(ev);
+  constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
+    super(startEv.viewport!, 0, true, false);
+    this.onStart(startEv);
+    this.handleEvent(ev);
   }
 
-  private is2dRotateGesture(_ev: BeTouchEvent): boolean {
-    if (!this.allowRotate || this.rotatePrevented)
-      return false;
-
-    if (this.doing2dRotation)
-      return true;
-
-    /*     const vp = this.viewport!;
-        const view = vp.view;
-        const info = ev.gestureInfo!;
-        if (view.allow3dManipulations() || info.numberTouches !== 2) {
-          this.rotatePrevented = false;
-          return false;
-        }
-
-        const startInfo = this.startInfo;
-        const angleChange = Math.abs(this.getRotationFromStart(info).radians);
-        const angularDistance = Math.abs(info.distance / 2.0 * Math.sin(angleChange));
-        const zoomDistance = Math.abs(info.distance - startInfo.distance);
-
-        const panDistance = startInfo.getViewPoint(vp).distance(info.getViewPoint(vp));
-
-        if (angleChange > Math.PI / 10 || angularDistance > zoomDistance && angularDistance > panDistance * 0.75) {
-          this.doing2dRotation = true;
-          return true;
-        }
-
-        const timeDiff = Date.now() - this.startTime;
-        this.rotatePrevented = timeDiff > this.is2dRotateGestureLimit; */
-    return false;
-  }
-
-  private is3dRotateGesture(_ev: BeTouchEvent): boolean {
-    //    return this.allowRotate && (1 === ev.gestureInfo!.numberTouches) && this.viewport!.view.allow3dManipulations();
-    return true;
-  }
-
-  /*   private computeZoomRatio(info: GestureInfo): number {
-      if (!this.allowZoom)
-        return 1.0;
-
-      let newDistance = info.distance;
-      if (newDistance < 1.0)
-        newDistance = 1.0;
-
-      let startDistance = this.startInfo.distance;
-      if (startDistance < 1.0)
-        startDistance = 1.0;
-
-      let zoomRatio = startDistance / newDistance;
-      if (zoomRatio < 0.1)
-        zoomRatio = 0.1;
-      else if (zoomRatio > 10.0)
-        zoomRatio = 10.0;
-
-      if (info.numberTouches > 2 || (Math.abs(startDistance - newDistance) < this.viewport!.pixelsFromInches(0.125)))
-        zoomRatio = 1.0;
-
-      return zoomRatio;
+  public onStart(ev: BeTouchEvent): void {
+    const vp = this.viewport!;
+    vp.getWorldFrustum(this._frustum);
+    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+    if (undefined !== visiblePoint) {
+      this._startPtWorld.setFrom(visiblePoint);
+      vp.worldToView(this._startPtWorld, this._startPtView);
+    } else {
+      this._startPtView.setFrom(ev.viewPoint);
+      this._startPtView.z = vp.worldToView(vp.view.getTargetPoint()).z;
+      vp.viewToWorld(this._startPtView, this._startPtWorld);
     }
-
-    private getRotationFromStart(info: GestureInfo): Angle {
-      const currentTouches = info.touches;
-      const startTouches = this.startInfo.touches;
-      const startVec = new Vector2d(startTouches[1].x - startTouches[0].x, startTouches[1].y - startTouches[0].y);
-      const currentVec = new Vector2d(currentTouches[1].x - currentTouches[0].x, currentTouches[1].y - currentTouches[0].y);
-      return startVec.angleTo(currentVec);
-    } */
-
-  private handle2dRotate(_ev: BeTouchEvent): boolean {
-    const vp = this.viewport!;
-
-    //  All of the transforms and computation are relative to the original transform.
-    if (!vp.setupViewFromFrustum(this.frustum))
-      return true;
-
-    /*     const view = vp.view;
-        const info = ev.gestureInfo!;
-        const currentTouches = info.touches;
-        const startTouches = this.startInfo.touches;
-
-        const startPt0 = vp.viewToWorld(new Point3d(startTouches[0].x, startTouches[0].y, 0));
-        const currPt0 = vp.viewToWorld(new Point3d(currentTouches[0].x, currentTouches[0].y, 0));
-        const diffWorld = startPt0.minus(currPt0);
-        const translateTransform = Transform.createTranslation(diffWorld);
-
-        const radians = this.getRotationFromStart(info);
-        const matrix = RotMatrix.createRotationAroundVector(view.getZVector(), radians)!;
-        const rotationTransform = Transform.createFixedPointAndMatrix(currPt0, matrix);
-        let transform = translateTransform.multiplyTransformTransform(rotationTransform);
-
-        const zoomRatio = this.computeZoomRatio(info);
-        const scaleTransform = Transform.createScaleAboutPoint(startPt0, zoomRatio);
-
-        transform = scaleTransform.multiplyTransformTransform(transform);
-        const frust = this.frustum.transformBy(transform);
-
-        vp.setupViewFromFrustum(frust);
-        this.saveTouchStopData(info);
-        this.doUpdate(true);
-
-        this.lastPtView.setFrom(currPt0); */
-    return true;
+    this._lastPtView.setFrom(this._startPtView);
+    this._startTouchCount = ev.touchCount;
+    this._startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : Vector2d.createZero());
+    this._startDistance = (2 === ev.touchCount ? this._startDirection.magnitude() : 0.0);
   }
 
-  private handle3dRotate(ev: BeTouchEvent) {
-    if (this.lastPtView.isAlmostEqual(ev.viewPoint, 2.0))
-      return true;
+  private computeZoomRatio(ev: BeTouchEvent): number {
+    if (0.0 === this._startDistance)
+      return 1.0;
 
     const vp = this.viewport!;
-    const currPt = ev.viewPoint.clone();
-    if (this.startPtView.isAlmostEqual(currPt, 2.0))
-      currPt.setFrom(this.startPtView);
+    const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : 0.0);
 
-    this.lastPtView.setFrom(currPt);
+    if (0.0 === distance)
+      return 1.0;
 
-    if (!vp.setupViewFromFrustum(this.frustum))
-      return true;
+    if (Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(0.2))
+      return 1.0;
 
+    let zoomRatio = this._startDistance / distance;
+    if (zoomRatio < 0.1)
+      zoomRatio = 0.1;
+    else if (zoomRatio > 10.0)
+      zoomRatio = 10.0;
+
+    return zoomRatio;
+  }
+
+  private computeRotation(ev: BeTouchEvent): Angle {
+    if (ev.touchCount < 2)
+      return Angle.createDegrees(0.0);
+
+    const vp = this.viewport!;
+    const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp));
+    const rotation = this._startDirection.angleTo(direction);
+
+    if (Math.abs(rotation.radians) < Angle.createDegrees(5.0).radians)
+      return Angle.createDegrees(0.0);
+
+    const angularDistance = Math.abs(direction.magnitude() / 2.0 * Math.sin(Math.abs(rotation.radians)));
+    const zoomDistance = Math.abs(direction.magnitude() - this._startDirection.magnitude());
+    const panDistance = this._startPtView.distanceXY(this._lastPtView);
+
+    // NOTE: The * 0.75 below is because it's easy to confuse an attempted rotate for an attempted pan, and this tries to balance that without having a false positive in the opposite direction.
+    if (Math.abs(rotation.radians) > Angle.createDegrees(18.0).radians || (angularDistance > zoomDistance && angularDistance > panDistance * 0.75))
+      return rotation;
+
+    return Angle.createDegrees(0.0);
+  }
+
+  private handle2dPan(_ev: BeTouchEvent): void {
+    const vp = this.viewport!;
+    const screenDist = Point2d.create(this._startPtView.x - this._lastPtView.x, this._startPtView.y - this._lastPtView.y);
+    vp.scroll(screenDist);
+  }
+
+  private handle2dRotateZoom(ev: BeTouchEvent): void {
+    const vp = this.viewport!;
+    const rotation = this.computeRotation(ev);
+    const zoomRatio = this.computeZoomRatio(ev);
+    const targetWorld = vp.viewToWorld(this._lastPtView);
+    const translateTransform = Transform.createTranslation(this._startPtWorld.minus(targetWorld));
+    const rotationTransform = Transform.createFixedPointAndMatrix(targetWorld, RotMatrix.createRotationAroundVector(vp.view.getZVector(), rotation)!);
+    const scaleTransform = Transform.createScaleAboutPoint(this._startPtWorld, zoomRatio);
+    const transform = translateTransform.multiplyTransformTransform(rotationTransform);
+
+    scaleTransform.multiplyTransformTransform(transform, transform);
+    const frustum = this._frustum.transformBy(transform);
+    vp.setupViewFromFrustum(frustum);
+  }
+
+  private handle3dRotate(_ev: BeTouchEvent): void {
+    const vp = this.viewport!;
     const viewRect = vp.viewRect;
     const xExtent = viewRect.width;
     const yExtent = viewRect.height;
-    const xDelta = currPt.x - this.startPtView.x;
-    const yDelta = currPt.y - this.startPtView.y;
+    const xDelta = this._lastPtView.x - this._startPtView.x;
+    const yDelta = this._lastPtView.y - this._startPtView.y;
 
     const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
     const yAxis = vp.rotMatrix.getRow(0);
@@ -1725,85 +2029,89 @@ export class DefaultViewTouchTool extends ViewManip {
     const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
 
-    // ### TODO Follow rotateViewWorld logic
-    //    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, worldRMatrix);
-    //    const frustum = this.frustum.transformBy(worldTransform, scratchFrustum);
-
-    //    if (!vp.setupViewFromFrustum(frustum))
-    //      return true;
-
     const result = worldRMatrix.getAxisAndAngleOfRotation();
     const radians = Angle.createRadians(-result.angle.radians);
     const worldAxis = result.axis;
 
     const rotationMatrix = RotMatrix.createRotationAroundVector(worldAxis, radians);
     if (!rotationMatrix)
-      return true;
-    const worldTransform = Transform.createFixedPointAndMatrix(this.startPtWorld, rotationMatrix);
-    const frustum = this.frustum.clone();
-    frustum.multiply(worldTransform);
-
-    if (!vp.setupViewFromFrustum(frustum))
-      return true;
-
-    //    this.saveTouchStopData(ev.gestureInfo!);
-    // this.doUpdate(true);
-    return true;
-  }
-
-  public onStart(ev: BeTouchEvent): void {
-    // super.onStart(ev);
-
-    const vp = this.viewport!;
-    vp.getWorldFrustum(this.frustum);
-
-    this.doing2dRotation = this.rotatePrevented = false;
-    this.startPtWorld.setFrom(ev.point);
-    this.startPtView.setFrom(ev.viewPoint);
-    this.updateTargetCenter();
-
-    if (vp.isCameraOn()) {
-      const targetCenterView = vp.worldToView(this.targetCenterWorld);
-      this.startPtView.z = targetCenterView.z;
-      vp.viewToWorld(this.startPtView, this.startPtWorld);
-    }
-
-    this.lastPtView.setFrom(this.startPtView);
-    //    this.startTime = Date.now();
-    const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
-    if (!visiblePoint)
       return;
 
-    this.startPtWorld.setFrom(visiblePoint);
-    vp.worldToView(this.startPtWorld, this.startPtView);
-    this.lastPtView.setFrom(this.startPtView);
+    const worldTransform = Transform.createFixedPointAndMatrix(this._startPtWorld, rotationMatrix);
+    const frustum = this._frustum.transformBy(worldTransform);
+    vp.setupViewFromFrustum(frustum);
   }
 
-  protected handleEvent(ev: BeTouchEvent): boolean {
-    if (this.is3dRotateGesture(ev))
-      return this.handle3dRotate(ev);
-
-    if (this.is2dRotateGesture(ev))
-      return this.handle2dRotate(ev);
-
+  private handle3dPanZoom(ev: BeTouchEvent): void {
     const vp = this.viewport!;
-    //    const info = ev.gestureInfo!;
-    //    const zoomRatio = this.computeZoomRatio(info);
-    const zoomRatio = 0.25;
+    const zoomRatio = this.computeZoomRatio(ev);
 
-    // reset frustum to original position
-    if (!vp.setupViewFromFrustum(this.frustum))
-      return true;
+    if (vp.isCameraOn) {
+      const targetWorld = vp.viewToWorld(this._lastPtView);
+      const preTrans = Transform.createTranslationXYZ(-targetWorld.x, -targetWorld.y, -targetWorld.z);
+      const postTrans = Transform.createTranslation(this._startPtWorld);
 
-    let zoomCenter = (vp.view.allow3dManipulations() ? vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches)) : undefined);
-    if (undefined === zoomCenter)
-      zoomCenter = ev.point;
+      preTrans.origin.scaleInPlace(zoomRatio);
+      preTrans.matrix.scale(zoomRatio, preTrans.matrix);
+      const cameraTransform = postTrans.multiplyTransformTransform(preTrans);
 
-    vp.zoom(ev.point, zoomRatio);
-    //    this.saveTouchStopData(info);
-    this.doUpdate(true);
+      const view = vp.view as ViewState3d;
+      const oldEyePoint = view.getEyePoint();
+      const newEyePoint = cameraTransform.multiplyPoint3d(oldEyePoint);
+      const cameraOffset = newEyePoint.minus(oldEyePoint);
+      const cameraOffsetTransform = Transform.createTranslation(cameraOffset);
 
-    return true;
+      const frustum = this._frustum.transformBy(cameraOffsetTransform);
+      vp.setupViewFromFrustum(frustum);
+      return;
+    }
+
+    const targetNpc = vp.viewToNpc(this._lastPtView);
+    const transform = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1.0));
+    const viewCenter = Point3d.create(.5, .5, .5);
+    const startPtNpc = vp.viewToNpc(this._startPtView);
+    const shift = startPtNpc.minus(targetNpc); shift.z = 0.0;
+    const offset = Transform.createTranslation(shift);
+
+    offset.multiplyTransformTransform(transform, transform);
+    transform.multiplyPoint3d(viewCenter, viewCenter);
+    vp.npcToWorld(viewCenter, viewCenter);
+    vp.zoom(viewCenter, zoomRatio);
+  }
+
+  private handleEvent(ev: BeTouchEvent): void {
+    if (undefined === this.viewport)
+      return;
+
+    if (this._startTouchCount !== ev.touchCount) {
+      this.onStart(ev);
+      return;
+    }
+
+    const smallDistance = this.viewport.pixelsFromInches(0.05);
+    if (this._lastPtView.isAlmostEqualXY(ev.viewPoint, smallDistance))
+      return;
+
+    if (this._startPtView.isAlmostEqualXY(ev.viewPoint, smallDistance)) {
+      this._lastPtView.setFrom(this._startPtView);
+    } else {
+      this._lastPtView.setFrom(ev.viewPoint); this._lastPtView.z = this._startPtView.z;
+    }
+
+    if (!this.viewport.setupViewFromFrustum(this._frustum))
+      return;
+
+    if (this.viewport.view.allow3dManipulations()) {
+      if (ev.isSingleTouch)
+        return this.handle3dRotate(ev);
+
+      return this.handle3dPanZoom(ev);
+    }
+
+    if (ev.isSingleTouch)
+      return this.handle2dPan(ev);
+
+    return this.handle2dRotateZoom(ev);
   }
 
   public async onTouchMove(ev: BeTouchEvent): Promise<void> { this.handleEvent(ev); }
@@ -1813,138 +2121,112 @@ export class DefaultViewTouchTool extends ViewManip {
   public async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.Yes; }
   public async onDataButtonUp(_ev: BeButtonEvent) { return EventHandled.Yes; }
 
-  /*   public onMultiFingerMove(ev: BeGestureEvent): boolean {
-      const info = ev.gestureInfo!;
-      if (info.numberTouches !== this.startInfo.numberTouches) {
-        this.onStart(ev);
-        return true;
-      }
-      return this.handleEvent(ev);
-    }
-
-    public onSingleFingerMove(ev: BeGestureEvent): boolean { return this.onMultiFingerMove(ev); }
-    public onEndGesture(_ev: BeGestureEvent): boolean {
-      this.clearTouchStopData();
-      return this.endGesture();
-    } */
-
 }
 
-export class ViewLookTool extends ViewManip {
-  public static toolId = "View.Look";
-  constructor(vp: Viewport) {
-    super(vp, ViewHandleType.Look, true, false, true);
-  }
-}
-
-export class ViewScrollTool extends ViewManip {
-  public static toolId = "View.Scroll";
-  constructor(vp: Viewport) {
-    super(vp, ViewHandleType.Scroll, true, false, true);
-  }
-}
-
+/** tool that performs view undo operation. An application could also just call Viewport.doUndo directly, creating a ViewTool isn't required. */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
-  private viewport: Viewport;
+  private _viewport: Viewport;
 
-  constructor(vp: Viewport) { super(); this.viewport = vp; }
+  constructor(vp: Viewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
-    this.viewport.doUndo(ToolSettings.animationTime);
+    this._viewport.doUndo(ToolSettings.animationTime);
     this.exitTool();
   }
 }
 
+/** tool that performs view redo operation. An application could also just call Viewport.doRedo directly, creating a ViewTool isn't required. */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
-  private viewport: Viewport;
+  private _viewport: Viewport;
 
-  constructor(vp: Viewport) { super(); this.viewport = vp; }
+  constructor(vp: Viewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
-    this.viewport.doRedo(ToolSettings.animationTime);
+    this._viewport.doRedo(ToolSettings.animationTime);
     this.exitTool();
   }
 }
 
+/** tool that toggles the camera on/off in a spatial view */
 export class ViewToggleCameraTool extends ViewTool {
   public static toolId = "View.ToggleCamera";
-  private viewport: Viewport;
+  private _viewport: Viewport;
 
-  constructor(viewport: Viewport) { super(); this.viewport = viewport; }
+  constructor(viewport: Viewport) { super(); this._viewport = viewport; }
 
-  public onInstall(): boolean { return (undefined !== this.viewport && this.viewport.view.is3d() && this.viewport.view.allow3dManipulations()); }
+  public onInstall(): boolean { return (undefined !== this._viewport && this._viewport.view.allow3dManipulations()); }
 
   public onPostInstall(): void {
-    if (this.viewport.isCameraOn())
-      (this.viewport.view as ViewState3d).turnCameraOff();
+    if (this._viewport.isCameraOn)
+      (this._viewport.view as ViewState3d).turnCameraOff();
     else
-      this.viewport.turnCameraOn();
+      this._viewport.turnCameraOn();
 
-    this.viewport.synchWithView(true);
+    this._viewport.synchWithView(true);
     this.exitTool();
   }
 }
 
-// Tool currently only used for debugging purposes.
-// Users of imodeljs-core have the ability to set these flags from their app directly and do not need this ViewTool.
+/** @hidden */
 export class ViewChangeRenderModeTool extends ViewTool {
+  // Tool currently only used for debugging purposes. Users of imodeljs-core have the ability to set these flags from their app directly and do not need this ViewTool.
   public static toolId = "View.ChangeRenderMode";
-  private viewport: Viewport;
+  private _viewport: Viewport;
   // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundPlane, etc.)
-  private renderOptions: Map<string, boolean>;
+  private _renderOptions: Map<string, boolean>;
   // REFERENCE to app's menu for changing render modes
-  private renderMenu: HTMLElement;
-  private renderMode: RenderMode;
+  private _renderMenu: HTMLElement;
+  private _renderMode: RenderMode;
 
   constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>, renderMenuDialog: HTMLElement, mode: RenderMode) {
     super();
-    this.viewport = viewport;
-    this.renderOptions = renderOptionsMap;
-    this.renderMenu = renderMenuDialog;
-    this.renderMode = mode;
+    this._viewport = viewport;
+    this._renderOptions = renderOptionsMap;
+    this._renderMenu = renderMenuDialog;
+    this._renderMode = mode;
   }
 
   // We want changes to happen immediately when checking or unchecking an option
   public onPostInstall() {
-    const viewflags = ViewFlags.createFrom(this.viewport.viewFlags);
-    viewflags.renderMode = this.renderMode;
-    viewflags.acsTriad = this.renderOptions.get("ACSTriad")!;
-    viewflags.fill = this.renderOptions.get("fill")!;
-    viewflags.grid = this.renderOptions.get("grid")!;
-    viewflags.textures = this.renderOptions.get("textures")!;
-    viewflags.visibleEdges = this.renderOptions.get("visibleEdges")!;
-    viewflags.materials = this.renderOptions.get("materials")!;
-    viewflags.monochrome = this.renderOptions.get("monochrome")!;
-    viewflags.constructions = this.renderOptions.get("constructions")!;
-    viewflags.transparency = this.renderOptions.get("transparency")!;
-    viewflags.hiddenEdges = this.renderOptions.get("hiddenEdges")!;
-    viewflags.weights = this.renderOptions.get("weights")!;
-    viewflags.styles = this.renderOptions.get("styles")!;
-    viewflags.clipVolume = this.renderOptions.get("clipVolume")!;
-    viewflags.backgroundMap = this.renderOptions.get("backgroundMap")!;
+    const viewflags = ViewFlags.createFrom(this._viewport.viewFlags);
+    viewflags.renderMode = this._renderMode;
+    viewflags.acsTriad = this._renderOptions.get("ACSTriad")!;
+    viewflags.fill = this._renderOptions.get("fill")!;
+    viewflags.grid = this._renderOptions.get("grid")!;
+    viewflags.textures = this._renderOptions.get("textures")!;
+    viewflags.visibleEdges = this._renderOptions.get("visibleEdges")!;
+    viewflags.materials = this._renderOptions.get("materials")!;
+    viewflags.monochrome = this._renderOptions.get("monochrome")!;
+    viewflags.constructions = this._renderOptions.get("constructions")!;
+    viewflags.transparency = this._renderOptions.get("transparency")!;
+    viewflags.hiddenEdges = this._renderOptions.get("hiddenEdges")!;
+    viewflags.weights = this._renderOptions.get("weights")!;
+    viewflags.styles = this._renderOptions.get("styles")!;
+    viewflags.clipVolume = this._renderOptions.get("clipVolume")!;
+    viewflags.backgroundMap = this._renderOptions.get("backgroundMap")!;
 
-    const lights = this.renderOptions.get("lights")!;
+    const lights = this._renderOptions.get("lights")!;
     viewflags.sourceLights = lights;
     viewflags.solarLight = lights;
     viewflags.cameraLights = lights;
 
     // Now handle environment
-    if (this.viewport.view.is3d()) {
-      const view = this.viewport.view as ViewState3d;
+    if (this._viewport.view.is3d()) {
+      const view = this._viewport.view as ViewState3d;
       const displayStyle = view.getDisplayStyle3d();
       const env = displayStyle.environment;
-      env.ground.display = this.renderOptions.get("groundplane")!; // Changes directly within displaystyle
-      env.sky.display = this.renderOptions.get("skybox")!;  // Changes directly within displaystyle
+      env.ground.display = this._renderOptions.get("groundplane")!; // Changes directly within displaystyle
+      env.sky.display = this._renderOptions.get("skybox")!;  // Changes directly within displaystyle
     }
 
-    this.viewport.view.viewFlags = viewflags;
-    this.viewport.sync.invalidateController();
+    this._viewport.view.viewFlags = viewflags;
+    this._viewport.sync.invalidateController();
   }
 
   public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.renderMenu.style.display = "none";
+    this._renderMenu.style.display = "none";
     this.exitTool();
     return EventHandled.Yes;
   }

@@ -127,25 +127,25 @@ export abstract class BSpline2dNd extends GeometryQuery {
   public knots: KnotVector[];
   public coffs: Float64Array;
   public poleDimension: number;
-  private numPoles: number[];
+  private _numPoles: number[];
 
   public degreeUV(select: UVSelect): number { return this.knots[select].degree; }
   public orderUV(select: UVSelect): number { return this.knots[select].degree + 1; }
-  public numSpanUV(select: UVSelect): number { return this.numPoles[select] - this.knots[select].degree; }
+  public numSpanUV(select: UVSelect): number { return this._numPoles[select] - this.knots[select].degree; }
   public numPolesTotal(): number { return this.coffs.length / this.poleDimension; }
-  public numPolesUV(select: UVSelect): number { return this.numPoles[select]; }
-  public poleStepUV(select: UVSelect): number { return select === 0 ? 1 : this.numPoles[0]; }
+  public numPolesUV(select: UVSelect): number { return this._numPoles[select]; }
+  public poleStepUV(select: UVSelect): number { return select === 0 ? 1 : this._numPoles[0]; }
   public getPoint3dPole(i: number, j: number, result?: Point3d): Point3d | undefined {
-    return Point3d.createFromPacked(this.coffs, i + j * this.numPoles[0], result);
+    return Point3d.createFromPacked(this.coffs, i + j * this._numPoles[0], result);
   }
   // Get a pole (from i,j indices) as Point3d, assuming data is stored xyzw
   public getPoint3dPoleXYZW(i: number, j: number, result?: Point3d): Point3d | undefined {
-    return Point3d.createFromPackedXYZW(this.coffs, i + j * this.numPoles[0], result);
+    return Point3d.createFromPackedXYZW(this.coffs, i + j * this._numPoles[0], result);
   }
-/**
- * @param value numeric value to convert to strict 0 or 1.
- * @returns Return 0 for 0 input, 1 for any nonzero input.
- */
+  /**
+   * @param value numeric value to convert to strict 0 or 1.
+   * @returns Return 0 for 0 input, 1 for any nonzero input.
+   */
   public numberToUVSelect(value: number): UVSelect { return value === 0 ? 0 : 1; }
   /** extend a range, treating each block as simple XYZ */
   public extendRangeXYZ(rangeToExtend: Range3d, transform?: Transform) {
@@ -218,11 +218,11 @@ export abstract class BSpline2dNd extends GeometryQuery {
     return result;
   }
 
-  protected basisBufferUV: Float64Array[]; //  basis function buffers for u, v directgions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
-  protected basisBuffer1UV: Float64Array[]; // basis function buffers for u, v directions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
+  protected _basisBufferUV: Float64Array[]; //  basis function buffers for u, v directgions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
+  protected _basisBuffer1UV: Float64Array[]; // basis function buffers for u, v directions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
 
-  protected poleBuffer: Float64Array; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
-  protected poleBuffer1UV: Float64Array[]; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
+  protected _poleBuffer: Float64Array; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
+  protected _poleBuffer1UV: Float64Array[]; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
 
   /**
    * initialize arrays for given spline dimensions.
@@ -234,19 +234,19 @@ export abstract class BSpline2dNd extends GeometryQuery {
     this.knots = [knotsU, knotsV];
     this.coffs = new Float64Array(numPolesU * numPolesV * poleLength);
     this.poleDimension = poleLength;
-    this.basisBufferUV = [new Float64Array(orderU), new Float64Array(orderV)];
-    this.basisBuffer1UV = [new Float64Array(orderU), new Float64Array(orderV)];
-    this.numPoles = [numPolesU, numPolesV];
-    this.poleBuffer = new Float64Array(poleLength);
-    this.poleBuffer1UV = [new Float64Array(poleLength), new Float64Array(poleLength)];
+    this._basisBufferUV = [new Float64Array(orderU), new Float64Array(orderV)];
+    this._basisBuffer1UV = [new Float64Array(orderU), new Float64Array(orderV)];
+    this._numPoles = [numPolesU, numPolesV];
+    this._poleBuffer = new Float64Array(poleLength);
+    this._poleBuffer1UV = [new Float64Array(poleLength), new Float64Array(poleLength)];
 
   }
-/**
- * Map a position, specified as (uv direction, bezier span, fraction within the bezier), to an overal knot value.
- * @param select selector indicating U or V direction.
- * @param span index of bezier span
- * @param localFraction fractional coordinate within the bezier span
- */
+  /**
+   * Map a position, specified as (uv direction, bezier span, fraction within the bezier), to an overal knot value.
+   * @param select selector indicating U or V direction.
+   * @param span index of bezier span
+   * @param localFraction fractional coordinate within the bezier span
+   */
   public spanFractionToKnot(select: UVSelect, span: number, localFraction: number): number {
     return this.knots[select].spanFractionToKnot(span, localFraction);
   }
@@ -262,16 +262,16 @@ export abstract class BSpline2dNd extends GeometryQuery {
   }
   /** sum poles by the weights in the basisBuffer, using poles for given span */
   public sumPoleBufferForSpan(spanIndexU: number, spanIndexV: number) {
-    const poleBuffer = this.poleBuffer;
+    const poleBuffer = this._poleBuffer;
     const coffs = this.coffs;
     poleBuffer.fill(0);
     const m = this.poleDimension;
-    const stepV = this.poleDimension * this.numPoles[0];
+    const stepV = this.poleDimension * this._numPoles[0];
     let kU = m * spanIndexU + spanIndexV * stepV;
     let g = 0;
-    for (const fV of this.basisBufferUV[1]) {
+    for (const fV of this._basisBufferUV[1]) {
       let k = kU;
-      for (const fU of this.basisBufferUV[0]) {
+      for (const fU of this._basisBufferUV[0]) {
         g = fU * fV;
         for (let j = 0; j < m; j++) {
           poleBuffer[j] += g * coffs[k++];
@@ -282,18 +282,18 @@ export abstract class BSpline2dNd extends GeometryQuery {
   }
   /** sum derivatives by the weights in the basisBuffer, using poles for given span */
   public sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number) {
-    const poleBuffer1U = this.poleBuffer1UV[0];
-    const poleBuffer1V = this.poleBuffer1UV[1];
+    const poleBuffer1U = this._poleBuffer1UV[0];
+    const poleBuffer1V = this._poleBuffer1UV[1];
     poleBuffer1U.fill(0);
     poleBuffer1V.fill(0);
     const m = this.poleDimension;
-    const stepV = this.poleDimension * this.numPoles[0];
+    const stepV = this.poleDimension * this._numPoles[0];
     let kU = m * spanIndexU + spanIndexV * stepV;
     // U partial derivatives ...
     let g = 0;
-    for (const fV of this.basisBufferUV[1]) {
+    for (const fV of this._basisBufferUV[1]) {
       let k = kU;
-      for (const fU of this.basisBuffer1UV[0]) {
+      for (const fU of this._basisBuffer1UV[0]) {
         g = fU * fV;
         for (let j = 0; j < m; j++) {
           poleBuffer1U[j] += g * this.coffs[k++];
@@ -304,9 +304,9 @@ export abstract class BSpline2dNd extends GeometryQuery {
 
     // V partial derivatives ...
     kU = m * spanIndexU + spanIndexV * stepV;
-    for (const fV of this.basisBuffer1UV[1]) {
+    for (const fV of this._basisBuffer1UV[1]) {
       let k = kU;
-      for (const fU of this.basisBufferUV[0]) {
+      for (const fU of this._basisBufferUV[0]) {
         g = fU * fV;
         for (let j = 0; j < m; j++) {
           poleBuffer1V[j] += g * this.coffs[k++];
@@ -323,12 +323,12 @@ export abstract class BSpline2dNd extends GeometryQuery {
     const poleIndex0V = knotIndex0V - this.degreeUV(1) + 1;
 
     if (numDerivative < 1) {
-      this.knots[0].evaluateBasisFunctions(knotIndex0U, u, this.basisBufferUV[0]);
-      this.knots[1].evaluateBasisFunctions(knotIndex0V, v, this.basisBufferUV[1]);
+      this.knots[0].evaluateBasisFunctions(knotIndex0U, u, this._basisBufferUV[0]);
+      this.knots[1].evaluateBasisFunctions(knotIndex0V, v, this._basisBufferUV[1]);
       this.sumPoleBufferForSpan(poleIndex0U, poleIndex0V);
     } else {
-      this.knots[0].evaluateBasisFunctions1(knotIndex0U, u, this.basisBufferUV[0], this.basisBuffer1UV[0]);
-      this.knots[1].evaluateBasisFunctions1(knotIndex0V, v, this.basisBufferUV[1], this.basisBuffer1UV[1]);
+      this.knots[0].evaluateBasisFunctions1(knotIndex0U, u, this._basisBufferUV[0], this._basisBuffer1UV[0]);
+      this.knots[1].evaluateBasisFunctions1(knotIndex0V, v, this._basisBufferUV[1], this._basisBuffer1UV[1]);
       this.sumPoleBufferForSpan(poleIndex0U, poleIndex0V);
       this.sumpoleBufferDerivativesForSpan(poleIndex0U, poleIndex0V);
     }
@@ -538,9 +538,9 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     }
     return surface;
   }
-/**
- * @returns Return a complete copy of the bspline surface.
- */
+  /**
+   * @returns Return a complete copy of the bspline surface.
+   */
   public clone(): BSplineSurface3d {
     const knotVector1U = this.knots[0].clone();
     const knotVector1V = this.knots[1].clone();
@@ -565,19 +565,19 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    */
   public knotToPoint(u: number, v: number): Point3d {
     this.evaluateBuffersAtKnot(u, v);
-    return Point3d.createFrom(this.poleBuffer);
+    return Point3d.createFrom(this._poleBuffer);
   }
   /** Evaluate at a position given by a knot value.  */
   public knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     this.evaluateBuffersAtKnot(u, v, 1);
     return Plane3dByOriginAndVectors.createOriginAndVectorsArrays(
-      this.poleBuffer, this.poleBuffer1UV[0], this.poleBuffer1UV[1], result);
+      this._poleBuffer, this._poleBuffer1UV[0], this._poleBuffer1UV[1], result);
   }
-/** Evalute at a position given by fractional coordinte in each direction.
-   * @param fractionU u coordinate, as a fraction of the knot range.
-   * @param fractionV v coordinate, as a fraction of the knot range.
- * @returns Return the xyz coordinates on the surface.
- */
+  /** Evalute at a position given by fractional coordinte in each direction.
+     * @param fractionU u coordinate, as a fraction of the knot range.
+     * @param fractionV v coordinate, as a fraction of the knot range.
+   * @returns Return the xyz coordinates on the surface.
+   */
   public fractionToPoint(fractionU: number, fractionV: number): Point3d {
     return this.knotToPoint(this.knots[0].fractionToKnot(fractionU), this.knots[1].fractionToKnot(fractionV));
   }
@@ -702,7 +702,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param KnotArrayV optional knots for the V direction.  See note above about knot counts.
    */
-   public static create(
+  public static create(
     controlPointArray: Point3d[],
     weightArray: number[],
     numPolesU: number,
@@ -823,12 +823,12 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
   /** Evaluate at a position given by a knot value.  */
   public knotToPoint4d(u: number, v: number): Point4d {
     this.evaluateBuffersAtKnot(u, v);
-    return Point4d.createFromPackedXYZW(this.poleBuffer, 0);
+    return Point4d.createFromPackedXYZW(this._poleBuffer, 0);
   }
   /** Evaluate at a position given by a knot value.  */
   public knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     this.evaluateBuffersAtKnot(u, v, 1);
-    return Plane3dByOriginAndVectors.createOriginAndVectorsWeightedArrays(this.poleBuffer, this.poleBuffer1UV[0], this.poleBuffer1UV[1], result);
+    return Plane3dByOriginAndVectors.createOriginAndVectorsWeightedArrays(this._poleBuffer, this._poleBuffer1UV[0], this._poleBuffer1UV[1], result);
   }
 
   public fractionToPoint4d(fractionU: number, fractionV: number): Point4d {
@@ -916,18 +916,18 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     }
     return true;
   }
-/**
- * Pass `this` (strongly typed) to `handler.handleBsplineSurface3dH(this)`.
- * @param handler double dispatch handler.
- */
+  /**
+   * Pass `this` (strongly typed) to `handler.handleBsplineSurface3dH(this)`.
+   * @param handler double dispatch handler.
+   */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineSurface3dH(this);
   }
-/**
- * extend a range to include the (optionally transformed) points of this surface
- * @param rangeToExtend range that is updaatd to include this surface range
- * @param transform transform to apply to the surface points
- */
+  /**
+   * extend a range to include the (optionally transformed) points of this surface
+   * @param rangeToExtend range that is updaatd to include this surface range
+   * @param transform transform to apply to the surface points
+   */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     this.extendRangeXYZH(rangeToExtend, transform);
   }

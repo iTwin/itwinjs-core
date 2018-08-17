@@ -31,6 +31,14 @@ class TestRpcImplDirect extends TestRpcInterface {
   public async op12(): Promise<Uint8Array> {
     return testInterfaceResource();
   }
+
+  public async op13(data: Uint8Array): Promise<void> {
+    if (data[0] === 1 && data[1] === 2 && data[2] === 3 && data[3] === 4) {
+      return;
+    } else {
+      throw new Error();
+    }
+  }
 }
 
 export class TestbedConfig {

@@ -66,27 +66,27 @@ export abstract class RpcConfiguration {
     configuration.controlChannel.initialize();
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public static supply(definition: RpcInterface): RpcConfiguration {
     return RpcConfiguration.obtain(definition.configurationSupplier ? definition.configurationSupplier() : RpcDefaultConfiguration);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void {
     this.protocol.onRpcClientInitialized(definition, client);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
     this.protocol.onRpcImplInitialized(definition, impl);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void {
     this.protocol.onRpcClientTerminated(definition, client);
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
     this.protocol.onRpcImplTerminated(definition, impl);
   }

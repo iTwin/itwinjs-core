@@ -220,7 +220,7 @@ export class BriefcaseHandler {
     ArgumentCheck.defined("briefcase", briefcase);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
-    if (Config.isBrowser())
+    if (Config.isBrowser)
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)

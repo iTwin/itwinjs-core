@@ -6,7 +6,7 @@ import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
 
 export class TilesDataUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-tilesdataaccess.bentley.com",
     QA: "https://qa-connect-tilesdataaccess.bentley.com",
     PROD: "https://connect-tilesdataaccess.bentley.com",
@@ -14,11 +14,11 @@ export class TilesDataUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(TileDataAccessClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(TileDataAccessClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 

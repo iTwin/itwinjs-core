@@ -392,7 +392,7 @@ export class ClipShape extends ClipPrimitive {
     if (this.invisible)
       val.shape.invisible = true;
 
-    if (this._transformFromClip && !this._transformFromClip.isIdentity())
+    if (this._transformFromClip && !this._transformFromClip.isIdentity)
       val.shape.trans = this._transformFromClip.toJSON();
 
     if (this.isMask)
@@ -520,7 +520,7 @@ export class ClipShape extends ClipPrimitive {
   }
 
   /** Checks to ensure that the member polygon has an area, and that the polygon is closed. */
-  public isValidPolygon(): boolean {
+  public get isValidPolygon(): boolean {
     if (this._polygon.length < 3)
       return false;
     if (!this._polygon[0].isExactEqual(this._polygon[this._polygon.length - 1]))
@@ -712,7 +712,7 @@ export class ClipShape extends ClipPrimitive {
 
       range.extend(shapePts[0], shapePts[1]);
     }
-    if (range.isNull()) {
+    if (range.isNull) {
       return undefined;
     }
     return range;
@@ -727,7 +727,7 @@ export class ClipShape extends ClipPrimitive {
   }
 
   public transformInPlace(transform: Transform): boolean {
-    if (transform.isIdentity())
+    if (transform.isIdentity)
       return true;
 
     super.transformInPlace(transform);
@@ -754,7 +754,7 @@ export class ClipShape extends ClipPrimitive {
     return true;
   }
 
-  public isXYPolygon(): boolean {
+  public get isXYPolygon(): boolean {
     if (this._polygon.length === 0)   // Note: This is a lenient check, as points array could also contain less than 3 points (not a polygon)
       return false;
     if (this._transformFromClip === undefined)

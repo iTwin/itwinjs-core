@@ -34,8 +34,8 @@ export class UserStatistics extends UserInfo {
  * @see UserStatisticsHandler.get()
  */
 export class UserStatisticsQuery extends InstanceIdQuery {
-  private statisticsPrefix = "HasStatistics-forward-Statistics";
-  private queriedByIds = false;
+  private _statisticsPrefix = "HasStatistics-forward-Statistics";
+  private _queriedByIds = false;
   /**
    * Constructor for UserStatisticsQuery.
    */
@@ -63,41 +63,41 @@ export class UserStatisticsQuery extends InstanceIdQuery {
     filter += "]";
 
     this.addFilter(filter);
-    this.queriedByIds = true;
+    this._queriedByIds = true;
     return this;
   }
 
   /** Select all statistics */
   public selectAll() {
-    return this.addSelect(`${this.statisticsPrefix}.*`);
+    return this.addSelect(`${this._statisticsPrefix}.*`);
   }
 
   /** Select Briefcases count */
   public selectBriefcasesCount() {
-    return this.addSelect(`${this.statisticsPrefix}.BriefcasesCount`);
+    return this.addSelect(`${this._statisticsPrefix}.BriefcasesCount`);
   }
 
   /** Select pushed ChangeSets count */
   public selectPushedChangeSetsCount() {
-    return this.addSelect(`${this.statisticsPrefix}.PushedChangeSetsCount`);
+    return this.addSelect(`${this._statisticsPrefix}.PushedChangeSetsCount`);
   }
 
   /** Select Owned locks count */
   public selectOwnedLocksCount() {
-    return this.addSelect(`${this.statisticsPrefix}.OwnedLocksCount`);
+    return this.addSelect(`${this._statisticsPrefix}.OwnedLocksCount`);
   }
 
   /** Select last ChangeSet push date count */
   public selectLastChangeSetPushDate() {
-    return this.addSelect(`${this.statisticsPrefix}.LastChangeSetPushDate`);
+    return this.addSelect(`${this._statisticsPrefix}.LastChangeSetPushDate`);
   }
 
   /**
    * Returns whether was object queried by ids or no
    * @hidden
    */
-  public isQueriedByIds() {
-    return this.queriedByIds;
+  public get isQueriedByIds() {
+    return this._queriedByIds;
   }
 }
 
@@ -139,7 +139,7 @@ export class UserStatisticsHandler {
     }
 
     let userStatistics: UserStatistics[];
-    if (query.isQueriedByIds()) {
+    if (query.isQueriedByIds) {
       userStatistics = await this._handler.postQuery<UserStatistics>(UserStatistics, token,
         this.getRelativeUrl(imodelId), query.getQueryOptions());
     } else {

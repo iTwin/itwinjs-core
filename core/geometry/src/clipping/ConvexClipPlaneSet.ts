@@ -294,9 +294,9 @@ export class ConvexClipPlaneSet implements Clipper {
     return false;
   }
 
-  private static sClipArcFractionArray = new GrowableFloat64Array();
+  private static _clipArcFractionArray = new GrowableFloat64Array();
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ConvexClipPlaneSet.sClipArcFractionArray;
+    const breaks = ConvexClipPlaneSet._clipArcFractionArray;
     breaks.clear();
     for (const clipPlane of this.planes) {
       clipPlane.appendIntersectionRadians(arc, breaks);

@@ -47,8 +47,8 @@ export default class Enumeration extends SchemaItem {
     this._enumerators = [];
   }
 
-  public isInt(): this is IntEnumeration { return this.primitiveType === PrimitiveType.Integer; }
-  public isString(): this is StringEnumeration { return this.primitiveType === PrimitiveType.String; }
+  public get isInt(): boolean { return this.primitiveType === PrimitiveType.Integer; }
+  public get isString(): boolean { return this.primitiveType === PrimitiveType.String; }
 
   /**
    * Gets an enumerator that matches the name provided.
@@ -68,11 +68,11 @@ export default class Enumeration extends SchemaItem {
     return this.enumerators.find((item) => item.value === value);
   }
 
-   /** @hidden
-    * Checks whether there already exists an enumerator with this name or this value
-    * @param name The name of the enumerator we are trying to create
-    * @param value The value of the enumerator we are trying to create
-    */
+  /** @hidden
+   * Checks whether there already exists an enumerator with this name or this value
+   * @param name The name of the enumerator we are trying to create
+   * @param value The value of the enumerator we are trying to create
+   */
   private findDuplicateEnumerators(name: string, value: string | number) {
     this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
       if (element.name.toLowerCase() === name.toLowerCase())
@@ -91,14 +91,14 @@ export default class Enumeration extends SchemaItem {
    * @return AnyEnumerator object
    */
   public createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator {
-    if (this.isInt() && typeof(value) === "string") // throws if backing type is int and value is string
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
-    if (!this.isInt() && typeof(value) === "number") // also throws if backing type is string and value is number
+    if (this.isInt && typeof (value) === "string") // throws if backing type is int and value is string
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
+    if (!this.isInt && typeof (value) === "number") // also throws if backing type is string and value is number
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
     if (!ECName.validate(name))
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-    return {name, value, label, description};
+    return { name, value, label, description };
   }
 
   /**
@@ -111,7 +111,7 @@ export default class Enumeration extends SchemaItem {
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    schemaJson.backingTypeName = (this.isInt()) ? "int" : "string";
+    schemaJson.backingTypeName = (this.isInt) ? "int" : "string";
     schemaJson.isStrict = this.isStrict;
     schemaJson.enumerators = [];
     this._enumerators.forEach((element: AnyEnumerator) => {
@@ -130,11 +130,19 @@ export default class Enumeration extends SchemaItem {
   /**
    * Populates this Enumeration with the values from the provided.
    */
-  private enumerationFromJson(jsonObj: any) {
+  public async fromJson(jsonObj: any): Promise<void> {
+    this.fromJsonSync(jsonObj);
+  }
+
+  /**
+   * Populates this Enumeration with the values from the provided.
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
     if (undefined === this._primitiveType) {
       if (undefined === jsonObj.backingTypeName)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} is missing the required 'backingTypeName' attribute.`);
-      if (typeof(jsonObj.backingTypeName) !== "string")
+      if (typeof (jsonObj.backingTypeName) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
 
       if (/int/i.test(jsonObj.backingTypeName))
@@ -145,17 +153,17 @@ export default class Enumeration extends SchemaItem {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
     } else {
       if (undefined !== jsonObj.backingTypeName) {
-        if (typeof(jsonObj.backingTypeName) !== "string")
+        if (typeof (jsonObj.backingTypeName) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
 
-        const primitiveTypePattern = (this.isInt()) ? /int/i : /string/i;
+        const primitiveTypePattern = (this.isInt) ? /int/i : /string/i;
         if (!primitiveTypePattern.test(jsonObj.backingTypeName))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible backingTypeName. It must be "${(this.isInt()) ? "int" : "string"}", not "${(this.isInt()) ? "string" : "int"}".`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible backingTypeName. It must be "${(this.isInt) ? "int" : "string"}", not "${(this.isInt) ? "string" : "int"}".`);
       }
     }
 
     if (undefined !== jsonObj.isStrict) {
-      if (typeof(jsonObj.isStrict) !== "boolean")
+      if (typeof (jsonObj.isStrict) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
       this._isStrict = jsonObj.isStrict;
     }
@@ -165,7 +173,7 @@ export default class Enumeration extends SchemaItem {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
       jsonObj.enumerators.forEach((enumerator: any) => {
-        if (typeof(enumerator) !== "object")
+        if (typeof (enumerator) !== "object")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
         if (undefined === enumerator.value)
@@ -183,12 +191,12 @@ export default class Enumeration extends SchemaItem {
         }
 
         if (undefined !== enumerator.label) {
-          if (typeof(enumerator.label) !== "string")
+          if (typeof (enumerator.label) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
         }
 
         if (undefined !== enumerator.description) {
-          if (typeof(enumerator.description) !== "string")
+          if (typeof (enumerator.description) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
         }
         // Creates a new enumerator (with the specified name, value, label and description- label and description are optional) and adds to the list of enumerators.
@@ -196,22 +204,6 @@ export default class Enumeration extends SchemaItem {
         this.addEnumerator(this.createEnumerator(enumName, enumerator.value, enumerator.label, enumerator.description));
       });
     }
-  }
-
-  /**
-   * Populates this Enumeration with the values from the provided.
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-    this.enumerationFromJson(jsonObj);
-  }
-
-  /**
-   * Populates this Enumeration with the values from the provided.
-   */
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
-    this.enumerationFromJson(jsonObj);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

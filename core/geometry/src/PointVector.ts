@@ -88,7 +88,7 @@ export class XY implements XAndY {
     return Math.max(Math.abs(this.x - other.x), Math.abs(this.y - other.y));
   }
   /** @returns true if the x,y components are both small by metric metric tolerance */
-  public isAlmostZero(): boolean {
+  public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y);
   }
 
@@ -245,7 +245,7 @@ export class XYZ implements XYAndZ {
     return index;
   }
   /** Return true if the if x,y,z components are all nearly zero to tolerance Geometry.smallMetricDistance */
-  public isAlmostZero(): boolean {
+  public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y) && Geometry.isSmallMetricDistance(this.z);
   }
 
@@ -761,12 +761,12 @@ export class Vector3d extends XYZ {
   /** Return a vector with 000 xyz parts. */
   public static createZero(result?: Vector3d): Vector3d { return Vector3d.create(0, 0, 0, result); }
 
-  /** Return a unit X vector  */
-  public static unitX(): Vector3d { return new Vector3d(1, 0, 0); }
+  /** Return a unit X vector optionally multiplied by a scale  */
+  public static unitX(scale: number = 1): Vector3d { return new Vector3d(scale, 0, 0); }
   /** Return a unit Y vector  */
-  public static unitY(): Vector3d { return new Vector3d(0, 1, 0); }
+  public static unitY(scale: number = 1): Vector3d { return new Vector3d(0, scale, 0); }
   /** Return a unit Z vector  */
-  public static unitZ(): Vector3d { return new Vector3d(0, 0, 1); }
+  public static unitZ(scale: number = 1): Vector3d { return new Vector3d(0, 0, scale); }
 
   /** Divide by denominator, but return undefined if denominator is zero. */
   public safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined {
@@ -1199,7 +1199,7 @@ export class Segment1d {
   /**
    * Return true if the segment limits are (exactly) 0 and 1
    */
-  public isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
+  public get isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
 }
 
 /** The properties that define [[YawPitchRollAngles]]. */
@@ -1251,9 +1251,9 @@ export class YawPitchRollAngles {
   /** Convert to a JSON object of form { pitch: 20 , roll: 29.999999999999996 , yaw: 10 }. Any values that are exactly zero (with tolerance `Geometry.smallAngleRadians`) are omitted. */
   public toJSON(): YawPitchRollProps {
     const val: YawPitchRollProps = {};
-    if (!this.pitch.isAlmostZero()) val.pitch = this.pitch.toJSON();
-    if (!this.roll.isAlmostZero()) val.roll = this.roll.toJSON();
-    if (!this.yaw.isAlmostZero()) val.yaw = this.yaw.toJSON();
+    if (!this.pitch.isAlmostZero) val.pitch = this.pitch.toJSON();
+    if (!this.roll.isAlmostZero) val.roll = this.roll.toJSON();
+    if (!this.yaw.isAlmostZero) val.yaw = this.yaw.toJSON();
     return val;
   }
   /**
@@ -1299,7 +1299,7 @@ export class YawPitchRollAngles {
       s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2),
       s1, c1 * s2, c1 * c2,
       result,
-    );
+      );
   }
   /** @returns Return the largest angle in radians */
   public maxAbsRadians(): number {
@@ -1328,7 +1328,7 @@ export class YawPitchRollAngles {
       this.yaw.radians - other.yaw.radians,
       this.pitch.radians - other.pitch.radians,
       this.roll.radians - other.roll.radians,
-    );
+      );
   }
   /** Return the largest angle in degrees. */
   public maxAbsDegrees(): number { return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees); }
@@ -1776,7 +1776,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
     /* For small theta, sin^2(theta)~~theta^2 */
     return cross * cross <= Geometry.smallAngleRadiansSquared * a2 * b2;
   }
-
+/**
+ * @returns `true` if `this` vector is perpendicular to `other`.
+ * @param other second vector.
+ */
   public isPerpendicularTo(other: Vector2d): boolean {
     return Angle.isPerpendicularDotSet(this.magnitudeSquared(), other.magnitudeSquared(), this.dotProduct(other));
   }

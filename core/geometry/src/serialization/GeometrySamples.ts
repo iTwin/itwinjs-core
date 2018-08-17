@@ -7,7 +7,7 @@ import { Point3d, Vector3d, Point2d, Vector2d, Segment1d } from "../PointVector"
 import { Transform, RotMatrix } from "../Transform";
 
 import { Range1d, Range2d, Range3d } from "../Range";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurvePrimitive, GeometryQuery } from "../curve/CurvePrimitive";
 import { Point4d, Matrix4d, Map4d } from "../numerics/Geometry4d";
 import { Path, Loop, ParityRegion, UnionRegion, BagOfCurves } from "../curve/CurveChain";
 import { IndexedPolyface } from "../polyface/Polyface";
@@ -30,6 +30,7 @@ import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+
 /* tslint:disable:no-console */
 
 /** Access the last point in the array. push another shifted by dx,dy,dz */
@@ -1161,6 +1162,34 @@ export class Sample {
     Sample.appendSplits(result, xyzC, numSplitBC, true);
     Sample.appendSplits(result, xyzA, numSplitCA, wrap);
     return result;
+  }
+
+  public static createCenteredBoxEdges(ax: number = 1, ay: number = 1, az: number = 0, cx: number = 0, cy: number = 0, cz: number = 0,
+    geometry?: GeometryQuery[]): GeometryQuery[] {
+    if (!geometry)
+      geometry = [];
+    const x0 = cx - ax;
+    const y0 = cy - ay;
+    const z0 = cz - az;
+
+    const x1 = cx + ax;
+    const y1 = cy + ay;
+    const z1 = cz + az;
+
+    for (const z of [z0, z1]) {
+      geometry.push(
+        LineString3d.create(
+          Point3d.create(x0, y0, z),
+          Point3d.create(x1, y0, z),
+          Point3d.create(x1, y1, z),
+          Point3d.create(x0, y1, z),
+          Point3d.create(x0, y0, z)));
+    }
+    geometry.push(LineSegment3d.createXYZXYZ(x0, y0, z0, x0, y0, z1));
+    geometry.push(LineSegment3d.createXYZXYZ(x1, y0, z0, x1, y0, z1));
+    geometry.push(LineSegment3d.createXYZXYZ(x1, y1, z0, x1, y1, z1));
+    geometry.push(LineSegment3d.createXYZXYZ(x0, y1, z0, x0, y1, z1));
+    return geometry;
   }
 
   public static createSimpleTransitionSpirals(): TransitionSpiral3d[] {

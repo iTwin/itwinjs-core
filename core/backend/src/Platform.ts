@@ -27,13 +27,13 @@ export class Platform {
   public static get electron(): any { return ((typeof (process) !== "undefined") && ("electron" in process.versions)) ? require("electron") : undefined; }
 
   /** Query if this is a desktop configuration */
-  public static isDesktop(): boolean { return Platform.electron !== undefined; }
+  public static get isDesktop(): boolean { return Platform.electron !== undefined; }
 
   /** Query if this is a mobile configuration */
-  public static isMobile(): boolean { return Platform.imodeljsMobile !== undefined; }
+  public static get isMobile(): boolean { return Platform.imodeljsMobile !== undefined; }
 
   /** Query if this is running in nodejs  */
-  public static isNodeJs(): boolean { return !Platform.isMobile(); } // currently we use nodejs for all non-mobile backend apps
+  public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
 }
 
 /** Well known directories that may be used by the app. Also see [[Platform]] */

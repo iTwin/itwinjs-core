@@ -94,8 +94,8 @@ export namespace IModelTileIO {
 
     public async read(): Promise<GltfTileIO.ReaderResult> {
       // ###TODO don't re-read the headers...
-      this.buffer.reset();
-      const header = new Header(this.buffer);
+      this._buffer.reset();
+      const header = new Header(this._buffer);
       let isLeaf = true;
       if (!header.isValid)
         return { readStatus: TileIO.ReadStatus.InvalidHeader, isLeaf };
@@ -110,7 +110,7 @@ export namespace IModelTileIO {
 
       // Textures must be loaded asynchronously first...
       await this.loadNamedTextures();
-      if (this.isCanceled)
+      if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
       else
         return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
@@ -121,25 +121,25 @@ export namespace IModelTileIO {
     }
 
     protected readFeatureTable(): FeatureTable | undefined {
-      const startPos = this.buffer.curPos;
-      const header = FeatureTableHeader.readFrom(this.buffer);
+      const startPos = this._buffer.curPos;
+      const header = FeatureTableHeader.readFrom(this._buffer);
       if (undefined === header)
         return undefined;
 
-      const featureTable = new FeatureTable(header.maxFeatures, this.modelId);
+      const featureTable = new FeatureTable(header.maxFeatures, this._modelId);
       for (let i = 0; i < header.count; i++) {
-        const elementId = this.buffer.nextId64;
-        const subCategoryId = this.buffer.nextId64;
-        const geometryClass = this.buffer.nextUint32 as GeometryClass;
-        const index = this.buffer.nextUint32;
+        const elementId = this._buffer.nextId64;
+        const subCategoryId = this._buffer.nextId64;
+        const geometryClass = this._buffer.nextUint32 as GeometryClass;
+        const index = this._buffer.nextUint32;
 
-        if (this.buffer.isPastTheEnd)
+        if (this._buffer.isPastTheEnd)
           return undefined;
 
         featureTable.insertWithIndex(new Feature(elementId, subCategoryId, geometryClass), index);
       }
 
-      this.buffer.curPos = startPos + header.length;
+      this._buffer.curPos = startPos + header.length;
       return featureTable;
     }
 
@@ -185,7 +185,7 @@ export namespace IModelTileIO {
           const gradientProps = json.gradient as Gradient.SymbProps;
           const gradient = undefined !== gradientProps ? Gradient.Symb.fromJSON(gradientProps) : undefined;
           if (undefined !== gradient) {
-            const texture = this.system.getGradientTexture(gradient, this.iModel);
+            const texture = this._system.getGradientTexture(gradient, this._iModel);
             if (undefined !== texture) {
               // ###TODO: would be better if DisplayParams created the TextureMapping - but that requires an IModelConnection and a RenderSystem...
               textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
@@ -202,12 +202,12 @@ export namespace IModelTileIO {
     }
 
     protected materialFromJson(key: string): RenderMaterial | undefined {
-      if (this.renderMaterials === undefined || this.renderMaterials[key] === undefined)
+      if (this._renderMaterials === undefined || this._renderMaterials[key] === undefined)
         return undefined;
 
-      let material = this.system.findMaterial(key, this.iModel);
+      let material = this._system.findMaterial(key, this._iModel);
       if (!material) {
-        const materialJson = this.renderMaterials[key];
+        const materialJson = this._renderMaterials[key];
 
         const materialParams = new RenderMaterial.Params(key);
         materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
@@ -231,7 +231,7 @@ export namespace IModelTileIO {
         if (undefined !== materialJson.textureMapping)
           materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
-        material = this.system.createMaterial(materialParams, this.iModel);
+        material = this._system.createMaterial(materialParams, this._iModel);
       }
 
       return material;
@@ -242,7 +242,7 @@ export namespace IModelTileIO {
         return undefined;
 
       const name = JsonUtils.asString(json.name);
-      const namedTex = 0 !== name.length ? this.namedTextures[name] : undefined;
+      const namedTex = 0 !== name.length ? this._namedTextures[name] : undefined;
       const texture = undefined !== namedTex ? namedTex.renderTexture as RenderTexture : undefined;
       if (undefined === texture)
         return undefined;
@@ -260,26 +260,26 @@ export namespace IModelTileIO {
     }
 
     private async loadNamedTextures(): Promise<void> {
-      if (undefined === this.namedTextures)
+      if (undefined === this._namedTextures)
         return Promise.resolve();
 
       const promises = new Array<Promise<void>>();
-      for (const name of Object.keys(this.namedTextures))
+      for (const name of Object.keys(this._namedTextures))
         promises.push(this.loadNamedTexture(name));
 
       return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
     }
 
     private async loadNamedTexture(name: string): Promise<void> {
-      if (this.isCanceled)
+      if (this._isCanceled)
         return Promise.resolve();
 
-      const namedTex = this.namedTextures[name];
+      const namedTex = this._namedTextures[name];
       assert(undefined !== namedTex); // we got here by iterating the keys of this.namedTextures...
       if (undefined === namedTex)
         return Promise.resolve();
 
-      const texture = this.system.findTexture(name, this.iModel);
+      const texture = this._system.findTexture(name, this._iModel);
       if (undefined !== texture)
         return Promise.resolve();
 
@@ -287,7 +287,7 @@ export namespace IModelTileIO {
     }
     private async readNamedTexture(namedTex: any): Promise<RenderTexture | undefined> {
       const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-      const bufferViewJson = 0 !== bufferViewId.length ? this.bufferViews[bufferViewId] : undefined;
+      const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
       if (undefined === bufferViewJson)
         return Promise.resolve(undefined);
 
@@ -296,12 +296,12 @@ export namespace IModelTileIO {
       if (0 === byteLength)
         return Promise.resolve(undefined);
 
-      const bytes = this.binaryData.subarray(byteOffset, byteOffset + byteLength);
+      const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
       const imageSource = new ImageSource(bytes, format);
 
       return ImageUtil.extractImage(imageSource).then((image) => {
-        if (this.isCanceled)
+        if (this._isCanceled)
           return undefined;
 
         let textureType = RenderTexture.Type.Normal;
@@ -311,7 +311,7 @@ export namespace IModelTileIO {
           textureType = RenderTexture.Type.TileSection;
 
         const params = new RenderTexture.Params(name, textureType);
-        return this.system.createTextureFromImage(image, ImageSourceFormat.Png === format, this.iModel, params);
+        return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
       });
     }
   }

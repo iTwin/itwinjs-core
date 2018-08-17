@@ -192,7 +192,7 @@ export class ClipMaskVolume implements RenderClipVolume {
   /** Create a new ClipMaskVolume from a clip vector. */
   public static create(clipVec: ClipVector): ClipMaskVolume | undefined {
     const range = clipVec.boundingRange;
-    if (range.isNull())
+    if (range.isNull)
       return undefined;
 
     const pts: Point3d[] = [
@@ -308,7 +308,7 @@ export class ClipMaskVolume implements RenderClipVolume {
 
     // Render clip geometry as a mask
     System.instance.frameBufferStack.execute(this._fbo, true, () => {
-      const prevState = System.instance.currentRenderState;
+      const prevState = System.instance.currentRenderState.clone();
       const target = exec.target;
       System.instance.applyRenderState(state);
 

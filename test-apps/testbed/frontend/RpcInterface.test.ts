@@ -266,13 +266,13 @@ describe("RpcInterface", () => {
 
   it("should describe available RPC endpoints from the frontend", async () => {
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
-    const controlInterface = (controlChannel as any).channelInterface as RpcInterfaceDefinition;
+    const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.name;
     const controlPolicy = RpcOperation.lookup(controlInterface, "describeEndpoints").policy;
 
     const simulateIncompatible = () => {
       const interfaces: string[] = [];
-      ((controlChannel as any).configuration as RpcConfiguration).interfaces().forEach((definition) => {
+      ((controlChannel as any)._configuration as RpcConfiguration).interfaces().forEach((definition) => {
         interfaces.push(definition.name === "IModelReadRpcInterface" ? `${definition.name}@0.0.0` : `${definition.name}@${definition.version}`);
       });
 
@@ -311,6 +311,15 @@ describe("RpcInterface", () => {
     assert.equal(data[1], 2);
     assert.equal(data[2], 3);
     assert.equal(data[3], 4);
+  });
+
+  it("should support sending binary resources to the backend", async () => {
+    const data = new Uint8Array(4);
+    data[0] = 1;
+    data[1] = 2;
+    data[2] = 3;
+    data[3] = 4;
+    await TestRpcInterface.getClient().op13(data);
   });
 
   it("should reject a mismatched RPC interface request", async () => {

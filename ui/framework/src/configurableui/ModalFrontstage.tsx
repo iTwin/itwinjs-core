@@ -31,7 +31,7 @@ export interface ModalFrontstageProps {
  * ModalFrontstage React component
  */
 export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
-  private onGoBack = () => {
+  private _onGoBack = () => {
     this.props.navigateBack();
     this.props.closeModal();
   }
@@ -54,7 +54,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
       <>
         <div className={"modal-frontstage" + openClass}>
           <div className="app-bar">
-            <BackButton onClick={this.onGoBack} />
+            <BackButton onClick={this._onGoBack} />
             <span className="bwc-text-headline">{this.props.title}</span>
             {this.props.appBarRight &&
               <span className="app-bar-right">{this.props.appBarRight}</span>

@@ -24,10 +24,24 @@ export const enum AxisOrder {
   /** Left handed system, Z then Y then X */
   ZYX = 6,
 }
+/* Enumeration of the 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z */
 export const enum AxisIndex {
   X = 0,
   Y = 1,
   Z = 2,
+}
+
+/* Standard views.   Used in `RotMatrix.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+*/
+export const enum StandardViewIndex {
+  Top = 1,
+  Bottom = 2,
+  Left = 3,
+  Right = 4,
+  Front = 5,
+  Back = 6,
+  Iso = 7,
+  RightIso = 8,
 }
 
 /** Enumeration among choice for how a coordinate transformation should incorporate scaling. */
@@ -54,7 +68,7 @@ export interface BeJSONFunctions {
  * If value is a number, it is in *degrees*.
  * If value is an object, it can have either degrees or radians.
  */
-export type AngleProps = { degrees: number } | { radians: number } | number;
+export type AngleProps = { degrees: number } | { radians: number } | { _radians: number } | { _degrees: number } | number;
 
 /** The Properties for a JSON representation of an AngleSweep.
  * * The json data is always start and end angles as a pair in an array.
@@ -63,6 +77,7 @@ export type AngleProps = { degrees: number } | { radians: number } | number;
  * If the AngleProps is an object with key radians, the radians value must be an array with the two radians angles as numbers
  */
 export type AngleSweepProps =
+  AngleSweep |
   { degrees: [number, number] } |
   { radians: [number, number] } |
   [number, number];
@@ -568,7 +583,7 @@ export class Angle implements BeJSONFunctions {
   public tan(): number { return Math.tan(this._radians); }
 
   public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
-  public isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
+  public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
 
   /** Adjust a radians value so it is positive in 0..360 */
   public static adjustDegrees0To360(degrees: number): number {
@@ -625,8 +640,8 @@ export class Angle implements BeJSONFunctions {
   }
 
   public static zero() { return new Angle(0); }
-  public isExactZero() { return this.radians === 0; }
-  public isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
+  public get isExactZero() { return this.radians === 0; }
+  public get isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
 
   /** Create an angle object with degrees adjusted into 0..360. */
   public static createDegreesAdjustPositive(degrees: number): Angle { return Angle.createDegrees(Angle.adjustDegrees0To360(degrees)); }
@@ -843,11 +858,11 @@ export class AngleSweep implements BeJSONFunctions {
     this._radians1 = Geometry.clampToStartEnd(this._radians1, -limit, limit);
   }
   /** Ask if the sweep is counterclockwise, i.e. positive sweep */
-  public isCCW(): boolean { return this._radians1 >= this._radians0; }
+  public get isCCW(): boolean { return this._radians1 >= this._radians0; }
   /** Ask if the sweep is a full circle. */
-  public isFullCircle(): boolean { return Angle.isFullCircleRadians(this.sweepRadians); }
+  public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this.sweepRadians); }
   /** Ask if the sweep is a full sweep from south pole to north pole. */
-  public isFullLatitudeSweep(): boolean {
+  public get isFullLatitudeSweep(): boolean {
     const a = Math.PI * 0.5;
     return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians0, -a)
       && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1, a);

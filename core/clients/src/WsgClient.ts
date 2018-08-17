@@ -178,8 +178,8 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
    */
   constructor() {
     super();
-    this.defaultOptions.errorCallback = WsgError.parse;
-    this.defaultOptions.retryCallback = WsgError.shouldRetry;
+    this._defaultOptions.errorCallback = WsgError.parse;
+    this._defaultOptions.retryCallback = WsgError.shouldRetry;
   }
 }
 
@@ -197,7 +197,7 @@ export interface WsgRequestOptions {
  */
 export abstract class WsgClient extends Client {
   private static _defaultWsgRequestOptionsProvider: DefaultWsgRequestOptionsProvider;
-  protected url?: string;
+  protected _url?: string;
 
   /**
    * Creates an instance of Client.
@@ -214,7 +214,7 @@ export abstract class WsgClient extends Client {
   /**
    * Augments request options with defaults returned by the DefaultWsgRequestOptionsProvider.
    * @note that the options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
@@ -232,22 +232,22 @@ export abstract class WsgClient extends Client {
    * @returns URL for the service
    */
   public async getUrl(excludeApiVersion?: boolean): Promise<string> {
-    if (this.url) {
-      return Promise.resolve(this.url);
+    if (this._url) {
+      return Promise.resolve(this._url);
     }
 
     return super.getUrl()
       .then((url: string): Promise<string> => {
-        this.url = url;
+        this._url = url;
         if (!excludeApiVersion) {
-          this.url += "/" + this.apiVersion;
+          this._url += "/" + this.apiVersion;
         }
-        return Promise.resolve(this.url); // TODO: On the server this really needs a lifetime!!
+        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
       });
   }
 
   /**
-   * Gets the (delegation) access token to acess the service
+   * Gets the (delegation) access token to access the service
    * @param authTokenInfo Access token.
    * @returns Resolves to the (delegation) access token.
    */
@@ -363,7 +363,7 @@ export abstract class WsgClient extends Client {
   }
 
   // @todo Use lower level utilities instead of the node based Request API.
-  // @todo Deseriaize stream directly to the type, instead of creating an intermediate JSON object.
+  // @todo Deserialize stream directly to the type, instead of creating an intermediate JSON object.
   /**
    * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
    * @param typedConstructor Constructor function for the type

@@ -1,13 +1,13 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.113.0",
+  "version": "0.117.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
   "repository": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.113.0",
+    "@bentley/bentleyjs-tools": "0.117.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
@@ -29,7 +29,7 @@
     "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry/json/file.json --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
     "cover:docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"

@@ -63,7 +63,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
         isOpen={isWidgetOpen}
         onResize={
           (x, y, handle) => {
-            this.handleOnWidgetResize(this.props.zoneId, x, y, handle);
+            this._handleOnWidgetResize(this.props.zoneId, x, y, handle);
           }
         }
       />
@@ -76,9 +76,9 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
         <WidgetTab
           key={`${stackedWidget.id}_${index}`}
           isActive={tab.isActive}
-          onClick={() => this.handleWidgetTabClick(stackedWidget.id, index)}
-          onDragBehaviorChanged={(isDragging) => this.handleWidgetTabDragBehaviorChanged(stackedWidget.id, isDragging)}
-          onDrag={this.handleWidgetTabDrag}
+          onClick={() => this._handleWidgetTabClick(stackedWidget.id, index)}
+          onDragBehaviorChanged={(isDragging) => this._handleWidgetTabDragBehaviorChanged(stackedWidget.id, isDragging)}
+          onDrag={this._handleWidgetTabDrag}
           anchor={this.props.anchor}
         >
           <Icon iconInfo={tab.icon} />
@@ -87,19 +87,19 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     });
   }
 
-  private handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle) => {
+  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle) => {
     this.props.widgetChangeHandler.handleOnWidgetResize(zoneId, x, y, handle);
   }
 
-  private handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
+  private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
     this.props.widgetChangeHandler.handleWidgetTabClick(widgetId, tabIndex);
   }
 
-  private handleWidgetTabDragBehaviorChanged = (widgetId: number, isDragging: boolean) => {
+  private _handleWidgetTabDragBehaviorChanged = (widgetId: number, isDragging: boolean) => {
     this.props.widgetChangeHandler.handleWidgetTabDragBehaviorChanged(widgetId, isDragging);
   }
 
-  private handleWidgetTabDrag = (dragged: PointProps) => {
+  private _handleWidgetTabDrag = (dragged: PointProps) => {
     this.props.widgetChangeHandler.handleWidgetTabDrag(dragged as Point);
   }
 }

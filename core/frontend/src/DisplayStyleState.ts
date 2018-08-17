@@ -10,7 +10,7 @@ import {
   ColorDefProps,
   ColorDef,
   ColorByName,
-  ElementProps,
+  DisplayStyleProps,
   RenderTexture,
   RenderMaterial,
   Gradient,
@@ -25,30 +25,32 @@ import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
-export abstract class DisplayStyleState extends ElementState {
-  private _viewFlags: ViewFlags;
-  private _background: ColorDef;
-  private _monochrome: ColorDef;
-  private _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
+  private readonly _viewFlags: ViewFlags;
+  private readonly _background: ColorDef;
+  private readonly _monochrome: ColorDef;
+  private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
   private _backgroundMap: BackgroundMapState;
+
+  constructor(props: DisplayStyleProps, iModel: IModelConnection) {
+    super(props, iModel);
+    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
+    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
+    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
+    const monoJson = this.styles[monoName];
+    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
+    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
+  }
 
   public syncBackgroundMapState() {
     this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), this.iModel);
   }
 
-  constructor(props: ElementProps, iModel: IModelConnection) {
-    super(props, iModel);
-    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
-    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
-    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
-    const monoJson = this.getStyles()[monoName];
-    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
-    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
+  public equalState(other: DisplayStyleState): boolean {
+    return JSON.stringify(this.styles) === JSON.stringify(other.styles);
   }
 
-  public equalState(other: DisplayStyleState): boolean {
-    return JSON.stringify(this.getStyles()) === JSON.stringify(other.getStyles());
-  }
+  public get backgroundMap() { return this._backgroundMap; }
 
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
@@ -59,26 +61,31 @@ export abstract class DisplayStyleState extends ElementState {
     this.setStyle("viewflags", flags);
   }
 
-  public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
+  public get styles(): any {
+    const p = this.jsonProperties as any;
+    if (undefined === p.styles)
+      p.styles = new Object();
+
+    return p.styles;
+  }
   public getStyle(name: string): any {
-    const style: object = this.getStyles()[name];
+    const style: object = this.styles[name];
     return style ? style : {};
   }
   /** change the value of a style on this DisplayStyle */
-  public setStyle(name: string, value: any): void { this.getStyles()[name] = value; }
+  public setStyle(name: string, value: any): void { this.styles[name] = value; }
 
   /** Remove a Style from this DisplayStyle. */
-  public removeStyle(name: string) { delete this.getStyles()[name]; }
+  public removeStyle(name: string) { delete this.styles[name]; }
 
   /** Get the background color for this DisplayStyle */
   public get backgroundColor(): ColorDef { return this._background; }
-  public set backgroundColor(val: ColorDef) { this._background = val; this.setStyle("backgroundColor", val); }
+  public set backgroundColor(val: ColorDef) { this._background.setFrom(val); this.setStyle("backgroundColor", val); }
 
-  public getMonochromeColor(): ColorDef { return this._monochrome; }
-  public setMonochromeColor(val: ColorDef): void { this._monochrome = val; this.setStyle("monochromeColor", val); }
+  public get monochromeColor(): ColorDef { return this._monochrome; }
+  public set monochromeColor(val: ColorDef) { this._monochrome.setFrom(val); this.setStyle("monochromeColor", val); }
 
-  public getBackgroundMap(): BackgroundMapState { return this._backgroundMap; }
-  public getBackgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.getBackgroundMap().getPlane() : undefined; }
+  public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.backgroundMap.getPlane() : undefined; }
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 
   public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
@@ -99,7 +106,7 @@ export abstract class DisplayStyleState extends ElementState {
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2dState extends DisplayStyleState {
-  constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
+  constructor(props: DisplayStyleProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
 export interface GroundPlaneProps {
@@ -115,8 +122,8 @@ export class GroundPlane implements GroundPlaneProps {
   public elevation: number = 0.0;  // the Z height to draw the ground plane
   public aboveColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from above
   public belowColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from below
-  private aboveSymb?: Gradient.Symb; // symbology for ground plane when view is from above
-  private belowSymb?: Gradient.Symb; // symbology for ground plane when view is from below
+  private _aboveSymb?: Gradient.Symb; // symbology for ground plane when view is from above
+  private _belowSymb?: Gradient.Symb; // symbology for ground plane when view is from below
 
   public constructor(ground?: GroundPlaneProps) {
     ground = ground ? ground : {};
@@ -131,7 +138,7 @@ export class GroundPlane implements GroundPlaneProps {
    * Will store the ground colors used in the optional ColorDef array provided.
    */
   public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
-    let gradient = aboveGround ? this.aboveSymb : this.belowSymb;
+    let gradient = aboveGround ? this._aboveSymb : this._belowSymb;
     if (undefined !== gradient)
       return gradient;
 
@@ -150,9 +157,9 @@ export class GroundPlane implements GroundPlaneProps {
 
     // Store the gradient for possible future use
     if (aboveGround)
-      this.aboveSymb = gradient;
+      this._aboveSymb = gradient;
     else
-      this.belowSymb = gradient;
+      this._belowSymb = gradient;
 
     return gradient;
   }
@@ -440,13 +447,13 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _skyBoxParamsLoaded?: boolean;
   private _environment?: Environment;
 
-  public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
+  public constructor(props: DisplayStyleProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
 
   /** change one of the scene light specifications (Ambient, Flash, or Portrait) for this display style */
   public setSceneLight(light: Light) {
-    if (!light.isValid())
+    if (!light.isValid)
       return;
 
     const sceneLights = this.getStyle("sceneLights");
@@ -469,7 +476,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   /** change the light specification and direction of the solar light for this display style */
   public setSolarLight(light: Light, direction: Vector3d) {
     const sceneLights = this.getStyle("sceneLights");
-    if (light.lightType !== LightType.Solar || !light.isValid()) {
+    if (light.lightType !== LightType.Solar || !light.isValid) {
       delete sceneLights.sunDir;
     } else {
       sceneLights.sun = light;

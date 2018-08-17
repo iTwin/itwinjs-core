@@ -48,7 +48,7 @@ export class DrawParams extends ShaderProgramParams {
   public readonly viewMatrix: Matrix4;
 
   private static readonly _scratchTransform = Transform.createIdentity();
-  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = System.identityTransform, pass: RenderPass = RenderPass.OpaqueGeneral) {
+  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity, pass: RenderPass = RenderPass.OpaqueGeneral) {
     super(target, pass);
     this.geometry = geometry;
     this.modelMatrix = Matrix4.fromTransform(modelMatrix);
@@ -150,17 +150,17 @@ class PrimitiveCommand extends DrawCommand {
 
 /** Draw a batch primitive, possibly with symbology overridden per-feature */
 class BatchPrimitiveCommand extends PrimitiveCommand {
-  private readonly batch: Batch;
+  private readonly _batch: Batch;
 
   public constructor(primitive: Primitive, batch: Batch) {
     super(primitive);
-    this.batch = batch;
+    this._batch = batch;
   }
 
   public preExecute(exec: ShaderProgramExecutor): void {
-    exec.target.currentOverrides = this.batch.getOverrides(exec.target);
+    exec.target.currentOverrides = this._batch.getOverrides(exec.target);
     assert(undefined === exec.target.currentPickTable);
-    exec.target.currentPickTable = this.batch.pickTable;
+    exec.target.currentPickTable = this._batch.pickTable;
   }
   public postExecute(exec: ShaderProgramExecutor): void {
     exec.target.currentOverrides = undefined;
@@ -552,7 +552,7 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes && !batch.range.isNull()) {
+    if (undefined !== this._frustumPlanes && !batch.range.isNull) {
       let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
       frustum = frustum.transformBy(this.target.currentTransform, frustum);
       if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {

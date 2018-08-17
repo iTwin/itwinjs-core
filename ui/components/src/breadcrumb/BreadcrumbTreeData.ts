@@ -48,7 +48,7 @@ export class BreadcrumbRoot {
       return [];
     if (!this.dataProvider.getChildNodes)
       return [];
-    const treeNodes = await this.dataProvider.getChildNodes(node._treeNode, { size: 9999, start: 0 });
+    const treeNodes = await this.dataProvider.getChildNodes(node.treeNode, { size: 9999, start: 0 });
     return treeNodes.map((n: TreeNodeItem) => this.treeNodeToBreadcrumbNode(n, node));
   }
 
@@ -62,14 +62,14 @@ export class BreadcrumbRoot {
    * @returns Promise object representing List of BreadcrumbItems between root and target.
    */
   public async pathTo(target: BreadcrumbItem): Promise<BreadcrumbItem[]> {
-    const path = await this.path(target, this);
+    const path = await this._path(target, this);
     if (path)
       return path;
     else
       return [this];
   }
 
-  private path = async (target: BreadcrumbItem, tree: BreadcrumbItem): Promise<BreadcrumbItem[] | undefined> => {
+  private _path = async (target: BreadcrumbItem, tree: BreadcrumbItem): Promise<BreadcrumbItem[] | undefined> => {
     if (tree.equals(target)) {
       return [tree];
     }
@@ -83,7 +83,7 @@ export class BreadcrumbRoot {
       children = await this.loadChildren(tree as BreadcrumbNode);
 
     for (const child of children) {
-      const path = await this.path(target, child);
+      const path = await this._path(target, child);
       if (path) {
         return [tree, ...path];
       }
@@ -97,7 +97,7 @@ export class BreadcrumbRoot {
    * @param str raw input
    * @returns escaped output
    */
-  private escapeRegExp = (str: string) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+  private _escapeRegExp = (str: string) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 
   /**
    * finds node given a path
@@ -106,21 +106,21 @@ export class BreadcrumbRoot {
    */
   public findChild = async (path: string): Promise<BreadcrumbItem | undefined> => {
     // remove padding whitespace
-    const delimiter = this.escapeRegExp((this.delimiter!));
+    const delimiter = this._escapeRegExp((this.delimiter!));
     // remove trailing delimiter with optional whitespace padding
     path = path.replace(new RegExp("\\s*" + delimiter + "\\s*$"), "");
     if (path.length === 0)
       return this;
     const root = await this.loadRoot();
     for (const tree of root) {
-      const node = await this.find(tree, path, delimiter);
+      const node = await this._find(tree, path, delimiter);
       if (node)
         return node;
     }
     return undefined;
   }
 
-  private find = async (node: BreadcrumbNode, path: string, delimiter: string): Promise<BreadcrumbNode | undefined> => {
+  private _find = async (node: BreadcrumbNode, path: string, delimiter: string): Promise<BreadcrumbNode | undefined> => {
     // remove leading delimiter with optional whitespace padding
     path = path.replace(new RegExp("^\\s*" + delimiter + "\\s*"), "");
 
@@ -132,7 +132,7 @@ export class BreadcrumbRoot {
     if (path.indexOf(label) === 0 && node.hasChildren) {
       const children = await this.loadChildren(node);
       for (const child of children) {
-        const n = await this.find(child, path.substr(label.length), this.delimiter);
+        const n = await this._find(child, path.substr(label.length), this.delimiter);
         if (n)
           return n;
       }
@@ -154,7 +154,7 @@ export class BreadcrumbRoot {
       items = await this.loadRoot();
       list = [this];
     } else {
-      const delimiter = this.escapeRegExp((this.delimiter!));
+      const delimiter = this._escapeRegExp((this.delimiter!));
       const mat = path.match(new RegExp("\\s*(.*)\\s*" + delimiter + "\\s*(.*?)$"));
 
       let node: BreadcrumbItem | undefined = this;
@@ -217,14 +217,14 @@ export class BreadcrumbRoot {
 
 /** child node of BreadcrumbRoot */
 export class BreadcrumbNode {
-  public _treeNode: TreeNodeItem;
+  public treeNode: TreeNodeItem;
   public parent: BreadcrumbItem;
   public icon: string | undefined;
   public label: string;
   public hasChildren: boolean;
 
   constructor(treeNode: TreeNodeItem, label: string, hasChildren: boolean, parent: BreadcrumbItem, icon?: string) {
-    this._treeNode = treeNode;
+    this.treeNode = treeNode;
     this.label = label;
     this.hasChildren = hasChildren;
     this.parent = parent;
@@ -232,6 +232,6 @@ export class BreadcrumbNode {
   }
 
   public equals = (that: BreadcrumbItem) => {
-    return that instanceof BreadcrumbNode && this._treeNode.id === that._treeNode.id && this.label === that.label && this.icon === that.icon;
+    return that instanceof BreadcrumbNode && this.treeNode.id === that.treeNode.id && this.label === that.label && this.icon === that.icon;
   }
 }

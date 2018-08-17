@@ -13,7 +13,7 @@ import { DeploymentEnv, UrlDescriptor } from "../Client";
 chai.should();
 
 export class TilesGeneratorUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-3dtilesgenerator.bentley.com",
     QA: "https://qa-3dtilesgenerator.bentley.com",
     PROD: "https://3dtilesgenerator.bentley.com",
@@ -21,11 +21,11 @@ export class TilesGeneratorUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(TilesGeneratorClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(TilesGeneratorClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 

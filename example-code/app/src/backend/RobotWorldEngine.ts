@@ -153,7 +153,7 @@ export class RobotWorldEngine {
 
   public static initialize() {
     const config = new IModelHostConfiguration();
-    if (Platform.isNodeJs())
+    if (Platform.isNodeJs)
       config.appAssetsDir = path.join(__dirname, "assets");
     else
       config.appAssetsDir = KnownLocations.packageAssetsDir;

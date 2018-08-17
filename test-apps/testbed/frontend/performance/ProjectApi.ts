@@ -13,14 +13,14 @@ export enum ProjectScope {
 }
 
 export class ProjectApi {
-  private static connectClient: ConnectClient;
+  private static _connectClient: ConnectClient;
 
   /** Deployment environment to use for Connect and iModelHub */
   public static hubDeploymentEnv: DeploymentEnv = "QA";
 
   // Initialize the project Api
   public static async init(): Promise<void> {
-    ProjectApi.connectClient = new ConnectClient(ProjectApi.hubDeploymentEnv);
+    ProjectApi._connectClient = new ConnectClient(ProjectApi.hubDeploymentEnv);
   }
 
   public static async getProjectByName(accessToken: AccessToken, projectScope: ProjectScope, projectName: string): Promise<Project | undefined> {
@@ -33,7 +33,7 @@ export class ProjectApi {
 
     let projectList: Project[] = [];
     if (projectScope === ProjectScope.Invited) {
-      projectList = await ProjectApi.connectClient.getInvitedProjects(accessToken, queryOptions);
+      projectList = await ProjectApi._connectClient.getInvitedProjects(accessToken, queryOptions);
     }
 
     if (projectScope === ProjectScope.Favorites) {
@@ -42,7 +42,7 @@ export class ProjectApi {
       queryOptions.isMRU = true;
     }
 
-    projectList = await ProjectApi.connectClient.getProjects(accessToken, queryOptions);
+    projectList = await ProjectApi._connectClient.getProjects(accessToken, queryOptions);
 
     for (const thisProject of projectList) {
       if (thisProject.name === projectName)

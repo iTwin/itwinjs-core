@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d } from "@bentley/geometry-core";
+import { Point3d, Point2d, PolygonOps } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
@@ -14,12 +14,7 @@ import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
 export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
-
-export const enum BeButton {
-  Data = 0,
-  Reset = 1,
-  Middle = 2,
-}
+export const enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
 export enum BeCursor {
   Default = "default",
@@ -44,7 +39,7 @@ export const enum InputSource {
   Touch = 2,
 }
 
-/** The *source* that generated a point. */
+/** The *source* that generated a coordinate. */
 export const enum CoordSource {
   /** Event was created by an action from the user */
   User = 0,
@@ -169,6 +164,29 @@ export class BeTouchEvent extends BeButtonEvent {
     const rect = vp.getClientRect();
     return Point2d.createFrom({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
   }
+  public static getTouchListCentroid(list: TouchList, vp: Viewport): Point2d | undefined {
+    switch (list.length) {
+      case 0: {
+        return undefined;
+      }
+      case 1: {
+        return this.getTouchPosition(list[0], vp);
+      }
+      case 2: {
+        return this.getTouchPosition(list[0], vp).interpolate(0.5, this.getTouchPosition(list[1], vp));
+      }
+      default: {
+        const points: Point2d[] = [];
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < list.length; i++) {
+          points.push(this.getTouchPosition(list[i], vp));
+        }
+        const centroid = Point2d.createZero();
+        PolygonOps.centroidAndArea(points, centroid);
+        return centroid;
+      }
+    }
+  }
   public static findTouchById(list: TouchList, id: number): Touch | undefined {
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < list.length; i++) {
@@ -202,17 +220,17 @@ export class Tool {
   public static hidden = false;
   /** The unique string that identifies this tool. This must be overridden in every subclass. */
   public static toolId = "";
-  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool */
+  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
-  private static _keyin?: string; // localized (fetched only once, first time needed. If not found, toolId is returned).
-  private static _flyover?: string; // localized (fetched first time needed. If not found, keyin is returned.)
-  private static _description?: string; // localized (fetched first time needed. If not found, flyover is returned.)
   public constructor(..._args: any[]) { }
 
-  private static get localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
-  private static get keyinKey() { return this.localizeBase + ".keyin"; }
-  private static get flyoverKey() { return this.localizeBase + ".flyover"; }
-  private static get descriptionKey() { return this.localizeBase + ".description"; }
+  private static _keyin?: string;
+  private static _flyover?: string;
+  private static _description?: string;
+  private static get _localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
+  private static get _keyinKey() { return this._localizeBase + ".keyin"; }
+  private static get _flyoverKey() { return this._localizeBase + ".flyover"; }
+  private static get _descriptionKey() { return this._localizeBase + ".description"; }
 
   /**
    * Register this Tool class with the ToolRegistry.
@@ -224,21 +242,21 @@ export class Tool {
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this.keyinKey)); }
+  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this._keyinKey)); }
 
   /**
    * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the keyin property is returned.
    */
-  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n.translate([this.flyoverKey, this.keyinKey])); }
+  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n.translate([this._flyoverKey, this._keyinKey])); }
 
   /**
    * Get the localized description for this Tool class. This returns the value of "tools." + this.toolId + ".description" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the flyover property is returned.
    */
-  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n.translate([this.descriptionKey, this.flyoverKey, this.keyinKey])); }
+  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n.translate([this._descriptionKey, this._flyoverKey, this._keyinKey])); }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
@@ -292,7 +310,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public onSuspend(): void { }
 
-  /** Notification of a vViewTool or InputCollector exiting and this tool is being unsuspended.
+  /** Notification of a ViewTool or InputCollector exiting and this tool is being unsuspended.
    *  @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
   public onUnsuspend(): void { }
@@ -321,7 +339,7 @@ export abstract class InteractiveTool extends Tool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   /** Invoked when the data button is pressed.
-   * @return ENo by default. Sub-classes may ascribe special meaning to this status.
+   * @return No by default. Sub-classes may ascribe special meaning to this status.
    */
   public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
   /** Invoked when the data button is released.
@@ -363,19 +381,19 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onMouseWheel(_ev: BeWheelEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
+  /** Called when Control, Shift, or Alt modifier keys are pressed or released.
    * @param _wentDown up or down key event
    * @param _modifier The modifier key mask
    * @param _event The event that caused this call
-   * @return true to refresh view decorations or update dynamics.
+   * @return Yes to refresh view decorations or update dynamics.
    */
-  public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<boolean> { return false; }
+  public async onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  /** Called when keys are pressed or released.
+  /** Called when any key is pressed or released.
    * @param _wentDown up or down key event
    * @param _keyEvent The KeyboardEvent
    * @return Yes to prevent further processing of this event
-   * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
+   * @see [[onModifierKeyTransition]]
    */
   public async onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): Promise<EventHandled> { return EventHandled.No; }
 
@@ -404,7 +422,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onTouchTap(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
+  public isCompatibleViewport(_vp: Viewport, _isSelectedViewChange: boolean): boolean { return true; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
 
   /**
@@ -415,12 +433,10 @@ export abstract class InteractiveTool extends Tool {
   public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
 
   /**
-   * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
+   * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.
    * @param hit The HitDetail whose info is needed.
-   * @param _delimiter Use this string to break lines of the description.
    * @return A Promise for the string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
-   * The default implementation shows hit description
    */
   public async getToolTip(_hit: HitDetail): Promise<string> { return _hit.getToolTip(); }
 
@@ -428,7 +444,7 @@ export abstract class InteractiveTool extends Tool {
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
 
   /** Call to find out if dynamics are currently active. */
-  public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
+  public get isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
 
   /** Call to initialize dynamics mode. While dynamics are active onDynamicFrame will be called. Dynamics are typically only used by a PrimitiveTool that creates or modifies geometric elements. */
   public beginDynamics(): void { IModelApp.toolAdmin.beginDynamics(); }

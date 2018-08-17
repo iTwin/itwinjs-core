@@ -344,10 +344,10 @@ export namespace LineStyleDefinition {
     }
 
     /** Create a file property for a new raster image component. */
-    public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: ArrayBuffer): StyleProps | undefined {
+    public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
       const rasterFileProps: FilePropertyProps = { name: "RasterImageV1", namespace: "dgn_LStyle" };
       rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
-      if (DbResult.BE_SQLITE_OK !== iModel.saveFileProperty(rasterFileProps, image))
+      if (DbResult.BE_SQLITE_OK !== iModel.saveFileProperty(rasterFileProps, undefined, image))
         return undefined;
       props.imageId = rasterFileProps.id;
       const fileProps: FilePropertyProps = { name: "RasterComponentV1", namespace: "dgn_LStyle" };

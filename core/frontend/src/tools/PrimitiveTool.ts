@@ -65,7 +65,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     const view = vp.view;
     const iModel = view.iModel;
     if (this.requireWriteableTarget()) {
-      if (iModel.isReadonly()) {
+      if (iModel.isReadonly) {
         // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.i18n.translate("DgnViewL10N::MSG_UnableToStartTool_FileIsReadOnly"))); ###TODO find correct i18n message code
         return false; // Tool can't be used when iModel is read only.
       }
@@ -120,7 +120,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     const view = vp.view;
     const iModel = view.iModel;
-    if (!view.isSpatialView() || iModel.isReadonly() || !this.requireWriteableTarget())
+    if (!view.isSpatialView() || iModel.isReadonly || !this.requireWriteableTarget())
       return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
@@ -128,7 +128,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     // We know the tool isn't doing a locate, we don't know what it will do with this point. Minimize erroneous filtering by restricting the check to when AccuSnap is tool enable (not user enabled)...
-    if (!IModelApp.accuSnap.isSnapEnabled())
+    if (!IModelApp.accuSnap.isSnapEnabled)
       return true;
 
     const extents = iModel.projectExtents;

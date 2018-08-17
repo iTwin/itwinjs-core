@@ -25,7 +25,7 @@ export interface SerializedRpcRequest {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
-  parameters: string;
+  parameters: string | Uint8Array;
 }
 
 /** An RPCD operation request fulfillment. */
@@ -46,7 +46,7 @@ export interface RpcRequestFulfillment {
   type: RpcResponseType;
 }
 
-/** @internal @hidden */
+/** @hidden */
 export namespace RpcRequestFulfillment {
   export function forUnknownError(request: SerializedRpcRequest, error: any): RpcRequestFulfillment {
     const result = RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
@@ -143,6 +143,13 @@ export abstract class RpcProtocol {
 
   /** Serializes a request. */
   public serialize(request: RpcRequest): SerializedRpcRequest {
+    let parameters: string | Uint8Array;
+    if (request.parameters.length === 1 && request.parameters[0] instanceof Uint8Array) {
+      parameters = request.parameters[0];
+    } else {
+      parameters = RpcMarshaling.serialize(request.operation, request.protocol, request.parameters);
+    }
+
     return {
       id: request.id,
       authorization: this.configuration.applicationAuthorizationValue || "",
@@ -153,7 +160,7 @@ export abstract class RpcProtocol {
       },
       method: this.supplyMethodForOperation(request.operation),
       path: this.supplyPathForOperation(request.operation, request),
-      parameters: RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
+      parameters,
     };
   }
 
@@ -163,15 +170,15 @@ export abstract class RpcProtocol {
     this.events.addListener((type, object) => RpcProtocol.events.raiseEvent(type, object));
   }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden @internal */
+  /** @hidden */
   public onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 }

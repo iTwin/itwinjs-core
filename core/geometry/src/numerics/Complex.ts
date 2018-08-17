@@ -4,15 +4,15 @@
 /** @module Numerics */
 import { BeJSONFunctions, Geometry, Angle } from "../Geometry";
 export class Complex implements BeJSONFunctions {
-  private myX: number;
-  set x(value) { this.myX = value; }
-  get x() { return this.myX; }
+  private _myX: number;
+  set x(value) { this._myX = value; }
+  get x() { return this._myX; }
 
-  private myY: number;
-  set y(value) { this.myY = value; }
-  get y() { return this.myY; }
+  private _myY: number;
+  set y(value) { this._myY = value; }
+  get y() { return this._myY; }
 
-  public constructor(x: number = 0, y: number = 0) { this.myX = x; this.myY = y; }
+  public constructor(x: number = 0, y: number = 0) { this._myX = x; this._myY = y; }
   public set(x: number = 0, y: number = 0): void { this.x = x; this.y = y; }
   public setFrom(other: Complex) { this.x = other.x; this.y = other.y; }
   public clone(): Complex { return new Complex(this.x, this.y); }

@@ -4,7 +4,7 @@
 import { Point2d, Vector3d, Point3d } from "../PointVector";
 import { RotMatrix } from "../Transform";
 import { Transform } from "../Transform";
-import { Angle, AxisOrder, Geometry } from "../Geometry";
+import { Angle, AxisOrder, Geometry, AxisIndex } from "../Geometry";
 import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "./Checker";
 // import { prettyPrint } from "./testFunctions";
@@ -20,7 +20,7 @@ function verifyInverseGo(ck: Checker, matrixA: RotMatrix) {
     const matrixB = matrixA.inverse();
     if (ck.testPointer(matrixB, "matrix has inverse") && matrixB) {
       const matrixAB = matrixA.multiplyMatrixMatrix(matrixB);
-      ck.testTrue(matrixAB.isIdentity(), "verify A*Ainv is identity");
+      ck.testTrue(matrixAB.isIdentity, "verify A*Ainv is identity");
     }
 
   }
@@ -320,12 +320,28 @@ describe("RotMatrix.ViewConstructions", () => {
       RotMatrix.createRotationAroundVector(Vector3d.unitX(), Angle.createDegrees(90))!, "Rotate 90 X");
     ck.testRotMatrix(
       RotMatrix.create90DegreeRotationAroundAxis(1),
-      RotMatrix.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(90))!, "Rotate 90 X");
+      RotMatrix.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(90))!, "Rotate 90 Y");
     ck.testRotMatrix(
       RotMatrix.create90DegreeRotationAroundAxis(2),
-      RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(90))!, "Rotate 90 X");
+      RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(90))!, "Rotate 90 Z");
     ck.checkpoint("RotateAroundAxis");
     expect(ck.getNumErrors()).equals(0);
+
+    for (const degrees of [0.0, 10.0, -40.0]) {
+      const theta = Angle.createDegrees(degrees);
+      ck.testRotMatrix(
+        RotMatrix.createRotationAroundAxisIndex(AxisIndex.X, theta),
+        RotMatrix.createRotationAroundVector(Vector3d.unitX(), theta)!, "Rotate theta X");
+      ck.testRotMatrix(
+        RotMatrix.createRotationAroundAxisIndex(AxisIndex.Y, theta),
+        RotMatrix.createRotationAroundVector(Vector3d.unitY(), theta)!, "Rotate 90 Y");
+      ck.testRotMatrix(
+        RotMatrix.createRotationAroundAxisIndex(AxisIndex.Z, theta),
+        RotMatrix.createRotationAroundVector(Vector3d.unitZ(), theta)!, "Rotate 90 Z");
+      ck.checkpoint("RotateAroundAxis");
+    }
+    expect(ck.getNumErrors()).equals(0);
+
   });
 
   it("RowColumn", () => {
@@ -378,16 +394,16 @@ describe("RotMatrix.ViewConstructions", () => {
       const sign = signList[i];
       const matrix = RotMatrix.createRigidFromColumns(unitX, unitY, axisOrder)!;
       ck.testCoordinate(sign, matrix.determinant(), "determinant of permutation");
-      ck.testTrue(matrix.isSignedPermutation(), "confirm signed permutation");
+      ck.testTrue(matrix.isSignedPermutation, "confirm signed permutation");
       // muddy up one indexed entry at a time . . .
       for (let k = 0; k < 9; k++) {
         const matrixA = matrix.clone();
         const ak = matrixA.coffs[k];
         matrixA.coffs[k] += shiftValue;
-        ck.testFalse(matrixA.isSignedPermutation(), "confirm not signed permutation");
+        ck.testFalse(matrixA.isSignedPermutation, "confirm not signed permutation");
         if (ak !== 1.0) {
           matrixA.coffs[k] = 1;
-          ck.testFalse(matrixA.isSignedPermutation(), "confirm not signed permutation");
+          ck.testFalse(matrixA.isSignedPermutation, "confirm not signed permutation");
         }
       }
     }
@@ -494,10 +510,10 @@ describe("RotMatrix.ViewConstructions", () => {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         matrixXY.clone(matrixA1);
-        ck.testTrue(matrixA1.isXY(), "xy matrix");
+        ck.testTrue(matrixA1.isXY, "xy matrix");
         if (i === 2 || j === 2) {
           matrixA1.setAt(i, j, matrixA1.at(i, j) + epsilon);
-          ck.testFalse(matrixA1.isXY(), "xy matrix perturbed");
+          ck.testFalse(matrixA1.isXY, "xy matrix perturbed");
 
         }
       }
@@ -554,20 +570,21 @@ describe("SkewFactorization", () => {
       if (ck.testPointer(factors) && factors !== undefined) {
         const product = factors.rigidFactor.multiplyMatrixMatrix(factors.skewFactor);
         ck.testRotMatrix(matrix, product, "rigid*skew=matrix");
-        ck.testTrue(factors.skewFactor.isUpperTriangular(), "upper triangular skew factors");
+        ck.testTrue(factors.skewFactor.isUpperTriangular, "upper triangular skew factors");
       }
       const scaleX = 3, scaleY = 2, scaleZ = 7;
       // inverse first, then scale:
       const matrixA = matrix.clone();
-      matrixA.computeCachedInverse (true);
+      matrixA.computeCachedInverse(true);
       matrixA.scaleColumnsInPlace(scaleX, scaleY, scaleZ);
 
       // scale, then inverse
       const matrixB = matrix.clone();
       matrixB.scaleColumnsInPlace(scaleX, scaleY, scaleZ);
-      matrixB.computeCachedInverse (true);
+      matrixB.computeCachedInverse(true);
       ck.testNumberArray(matrixA.inverseCoffs, matrixB.inverseCoffs);
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
 });

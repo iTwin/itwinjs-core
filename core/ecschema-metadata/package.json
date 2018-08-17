@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "0.9.0",
+  "version": "0.117.0",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/index.js",
@@ -11,7 +11,7 @@
     "clean": "rimraf lib package-deps.json .nyc_output",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/json/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./test/**/*.test.ts",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },
@@ -26,8 +26,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.113.0",
-    "@bentley/bentleyjs-tools": "0.113.0",
+    "@bentley/bentleyjs-core": "0.117.0",
+    "@bentley/bentleyjs-tools": "0.117.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -45,7 +45,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.113.0"
+    "@bentley/bentleyjs-core": "0.117.0"
   },
   "nyc": {
     "include": [

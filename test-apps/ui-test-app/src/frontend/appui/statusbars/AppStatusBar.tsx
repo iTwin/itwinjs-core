@@ -6,10 +6,9 @@ import * as React from "react";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { StatusBarWidgetControl, IStatusBar, StatusBarFieldId } from "@bentley/ui-framework";
-import { MessageCenterField } from "@bentley/ui-framework";
+import { MessageCenterField, SnapModeField } from "@bentley/ui-framework";
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
-import { SnapModeField } from "../statusfields/SnapMode";
 
 class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

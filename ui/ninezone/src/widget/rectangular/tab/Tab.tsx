@@ -35,14 +35,14 @@ export default class Tab extends React.Component<TabProps> {
       <div
         className={className}
         style={this.props.style}
-        onClick={this.handleOnClick}
+        onClick={this._handleOnClick}
       >
         {this.props.children}
       </div>
     );
   }
 
-  private handleOnClick = () => {
+  private _handleOnClick = () => {
     this.props.onClick && this.props.onClick();
   }
 }

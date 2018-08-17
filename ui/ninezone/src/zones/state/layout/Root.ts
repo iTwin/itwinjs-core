@@ -20,19 +20,19 @@ export default class Root extends Layout {
     this.setSize(nineZone.props.size);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this;
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this;
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this;
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this;
   }
 

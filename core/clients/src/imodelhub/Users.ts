@@ -34,7 +34,7 @@ export class UserInfo extends WsgInstance {
  * @see UserInfoHandler.get()
  */
 export class UserInfoQuery extends InstanceIdQuery {
-  private queriedByIds = false;
+  private _queriedByIds = false;
 
   /**
    * Query User info by user ids.
@@ -56,13 +56,13 @@ export class UserInfoQuery extends InstanceIdQuery {
     filter += "]";
 
     this.addFilter(filter);
-    this.queriedByIds = true;
+    this._queriedByIds = true;
     return this;
   }
 
   /** Returns whether was object queried by ids or no */
-  public isQueriedByIds() {
-    return this.queriedByIds;
+  public get isQueriedByIds() {
+    return this._queriedByIds;
   }
 }
 
@@ -102,7 +102,7 @@ export class UserInfoHandler {
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let users: UserInfo[];
-    if (query.isQueriedByIds()) {
+    if (query.isQueriedByIds) {
       users = await this._handler.postQuery<UserInfo>(UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     } else {
       users = await this._handler.getInstances<UserInfo>(UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());

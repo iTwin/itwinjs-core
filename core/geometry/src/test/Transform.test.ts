@@ -23,7 +23,7 @@ describe("Transform", () => {
     for (const transform of transforms) {
       // single point calls ...
       transform.multiplyPoint3d(point3dA[0], xyz);
-      ck.testBoolean(transform.isIdentity(), xyz.isAlmostEqual(point3dA[0]));
+      ck.testBoolean(transform.isIdentity, xyz.isAlmostEqual(point3dA[0]));
       transform.multiplyInversePoint3d(xyz, xyz);
       ck.testPoint3d(point3dA[0], xyz, "RoundTrip transform and inverse");
       const point3dB = transform.multiplyPoint3dArray(point3dA);
@@ -70,7 +70,7 @@ describe("Transform", () => {
       const cornerA = corners[i];
       const cornerB = corners[i + 1];
       Transform.initFromRange(corners[i], corners[i + 1], npcToWorld, worldToNpc);
-      ck.testTrue(npcToWorld.multiplyTransformTransform(worldToNpc).isIdentity(), "range maps  inverses");
+      ck.testTrue(npcToWorld.multiplyTransformTransform(worldToNpc).isIdentity, "range maps  inverses");
       for (const xyz of point3dA) {
         worldToNpc.multiplyPoint3d(xyz, npc);
         const interpolated = cornerA.interpolateXYZ(npc.x, npc.y, npc.z, cornerB);
@@ -113,7 +113,7 @@ describe("Transform", () => {
         ck.testTransform(transformA, transformC2, "createOriginAndMatrixColumn");
         // (destroy the transform)
         transformA.setIdentity();
-        ck.testTrue(transformA.isIdentity());
+        ck.testTrue(transformA.isIdentity);
       }
     }
     expect(ck.getNumErrors()).equals(0);

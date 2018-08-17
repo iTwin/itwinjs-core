@@ -45,7 +45,7 @@ export class BooleanTypeConverter extends TypeConverter {
     return booleanValue;
   }
 
-  public isBooleanType(): boolean { return true; }
+  public get isBooleanType(): boolean { return true; }
 }
 TypeConverterManager.registerConverter("boolean", BooleanTypeConverter);
 TypeConverterManager.registerConverter("bool", BooleanTypeConverter);

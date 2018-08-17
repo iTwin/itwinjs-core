@@ -63,23 +63,51 @@ export const enum ShowSignOption { // default is no sign
   NegativeParentheses,
 }
 
-export function scientificTypeToString(scientificType: ScientificType) {
+// parse and toString methods
+
+export function scientificTypeToString(scientificType: ScientificType): string {
   if (scientificType === ScientificType.Normalized)
     return "Normalized";
   else
     return "ZeroNormalized";
 }
 
-export function showSignOptionToString(showSign: ShowSignOption) {
+export function parseScientificType(scientificType: string, formatName: string): ScientificType {
+  switch (scientificType.toUpperCase()) {
+    case "NORMALIZED":
+      return ScientificType.Normalized;
+    case "ZERONORMALIZED":
+      return ScientificType.ZeroNormalized;
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'scientificType' attribute.`);
+  }
+}
+
+export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
     case ShowSignOption.NegativeParentheses:
-      return "negativeParentheses";
+      return "NegativeParentheses";
     case ShowSignOption.NoSign:
-      return "noSign";
+      return "NoSign";
     case ShowSignOption.OnlyNegative:
-      return "onlyNegative";
+      return "OnlyNegative";
     case ShowSignOption.SignAlways:
-      return "signAlways";
+      return "SignAlways";
+  }
+}
+
+export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
+  switch (showSignOption.toUpperCase()) {
+    case "NOSIGN":
+      return ShowSignOption.NoSign;
+    case "ONLYNEGATIVE":
+      return ShowSignOption.OnlyNegative;
+    case "SIGNALWAYS":
+      return ShowSignOption.SignAlways;
+    case "NEGATIVEPARENTHESES":
+      return ShowSignOption.NegativeParentheses;
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'showSignOption' attribute.`);
   }
 }
 
@@ -108,7 +136,7 @@ export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] 
   return formatTraitsArr;
 }
 
-export function parseFormatTrait(stringToCheck: string, currentFormatTrait: number): number {
+export function parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits {
   let formatTrait = currentFormatTrait;
   switch (stringToCheck) {
     case "trailzeroes":
@@ -147,28 +175,7 @@ export function parseFormatTrait(stringToCheck: string, currentFormatTrait: numb
   return formatTrait;
 }
 
-export function parseFormatType(jsonObjType: string, formatName: string): FormatType | undefined {
-  let formatType;
-  switch (jsonObjType.toLowerCase()) {
-    case "decimal":
-      formatType = FormatType.Decimal;
-      break;
-    case "scientific":
-      formatType = FormatType.Scientific;
-      break;
-    case "station":
-      formatType = FormatType.Station;
-      break;
-    case "fractional":
-      formatType = FormatType.Fractional;
-      break;
-    default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'type' attribute.`);
-  }
-  return formatType;
-}
-
-export function formatTypeToString(type: FormatType) {
+export function formatTypeToString(type: FormatType): string {
   switch (type) {
     case FormatType.Decimal:
       return "Decimal";
@@ -181,129 +188,116 @@ export function formatTypeToString(type: FormatType) {
   }
 }
 
-export function parseDecimalPrecision(jsonObjPrecision: number): number | undefined {
-  let precision;
-  switch (jsonObjPrecision) {
-    case 0:
-      precision = DecimalPrecision.Zero;
+export function parseFormatType(jsonObjType: string, formatName: string): FormatType {
+  switch (jsonObjType.toUpperCase()) {
+    case "DECIMAL":
+      return FormatType.Decimal;
       break;
-    case 1:
-      precision = DecimalPrecision.One;
+    case "SCIENTIFIC":
+      return FormatType.Scientific;
       break;
-    case 2:
-      precision = DecimalPrecision.Two;
+    case "STATION":
+      return FormatType.Station;
       break;
-    case 3:
-      precision = DecimalPrecision.Three;
-      break;
-    case 4:
-      precision = DecimalPrecision.Four;
-      break;
-    case 5:
-      precision = DecimalPrecision.Five;
-      break;
-    case 6:
-      precision = DecimalPrecision.Six;
-      break;
-    case 7:
-      precision = DecimalPrecision.Seven;
-      break;
-    case 8:
-      precision = DecimalPrecision.Eight;
-      break;
-    case 9:
-      precision = DecimalPrecision.Nine;
-      break;
-    case 10:
-      precision = DecimalPrecision.Ten;
-      break;
-    case 11:
-      precision = DecimalPrecision.Eleven;
-      break;
-    case 12:
-      precision = DecimalPrecision.Twelve;
-      break;
-    default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The 'precision' attribute must be an integer in the range 0-12.`);
-  }
-  return precision;
-}
-
-export function parseFractionalPrecision(jsonObjPrecision: number, formatName: string) {
-  let precision;
-  switch (jsonObjPrecision) {
-    case 1:
-      precision = FractionalPrecision.One;
-      break;
-    case 2:
-      precision = FractionalPrecision.Two;
-      break;
-    case 4:
-      precision = FractionalPrecision.Four;
-      break;
-    case 8:
-      precision = FractionalPrecision.Eight;
-      break;
-    case 16:
-      precision = FractionalPrecision.Sixteen;
-      break;
-    case 32:
-      precision = FractionalPrecision.ThirtyTwo;
-      break;
-    case 64:
-      precision = FractionalPrecision.SixtyFour;
-      break;
-    case 128:
-      precision = FractionalPrecision.OneHundredTwentyEight;
-      break;
-    case 256:
-      precision = FractionalPrecision.TwoHundredFiftySix;
-      break;
-    default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
-  }
-  return precision;
-}
-
-export function parsePrecision(jsonObjPrecision: number, formatName: string, type: FormatType): number | undefined {
-  let precision;
-  switch (type) { // type must be decimal, fractional, scientific, or station
-    case FormatType.Decimal:
-    case FormatType.Scientific:
-    case FormatType.Station:
-      precision = parseDecimalPrecision(jsonObjPrecision);
-      break;
-    case FormatType.Fractional:
-      precision = parseFractionalPrecision(jsonObjPrecision, formatName);
+    case "FRACTIONAL":
+      return FormatType.Fractional;
       break;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
-  return precision;
 }
 
-export function parseScientificType(jsonObjScientificType: string, formatName: string) {
-  switch (jsonObjScientificType) {
-    case "normalized":
-      return ScientificType.Normalized;
-    case "zeronormalized":
-      return ScientificType.ZeroNormalized;
+export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision {
+  switch (jsonObjPrecision) {
+    case 0:
+      return DecimalPrecision.Zero;
+      break;
+    case 1:
+      return DecimalPrecision.One;
+      break;
+    case 2:
+      return DecimalPrecision.Two;
+      break;
+    case 3:
+      return DecimalPrecision.Three;
+      break;
+    case 4:
+      return DecimalPrecision.Four;
+      break;
+    case 5:
+      return DecimalPrecision.Five;
+      break;
+    case 6:
+      return DecimalPrecision.Six;
+      break;
+    case 7:
+      return DecimalPrecision.Seven;
+      break;
+    case 8:
+      return DecimalPrecision.Eight;
+      break;
+    case 9:
+      return DecimalPrecision.Nine;
+      break;
+    case 10:
+      return DecimalPrecision.Ten;
+      break;
+    case 11:
+      return DecimalPrecision.Eleven;
+      break;
+    case 12:
+      return DecimalPrecision.Twelve;
+      break;
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'scientificType' attribute.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The 'precision' attribute must be an integer in the range 0-12.`);
   }
 }
 
-export function parseShowSignOption(jsonObjShowSignOption: string, formatName: string) {
-  switch (jsonObjShowSignOption) {
-    case "nosign":
-      return ShowSignOption.NoSign;
-    case "onlynegative":
-      return ShowSignOption.OnlyNegative;
-    case "signalways":
-      return ShowSignOption.SignAlways;
-    case "negativeparentheses":
-      return ShowSignOption.NegativeParentheses;
+export function parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision {
+  switch (jsonObjPrecision) {
+    case 1:
+      return FractionalPrecision.One;
+      break;
+    case 2:
+      return FractionalPrecision.Two;
+      break;
+    case 4:
+      return FractionalPrecision.Four;
+      break;
+    case 8:
+      return FractionalPrecision.Eight;
+      break;
+    case 16:
+      return FractionalPrecision.Sixteen;
+      break;
+    case 32:
+      return FractionalPrecision.ThirtyTwo;
+      break;
+    case 64:
+      return FractionalPrecision.SixtyFour;
+      break;
+    case 128:
+      return FractionalPrecision.OneHundredTwentyEight;
+      break;
+    case 256:
+      return FractionalPrecision.TwoHundredFiftySix;
+      break;
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'showSignOption' attribute.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
+  }
+}
+
+export function parsePrecision(precision: number, formatName: string, type: FormatType): DecimalPrecision | FractionalPrecision {
+  switch (type) { // type must be decimal, fractional, scientific, or station
+    case FormatType.Decimal:
+    case FormatType.Scientific:
+    case FormatType.Station:
+      return parseDecimalPrecision(precision);
+      break;
+    case FormatType.Fractional:
+      return parseFractionalPrecision(precision, formatName);
+      break;
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
 }

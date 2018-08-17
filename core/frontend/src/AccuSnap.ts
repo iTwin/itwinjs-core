@@ -34,57 +34,58 @@ export class AccuSnap {
   /** localized message explaining why last error was generated. */
   public explanation?: string;
   /** During snap creation: the snap to try */
-  private candidateSnapMode = SnapMode.Nearest;
+  private _candidateSnapMode = SnapMode.Nearest;
   /** Number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools */
-  private suppressed = 0;
+  private _suppressed = 0;
   /** Number of times "noMotion" has been called since last motion */
-  private noMotionCount = 0;
+  private _noMotionCount = 0;
   /** Anchor point for tooltip window is cleared when cursor moves away from this point. */
-  private readonly toolTipPt = new Point3d();
+  private readonly _toolTipPt = new Point3d();
   /** Location of cursor when we last checked for motion */
-  private readonly lastCursorPos = new Point2d();
+  private readonly _lastCursorPos = new Point2d();
   /** Accumulated distance (squared) the mouse has moved since we started checking for motion */
-  private totalMotionSq = 0;
+  private _totalMotionSq = 0;
   /** How much mouse movement constitutes a "move" (squared) */
-  private motionToleranceSq = 0;
+  private _motionToleranceSq = 0;
   public readonly toolState = new AccuSnap.ToolState();
-  protected settings = new AccuSnap.Settings();
+  protected _settings = new AccuSnap.Settings();
 
   public onInitialized() { }
-  private doLocateTesting() { return this.isLocateEnabled(); }
-  private getSearchDistance() { return this.doLocateTesting() ? 1.0 : this.settings.searchDistance; }
-  private getHotDistanceInches() { return IModelApp.locateManager.apertureInches * this.settings.hotDistanceFactor; }
-  public isLocateEnabled() { return this.toolState.locate; }
+  private get _searchDistance(): number { return this.isLocateEnabled ? 1.0 : this._settings.searchDistance; }
+  private get _hotDistanceInches(): number { return IModelApp.locateManager.apertureInches * this._settings.hotDistanceFactor; }
+  /** Whether locate of elements under the cursor is enabled by the current InteractiveTool. */
+  public get isLocateEnabled(): boolean { return this.toolState.locate; }
+  /** Whether snapping to elements under the cursor is enabled by the current InteractiveTool. */
+  public get isSnapEnabled(): boolean { return this.toolState.enabled; }
+  /** Whether the user setting for snapping is enabled. Snappping is done only when both the user and current InteractiveTool have enabled it. */
+  public get isSnapEnabledByUser(): boolean { return this._settings.enableFlag; }
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
   private needsFlash(view: Viewport): boolean { return (this.needFlash.has(view)); }
   private setNeedsFlash(view: Viewport) { this.needFlash.add(view); this.clearIsFlashed(view); view.invalidateDecorations(); }
   private setIsFlashed(view: Viewport) { this.areFlashed.add(view); }
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
-  public isSnapEnabled(): boolean { return this.toolState.enabled; }
-  private getUserEnabled(): boolean { return this.settings.enableFlag; }
-  public userWantsSnaps(): boolean { return this.getUserEnabled(); }
-  private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit.isSnapDetail()) ? hit : undefined; }
+  private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit instanceof SnapDetail) ? hit : undefined; }
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
-  public isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot(); }
+  public get isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot; }
 
   /** @hidden */
   public destroy(): void {
     this.currHit = undefined;
     this.aSnapHits = undefined;
   }
-  private doSnapping(): boolean { return this.isSnapEnabled() && this.userWantsSnaps() && !this.isSnapSuspended(); }
-  private isSnapSuspended(): boolean { return (0 !== this.suppressed || 0 !== this.toolState.suspended); }
+  private get _doSnapping(): boolean { return this.isSnapEnabled && this.isSnapEnabledByUser && !this._isSnapSuspended; }
+  private get _isSnapSuspended(): boolean { return (0 !== this._suppressed || 0 !== this.toolState.suspended); }
 
   /**
    * Get the SnapMode that was used to generate the SnapDetail. Since getActiveSnapModes can return multiple SnapMode values, candidateSnapMode holds
    * the SnapMode that was chosen.
    */
-  public getSnapMode(): SnapMode { return this.candidateSnapMode; }
+  public get snapMode(): SnapMode { return this._candidateSnapMode; }
 
   /** Get the current snap divisor to use to use for SnapMode.NearestKeypoint.
    * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a snap divisor ui component.
    */
-  public getKeypointDivisor() { return 2; }
+  public get keypointDivisor() { return 2; }
 
   /** Get the current active SnapModes. SnapMode position determines priority, with the first entry being the highest. The SnapDetail will be returned for the first SnapMode that produces a hot snap.
    * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a SnapMode ui component.
@@ -104,38 +105,38 @@ export class AccuSnap {
    * Check to see whether its appropriate to generate an AccuSnap point, given the current user
    * and command settings, and whether a tentative point is currently active.
    */
-  public isActive(): boolean {
+  public get isActive(): boolean {
     // Unless we're snapping in intersect mode (to find extended intersections), skip if tentative point active...
     if (IModelApp.tentativePoint.isActive) {
-      if (!this.doSnapping())
+      if (!this._doSnapping)
         return false;
       const snaps = this.getActiveSnapModes();
       for (const snap of snaps) { if (snap === SnapMode.Intersection) return true; }
       return false;
     }
 
-    return this.doSnapping() || this.doLocateTesting();
+    return this._doSnapping || this.isLocateEnabled;
   }
 
   private initializeForCheckMotion(): void {
-    this.lastCursorPos.setFrom(IModelApp.toolAdmin.currentInputState.lastMotion);
-    this.totalMotionSq = 0;
-    this.motionToleranceSq = IModelApp.toolAdmin.isCurrentInputSourceMouse() ? 1 : 20;
+    this._lastCursorPos.setFrom(IModelApp.toolAdmin.currentInputState.lastMotion);
+    this._totalMotionSq = 0;
+    this._motionToleranceSq = IModelApp.toolAdmin.isCurrentInputSourceMouse ? 1 : 20;
   }
 
   public checkStopLocate(): boolean {
     const curPos = IModelApp.toolAdmin.currentInputState.lastMotion; //  Get the current cursor pos and compute the distance moved since last check.
-    const dx = curPos.x - this.lastCursorPos.x;
-    const dy = curPos.y - this.lastCursorPos.y;
+    const dx = curPos.x - this._lastCursorPos.x;
+    const dy = curPos.y - this._lastCursorPos.y;
     if (0 === dx && 0 === dy) // quick negative test
       return false;
 
-    this.lastCursorPos.setFrom(curPos); //  Remember the new pos
+    this._lastCursorPos.setFrom(curPos); //  Remember the new pos
 
     // See if distance moved since we started checking is over the "move" threshold
     const dsq = dx * dx + dy * dy;
-    this.totalMotionSq += dsq;
-    return this.totalMotionSq > this.motionToleranceSq;
+    this._totalMotionSq += dsq;
+    return this._totalMotionSq > this._motionToleranceSq;
   }
 
   /** Clear any AccuSnap info on the screen and release any hit path references */
@@ -143,11 +144,11 @@ export class AccuSnap {
   public setCurrHit(newHit?: HitDetail): void {
     const newSnap = AccuSnap.toSnapDetail(newHit);
     const currSnap = this.getCurrSnapDetail();
-    const sameElem = (!!newHit && newHit.isSameHit(this.currHit));
+    const sameElem = (undefined !== newHit && newHit.isSameHit(this.currHit));
     const sameHit = (sameElem && !newSnap);
-    const sameSnap = (sameElem && !!newSnap && !!currSnap);
+    const sameSnap = (sameElem && undefined !== newSnap && undefined !== currSnap);
     const samePt = (sameHit || (sameSnap && newSnap!.snapPoint.isAlmostEqual(currSnap!.snapPoint)));
-    const sameHot = (sameHit || (sameSnap && (this.isHot() === newSnap!.isHot())));
+    const sameHot = (sameHit || (sameSnap && (this.isHot === newSnap!.isHot)));
     const sameBaseSnapMode = (!newSnap || !currSnap || newSnap.snapMode === currSnap.snapMode);
     const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit!.getHitType())));
 
@@ -215,7 +216,7 @@ export class AccuSnap {
 
   public async displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d) {
     // if the tooltip is already displayed, or if user doesn't want it, quit.
-    if (IModelApp.notifications.isToolTipOpen() || !this.settings.toolTip)
+    if (IModelApp.notifications.isToolTipOpen || !this._settings.toolTip)
       return;
 
     const accuSnapHit = this.currHit;
@@ -225,14 +226,14 @@ export class AccuSnap {
     if (!accuSnapHit && !tpHit && !this.errorIcon.isActive)
       return;
 
-    let timeout = this.settings.toolTipDelay;
+    let timeout = this._settings.toolTipDelay;
     let theHit: HitDetail | undefined;
 
     // determine which type of hit and how long to wait, and the detail level
     if (tpHit) {
       // when the tentative button is first pressed, we pass nullptr for uorPt so that we show the tooltip immediately
       if (uorPt) {
-        const aperture = (this.settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
+        const aperture = (this._settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
 
         // see if he came back somewhere near the currently snapped element
         if (!IModelApp.locateManager.picker.testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
@@ -246,18 +247,18 @@ export class AccuSnap {
 
       theHit = tpHit;
     } else {
-      if (!this.settings.toolTip)
+      if (!this._settings.toolTip)
         return;
 
       theHit = accuSnapHit;
     }
 
     // have we waited long enough to show the balloon?
-    if (this.noMotionCount < timeout) {
+    if (this._noMotionCount < timeout) {
       return;
     }
 
-    this.toolTipPt.setFrom(viewPt);
+    this._toolTipPt.setFrom(viewPt);
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
     if (!this.errorIcon.isActive && theHit) {
@@ -286,11 +287,11 @@ export class AccuSnap {
   }
 
   public clearToolTip(ev?: BeButtonEvent): void {
-    this.noMotionCount = 0;
-    if (!IModelApp.notifications.isToolTipOpen())
+    this._noMotionCount = 0;
+    if (!IModelApp.notifications.isToolTipOpen)
       return;
 
-    if (ev && (5 > ev.viewPoint.distanceXY(this.toolTipPt)))
+    if (ev && (5 > ev.viewPoint.distanceXY(this._toolTipPt)))
       return;
 
     IModelApp.notifications.clearToolTip();
@@ -304,7 +305,7 @@ export class AccuSnap {
 
     const crossPt = snap.snapPoint;
     const viewport = snap.viewport!;
-    const crossSprite = IconSprites.getSprite(snap.isHot() ? "SnapCross" : "SnapUnfocused", viewport);
+    const crossSprite = IconSprites.getSprite(snap.isHot ? "SnapCross" : "SnapUnfocused", viewport);
 
     this.cross.activate(crossSprite, viewport, crossPt, 0);
 
@@ -368,7 +369,7 @@ export class AccuSnap {
       return false;
 
     const snap = AccuSnap.toSnapDetail(hit);
-    return !snap || snap.isHot() || this.settings.hiliteColdHits;
+    return !snap || snap.isHot || this._settings.hiliteColdHits;
   }
 
   private unFlashViews() {
@@ -383,7 +384,7 @@ export class AccuSnap {
   public adjustPointIfHot(pt: Point3d, view: Viewport): void {
     const currSnap = this.getCurrSnapDetail();
 
-    if (!currSnap || !currSnap.isHot() || view !== currSnap.viewport)
+    if (!currSnap || !currSnap.isHot || view !== currSnap.viewport)
       return;
 
     pt.setFrom(currSnap.adjustedPoint);
@@ -404,31 +405,31 @@ export class AccuSnap {
   private initCmdState() { this.toolState.suspended = 0; }
 
   public suspend(doSuspend: boolean) {
-    const previousDoSnapping = this.doSnapping();
+    const previousDoSnapping = this._doSnapping;
     if (doSuspend)
       this.toolState.suspended++;
     else if (this.toolState.suspended > 0)
       this.toolState.suspended--;
 
-    this.onEnabledStateChange(this.doSnapping(), previousDoSnapping);
+    this.onEnabledStateChange(this._doSnapping, previousDoSnapping);
   }
 
   public suppress(doSuppress: boolean): number {
-    const previousDoSnapping = this.doSnapping();
+    const previousDoSnapping = this._doSnapping;
     if (doSuppress)
-      this.suppressed++;
-    else if (this.suppressed > 0)
-      this.suppressed--;
+      this._suppressed++;
+    else if (this._suppressed > 0)
+      this._suppressed--;
 
-    this.onEnabledStateChange(this.doSnapping(), previousDoSnapping);
-    return this.suppressed;
+    this.onEnabledStateChange(this._doSnapping, previousDoSnapping);
+    return this._suppressed;
   }
 
   public enableSnap(yesNo: boolean) {
-    const previousDoSnapping = this.doSnapping();
+    const previousDoSnapping = this._doSnapping;
     this.toolState.enabled = yesNo;
     if (!yesNo) this.clear();
-    this.onEnabledStateChange(this.doSnapping(), previousDoSnapping);
+    this.onEnabledStateChange(this._doSnapping, previousDoSnapping);
   }
 
   private getNextAccuSnappable(hitList: HitList<HitDetail>): HitDetail | undefined {
@@ -447,7 +448,7 @@ export class AccuSnap {
         viewFlags: thisHit.viewport.viewFlags,
         snapMode,
         snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
-        snapDivisor: this.getKeypointDivisor(),
+        snapDivisor: this.keypointDivisor,
       }); // ### TODO offSubCategories...
 
     if (out) out.snapStatus = result.status;
@@ -474,13 +475,13 @@ export class AccuSnap {
       if (bestHit && 0 !== hitList.compare(thisHit, bestHit))
         break;
 
-      const thisSnap = await this.requestSnap(thisHit, this.getSnapMode(), this.getHotDistanceInches(), out);
+      const thisSnap = await this.requestSnap(thisHit, this.snapMode, this._hotDistanceInches, out);
       if (undefined === thisSnap)
         continue;
 
       // Pass the snap path instead of the hit path in case a filter modifies the path contents.
       let filtered = false;
-      if (this.doLocateTesting())
+      if (this.isLocateEnabled)
         filtered = IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out);
 
       const thisDist = thisSnap.hitPoint.distance(thisSnap.snapPoint);
@@ -507,17 +508,17 @@ export class AccuSnap {
     // the other hand, when NOT locating, we need to use the raw point so we can snap to elements
     // away from the grid.
 
-    const testPoint = this.isLocateEnabled() ? ev.point : ev.rawPoint;
+    const testPoint = this.isLocateEnabled ? ev.point : ev.rawPoint;
     const vp = ev.viewport!;
     const picker = IModelApp.locateManager.picker;
     const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
 
     // NOTE: Since TestHit will use the same HitSource as the input hit we only need to sets this for DoPick...
-    options.hitSource = this.isSnapEnabled() ? HitSource.AccuSnap : HitSource.MotionLocate;
+    options.hitSource = this.isSnapEnabled ? HitSource.AccuSnap : HitSource.MotionLocate;
 
     let aperture = (vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
     this.initializeForCheckMotion();
-    aperture *= this.getSearchDistance();
+    aperture *= this._searchDistance;
 
     if (0 === picker.doPick(vp, testPoint, aperture, options)) {
       this.aSnapHits = undefined; // Clear any previous hit list so reset won't cycle through hits cursor is no longer over, etc.
@@ -594,7 +595,7 @@ export class AccuSnap {
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
 
-    if (this.doSnapping()) {
+    if (this._doSnapping) {
       // if we don't have any more candidate hits, get a new list at the current location
       if (!this.aSnapHits || (0 === this.aSnapHits.length)) {
         hit = await this.getNewSnapDetail(out, ev);
@@ -603,7 +604,7 @@ export class AccuSnap {
         this.aSnapHits.removeCurrentHit();
         hit = await this.getAccuSnapDetail(this.aSnapHits, out);
       }
-    } else if (this.doLocateTesting()) {
+    } else if (this.isLocateEnabled) {
       hit = this.findLocatableHit(ev, false, out); // get next AccuSnap path (or undefined)
     }
 
@@ -700,7 +701,7 @@ export class AccuSnap {
       snapModes.push(SnapMode.Intersection);
     } else {
       // The user's finger is likely to create unwanted AccuSnaps, so don't snap unless source is a mouse.
-      if (IModelApp.toolAdmin.isCurrentInputSourceMouse())
+      if (IModelApp.toolAdmin.isCurrentInputSourceMouse)
         snapModes = this.getActiveSnapModes();
       else
         snapModes = [];
@@ -712,14 +713,14 @@ export class AccuSnap {
 
     for (const snapMode of snapModes) {
       // Try to generate a snap for this snap mode and compare it with the others.
-      this.candidateSnapMode = snapMode;
+      this._candidateSnapMode = snapMode;
 
-      const snap = (this.candidateSnapMode !== SnapMode.Intersection) ? await this.getNewSnapDetail(out, ev) : await this.doIntersectSnap(ev, snapModes.length > 1, out);
+      const snap = (this._candidateSnapMode !== SnapMode.Intersection) ? await this.getNewSnapDetail(out, ev) : await this.doIntersectSnap(ev, snapModes.length > 1, out);
       if (SnapStatus.Aborted === out.snapStatus)
         return undefined;
 
       if ((SnapStatus.Success === out.snapStatus) && snap) {
-        if (snap.isHot() && (SnapMode.Center === this.candidateSnapMode || SnapHeat.InRange === snap.heat)) {
+        if (snap.isHot && (SnapMode.Center === this._candidateSnapMode || SnapHeat.InRange === snap.heat)) {
           preferred = snap;
           break;
         } else {
@@ -743,17 +744,16 @@ export class AccuSnap {
 
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
-
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
     this.clearToolTip(ev);
 
     let hit: HitDetail | undefined;
-    if (this.isActive()) {
-      if (this.doSnapping())
+    if (this.isActive) {
+      if (this._doSnapping)
         hit = await this.getPreferredSnap(ev, out);
-      else if (this.doLocateTesting())
+      else if (this.isLocateEnabled)
         hit = this.findLocatableHit(ev, true, out);
     }
 
@@ -768,7 +768,7 @@ export class AccuSnap {
   public onMotionStopped(_ev: BeButtonEvent): void { }
 
   public async onNoMotion(ev: BeButtonEvent) {
-    this.noMotionCount++;
+    this._noMotionCount++;
     return this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
   }
 
@@ -836,21 +836,21 @@ export class AccuSnap {
 }
 
 export class TentativeOrAccuSnap {
-  public static isHot(): boolean { return IModelApp.accuSnap.isHot() || IModelApp.tentativePoint.isSnapped(); }
+  public static get isHot(): boolean { return IModelApp.accuSnap.isHot || IModelApp.tentativePoint.isSnapped; }
 
   public static getCurrentSnap(checkIsHot: boolean = true): SnapDetail | undefined {
     // Checking for a hot AccuSnap hit before checking tentative is probably necessary for extended intersections?
-    if (IModelApp.accuSnap.isHot())
+    if (IModelApp.accuSnap.isHot)
       return IModelApp.accuSnap.getCurrSnapDetail();
 
-    if (IModelApp.tentativePoint.isSnapped())
+    if (IModelApp.tentativePoint.isSnapped)
       return IModelApp.tentativePoint.currSnap;
 
     return (checkIsHot ? undefined : IModelApp.accuSnap.getCurrSnapDetail());
   }
 
   public static getCurrentPoint(): Point3d {
-    if (IModelApp.accuSnap.isHot()) {
+    if (IModelApp.accuSnap.isHot) {
       const pathP = IModelApp.accuSnap.getCurrSnapDetail();
       if (pathP)
         return pathP.adjustedPoint;
