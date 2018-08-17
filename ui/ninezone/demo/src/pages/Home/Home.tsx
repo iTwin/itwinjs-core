@@ -7,7 +7,7 @@ import Readme from "../Readme/Readme";
 
 import "./Home.scss";
 import Navigation from "./Navigation";
-import * as packagesJson from "@src/../package.json";
+const packagesJson = require("@src/../package.json"); // tslint:disable-line
 
 export const home: React.StatelessComponent = () => (
   <div className={"nzdemo-pages-home-home"}>

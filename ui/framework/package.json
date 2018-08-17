@@ -83,7 +83,7 @@
     "tsconfig-paths": "^3.3.2",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.9.1",
+    "typescript": "~3.0.0",
     "tslint": "^5.11.0",
     "xmlhttprequest": "^1.8.0"
   },
