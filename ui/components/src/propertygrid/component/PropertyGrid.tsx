@@ -4,7 +4,7 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
-import { DisposableList } from "@bentley/bentleyjs-core";
+import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { PropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
@@ -31,7 +31,7 @@ export interface PropertyGridState {
  */
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
 
-  private _disposableListeners: DisposableList;
+  private _dataChangesListenerDisposeFunc?: DisposeFunc;
   private _isMounted = false;
 
   public readonly state: Readonly<PropertyGridState> = {
@@ -40,19 +40,26 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
 
   constructor(props: PropertyGridProps) {
     super(props);
-
-    this._disposableListeners = new DisposableList();
-    this._disposableListeners.add(this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged));
+    this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
   }
 
-  public componentWillMount() {
+  public componentDidMount() {
     this._isMounted = true;
     this.gatherData(this.props.dataProvider);
   }
 
   public componentWillUnmount() {
+    if (this._dataChangesListenerDisposeFunc) {
+      this._dataChangesListenerDisposeFunc();
+      this._dataChangesListenerDisposeFunc = undefined;
+    }
     this._isMounted = false;
-    this._disposableListeners.dispose();
+  }
+
+  public componentDidUpdate() {
+    if (this._dataChangesListenerDisposeFunc)
+      this._dataChangesListenerDisposeFunc();
+    this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
   }
 
   private _onPropertyDataChanged = () => {

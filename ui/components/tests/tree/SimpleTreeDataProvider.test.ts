@@ -5,7 +5,7 @@ import { expect } from "chai";
 import SimpleTreeDataProvider, { SimpleTreeDataProviderHierarchy } from "@src/tree/SimpleTreeDataProvider";
 import { TreeNodeItem } from "@src/tree/TreeDataProvider";
 
-describe.only("SimpleTreeDataProvider", () => {
+describe("SimpleTreeDataProvider", () => {
 
   const createTreeNodeItem = (id: string, parentId?: string): TreeNodeItem => {
     return {
