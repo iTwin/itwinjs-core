@@ -592,5 +592,6 @@ export namespace IModelConnection {
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
     public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids); }
     public async getTileProps(ids: TileId[]): Promise<TileProps[]> { return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids); }
+    public async getTileContent(id: TileId): Promise<string> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, id); }
   }
 }

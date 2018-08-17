@@ -92,9 +92,6 @@ export class Tile implements IDisposable {
 
     if (!this.root.loader.tileRequiresLoading(props)) {
       this.setIsReady();    // If no contents, this node is for structure only and no content loading is required.
-    } else {
-      if (undefined !== props.geometry)
-        this.root.loader.loadGraphics(this, props.geometry);
     }
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
@@ -478,13 +475,11 @@ export namespace Tile {
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
       public readonly zoomFactor?: number,
-      public readonly geometry?: any) { }
+      public readonly hasGeometry?: any) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
-      // ###TODO: We should be requesting the geometry separately, when needed
-      // ###TODO: Transmit as binary, not base-64
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, props.geometry);
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, props.hasGeometry);
     }
   }
 }
@@ -630,7 +625,7 @@ export class IModelTileLoader extends TileLoader {
   constructor(private _iModel: IModelConnection, private _rootId: Id64) { super(); }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
-  public tileRequiresLoading(params: Tile.Params): boolean { return undefined !== params.geometry; }
+  public tileRequiresLoading(params: Tile.Params): boolean { return params.hasGeometry; }
 
   protected static _viewFlagOverrides = new ViewFlag.Overrides();
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
@@ -640,7 +635,15 @@ export class IModelTileLoader extends TileLoader {
     return this._iModel.tiles.getTileProps(tileIds);
   }
 
-  public async loadTileContents(_missingTiles: MissingNodes): Promise<void> {
+  public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
+    for (const tile of missingTiles.extractArray()) {
+      this._iModel.tiles.getTileContent(tile.root.constructTileId(tile.id)).then((content: string) => {
+        if (tile.isLoading)
+          this.loadGraphics(tile, content);
+      }).catch((_err: any) => {
+        tile.setNotFound();
+      });
+    }
   }
 }
 

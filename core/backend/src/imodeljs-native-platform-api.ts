@@ -268,6 +268,14 @@ export declare class NativeDgnDb {
   public getTiles(treeId: string, tileIds: string[]): ErrorStatusOrResult<IModelStatus, any>;
 
   /**
+   * Get the content (geometry) of a tile as a base-64-encoded string
+   * @param treeId The ID of the tile tree
+   * @param tileId The ID of the tile
+   * @returns The binary geometry content as a base-64-encoded string
+   */
+  public getTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, string>;
+
+  /**
    * Insert an element.
    * @param elemProps The element's properties, in stringified JSON format.
    * @return In case of success, the result property of the returned object will be the element's ID (as a hex string)

@@ -39,8 +39,8 @@ export interface TileProps {
   childIds: string[];
   /** Optional scaling factor applied to this tile's maximum size */
   zoomFactor?: number;
-  /** WIP: base-64-encoded binary tile geometry data, ArrayBuffer or undefined if no geometry */
-  geometry?: any;
+  /** WIP: */
+  hasGeometry?: any;
 }
 
 /** The metdata describing a TileTree */
@@ -57,5 +57,4 @@ export interface TileTreeProps {
   yAxisUp?: boolean;
   /** Optional - if defined and true, this TileTree contains only terrain tiles. */
   isTerrain?: boolean;
-  // ###TODO: ViewFlag.Overrides, ClipVector
 }

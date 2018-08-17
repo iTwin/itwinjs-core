@@ -62,4 +62,9 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
     return result;
   }
+
+  public async getTileContent(iModelToken: IModelToken, id: TileId): Promise<string> {
+    const db = IModelDb.find(iModelToken);
+    return db.tiles.getTileContent(id.treeId.value, id.tileId);
+  }
 }

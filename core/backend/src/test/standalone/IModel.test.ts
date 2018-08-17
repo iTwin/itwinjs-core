@@ -316,7 +316,7 @@ describe("iModel", () => {
     expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
     expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
 
-    expect(tree.rootTile.geometry).to.be.undefined; // empty model => empty tile
+    expect(tree.rootTile.hasGeometry).to.be.false; // empty model => empty tile
     expect(tree.rootTile.contentRange).to.be.undefined;
     expect(tree.rootTile.childIds.length).to.equal(0);
   });

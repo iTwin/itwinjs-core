@@ -1332,6 +1332,19 @@ export namespace IModelDb {
       assert(Array.isArray(result));
       return result! as TileProps[];
     }
+
+    /** @hidden */
+    public getTileContent(treeId: string, tileId: string): string {
+      if (!this._iModel.briefcase)
+        throw this._iModel.newNotOpenError();
+
+      const { error, result } = this._iModel.nativeDb.getTileContent(treeId, tileId);
+      if (error)
+        throw new IModelError(error.status, "TreeId=" + treeId + " TileId=" + tileId);
+
+      assert("string" === typeof(result));
+      return result as string;
+    }
   }
 }
 

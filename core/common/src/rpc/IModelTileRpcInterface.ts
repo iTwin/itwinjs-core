@@ -22,4 +22,5 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
 
   public getTileTreeProps(_iModelToken: IModelToken, _ids: Id64Set): Promise<TileTreeProps[]> { return this.forward.apply(this, arguments); }
   public getTileProps(_iModelToken: IModelToken, _ids: TileId[]): Promise<TileProps[]> { return this.forward.apply(this, arguments); }
+  public getTileContent(_iModelToken: IModelToken, _id: TileId): Promise<string> { return this.forward.apply(this, arguments); }
 }
