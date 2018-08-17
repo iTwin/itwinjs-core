@@ -1,6 +1,5 @@
 import * as React from "react";
 import "./BlockingPrompt.scss";
-// import "../components.scss";
 import "./Common.scss";
 
 interface IBlockingPromptProps {

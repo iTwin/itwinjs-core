@@ -120,13 +120,8 @@ $pp-max-dropdown-width: 450px;
   max-width: $pp-max-dropdown-width;
   z-index: 100;
   padding-bottom: .75em;
-  border: 1px solid rgba(0,0,0,.15);
   border-radius: 0px 0px 5px 5px;
-  background-clip: padding-box;
-  -webkit-background-clip: padding-box;
-  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-  box-shadow: 0px 6px 12px rgba(0,0,0,0.25);
-
+  
   /* first part of the dropdown is a list */
   ul {
     padding: 0px;

@@ -1,7 +1,8 @@
 import * as React from "react";
+import * as classnames from "classnames";
 import { connect } from "react-redux";
 import { IModelList } from "./IModelList";
-import { ProjectPicker } from "./ProjectPicker";
+import { ProjectDropdown } from "./ProjectDropdown";
 import { UiFramework } from "../UiFramework";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { ProjectInfo } from "../clientservices/ProjectServices";
@@ -14,7 +15,6 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { OpenIModelActions, OpenIModelState } from "../openimodel/state";
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
-import { CSSProperties } from "react";
 import "./IModelOpen.scss";
 import "./Common.scss";
 
@@ -98,7 +98,8 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
     this.props.setIModels(iModelInfos);
     this.setState(Object.assign({}, this.state, {
       isLoadingiModels: false,
-      iModels: iModelInfos }));
+      iModels: iModelInfos
+    }));
   }
 
   // called when a state change occurs.
@@ -128,18 +129,16 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
     } else {
       return (
         <IModelList iModels={this.state.iModels}
-            onIModelSelected={this.onIModelSelected}
-            accessToken={this.props.accessToken}
-            setSelectedViews={this.props.setSelectedViews}
-            onIModelViewsSelected={this.props.onIModelViewsSelected}/>
+          onIModelSelected={this.onIModelSelected}
+          accessToken={this.props.accessToken}
+          setSelectedViews={this.props.setSelectedViews}
+          onIModelViewsSelected={this.props.onIModelViewsSelected} />
       );
     }
   }
 
   public render() {
-    let canvasStyle: CSSProperties = {};
-    if (this.state.isNavigationExpanded)
-      canvasStyle = { left: "220px" };
+    const contentStyle = classnames("open-content", this.state.isNavigationExpanded && "pinned");
     return (
       <div>
         <div className="open-appbar">
@@ -149,23 +148,23 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
           <div className="project-picker-content">
             <span className="projects-label">Projects</span>
             <div className="project-picker">
-              <ProjectPicker accessToken={this.props.accessToken} currentProject={this.state.currentProject} recentProjects={this.props.recentProjects} onProjectClicked={this.selectProject.bind(this)} />
+              <ProjectDropdown accessToken={this.props.accessToken} currentProject={this.state.currentProject} recentProjects={this.props.recentProjects} onProjectClicked={this.selectProject.bind(this)} />
             </div>
           </div>
-          <div className="user-profile"><UserProfileButton accessToken={this.props.accessToken}/></div>
+          <div className="user-profile"><UserProfileButton accessToken={this.props.accessToken} /></div>
         </div>
         <NavigationList defaultTab={0} onExpandChanged={this.onNavigationChanged}>
           <NavigationItem label="Recent" icon="icon-history" />
-          <NavigationItem label="Offline" icon="icon-network"/>
+          <NavigationItem label="Offline" icon="icon-network" />
           <NavigationItem label="Browse History" icon="icon-folder" />
           <NavigationItem label="iModels" icon="icon-imodel-2" />
           <NavigationItem label="Share" icon="icon-share" />
           <NavigationItem label="Share Point" icon="icon-apps-sharepoint" />
           <NavigationItem label="Reality Data" icon="icon-apps-reality-modeling" />
-          <NavigationItem label="New Project..." icon="icon-zoom-in"/>
+          <NavigationItem label="New Project..." icon="icon-zoom-in" />
         </NavigationList>
-        <div className="open-content" style={canvasStyle}>
-            {this.renderIModels()}
+        <div className={contentStyle}>
+          {this.renderIModels()}
         </div>
       </div>
     );

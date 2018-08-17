@@ -79,6 +79,11 @@ $border-color: #e7e9ec;
   background: $open-background;
 }
 
+.open-navbar:hover,
+.open-navbar.pinned {
+  width: 220px;
+}
+
 /* right side (content) area */
 .open-content {
   top: $appbar-height;
@@ -88,4 +93,12 @@ $border-color: #e7e9ec;
   overflow: hidden;
   position: absolute;
   background: $content-background;
+  -webkit-transition: all .2s linear;
+  -moz-transition: all .2s linear;
+  -o-transition: all .2s linear;
+  transition: all .2s linear;
+}
+
+.open-content.pinned {
+  left: 220px;
 }

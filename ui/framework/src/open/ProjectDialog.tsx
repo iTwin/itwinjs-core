@@ -8,19 +8,20 @@ import { SearchBox } from "@bentley/ui-core";
 import "./Common.scss";
 import "./ProjectSelector.scss";
 
-interface ProjectProps {
+interface ProjectDialogProps {
   accessToken: AccessToken;
   filterType?: ProjectScope;
   onClose: () => void;
+  onProjectSelected?: (project: ProjectInfo) => void;
 }
 
-interface ProjectState {
+interface ProjectDialogState {
   isLoading: boolean;
   projects?: ProjectInfo[];
   activeFilter: ProjectScope;
 }
 
-export class ProjectSelector extends React.Component<ProjectProps, ProjectState> {
+export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDialogState> {
 
   constructor(props?: any, context?: any) {
     super(props, context);
@@ -28,7 +29,7 @@ export class ProjectSelector extends React.Component<ProjectProps, ProjectState>
     this.state = { isLoading: true, activeFilter: this.props.filterType! };
   }
 
-  public static defaultProps: Partial<ProjectProps> = {
+  public static defaultProps: Partial<ProjectDialogProps> = {
     filterType: ProjectScope.MostRecentlyUsed,
   };
 
@@ -66,8 +67,10 @@ export class ProjectSelector extends React.Component<ProjectProps, ProjectState>
     // this.getRecentProjects(ProjectScope.All);
   }
 
-  private onProjectSelected = () => {
-    this.onClose();
+  private onProjectSelected = (projectInfo: ProjectInfo) => {
+    if (this.props.onProjectSelected) {
+      this.props.onProjectSelected(projectInfo);
+    }
   }
 
   private handleSearchValueChanged = (value: string): void => {
@@ -108,7 +111,7 @@ export class ProjectSelector extends React.Component<ProjectProps, ProjectState>
 
   private renderProject(project: ProjectInfo) {
     return (
-      <tr onClick={this.onProjectSelected}>
+      <tr onClick={this.onProjectSelected.bind(this, project)}>
         <td>{project.projectNumber}</td>
         <td>{project.name}</td>
         <td/>
@@ -116,10 +119,6 @@ export class ProjectSelector extends React.Component<ProjectProps, ProjectState>
       </tr>
      );
   }
-
-  /*
-  <input className={searchClassName} placeholder="Search..." type="text" />
-  */
 
   public render() {
     const searchClassName = classnames("tabs-searchbox", this.state.activeFilter !== ProjectScope.All && "hidden");
