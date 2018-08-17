@@ -76,6 +76,22 @@ class LayoutMock extends Layout {
   private _minHeight: number | undefined = undefined;
   private _minWidth: number | undefined = undefined;
 
+  protected get _topZone() {
+    return this.topZone;
+  }
+
+  protected get _bottomZone() {
+    return this.bottomZone;
+  }
+
+  protected get _leftZone() {
+    return this.leftZone;
+  }
+
+  protected get _rightZone() {
+    return this.rightZone;
+  }
+
   public set bounds(bounds: Rectangle) {
     this._bounds = bounds;
   }
