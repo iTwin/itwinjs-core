@@ -30,7 +30,7 @@
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./src 1>&2",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
-    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register -r ignore-styles -r jsdom-global/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.{ts,tsx}",
+    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./tests/index.test.ts tests/**/*.ts",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
