@@ -89,8 +89,8 @@ export class TypeConverter implements SortComparer, OperatorProcessor {
     return valueA !== valueB;
   }
 
-  public isStringType(): boolean { return false; }
-  public isLessGreaterType(): boolean { return false; }
-  public isNullableType(): boolean { return false; }
-  public isBooleanType(): boolean { return false; }
+  public get isStringType(): boolean { return false; }
+  public get isLessGreaterType(): boolean { return false; }
+  public get isNullableType(): boolean { return false; }
+  public get isBooleanType(): boolean { return false; }
 }

@@ -22,25 +22,25 @@ export const withTimeout = <ComponentProps extends {}>(
   Component: React.ComponentType<ComponentProps>,
 ) => {
   return class WithTimeout extends React.Component<ComponentProps & WithTimeoutProps> {
-    public _timer: Timer | undefined = undefined;
+    public timer: Timer | undefined = undefined;
 
     public componentDidMount(): void {
-      this._timer = new Timer(this.props.timeout);
-      this._timer.setOnExecute(() => this.props.onTimeout && this.props.onTimeout());
+      this.timer = new Timer(this.props.timeout);
+      this.timer.setOnExecute(() => this.props.onTimeout && this.props.onTimeout());
 
       this.startTimeout();
     }
 
     public componentWillUnmount(): void {
-      if (!this._timer)
+      if (!this.timer)
         return;
-      this._timer.stop();
+      this.timer.stop();
     }
 
     public componentWillReceiveProps(_nextProps: Readonly<WithTimeoutProps>): void {
-      if (!this._timer)
+      if (!this.timer)
         return;
-      this._timer.delay = this.props.timeout;
+      this.timer.delay = this.props.timeout;
       this.startTimeout();
     }
 
@@ -54,14 +54,14 @@ export const withTimeout = <ComponentProps extends {}>(
     }
 
     public startTimeout() {
-      if (!this._timer)
+      if (!this.timer)
         return;
       if (!this.props.startTimeout)
         return;
-      if (this._timer.isRunning)
+      if (this.timer.isRunning)
         return;
 
-      this._timer.start();
+      this.timer.start();
     }
   };
 };

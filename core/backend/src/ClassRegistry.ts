@@ -10,9 +10,9 @@ import { Schema, Schemas } from "./Schema";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
-  private static readonly classMap = new Map<string, typeof Entity>();
+  private static readonly _classMap = new Map<string, typeof Entity>();
   private static getKey(schemaName: string, className: string) { return (schemaName + ":" + className).toLowerCase(); }
-  private static lookupClass(name: string) { return this.classMap.get(name.toLowerCase()); }
+  private static lookupClass(name: string) { return this._classMap.get(name.toLowerCase()); }
 
   /** @hidden */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
@@ -31,7 +31,7 @@ export class ClassRegistry {
     if (!props.classFullName)
       throw new IModelError(IModelStatus.BadArg, "props must have a classFullName member");
 
-    let entityClass = this.classMap.get(props.classFullName.toLowerCase());
+    let entityClass = this._classMap.get(props.classFullName.toLowerCase());
     if (!entityClass) {
       entityClass = this.generateClass(props.classFullName, iModel);
       if (!entityClass)
@@ -41,7 +41,7 @@ export class ClassRegistry {
   }
 
   /** @hidden */
-  public static register(entityClass: typeof Entity) { this.classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
+  public static register(entityClass: typeof Entity) { this._classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
   /** @hidden */
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
   /** @hidden */
@@ -134,10 +134,10 @@ export class ClassRegistry {
    */
   public static getClass(fullName: string, iModel: IModelDb): typeof Entity {
     const key = fullName.toLowerCase();
-    if (!this.classMap.has(key))
+    if (!this._classMap.has(key))
       return this.generateClass(fullName, iModel);
 
-    const ctor = this.classMap.get(key);
+    const ctor = this._classMap.get(key);
     if (!ctor)
       throw this.makeClassNotFoundError(fullName);
 

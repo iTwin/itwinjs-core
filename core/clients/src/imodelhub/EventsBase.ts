@@ -108,7 +108,7 @@ export abstract class EventBaseHandler {
       return JSON.parse(message.substring(message.indexOf("{"), message.lastIndexOf("}") + 1));
     };
 
-    if (Config.isBrowser()) {
+    if (Config.isBrowser) {
       options.parser = (_: any, message: any) => parse(message);
     } else {
       options.buffer = true;
@@ -157,14 +157,14 @@ export class ListenerSubscription {
 
 /** @hidden */
 export class EventListener {
-  private static subscriptions: Map<string, ListenerSubscription>;
+  private static _subscriptions: Map<string, ListenerSubscription>;
 
   /** @hidden */
   public static create(subscription: ListenerSubscription, listener: (event: IModelHubBaseEvent) => void): () => void {
-    if (!this.subscriptions) {
-      this.subscriptions = new Map<string, ListenerSubscription>();
+    if (!this._subscriptions) {
+      this._subscriptions = new Map<string, ListenerSubscription>();
     }
-    let existingSubscription = this.subscriptions.get(subscription.id);
+    let existingSubscription = this._subscriptions.get(subscription.id);
     let deleteListener: () => void;
     if (!existingSubscription) {
       existingSubscription = subscription;
@@ -175,14 +175,14 @@ export class EventListener {
       deleteListener = subscription.listeners.addListener(listener);
     }
 
-    this.subscriptions.set(subscription.id, existingSubscription);
+    this._subscriptions.set(subscription.id, existingSubscription);
     const subscriptionId = subscription.id;
     return () => {
       deleteListener();
-      const sub = this.subscriptions.get(subscriptionId);
+      const sub = this._subscriptions.get(subscriptionId);
       if (sub) {
         if (sub.listeners && sub.listeners.numberOfListeners === 0)
-          this.subscriptions.delete(subscription.id);
+          this._subscriptions.delete(subscription.id);
       }
     };
   }
@@ -220,6 +220,6 @@ export class EventListener {
         }
       }
     }
-    this.subscriptions.delete(subscription.id);
+    this._subscriptions.delete(subscription.id);
   }
 }

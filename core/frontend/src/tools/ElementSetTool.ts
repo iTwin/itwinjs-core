@@ -111,8 +111,8 @@ export class ElementAgenda {
   /** Set the source for this ElementAgenda. */
   public setSource(val: ModifyElementSource) { if (this.groupMarks.length > 0) this.groupMarks[this.groupMarks.length - 1].source = val; }
 
-  public isEmpty() { return this.length === 0; }
-  public getCount() { return this.length; }
+  public get isEmpty() { return this.length === 0; }
+  public get count() { return this.length; }
   public get length() { return this.elements.length; }
 
   /** Calls ClearHilite and empties this ElementAgenda. */

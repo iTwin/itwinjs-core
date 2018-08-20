@@ -16,19 +16,19 @@ export class Layout1 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(4).getLayout();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this.zone.nineZone.getRoot();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(2).getLayout();
   }
 
@@ -55,19 +55,19 @@ export class Layout2 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(1).getLayout();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(3).getLayout();
   }
 
@@ -94,19 +94,19 @@ export class Layout3 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(2).getLayout();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this.zone.nineZone.getRoot();
   }
 
@@ -141,19 +141,19 @@ export class Layout4 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(3).getLayout();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this.zone.nineZone.getRoot();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
   }
 
@@ -180,19 +180,19 @@ export class Layout6 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(3).getLayout();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(9).getLayout();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(4).getLayout();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this.zone.nineZone.getRoot();
   }
 
@@ -219,21 +219,21 @@ export class Layout7 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     if (this.zone.nineZone.getRoot().isInFooterMode)
       return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
     return this.zone.nineZone.getRoot();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     return this.zone.nineZone.getRoot();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     if (this.zone.nineZone.getRoot().isInFooterMode)
       return this.zone.nineZone.getRoot().nineZone.getZone(9).getLayout();
     return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
@@ -262,21 +262,21 @@ export class Layout8 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     return this.zone.nineZone.getRoot();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     if (this.zone.nineZone.getRoot().isInFooterMode)
       return this.zone.nineZone.getRoot();
     return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     if (this.zone.nineZone.getRoot().isInFooterMode)
       return this.zone.nineZone.getRoot();
     return this.zone.nineZone.getRoot().nineZone.getZone(9).getLayout();
@@ -305,23 +305,23 @@ export class Layout9 extends Layout {
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
-  protected get topZone() {
+  protected get _topZone() {
     return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
   }
 
-  protected get bottomZone() {
+  protected get _bottomZone() {
     if (this.zone.nineZone.getRoot().isInFooterMode)
       return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
     return this.zone.nineZone.getRoot();
   }
 
-  protected get leftZone() {
+  protected get _leftZone() {
     if (this.zone.nineZone.getRoot().isInFooterMode)
       return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
     return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
   }
 
-  protected get rightZone() {
+  protected get _rightZone() {
     return this.zone.nineZone.getRoot();
   }
 

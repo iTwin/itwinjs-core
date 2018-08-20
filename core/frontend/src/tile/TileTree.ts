@@ -337,11 +337,11 @@ export class Tile implements IDisposable {
     }
   }
 
-  private static scratchWorldFrustum = new Frustum();
-  private static scratchRootFrustum = new Frustum();
+  private static _scratchWorldFrustum = new Frustum();
+  private static _scratchRootFrustum = new Frustum();
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
-    const box = Frustum.fromRange(range, Tile.scratchRootFrustum);
-    const worldBox = box.transformBy(args.location, Tile.scratchWorldFrustum);
+    const box = Frustum.fromRange(range, Tile._scratchRootFrustum);
+    const worldBox = box.transformBy(args.location, Tile._scratchWorldFrustum);
     const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
     const isCulled = isOutside || isClipped;
@@ -442,9 +442,9 @@ export namespace Tile {
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
-    private static scratchRange = new Range3d();
+    private static _scratchRange = new Range3d();
     public getTileRadius(tile: Tile): number {
-      let range = tile.range.clone(DrawArgs.scratchRange);
+      let range = tile.range.clone(DrawArgs._scratchRange);
       range = this.location.multiplyRange(range, range);
       return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
     }
@@ -627,7 +627,7 @@ export abstract class TileLoader {
 }
 
 export class IModelTileLoader extends TileLoader {
-  constructor(private iModel: IModelConnection, private rootId: Id64) { super(); }
+  constructor(private _iModel: IModelConnection, private _rootId: Id64) { super(); }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return undefined !== params.geometry; }
@@ -636,8 +636,8 @@ export class IModelTileLoader extends TileLoader {
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
 
   public async getTileProps(ids: string[]): Promise<TileProps[]> {
-    const tileIds: TileId[] = ids.map((id: string) => new TileId(this.rootId, id));
-    return this.iModel.tiles.getTileProps(tileIds);
+    const tileIds: TileId[] = ids.map((id: string) => new TileId(this._rootId, id));
+    return this._iModel.tiles.getTileProps(tileIds);
   }
 
   public async loadTileContents(_missingTiles: MissingNodes): Promise<void> {

@@ -91,7 +91,7 @@ export default class Toast extends React.Component<ToastProps> {
         <div
           className="nz-toast"
           ref={this._toast}
-          onTransitionEnd={this.handleTransitionEnd}
+          onTransitionEnd={this._handleTransitionEnd}
         >
           {this.props.content}
         </div>
@@ -99,7 +99,7 @@ export default class Toast extends React.Component<ToastProps> {
     );
   }
 
-  private handleTransitionEnd = () => {
+  private _handleTransitionEnd = () => {
     this.setStage(Stage.AnimatedOut);
   }
 

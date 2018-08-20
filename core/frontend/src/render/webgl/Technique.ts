@@ -92,10 +92,10 @@ export abstract class VariedTechnique implements Technique {
   }
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
-  protected abstract get debugDescription(): string;
+  protected abstract get _debugDescription(): string;
 
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
-    const descr = this.debugDescription + ": " + flags.buildDescription();
+    const descr = this._debugDescription + ": " + flags.buildDescription();
     builder.setDebugDescription(descr);
 
     const index = this.getShaderIndex(flags);
@@ -167,10 +167,10 @@ export abstract class VariedTechnique implements Technique {
 }
 
 class SurfaceTechnique extends VariedTechnique {
-  private static readonly kOpaque = 0;
-  private static readonly kTranslucent = 1;
-  private static readonly kFeature = 2;
-  private static readonly kHilite = numFeatureVariants(SurfaceTechnique.kFeature);
+  private static readonly _kOpaque = 0;
+  private static readonly _kTranslucent = 1;
+  private static readonly _kFeature = 2;
+  private static readonly _kHilite = numFeatureVariants(SurfaceTechnique._kFeature);
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -191,25 +191,25 @@ class SurfaceTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "Surface"; }
+  protected get _debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
-      return SurfaceTechnique.kHilite;
+      return SurfaceTechnique._kHilite;
     }
 
-    let index = flags.isTranslucent ? SurfaceTechnique.kTranslucent : SurfaceTechnique.kOpaque;
-    index += SurfaceTechnique.kFeature * flags.featureMode;
+    let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
+    index += SurfaceTechnique._kFeature * flags.featureMode;
     return index;
   }
 }
 
 class PolylineTechnique extends VariedTechnique {
-  private static readonly kOpaque = 0;
-  private static readonly kTranslucent = 1;
-  private static readonly kFeature = 2;
-  private static readonly kHilite = numFeatureVariants(PolylineTechnique.kFeature);
+  private static readonly _kOpaque = 0;
+  private static readonly _kTranslucent = 1;
+  private static readonly _kFeature = 2;
+  private static readonly _kHilite = numFeatureVariants(PolylineTechnique._kFeature);
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -238,24 +238,24 @@ class PolylineTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "Polyline"; }
+  protected get _debugDescription() { return "Polyline"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
-      return PolylineTechnique.kHilite;
+      return PolylineTechnique._kHilite;
     }
 
-    let index = flags.isTranslucent ? PolylineTechnique.kTranslucent : PolylineTechnique.kOpaque;
-    index += PolylineTechnique.kFeature * flags.featureMode;
+    let index = flags.isTranslucent ? PolylineTechnique._kTranslucent : PolylineTechnique._kOpaque;
+    index += PolylineTechnique._kFeature * flags.featureMode;
     return index;
   }
 }
 
 class EdgeTechnique extends VariedTechnique {
-  private static readonly kOpaque = 0;
-  private static readonly kTranslucent = 1;
-  private static readonly kFeature = 2;
+  private static readonly _kOpaque = 0;
+  private static readonly _kTranslucent = 1;
+  private static readonly _kFeature = 2;
   private readonly _isSilhouette: boolean;
 
   public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
@@ -285,20 +285,20 @@ class EdgeTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
+  protected get _debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    let index = flags.isTranslucent ? EdgeTechnique.kTranslucent : EdgeTechnique.kOpaque;
-    index += EdgeTechnique.kFeature * flags.featureMode;
+    let index = flags.isTranslucent ? EdgeTechnique._kTranslucent : EdgeTechnique._kOpaque;
+    index += EdgeTechnique._kFeature * flags.featureMode;
     return index;
   }
 }
 
 class PointStringTechnique extends VariedTechnique {
-  private static readonly kOpaque = 0;
-  private static readonly kTranslucent = 1;
-  private static readonly kFeature = 2;
-  private static readonly kHilite = numFeatureVariants(PointStringTechnique.kFeature);
+  private static readonly _kOpaque = 0;
+  private static readonly _kTranslucent = 1;
+  private static readonly _kFeature = 2;
+  private static readonly _kHilite = numFeatureVariants(PointStringTechnique._kFeature);
 
   public constructor(gl: WebGLRenderingContext) {
     super((numFeatureVariants(2) + numHiliteVariants));
@@ -327,22 +327,22 @@ class PointStringTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "PointString"; }
+  protected get _debugDescription() { return "PointString"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
-      return PointStringTechnique.kHilite;
+      return PointStringTechnique._kHilite;
     }
 
-    let index = flags.isTranslucent ? PointStringTechnique.kTranslucent : PointStringTechnique.kOpaque;
-    index += PointStringTechnique.kFeature * flags.featureMode;
+    let index = flags.isTranslucent ? PointStringTechnique._kTranslucent : PointStringTechnique._kOpaque;
+    index += PointStringTechnique._kFeature * flags.featureMode;
     return index;
   }
 }
 
 class PointCloudTechnique extends VariedTechnique {
-  private static readonly kHilite = numFeatureVariants(1);
+  private static readonly _kHilite = numFeatureVariants(1);
 
   public constructor(gl: WebGLRenderingContext) {
     super(numFeatureVariants(1) + numHiliteVariants);
@@ -359,12 +359,12 @@ class PointCloudTechnique extends VariedTechnique {
     }
   }
 
-  protected get debugDescription() { return "PointCloud"; }
+  protected get _debugDescription() { return "PointCloud"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index: number;
     if (flags.isHilite)
-      index = PointCloudTechnique.kHilite;
+      index = PointCloudTechnique._kHilite;
     else
       index = flags.featureMode;
 

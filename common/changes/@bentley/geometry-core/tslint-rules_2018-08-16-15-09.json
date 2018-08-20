@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "TSLint New Rule Enforcements",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "nate.rex@bentley.com"
+}

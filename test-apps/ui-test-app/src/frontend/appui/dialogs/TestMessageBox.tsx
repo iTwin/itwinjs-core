@@ -35,10 +35,10 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
         title={this.props.title}
         severity={this.props.severity}
         buttonCluster={[
-          { type: ButtonType.Close, buttonStyle: ButtonStyle.Primary, onClick: () => { this.toggleOpened(); } },
+          { type: ButtonType.Close, buttonStyle: ButtonStyle.Primary, onClick: () => { this._toggleOpened(); } },
         ]}
-        onClose={this.toggleOpened}
-        onEscape={this.toggleOpened}
+        onClose={this._toggleOpened}
+        onEscape={this._toggleOpened}
       >
         Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
         <div>
@@ -60,7 +60,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
     }
   }
 
-  private toggleOpened = () => {
+  private _toggleOpened = () => {
     this.setState((_prevState) => ({
       opened: !this.state.opened,
     }), () => {

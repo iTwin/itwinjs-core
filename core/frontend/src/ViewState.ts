@@ -456,7 +456,7 @@ export abstract class ViewState extends ElementState {
     let origin: Point3d;
 
     // Compute root vectors along edges of view frustum.
-    if (this.is3d() && this.isCameraOn()) {
+    if (this.is3d() && this.isCameraOn) {
       const camera = this.camera;
       const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
       viewRot.multiplyVectorInPlace(eyeToOrigin);                        // align with view coordinates.
@@ -725,7 +725,7 @@ export abstract class ViewState extends ElementState {
    * @param clip the new clipping volume. If undefined, clipping is removed from view.
    */
   public setViewClip(clip?: ClipVector) {
-    if (clip && clip.isValid())
+    if (clip && clip.isValid)
       this.setDetail("clip", clip.toJSON());
     else
       this.removeDetail("clip");
@@ -737,7 +737,7 @@ export abstract class ViewState extends ElementState {
     if (clip === undefined)
       return undefined;
     const clipVector = ClipVector.fromJSON(clip);
-    return clipVector.isValid() ? clipVector : undefined;
+    return clipVector.isValid ? clipVector : undefined;
   }
 
   /** Set the grid settings for this view */
@@ -836,7 +836,7 @@ export abstract class ViewState extends ElementState {
    * @see lookAtVolume
    */
   public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
-    if (volume.isNull()) // make sure volume is valid
+    if (volume.isNull) // make sure volume is valid
       return;
 
     const viewRot = this.getRotation();
@@ -851,7 +851,7 @@ export abstract class ViewState extends ElementState {
 
     let origNewDelta = newDelta.clone();
 
-    const isCameraOn: boolean = this.is3d() && this.isCameraOn();
+    const isCameraOn: boolean = this.is3d() && this.isCameraOn;
     if (isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
@@ -951,7 +951,7 @@ export abstract class ViewState extends ElementState {
  */
 export abstract class ViewState3d extends ViewState {
   /** True if the camera is valid. */
-  protected cameraOn: boolean;
+  protected _cameraOn: boolean;
   /** The lower left back corner of the view frustum. */
   public readonly origin: Point3d;
   /** The extent of the view frustum. */
@@ -968,7 +968,7 @@ export abstract class ViewState3d extends ViewState {
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
-    this.cameraOn = JsonUtils.asBool(props.cameraOn);
+    this._cameraOn = JsonUtils.asBool(props.cameraOn);
     this.origin = Point3d.fromJSON(props.origin);
     this.extents = Vector3d.fromJSON(props.extents);
     this.rotation = YawPitchRollAngles.fromJSON(props.angles).toRotMatrix();
@@ -978,7 +978,7 @@ export abstract class ViewState3d extends ViewState {
 
   public toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
-    val.cameraOn = this.cameraOn;
+    val.cameraOn = this._cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
     val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation)!.toJSON();
@@ -991,16 +991,16 @@ export abstract class ViewState3d extends ViewState {
     if (!this.origin.isAlmostEqual(other.origin) || !this.extents.isAlmostEqual(other.extents) || !this.rotation.isAlmostEqual(other.rotation))
       return false;
 
-    if (this.isCameraOn() !== other.isCameraOn())
+    if (this.isCameraOn !== other.isCameraOn)
       return false;
 
-    if (this.isCameraOn() && this.camera.equals(other.camera)) // ###TODO: should this be less precise equality?
+    if (this.isCameraOn && this.camera.equals(other.camera)) // ###TODO: should this be less precise equality?
       return false;
 
     return super.equalState(other);
   }
 
-  public isCameraOn(): boolean { return this.cameraOn; }
+  public get isCameraOn(): boolean { return this._cameraOn; }
   public setupFromFrustum(frustum: Frustum): ViewStatus {
     const stat = super.setupFromFrustum(frustum);
     if (ViewStatus.Success !== stat)
@@ -1062,10 +1062,10 @@ export abstract class ViewState3d extends ViewState {
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
   /** @hidden */
-  protected enableCamera(): void { if (this.supportsCamera()) this.cameraOn = true; }
+  protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
   public supportsCamera(): boolean { return true; }
   public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
-  public isEyePointAbove(elevation: number): boolean { return !this.cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
+  public isEyePointAbove(elevation: number): boolean { return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
 
   public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
 
@@ -1074,10 +1074,10 @@ export abstract class ViewState3d extends ViewState {
    * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
    * @note To turn the camera back on, call #lookAt
    */
-  public turnCameraOff() { this.cameraOn = false; }
+  public turnCameraOff() { this._cameraOn = false; }
 
   /** Determine whether the camera is valid for this view */
-  public isCameraValid() { return this.camera.isValid(); }
+  public get isCameraValid() { return this.camera.isValid; }
 
   /** Calculate the lens angle formed by the current delta and focus distance */
   public calcLensAngle(): Angle {
@@ -1087,7 +1087,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** Get the target point of the view. If there is no camera, view center is returned. */
   public getTargetPoint(result?: Point3d): Point3d {
-    if (!this.cameraOn)
+    if (!this._cameraOn)
       return super.getTargetPoint(result);
 
     const viewZ = this.getRotation().getRow(2);
@@ -1215,7 +1215,7 @@ export abstract class ViewState3d extends ViewState {
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public moveCameraWorld(distance: Vector3d): ViewStatus {
-    if (!this.cameraOn) {
+    if (!this._cameraOn) {
       this.origin.plus(distance, this.origin);
       return ViewStatus.Success;
     }
@@ -1296,7 +1296,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** Ensure the focus plane lies between the front and back planes. If not, center it. */
   public verifyFocusPlane(): void {
-    if (!this.cameraOn)
+    if (!this._cameraOn)
       return;
 
     let backDist = this.getBackDistance();
@@ -1426,7 +1426,7 @@ export abstract class ViewState3d extends ViewState {
   /** @hidden */
   protected drawGroundPlane(context: DecorateContext): void {
     const extents = this.getGroundExtents(context.viewport);
-    if (extents.isNull()) {
+    if (extents.isNull) {
       return;
     }
 
@@ -1528,7 +1528,7 @@ export class SpatialViewState extends ViewState3d {
       }
     });
 
-    if (range.isNull())
+    if (range.isNull)
       range.setFrom(this.getViewedExtents());
 
     range.ensureMinLengths(1.0);
@@ -1667,7 +1667,7 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   /** DEBUG ONLY - A list of attachment Ids that are the only ones that should be loaded. If this member is left undefined, all attachments will be loaded. */
-  private static DEBUG_FILTER_ATTACHMENTS?: Id64Array;
+  private static _DEBUG_FILTER_ATTACHMENTS?: Id64Array;
   // ------------------------------------------------------------------------------------------
 
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
@@ -1695,14 +1695,14 @@ export class SheetViewState extends ViewState2d {
   public readonly sheetSize: Point2d;
   private _attachmentIds: Id64Array;
   private _attachments: Attachments.AttachmentList;
-  private all3dAttachmentTilesLoaded: boolean = true;
+  private _all3dAttachmentTilesLoaded: boolean = true;
   public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
   /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles. */
   public markAttachment3dSceneIncomplete() {
     // NB: 2d attachments will draw to completion once they have a tile tree... but 3d attachments create new tiles for each
     // depth, and therefore report directly to the ViewState whether or not new tiles are being loaded
-    this.all3dAttachmentTilesLoaded = false;
+    this._all3dAttachmentTilesLoaded = false;
   }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
@@ -1741,23 +1741,23 @@ export class SheetViewState extends ViewState2d {
   private debugFilterAttachments() {
     const newAttachmentIds: Id64Array = [];
     for (const id of this._attachmentIds)
-      if (SheetViewState.DEBUG_FILTER_ATTACHMENTS === undefined)
+      if (SheetViewState._DEBUG_FILTER_ATTACHMENTS === undefined)
         newAttachmentIds.push(id);
-      else if (SheetViewState.DEBUG_FILTER_ATTACHMENTS.indexOf(id) !== -1)
+      else if (SheetViewState._DEBUG_FILTER_ATTACHMENTS.indexOf(id) !== -1)
         newAttachmentIds.push(id);
     this._attachmentIds = newAttachmentIds;
   }
 
   /** If any attachments have not yet been loaded or are waiting on tiles, invalidate the scene. */
   public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allReady || !this.all3dAttachmentTilesLoaded)
+    if (!this._attachments.allReady || !this._all3dAttachmentTilesLoaded)
       _viewport.sync.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
   public createScene(context: SceneContext) {
     // This will be set to false by the end of the function if any 3d attachments are waiting on tiles...
-    this.all3dAttachmentTilesLoaded = true;
+    this._all3dAttachmentTilesLoaded = true;
 
     super.createScene(context);
 

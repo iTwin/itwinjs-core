@@ -92,29 +92,29 @@ export class FrustumUniforms {
 /** Interface for 3d GPU clipping. */
 export class Clips {
   private _texture?: TextureHandle;
-  private clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
-  private clipCount: number = 0;
+  private _clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
+  private _clipCount: number = 0;
 
   public get texture(): TextureHandle | undefined { return this._texture; }
-  public get count(): number { return this.clipCount; }
-  public get isValid(): boolean { return this.clipCount > 0; }
+  public get count(): number { return this._clipCount; }
+  public get isValid(): boolean { return this._clipCount > 0; }
 
   public set(numPlanes: number, texture: TextureHandle) {
-    this.clipActive++;
-    if (this.clipActive !== 1)
+    this._clipActive++;
+    if (this._clipActive !== 1)
       return;
 
-    this.clipCount = numPlanes;
+    this._clipCount = numPlanes;
     this._texture = texture;
   }
 
   public clear() {
-    if (this.clipActive === 1) {
-      this.clipCount = 0;
+    if (this._clipActive === 1) {
+      this._clipCount = 0;
       this._texture = undefined;
     }
-    if (this.clipActive > 0)
-      this.clipActive--;
+    if (this._clipActive > 0)
+      this._clipActive--;
   }
 }
 

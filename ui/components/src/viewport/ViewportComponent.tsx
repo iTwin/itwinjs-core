@@ -62,10 +62,10 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     this._vp = new Viewport(this._canvas.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);
 
-    ViewportManager.CubeRotationChangeEvent.addListener(this.handleCubeRotationChangeEvent);
-    ViewportManager.StandardRotationChangeEvent.addListener(this.handleStandardRotationChangeEvent);
+    ViewportManager.CubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
+    ViewportManager.StandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent);
     if (this._vp) {
-      this._vp.onViewChanged.addListener(this.handleViewChanged);
+      this._vp.onViewChanged.addListener(this._handleViewChanged);
       ViewportManager.setActiveViewport(this._vp);
     }
   }
@@ -76,25 +76,25 @@ export class ViewportComponent extends React.Component<ViewportProps> {
         ViewportManager.setActiveViewport(undefined);
 
       IModelApp.viewManager.dropViewport(this._vp);
-      this._vp.onViewChanged.removeListener(this.handleViewChanged);
+      this._vp.onViewChanged.removeListener(this._handleViewChanged);
     }
 
-    ViewportManager.CubeRotationChangeEvent.removeListener(this.handleCubeRotationChangeEvent);
-    ViewportManager.StandardRotationChangeEvent.removeListener(this.handleStandardRotationChangeEvent);
+    ViewportManager.CubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
+    ViewportManager.StandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
   }
 
-  private onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     event.preventDefault();
 
     ViewportManager.setActiveViewport(this._vp);
   }
 
-  private handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
+  private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
     if (this._vp && ViewportManager.getActiveViewport() === this._vp) {
       if (args.animationTime && args.animationTime < 0) {
         this._vp.synchWithView(true);
       }
-      const rotMatrix = this.rotationMatrixFromYawPitchRoll(args.rotation); // TODO - switch to internal function after custom rotation order is implemented
+      const rotMatrix = this._rotationMatrixFromYawPitchRoll(args.rotation); // TODO - switch to internal function after custom rotation order is implemented
       if (this._vp.rotMatrix !== rotMatrix) {
         const center = this._vp.view.getTargetPoint(); // Don't try to locate geometry using depth buffer...
         const inverse = rotMatrix.clone().inverse(); // rotation is from current nav cube state...
@@ -114,7 +114,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     }
   }
 
-  private handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
+  private _handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
     if (this._vp && ViewportManager.getActiveViewport() === this._vp) {
       // this._vp.view.setStandardRotation(args.standardRotation);
       this._vp.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(args.standardRotation));
@@ -122,7 +122,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     }
   }
 
-  private handleViewChanged = (vp: Viewport) => {
+  private _handleViewChanged = (vp: Viewport) => {
     const yawPitchRoll = ViewportComponent.getViewportYawPitchRoll(vp);
     if (yawPitchRoll && !yawPitchRoll.isAlmostEqual(ViewportManager.getViewRotation()))
       ViewportManager.setViewRotation(vp, yawPitchRoll);
@@ -130,7 +130,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 
   /** Pulled from three.js, "ZXY" intrinsic Tait-Bryan angles for right-handed coordinates (rotations reversed from left-handed)
    */
-  private rotationMatrixFromYawPitchRoll = (angle: YawPitchRollAngles) => {
+  private _rotationMatrixFromYawPitchRoll = (angle: YawPitchRollAngles) => {
     const x = angle.pitch.radians, y = angle.roll.radians, z = angle.yaw.radians;
     const cx = Math.cos(x), sx = Math.sin(x);
     const cy = Math.cos(y), sy = Math.sin(y);
@@ -153,7 +153,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     );
     return rotX.multiplyMatrixMatrix(rotY).multiplyMatrixMatrix(rotZ);
   }
-  private static yawPitchRollFromRotationMatrix = (m: RotMatrix) => {
+  private static _yawPitchRollFromRotationMatrix = (m: RotMatrix) => {
     const clamp = (v: number, min: number, max: number) => {
       return Math.max(min, Math.min(max, v));
     };
@@ -176,13 +176,13 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     return YawPitchRollAngles.createRadians(-z, x, y);
   }
   public static getViewportYawPitchRoll(vp: Viewport): YawPitchRollAngles | undefined {
-    return this.yawPitchRollFromRotationMatrix(vp.rotMatrix);
+    return this._yawPitchRollFromRotationMatrix(vp.rotMatrix);
   }
 
   public render() {
     return (
       <canvas ref={this._canvas} style={{ height: "100%", width: "100%" }}
-        onMouseDown={this.onMouseDown}
+        onMouseDown={this._onMouseDown}
         onContextMenu={(e) => { e.preventDefault(); return false; }}
       />
     );

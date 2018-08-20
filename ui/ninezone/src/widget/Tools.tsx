@@ -24,6 +24,8 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
   isNavigation?: boolean;
   /** Vertical toolbar. See [[Toolbar]] */
   verticalToolbar?: React.ReactNode;
+  /** Pass true to reduce the distance between toolbars when [[ToolsProps.button]] is not provided. */
+  preserveSpace?: boolean;
 }
 
 /**
@@ -32,9 +34,14 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
  */
 // tslint:disable-next-line:variable-name
 export const Tools: React.StatelessComponent<ToolsProps> = (props: ToolsProps) => {
+  const singleToolbar = (props.verticalToolbar && !props.horizontalToolbar) ||
+    (!props.verticalToolbar && props.horizontalToolbar);
+  const noGap = singleToolbar && !props.button;
+  const reducedGap = !singleToolbar && !props.button && props.preserveSpace;
   const className = classnames(
     "nz-widget-tools",
-    !props.button && "nz-no-app-button",
+    noGap && "nz-no-gap",
+    reducedGap && "nz-reduced-gap",
     props.isNavigation && "nz-is-navigation",
     props.className);
 

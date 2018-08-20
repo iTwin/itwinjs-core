@@ -303,7 +303,6 @@ describe("Tree withUnifiedSelection", () => {
         const nodes = [createRandomTreeNodeItem()];
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
         />, { disableLifecycleMethods: true });
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, true);
@@ -374,7 +373,6 @@ describe("Tree withUnifiedSelection", () => {
         const nodes = [createRandomTreeNodeItem()];
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
         />, { disableLifecycleMethods: true });
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);

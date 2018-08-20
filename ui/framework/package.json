@@ -83,7 +83,7 @@
     "tsconfig-paths": "^3.3.2",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.9.1",
+    "typescript": "~3.0.0",
     "tslint": "^5.11.0",
     "xmlhttprequest": "^1.8.0"
   },
@@ -97,6 +97,8 @@
     "classnames": "^2.2.5",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "react-dnd": "^5.0.0",
+    "react-dnd-html5-backend": "^5.0.1",
     "react-redux": "^5.0.7",
     "react-split-pane": "^0.1.77",
     "redux": "^4.0.0",

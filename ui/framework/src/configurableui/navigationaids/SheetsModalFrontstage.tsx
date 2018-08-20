@@ -53,11 +53,11 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 
   public get appBarRight(): React.ReactNode {
     return (
-      <SearchBox placeholder={UiFramework.i18n.translate("UiCore:general.search")} onValueChanged={this.handleSearchValueChanged} valueChangedDelay={250} />
+      <SearchBox placeholder={UiFramework.i18n.translate("UiCore:general.search")} onValueChanged={this._handleSearchValueChanged} valueChangedDelay={250} />
     );
   }
 
-  private handleSearchValueChanged = (value: string): void => {
+  private _handleSearchValueChanged = (value: string): void => {
     this._searchValue = value;
     FrontstageManager.updateModalFrontstage();
   }

@@ -13,7 +13,7 @@ const loggingCategory = "imodeljs-backend.AutoPush";
 /** Monitors backend activity. */
 export interface AppActivityMonitor {
   /** Check if the app is idle, that is, not busy. */
-  isIdle(): boolean;
+  isIdle: boolean;
 }
 
 /** An implementation of AppActivityMonitor that should be suitable for most backends. */
@@ -22,7 +22,7 @@ export class BackendActivityMonitor implements AppActivityMonitor {
   constructor(public idleIntervalSeconds: number = 1) {
   }
 
-  public isIdle(): boolean {
+  public get isIdle(): boolean {
     // If it has been over the specified amount of time since the last request was received,
     // then we *guess* the backend is in a lull and that the lull will continue for a similar amount of time.
     const millisSinceLastPost: number = Date.now() - RpcRequest.aggregateLoad.lastRequest;
@@ -242,7 +242,7 @@ export class AutoPush {
   //  Push changes, if there are changes and only if the backend is idle.
   private doAutoPush() {
     // Nothing to push?
-    if (!this.iModel.txns.hasLocalChanges()) {
+    if (!this.iModel.txns.findLocalChanges()) {
       this.cancel();
       this.scheduleNextPush();
       return;
@@ -266,7 +266,7 @@ export class AutoPush {
     }
 
     // If the backend is busy, then put off the push for a little while, and wait for a lull.
-    if (!this._activityMonitor.isIdle() && ((Date.now() - this._endOfPushMillis) < this._pushIntervalMillisMax)) {
+    if (!this._activityMonitor.isIdle && ((Date.now() - this._endOfPushMillis) < this._pushIntervalMillisMax)) {
       Logger.logInfo(loggingCategory, "AutoPush - Attempt to auto-push while backend is busy. Re-scheduling.");
       this.cancel();
       this.scheduleNextPush();

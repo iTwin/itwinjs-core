@@ -69,20 +69,20 @@ export interface CubeNavigationState {
 export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> {
   private _renderContainer: HTMLCanvasElement | null = null;
 
-  private camera!: THREE.PerspectiveCamera;
-  private scene!: THREE.Scene;
-  private hitboxMaterial!: THREE.MeshBasicMaterial;
-  private hitboxActiveMaterial!: THREE.MeshBasicMaterial;
-  private renderer!: THREE.WebGLRenderer;
-  private cameraGroup!: THREE.Group;
-  private box!: THREE.Mesh;
-  private hitboxes: THREE.Mesh[] = [];
-  private hitboxData: HitboxData[] = [];
-  private raycaster!: THREE.Raycaster;
-  private mouse: THREE.Vector2 = new THREE.Vector2(-1, -1);
+  private _camera!: THREE.PerspectiveCamera;
+  private _scene!: THREE.Scene;
+  private _hitboxMaterial!: THREE.MeshBasicMaterial;
+  private _hitboxActiveMaterial!: THREE.MeshBasicMaterial;
+  private _renderer!: THREE.WebGLRenderer;
+  private _cameraGroup!: THREE.Group;
+  private _box!: THREE.Mesh;
+  private _hitboxes: THREE.Mesh[] = [];
+  private _hitboxData: HitboxData[] = [];
+  private _raycaster!: THREE.Raycaster;
+  private _mouse: THREE.Vector2 = new THREE.Vector2(-1, -1);
 
-  private start: THREE.Vector2 = new THREE.Vector2();
-  private then: number = 0;
+  private _start: THREE.Vector2 = new THREE.Vector2();
+  private _then: number = 0;
 
   public readonly state: Readonly<CubeNavigationState> = {
     visible: true,
@@ -97,25 +97,25 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   public render(): React.ReactNode {
     return (
       <div className={"cube-container"}
-        onMouseDown={this.onMouseStartDrag}
-        onMouseMove={this.onCanvasMouseMove} >
+        onMouseDown={this._onMouseStartDrag}
+        onMouseMove={this._onCanvasMouseMove} >
         <div
           className={"cube-canvas-container"}
           ref={(element: any) => { this._renderContainer = element; }} />
         <div className={classnames("cube-pointer-container", { visible: this.state.visible })}>
           <div className={"cube-row"}>
             <span className={"cube-pointer icon icon-caret-down"}
-              onClick={(_e) => { this.onArrowClick(Arrow.Up); }} />
+              onClick={(_e) => { this._onArrowClick(Arrow.Up); }} />
           </div>
           <div className={"cube-row cube-pointer-center"}>
             <span className={"cube-pointer icon icon-caret-right"}
-              onClick={(_e) => { this.onArrowClick(Arrow.Left); }} />
+              onClick={(_e) => { this._onArrowClick(Arrow.Left); }} />
             <span className={"cube-pointer icon icon-caret-left"}
-              onClick={(e) => { e.preventDefault(); this.onArrowClick(Arrow.Right); }} />
+              onClick={(e) => { e.preventDefault(); this._onArrowClick(Arrow.Right); }} />
           </div>
           <div className={"cube-row"}>
             <span className={"cube-pointer icon icon-caret-up"}
-              onClick={(e) => { e.preventDefault(); this.onArrowClick(Arrow.Down); }} />
+              onClick={(e) => { e.preventDefault(); this._onArrowClick(Arrow.Down); }} />
           </div>
         </div>
       </div>
@@ -128,7 +128,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       hitbox === HitBox.Top || hitbox === HitBox.Bottom;
   }
 
-  private onArrowClick = (arrow: Arrow) => {
+  private _onArrowClick = (arrow: Arrow) => {
     // data relating Up/Down/Left/Right directions relative to every surface
     const routes: Direction[] = [];
     routes[HitBox.Front] = { up: HitBox.Top, down: HitBox.Bottom, left: HitBox.Left, right: HitBox.Right };
@@ -218,40 +218,40 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
           }
           break;
       }
-      const data = this.hitboxData[toHitbox];
+      const data = this._hitboxData[toHitbox];
       if (toHitbox !== HitBox.None && data && data.boxRotation) {
-        const startRot = this.cameraGroup.rotation.clone();
+        const startRot = this._cameraGroup.rotation.clone();
         let endRot = new THREE.Euler(0, 0, 0, "ZYX");
         if (toHitbox === HitBox.Top || toHitbox === HitBox.Bottom) {
           endRot = new THREE.Euler(data.boxRotation.x, Math.round(this.state.endRot.y / (Math.PI / 2)) * (Math.PI / 2), data.boxRotation.y, "ZYX");
         } else {
           endRot = data.boxRotation.clone();
         }
-        this.animateRotation(500, startRot, endRot, toHitbox);
+        this._animateRotation(500, startRot, endRot, toHitbox);
       }
     }
   }
 
-  private onMouseStartDrag = (event: any) => {
+  private _onMouseStartDrag = (event: any) => {
     event.preventDefault();
 
     if (!this._renderContainer)
       return;
 
     const rect = this._renderContainer.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersection = this.raycaster.intersectObjects(this.hitboxes);
+    this._mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this._mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
+    this._raycaster.setFromCamera(this._mouse, this._camera);
+    const intersection = this._raycaster.intersectObjects(this._hitboxes);
     if (intersection.length > 0) {
       // only start listening after drag is confirmed. Ie. the 3D box is clicked.
-      window.addEventListener("mousemove", this.onMouseDrag, false);
-      window.addEventListener("mouseup", this.onMouseStopDrag, false);
+      window.addEventListener("mousemove", this._onMouseDrag, false);
+      window.addEventListener("mouseup", this._onMouseStopDrag, false);
 
-      this.start.x = event.clientX;
-      this.start.y = event.clientY;
+      this._start.x = event.clientX;
+      this._start.y = event.clientY;
 
-      const rot = this.cameraGroup.rotation.clone();
+      const rot = this._cameraGroup.rotation.clone();
       this.setState({
         startRot: rot,
         endRot: rot,
@@ -260,81 +260,81 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     }
   }
 
-  private onGlobalMouseMove = (event: any) => {
+  private _onGlobalMouseMove = (event: any) => {
     if (!this._renderContainer)
       return;
     const rect = this._renderContainer.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
+    this._mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this._mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
   }
 
-  private onCanvasMouseMove = () => {
-    this.updateHover();
+  private _onCanvasMouseMove = () => {
+    this._updateHover();
   }
 
-  private onMouseOutOfWindow = (event: any) => {
+  private _onMouseOutOfWindow = (event: any) => {
     if (!event.relatedTarget) {
-      this.mouse = new THREE.Vector2(-1, -1);
-      this.updateHover();
+      this._mouse = new THREE.Vector2(-1, -1);
+      this._updateHover();
     }
   }
 
-  private onMouseDrag = (event: any) => {
+  private _onMouseDrag = (event: any) => {
     const scale = 0.05;
 
     const rot = new THREE.Euler(0, 0, 0, "ZYX");
-    rot.y = this.state.startRot.y + (this.start.x - event.clientX) * scale;
-    rot.x = this.state.startRot.x + (this.start.y - event.clientY) * scale;
+    rot.y = this.state.startRot.y + (this._start.x - event.clientX) * scale;
+    rot.x = this.state.startRot.x + (this._start.y - event.clientY) * scale;
     if (rot.x > Math.PI / 2)
       rot.x = Math.PI / 2;
     if (rot.x < -Math.PI / 2)
       rot.x = -Math.PI / 2;
 
-    this.setRotation(rot, this.state.startRot);
+    this._setRotation(rot, this.state.startRot);
   }
 
-  private updateHover = () => {
+  private _updateHover = () => {
     if (!this.state.dragging) {
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersection = this.raycaster.intersectObjects(this.hitboxes);
+      this._raycaster.setFromCamera(this._mouse, this._camera);
+      const intersection = this._raycaster.intersectObjects(this._hitboxes);
       if (intersection.length > 0) {
-        for (const hitbox of this.hitboxes) {
+        for (const hitbox of this._hitboxes) {
           if (intersection[0].object === hitbox) {
-            hitbox.material = this.hitboxActiveMaterial;
+            hitbox.material = this._hitboxActiveMaterial;
           } else {
-            hitbox.material = this.hitboxMaterial;
+            hitbox.material = this._hitboxMaterial;
           }
         }
       } else {
-        for (const hitbox of this.hitboxes) {
-          hitbox.material = this.hitboxMaterial;
+        for (const hitbox of this._hitboxes) {
+          hitbox.material = this._hitboxMaterial;
         }
       }
     }
 
   }
 
-  private onMouseStopDrag = (event: any) => {
+  private _onMouseStopDrag = (event: any) => {
     if (!this._renderContainer)
       return;
 
-    if (this.start.x === event.clientX && this.start.y === event.clientY) {
+    if (this._start.x === event.clientX && this._start.y === event.clientY) {
       const rect = this._renderContainer.getBoundingClientRect();
-      this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      this.mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersection = this.raycaster.intersectObjects(this.hitboxes);
+      this._mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      this._mouse.y = - ((event.clientY - rect.top) / rect.height) * 2 + 1;
+      this._raycaster.setFromCamera(this._mouse, this._camera);
+      const intersection = this._raycaster.intersectObjects(this._hitboxes);
       if (intersection.length > 0) {
-        for (let key = 0; key < this.hitboxes.length; key++) {
-          const hitbox = this.hitboxes[key];
+        for (let key = 0; key < this._hitboxes.length; key++) {
+          const hitbox = this._hitboxes[key];
           if (intersection[0].object === hitbox) {
-            const data = this.hitboxData[key];
+            const data = this._hitboxData[key];
             if (data && data.boxRotation) {
 
               let currentFace = HitBox.None;
               if (this.isFace(key))
                 currentFace = key;
-              const startRot = this.cameraGroup.rotation.clone();
+              const startRot = this._cameraGroup.rotation.clone();
               let endRot = new THREE.Euler(0, 0, 0, "ZYX");
 
               if ((key === HitBox.Top || key === HitBox.Bottom) && key !== this.state.currentFace) {
@@ -342,18 +342,18 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
               } else {
                 endRot = data.boxRotation.clone();
               }
-              this.animateRotation(500, startRot, endRot, currentFace);
+              this._animateRotation(500, startRot, endRot, currentFace);
               break;
             }
           }
         }
       }
     }
-    this.setState({ dragging: false }, () => { this.updateHover(); });
+    this.setState({ dragging: false }, () => { this._updateHover(); });
 
     // remove so event only triggers after this.on this.onMousStartDrag
-    window.removeEventListener("mousemove", this.onMouseDrag);
-    window.removeEventListener("mouseup", this.onMouseStopDrag);
+    window.removeEventListener("mousemove", this._onMouseDrag);
+    window.removeEventListener("mouseup", this._onMouseStopDrag);
   }
 
   public componentDidMount() {
@@ -431,14 +431,14 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       materials.push(material);
     });
 
-    this.camera = new THREE.PerspectiveCamera(20, width / height, 0.01, 100);
-    this.camera.position.z = 5;
-    this.cameraGroup = new THREE.Group();
-    this.cameraGroup.add(this.camera);
-    this.cameraGroup.rotation.order = "ZYX";
+    this._camera = new THREE.PerspectiveCamera(20, width / height, 0.01, 100);
+    this._camera.position.z = 5;
+    this._cameraGroup = new THREE.Group();
+    this._cameraGroup.add(this._camera);
+    this._cameraGroup.rotation.order = "ZYX";
 
-    this.scene = new THREE.Scene();
-    this.raycaster = new THREE.Raycaster();
+    this._scene = new THREE.Scene();
+    this._raycaster = new THREE.Raycaster();
 
     const boxSize = 1;
 
@@ -452,9 +452,9 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     const dist = boxSize / 2 - edgeSize / 2 + depth;
 
     const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
-    this.box = new THREE.Mesh(geometry, materials);
-    this.hitboxMaterial = new THREE.MeshBasicMaterial({ color: 0x0089FF, transparent: true, opacity: 0.0 });
-    this.hitboxActiveMaterial = new THREE.MeshBasicMaterial({ color: 0x0089FF, transparent: true, opacity: 0.3 });
+    this._box = new THREE.Mesh(geometry, materials);
+    this._hitboxMaterial = new THREE.MeshBasicMaterial({ color: 0x0089FF, transparent: true, opacity: 0.0 });
+    this._hitboxActiveMaterial = new THREE.MeshBasicMaterial({ color: 0x0089FF, transparent: true, opacity: 0.3 });
 
     const faceGeometry = new THREE.BoxGeometry(faceSize, edgeSize, faceSize);
     const edgeGeometry = new THREE.BoxGeometry(faceSize, edgeSize, edgeSize);
@@ -463,76 +463,76 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     // initialize all hitbox data
 
     // faces
-    this.hitboxData[HitBox.Front] = { geometry: faceGeometry, position: new THREE.Vector3(0, 0, dist), rotation: new THREE.Euler(Math.PI / 2, 0, 0), boxRotation: new THREE.Euler(0, 0, 0, "ZYX") };
-    this.hitboxData[HitBox.Back] = { geometry: faceGeometry, position: new THREE.Vector3(0, 0, -dist), rotation: new THREE.Euler(Math.PI / 2, 0, 0), boxRotation: new THREE.Euler(0, -Math.PI, 0, "ZYX") };
-    this.hitboxData[HitBox.Left] = { geometry: faceGeometry, position: new THREE.Vector3(dist, 0, 0), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.Right] = { geometry: faceGeometry, position: new THREE.Vector3(-dist, 0, 0), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.Top] = { geometry: faceGeometry, position: new THREE.Vector3(0, dist, 0), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 2, 0, 0, "ZYX") };
-    this.hitboxData[HitBox.Bottom] = { geometry: faceGeometry, position: new THREE.Vector3(0, -dist, 0), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 2, 0, 0, "ZYX") };
+    this._hitboxData[HitBox.Front] = { geometry: faceGeometry, position: new THREE.Vector3(0, 0, dist), rotation: new THREE.Euler(Math.PI / 2, 0, 0), boxRotation: new THREE.Euler(0, 0, 0, "ZYX") };
+    this._hitboxData[HitBox.Back] = { geometry: faceGeometry, position: new THREE.Vector3(0, 0, -dist), rotation: new THREE.Euler(Math.PI / 2, 0, 0), boxRotation: new THREE.Euler(0, -Math.PI, 0, "ZYX") };
+    this._hitboxData[HitBox.Left] = { geometry: faceGeometry, position: new THREE.Vector3(dist, 0, 0), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, Math.PI / 2, 0, "ZYX") };
+    this._hitboxData[HitBox.Right] = { geometry: faceGeometry, position: new THREE.Vector3(-dist, 0, 0), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -Math.PI / 2, 0, "ZYX") };
+    this._hitboxData[HitBox.Top] = { geometry: faceGeometry, position: new THREE.Vector3(0, dist, 0), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 2, 0, 0, "ZYX") };
+    this._hitboxData[HitBox.Bottom] = { geometry: faceGeometry, position: new THREE.Vector3(0, -dist, 0), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 2, 0, 0, "ZYX") };
     // edges
-    this.hitboxData[HitBox.FrontLeft] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, 0, dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontRight] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, 0, dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontTop] = { geometry: edgeGeometry, position: new THREE.Vector3(0, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 4, 0, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(0, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 4, 0, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontLeft] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, 0, dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontRight] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, 0, dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontTop] = { geometry: edgeGeometry, position: new THREE.Vector3(0, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 4, 0, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(0, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 4, 0, 0, "ZYX") };
 
-    this.hitboxData[HitBox.BackLeft] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, 0, -dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, 3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackRight] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, 0, -dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackTop] = { geometry: edgeGeometry, position: new THREE.Vector3(0, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 4, Math.PI, 0, "ZYX") };
-    this.hitboxData[HitBox.BackBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(0, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 4, Math.PI, 0, "ZYX") };
+    this._hitboxData[HitBox.BackLeft] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, 0, -dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, 3 * Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.BackRight] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, 0, -dist), rotation: new THREE.Euler(0, 0, Math.PI / 2), boxRotation: new THREE.Euler(0, -3 * Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.BackTop] = { geometry: edgeGeometry, position: new THREE.Vector3(0, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 4, Math.PI, 0, "ZYX") };
+    this._hitboxData[HitBox.BackBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(0, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 4, Math.PI, 0, "ZYX") };
 
-    this.hitboxData[HitBox.LeftTop] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(-Math.PI / 4, Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.LeftBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, -dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(Math.PI / 4, Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.RightTop] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(-Math.PI / 4, -Math.PI / 2, 0, "ZYX") };
-    this.hitboxData[HitBox.RightBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, -dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(Math.PI / 4, -Math.PI / 2, 0, "ZYX") };
+    this._hitboxData[HitBox.LeftTop] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(-Math.PI / 4, Math.PI / 2, 0, "ZYX") };
+    this._hitboxData[HitBox.LeftBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(dist, -dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(Math.PI / 4, Math.PI / 2, 0, "ZYX") };
+    this._hitboxData[HitBox.RightTop] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(-Math.PI / 4, -Math.PI / 2, 0, "ZYX") };
+    this._hitboxData[HitBox.RightBottom] = { geometry: edgeGeometry, position: new THREE.Vector3(-dist, -dist, 0), rotation: new THREE.Euler(0, Math.PI / 2, 0), boxRotation: new THREE.Euler(Math.PI / 4, -Math.PI / 2, 0, "ZYX") };
     // corners
-    this.hitboxData[HitBox.FrontLeftTop] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontLeftBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontRightTop] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, -Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.FrontRightBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, -Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontLeftTop] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontLeftBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontRightTop] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, -Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.FrontRightBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, -dist, dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, -Math.PI / 4, 0, "ZYX") };
 
-    this.hitboxData[HitBox.BackLeftTop] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, 3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackLeftBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, 3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackRightTop] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, -3 * Math.PI / 4, 0, "ZYX") };
-    this.hitboxData[HitBox.BackRightBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, -3 * Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.BackLeftTop] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, 3 * Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.BackLeftBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(dist, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, 3 * Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.BackRightTop] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(-Math.PI / 5, -3 * Math.PI / 4, 0, "ZYX") };
+    this._hitboxData[HitBox.BackRightBottom] = { geometry: cornerGeometry, position: new THREE.Vector3(-dist, -dist, -dist), rotation: new THREE.Euler(0, 0, 0), boxRotation: new THREE.Euler(Math.PI / 5, -3 * Math.PI / 4, 0, "ZYX") };
 
     // turn data into three.js objects
-    for (const key of Object.keys(this.hitboxData)) {
+    for (const key of Object.keys(this._hitboxData)) {
       const i = parseInt(key, 10);
-      const data = this.hitboxData[i];
-      const hitbox = new THREE.Mesh(data.geometry, this.hitboxMaterial);
+      const data = this._hitboxData[i];
+      const hitbox = new THREE.Mesh(data.geometry, this._hitboxMaterial);
       hitbox.position.copy(data.position);
       hitbox.rotation.copy(data.rotation);
-      this.scene.add(hitbox);
-      this.hitboxes[i] = hitbox;
+      this._scene.add(hitbox);
+      this._hitboxes[i] = hitbox;
     }
 
     // box edge lines
     const wireframe = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 1), new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 3 }));
 
-    this.box.add(wireframe);
+    this._box.add(wireframe);
 
-    this.scene.add(this.box);
-    this.scene.add(this.cameraGroup);
+    this._scene.add(this._box);
+    this._scene.add(this._cameraGroup);
 
-    this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    this.renderer.setSize(width, height);
-    this._renderContainer.appendChild(this.renderer.domElement);
+    this._renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    this._renderer.setSize(width, height);
+    this._renderContainer.appendChild(this._renderer.domElement);
 
-    this.then = Date.now();
-    requestAnimationFrame(this.animate);
+    this._then = Date.now();
+    requestAnimationFrame(this._animate);
 
-    ViewportManager.ViewRotationChangeEvent.addListener(this.handleViewRotationChangeEvent);
-    window.addEventListener("mousemove", this.onGlobalMouseMove, false);
-    window.addEventListener("mouseout", this.onMouseOutOfWindow, false);
+    ViewportManager.ViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
+    window.addEventListener("mousemove", this._onGlobalMouseMove, false);
+    window.addEventListener("mouseout", this._onMouseOutOfWindow, false);
   }
 
   public componentWillUnmount() {
-    ViewportManager.ViewRotationChangeEvent.removeListener(this.handleViewRotationChangeEvent);
-    window.removeEventListener("mousemove", this.onGlobalMouseMove, false);
-    window.removeEventListener("mouseout", this.onMouseOutOfWindow, false);
+    ViewportManager.ViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
+    window.removeEventListener("mousemove", this._onGlobalMouseMove, false);
+    window.removeEventListener("mouseout", this._onMouseOutOfWindow, false);
   }
 
-  private animateRotation = (animTime: number, startRot: THREE.Euler, endRot: THREE.Euler, currentFace: HitBox = HitBox.None) => {
+  private _animateRotation = (animTime: number, startRot: THREE.Euler, endRot: THREE.Euler, currentFace: HitBox = HitBox.None) => {
     // Uncomment these lines to use imodeljs-core animations
     // if (!this.almostEqual(endRot, this.state.endRot))
     //   ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToImodelJS(endRot), animTime);
@@ -544,7 +544,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       currentFace, visible: currentFace !== HitBox.None, // only set visible when currentFace is an actual face
     });
   }
-  private setRotation = (rot: THREE.Euler, startRot?: THREE.Euler, currentFace: HitBox = HitBox.None) => {
+  private _setRotation = (rot: THREE.Euler, startRot?: THREE.Euler, currentFace: HitBox = HitBox.None) => {
     // update viewport only if rotation changes
     if (!CubeNavigationAid.almostEqual(rot, this.state.endRot))
       ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToIModelJS(rot), 0);
@@ -554,22 +554,22 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       animPercent: 1.0, animTime: 0,
       currentFace, visible: currentFace !== HitBox.None, // only set visible when currentFace is an actual face
     }, () => {
-      this.cameraGroup.rotation.copy(this.state.endRot);
+      this._cameraGroup.rotation.copy(this.state.endRot);
     });
   }
 
-  private animate = (timestamp: number) => {
-    requestAnimationFrame(this.animate);
-    const delta = timestamp - this.then;
-    this.then = timestamp;
+  private _animate = (timestamp: number) => {
+    requestAnimationFrame(this._animate);
+    const delta = timestamp - this._then;
+    this._then = timestamp;
 
     let { animPercent } = this.state;
 
     if (animPercent >= 1.0) { // no animation occuring
-      this.updateHover();
+      this._updateHover();
 
-      this.cameraGroup.rotation.x = this.state.endRot.x;
-      this.cameraGroup.rotation.y = this.state.endRot.y;
+      this._cameraGroup.rotation.x = this.state.endRot.x;
+      this._cameraGroup.rotation.y = this.state.endRot.y;
     } else { // animation in progress
       // delta adjusts for variable frame rates
       animPercent += delta / this.state.animTime;
@@ -577,17 +577,17 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       const diffX = CubeNavigationAid.normalizeAngle(this.state.endRot.x - this.state.startRot.x);
       const diffZ = CubeNavigationAid.normalizeAngle(this.state.endRot.y - this.state.startRot.y);
       const fn = CubeNavigationAid.easeFn(animPercent);
-      this.cameraGroup.rotation.set(this.state.startRot.x + diffX * fn, this.state.startRot.y + diffZ * fn, 0);
-      ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToIModelJS(this.cameraGroup.rotation), 0); // Comment this line to use imodeljs-core animations
+      this._cameraGroup.rotation.set(this.state.startRot.x + diffX * fn, this.state.startRot.y + diffZ * fn, 0);
+      ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToIModelJS(this._cameraGroup.rotation), 0); // Comment this line to use imodeljs-core animations
       if (animPercent >= 1.0) { // animation ends
         animPercent = 1.0;
-        this.cameraGroup.rotation.copy(this.state.endRot);
+        this._cameraGroup.rotation.copy(this.state.endRot);
         ViewportManager.setCubeRotation(CubeNavigationAid.threeJSToIModelJS(this.state.endRot), -1);
       }
     }
     if (animPercent !== this.state.animPercent)
       this.setState({ animPercent });
-    this.renderer.render(this.scene, this.camera);
+    this._renderer.render(this._scene, this._camera);
   }
 
   /** Converts from threeJS Euler angles to iModelJS YawPitchRollAngles */
@@ -627,12 +627,12 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   }
 
   // Synchronize with rotation coming from the Viewport
-  private handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
+  private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
     const v = CubeNavigationAid.iModelJSToThreeJS(args.rotation);
     const c = this.state.endRot;
 
     if (!CubeNavigationAid.almostEqual(v, c) && this.state.animPercent >= 1.0 && !this.state.dragging) {
-      this.cameraGroup.rotation.copy(v);
+      this._cameraGroup.rotation.copy(v);
       this.setState({
         startRot: v, endRot: v,
         animPercent: 1.0, animTime: 0,

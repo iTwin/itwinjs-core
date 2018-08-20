@@ -129,7 +129,7 @@ export type GeometryStreamProps = GeometryStreamEntryProps[];
 /** GeometryStreamBuilder is a helper class for populating the GeometryStreamEntryProps array needed to create a GeometricElement or GeometryPart */
 export class GeometryStreamBuilder {
   /** Current inverse placement transform, used for converting world coordinate input to be placement relative */
-  private worldToLocal?: Transform;
+  private _worldToLocal?: Transform;
   /** GeometryStream entries */
   public readonly geometryStream: GeometryStreamProps = [];
 
@@ -138,7 +138,7 @@ export class GeometryStreamBuilder {
    * Can be called with undefined or identity transform to start appending geometry supplied in local coordinates again.
    */
   public setLocalToWorld(localToWorld?: Transform) {
-    this.worldToLocal = (undefined === localToWorld || localToWorld.isIdentity() ? undefined : localToWorld.inverse());
+    this._worldToLocal = (undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.inverse());
   }
 
   /** Supply local to world transform from Point3d and YawPitchRollAngles */
@@ -202,14 +202,14 @@ export class GeometryStreamBuilder {
 
     if (undefined !== geomParams.pattern) {
       const localPattern = geomParams.pattern.clone();
-      if (undefined !== this.worldToLocal && !localPattern.applyTransform(this.worldToLocal))
+      if (undefined !== this._worldToLocal && !localPattern.applyTransform(this._worldToLocal))
         return false;
       this.geometryStream.push({ pattern: localPattern });
     }
 
     if (undefined !== geomParams.styleInfo && undefined !== geomParams.styleInfo.styleMod) {
       const localStyleMod = new LineStyle.Modifier(geomParams.styleInfo.styleMod);
-      if (undefined !== this.worldToLocal && !localStyleMod.applyTransform(this.worldToLocal))
+      if (undefined !== this._worldToLocal && !localStyleMod.applyTransform(this._worldToLocal))
         return false;
       this.geometryStream.push({ styleMod: localStyleMod });
     }
@@ -221,14 +221,14 @@ export class GeometryStreamBuilder {
    *  Not valid when defining a GeometryPart as nested GeometryParts are not allowed.
    */
   public appendGeometryPart3d(partId: Id64, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean {
-    if (undefined === this.worldToLocal) {
+    if (undefined === this._worldToLocal) {
       this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin, rotation: instanceRotation, scale: instanceScale } });
       return true;
     }
     const partTrans = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toRotMatrix() : RotMatrix.createIdentity());
     if (undefined !== instanceScale)
       partTrans.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
-    const resultTrans = partTrans.multiplyTransformTransform(this.worldToLocal);
+    const resultTrans = partTrans.multiplyTransformTransform(this._worldToLocal);
     const scales = new Vector3d();
     if (!resultTrans.matrix.normalizeColumnsInPlace(scales))
       return false;
@@ -248,12 +248,12 @@ export class GeometryStreamBuilder {
 
   /** Append a TextString supplied in either local or world coordinates to the GeometryStreamProps array */
   public appendTextString(textString: TextString): boolean {
-    if (undefined === this.worldToLocal) {
+    if (undefined === this._worldToLocal) {
       this.geometryStream.push({ textString });
       return true;
     }
     const localTextString = new TextString(textString);
-    if (!localTextString.transformInPlace(this.worldToLocal))
+    if (!localTextString.transformInPlace(this._worldToLocal))
       return false;
     this.geometryStream.push({ textString: localTextString });
     return true;
@@ -261,14 +261,14 @@ export class GeometryStreamBuilder {
 
   /** Append a GeometryQuery supplied in either local or world coordinates to the GeometryStreamProps array */
   public appendGeometry(geometry: GeometryQuery): boolean {
-    if (undefined === this.worldToLocal) {
+    if (undefined === this._worldToLocal) {
       const geomData = GeomJson.Writer.toIModelJson(geometry);
       if (undefined === geomData)
         return false;
       this.geometryStream.push(geomData);
       return true;
     }
-    const localGeometry = geometry.cloneTransformed(this.worldToLocal);
+    const localGeometry = geometry.cloneTransformed(this._worldToLocal);
     if (undefined === localGeometry)
       return false;
     const localGeomData = GeomJson.Writer.toIModelJson(localGeometry);
@@ -280,16 +280,16 @@ export class GeometryStreamBuilder {
 
   /** Append raw brep data supplied in either local or world coordinates to the GeometryStreamProps array */
   public appendBRepData(brep: BRepEntity.DataProps): boolean {
-    if (undefined === this.worldToLocal) {
+    if (undefined === this._worldToLocal) {
       this.geometryStream.push({ brep });
       return true;
     }
     const entityTrans = Transform.fromJSON(brep.transform);
-    const localTrans = entityTrans.multiplyTransformTransform(this.worldToLocal);
+    const localTrans = entityTrans.multiplyTransformTransform(this._worldToLocal);
     const localBrep: BRepEntity.DataProps = {
       data: brep.data,
       type: brep.type,
-      transform: localTrans.isIdentity() ? undefined : localTrans,
+      transform: localTrans.isIdentity ? undefined : localTrans,
       faceSymbology: brep.faceSymbology,
     };
     this.geometryStream.push({ brep: localBrep });
@@ -328,7 +328,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   /** Current entry information */
   public entry: GeometryStreamIteratorEntry;
   /** Current entry position */
-  private index = 0;
+  private _index = 0;
 
   /** Construct a new GeometryStreamIterator given a GeometryStreamProps from either a GeometricElement3d, GeometricElement3d, or GeometryPart.
    * Supply the GeometricElement's category to initialize the appearance information for each geometric entry.
@@ -340,7 +340,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 
   /** Supply optional local to world transform. Used to transform entries that are stored relative to the element placement and return them in world coordinates. */
   public setLocalToWorld(localToWorld?: Transform) {
-    this.entry.localToWorld = (undefined === localToWorld || localToWorld.isIdentity() ? undefined : localToWorld.clone());
+    this.entry.localToWorld = (undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.clone());
   }
 
   /** Supply local to world transform from Point3d and YawPitchRollAngles of Placement3d */
@@ -409,8 +409,8 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
    */
   public next(): IteratorResult<GeometryStreamIteratorEntry> {
     this.entry.partToLocal = this.entry.partId = this.entry.geometryQuery = this.entry.textString = this.entry.brep = undefined; // NOTE: localRange remains valid until new subRange entry is encountered
-    while (this.index < this.geometryStream.length) {
-      const entry = this.geometryStream[this.index++];
+    while (this._index < this.geometryStream.length) {
+      const entry = this.geometryStream[this._index++];
       if (entry.appearance) {
         this.entry.geomParams.resetAppearance();
         if (entry.appearance.subCategory)

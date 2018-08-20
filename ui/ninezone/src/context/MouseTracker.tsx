@@ -17,18 +17,18 @@ export interface MouseTrackerProps {
  */
 export default class MouseTracker extends React.Component<MouseTrackerProps> {
   public componentDidMount() {
-    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mousemove", this._handleMouseMove);
   }
 
   public componentWillUnmount() {
-    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mousemove", this._handleMouseMove);
   }
 
   public render() {
     return null;
   }
 
-  private handleMouseMove = (e: MouseEvent) => {
+  private _handleMouseMove = (e: MouseEvent) => {
     this.changeCoordinates(e.clientX, e.clientY);
   }
 

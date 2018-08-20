@@ -146,15 +146,15 @@ describe("Enumeration", () => {
     }
     function assertValidEnumerator(enumeration: Enumeration, enumVal: number | string, label?: string, description?: string) {
       if (typeof (enumVal) === "number") {
-        expect(enumeration.isInt()).to.be.true;
-        expect(enumeration.isString()).to.be.false;
+        expect(enumeration.isInt).to.be.true;
+        expect(enumeration.isString).to.be.false;
         if (typeof (label) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
         if (typeof (description) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
       } else {
-        expect(enumeration.isInt()).to.be.false;
-        expect(enumeration.isString()).to.be.true;
+        expect(enumeration.isInt).to.be.false;
+        expect(enumeration.isString).to.be.true;
         if (typeof (label) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
         if (typeof (description) !== undefined)

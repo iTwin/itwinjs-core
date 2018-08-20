@@ -122,7 +122,7 @@ class ToolWidgetWithDef extends React.Component<Props> {
     super(props);
   }
 
-  private handleToolActivatedEvent = (args: ToolActivatedEventArgs): void => {
+  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs): void => {
     this.setState((_prevState, _props) => {
       const toolId = args.toolId;
       return {
@@ -132,11 +132,11 @@ class ToolWidgetWithDef extends React.Component<Props> {
   }
 
   public componentDidMount() {
-    FrontstageManager.ToolActivatedEvent.addListener(this.handleToolActivatedEvent);
+    FrontstageManager.ToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.ToolActivatedEvent.removeListener(this.handleToolActivatedEvent);
+    FrontstageManager.ToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   public render(): React.ReactNode {

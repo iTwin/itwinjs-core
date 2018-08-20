@@ -64,7 +64,8 @@
     "number": "Number2"
   },
   "toolAssist": {
-    "startPoint": "Start Point"
+    "startPoint": "Start Point",
+    "title": "Tool Assistance"
   },
   "buttons": {
     "toolGroup": "Tool Group",

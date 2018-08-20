@@ -196,7 +196,7 @@ export class Point4dArray {
       weights.push(data[i + 3]);
     }
   }
-  private static s_workPoint4d = Point4d.create();
+  private static _workPoint4d = Point4d.create();
   /**
    * Multiply (and replace) each block of 4 values as a Point4d.
    * @param transform transform to apply
@@ -204,7 +204,7 @@ export class Point4dArray {
    */
   public static multiplyInPlace(transform: Transform, xyzw: Float64Array): void {
     const numXYZW = xyzw.length;
-    const xyzw1 = Point4dArray.s_workPoint4d;
+    const xyzw1 = Point4dArray._workPoint4d;
     for (let i = 0; i + 3 < numXYZW; i += 4) {
       transform.multiplyXYZW(xyzw[i], xyzw[i + 1], xyzw[i + 2], xyzw[i + 3], xyzw1);
       xyzw[i] = xyzw1.x;
@@ -316,7 +316,7 @@ export class Point3dArray {
         for (; i < i1; i++) {
           block.push(data[i]);
         }
-        row.push (block);
+        row.push(block);
       }
       result.push(row);
     }
@@ -502,28 +502,28 @@ export class PolygonOps {
   * * Sum the areas(absolute, without regard to orientation) all these triangles.
   * @returns sum of absolute triangle areas.
   */
- public static sumTriangleAreasXY(points: Point3d[]): number {
-  let s = 0.0;
-  const n = points.length;
-  if (n >= 3) {
-    const origin = points[0];
-    const vector0 = origin.vectorTo(points[1]);
-    let vector1 = Vector3d.create();
-    // This will work with or without closure edge.  If closure is given, the last vector is 000.
-    for (let i = 2; i < n; i++) {
-      vector1 = origin.vectorTo(points[i], vector1);
-      s += vector0.crossProductXY(vector1);
-      vector0.setFrom(vector1);
+  public static sumTriangleAreasXY(points: Point3d[]): number {
+    let s = 0.0;
+    const n = points.length;
+    if (n >= 3) {
+      const origin = points[0];
+      const vector0 = origin.vectorTo(points[1]);
+      let vector1 = Vector3d.create();
+      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      for (let i = 2; i < n; i++) {
+        vector1 = origin.vectorTo(points[i], vector1);
+        s += vector0.crossProductXY(vector1);
+        vector0.setFrom(vector1);
+      }
     }
+    s *= 0.5;
+    // console.log ("polygon area ", s, points);
+    return s;
   }
-  s *= 0.5;
-  // console.log ("polygon area ", s, points);
-  return s;
-}
   /** These values are the integrated area moment products [xx,xy,xz, x]
    * for a right triangle in the first quadrant at the origin -- (0,0),(1,0),(0,1)
    */
-  private static readonly s_triangleMomentWeights = Matrix4d.createRowValues(
+  private static readonly _triangleMomentWeights = Matrix4d.createRowValues(
     2.0 / 24.0, 1.0 / 24.0, 0, 4.0 / 24.0,
     1.0 / 24.0, 2.0 / 24.0, 0, 4.0 / 24.0,
     0, 0, 0, 0,
@@ -531,13 +531,13 @@ export class PolygonOps {
   // statics for shared reuse.
   // many methods use these.
   // only use them in "leaf" methods that are certain not to call other users . . .
-  private static s_vector0 = Vector3d.create();
-  private static s_vector1 = Vector3d.create();
-  private static s_vectorOrigin = Vector3d.create();
-  private static s_normal = Vector3d.create();
-  private static s_matrixA = Matrix4d.createIdentity();
-  private static s_matrixB = Matrix4d.createIdentity();
-  private static s_matrixC = Matrix4d.createIdentity();
+  private static _vector0 = Vector3d.create();
+  private static _vector1 = Vector3d.create();
+  private static _vectorOrigin = Vector3d.create();
+  private static _normal = Vector3d.create();
+  private static _matrixA = Matrix4d.createIdentity();
+  private static _matrixB = Matrix4d.createIdentity();
+  private static _matrixC = Matrix4d.createIdentity();
 
   /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
   public static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined {
@@ -653,9 +653,9 @@ export class PolygonOps {
     }
     if (n === 4) {
       // cross product of diagonals is more stable than from single of the points . . .
-      points.vectorIndexIndex(0, 2, PolygonOps.s_vector0);
-      points.vectorIndexIndex(1, 3, PolygonOps.s_vector1);
-      PolygonOps.s_vector0.crossProduct(PolygonOps.s_vector1, result);
+      points.vectorIndexIndex(0, 2, PolygonOps._vector0);
+      points.vectorIndexIndex(1, 3, PolygonOps._vector1);
+      PolygonOps._vector0.crossProduct(PolygonOps._vector1, result);
       return result.normalizeInPlace();
     }
     // more than 4 points  ... no shortcuts ...
@@ -667,16 +667,16 @@ export class PolygonOps {
    * The polygon is assumed to be planar and non-self-intersecting.
    */
   public static addSecondMomentAreaProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d) {
-    const unitNormal = PolygonOps.s_normal;
+    const unitNormal = PolygonOps._normal;
     if (PolygonOps.unitNormal(points, unitNormal)) {
       // The direction of the normal makes the various detJ values positive or negative so that non-convex polygons
       // sum correctly.
-      const vector01 = PolygonOps.s_vector0;
-      const vector02 = PolygonOps.s_vector1;
-      const placement = PolygonOps.s_matrixA;
-      const matrixAB = PolygonOps.s_matrixB;
-      const matrixABC = PolygonOps.s_matrixC;
-      const vectorOrigin = points.vectorXYAndZIndex(origin, 0, PolygonOps.s_vectorOrigin)!;
+      const vector01 = PolygonOps._vector0;
+      const vector02 = PolygonOps._vector1;
+      const placement = PolygonOps._matrixA;
+      const matrixAB = PolygonOps._matrixB;
+      const matrixABC = PolygonOps._matrixC;
+      const vectorOrigin = points.vectorXYAndZIndex(origin, 0, PolygonOps._vectorOrigin)!;
       const numPoints = points.length;
       let detJ = 0;
       for (let i2 = 2; i2 < numPoints; i2++) {
@@ -684,7 +684,7 @@ export class PolygonOps {
         points.vectorIndexIndex(0, i2, vector02);
         detJ = unitNormal.tripleProduct(vector01, vector02);
         placement.setOriginAndVectors(vectorOrigin, vector01, vector02, unitNormal);
-        placement.multiplyMatrixMatrix(PolygonOps.s_triangleMomentWeights, matrixAB);
+        placement.multiplyMatrixMatrix(PolygonOps._triangleMomentWeights, matrixAB);
         matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
         moments.addScaledInPlace(matrixABC, detJ);
       }

@@ -139,7 +139,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
               icon={
                 <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClass} />
               }
-              onClick={this.toggleIsExpanded}
+              onClick={this._toggleIsExpanded}
             >
             </NZ_Icon>
           }
@@ -148,7 +148,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
     );
   }
 
-  private toggleIsExpanded = () => {
+  private _toggleIsExpanded = () => {
     this.setState((_prevState, _props) => {
       return {
         ..._prevState,
@@ -157,7 +157,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
     });
   }
 
-  private handleListItemClicked = (item: number) => {
+  private _handleListItemClicked = (item: number) => {
     const selected = item;
 
     this.setState(
@@ -183,7 +183,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
                   label={item.label}
                   icon={<span className={"icon " + item.iconClass} />}
                   isActive={this.state.selected === itemIndex}
-                  onClick={() => this.handleListItemClicked(itemIndex)}
+                  onClick={() => this._handleListItemClicked(itemIndex)}
                 >
                 </NZ_Item>
               );

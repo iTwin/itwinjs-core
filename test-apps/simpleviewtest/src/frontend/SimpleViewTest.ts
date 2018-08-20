@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Target, FeatureSymbology, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import {
@@ -329,7 +330,7 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (StandardViewId.Top !== rotationId && !theViewport.view.allow3dManipulations())
     return;
 
-  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
+  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired);
   const inverse = rMatrix.inverse();
   if (undefined === inverse)
     return;
@@ -377,6 +378,33 @@ function changeRenderMode(): void {
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
+enum MapType { Street = 0, Aerial = 1, Hybrid = 2 } // ###TODO - this is duplicated from WebMercatorTileTree.ts - needs common location
+
+function stringToMapType(s: string): MapType {
+  if ("Street" === s) return MapType.Street;
+  if ("Aerial" === s) return MapType.Aerial;
+  return MapType.Hybrid;
+}
+
+function mapTypeToString(m: MapType): string {
+  if (MapType.Street === m) return "Street";
+  if (MapType.Aerial === m) return "Aerial";
+  return "Hybrid";
+}
+
+function changeBackgroundMapState(): void {
+  if (!theViewport!.view.is3d())
+    return;
+  const mapProviderString = (document.getElementById("mapProviderList") as HTMLSelectElement)!.value;
+  const mapTypeString = (document.getElementById("mapTypeList") as HTMLSelectElement)!.value;
+  const mapTypeVal = stringToMapType(mapTypeString);
+  const view = theViewport!.view as ViewState3d;
+  const ds = view.getDisplayStyle3d();
+  ds.setStyle("backgroundMap", { providerName: mapProviderString, mapType: mapTypeVal });
+  ds.syncBackgroundMapState();
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
+}
+
 function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
   (document.getElementById(id)! as HTMLInputElement).checked = enabled;
   options.set(id, enabled);
@@ -386,11 +414,16 @@ function updateRenderModeOption(id: string, enabled: boolean, options: Map<strin
 function updateRenderModeOptionsMap() {
   let skybox = false;
   let groundplane = false;
+  let providerName = "BingProvider";
+  let mapType = MapType.Hybrid;
   if (theViewport!.view.is3d()) {
     const view = theViewport!.view as ViewState3d;
     const env = view.getDisplayStyle3d().environment;
     skybox = env.sky.display;
     groundplane = env.ground.display;
+    const backgroundMap = view.getDisplayStyle3d().getStyle("backgroundMap");
+    providerName = JsonUtils.asString(backgroundMap.mapType, "BingProvider");
+    mapType = JsonUtils.asInt(backgroundMap.mapType, MapType.Hybrid);
   }
 
   const viewflags = theViewport!.view.viewFlags;
@@ -413,6 +446,13 @@ function updateRenderModeOptionsMap() {
   updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
   updateRenderModeOption("clipVolume", viewflags.clipVolume, renderModeOptions.flags);
   updateRenderModeOption("backgroundMap", viewflags.backgroundMap, renderModeOptions.flags);
+  (document.getElementById("mapProviderList") as HTMLSelectElement)!.value = providerName;
+  (document.getElementById("mapTypeList") as HTMLSelectElement)!.value = mapTypeToString(mapType);
+
+  const backgroundMapDisabled = !theViewport!.iModel.isGeoLocated;
+  (document.getElementById("backgroundMap")! as HTMLInputElement).disabled = backgroundMapDisabled;
+  (document.getElementById("mapProviderList")! as HTMLInputElement).disabled = backgroundMapDisabled;
+  (document.getElementById("mapTypeList")! as HTMLInputElement).disabled = backgroundMapDisabled;
 
   renderModeOptions.mode = viewflags.renderMode;
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
@@ -459,6 +499,8 @@ function startMeasurePoints(_event: any) {
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
 function startToggleCamera(_event: any) {
+  const togglingOff = theViewport!.isCameraOn;
+  showStatus("Camera", togglingOff ? "off" : "on");
   IModelApp.tools.run("View.ToggleCamera", theViewport!);
 }
 
@@ -676,6 +718,8 @@ function wireIconsToFunctions() {
   boundingBoxes.addEventListener("click", () => theViewport!.wantTileBoundingBoxes = boundingBoxes.checked);
 
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
+  document.getElementById("mapProviderList")!.addEventListener("change", () => changeBackgroundMapState());
+  document.getElementById("mapTypeList")!.addEventListener("change", () => changeBackgroundMapState());
   document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
@@ -724,17 +768,18 @@ class SVTAccuSnap extends AccuSnap {
 }
 
 class SVTNotifications extends NotificationManager {
-  private toolTip?: Tooltip;
+  private _toolTip?: Tooltip;
 
   public outputPrompt(prompt: string) { showStatus(prompt); }
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  public isToolTipOpen(): boolean { return !!this.toolTip && this.toolTip._isOpen; }
+  protected toolTipIsOpen(): boolean { return !!this._toolTip && this._toolTip._isOpen; }
+
   public clearToolTip(): void {
-    if (this.isToolTipOpen())
-      this.toolTip!.hide();
+    if (this.isToolTipOpen)
+      this._toolTip!.hide();
   }
   public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
     this.clearToolTip();
@@ -743,10 +788,10 @@ class SVTNotifications extends NotificationManager {
     if (!position)
       return;
 
-    if (!this.toolTip)
-      this.toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
+    if (!this._toolTip)
+      this._toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
 
-    this.toolTip!.updateTitleContent(message);
+    this._toolTip!.updateTitleContent(message);
 
     const rect = el.getBoundingClientRect();
     if (undefined === pt) {
@@ -759,7 +804,7 @@ class SVTNotifications extends NotificationManager {
     position.style.width = width + "px";
     position.style.height = height + "px";
 
-    this.toolTip!.show();
+    this._toolTip!.show();
   }
 }
 

@@ -59,15 +59,15 @@ export class Cartographic implements LatLongAndHeight {
     return Cartographic.fromRadians(longitude.radians, latitude.radians, height, result);
   }
 
-  private static cartesianToCartographicN = new Point3d();
-  private static cartesianToCartographicP = new Point3d();
-  private static cartesianToCartographicH = new Vector3d();
-  private static wgs84OneOverRadii = new Point3d(1.0 / 6378137.0, 1.0 / 6378137.0, 1.0 / 6356752.3142451793);
-  private static wgs84OneOverRadiiSquared = new Point3d(1.0 / (6378137.0 * 6378137.0), 1.0 / (6378137.0 * 6378137.0), 1.0 / (6356752.3142451793 * 6356752.3142451793));
-  private static wgs84RadiiSquared = new Point3d(6378137.0 * 6378137.0, 6378137.0 * 6378137.0, 6356752.3142451793 * 6356752.3142451793);
-  private static wgs84CenterToleranceSquared = 0.1;
-  private static scratchN = new Vector3d();
-  private static scratchK = new Vector3d();
+  private static _cartesianToCartographicN = new Point3d();
+  private static _cartesianToCartographicP = new Point3d();
+  private static _cartesianToCartographicH = new Vector3d();
+  private static _wgs84OneOverRadii = new Point3d(1.0 / 6378137.0, 1.0 / 6378137.0, 1.0 / 6356752.3142451793);
+  private static _wgs84OneOverRadiiSquared = new Point3d(1.0 / (6378137.0 * 6378137.0), 1.0 / (6378137.0 * 6378137.0), 1.0 / (6356752.3142451793 * 6356752.3142451793));
+  private static _wgs84RadiiSquared = new Point3d(6378137.0 * 6378137.0, 6378137.0 * 6378137.0, 6356752.3142451793 * 6356752.3142451793);
+  private static _wgs84CenterToleranceSquared = 0.1;
+  private static _scratchN = new Vector3d();
+  private static _scratchK = new Vector3d();
 
   /**
    * Creates a new Cartographic from an [ECEF](https://en.wikipedia.org/wiki/ECEF) position.
@@ -76,19 +76,19 @@ export class Cartographic implements LatLongAndHeight {
    * @returns The modified result parameter, new Cartographic instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
    */
   public static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined {
-    const oneOverRadii = Cartographic.wgs84OneOverRadii;
-    const oneOverRadiiSquared = Cartographic.wgs84OneOverRadiiSquared;
-    const centerToleranceSquared = Cartographic.wgs84CenterToleranceSquared;
-    const p = Cartographic.scaleToGeodeticSurface(cartesian, oneOverRadii, oneOverRadiiSquared, centerToleranceSquared, Cartographic.cartesianToCartographicP);
+    const oneOverRadii = Cartographic._wgs84OneOverRadii;
+    const oneOverRadiiSquared = Cartographic._wgs84OneOverRadiiSquared;
+    const centerToleranceSquared = Cartographic._wgs84CenterToleranceSquared;
+    const p = Cartographic.scaleToGeodeticSurface(cartesian, oneOverRadii, oneOverRadiiSquared, centerToleranceSquared, Cartographic._cartesianToCartographicP);
 
     if (!p)
       return undefined;
 
-    const n = Cartographic.cartesianToCartographicN;
+    const n = Cartographic._cartesianToCartographicN;
     Cartographic.multiplyComponents(p, oneOverRadiiSquared, n);
     Cartographic.normalize(n, n);
 
-    const h = p.vectorTo(cartesian, Cartographic.cartesianToCartographicH);
+    const h = p.vectorTo(cartesian, Cartographic._cartesianToCartographicH);
     const longitude = Math.atan2(n.y, n.x);
     const latitude = Math.asin(n.z);
     const height = Math.sign(h.dotProduct(cartesian)) * h.magnitude();
@@ -157,8 +157,8 @@ export class Cartographic implements LatLongAndHeight {
   /** Create a string representing this cartographic in the format '(longitude, latitude, height)'. */
   public toString(): string { return "(" + this.longitude + ", " + this.latitude + ", " + this.height + ")"; }
 
-  private static scaleToGeodeticSurfaceIntersection = new Point3d();
-  private static scaleToGeodeticSurfaceGradient = new Point3d();
+  private static _scaleToGeodeticSurfaceIntersection = new Point3d();
+  private static _scaleToGeodeticSurfaceGradient = new Point3d();
   private static scaleToGeodeticSurface(cartesian: Point3d, oneOverRadii: XYAndZ, oneOverRadiiSquared: XYAndZ, centerToleranceSquared: number, result?: Point3d) {
     const positionX = cartesian.x;
     const positionY = cartesian.y;
@@ -177,7 +177,7 @@ export class Cartographic implements LatLongAndHeight {
     const ratio = Math.sqrt(1.0 / squaredNorm);
 
     // As an initial approximation, assume that the radial intersection is the projection point.
-    const intersection = Cartographic.scaleToGeodeticSurfaceIntersection;
+    const intersection = Cartographic._scaleToGeodeticSurfaceIntersection;
     Cartographic.scalePoint(cartesian, ratio, intersection);
 
     // If the position is near the center, the iteration will not converge.
@@ -191,7 +191,7 @@ export class Cartographic implements LatLongAndHeight {
 
     // Use the gradient at the intersection point in place of the true unit normal.
     // The difference in magnitude will be absorbed in the multiplier.
-    const gradient = Cartographic.scaleToGeodeticSurfaceGradient;
+    const gradient = Cartographic._scaleToGeodeticSurfaceGradient;
     gradient.x = intersection.x * oneOverRadiiSquaredX * 2.0;
     gradient.y = intersection.y * oneOverRadiiSquaredY * 2.0;
     gradient.z = intersection.z * oneOverRadiiSquaredZ * 2.0;
@@ -249,14 +249,14 @@ export class Cartographic implements LatLongAndHeight {
   /** Return an ECEF point from a Cartographic point */
   public toEcef(result?: Point3d): Point3d {
     const cosLatitude = Math.cos(this.latitude);
-    const scratchN = Cartographic.scratchN;
-    const scratchK = Cartographic.scratchK;
+    const scratchN = Cartographic._scratchN;
+    const scratchK = Cartographic._scratchK;
     scratchN.x = cosLatitude * Math.cos(this.longitude);
     scratchN.y = cosLatitude * Math.sin(this.longitude);
     scratchN.z = Math.sin(this.latitude);
     Cartographic.normalize(scratchN, scratchN);
 
-    Cartographic.multiplyComponents(Cartographic.wgs84RadiiSquared, scratchN, scratchK);
+    Cartographic.multiplyComponents(Cartographic._wgs84RadiiSquared, scratchN, scratchK);
     const gamma = Math.sqrt(scratchN.dotProduct(scratchK));
     Cartographic.scalePoint(scratchK, 1.0 / gamma, scratchK);
     Cartographic.scalePoint(scratchN, this.height, scratchN);

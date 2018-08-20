@@ -71,7 +71,7 @@ if (!TestConfig.enableMocks) {
 }
 
 export class IModelHubUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
     QA: "https://qa-imodelhubapi.bentley.com",
     PROD: "https://imodelhubapi.bentley.com",
@@ -79,11 +79,11 @@ export class IModelHubUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, env, this._urlDescriptor[env]);
   }
 }
 
@@ -690,21 +690,21 @@ export async function createVersions(accessToken: AccessToken, imodelId: string,
 }
 
 export class ProgressTracker {
-  private loaded: number = 0;
-  private total: number = 0;
-  private count: number = 0;
+  private _loaded: number = 0;
+  private _total: number = 0;
+  private _count: number = 0;
 
   public track() {
     return (progress: ProgressInfo) => {
-      this.loaded = progress.loaded;
-      this.total = progress.total!;
-      this.count++;
+      this._loaded = progress.loaded;
+      this._total = progress.total!;
+      this._count++;
     };
   }
 
   public check() {
-    chai.expect(this.count).to.be.greaterThan(0);
-    chai.expect(this.loaded).to.be.greaterThan(0);
-    chai.expect(this.loaded).to.be.equal(this.total);
+    chai.expect(this._count).to.be.greaterThan(0);
+    chai.expect(this._loaded).to.be.greaterThan(0);
+    chai.expect(this._loaded).to.be.equal(this._total);
   }
 }

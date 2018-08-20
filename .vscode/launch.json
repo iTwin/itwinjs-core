@@ -226,6 +226,24 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "[UI] Tests: Components",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "[Presentation] Tests: Common",
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
@@ -351,7 +369,7 @@
       ],
       "console": "integratedTerminal"
     },
-        {
+    {
       "name": "UI Test - Browser (frontend)",
       "type": "chrome",
       "request": "launch",
@@ -366,7 +384,7 @@
         "webpack:///*": "*",
         "webpack:///packages/*": "${webRoot}/*",
       }
-
+    }
   ],
   "compounds": [
     {

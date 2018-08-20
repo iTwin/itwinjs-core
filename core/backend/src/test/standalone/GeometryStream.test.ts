@@ -646,14 +646,14 @@ describe("GeometryStream", () => {
       assert.isDefined(entry.textString);
       const origin = new Point3d(entry.textString.origin);
       const rotation = new YawPitchRollAngles(entry.textString.rotation);
-      assert.isTrue(origin.isAlmostZero());
+      assert.isTrue(origin.isAlmostZero);
       assert.isTrue(rotation.isIdentity());
     }
 
     const itLocal = new GeometryStreamIterator(value.geom, value.category);
     for (const entry of itLocal) {
       assert.isDefined(entry.textString);
-      assert.isTrue(entry.textString!.origin.isAlmostZero());
+      assert.isTrue(entry.textString!.origin.isAlmostZero);
       assert.isTrue(entry.textString!.rotation.isIdentity());
     }
 

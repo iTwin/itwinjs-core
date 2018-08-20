@@ -59,7 +59,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
         label={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
         isLabelVisible={this.props.isInFooterMode}
         balloonLabel={messageCount.toString()}
-        onClick={this.handleMessageIndicatorClick}
+        onClick={this._handleMessageIndicatorClick}
         dialog={
           this.props.openWidget !== this._className ? undefined :
             <MessageCenter
@@ -69,7 +69,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
                   <MessageCenterButton>
                     <i className={"icon icon-export"} />
                   </MessageCenterButton>
-                  <MessageCenterButton onClick={this.handleCloseMessageIndicatorClick}>
+                  <MessageCenterButton onClick={this._handleCloseMessageIndicatorClick}>
                     <i className={"icon icon-close"} />
                   </MessageCenterButton>
                 </>
@@ -78,13 +78,13 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
                 <>
                   <MessageCenterTab
                     isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
-                    onClick={() => this.changeActiveTab(MessageCenterActiveTab.AllMessages)}
+                    onClick={() => this._changeActiveTab(MessageCenterActiveTab.AllMessages)}
                   >
                     {UiFramework.i18n.translate("UiFramework:messageCenter.all")}
                   </MessageCenterTab>
                   <MessageCenterTab
                     isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
-                    onClick={() => this.changeActiveTab(MessageCenterActiveTab.Problems)}
+                    onClick={() => this._changeActiveTab(MessageCenterActiveTab.Problems)}
                   >
                     {UiFramework.i18n.translate("UiFramework:messageCenter.problems")}
                   </MessageCenterTab>
@@ -101,7 +101,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
     return footerMessages;
   }
 
-  private handleMessageIndicatorClick = () => {
+  private _handleMessageIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
     if (isOpen)
       this.setOpenWidget(null);
@@ -109,11 +109,11 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
       this.setOpenWidget(this._className);
   }
 
-  private handleCloseMessageIndicatorClick = () => {
+  private _handleCloseMessageIndicatorClick = () => {
     this.setOpenWidget(null);
   }
 
-  private changeActiveTab = (tab: MessageCenterActiveTab) => {
+  private _changeActiveTab = (tab: MessageCenterActiveTab) => {
     this.setState((_prevState) => {
       return {
         activeTab: tab,

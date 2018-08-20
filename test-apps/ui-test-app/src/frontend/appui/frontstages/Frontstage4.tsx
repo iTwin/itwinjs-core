@@ -101,6 +101,18 @@ export class Frontstage4 {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
+          {
+            classId: "BreadcrumbDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
+          {
+            classId: "TreeDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
         ],
       },
       bottomCenter: {
@@ -134,6 +146,18 @@ export class Frontstage4 {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
+          {
+            classId: "TableDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
+          {
+            classId: "TreeDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
         ],
       },
     };
@@ -141,7 +165,7 @@ export class Frontstage4 {
     return frontstageProps;
   }
 
-  private tool1 = () => {
+  private _tool1 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -151,7 +175,7 @@ export class Frontstage4 {
     }
   }
 
-  private tool2 = () => {
+  private _tool2 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -237,8 +261,8 @@ export class Frontstage4 {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this.tool1} />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this.tool2} />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this._tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this._tool2} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconClass="icon-placeholder"

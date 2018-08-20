@@ -309,10 +309,10 @@ export class BentleyError extends Error {
       log(category || "BentleyError", this.toString(), this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
-  public hasMetaData(): boolean { return this._getMetaData !== undefined; }
+  public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
 
   public getMetaData(): any {
-    return this.hasMetaData() ? this._getMetaData!() : undefined;
+    return this.hasMetaData ? this._getMetaData!() : undefined;
   }
 
   /** This function returns the name of each error status. Override this method to handle more error status codes. */

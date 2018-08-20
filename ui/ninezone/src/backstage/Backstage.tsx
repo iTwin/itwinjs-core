@@ -21,7 +21,7 @@ export interface BackstageProps extends CommonProps, NoChildrenProps {
 
 /** Backstage component of 9-zone UI app. */
 export default class Backstage extends React.Component<BackstageProps> {
-  private handleClickEvent = (ev: React.MouseEvent<HTMLDivElement>) => {
+  private _handleClickEvent = (ev: React.MouseEvent<HTMLDivElement>) => {
     const node = ReactDOM.findDOMNode(this);
     if (ev.target === node)
       this.props.onOverlayClicked && this.props.onOverlayClicked(ev);
@@ -37,7 +37,7 @@ export default class Backstage extends React.Component<BackstageProps> {
       <div
         className={className}
         style={this.props.style}
-        onClick={this.handleClickEvent}
+        onClick={this._handleClickEvent}
       >
         <div className="nz-items">
           {this.props.items}
