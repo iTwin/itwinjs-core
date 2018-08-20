@@ -61,11 +61,8 @@ export class IModelApp {
     return this._imodelClient;
   }
 
-  public static set iModelClient(client: IModelClient) {
-    this._imodelClient = client;
-  }
-
-  public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid(); }
+  public static set iModelClient(client: IModelClient) { this._imodelClient = client; }
+  public static get hasRenderSystem(): boolean { return this._renderSystem !== undefined && this._renderSystem.isValid(); }
 
   /**
    * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp

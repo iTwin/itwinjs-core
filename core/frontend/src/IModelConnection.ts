@@ -577,8 +577,7 @@ export namespace IModelConnection {
      */
     public async saveThumbnail(viewId: Id64Props, thumbnail: ThumbnailProps): Promise<void> {
       const id = new Id64(viewId);
-      const thumbBytes = Math.ceil(thumbnail.image.length / 2) * 2; // must be a multiple of 2.
-      const val = new Uint8Array(thumbBytes + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
+      const val = new Uint8Array(thumbnail.image.length + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
       new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
       new Uint32Array(val.buffer, 8).set([id.getLowUint32(), id.getHighUint32()]); // viewId is 8 bytes starting at offset 8
       new Uint8Array(val.buffer, 16).set(thumbnail.image); // image data at offset 16
