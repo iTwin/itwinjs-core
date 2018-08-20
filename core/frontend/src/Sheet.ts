@@ -350,7 +350,7 @@ export namespace Attachments {
     private get rootAsTree3d(): Tree3d { return this.root as Tree3d; }
     /** Get the load state from the owner attachment's array at this tile's depth. */
     private getState(): State { return this.rootAsTree3d.getState(this.depth - 1); }
-    /** Set the load state of the onwner attachment's array at this tile's depth. */
+    /** Set the load state of the owner attachment's array at this tile's depth. */
     private setState(state: State) { this.rootAsTree3d.setState(this.depth - 1, state); }
 
     // override
@@ -359,9 +359,7 @@ export namespace Attachments {
     public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
 
     // override
-    public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
-      return this.select(selected, args);
-    }
+    public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent { return this.select(selected, args); }
 
     private select(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
       if (this.depth === 1)
@@ -664,11 +662,8 @@ export namespace Attachments {
       if (loadStatus === TileTree.LoadStatus.Loaded) {
         attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);
         return State.Ready;
-      } else if (loadStatus === TileTree.LoadStatus.Loading) {
-        return State.Loading;
-      } else {
-        return State.Empty;
       }
+      return loadStatus === TileTree.LoadStatus.Loading ? State.Loading : State.Empty;
     }
   }
 
@@ -702,7 +697,7 @@ export namespace Attachments {
   /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
   export class Tree3d extends Tree {
     public readonly tileColor: ColorDef;
-    public readonly biasDistance: number; // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
+    public readonly biasDistance: number; // distance in z to position tile in parent viewport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
     public readonly viewport: AttachmentViewport;
     public readonly sheetView: SheetViewState;
     public readonly attachment: Attachment3d;
@@ -984,7 +979,7 @@ export namespace Attachments {
     /** The number of attachments in this list. */
     public get length(): number { return this.list.length; }
 
-    /** Returns true if all of the 2d attachments in the list have tile trees that are fully loaded, and all 3d attachments have tile trees that are atleast not undefined. */
+    /** Returns true if all of the 2d attachments in the list have tile trees that are fully loaded, and all 3d attachments have tile trees that are at least not undefined. */
     public get allLoaded(): boolean {
       if (!this._all2dReady)
         return false;

@@ -378,24 +378,26 @@ export namespace IModelConnection {
     /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
-      Id64.toIdSet(modelIds).forEach((id) => {
+      for (const id of Id64.toIdSet(modelIds)) {
         const loaded = this.getLoaded(id);
         if (!loaded)
           notLoaded.add(id);
-      });
+      }
 
       if (notLoaded.size === 0)
         return; // all requested models are already loaded
 
       try {
-        (await this.getProps(notLoaded)).forEach(async (props) => {
+        const propArray = await this.getProps(notLoaded);
+        for (const props of propArray) {
           let ctor = IModelConnection.findClass(props.classFullName);
-          if (undefined === ctor) // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
+          if (undefined === ctor) { // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
             ctor = await this._iModel.findRegisteredBaseClass(props.classFullName, ModelState); // must wait for this
+          }
           const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
           this.loaded.set(modelState.id.value, modelState as ModelState); // save it in loaded set
-        });
-      } catch (err) { } // ignore error, we had nothing to do.
+        }
+      } catch (err) { }  // ignore error, we had nothing to do.
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams. */
