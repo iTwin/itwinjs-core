@@ -77,7 +77,7 @@ $grad-end-highlight: $bwc-gray-7;
           }
         }
         &.left, &.right, &.front, &.back {
-          background: linear-gradient(#{$grad-start}, #{$grad-end});
+            background: linear-gradient(#{$grad-start}, #{$grad-end});
         }
         &.top {
           background: $grad-start;
@@ -93,7 +93,7 @@ $grad-end-highlight: $bwc-gray-7;
           }
         }
         &.left, &.right, &.front, &.back {
-          background: linear-gradient(#{$grad-start-highlight}, #{$grad-end-highlight});
+            background: linear-gradient(#{$grad-start-highlight}, #{$grad-end-highlight});
         }
         &.top {
           background: $grad-start-highlight;
