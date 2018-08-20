@@ -212,7 +212,8 @@ describe("RotMatrix.Factors", () => {
     ck.checkpoint("RotMatrix.AxisAndAngleOfRotationB");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("AxisAndAngleOfRotationPI", () => {
+  // rotation by 180 degrees is a special case to invert.
+  it("AxisAndAngleOfRotationPI", () => {
     const ck = new Checker();
     for (const vectorA0 of [
       Vector3d.unitX(),
@@ -324,7 +325,7 @@ describe("RotMatrix.ViewConstructions", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("RotateVectorToVector", () => {
+  it("RotateVectorToVector", () => {
     const ck = new Checker();
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(0, 0, 1), ck);
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), ck);
