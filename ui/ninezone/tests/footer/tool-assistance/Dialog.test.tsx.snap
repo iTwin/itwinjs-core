@@ -3,6 +3,20 @@
 exports[`<Dialog /> renders correctly 1`] = `
 <Component
   className="nz-footer-toolAssistance-dialog"
+  content={
+    <Unknown
+      content={<ToolAssistanceContent />}
+      titleBar={
+        <Unknown
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
   direction={1}
 />
 `;

@@ -41,16 +41,17 @@
     }
   }
 
-  &.is-active {
-    .nz-icon {
-      color: $active-icon-color;
-      filter: $no-shadow;
-      transition-duration: 0s;
-      transition-duration: 150ms;
-      transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
-
-      svg {
+  &.nz-is-active {
+    &:not(:active) {
+      .nz-icon {
+        color: $primary-base;
         filter: $no-shadow;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+
+        svg {
+          filter: $no-shadow;
+        }
       }
     }
   }

@@ -1,13 +1,14 @@
-/*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
-$tab-height: 60px;
-$tab-border-width: 1px;
-$tab-border-radius: 3px;
-$tab-strip-width: 2px;
-$tab-strip-margin: 2px;
+@import "@bentley/ui-core/lib/colors";
 
-$settings-triangle-size-value: 28;
-$settings-triangle-size: $settings-triangle-size-value + 0px;
+$nz-tab-height: 60px;
+$nz-tab-width: 32px;
+$nz-tab-strip-width: 2px;
+$nz-tab-strip-margin: 2px;
+$nz-tab-background-color: $background-3;
 
 $resize-grip-size: 3px;
+
+$nz-widget-background-color: $background-2;
+$nz-widget-border-color: $background-5;
+$nz-widget-border-width: 1px;
+$nz-widget-border-radius: 3px;

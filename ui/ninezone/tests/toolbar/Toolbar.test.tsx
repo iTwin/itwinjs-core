@@ -3,20 +3,23 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
-import Toolbar from "@src/toolbar/Toolbar";
+import Toolbar, { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Direction } from "@src/utilities/Direction";
 
 describe("<Toolbar />", () => {
   it("should render", () => {
-    mount(<Toolbar expandsTo={Direction.Left} />);
+    mount(<Toolbar />);
   });
 
   it("renders correctly", () => {
-    shallow(<Toolbar expandsTo={Direction.Left} />).should.matchSnapshot();
+    shallow(<Toolbar />).should.matchSnapshot();
   });
 
-  it("renders vertical with expands to direction", () => {
+  it("renders with expandsTo", () => {
     shallow(<Toolbar expandsTo={Direction.Right} />).should.matchSnapshot();
+  });
+
+  it("renders with panelAlignment", () => {
+    shallow(<Toolbar panelAlignment={ToolbarPanelAlignment.End} />).should.matchSnapshot();
   });
 });

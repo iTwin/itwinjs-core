@@ -1,3 +1,4 @@
+@import "../_variables";
 @import "_variables";
 
 .nz-toolbar-item-item {
@@ -7,8 +8,6 @@
   border-style: solid;
   cursor: pointer;
   transition: all 500ms ease;
-  width: $desktop-item-width;
-  height: $desktop-item-height;
   position: relative;
 
   .nz-gradient {
@@ -31,24 +30,24 @@
   }
 
   &.nz-is-active {
-    background: $background-1;
-    transition-duration: 0s;
+    &:not(:active) {
+      transition-duration: 0s;
 
-    .nz-gradient {
-      width: 0;
-      height: 0;
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        background-color: $primary-base;
+        left: 3px;
+        top: ($nz-desktop-item-height - $desktop-tool-stripe-height) / 2;
+        border-radius: 2px;
+        width: $desktop-tool-stripe-width;
+        height: $desktop-tool-stripe-height;
+      }
+
+      .nz-gradient {
+        background: $background-1;
+      }
     }
-  }
-
-  &.nz-is-active::before {
-    content: '';
-    display: block;
-    position: absolute;
-    background-color: $primary-base;
-    left: 3px;
-    top: ($desktop-item-height - $desktop-tool-stripe-height) / 2;
-    border-radius: 2px;
-    width: $desktop-tool-stripe-width;
-    height: $desktop-tool-stripe-height;
   }
 }

@@ -11,7 +11,9 @@
   max-height: 100%;
   position: relative;
 
-  &.nz-left-anchor {
+  $border-width: $nz-widget-border-width;
+
+  &.nz-left-anchor, &.nz-bottom-left-anchor {
     grid-auto-columns: 1fr auto;
 
     > .nz-tabs-column {
@@ -21,7 +23,7 @@
       > .nz-tabs {
         > * {
           &.nz-is-active {
-            margin-left: -$tab-border-width;
+            margin-left: -$border-width;
           }
         }
       }
@@ -31,12 +33,12 @@
       grid-row: 1;
       grid-column: 1;
       border-top-right-radius: unset;
-      border-top-left-radius: $tab-border-radius;
+      border-top-left-radius: $nz-widget-border-radius;
 
       > .nz-settings {
-        left: -$tab-border-width;
+        left: -$border-width;
         border-top-right-radius: unset;
-        border-top-left-radius: $tab-border-radius;
+        border-top-left-radius: $nz-widget-border-radius;
       }
     }
 
@@ -46,7 +48,7 @@
       > .nz-tabs-column {
         > .nz-tabs {
           > * {
-            border-left-width: $tab-border-width;
+            border-left-width: $border-width;
 
             &.nz-is-active {
               margin-left: unset;
@@ -58,11 +60,20 @@
   }
 
   &.nz-is-closed {
+    height: 100%;
+    align-items: center;
+
+    &.nz-bottom-left-anchor, &.nz-bottom-right-anchor {
+      align-items: end;
+    }
+
     > .nz-top-grip {
       display: none;
     }
 
     > .nz-tabs-column {
+      grid-auto-rows: 1fr 0;
+
       > .nz-left-grip-container {
         > .nz-left-grip {
           display: none;
@@ -71,8 +82,8 @@
 
       > .nz-tabs {
         > * {
-          border-right-width: $tab-border-width;
-          border-radius: $tab-border-radius;
+          border-right-width: $border-width;
+          border-radius: $nz-widget-border-radius;
 
           &.nz-is-active {
             margin-right: unset;
@@ -90,7 +101,7 @@
     grid-row: 1;
     grid-column: 1;
     display: grid;
-    grid-auto-rows: min-content minmax($tab-height * 1.5, auto);
+    grid-auto-rows: min-content minmax($nz-tab-height * 1.5, auto);
 
     > .nz-left-grip-container {
       position: relative;
@@ -99,7 +110,7 @@
 
       > .nz-left-grip {
         position: absolute;
-        right: -($resize-grip-size + $tab-border-width) / 2;
+        right: -($resize-grip-size + $border-width) / 2;
         height: 100%;
       }
     }
@@ -114,7 +125,7 @@
         }
 
         &.nz-is-active {
-          margin-right: -$tab-border-width;
+          margin-right: -$border-width;
         }
       }
     }
@@ -123,41 +134,41 @@
   > .nz-top-grip {
     width: 100%;
     position: absolute;
-    top: -($resize-grip-size - $tab-border-width) / 2;
+    top: -($resize-grip-size - $border-width) / 2;
   }
 
   > .nz-content-area {
     grid-row: 1;
     grid-column: 2;
     border-style: solid;
-    border-width: $tab-border-width;
-    border-color: $background-5;
-    background-color: $background-2;
+    border-width: $border-width;
+    border-color: $nz-widget-border-color;
+    background-color: $nz-widget-background-color;
     position: relative;
-    border-top-right-radius: $tab-border-radius;
-    border-bottom-left-radius: $tab-border-radius;
-    border-bottom-right-radius: $tab-border-radius;
+    border-top-right-radius: $nz-widget-border-radius;
+    border-bottom-left-radius: $nz-widget-border-radius;
+    border-bottom-right-radius: $nz-widget-border-radius;
     pointer-events: auto;
     display: grid;
 
     > .nz-bottom-grip {
       width: 100%;
       position: absolute;
-      bottom: -($resize-grip-size - $tab-border-width);
+      bottom: -($resize-grip-size - $border-width);
     }
 
     > .nz-right-grip {
       height: 100%;
       position: absolute;
       top: 0;
-      right: -($resize-grip-size - $tab-border-width);
+      right: -($resize-grip-size - $border-width);
     }
 
     > .nz-settings {
       position: absolute;
-      right: -$tab-border-width;
-      top: -$tab-border-width;
-      border-top-right-radius: $tab-border-radius;
+      right: -$border-width;
+      top: -$border-width;
+      border-top-right-radius: $nz-widget-border-radius;
     }
 
     > .nz-content {

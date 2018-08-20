@@ -11,12 +11,6 @@ $icon-shadow: drop-shadow(0 1px #FFFFFF);
 $space-between-text-and-icon: 10px;
 $space-between-icons: 20px;
 
-$dialog-border-width: 2px;
-$dialog-border-color: #000000;
-$dialog-bg-color: #fff;
-
-$dialog-title-button-size: 20px;
-
 $balloon-padding: 3px;
 $min-balloon-height: $icon-size - 2 * $balloon-padding;
 $min-balloon-width: $min-balloon-height;
@@ -26,3 +20,4 @@ $balloon-arrow-height: 10px;
 $snap-mode-icon-size: 20px;
 
 $nz-footer-indicator-horizontal-padding: 20px;
+$nz-footer-popover-min-width: 274px;
