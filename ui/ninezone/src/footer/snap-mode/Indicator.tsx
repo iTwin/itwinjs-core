@@ -38,12 +38,12 @@ export default class SnapModeIndicator extends React.Component<SnapModeIndicator
       <div
         className={className}
         style={this.props.style}
+        onClick={this._handleOnIndicatorClick}
       >
         <div className="nz-indicator">
           <span className={labelClassName}>{this.props.label}</span>
           <div
             className="nz-icon"
-            onClick={this.handleOnIndicatorClick}
           >
             {this.props.icon}
           </div>
@@ -55,7 +55,7 @@ export default class SnapModeIndicator extends React.Component<SnapModeIndicator
     );
   }
 
-  private handleOnIndicatorClick = () => {
+  private _handleOnIndicatorClick = () => {
     this.props.onClick && this.props.onClick();
   }
 }

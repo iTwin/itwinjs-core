@@ -15,7 +15,7 @@ export class FeaturesInfo {
     switch (featureIndex.type) {
       case FeatureIndexType.Empty: return undefined;
       case FeatureIndexType.Uniform: return new FeaturesInfo(featureIndex.featureID);
-      default: return FeaturesInfo.nonUniform;
+      default: return FeaturesInfo._nonUniform;
     }
   }
   public static createUniform(id: number): FeaturesInfo { return new FeaturesInfo(id); }
@@ -26,5 +26,5 @@ export class FeaturesInfo {
 
   private constructor(uniform?: number) { this.uniform = uniform; }
 
-  private static nonUniform = new FeaturesInfo(undefined);
+  private static _nonUniform = new FeaturesInfo(undefined);
 }

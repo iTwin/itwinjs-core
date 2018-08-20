@@ -269,9 +269,9 @@ export class TransientIdSequence {
  */
 export class Guid {
   public readonly value: string;
-  private static uuidPattern = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-  private static hexChars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
-  private static v4VariantChars = ["8", "9", "a", "b"];
+  private static _uuidPattern = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+  private static _hexChars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
+  private static _v4VariantChars = ["8", "9", "a", "b"];
 
   /** construct  */
   public constructor(input?: Guid | string | boolean) {
@@ -289,7 +289,7 @@ export class Guid {
   /** determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
    *  that the string is actually in valid UUID format.
    */
-  public static isGuid(value: string) { return Guid.uuidPattern.test(value); }
+  public static isGuid(value: string) { return Guid._uuidPattern.test(value); }
 
   /** determine whether the input string is a valid V4 Guid string */
   public static isV4Guid(value: string) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value); }
@@ -301,42 +301,42 @@ export class Guid {
   /** Create a new V4 Guid value */
   public static createValue(): string {
     return [
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
       "-",
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
       "-",
       "4",
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
       "-",
-      Guid.randomCharFrom(Guid.v4VariantChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
+      Guid.randomCharFrom(Guid._v4VariantChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
       "-",
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
-      Guid.randomCharFrom(Guid.hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
+      Guid.randomCharFrom(Guid._hexChars),
     ].join("");
   }
 }

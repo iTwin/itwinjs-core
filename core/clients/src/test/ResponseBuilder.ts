@@ -270,12 +270,12 @@ export class ResponseBuilder {
 }
 
 export class UrlDiscoveryMock {
-  private static readonly regionMap: { [deploymentEnv: string]: number } = { DEV: 103, QA: 102, PROD: 0, PERF: 294 };
+  private static readonly _regionMap: { [deploymentEnv: string]: number } = { DEV: 103, QA: 102, PROD: 0, PERF: 294 };
 
   public static mockGetUrl(searchKey: string, env: DeploymentEnv, returnedUrl: string) {
     if (!TestConfig.enableMocks)
       return;
     ResponseBuilder.mockResponse("https://buddi.bentley.com", RequestType.Get,
-      `/WebService/GetUrl/?url=${searchKey}&region=${this.regionMap[env]}`, { result: { url: returnedUrl } });
+      `/WebService/GetUrl/?url=${searchKey}&region=${this._regionMap[env]}`, { result: { url: returnedUrl } });
   }
 }

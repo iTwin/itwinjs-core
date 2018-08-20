@@ -9,23 +9,23 @@ export class BreadcrumbTreeUtils {
   public static pathTo = async (dataProvider: TreeDataProvider, target?: TreeNodeItem): Promise<TreeNodeItem[]> => {
     if (target === undefined)
       return [];
-    const children = await dataProvider.getRootNodes({size: 9999, start: 0});
+    const children = await dataProvider.getRootNodes({ size: 9999, start: 0 });
     for (const child of children) {
-      const p = await BreadcrumbTreeUtils.path(dataProvider, target, child);
+      const p = await BreadcrumbTreeUtils._path(dataProvider, target, child);
       if (p !== undefined) return p;
     }
     return [];
   }
 
-  private static path = async (dataProvider: TreeDataProvider, target: TreeNodeItem, tree: TreeNodeItem): Promise<TreeNodeItem[] | undefined> => {
+  private static _path = async (dataProvider: TreeDataProvider, target: TreeNodeItem, tree: TreeNodeItem): Promise<TreeNodeItem[] | undefined> => {
     if (tree.id === target.id)
       return [tree];
     if (!tree.hasChildren)
       return undefined;
-    const children = await dataProvider.getChildNodes(tree, {size: 9999, start: 0});
+    const children = await dataProvider.getChildNodes(tree, { size: 9999, start: 0 });
 
     for (const child of children) {
-      const p = await BreadcrumbTreeUtils.path(dataProvider, target, child);
+      const p = await BreadcrumbTreeUtils._path(dataProvider, target, child);
       if (p) return [tree, ...p];
     }
     return undefined;
@@ -41,23 +41,23 @@ export class BreadcrumbTreeUtils {
     return p.join(delimiter);
   }
 
-  private static escapeRegExp = (str: string) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+  private static _escapeRegExp = (str: string) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 
   public static findChild = async (dataProvider: TreeDataProvider, p: string, delimiter: string): Promise<TreeNodeItem | undefined> => {
     if (p.lastIndexOf(delimiter) === p.length - delimiter.length)
       p = p.substr(0, p.length - delimiter.length);
     if (p.length === 0)
       return undefined;
-    const root = await dataProvider.getRootNodes({size: 9999, start: 0});
+    const root = await dataProvider.getRootNodes({ size: 9999, start: 0 });
     for (const tree of root) {
-      const node = await BreadcrumbTreeUtils.find(dataProvider, tree, p, delimiter);
+      const node = await BreadcrumbTreeUtils._find(dataProvider, tree, p, delimiter);
       if (node)
         return node;
     }
     return undefined;
   }
 
-  private static find = async (dataProvider: TreeDataProvider, node: TreeNodeItem, p: string, delimiter: string): Promise<TreeNodeItem | undefined> => {
+  private static _find = async (dataProvider: TreeDataProvider, node: TreeNodeItem, p: string, delimiter: string): Promise<TreeNodeItem | undefined> => {
     // remove leading delimiter
     if (p.indexOf(delimiter) === 0)
       p = p.substr(delimiter.length);
@@ -67,9 +67,9 @@ export class BreadcrumbTreeUtils {
       return node;
     }
     if (p.indexOf(label) === 0 && node.hasChildren) {
-      const children = await dataProvider.getChildNodes(node, {size: 9999, start: 0});
+      const children = await dataProvider.getChildNodes(node, { size: 9999, start: 0 });
       for (const child of children) {
-        const n = await BreadcrumbTreeUtils.find(dataProvider, child, p.substr(label.length), delimiter);
+        const n = await BreadcrumbTreeUtils._find(dataProvider, child, p.substr(label.length), delimiter);
         if (n)
           return n;
       }
@@ -81,10 +81,10 @@ export class BreadcrumbTreeUtils {
     let items: ReadonlyArray<Readonly<TreeNodeItem>> = [];
     let list: ReadonlyArray<Readonly<TreeNodeItem>> = [];
     if (p.length === 0) {
-      items = await dataProvider.getRootNodes({size: 9999, start: 0});
+      items = await dataProvider.getRootNodes({ size: 9999, start: 0 });
       list = [];
     } else {
-      const del = BreadcrumbTreeUtils.escapeRegExp(delimiter);
+      const del = BreadcrumbTreeUtils._escapeRegExp(delimiter);
       const mat = p.match(new RegExp("(.*)" + del + "(.*?)$"));
 
       let node: TreeNodeItem | undefined;
@@ -96,9 +96,9 @@ export class BreadcrumbTreeUtils {
       list = await BreadcrumbTreeUtils.pathTo(dataProvider, node);
       let children: ReadonlyArray<Readonly<TreeNodeItem>>;
       if (node === undefined)
-        children = await dataProvider.getRootNodes({size: 9999, start: 0});
+        children = await dataProvider.getRootNodes({ size: 9999, start: 0 });
       else
-        children = await dataProvider.getChildNodes(node, {size: 9999, start: 0});
+        children = await dataProvider.getChildNodes(node, { size: 9999, start: 0 });
       if (name.length === 0) {
         items = children;
       } else {
@@ -122,17 +122,17 @@ export class BreadcrumbTreeUtils {
       getColumns: async () => columns,
       getRowsCount: async () => nodes.length,
       getRow: async (rowIndex: number, unfiltered?: boolean): Promise<DataRowItem> => {
-        if (rowIndex > nodes.length || (unfiltered && !unfiltered)) return {_node: {} as TreeNodeItem, key: "", cells: []};
+        if (rowIndex > nodes.length || (unfiltered && !unfiltered)) return { _node: {} as TreeNodeItem, key: "", cells: [] };
         const n = nodes[rowIndex];
-        if (!n) return {_node: {} as TreeNodeItem, key: "", cells: []};
+        if (!n) return { _node: {} as TreeNodeItem, key: "", cells: [] };
         const colorOverrides = {
           foreColor: n.labelForeColor,
           backColor: n.labelBackColor,
         };
         const cells: CellItem[] = [
-          {key: "icon", record: n.hasChildren ? "icon-folder" : n.iconPath},
-          {key: "label", record: n.label},
-          {key: "description", record: n.description},
+          { key: "icon", record: n.hasChildren ? "icon-folder" : n.iconPath },
+          { key: "label", record: n.label },
+          { key: "description", record: n.description },
         ];
         for (const k in n.extendedData) {
           // only add string values to table cell list
@@ -159,7 +159,7 @@ export class BreadcrumbTreeUtils {
         };
         return row;
       },
-      sort: async () => {},
+      sort: async () => { },
     };
   }
 }

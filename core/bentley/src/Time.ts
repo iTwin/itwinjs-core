@@ -23,11 +23,11 @@ export class BeDuration {
    */
   public static fromMilliseconds(milliseconds: number) { return new BeDuration(milliseconds); }
   /** Determine whether this BeDuration is 0 seconds */
-  public isZero() { return this._milliseconds === 0; }
+  public get isZero() { return this._milliseconds === 0; }
   /** Determine whether this BeDuration is towards the future */
-  public isTowardsFuture(): boolean { return this._milliseconds > 0; }
+  public get isTowardsFuture(): boolean { return this._milliseconds > 0; }
   /** Determine whether this BeDuration is towards the past */
-  public isTowardsPast(): boolean { return this._milliseconds < 0; }
+  public get isTowardsPast(): boolean { return this._milliseconds < 0; }
   /** Subtract a BeDuration from this BeDuration, returning a new BeDuration. */
   public minus(other: BeDuration): BeDuration { return new BeDuration(this._milliseconds - other._milliseconds); }
   /** Add a BeDuration to this BeDuration, returning a new BeDuration */
@@ -66,10 +66,10 @@ export class BeTimePoint {
   public static beforeNow(val: BeDuration) { return new BeTimePoint(Date.now() - val.milliseconds); }
 
   /** Determine whether this BeTimePoint is a time in the future from the time this method is called (it calls now()!) */
-  public isInFuture(): boolean { return Date.now() < this._milliseconds; }
+  public get isInFuture(): boolean { return Date.now() < this._milliseconds; }
 
   /** Determine whether this BeTimePoint is a time that has already passed before the time this method is called (it calls now()!) */
-  public isInPast(): boolean { return Date.now() > this._milliseconds; }
+  public get isInPast(): boolean { return Date.now() > this._milliseconds; }
 
   /** Determine whether this BeTimePoint happens before another one.
    * @param other the other BeTimePoint.

@@ -67,23 +67,23 @@ export default class Tree extends React.Component<Props, State> {
     super(props, context);
 
     this._tree = this.createTree();
-    this._nodeRenderFunc = (props.renderNode) ? props.renderNode : this.defaultRenderNode;
+    this._nodeRenderFunc = (props.renderNode) ? props.renderNode : this._defaultRenderNode;
     this._selectionHandler.onNodesSelected = this.props.onNodesSelected;
     this._selectionHandler.onNodesDeselected = this.props.onNodesDeselected;
   }
 
   private createTree(): BeInspireTree {
-    const tree = new BeInspireTree(this.props.dataProvider, this.syncNodes);
+    const tree = new BeInspireTree(this.props.dataProvider, this._syncNodes);
     tree.on("node.selected", this._selectionHandler.select.bind(this._selectionHandler));
     tree.on("node.deselected", this._selectionHandler.deselect.bind(this._selectionHandler));
-    tree.on("node.expanded", this.onNodeExpanded);
-    tree.on("node.collapsed", this.onNodeCollapsed);
-    tree.on("children.loaded", this.onChildrenLoaded);
+    tree.on("node.expanded", this._onNodeExpanded);
+    tree.on("node.collapsed", this._onNodeCollapsed);
+    tree.on("children.loaded", this._onChildrenLoaded);
     return tree;
   }
 
   public async componentWillReceiveProps(props: Props) {
-    this._nodeRenderFunc = (props.renderNode) ? props.renderNode : this.defaultRenderNode;
+    this._nodeRenderFunc = (props.renderNode) ? props.renderNode : this._defaultRenderNode;
     this._selectionHandler.onNodesSelected = this.props.onNodesSelected;
     this._selectionHandler.onNodesDeselected = this.props.onNodesDeselected;
 
@@ -109,7 +109,7 @@ export default class Tree extends React.Component<Props, State> {
     this._isMounted = false;
   }
 
-  private onNodeExpanded = (node: InspireTreeNode) => {
+  private _onNodeExpanded = (node: InspireTreeNode) => {
     if (this.props.onNodeExpanded)
       this.props.onNodeExpanded(node);
 
@@ -118,26 +118,26 @@ export default class Tree extends React.Component<Props, State> {
     }
   }
 
-  private onNodeCollapsed = (node: InspireTreeNode) => {
+  private _onNodeCollapsed = (node: InspireTreeNode) => {
     if (this.props.onNodeCollapsed)
       this.props.onNodeCollapsed(node);
   }
 
-  private onChildrenLoaded = (parentNode: InspireTreeNode) => {
+  private _onChildrenLoaded = (parentNode: InspireTreeNode) => {
     if (undefined !== parentNode.children && "boolean" !== typeof parentNode.children) {
       this._tree.updateNodesSelection(parentNode.children as any, this.props.selectedNodes);
     }
   }
 
   // Update the state when changes have been made to our nodes
-  private syncNodes = (rootNodes: InspireTreeNode[]) => {
+  private _syncNodes = (rootNodes: InspireTreeNode[]) => {
     if (!this._isMounted)
       return;
 
     this.setState({ rootNodes });
   }
 
-  private defaultRenderNode = (data: InspireTreeNode, children?: React.ReactNode, index?: number): React.ReactNode => {
+  private _defaultRenderNode = (data: InspireTreeNode, children?: React.ReactNode, index?: number): React.ReactNode => {
     const toggleSelection = () => {
       using(this._selectionHandler.createOperation(), () => {
         data.toggleSelect();
@@ -266,7 +266,7 @@ export default class Tree extends React.Component<Props, State> {
         }}
         objectTypes={this.props.objectTypes}
         shallow={true}
-        >
+      >
         {this.renderBranch(this.state.rootNodes)}
       </DropTree>
     );

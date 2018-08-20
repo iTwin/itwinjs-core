@@ -142,7 +142,7 @@ export abstract class GraphicBuilder {
   public wantStrokePattern(_pattern: AreaPattern.Params): boolean { return true; }
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
-  public abstract _finish(): RenderGraphic;
+  protected abstract _finish(): RenderGraphic;
   public finish(): RenderGraphic { return this._finish(); }
 
   /**

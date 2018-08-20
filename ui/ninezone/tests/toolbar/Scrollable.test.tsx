@@ -3,32 +3,35 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import Scrollable, { ScrollableState } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
 import Chevron from "@src/toolbar/scroll/Chevron";
+import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 
 describe("<Scrollable />", () => {
   it("should render", () => {
-    mount(<Scrollable expandsTo={Direction.Left} />);
+    mount(<Scrollable />);
   });
 
   it("renders correctly", () => {
-    shallow(<Scrollable expandsTo={Direction.Left} />).should.matchSnapshot();
+    shallow(<Scrollable />).should.matchSnapshot();
   });
 
   it("renders with visible item threshold", () => {
-    shallow(<Scrollable expandsTo={Direction.Left} visibleItemThreshold={2} />).should.matchSnapshot();
+    shallow(<Scrollable visibleItemThreshold={2} />).should.matchSnapshot();
   });
 
   it("renders with expandsTo", () => {
-    shallow(<Scrollable expandsTo={Direction.Right} />).should.matchSnapshot();
+    shallow(<Scrollable expandsTo={Direction.Left} />).should.matchSnapshot();
+  });
+
+  it("renders with panelAlignment", () => {
+    shallow(<Scrollable panelAlignment={ToolbarPanelAlignment.End} />).should.matchSnapshot();
   });
 
   it("renders vertical with overflow scrolled left correctly", () => {
     const sut = shallow(
       <Scrollable
-        expandsTo={Direction.Left}
         visibleItemThreshold={3}
         items={
           <>
@@ -49,7 +52,6 @@ describe("<Scrollable />", () => {
   it("renders vertical with overflow scrolled right most correctly", () => {
     const sut = shallow(
       <Scrollable
-        expandsTo={Direction.Left}
         visibleItemThreshold={2}
         items={
           <>
@@ -68,12 +70,12 @@ describe("<Scrollable />", () => {
   });
 
   it("initial scroll offset should be 0", () => {
-    const sut = shallow<Scrollable, ScrollableState>(<Scrollable expandsTo={Direction.Left} />);
+    const sut = shallow<Scrollable, ScrollableState>(<Scrollable />);
     sut.state().scrollOffset.should.eq(0);
   });
 
   it("should handle left scroll indicator click events", () => {
-    const sut = mount<Scrollable, ScrollableState>(<Scrollable expandsTo={Direction.Left} visibleItemThreshold={3} />);
+    const sut = mount<Scrollable, ScrollableState>(<Scrollable visibleItemThreshold={3} />);
     sut.setState({
       scrollOffset: 2,
     });
@@ -90,7 +92,6 @@ describe("<Scrollable />", () => {
   it("should handle right scroll indicator click events", () => {
     const sut = mount<Scrollable, ScrollableState>(
       <Scrollable
-        expandsTo={Direction.Left}
         visibleItemThreshold={2}
         items={
           <>

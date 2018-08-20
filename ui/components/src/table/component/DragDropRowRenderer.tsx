@@ -45,12 +45,12 @@ interface RowWrapperState {
 }
 
 class RowWrapper extends React.Component<any & RowWrapperProps, RowWrapperState> {
-  private root: HTMLDivElement | null = null;
+  private _root: HTMLDivElement | null = null;
   public readonly state: RowWrapperState = {
     hoverMode: HoverMode.Above,
   };
   public render(): React.ReactElement<any> {
-    const {isOver, isDragging, canDrag, canDrop, ...props } = this.props as RowWrapperProps;
+    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as RowWrapperProps;
     const mode = this.state.hoverMode;
     const classes = classnames(
       "table-drop-target",
@@ -62,34 +62,34 @@ class RowWrapper extends React.Component<any & RowWrapperProps, RowWrapperState>
       },
     );
     return (
-      <div className={classes} ref={(el) => { this.root = el; }} onDragOver={this.handleDragOver}>
+      <div className={classes} ref={(el) => { this._root = el; }} onDragOver={this._handleDragOver}>
         <Row {...props} />
       </div>
     );
   }
 
-  private handleDragOver = (event: React.DragEvent) => {
-    if (this.props.isOver && this.root) {
-      const rect = this.root.getBoundingClientRect();
+  private _handleDragOver = (event: React.DragEvent) => {
+    if (this.props.isOver && this._root) {
+      const rect = this._root.getBoundingClientRect();
       const relativeY = (event.clientY - rect.top) / rect.height;
       if (this.props.canDropOn) {
         if (relativeY < 1 / 3) {
           if (this.state.hoverMode !== HoverMode.Above)
-            this.setState({hoverMode: HoverMode.Above});
+            this.setState({ hoverMode: HoverMode.Above });
         } else if (relativeY < 2 / 3) {
           if (this.state.hoverMode !== HoverMode.On)
-            this.setState({hoverMode: HoverMode.On});
+            this.setState({ hoverMode: HoverMode.On });
         } else {
           if (this.state.hoverMode !== HoverMode.Below)
-            this.setState({hoverMode: HoverMode.Below});
+            this.setState({ hoverMode: HoverMode.Below });
         }
       } else {
         if (relativeY < 1 / 2) {
           if (this.state.hoverMode !== HoverMode.Above)
-            this.setState({hoverMode: HoverMode.Above});
+            this.setState({ hoverMode: HoverMode.Above });
         } else {
           if (this.state.hoverMode !== HoverMode.Below)
-            this.setState({hoverMode: HoverMode.Below});
+            this.setState({ hoverMode: HoverMode.Below });
         }
       }
     }
@@ -112,7 +112,7 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
             if (args.dropRect) {
               const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
               if (relativeY > 1 / 2) {
-                  args.row = this.props.idx + 1;
+                args.row = this.props.idx + 1;
               }
             }
           }
@@ -125,7 +125,7 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
             if (args.dropRect) {
               const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
               if (relativeY > 1 / 2) {
-                  args.row = this.props.idx + 1;
+                args.row = this.props.idx + 1;
               }
             }
           }
@@ -149,7 +149,7 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
         objectType={() => {
           if (this.props.objectType) {
             if (typeof this.props.objectType === "function")
-              return this.props.objectType({row: this.props.idx});
+              return this.props.objectType({ row: this.props.idx });
             else
               return this.props.objectType;
           }

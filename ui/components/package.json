@@ -58,7 +58,6 @@
     "@types/mocha": "^5.2.5",
     "@types/react": "^16.4.7",
     "@types/react-data-grid": "^2.0.11",
-    "@types/react-dnd": "^2.0.36",
     "@types/react-dom": "^16.0.6",
     "@types/sinon": "^5.0.1",
     "@types/sinon-chai": "^3.2.0",
@@ -85,7 +84,8 @@
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.9.1",
+    "typemoq": "^2.1.0",
+    "typescript": "~3.0.0",
     "xmlhttprequest": "^1.8.0"
   },
   "//dependencies": [
@@ -100,8 +100,8 @@
     "lodash": "^4.17.10",
     "react": "^16.4.2",
     "react-data-grid": "^3.0.0",
-    "react-dnd": "^5.0.0",
-    "react-dom": "^16.4.2"
+    "react-dom": "^16.4.2",
+    "react-dnd": "^5.0.0"
   },
   "nyc": {
     "nycrc-path": "../.nycrc"

@@ -323,7 +323,7 @@
     },
     {
       "name": "tslint-consistent-codestyle",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "tools" ]
     },
     {
       "name": "typescript-json-schema",

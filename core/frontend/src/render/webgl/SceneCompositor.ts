@@ -145,16 +145,16 @@ class PixelBuffer implements Pixel.Buffer {
   private readonly _elemIdHi?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
 
-  private get numPixels(): number { return this._rect.width * this._rect.height; }
+  private get _numPixels(): number { return this._rect.width * this._rect.height; }
 
   private getPixelIndex(x: number, y: number): number {
     if (x < this._rect.left || y < this._rect.top)
-      return this.numPixels;
+      return this._numPixels;
 
     x -= this._rect.left;
     y -= this._rect.top;
     if (x >= this._rect.width || y >= this._rect.height)
-      return this.numPixels;
+      return this._numPixels;
 
     // NB: View coords have origin at top-left; GL at bottom-left. So our rows are upside-down.
     y = this._rect.height - 1 - y;
@@ -204,7 +204,7 @@ class PixelBuffer implements Pixel.Buffer {
   public getPixel(x: number, y: number): Pixel.Data {
     const px = this._invalidPixelData;
     const index = this.getPixelIndex(x, y);
-    if (index >= this.numPixels)
+    if (index >= this._numPixels)
       return px;
 
     // Initialize to the defaults...
@@ -320,8 +320,8 @@ abstract class Compositor extends SceneCompositor {
   protected _height: number = -1;
   protected _textures = new Textures();
   protected _depth?: DepthBuffer;
-  protected _fbos: FrameBuffers;
-  protected _geometry: Geometry;
+  protected _frameBuffers: FrameBuffers;
+  protected _geom: Geometry;
   protected _readPickDataFromPingPong: boolean = true;
   protected _opaqueRenderState = new RenderState();
   protected _translucentRenderState = new RenderState();
@@ -344,8 +344,8 @@ abstract class Compositor extends SceneCompositor {
     super();
 
     this._target = target;
-    this._fbos = fbos;
-    this._geometry = geometry;
+    this._frameBuffers = fbos;
+    this._geom = geometry;
 
     this._opaqueRenderState.flags.depthTest = true;
 
@@ -443,7 +443,7 @@ abstract class Compositor extends SceneCompositor {
     this._target.setFrameTime();
 
     if (needComposite) {
-      this._geometry.composite!.update(flags);
+      this._geom.composite!.update(flags);
       this.clearTranslucent();
       this.renderTranslucent(commands);
       this._target.setFrameTime();
@@ -488,7 +488,7 @@ abstract class Compositor extends SceneCompositor {
     // (If *only* overlays exist, then clearOpaque() above already took care of this).
     if (haveRenderCommands) {
       const system = System.instance;
-      system.frameBufferStack.execute(this._fbos.opaqueColor!, true, () => {
+      system.frameBufferStack.execute(this._frameBuffers.opaqueColor!, true, () => {
         system.applyRenderState(RenderState.defaults);
         system.context.clearDepth(1.0);
         system.context.clear(GL.BufferBit.Depth);
@@ -502,7 +502,7 @@ abstract class Compositor extends SceneCompositor {
     return PixelBuffer.create(rect, selector, this);
   }
 
-  public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._fbos.depthAndOrder); }
+  public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._frameBuffers.depthAndOrder); }
 
   public readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined {
     const tex = high ? this._textures.idHigh : this._textures.idLow;
@@ -540,15 +540,15 @@ abstract class Compositor extends SceneCompositor {
   public dispose() {
     this._depth = dispose(this._depth);
     dispose(this._textures);
-    dispose(this._fbos);
-    dispose(this._geometry);
+    dispose(this._frameBuffers);
+    dispose(this._geom);
   }
 
   private init(): boolean {
     this.dispose();
     this._depth = System.instance.createDepthBuffer(this._width, this._height);
     if (this._depth !== undefined) {
-      return this._textures.init(this._width, this._height) && this._fbos.init(this._textures, this._depth) && this._geometry.init(this._textures);
+      return this._textures.init(this._width, this._height) && this._frameBuffers.init(this._textures, this._depth) && this._geom.init(this._textures);
     }
     return false;
   }
@@ -627,7 +627,7 @@ abstract class Compositor extends SceneCompositor {
     }
 
     const fbStack = System.instance.frameBufferStack;
-    const fboSet = this._fbos.stencilSet;
+    const fboSet = this._frameBuffers.stencilSet;
     const fboCopy = this.getBackgroundFbo(needComposite);
     if (undefined === fboSet || undefined === fboCopy)
       return;
@@ -650,7 +650,7 @@ abstract class Compositor extends SceneCompositor {
     fbStack.execute(fboCopy!, true, () => {
       this._target.pushState(this._target.decorationState);
       System.instance.applyRenderState(this._stencilCopyRenderState);
-      const params = new DrawParams(this._target, this._geometry.stencilCopy!);
+      const params = new DrawParams(this._target, this._geom.stencilCopy!);
       this._target.techniques.draw(params);
       this._target.popBranch();
     });
@@ -660,7 +660,7 @@ abstract class Compositor extends SceneCompositor {
   private renderHilite(commands: RenderCommands) {
     // Clear the hilite buffer.
     const system = System.instance;
-    system.frameBufferStack.execute(this._fbos.hilite!, true, () => {
+    system.frameBufferStack.execute(this._frameBuffers.hilite!, true, () => {
       system.context.clearColor(0, 0, 0, 0);
       system.context.clear(GL.BufferBit.Color);
 
@@ -670,7 +670,7 @@ abstract class Compositor extends SceneCompositor {
 
   private composite() {
     System.instance.applyRenderState(RenderState.defaults);
-    const params = new DrawParams(this._target, this._geometry.composite!);
+    const params = new DrawParams(this._target, this._geom.composite!);
     this._target.techniques.draw(params);
   }
 
@@ -794,18 +794,18 @@ class MRTCompositor extends Compositor {
   public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
 
-  private get fbos(): MRTFrameBuffers { return this._fbos as MRTFrameBuffers; }
-  private get geometry(): MRTGeometry { return this._geometry as MRTGeometry; }
+  private get _fbos(): MRTFrameBuffers { return this._frameBuffers as MRTFrameBuffers; }
+  private get _geometry(): MRTGeometry { return this._geom as MRTGeometry; }
 
   protected clearOpaque(needComposite: boolean): void {
-    const fbo = needComposite ? this.fbos.opaqueAndCompositeAll! : this.fbos.opaqueAll!;
+    const fbo = needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!;
     const system = System.instance;
     system.frameBufferStack.execute(fbo, true, () => {
       // Clear pick data buffers to 0's and color buffer to background color
       // (0,0,0,0) in elementID0 and ElementID1 buffers indicates invalid element id
       // (0,0,0,0) in DepthAndOrder buffer indicates render order 0 and encoded depth of 0 (= far plane)
       system.applyRenderState(this._noDepthMaskRenderState);
-      const params = new DrawParams(this._target, this.geometry.clearPickAndColor!);
+      const params = new DrawParams(this._target, this._geometry.clearPickAndColor!);
       this._target.techniques.draw(params);
 
       // Clear depth buffer
@@ -820,7 +820,7 @@ class MRTCompositor extends Compositor {
     this._readPickDataFromPingPong = true;
 
     let fbStack = System.instance.frameBufferStack;
-    fbStack.execute(needComposite ? this.fbos.opaqueAndCompositeAll! : this.fbos.opaqueAll!, true, () => {
+    fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (renderForReadPixels) {
@@ -832,7 +832,7 @@ class MRTCompositor extends Compositor {
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels) {
       fbStack = System.instance.frameBufferStack;
-      fbStack.execute(needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!, true, () => {
+      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
@@ -841,30 +841,30 @@ class MRTCompositor extends Compositor {
 
   protected clearTranslucent() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
-    System.instance.frameBufferStack.execute(this.fbos.clearTranslucent!, true, () => {
-      const params = new DrawParams(this._target, this.geometry.clearTranslucent!);
+    System.instance.frameBufferStack.execute(this._fbos.clearTranslucent!, true, () => {
+      const params = new DrawParams(this._target, this._geometry.clearTranslucent!);
       this._target.techniques.draw(params);
     });
   }
 
   protected renderTranslucent(commands: RenderCommands) {
-    System.instance.frameBufferStack.execute(this.fbos.translucent!, true, () => {
+    System.instance.frameBufferStack.execute(this._fbos.translucent!, true, () => {
       this.drawPass(commands, RenderPass.Translucent);
     });
   }
 
   protected pingPong() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
-    System.instance.frameBufferStack.execute(this.fbos.pingPong!, true, () => {
-      const params = new DrawParams(this._target, this.geometry.copyPickBuffers!);
+    System.instance.frameBufferStack.execute(this._fbos.pingPong!, true, () => {
+      const params = new DrawParams(this._target, this._geometry.copyPickBuffers!);
       this._target.techniques.draw(params);
     });
   }
 
-  protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!; }
+  protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
 
-  private get samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this.fbos.pingPong! : this.fbos.opaqueAll!; }
-  private getSamplerTexture(index: number) { return this.samplerFbo.getColor(index); }
+  private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
+  private getSamplerTexture(index: number) { return this._samplerFbo.getColor(index); }
 }
 
 class MPFrameBuffers extends FrameBuffers {
@@ -925,28 +925,28 @@ class MPCompositor extends Compositor {
     super(target, new MPFrameBuffers(), new MPGeometry());
   }
 
-  private get fbos(): MPFrameBuffers { return this._fbos as MPFrameBuffers; }
-  private get geometry(): MPGeometry { return this._geometry as MPGeometry; }
+  private get _fbos(): MPFrameBuffers { return this._frameBuffers as MPFrameBuffers; }
+  private get _geometry(): MPGeometry { return this._geom as MPGeometry; }
 
   public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
   public get elementId0(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.idLow!; }
   public get elementId1(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.hilite! : this._textures.idHigh!; }
   public get depthAndOrder(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.revealage! : this._textures.depthAndOrder!; }
 
-  protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!; }
+  protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
 
   protected clearOpaque(needComposite: boolean): void {
     const bg = FloatRgba.fromColorDef(this._target.bgColor);
-    this.clearFbo(needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
-    this.clearFbo(this.fbos.depthAndOrder!, 0, 0, 0, 0, true);
-    this.clearFbo(this.fbos.idLow!, 0, 0, 0, 0, true);
-    this.clearFbo(this.fbos.idHigh!, 0, 0, 0, 0, true);
+    this.clearFbo(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
+    this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, true);
+    this.clearFbo(this._fbos.idLow!, 0, 0, 0, 0, true);
+    this.clearFbo(this._fbos.idHigh!, 0, 0, 0, 0, true);
   }
 
   protected renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean): void {
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
-    const colorFbo = needComposite ? this.fbos.opaqueAndCompositeColor! : this.fbos.opaqueColor!;
+    const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
     if (renderForReadPixels)
@@ -968,26 +968,26 @@ class MPCompositor extends Compositor {
     const stack = System.instance.frameBufferStack;
     stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
     this._currentRenderTargetIndex++;
-    stack.execute(this.fbos.idLow!, true, () => this.drawPass(commands, pass, false));
+    stack.execute(this._fbos.idLow!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex++;
-    stack.execute(this.fbos.idHigh!, true, () => this.drawPass(commands, pass, false));
+    stack.execute(this._fbos.idHigh!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex++;
-    stack.execute(this.fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
+    stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex = 0;
   }
 
   protected clearTranslucent() {
-    this.clearFbo(this.fbos.accumulation!, 0, 0, 0, 1, false);
-    this.clearFbo(this.fbos.revealage!, 1, 0, 0, 1, false);
+    this.clearFbo(this._fbos.accumulation!, 0, 0, 0, 1, false);
+    this.clearFbo(this._fbos.revealage!, 1, 0, 0, 1, false);
   }
 
   protected renderTranslucent(commands: RenderCommands) {
-    System.instance.frameBufferStack.execute(this.fbos.accumulation!, true, () => {
+    System.instance.frameBufferStack.execute(this._fbos.accumulation!, true, () => {
       this.drawPass(commands, RenderPass.Translucent);
     });
 
     this._currentRenderTargetIndex = 1;
-    System.instance.frameBufferStack.execute(this.fbos.revealage!, true, () => {
+    System.instance.frameBufferStack.execute(this._fbos.revealage!, true, () => {
       this.drawPass(commands, RenderPass.Translucent);
     });
 
@@ -997,13 +997,13 @@ class MPCompositor extends Compositor {
   protected pingPong() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
 
-    this.copyFbo(this._textures.idLow!, this.fbos.accumulation!);
-    this.copyFbo(this._textures.idHigh!, this.fbos.revealage!);
-    this.copyFbo(this._textures.depthAndOrder!, this.fbos.hilite!);
+    this.copyFbo(this._textures.idLow!, this._fbos.accumulation!);
+    this.copyFbo(this._textures.idHigh!, this._fbos.revealage!);
+    this.copyFbo(this._textures.depthAndOrder!, this._fbos.hilite!);
   }
 
   private copyFbo(src: TextureHandle, dst: FrameBuffer): void {
-    const geom = this.geometry.copyColor!;
+    const geom = this._geometry.copyColor!;
     geom.texture = src.getHandle()!;
     System.instance.frameBufferStack.execute(dst, true, () => {
       const params = new DrawParams(this._target, geom);

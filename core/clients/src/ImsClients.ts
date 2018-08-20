@@ -14,7 +14,7 @@ import { AuthorizationToken, AccessToken } from "./Token";
 /** Client API for the IMS Federated Authentication Service. */
 export class ImsFederatedAuthenticationClient extends Client {
   public static readonly searchKey: string = "IMS.FederatedAuth.Url";
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://qa-ims.bentley.com",
     QA: "https://qa-ims.bentley.com",
     PROD: "https://ims.bentley.com",
@@ -42,7 +42,7 @@ export class ImsFederatedAuthenticationClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ImsFederatedAuthenticationClient.defaultUrlDescriptor[this.deploymentEnv];
+    return ImsFederatedAuthenticationClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -66,7 +66,7 @@ export class ImsFederatedAuthenticationClient extends Client {
 export class ImsActiveSecureTokenClient extends Client {
   public static readonly searchKey: string = "Mobile.ImsStsAuth";
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
     QA: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
     PROD: "https://ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
@@ -94,7 +94,7 @@ export class ImsActiveSecureTokenClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ImsActiveSecureTokenClient.defaultUrlDescriptor[this.deploymentEnv];
+    return ImsActiveSecureTokenClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -139,7 +139,7 @@ export class ImsActiveSecureTokenClient extends Client {
 export class ImsDelegationSecureTokenClient extends Client {
   public static readonly searchKey: string = "ActiveSTSDelegationServiceUrl";
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://qa-ims.bentley.com/rest/DelegationSTSService",
     QA: "https://qa-ims.bentley.com/rest/DelegationSTSService",
     PROD: "https://ims.bentley.com/rest/DelegationSTSService",
@@ -167,7 +167,7 @@ export class ImsDelegationSecureTokenClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ImsDelegationSecureTokenClient.defaultUrlDescriptor[this.deploymentEnv];
+    return ImsDelegationSecureTokenClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**

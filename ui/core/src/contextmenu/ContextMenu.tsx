@@ -208,8 +208,8 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     return (
       <div style={this.props.style}
         className={"context-menu"}
-        onKeyUp={this.handleKeyUp}
-        onClick={this.handleClick}
+        onKeyUp={this._handleKeyUp}
+        onClick={this._handleClick}
         ref={(el) => { this._rootElement = el; }}>
         <div
           ref={(el) => { this._menuElement = el; }}
@@ -222,12 +222,12 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     );
   }
   public componentDidMount() {
-    window.addEventListener("focus", this.handleFocusChange);
-    window.addEventListener("mouseup", this.handleFocusChange);
+    window.addEventListener("focus", this._handleFocusChange);
+    window.addEventListener("mouseup", this._handleFocusChange);
   }
   public componentWillUnmount() {
-    window.removeEventListener("focus", this.handleFocusChange);
-    window.removeEventListener("mouseup", this.handleFocusChange);
+    window.removeEventListener("focus", this._handleFocusChange);
+    window.removeEventListener("mouseup", this._handleFocusChange);
   }
   public focus = () => {
     if (this._menuElement)
@@ -239,15 +239,15 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
       this._menuElement.blur();
   }
 
-  private handleFocusChange = (event: any) => {
+  private _handleFocusChange = (event: any) => {
     if (this._rootElement && this.props.opened && event.target instanceof Node && this.props.onBlur && !this._rootElement.contains(event.target))
       this.props.onBlur(event);
   }
-  private handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  private _handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (this.props.onSelect)
       this.props.onSelect(event);
   }
-  private handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.keyCode === 37) /*<Left>*/ {
       event.stopPropagation();
       if (this.props.parent && this.props.parentSubmenu) {
@@ -338,11 +338,11 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
     return (
       <div
         ref={(el) => { this._root = el; }}
-        onClick={this.handleClick}
+        onClick={this._handleClick}
         style={this.props.style}
-        onFocus={this.handleFocus}
-        onKeyUp={this.handleKeyUp}
-        onMouseOver={this.handleMouseOver}
+        onFocus={this._handleFocus}
+        onKeyUp={this._handleKeyUp}
+        onMouseOver={this._handleMouseOver}
         className={classnames(this.props.className, "context-menu-item", { disabled: this.props.disabled, selected: this.props.selected })}>
         <div className={classnames("context-menu-icon", "icon", this.props.icon)} />
         <div className={"context-menu-content"}>{this.props.children}</div>
@@ -350,11 +350,11 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
     );
   }
 
-  private handleFocus = (event: React.FocusEvent<HTMLDivElement>) => {
+  private _handleFocus = (event: React.FocusEvent<HTMLDivElement>) => {
     event.stopPropagation();
   }
 
-  private handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
+  private _handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
     if (this._root && this._root.style.visibility !== "hidden" && this.props.onHover) {
       this.props.onHover();
     }
@@ -368,13 +368,13 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
     }
   }
 
-  private handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  private _handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (this.props.onClick)
       this.props.onClick(event);
     if (this.props.onSelect)
       this.props.onSelect(event);
   }
-  private handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.keyCode === 13 && this.props.onSelect !== undefined) {
       this.props.onSelect(event);
     }
@@ -466,10 +466,10 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     }
     return (
       <div className={"context-submenu"}
-        onMouseOver={this.handleMouseOver}
+        onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}>
         <div
-          onClick={this.handleClick}
+          onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
           style={this.props.style}
           className={classnames("context-menu-item context-submenu-container", { disabled: this.props.disabled, selected: this.props.selected })}>
@@ -494,11 +494,11 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     );
   }
   public componentDidMount() {
-    document.addEventListener("click", this.handleClickGlobal);
+    document.addEventListener("click", this._handleClickGlobal);
   }
 
   public componentWillUnmount() {
-    document.removeEventListener("click", this.handleClickGlobal);
+    document.removeEventListener("click", this._handleClickGlobal);
   }
 
   public select = () => {
@@ -518,13 +518,13 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     }
   }
 
-  private handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
+  private _handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
     if (this._menuButtonElement && this._menuButtonElement.style.visibility !== "hidden" && this.props.onHover) {
       this.props.onHover();
     }
   }
 
-  private handleClick = (event: any) => {
+  private _handleClick = (event: any) => {
     event.stopPropagation();
     if (!this.props.disabled) {
       if (this.props.onClick !== undefined)
@@ -533,7 +533,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     }
   }
 
-  private handleClickGlobal = (event: any) => {
+  private _handleClickGlobal = (event: any) => {
     if (this._subMenuElement && !this._subMenuElement.contains(event.target))
       this.setState((_prevState) => ({ opened: false }));
   }

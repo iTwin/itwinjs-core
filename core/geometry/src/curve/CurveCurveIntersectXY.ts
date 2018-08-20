@@ -33,21 +33,21 @@ export class CurveLocationDetailArrayPair {
  */
 class CurveCurveIntersectXY extends NullGeometryHandler {
   // private geometryA: GeometryQuery;  // nb never used -- passed through handlers.
-  private extendA: boolean;
-  private geometryB: GeometryQuery;
-  private extendB: boolean;
-  private results!: CurveLocationDetailArrayPair;
+  private _extendA: boolean;
+  private _geometryB: GeometryQuery;
+  private _extendB: boolean;
+  private _results!: CurveLocationDetailArrayPair;
 
   private reinitialize() {
-    this.results = new CurveLocationDetailArrayPair();
+    this._results = new CurveLocationDetailArrayPair();
   }
 
   public constructor(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
     super();
     // this.geometryA = _geometryA;
-    this.extendA = extendA;
-    this.geometryB = geometryB;
-    this.extendB = extendB;
+    this._extendA = extendA;
+    this._geometryB = geometryB;
+    this._extendB = extendB;
     this.reinitialize();
   }
   /**
@@ -56,13 +56,13 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
    *
    */
   public grabResults(reinitialize: boolean = false): CurveLocationDetailArrayPair {
-    const result = this.results;
+    const result = this._results;
     if (reinitialize)
       this.reinitialize();
     return result;
   }
 
-  private static workVector2dA = Vector2d.create();
+  private static _workVector2dA = Vector2d.create();
 
   private acceptFraction(extend0: boolean, fraction: number, extend1: boolean) {
     if (!extend0 && fraction < 0.0)
@@ -93,7 +93,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     reversed: boolean,
   ) {
 
-    const uv = CurveCurveIntersectXY.workVector2dA;
+    const uv = CurveCurveIntersectXY._workVector2dA;
     if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
       pointA0, pointA1,
       pointB0, pointB1, uv)
@@ -109,11 +109,11 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         pointB0.interpolate(uv.y, pointB1));
       detailB.setIntervalRole(CurveIntervalRole.isolated);
       if (reversed) {
-        this.results.dataA.push(detailB);
-        this.results.dataB.push(detailA);
+        this._results.dataA.push(detailB);
+        this._results.dataB.push(detailA);
       } else {
-        this.results.dataA.push(detailA);
-        this.results.dataB.push(detailB);
+        this._results.dataA.push(detailA);
+        this._results.dataB.push(detailB);
       }
     }
   }
@@ -121,8 +121,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   public computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any {
     const pointA0 = lsA.point0Ref;
     const pointA1 = lsA.point1Ref;
-    const pointB0 = CurveCurveIntersectXY.workPointB0;
-    const pointB1 = CurveCurveIntersectXY.workPointB1;
+    const pointB0 = CurveCurveIntersectXY._workPointB0;
+    const pointB1 = CurveCurveIntersectXY._workPointB1;
     const numB = lsB.numPoints();
     if (numB > 1) {
       const dfB = 1.0 / (numB - 1);
@@ -142,30 +142,30 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     return undefined;
   }
 
-  private static workPointA0 = Point3d.create();
-  private static workPointA1 = Point3d.create();
-  private static workPointB0 = Point3d.create();
-  private static workPointB1 = Point3d.create();
+  private static _workPointA0 = Point3d.create();
+  private static _workPointA1 = Point3d.create();
+  private static _workPointB0 = Point3d.create();
+  private static _workPointB1 = Point3d.create();
 
   public handleLineSegment3d(segmentA: LineSegment3d): any {
-    if (this.geometryB instanceof LineSegment3d) {
-      const segmentB = this.geometryB;
+    if (this._geometryB instanceof LineSegment3d) {
+      const segmentB = this._geometryB;
       this.computeSegmentSegment(
-        segmentA, this.extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this.extendA,
-        segmentB, this.extendB, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this.extendB,
+        segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
+        segmentB, this._extendB, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this._extendB,
         false);
-    } else if (this.geometryB instanceof LineString3d) {
-      this.computeSegmentLineString(segmentA, this.extendA, this.geometryB, this.extendB, false);
+    } else if (this._geometryB instanceof LineString3d) {
+      this.computeSegmentLineString(segmentA, this._extendA, this._geometryB, this._extendB, false);
     }
   }
 
   public handleLineString3d(lsA: LineString3d): any {
-    if (this.geometryB instanceof LineString3d) {
-      const lsB = this.geometryB as LineString3d;
-      const pointA0 = CurveCurveIntersectXY.workPointA0;
-      const pointA1 = CurveCurveIntersectXY.workPointA1;
-      const pointB0 = CurveCurveIntersectXY.workPointB0;
-      const pointB1 = CurveCurveIntersectXY.workPointB1;
+    if (this._geometryB instanceof LineString3d) {
+      const lsB = this._geometryB as LineString3d;
+      const pointA0 = CurveCurveIntersectXY._workPointA0;
+      const pointA1 = CurveCurveIntersectXY._workPointA1;
+      const pointB0 = CurveCurveIntersectXY._workPointB0;
+      const pointB1 = CurveCurveIntersectXY._workPointB1;
       const numA = lsA.numPoints();
       const numB = lsB.numPoints();
       if (numA > 1 && numB > 1) {
@@ -176,8 +176,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         let fB0;
         let fA1;
         let fB1;
-        const extendA = this.extendA;
-        const extendB = this.extendB;
+        const extendA = this._extendA;
+        const extendB = this._extendB;
         lsA.pointAt(0, pointA0);
         for (let ia = 1; ia < numA; ia++ , pointA0.setFrom(pointA1), fA0 = fA1) {
           fA1 = ia * dfA;
@@ -194,8 +194,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
           }
         }
       }
-    } else if (this.geometryB instanceof LineSegment3d) {
-      this.computeSegmentLineString(this.geometryB, this.extendB, lsA, this.extendA, true);
+    } else if (this._geometryB instanceof LineSegment3d) {
+      this.computeSegmentLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
     }
     return undefined;
     /*  public handleArc3d(arc0: Arc3d): any {

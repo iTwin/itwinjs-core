@@ -1,0 +1,168 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+/* The Modal (background) */
+.modal-background {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed; /* Stay in place */
+  z-index: 10; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* dialog box */
+.projects {
+  background-color: #fefefe;
+  width: 850px;
+  height: 500px;
+  border: 1px solid #888;
+  position: relative;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* header */
+.projects .header {
+  flex: initial;
+  padding: 1em;
+  display: flex;
+  align-items: center;
+  color: $bwc-text-color;
+  border-bottom: 1px solid #eee;
+}
+
+/* title */
+.projects .header h3 {
+  margin: 0;
+  color: $bwc-text-color;
+}
+
+/* close button */
+.projects .header .icon {
+  margin-left: auto;
+  font-size: 1em;
+  color: $bwc-icons-dark;
+  cursor: pointer;
+  -webkit-transition: color 0.3s;
+	transition: color 0.3s;
+}
+
+/* close button hover */
+.projects .header .icon:hover {
+  color: #000;
+}
+
+/* content */
+.projects .projects-content {
+  height: 100%;
+  color: $bwc-gray;
+  padding: .5em 1.5em 1.5em 1.5em;
+  display: flex;
+  flex-direction: column;
+}
+
+/* container for tabs */
+.projects-content .tabs-container {
+  display: flex;
+  align-items: center;
+}
+
+/* container for table */
+.projects-content .table-container {
+  height: 100%;
+  overflow: auto;
+  margin-top: 1em;
+}
+
+/* projects list (table) */
+.projects .projects-content table {
+  width: 100%;
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+
+  th, td {
+    border-bottom: 1px solid $bwc-tables-border-color;
+    cursor: pointer;
+  }
+
+  th {
+    font-weight: 500;
+    text-align: left;
+    padding: .75em;
+    font-size: $bwc-font-size-leading;
+    color: dimgray;
+    background: $bwc-tables-head-light;
+  }
+
+  td {
+    text-align: left;
+    padding: .75em;
+    font-size: $bwc-font-size;
+    color: dimgray;
+  }
+
+  tr:hover {background-color: #f5f5f5}
+}
+
+/* search box */
+.projects .projects-content .tabs-searchbox {
+  margin-left: 3em;
+  -webkit-transition: opacity 0.3s;
+  -o-transition: opacity 0.3;
+	transition: opacity 0.3s;
+}
+
+.projects .projects-content .tabs-searchbox.hidden {
+  opacity: 0;
+}
+
+/* loader */
+.projects-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  > div {
+    @include bwc-loaders-large;
+  }
+}
+
+/* no projects prompt */
+.projects-none {
+  position: absolute;
+  white-space: nowrap;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+/* Add Zoom Animation */
+.animate {
+  -webkit-animation: animatezoom 0.6s;
+  animation: animatezoom 0.6s
+}
+
+@-webkit-keyframes animatezoom {
+  from {-webkit-transform: scale(0)}
+  to {-webkit-transform: scale(1)}
+}
+
+@keyframes animatezoom {
+  from {transform: scale(0)}
+  to {transform: scale(1)}
+}

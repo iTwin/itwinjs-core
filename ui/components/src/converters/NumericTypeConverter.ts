@@ -10,7 +10,7 @@ import { TypeConverterManager } from "./TypeConverterManager";
  * Base Numeric Type Converter.
  */
 export class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
-  public isLessGreaterType(): boolean { return true; }
+  public get isLessGreaterType(): boolean { return true; }
 
   public isLessThan(a: any, b: any): boolean {
     return a < b;

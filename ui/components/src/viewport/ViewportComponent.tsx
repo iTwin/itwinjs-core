@@ -61,10 +61,10 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     this._vp = new Viewport(this._canvas.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);
 
-    ViewportManager.CubeRotationChangeEvent.addListener(this.handleCubeRotationChangeEvent);
-    ViewportManager.StandardRotationChangeEvent.addListener(this.handleStandardRotationChangeEvent);
+    ViewportManager.CubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
+    ViewportManager.StandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent);
     if (this._vp) {
-      this._vp.onViewChanged.addListener(this.handleViewChanged);
+      this._vp.onViewChanged.addListener(this._handleViewChanged);
       ViewportManager.setActiveViewport(this._vp);
     }
   }
@@ -75,20 +75,20 @@ export class ViewportComponent extends React.Component<ViewportProps> {
         ViewportManager.setActiveViewport(undefined);
 
       IModelApp.viewManager.dropViewport(this._vp);
-      this._vp.onViewChanged.removeListener(this.handleViewChanged);
+      this._vp.onViewChanged.removeListener(this._handleViewChanged);
     }
 
-    ViewportManager.CubeRotationChangeEvent.removeListener(this.handleCubeRotationChangeEvent);
-    ViewportManager.StandardRotationChangeEvent.removeListener(this.handleStandardRotationChangeEvent);
+    ViewportManager.CubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
+    ViewportManager.StandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
   }
 
-  private onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     event.preventDefault();
 
     ViewportManager.setActiveViewport(this._vp);
   }
 
-  private handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
+  private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
     if (this._vp && ViewportManager.getActiveViewport() === this._vp) {
       if (args.animationTime && args.animationTime < 0) {
         this._vp.synchWithView(true);
@@ -113,7 +113,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     }
   }
 
-  private handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
+  private _handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
     if (this._vp && ViewportManager.getActiveViewport() === this._vp) {
       // this._vp.view.setStandardRotation(args.standardRotation);
       this._vp.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(args.standardRotation));
@@ -121,21 +121,20 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     }
   }
 
-  private handleViewChanged = (vp: Viewport) => {
+  private _handleViewChanged = (vp: Viewport) => {
     const rotMatrix = ViewportComponent.getViewportRotMatrix(vp);
     if (rotMatrix)
       ViewportManager.setViewRotMatrix(vp, rotMatrix);
   }
 
   public static getViewportRotMatrix(vp: Viewport): RotMatrix | undefined {
-    console.log(vp, vp.rotMatrix);
     return vp.rotMatrix;
   }
 
   public render() {
     return (
       <canvas ref={this._canvas} style={{ height: "100%", width: "100%" }}
-        onMouseDown={this.onMouseDown}
+        onMouseDown={this._onMouseDown}
         onContextMenu={(e) => { e.preventDefault(); return false; }}
       />
     );

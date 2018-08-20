@@ -30,28 +30,28 @@ export abstract class AbstractNewtonIterator {
     stepSizeTolerance: number = 1.0e-11,
     successiveConvergenceTarget: number = 2,
     maxIterations: number = 15) {
-    this.stepSizeTolerance = stepSizeTolerance;
-    this.successiveConvergenceTarget = successiveConvergenceTarget;
-    this.maxIterations = maxIterations;
+    this._stepSizeTolerance = stepSizeTolerance;
+    this._successiveConvergenceTarget = successiveConvergenceTarget;
+    this._maxIterations = maxIterations;
   }
-  protected numAccepted: number = 0;
-  protected successiveConvergenceTarget: number;
-  protected stepSizeTolerance: number;
-  protected maxIterations: number;
+  protected _numAccepted: number = 0;
+  protected _successiveConvergenceTarget: number;
+  protected _stepSizeTolerance: number;
+  protected _maxIterations: number;
   public numIterations: number = 0;
   public testConvergence(delta: number): boolean {
-    if (Math.abs(delta) < this.stepSizeTolerance) {
-      this.numAccepted++;
-      return this.numAccepted >= this.successiveConvergenceTarget;
+    if (Math.abs(delta) < this._stepSizeTolerance) {
+      this._numAccepted++;
+      return this._numAccepted >= this._successiveConvergenceTarget;
     }
-    this.numAccepted = 0;
+    this._numAccepted = 0;
     return false;
   }
 
   public runIterations(): boolean {
-    this.numAccepted = 0;
+    this._numAccepted = 0;
     this.numIterations = 0;
-    while (this.numIterations++ < this.maxIterations && this.computeStep()) {
+    while (this.numIterations++ < this._maxIterations && this.computeStep()) {
       if (this.testConvergence(this.currentStepSize())
         && this.applyCurrentStep(true)) {
         return true;
@@ -71,25 +71,25 @@ export abstract class NewtonEvaluatorRtoRD {
   public currentdFdX!: number;
 }
 export class Newton1dUnbounded extends AbstractNewtonIterator {
-  private func: NewtonEvaluatorRtoRD;
-  private currentStep!: number;
-  private currentX!: number;
-  private target!: number;
+  private _func: NewtonEvaluatorRtoRD;
+  private _currentStep!: number;
+  private _currentX!: number;
+  private _target!: number;
   public constructor(func: NewtonEvaluatorRtoRD) {
     super();
-    this.func = func;
+    this._func = func;
     this.setTarget(0);
   }
-  public setX(x: number): boolean { this.currentX = x; return true; }
-  public getX(): number { return this.currentX; }
-  public setTarget(y: number) { this.target = y; }
-  public applyCurrentStep(): boolean { return this.setX(this.currentX - this.currentStep); }
+  public setX(x: number): boolean { this._currentX = x; return true; }
+  public getX(): number { return this._currentX; }
+  public setTarget(y: number) { this._target = y; }
+  public applyCurrentStep(): boolean { return this.setX(this._currentX - this._currentStep); }
   /** Univariate newton step : */
   public computeStep(): boolean {
-    if (this.func.evaluate(this.currentX)) {
-      const dx = Geometry.conditionalDivideFraction(this.func.currentF - this.target, this.func.currentdFdX);
+    if (this._func.evaluate(this._currentX)) {
+      const dx = Geometry.conditionalDivideFraction(this._func.currentF - this._target, this._func.currentdFdX);
       if (dx !== undefined) {
-        this.currentStep = dx;
+        this._currentStep = dx;
         return true;
       }
     }
@@ -97,7 +97,7 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
   }
 
   public currentStepSize(): number {
-    return Math.abs(this.currentStep / (1.0 + Math.abs(this.currentX)));
+    return Math.abs(this._currentStep / (1.0 + Math.abs(this._currentX)));
   }
 }
 
@@ -110,28 +110,28 @@ export abstract class NewtonEvaluatorRtoR {
 }
 
 export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
-  private func: NewtonEvaluatorRtoR;
-  private currentStep!: number;
-  private currentX!: number;
+  private _func: NewtonEvaluatorRtoR;
+  private _currentStep!: number;
+  private _currentX!: number;
   public derivativeH: number; // step size for approximate derivative
 
   public constructor(func: NewtonEvaluatorRtoR) {
     super();
-    this.func = func;
+    this._func = func;
     this.derivativeH = 1.0e-8;
   }
-  public setX(x: number): boolean { this.currentX = x; return true; }
-  public getX(): number { return this.currentX; }
-  public applyCurrentStep(): boolean { return this.setX(this.currentX - this.currentStep); }
+  public setX(x: number): boolean { this._currentX = x; return true; }
+  public getX(): number { return this._currentX; }
+  public applyCurrentStep(): boolean { return this.setX(this._currentX - this._currentStep); }
   /** Univariate newton step : */
   public computeStep(): boolean {
-    if (this.func.evaluate(this.currentX)) {
-      const fA = this.func.currentF;
-      if (this.func.evaluate(this.currentX + this.derivativeH)) {
-        const fB = this.func.currentF;
+    if (this._func.evaluate(this._currentX)) {
+      const fA = this._func.currentF;
+      if (this._func.evaluate(this._currentX + this.derivativeH)) {
+        const fB = this._func.currentF;
         const dx = Geometry.conditionalDivideFraction(fA, (fB - fA) / this.derivativeH);
         if (dx !== undefined) {
-          this.currentStep = dx;
+          this._currentStep = dx;
           return true;
         }
       }
@@ -140,6 +140,6 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
   }
 
   public currentStepSize(): number {
-    return Math.abs(this.currentStep / (1.0 + Math.abs(this.currentX)));
+    return Math.abs(this._currentStep / (1.0 + Math.abs(this._currentX)));
   }
 }

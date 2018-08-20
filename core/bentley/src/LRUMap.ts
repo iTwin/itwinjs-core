@@ -17,44 +17,44 @@ export class Entry<K, V> {
 }
 
 class EntryIterator<K, V> implements Iterator<[K, V] | undefined> {
-  private entry: Entry<K, V> | undefined;
+  private _entry: Entry<K, V> | undefined;
   constructor(oldestEntry: Entry<K, V>) {
-    this.entry = oldestEntry;
+    this._entry = oldestEntry;
   }
   public next() {
-    const ent = this.entry;
+    const ent = this._entry;
     if (!ent)
       return { done: true, value: undefined };
-    this.entry = ent.newer;
+    this._entry = ent.newer;
     const val: [K, V] = [ent.key, ent.value];
     return { done: false, value: val };
   }
 }
 
 class KeyIterator<K, V> implements Iterator<K | undefined>  {
-  private entry: Entry<K, V> | undefined;
+  private _entry: Entry<K, V> | undefined;
   constructor(oldestEntry: Entry<K, V>) {
-    this.entry = oldestEntry;
+    this._entry = oldestEntry;
   }
   public next() {
-    const ent = this.entry;
+    const ent = this._entry;
     if (!ent)
       return { done: true, value: undefined };
-    this.entry = ent.newer;
+    this._entry = ent.newer;
     return { done: false, value: ent.key };
   }
 }
 
 class ValueIterator<K, V> implements Iterator<V | undefined> {
-  private entry: Entry<K, V> | undefined;
+  private _entry: Entry<K, V> | undefined;
   constructor(oldestEntry: Entry<K, V>) {
-    this.entry = oldestEntry;
+    this._entry = oldestEntry;
   }
   public next() {
-    const ent = this.entry;
+    const ent = this._entry;
     if (!ent)
       return { done: true, value: undefined };
-    this.entry = ent.newer;
+    this._entry = ent.newer;
     return { done: false, value: ent.value };
   }
 }

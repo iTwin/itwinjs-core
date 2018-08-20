@@ -44,7 +44,7 @@ export abstract class CurveCollection extends GeometryQuery {
   public maxGap(): number { return GapSearchContext.maxGap(this); }
 
   /** return true if the curve collection has any primitives other than LineSegment3d and LineString3d  */
-  public hasNonLinearPrimitives(): boolean { return CountLinearPartsSearchContext.hasNonLinearPrimitives(this); }
+  public checkForNonLinearPrimitives(): boolean { return CountLinearPartsSearchContext.hasNonLinearPrimitives(this); }
 
   public tryTransformInPlace(transform: Transform): boolean { return TransformInPlaceContext.tryTransformInPlace(this, transform); }
   public clone(): CurveCollection | undefined {
@@ -58,18 +58,18 @@ export abstract class CurveCollection extends GeometryQuery {
    * * `ParityRegion`
    * * `UnionRegion`
    */
-  public isAnyRegionType(): boolean {
+  public get isAnyRegionType(): boolean {
     return this.dgnBoundaryType() === 2 || this.dgnBoundaryType() === 5 || this.dgnBoundaryType() === 4;
   }
   /** Return true for a `Path`, i.e. a chain of curves joined head-to-tail
    */
-  public isOpenPath(): boolean {
+  public get isOpenPath(): boolean {
     return this.dgnBoundaryType() === 1;
   }
   /** Return true for a single-loop planar region type, i.e. `Loop`.
    * * This is _not- a test for physical closure of a `Path`
    */
-  public isClosedPath(): boolean {
+  public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
   }
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
@@ -172,7 +172,7 @@ export abstract class CurveChain extends CurveCollection {
       if (children.length === 1) {
         const ls = children[0];
         if (ls instanceof LineString3d)
-        return ls.packedPoints;
+          return ls.packedPoints;
       }
     }
     return undefined;
@@ -211,11 +211,26 @@ export class Path extends CurveChain {
   }
 
   public constructor() { super(); }
+  /**
+   * Create a path from a variable length list of curve primtiives
+   * @param curves variable length list of individual curve primitives
+   */
   public static create(...curves: CurvePrimitive[]): Path {
     const result = new Path();
     for (const curve of curves) { result.children.push(curve); }
     return result;
   }
+
+  /**
+   * Create a path from a an array of curve primtiives
+   * @param curves array of individual curve primitives
+   */
+  public static createArray(curves: CurvePrimitive[]): Path {
+    const result = new Path();
+    for (const curve of curves) { result.children.push(curve); }
+    return result;
+  }
+
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)
@@ -242,7 +257,21 @@ export class Loop extends CurveChain {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Loop; }
   public constructor() { super(); }
 
+  /**
+   * Create a loop from variable length list of CurvePrimtives
+   * @param curves array of individual curve primitives
+   */
   public static create(...curves: CurvePrimitive[]): Loop {
+    const result = new Loop();
+    for (const curve of curves) { result.children.push(curve); }
+    return result;
+  }
+
+  /**
+   * Create a loop from an array of curve primtiives
+   * @param curves array of individual curve primitives
+   */
+  public static createArray(curves: CurvePrimitive[]): Loop {
     const result = new Loop();
     for (const curve of curves) { result.children.push(curve); }
     return result;
@@ -252,6 +281,7 @@ export class Loop extends CurveChain {
     linestring.addClosurePoint();
     return Loop.create(linestring);
   }
+
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)

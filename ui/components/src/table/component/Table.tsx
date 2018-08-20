@@ -93,8 +93,8 @@ export class Table extends React.Component<TableProps, TableState> {
     if (props.pageAmount)
       this._pageAmount = props.pageAmount;
 
-    this._disposableListeners.add(props.dataProvider.onColumnsChanged.addListener(this.onColumnsChanged));
-    this._disposableListeners.add(props.dataProvider.onRowsChanged.addListener(this.onRowsChanged));
+    this._disposableListeners.add(props.dataProvider.onColumnsChanged.addListener(this._onColumnsChanged));
+    this._disposableListeners.add(props.dataProvider.onRowsChanged.addListener(this._onRowsChanged));
   }
 
   public componentWillReceiveProps(_newProps: TableProps) {
@@ -124,7 +124,7 @@ export class Table extends React.Component<TableProps, TableState> {
     });
   }
 
-  private onColumnsChanged = async () => {
+  private _onColumnsChanged = async () => {
     await this.updateColumns();
   }
 
@@ -133,15 +133,15 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
-    this.rowGetterAsync.cache.clear();
+    this._rowGetterAsync.cache.clear();
     this.setState((prev: TableState) => ({
       ...prev,
       rowsCount,
     }));
-    this.rowGetterAsync(0);
+    this._rowGetterAsync(0);
   }
 
-  private onRowsChanged = async () => {
+  private _onRowsChanged = async () => {
     await this.updateRows();
   }
 
@@ -173,7 +173,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return {
       key: columnDescription.key,
       name: label,
-      ...( columnDescription.icon ? {
+      ...(columnDescription.icon ? {
         width: 32,
         formatter: IconCell,
       } : {}),
@@ -205,20 +205,20 @@ export class Table extends React.Component<TableProps, TableState> {
     return row ? row.item : undefined;
   }
 
-  private rowGetter = (i: number): ReactDataGridRow => {
+  private _rowGetter = (i: number): ReactDataGridRow => {
     if (this.state.rows[i])
       return this.state.rows[i].row;
 
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this.rowGetterAsync(i - (i % this._pageAmount));
+    this._rowGetterAsync(i - (i % this._pageAmount));
 
     // Return placeholder object
     return { __key: "" };
   }
 
-  private rowGetterAsync = _.memoize(async (index: number): Promise<void> => {
+  private _rowGetterAsync = _.memoize(async (index: number): Promise<void> => {
     if (index < 0)
       return;
 
@@ -252,7 +252,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return result;
   }
 
-  private handleGridSort = (columnKey: string, sortDirection: "ASC" | "DESC" | "NONE") => {
+  private _handleGridSort = (columnKey: string, sortDirection: "ASC" | "DESC" | "NONE") => {
     let directionEnum: SortDirection;
 
     switch (sortDirection) {
@@ -306,25 +306,25 @@ export class Table extends React.Component<TableProps, TableState> {
     this.updateRows();
   }
 
-  private onRowClick = (rowIdx: number, row: ReactDataGridRow) => {
-    if (this.isRowSelected(row.__key))
-      this.onRowsDeselected([{ rowIdx, row }]);
+  private _onRowClick = (rowIdx: number, row: ReactDataGridRow) => {
+    if (this._isRowSelected(row.__key))
+      this._onRowsDeselected([{ rowIdx, row }]);
     else
-      this.onRowsSelected([{ rowIdx, row }]);
+      this._onRowsSelected([{ rowIdx, row }]);
   }
 
-  private isRowSelected = (key: string): boolean => {
+  private _isRowSelected = (key: string): boolean => {
     return -1 !== this.state.selectedRowKeys.indexOf(key);
   }
 
-  private getRowItems = (rows: ReactDataGrid.SelectionParams[]): RowItem[] => {
+  private _getRowItems = (rows: ReactDataGrid.SelectionParams[]): RowItem[] => {
     return rows
       .map((r) => this.getRowItem(r.rowIdx))
       .filter((r) => (undefined !== r)) as RowItem[];
   }
 
-  private onRowsSelected = (rows: ReactDataGrid.SelectionParams[]): void => {
-    if (this.props.onRowsSelected && !this.props.onRowsSelected(this.getRowItems(rows), true))
+  private _onRowsSelected = (rows: ReactDataGrid.SelectionParams[]): void => {
+    if (this.props.onRowsSelected && !this.props.onRowsSelected(this._getRowItems(rows), true))
       return;
 
     // wip: add or replace? for now just replace...
@@ -334,8 +334,8 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ selectedRowKeys });
   }
 
-  private onRowsDeselected = (rows: ReactDataGrid.SelectionParams[]): void => {
-    if (this.props.onRowsDeselected && !this.props.onRowsDeselected(this.getRowItems(rows)))
+  private _onRowsDeselected = (rows: ReactDataGrid.SelectionParams[]): void => {
+    if (this.props.onRowsDeselected && !this.props.onRowsDeselected(this._getRowItems(rows)))
       return;
 
     const keepSelected = (key: string): boolean => !rows.some((r) => ((r.row as ReactDataGridRow).__key === key));
@@ -344,14 +344,14 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   public render() {
-  // tslint:disable-next-line:variable-name
+    // tslint:disable-next-line:variable-name
     const DragDropWrapper =
       withDropTarget(class extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
-      public render(): React.ReactNode {
-        const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps;
-        return (<div className="react-data-grid-wrapper" {...props} />);
-      }
-    });
+        public render(): React.ReactNode {
+          const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps;
+          return (<div className="react-data-grid-wrapper" {...props} />);
+        }
+      });
     return (
       <DragDropWrapper
         dropStyle={{
@@ -372,10 +372,10 @@ export class Table extends React.Component<TableProps, TableState> {
           return true;
         }}
         objectTypes={this.props.objectTypes}
-        >
+      >
         <ReactDataGrid
           columns={this.state.columns}
-          rowGetter={this.rowGetter}
+          rowGetter={this._rowGetter}
           rowsCount={this.state.rowsCount}
           enableCellSelect={true}
           minHeight={500}
@@ -422,7 +422,7 @@ export class Table extends React.Component<TableProps, TableState> {
                 if (this.props.objectType) {
                   if (typeof this.props.objectType === "function") {
                     if (data) {
-                      const {row} = data;
+                      const { row } = data;
                       if (row >= 0 && row < this.state.rows.length) {
                         const rowItem = this.state.rows[row];
                         if (rowItem !== undefined && rowItem.item !== undefined) {
@@ -444,21 +444,22 @@ export class Table extends React.Component<TableProps, TableState> {
           }
           rowSelection={{
             showCheckbox: false,
-            onRowsSelected: this.onRowsSelected,
-            onRowsDeselected: this.onRowsDeselected,
+            enableShiftSelect: true,
+            onRowsSelected: this._onRowsSelected,
+            onRowsDeselected: this._onRowsDeselected,
             selectBy: {
               keys: { rowKey: "__key", values: this.state.selectedRowKeys },
             },
           }}
-          onRowClick={(index, row) => this.onRowClick(index, row as ReactDataGridRow)}
-          onGridSort={this.handleGridSort}
+          onRowClick={(index, row) => this._onRowClick(index, row as ReactDataGridRow)}
+          onGridSort={this._handleGridSort}
         />
       </DragDropWrapper>
     );
   }
 }
 
-export class IconCell extends React.Component<{value?: any}> {
+export class IconCell extends React.Component<{ value?: any }> {
   public render() {
     let classes = "icon";
     if (this.props.value)

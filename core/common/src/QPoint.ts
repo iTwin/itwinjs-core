@@ -49,7 +49,7 @@ export class QParams2d {
 
   /** Initialize these parameters to support quantization of values within the specified range. */
   public setFromRange(range: Range2d) {
-    if (!range.isNull()) {
+    if (!range.isNull) {
       this.setFrom(range.low.x, range.low.y, Quantization.computeScale(range.high.x - range.low.x), Quantization.computeScale(range.high.y - range.low.y));
     } else {
       this.origin.x = this.origin.y = this.scale.x = this.scale.y = 0;
@@ -215,7 +215,7 @@ export class QParams3d {
 
   /** Initialize these parameters to support quantization of values within the specified range. */
   public setFromRange(range: Range3d) {
-    if (!range.isNull()) {
+    if (!range.isNull) {
       this.setFrom(range.low.x, range.low.y, range.low.z,
         Quantization.computeScale(range.high.x - range.low.x), Quantization.computeScale(range.high.y - range.low.y), Quantization.computeScale(range.high.z - range.low.z));
     } else {

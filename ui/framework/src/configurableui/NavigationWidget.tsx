@@ -127,24 +127,24 @@ class NavigationWidgetWithDef extends React.Component<Props> {
     super(props);
   }
 
-  private handleToolActivatedEvent = (args: ToolActivatedEventArgs): void => {
+  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs): void => {
     this.setState((_prevState) => ({ toolId: args.toolId }));
   }
 
-  private handleNavigationAidActivatedEvent = (args: NavigationAidActivatedEventArgs): void => {
+  private _handleNavigationAidActivatedEvent = (args: NavigationAidActivatedEventArgs): void => {
     this.props.navigationWidgetDef.updateNavigationAid(args.navigationAidId);
 
     this.setState((_prevState) => ({ navigationAidId: args.navigationAidId }));
   }
 
   public componentDidMount() {
-    FrontstageManager.ToolActivatedEvent.addListener(this.handleToolActivatedEvent);
-    FrontstageManager.NavigationAidActivatedEvent.addListener(this.handleNavigationAidActivatedEvent);
+    FrontstageManager.ToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    FrontstageManager.NavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.ToolActivatedEvent.removeListener(this.handleToolActivatedEvent);
-    FrontstageManager.NavigationAidActivatedEvent.removeListener(this.handleNavigationAidActivatedEvent);
+    FrontstageManager.ToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    FrontstageManager.NavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
   }
 
   public render(): React.ReactNode {

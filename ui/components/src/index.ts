@@ -25,6 +25,10 @@ export * from "./viewport";
  * Classes for working with a Breadcrumb.
  */
 /**
+ * @docs-group-description DragDrop
+ * Classes and Higher Order Components for working with the DragDrop API.
+ */
+/**
  * @docs-group-description Properties
  * Classes for working with Properties.
  */

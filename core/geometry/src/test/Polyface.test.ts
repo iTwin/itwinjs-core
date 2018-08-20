@@ -140,7 +140,7 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
     const faceData = polyface.getFaceDataByFacetIndex(i);  // Ensures we do not get out of bounds exception
     ck.testTrue(faceData !== undefined);
     if (shouldCheckParamDistance)
-      ck.testFalse(faceData.paramDistanceRange.isNull(), "paramDistanceRange should not be null");
+      ck.testFalse(faceData.paramDistanceRange.isNull, "paramDistanceRange should not be null");
   }
 }
 
@@ -280,7 +280,7 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string) {
     dy = 4.0 * gRange.yLength();
     const transformX = Transform.createTranslationXYZ(dx, 0, 0);
 
-    if (!gRange.isNull()) {
+    if (!gRange.isNull) {
       const corners = gRange.corners();
       const ls = LineString3d.create(
         corners[0], corners[1],

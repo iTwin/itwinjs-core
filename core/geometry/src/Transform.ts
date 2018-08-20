@@ -131,7 +131,7 @@ export class RotMatrix implements BeJSONFunctions {
   public coffs: Float64Array;
   public inverseCoffs: Float64Array | undefined;
   public inverseState: InverseMatrixState;
-  public static _identity: RotMatrix;
+  private static _identity: RotMatrix;
 
   /** The identity RotMatrix. Value is frozen and cannot be modified. */
   public static get identity(): RotMatrix {
@@ -211,7 +211,7 @@ export class RotMatrix implements BeJSONFunctions {
   /** Test for exact (bitwise) equality with other. */
   public isExactEqual(other: RotMatrix): boolean { return this.maxDiff(other) === 0.0; }
   /** test if all entries in the z row and column are exact 001, i.e. the matrix only acts in 2d */
-  public isXY(): boolean {
+  public get isXY(): boolean {
     return this.coffs[2] === 0.0
       && this.coffs[5] === 0.0
       && this.coffs[6] === 0.0
@@ -645,7 +645,42 @@ export class RotMatrix implements BeJSONFunctions {
       return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
     }
     if (Math.abs(s) < Geometry.smallAngleRadians) {
-      return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: true };
+      // There is no significant skew.
+      // The matrix is symmetric
+      // So it has simple eigenvalues -- either (1,1,1) or (1,-1,-1).
+      if (c > 0)  // no rotation
+        return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: true };
+      // 180 degree flip around some axis ?
+      // Look for the simple case of a principal rotation ...
+      // look for a pair of (-1) entries on the diagonal ...
+      const axx = this.coffs[0];
+      const ayy = this.coffs[4];
+      const azz = this.coffs[8];
+      const theta180 = Angle.createDegrees(180);
+      // Look for principal axis flips as a special case . ..
+      if (Geometry.isAlmostEqualNumber(-1.0, ayy) && Geometry.isAlmostEqualNumber(-1, azz)) {
+        // rotate around
+        return { axis: Vector3d.create(1, 0, 0), angle: theta180, ok: true };
+      } else if (Geometry.isAlmostEqualNumber(-1.0, axx) && Geometry.isAlmostEqualNumber(-1, azz)) {
+        return { axis: Vector3d.create(0, 1, 0), angle: theta180, ok: true };
+      } else if (Geometry.isAlmostEqualNumber(-1.0, axx) && Geometry.isAlmostEqualNumber(-1, ayy)) {
+        return { axis: Vector3d.create(0, 0, 1), angle: theta180, ok: true };
+      }
+
+      // 180 degree flip around some other axis ...
+      const eigenvectors = RotMatrix.createIdentity();
+      const eigenvalues = Vector3d.create(0, 0, 0);
+      if (this.fastSymmetricEigenvalues(eigenvectors, eigenvalues)) {
+        if (Geometry.isAlmostEqualNumber(1, eigenvalues.x))
+          return { axis: eigenvectors.getColumn(0), angle: theta180, ok: true };
+        if (Geometry.isAlmostEqualNumber(1, eigenvalues.y))
+          return { axis: eigenvectors.getColumn(1), angle: theta180, ok: true };
+        if (Geometry.isAlmostEqualNumber(1, eigenvalues.z))
+          return { axis: eigenvectors.getColumn(2), angle: theta180, ok: true };
+        // Don't know if this can be reached ....
+        return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
+      }
+      return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
     }
     const a = 1.0 / (2.0 * s);
     const result = { axis: Vector3d.create(skewYZ * a, skewZX * a, skewXY * a), angle: Angle.createAtan2(s, c), ok: true };
@@ -1755,13 +1790,13 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Test if the matrix is (very near to) an identity */
-  public isIdentity(): boolean {
+  public get isIdentity(): boolean {
     return this.maxDiff(RotMatrix.identity) < Geometry.smallAngleRadians;
 
   }
 
   /** Test if the off diagonal entries are all nearly zero */
-  public isDiagonal(): boolean {
+  public get isDiagonal(): boolean {
     const sumAll = this.sumSquares();
     const sumDiagonal = this.sumDiagonalSquares();
     const sumOff = Math.abs(sumAll - sumDiagonal);
@@ -1769,7 +1804,7 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Test if the below diagonal entries are all nearly zero */
-  public isUpperTriangular(): boolean {
+  public get isUpperTriangular(): boolean {
     const sumAll = this.sumSquares();
     const sumLow = Geometry.hypotenuseSquaredXYZ(this.coffs[3], this.coffs[6], this.coffs[7]);
     return Math.sqrt(sumLow) <= Geometry.smallAngleRadians * (1.0 + Math.sqrt(sumAll));
@@ -1797,7 +1832,7 @@ export class RotMatrix implements BeJSONFunctions {
 
   /** Test if the matrix is a pure rotation. */
   public isRigid(allowMirror: boolean = false): boolean {
-    return this.hasPerpendicularUnitRowsAndColumns() && (allowMirror || this.determinant() > 0);
+    return this.testPerpendicularUnitRowsAndColumns() && (allowMirror || this.determinant() > 0);
   }
   /** Test if all rows and columns are perpendicular to each other and have equal length.
    * If so, the length (or its negative) is the scale factor from a set of rigid axes to these axes.
@@ -1815,7 +1850,7 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Test if the matrix is shuffles and negates columns. */
-  public isSignedPermutation(): boolean {
+  public get isSignedPermutation(): boolean {
     let count = 0;
     for (let row = 0; row < 3; row++)
       for (let col = 0; col < 3; col++) {
@@ -1841,9 +1876,9 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Test if all rows and columns are length 1 and are perpendicular to each other.  (I.e. the matrix is either a pure rotation with uniform scale factor of 1 or -1) */
-  public hasPerpendicularUnitRowsAndColumns(): boolean {
+  public testPerpendicularUnitRowsAndColumns(): boolean {
     const product = this.multiplyMatrixMatrixTranspose(this);
-    return product.isIdentity();
+    return product.isIdentity;
   }
   /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse)
    * vectorA is placed in the first column of the axis order.
@@ -1901,7 +1936,7 @@ export class Transform implements BeJSONFunctions {
   // ASSUME no calls to other methods that use the same scratch.
   // When Transform was in the same file with Point3d, this was initialized right here.
   // But when split, there is a load order issue, so it has to be initialized at point-of-use
-  private static scratchPoint: Point3d;
+  private static _scratchPoint: Point3d;
   private _origin: XYZ;
   private _matrix: RotMatrix;
   // Constructor accepts and uses POINTER to content .. no copy here.
@@ -2021,8 +2056,8 @@ export class Transform implements BeJSONFunctions {
   public getTranslation(): Vector3d { return Vector3d.createFrom(this._origin); }
 
   /** test if the transform has 000 origin and identity RotMatrix */
-  public isIdentity(): boolean {
-    return this._matrix.isIdentity() && this._origin.isAlmostZero();
+  public get isIdentity(): boolean {
+    return this._matrix.isIdentity && this._origin.isAlmostZero;
   }
   /** Return an identity transform, optionally filling existing transform.  */
   public static createIdentity(result?: Transform): Transform {
@@ -2242,10 +2277,10 @@ export class Transform implements BeJSONFunctions {
    * @param transformB right operand
    */
   public setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void {
-    if (Transform.scratchPoint === undefined)
-      Transform.scratchPoint = Point3d.create();
-    RotMatrix.XYZPlusMatrixTimesXYZ(transformA._origin, transformA._matrix, transformB._origin, Transform.scratchPoint);
-    this._origin.setFrom(Transform.scratchPoint);
+    if (Transform._scratchPoint === undefined)
+      Transform._scratchPoint = Point3d.create();
+    RotMatrix.XYZPlusMatrixTimesXYZ(transformA._origin, transformA._matrix, transformB._origin, Transform._scratchPoint);
+    this._origin.setFrom(Transform._scratchPoint);
     transformA._matrix.multiplyMatrixMatrix(transformB._matrix, this._matrix);
   }
   //   [Q A][R 0] = [QR A]

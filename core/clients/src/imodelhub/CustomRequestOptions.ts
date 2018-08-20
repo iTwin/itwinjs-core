@@ -24,7 +24,7 @@ export class CustomRequestOptions {
     return customOptions;
   }
 
-  public isSet(): boolean {
+  public get isSet(): boolean {
     return null != this._customOptions;
   }
 }

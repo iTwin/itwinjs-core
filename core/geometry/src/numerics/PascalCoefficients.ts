@@ -6,7 +6,7 @@
  *
  */
 export class PascalCoefficients {
-  private static allRows: Float64Array[] = [];
+  private static _allRows: Float64Array[] = [];
   /**
    * * return a row of the pascal table.
    * * The contents must not be altered by the user !!!
@@ -14,7 +14,7 @@ export class PascalCoefficients {
    * * BUT in practice, values 60 create integer entries that are too big for IEEE double.
    */
   public static getRow(row: number): Float64Array {
-    const allRows = PascalCoefficients.allRows;
+    const allRows = PascalCoefficients._allRows;
     if (allRows.length === 0) {
       // seed the table . . .
       allRows.push(new Float64Array([1]));

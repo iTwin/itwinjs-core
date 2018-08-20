@@ -18,15 +18,15 @@ describe("SqliteStatement", () => {
 
   it("Create Table, Insert, Select with ECDb", () => {
     using(ECDbTestHelper.createECDb(_outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValue(1, stringVal);
         stmt.bindValue(2, intVal);
         stmt.bindValue(3, doubleVal);
@@ -35,13 +35,13 @@ describe("SqliteStatement", () => {
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValues([stringVal, intVal, doubleVal, blobVal]);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(:string,:int,:double,:blob)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValue(":string", stringVal);
         stmt.bindValue(":int", intVal);
         stmt.bindValue(":double", doubleVal);
@@ -50,7 +50,7 @@ describe("SqliteStatement", () => {
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(:string,:int,:double,:blob)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValues({ ":string": stringVal, ":int": intVal, ":double": doubleVal, ":blob": blobVal });
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
@@ -58,13 +58,13 @@ describe("SqliteStatement", () => {
       ecdb.saveChanges();
 
       ecdb.withPreparedSqliteStatement("SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable", (stmt: SqliteStatement) => {
-        assert.isTrue(stmt.isReadonly());
+        assert.isTrue(stmt.isReadonly);
         let rowCount: number = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
           assert.equal(stmt.getColumnCount(), 5);
           const idSqlVal: SqliteValue = stmt.getValue(0);
-          assert.isFalse(idSqlVal.isNull());
+          assert.isFalse(idSqlVal.isNull);
           assert.equal(idSqlVal.type, SqliteValueType.Integer);
           assert.isDefined(idSqlVal.value);
           assert.equal(idSqlVal.value, rowCount);
@@ -72,7 +72,7 @@ describe("SqliteStatement", () => {
           assert.equal(idSqlVal.columnName, "id");
 
           const stringSqlVal: SqliteValue = stmt.getValue(1);
-          assert.isFalse(stringSqlVal.isNull());
+          assert.isFalse(stringSqlVal.isNull);
           assert.equal(stringSqlVal.type, SqliteValueType.String);
           assert.isDefined(stringSqlVal.value);
           assert.equal(stringSqlVal.value, stringVal);
@@ -80,7 +80,7 @@ describe("SqliteStatement", () => {
           assert.equal(stringSqlVal.columnName, "stringcol");
 
           const intSqlVal: SqliteValue = stmt.getValue(2);
-          assert.isFalse(intSqlVal.isNull());
+          assert.isFalse(intSqlVal.isNull);
           assert.equal(intSqlVal.type, SqliteValueType.Integer);
           assert.isDefined(intSqlVal.value);
           assert.equal(intSqlVal.value, intVal);
@@ -88,7 +88,7 @@ describe("SqliteStatement", () => {
           assert.equal(intSqlVal.columnName, "intcol");
 
           const doubleSqlVal: SqliteValue = stmt.getValue(3);
-          assert.isFalse(doubleSqlVal.isNull());
+          assert.isFalse(doubleSqlVal.isNull);
           assert.equal(doubleSqlVal.type, SqliteValueType.Double);
           assert.isDefined(doubleSqlVal.value);
           assert.equal(doubleSqlVal.value, doubleVal);
@@ -96,7 +96,7 @@ describe("SqliteStatement", () => {
           assert.equal(doubleSqlVal.columnName, "doublecol");
 
           const blobSqlVal: SqliteValue = stmt.getValue(4);
-          assert.isFalse(blobSqlVal.isNull());
+          assert.isFalse(blobSqlVal.isNull);
           assert.equal(blobSqlVal.type, SqliteValueType.Blob);
           assert.isDefined(blobSqlVal.value);
           assert.equal(blobSqlVal.value.byteLength, blobVal.byteLength);
@@ -107,7 +107,7 @@ describe("SqliteStatement", () => {
       });
 
       ecdb.withPreparedSqliteStatement("SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable", (stmt: SqliteStatement) => {
-        assert.isTrue(stmt.isReadonly());
+        assert.isTrue(stmt.isReadonly);
         let rowCount: number = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
@@ -131,7 +131,7 @@ describe("SqliteStatement", () => {
       });
 
       ecdb.withPreparedSqliteStatement("SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable", (stmt: SqliteStatement) => {
-        assert.isTrue(stmt.isReadonly());
+        assert.isTrue(stmt.isReadonly);
         let rowCount: number = 0;
         for (const row of stmt) {
           rowCount++;
@@ -157,15 +157,15 @@ describe("SqliteStatement", () => {
 
   it("Null values", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindnull.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValue(1, undefined);
         stmt.bindValue(2, undefined);
         stmt.bindValue(3, undefined);
@@ -174,19 +174,19 @@ describe("SqliteStatement", () => {
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValues([]);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValues([undefined, undefined]);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(:string,:int,:double,:blob)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValue(":string", undefined);
         stmt.bindValue(":int", undefined);
         stmt.bindValue(":double", undefined);
@@ -195,13 +195,13 @@ describe("SqliteStatement", () => {
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValues({});
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly());
+        assert.isFalse(stmt.isReadonly);
         stmt.bindValues({ ":string": undefined, ":int": undefined });
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
@@ -209,18 +209,18 @@ describe("SqliteStatement", () => {
       ecdb.saveChanges();
 
       ecdb.withPreparedSqliteStatement("SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable", (stmt: SqliteStatement) => {
-        assert.isTrue(stmt.isReadonly());
+        assert.isTrue(stmt.isReadonly);
         let rowCount: number = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
           for (let i = 0; i < stmt.getColumnCount(); i++) {
             const sqlVal: SqliteValue = stmt.getValue(i);
             if (i === 0) {
-              assert.isFalse(sqlVal.isNull());
+              assert.isFalse(sqlVal.isNull);
               assert.equal(sqlVal.type, SqliteValueType.Integer);
               assert.equal(sqlVal.getInteger(), rowCount);
             } else {
-              assert.isTrue(sqlVal.isNull());
+              assert.isTrue(sqlVal.isNull);
               assert.equal(sqlVal.type, SqliteValueType.Null);
             }
           }
@@ -235,12 +235,12 @@ describe("SqliteStatement", () => {
     const fileName = "sqlitesqlagainstreadonlyconnection.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
     using(ECDbTestHelper.createECDb(_outDir, fileName), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
     });
 
     using(new ECDb(), (ecdb: ECDb) => {
       ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
-      assert.isTrue(ecdb.isOpen());
+      assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
         let rowCount: number = 0;
@@ -250,13 +250,13 @@ describe("SqliteStatement", () => {
           const nameVal: SqliteValue = stmt.getValue(0);
           assert.equal(nameVal.columnName, "Name");
           assert.equal(nameVal.type, SqliteValueType.String);
-          assert.isFalse(nameVal.isNull());
+          assert.isFalse(nameVal.isNull);
           const name: string = nameVal.getString();
 
           const versionVal: SqliteValue = stmt.getValue(1);
           assert.equal(versionVal.columnName, "StrData");
           assert.equal(versionVal.type, SqliteValueType.String);
-          assert.isFalse(versionVal.isNull());
+          assert.isFalse(versionVal.isNull);
           const profileVersion: any = JSON.parse(versionVal.getString());
 
           assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");

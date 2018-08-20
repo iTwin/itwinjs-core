@@ -17,13 +17,13 @@ export interface DragDropLayerChangedEventArgs {
 
 /** Drag/Drop Layer Changed Event class.
  */
-export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {}
+export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> { }
 
 /** Drag/Drop Layer Manager class.
  */
 export class DragDropLayerManager {
   private static _currentType: string | undefined;
-  private static _layers: {[type: string]: React.ComponentType<DragLayerProps>} = {};
+  private static _layers: { [type: string]: React.ComponentType<DragLayerProps> } = {};
   private static _dragDropLayerChangedEvent: DragDropLayerChangedEvent = new DragDropLayerChangedEvent();
 
   public static get DragDropLayerChangedEvent(): DragDropLayerChangedEvent { return this._dragDropLayerChangedEvent; }
@@ -40,7 +40,7 @@ export class DragDropLayerManager {
 
   public static setType(type: string | undefined) {
     this._currentType = type;
-    this._dragDropLayerChangedEvent.emit({type});
+    this._dragDropLayerChangedEvent.emit({ type });
   }
   public static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>) {
     this._layers[type] = layer;
@@ -61,13 +61,13 @@ export interface DragDropLayerRendererProps {
   itemType?: string;
   args?: DragSourceArguments;
   /** @hidden */
-  clientOffset?: {x: number, y: number};
+  clientOffset?: { x: number, y: number };
   /** @hidden */
-  initialClientOffset?: {x: number, y: number};
+  initialClientOffset?: { x: number, y: number };
   /** @hidden */
-  sourceClientOffset?: {x: number, y: number};
+  sourceClientOffset?: { x: number, y: number };
   /** @hidden */
-  initialSourceClientOffset?: {x: number, y: number};
+  initialSourceClientOffset?: { x: number, y: number };
 }
 
 /** DragDropLayerRenderer component.
@@ -75,28 +75,28 @@ export interface DragDropLayerRendererProps {
 class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
   private _dragging: boolean = false;
   public componentDidMount() {
-    window.addEventListener("dragstart", this.handleDragStart);
-    window.addEventListener("dragend", this.handleDragEnd);
+    window.addEventListener("dragstart", this._handleDragStart);
+    window.addEventListener("dragend", this._handleDragEnd);
   }
 
   public componentWillUnmount() {
-    window.removeEventListener("dragstart", this.handleDragStart);
-    window.removeEventListener("dragend", this.handleDragEnd);
+    window.removeEventListener("dragstart", this._handleDragStart);
+    window.removeEventListener("dragend", this._handleDragEnd);
   }
 
-  private handleDragStart = () => {
+  private _handleDragStart = () => {
     this._dragging = true;
   }
 
-  private handleDragEnd = () => {
+  private _handleDragEnd = () => {
     this._dragging = false;
   }
 
   public render(): React.ReactNode {
-    if (this.props.itemType !== DragDropLayerManager.getType() ) {
+    if (this.props.itemType !== DragDropLayerManager.getType()) {
       DragDropLayerManager.setType(this.props.itemType);
     }
-    const {item,
+    const { item,
       clientOffset, initialClientOffset,
       sourceClientOffset, initialSourceClientOffset,
     } = this.props;

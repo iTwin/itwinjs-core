@@ -17,23 +17,23 @@ import { LineString3d } from "../curve/LineString3d";
 /**
  */
 export class Box extends SolidPrimitive {
-  private localToWorld: Transform;
-  private baseX: number;
-  private baseY: number;
-  private topX: number;
-  private topY: number;
+  private _localToWorld: Transform;
+  private _baseX: number;
+  private _baseY: number;
+  private _topX: number;
+  private _topY: number;
 
   protected constructor(map: Transform,
     baseX: number, baseY: number, topX: number, topY: number, capped: boolean) {
     super(capped);
-    this.localToWorld = map;
-    this.baseX = baseX;
-    this.baseY = baseY;
-    this.topX = topX;
-    this.topY = topY;
+    this._localToWorld = map;
+    this._baseX = baseX;
+    this._baseY = baseY;
+    this._topX = topX;
+    this._topY = topY;
   }
   public clone(): Box {
-    return new Box(this.localToWorld.clone(), this.baseX, this.baseY, this.topX, this.topY, this.capped);
+    return new Box(this._localToWorld.clone(), this._baseX, this._baseY, this._topX, this._topY, this.capped);
   }
 
   /** Return a coordinate frame (right handed unit vectors)
@@ -43,16 +43,16 @@ export class Box extends SolidPrimitive {
    * * z direction perpenedicular
    */
   public getConstructiveFrame(): Transform | undefined {
-    return this.localToWorld.cloneRigid();
+    return this._localToWorld.cloneRigid();
   }
   public tryTransformInPlace(transform: Transform): boolean {
-    transform.multiplyTransformTransform(this.localToWorld, this.localToWorld);
+    transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
 
   public cloneTransformed(transform: Transform): Box | undefined {
     const result = this.clone();
-    transform.multiplyTransformTransform(result.localToWorld, result.localToWorld);
+    transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
     return result;
   }
 
@@ -95,25 +95,25 @@ export class Box extends SolidPrimitive {
       baseX, baseY, topX, topY, capped);
   }
 
-  public getBaseX(): number { return this.baseX; }
-  public getBaseY(): number { return this.baseY; }
-  public getTopX(): number { return this.topX; }
-  public getTopY(): number { return this.topY; }
-  public getBaseOrigin(): Point3d { return this.localToWorld.multiplyXYZ(0, 0, 0); }
-  public getTopOrigin(): Point3d { return this.localToWorld.multiplyXYZ(0, 0, 1); }
-  public getVectorX(): Vector3d { return this.localToWorld.matrix.columnX(); }
-  public getVectorY(): Vector3d { return this.localToWorld.matrix.columnY(); }
-  public getVectorZ(): Vector3d { return this.localToWorld.matrix.columnZ(); }
+  public getBaseX(): number { return this._baseX; }
+  public getBaseY(): number { return this._baseY; }
+  public getTopX(): number { return this._topX; }
+  public getTopY(): number { return this._topY; }
+  public getBaseOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
+  public getTopOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
+  public getVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  public getVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  public getVectorZ(): Vector3d { return this._localToWorld.matrix.columnZ(); }
   public isSameGeometryClass(other: any): boolean { return other instanceof Box; }
 
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Box) {
       if (this.capped !== other.capped) return false;
-      if (!this.localToWorld.isAlmostEqual(other.localToWorld)) return false;
-      return Geometry.isSameCoordinate(this.baseX, other.baseX)
-        && Geometry.isSameCoordinate(this.baseY, other.baseY)
-        && Geometry.isSameCoordinate(this.topX, other.topX)
-        && Geometry.isSameCoordinate(this.topY, other.topY);
+      if (!this._localToWorld.isAlmostEqual(other._localToWorld)) return false;
+      return Geometry.isSameCoordinate(this._baseX, other._baseX)
+        && Geometry.isSameCoordinate(this._baseY, other._baseY)
+        && Geometry.isSameCoordinate(this._topX, other._topX)
+        && Geometry.isSameCoordinate(this._topY, other._topY);
     }
     return false;
   }
@@ -121,10 +121,10 @@ export class Box extends SolidPrimitive {
     return handler.handleBox(this);
   }
   public strokeConstantVSection(zFraction: number): LineString3d {
-    const ax = Geometry.interpolate(this.baseX, zFraction, this.topX);
-    const ay = Geometry.interpolate(this.baseY, zFraction, this.topY);
+    const ax = Geometry.interpolate(this._baseX, zFraction, this._topX);
+    const ay = Geometry.interpolate(this._baseY, zFraction, this._topY);
     const result = LineString3d.create();
-    const transform = this.localToWorld;
+    const transform = this._localToWorld;
     const workPoint = Point3d.create();
     transform.multiplyXYZ(0, 0, zFraction, workPoint);
     result.addPoint(workPoint);
@@ -144,11 +144,11 @@ export class Box extends SolidPrimitive {
     return Loop.create(ls);
   }
   public extendRange(range: Range3d, transform?: Transform): void {
-    const boxTransform = this.localToWorld;
-    const ax = this.baseX;
-    const ay = this.baseY;
-    const bx = this.topX;
-    const by = this.topY;
+    const boxTransform = this._localToWorld;
+    const ax = this._baseX;
+    const ay = this._baseY;
+    const bx = this._topX;
+    const by = this._topY;
     if (transform) {
       range.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 0);
       range.extendTransformTransformedXYZ(transform, boxTransform, ax, 0, 0);

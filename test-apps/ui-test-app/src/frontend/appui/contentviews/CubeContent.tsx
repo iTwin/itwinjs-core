@@ -21,10 +21,10 @@ class CubeContentControl extends ContentControl {
 class CubeContent extends React.Component {
   private _renderContainer!: HTMLElement;
 
-  private camera!: THREE.PerspectiveCamera;
-  private scene!: THREE.Scene;
-  private box!: THREE.Mesh;
-  private renderer!: THREE.WebGLRenderer;
+  private _camera!: THREE.PerspectiveCamera;
+  private _scene!: THREE.Scene;
+  private _box!: THREE.Mesh;
+  private _renderer!: THREE.WebGLRenderer;
 
   constructor(props: any) {
     super(props);
@@ -46,13 +46,13 @@ class CubeContent extends React.Component {
   }
 
   public componentDidMount() {
-    ViewportManager.CubeRotationChangeEvent.addListener(this.handleCubeRotationChangeEvent);
+    ViewportManager.CubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
     const { width, height } = this._renderContainer.getBoundingClientRect();
 
-    this.camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 10);
-    this.camera.position.z = 1;
+    this._camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 10);
+    this._camera.position.z = 1;
 
-    this.scene = new THREE.Scene();
+    this._scene = new THREE.Scene();
 
     const boxSize = 0.3;
 
@@ -71,47 +71,47 @@ class CubeContent extends React.Component {
       geometry.faces[i + 1].color.setHex(colList[i / 2]);
     }
     const material = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors, overdraw: 0.5 });
-    this.box = new THREE.Mesh(geometry, material);
+    this._box = new THREE.Mesh(geometry, material);
     const wireframe = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 1), new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 3 }));
 
-    this.box.add(wireframe);
-    this.scene.add(this.box);
+    this._box.add(wireframe);
+    this._scene.add(this._box);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setSize(width, height);
-    this._renderContainer.appendChild(this.renderer.domElement);
-    this.animate();
+    this._renderer = new THREE.WebGLRenderer({ antialias: true });
+    this._renderer.setSize(width, height);
+    this._renderContainer.appendChild(this._renderer.domElement);
+    this._animate();
 
     window.addEventListener("resize", this.onWindowResize);
   }
 
   public componentWillUnmount() {
-    ViewportManager.CubeRotationChangeEvent.removeListener(this.handleCubeRotationChangeEvent);
+    ViewportManager.CubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
     window.removeEventListener("resize", this.onWindowResize);
   }
 
-  private handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
+  private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
     const m = args.rotMatrix;
-    this.box.setRotationFromMatrix(new THREE.Matrix4().set(
+    this._box.setRotationFromMatrix(new THREE.Matrix4().set(
       m.at(0, 0), m.at(1, 0), m.at(2, 0), 0,
       m.at(0, 1), m.at(1, 1), m.at(2, 1), 0,
       m.at(0, 2), m.at(1, 2), m.at(2, 2), 0,
-               0,          0,          0, 1,
+      0, 0, 0, 1,
     ));
   }
 
-  private animate = () => {
-    requestAnimationFrame(this.animate);
+  private _animate = () => {
+    requestAnimationFrame(this._animate);
 
-    this.renderer.render(this.scene, this.camera);
+    this._renderer.render(this._scene, this._camera);
   }
 
   private onWindowResize() {
     const { width, height } = this._renderContainer.getBoundingClientRect();
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
+    this._camera.aspect = width / height;
+    this._camera.updateProjectionMatrix();
 
-    this.renderer.setSize(width, height);
+    this._renderer.setSize(width, height);
   }
 }
 

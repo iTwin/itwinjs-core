@@ -29,7 +29,7 @@ export default class Tooltip extends React.Component<TooltipProps> {
         className={className}
         style={this.props.style}
       >
-        <MouseTracker onCoordinatesChange={this.handleCoordinatesChange} />
+        <MouseTracker onCoordinatesChange={this._handleCoordinatesChange} />
         {this.props.children}
       </div>
     );
@@ -67,7 +67,7 @@ export default class Tooltip extends React.Component<TooltipProps> {
     me.style.top = Css.toPx(top - parentRect.top);
   }
 
-  private handleCoordinatesChange = (x: number, y: number) => {
+  private _handleCoordinatesChange = (x: number, y: number) => {
     this.alignTooltip(x, y);
   }
 }

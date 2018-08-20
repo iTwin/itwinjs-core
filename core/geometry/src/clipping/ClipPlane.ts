@@ -171,7 +171,7 @@ export class ClipPlane implements Clipper {
     let normal = (upVector.crossProduct(edgeVector)).normalize();
 
     if (normal) {
-      if (!tiltAngle.isAlmostZero()) {
+      if (!tiltAngle.isAlmostZero) {
         const tiltNormal = Vector3d.createRotateVectorAroundVector(normal, edgeVector, tiltAngle);
         if (tiltNormal) {
           normal = tiltNormal.clone();
@@ -247,9 +247,9 @@ export class ClipPlane implements Clipper {
     AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, undefined, undefined, intersectionRadians);
   }
 
-  private static sClipArcFractionArray = new GrowableFloat64Array();
+  private static _clipArcFractionArray = new GrowableFloat64Array();
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ClipPlane.sClipArcFractionArray;
+    const breaks = ClipPlane._clipArcFractionArray;
     breaks.clear();
     this.appendIntersectionRadians(arc, breaks);
     arc.sweep.radiansArraytoPositivePeriodicFractions(breaks);

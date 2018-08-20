@@ -25,8 +25,8 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public readonly features?: Mesh.Features;
 
   /** if true the order of keys created to store meshBuilders maintain order */
-  private readonly preserveKeyOrder: boolean;
-  private keyOrder: number = 0;
+  private readonly _preserveKeyOrder: boolean;
+  private _keyOrder: number = 0;
 
   constructor(tolerance: number, range: Range3d, is2d: boolean, preserveKeyOrder: boolean = false, id?: Id64) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
@@ -35,7 +35,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     this.facetAreaTolerance = tolerance * ToleranceRatio.facetArea;
     this.range = range;
     this.is2d = is2d;
-    this.preserveKeyOrder = preserveKeyOrder;
+    this._preserveKeyOrder = preserveKeyOrder;
     if (undefined !== id && id.isValid) {
       const table = new FeatureTable(1);
       this.features = new Mesh.Features(table);
@@ -135,8 +135,8 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public getKey(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilderMap.Key {
     const key = new MeshBuilderMap.Key(displayParams, type, hasNormals, isPlanar);
 
-    if (this.preserveKeyOrder)
-      key.order = ++this.keyOrder;
+    if (this._preserveKeyOrder)
+      key.order = ++this._keyOrder;
 
     return key;
   }

@@ -46,9 +46,9 @@ function exerciseArc3d(ck: Checker, arc: Arc3d) {
   const arc1 = arc.cloneTransformed(scaleTransform) as Arc3d;
   ck.testFalse(arc.isAlmostEqual(arc1), "scale changes arc");
   ck.testPointer(arc1);
-  ck.testBoolean(arc1.isCircular(), arc.isCircular(), "scaled clone retains circular");
+  ck.testBoolean(arc1.isCircular, arc.isCircular, "scaled clone retains circular");
   ck.testBoolean(
-    arc.sweep.isFullCircle(),
+    arc.sweep.isFullCircle,
     arc.startPoint().isAlmostEqual(arc.endPoint()),
     "full circle start, end condition");
 
@@ -74,7 +74,7 @@ describe("Arc3d", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
     const arcA = Arc3d.createUnitCircle();
-    ck.testTrue(arcA.isCircular());
+    ck.testTrue(arcA.isCircular);
     exerciseArc3d(ck, arcA);
     exerciseArc3d(ck,
       Arc3d.create(

@@ -58,8 +58,8 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
   const path4 = collection.cloneStroked();
   ck.testPointer(path4, "clone Stroked");
 
-  ck.testFalse(collection.isOpenPath() && collection.isClosedPath(), "Collection cannot be both open and closed path");
-  ck.testFalse(collection.isOpenPath() && collection.isAnyRegionType(), "Collection cannot be both open and region");
+  ck.testFalse(collection.isOpenPath && collection.isClosedPath, "Collection cannot be both open and closed path");
+  ck.testFalse(collection.isOpenPath && collection.isAnyRegionType, "Collection cannot be both open and region");
   if (collection.children) {
     let i = 0;
     for (const child of collection.children) {
@@ -84,7 +84,7 @@ describe("CurveCollection", () => {
     const ck = new Checker();
     const counts = { nonLinearTrue: 0, nonLinearFalse: 1 };
     for (const data of Sample.createBagOfCurves())
-      if (data.hasNonLinearPrimitives())
+      if (data.checkForNonLinearPrimitives())
         counts.nonLinearTrue++;
       else
         counts.nonLinearFalse++;

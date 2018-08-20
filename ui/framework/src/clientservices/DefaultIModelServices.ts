@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { IModelHubClient, AccessToken, IModelRepository, Version, IModelQuery, VersionQuery } from "@bentley/imodeljs-clients";
+import { IModelHubClient, AccessToken, IModelRepository, Version, UserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
@@ -12,10 +12,25 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 
 import { UiFramework } from "../UiFramework";
 import { ProjectInfo } from "./ProjectServices";
-import { IModelInfo, IModelServices } from "./IModelServices";
+import { IModelInfo, IModelServices, VersionInfo, ChangeSetInfo, IModelUserInfo } from "./IModelServices";
 
 class IModelInfoImpl implements IModelInfo {
   constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ProjectInfo, public status: string = "", public thumbnail: string | undefined) {
+  }
+}
+
+class VersionInfoImpl implements VersionInfo {
+  constructor(public name: string, public description: string, public createdDate: Date, public changeSetId: string, public userCreated: string | undefined, public smallThumbnail: string | undefined, public largeThumbnail: string | undefined) {
+  }
+}
+
+class ChangeSetInfoImpl implements ChangeSetInfo {
+  constructor(public name: string, public description: string, public pushDate: Date, public changeSetId: string, public userCreated: string | undefined, public smallThumbnail: string | undefined, public largeThumbnail: string | undefined) {
+  }
+}
+
+class IModelUserInfoImpl implements IModelUserInfo {
+  constructor(public firstName: string, public lastName: string, public email: string, public id: string = "") {
   }
 }
 
@@ -23,11 +38,11 @@ class IModelInfoImpl implements IModelInfo {
  * Provides default [[IModelServices]]
  */
 export class DefaultIModelServices implements IModelServices {
-  private hubClient: IModelHubClient;
+  private _hubClient: IModelHubClient;
 
   /** Initialize the iModelHub Api */
   constructor() {
-    this.hubClient = new IModelHubClient(UiFramework.projectServices.deploymentEnv);
+    this._hubClient = new IModelHubClient(UiFramework.projectServices.deploymentEnv);
   }
 
   /** Get all iModels in a project */
@@ -37,9 +52,9 @@ export class DefaultIModelServices implements IModelServices {
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(top).skip(skip);
     try {
-      const iModels: IModelRepository[] = await this.hubClient.IModels().get(accessToken, projectInfo.wsgId, queryOptions);
+      const iModels: IModelRepository[] = await this._hubClient.IModels().get(accessToken, projectInfo.wsgId, queryOptions);
       for (const imodel of iModels) {
-        const versions: Version[] = await this.hubClient.Versions().get(accessToken, imodel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await this._hubClient.Versions().get(accessToken, imodel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           imodel.latestVersionName = versions[0].name;
           imodel.latestVersionChangeSetId = versions[0].changeSetId;
@@ -71,7 +86,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getThumbnail(accessToken: AccessToken, projectId: string, iModelId: string): Promise<string | undefined> {
 
     try {
-      const pngImage = await this.hubClient.Thumbnails().download(accessToken, iModelId, { projectId: projectId!, size: "Small" });
+      const pngImage = await this._hubClient.Thumbnails().download(accessToken, iModelId, { projectId: projectId!, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available
@@ -79,10 +94,86 @@ export class DefaultIModelServices implements IModelServices {
     return undefined;
   }
 
+  /** Get versions (top 5 for testing) for the iModel */
+  public async getVersions(accessToken: AccessToken, iModelId: string): Promise<VersionInfo[]> {
+    const versionInfos: VersionInfo[] = [];
+    try {
+      const versions: Version[] = await this._hubClient.Versions().get(accessToken, iModelId, new VersionQuery().select("*").top(5));
+      for (const thisVersion of versions) {
+        versionInfos.push(this.createVersionInfo(thisVersion));
+      }
+    } catch (e) {
+      alert(JSON.stringify(e));
+      return Promise.reject(e);
+      }
+    return versionInfos;
+  }
+
+  /** Get changesets (top 5 for testing) for the iModel */
+  public async getChangeSets(accessToken: AccessToken, iModelId: string): Promise<ChangeSetInfo[]> {
+    const changeSetInfos: ChangeSetInfo[] = [];
+    try {
+      const changesets: ChangeSet[] = await this._hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().top(5).latest());
+      for (const thisChangeSet of changesets) {
+        changeSetInfos.push(this.createChangeSetInfo(thisChangeSet));
+      }
+    } catch (e) {
+      alert(JSON.stringify(e));
+      return Promise.reject(e);
+      }
+    return changeSetInfos;
+  }
+
+  /** Get users that have access to a particular iModel */
+  public async getUsers(accessToken: AccessToken, iModelId: string): Promise<IModelUserInfo[]> {
+    const userInfos: IModelUserInfo[] = [];
+    try {
+      const users: UserInfo[] = await this._hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().select("*"));
+      for (const userInfo of users) {
+        userInfos.push(this.createUserInfo(userInfo));
+      }
+    } catch (e) {
+      alert(JSON.stringify(e));
+      return Promise.reject(e);
+      }
+    return userInfos;
+  }
+
+  public async getUser(accessToken: AccessToken, iModelId: string, userId: string): Promise<IModelUserInfo[]> {
+    const userInfos: IModelUserInfo[] = [];
+    try {
+      const users: UserInfo[] = await this._hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(userId));
+      for (const userInfo of users) {
+        userInfos.push(this.createUserInfo(userInfo));
+      }
+    } catch (e) {
+      alert(JSON.stringify(e));
+      return Promise.reject(e);
+      }
+    return userInfos;
+  }
+
   private createIModelInfo(thisIModel: IModelRepository, thisProjectInfo: ProjectInfo): IModelInfo {
     const createDate: Date = new Date(thisIModel.createdDate!);
     console.log("Working on iModel", thisIModel.name); // tslint:disable-line:no-console
     const thisIModelInfo: IModelInfo = new IModelInfoImpl(thisIModel.name!, thisIModel.description!, thisIModel.wsgId, createDate, thisProjectInfo, "", thisIModel.thumbnail);
     return thisIModelInfo;
+  }
+
+  private createVersionInfo(thisVersion: Version): VersionInfo {
+    const createDate: Date = new Date(thisVersion.createdDate!);
+    const thisVersionInfo: VersionInfo = new VersionInfoImpl(thisVersion.name!, thisVersion.description!, createDate, thisVersion.changeSetId!, thisVersion.userCreated!, thisVersion.smallThumbnailId!, thisVersion.largeThumbnailId!);
+    return thisVersionInfo;
+  }
+
+  private createChangeSetInfo(thisChangeSet: ChangeSet): ChangeSetInfo {
+    const pushDate: Date = new Date(thisChangeSet.pushDate!);
+    const thisChangeSetInfo: ChangeSetInfo = new ChangeSetInfoImpl(thisChangeSet.name!, thisChangeSet.description!, pushDate, thisChangeSet.changeSetId!, thisChangeSet.userCreated!, thisChangeSet.smallThumbnailId!, thisChangeSet.largeThumbnailId!);
+    return thisChangeSetInfo;
+  }
+
+  private createUserInfo(thisUser: UserInfo): IModelUserInfo {
+    const thisUserInfo: IModelUserInfo = new IModelUserInfoImpl(thisUser.firstName!, thisUser.lastName!, thisUser.email!, thisUser.id);
+    return thisUserInfo;
   }
 }

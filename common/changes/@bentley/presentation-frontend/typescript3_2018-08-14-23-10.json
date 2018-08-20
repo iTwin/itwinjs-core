@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated to use TypeScript 3.0",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "Bill.Goehrig@bentley.com"
+}

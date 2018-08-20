@@ -5,28 +5,52 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import Popover from "../../popup/popover/Triangle";
 import Direction from "../../utilities/Direction";
-import { Omit } from "../../utilities/Props";
-import Popover, { TrianglePopoverProps } from "../../popup/popover/Triangle";
+import CommonProps from "../../utilities/Props";
+import Dialog from "../message/content/dialog/Dialog";
+import TitleBar from "../message/content/dialog/TitleBar";
+import Title from "../message/content/dialog/Title";
+import Content from "./Content";
 import "./Dialog.scss";
 
 /** Properties of [[ToolAssistanceDialog]] component. */
-export interface ToolAssistanceDialogProps extends Omit<TrianglePopoverProps, "direction"> {
+export interface ToolAssistanceDialogProps extends CommonProps {
+  /** Dialog title. */
+  title?: string;
+  /** Items and separators of tool assistance. I.e. [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
+  items?: React.ReactNode;
 }
 
-/** Common dialog used by footer indicators. */
-export default class ToolAssistanceDialog extends React.Component<ToolAssistanceDialogProps> {
-  public render() {
-    const className = classnames(
-      "nz-footer-toolAssistance-dialog",
-      this.props.className);
+/** Tool assistance dialog used in [[ToolAssistanceIndicator]] component. */
+// tslint:disable-next-line:variable-name
+export const ToolAssistanceDialog: React.StatelessComponent<ToolAssistanceDialogProps> = (props: ToolAssistanceDialogProps) => {
+  const className = classnames(
+    "nz-footer-toolAssistance-dialog",
+    props.className);
 
-    return (
-      <Popover
-        {...this.props}
-        className={className}
-        direction={Direction.Top}
-      />
-    );
-  }
-}
+  return (
+    <Popover
+      className={className}
+      direction={Direction.Top}
+      content={
+        <Dialog
+          titleBar={
+            <TitleBar
+              title={
+                <Title text={props.title} />
+              }
+            />
+          }
+          content={
+            <Content>
+              {props.items}
+            </Content>
+          }
+        />
+      }
+    />
+  );
+};
+
+export default ToolAssistanceDialog;

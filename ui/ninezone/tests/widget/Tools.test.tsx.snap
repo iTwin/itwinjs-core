@@ -2,7 +2,7 @@
 
 exports[`<Tools /> renders correctly 1`] = `
 <div
-  className="nz-widget-tools nz-no-app-button"
+  className="nz-widget-tools"
 >
   <div
     className="nz-app-button"

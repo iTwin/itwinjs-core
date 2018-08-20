@@ -4,7 +4,7 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
-import { DisposableList } from "@bentley/bentleyjs-core";
+import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { PropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
@@ -31,7 +31,7 @@ export interface PropertyGridState {
  */
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
 
-  private _disposableListeners: DisposableList;
+  private _dataChangesListenerDisposeFunc?: DisposeFunc;
   private _isMounted = false;
 
   public readonly state: Readonly<PropertyGridState> = {
@@ -40,26 +40,33 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
 
   constructor(props: PropertyGridProps) {
     super(props);
-
-    this._disposableListeners = new DisposableList();
-    this._disposableListeners.add(this.props.dataProvider.onDataChanged.addListener(this.onPropertyDataChanged));
+    this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
   }
 
-  public componentWillMount() {
+  public componentDidMount() {
     this._isMounted = true;
     this.gatherData(this.props.dataProvider);
   }
 
   public componentWillUnmount() {
+    if (this._dataChangesListenerDisposeFunc) {
+      this._dataChangesListenerDisposeFunc();
+      this._dataChangesListenerDisposeFunc = undefined;
+    }
     this._isMounted = false;
-    this._disposableListeners.dispose();
   }
 
-  private onPropertyDataChanged = () => {
+  public componentDidUpdate() {
+    if (this._dataChangesListenerDisposeFunc)
+      this._dataChangesListenerDisposeFunc();
+    this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
+  }
+
+  private _onPropertyDataChanged = () => {
     this.gatherData(this.props.dataProvider);
   }
 
-  private shouldExpandCategory = (category: PropertyCategory): boolean => {
+  private _shouldExpandCategory = (category: PropertyCategory): boolean => {
     if (category.expand)
       return true;
     return this.state.categories.some((stateCategory: PropertyGridCategory) => {
@@ -75,7 +82,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     const categories = new Array<PropertyGridCategory>();
     propertyData.categories.map((category: PropertyCategory, _index: number) => {
       const gridCategory: PropertyGridCategory = {
-        propertyCategory: { ...category, expand: this.shouldExpandCategory(category) },
+        propertyCategory: { ...category, expand: this._shouldExpandCategory(category) },
         propertyCount: propertyData.records[category.name].length,
         properties: propertyData.records[category.name],
       };
@@ -84,7 +91,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.setState({ categories });
   }
 
-  private toggleCategoryExpansion = (category: PropertyGridCategory) => {
+  private _toggleCategoryExpansion = (category: PropertyGridCategory) => {
     const index = this.state.categories.findIndex((c) => c.propertyCategory.name === category.propertyCategory.name);
     if (-1 === index)
       return;
@@ -108,7 +115,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
           {
             this.state.categories.map((gridCategory: PropertyGridCategory) => {
               const onCategoryHeaderPressed = () => {
-                this.toggleCategoryExpansion(gridCategory);
+                this._toggleCategoryExpansion(gridCategory);
               };
 
               return (

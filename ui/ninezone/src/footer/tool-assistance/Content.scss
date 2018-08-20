@@ -1,0 +1,12 @@
+@import "@bentley/ui-core/lib/colors";
+
+.nz-footer-toolAssistance-content {
+  $horizontal-padding: 15px;
+  $vertical-padding: 10px;
+
+  padding-left: $horizontal-padding;
+  padding-right: $horizontal-padding;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+  color: $text-dark;
+}

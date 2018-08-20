@@ -28,7 +28,7 @@ export class Grid extends React.Component<GridProps, State> {
     return this.props.rows[i];
   }
 
-  private onRowClick = (rowIdx: any, _row: any) => {
+  private _onRowClick = (rowIdx: any, _row: any) => {
     if (this.state.selectedRow === rowIdx)
       this.setState({ selectedRow: null });
     else
@@ -53,7 +53,7 @@ export class Grid extends React.Component<GridProps, State> {
               indexes: [this.state.selectedRow],
             },
           }}
-          onRowClick={this.onRowClick}
+          onRowClick={this._onRowClick}
         />
       </div>
     );

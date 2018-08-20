@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import {TreeNode, NodeProps} from "@bentley/ui-core";
+import { TreeNode, NodeProps } from "@bentley/ui-core";
 import { withDragSource, withDropTarget } from "../../dragdrop";
 
 import "./Tree.scss";
@@ -33,12 +33,12 @@ export interface DragDropNodeState {
 // Used internally in ./Tree.tsx
 /** @hidden */
 export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps> {
-  private root: HTMLDivElement | null = null;
+  private _root: HTMLDivElement | null = null;
   public readonly state: DragDropNodeState = {
     hoverMode: HoverMode.On,
   };
   public render() {
-    const {isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropNodeProps;
+    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropNodeProps;
     const mode = this.state.hoverMode;
     const classes = classnames(
       "node-drop-target",
@@ -50,25 +50,25 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
       },
     );
     return (
-      <div className={classes} ref={(el) => { this.root = el; }} onDragOver={this.handleDragOver}>
+      <div className={classes} ref={(el) => { this._root = el; }} onDragOver={this._handleDragOver}>
         <TreeNode {...props} />
       </div>
     );
   }
 
-  private handleDragOver = (event: React.DragEvent) => {
-    if (this.props.isOver && this.root) {
-      const rect = this.root.getBoundingClientRect();
+  private _handleDragOver = (event: React.DragEvent) => {
+    if (this.props.isOver && this._root) {
+      const rect = this._root.getBoundingClientRect();
       const relativeY = (event.clientY - rect.top) / rect.height;
       if (relativeY < 1 / 3) {
         if (this.state.hoverMode !== HoverMode.Above)
-          this.setState({hoverMode: HoverMode.Above});
+          this.setState({ hoverMode: HoverMode.Above });
       } else if (relativeY < 2 / 3) {
         if (this.state.hoverMode !== HoverMode.On)
-          this.setState({hoverMode: HoverMode.On});
+          this.setState({ hoverMode: HoverMode.On });
       } else {
         if (this.state.hoverMode !== HoverMode.Below)
-          this.setState({hoverMode: HoverMode.Below});
+          this.setState({ hoverMode: HoverMode.Below });
       }
     }
   }

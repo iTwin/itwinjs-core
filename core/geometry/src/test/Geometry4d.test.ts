@@ -54,8 +54,8 @@ class Geometry4dTests {
     const sum3 = point0.plus3Scaled(point1, 3.3, point2, -0.3, point3, 1.2);
     const sum12 = point0.plus2Scaled(point1, 3.3, point2, -0.3).plusScaled(point3, 1.2);
     const result = sum3.minus(sum12);
-    ck.testBoolean(false, sum3.isAlmostZero(), "4d sums");
-    ck.testBoolean(true, result.isAlmostZero(), "4d sums");
+    ck.testBoolean(false, sum3.isAlmostZero, "4d sums");
+    ck.testBoolean(true, result.isAlmostZero, "4d sums");
   }
 
   public testNormalization(ck: bsiChecker.Checker) {

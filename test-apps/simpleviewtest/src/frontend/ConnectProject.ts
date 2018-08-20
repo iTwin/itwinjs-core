@@ -25,11 +25,11 @@ export enum ProjectScope {
 }
 
 class ProjectApi {
-  private static connectClient: ConnectClient;
+  private static _connectClient: ConnectClient;
 
   // Initialize the project Api
   public static async init(env: DeploymentEnv): Promise<void> {
-    ProjectApi.connectClient = new ConnectClient(env);
+    ProjectApi._connectClient = new ConnectClient(env);
   }
 
   public static async getProjectByName(accessToken: AccessToken, projectScope: ProjectScope, projectName: string): Promise<Project | undefined> {
@@ -42,7 +42,7 @@ class ProjectApi {
 
     let projectList: Project[] = [];
     if (projectScope === ProjectScope.Invited) {
-      projectList = await ProjectApi.connectClient.getInvitedProjects(accessToken, queryOptions);
+      projectList = await ProjectApi._connectClient.getInvitedProjects(accessToken, queryOptions);
     }
 
     if (projectScope === ProjectScope.Favorites) {
@@ -51,7 +51,7 @@ class ProjectApi {
       queryOptions.isMRU = true;
     }
 
-    projectList = await ProjectApi.connectClient.getProjects(accessToken, queryOptions);
+    projectList = await ProjectApi._connectClient.getProjects(accessToken, queryOptions);
 
     for (const thisProject of projectList) {
       if (thisProject.name === projectName)
@@ -62,23 +62,23 @@ class ProjectApi {
 }
 
 class IModelApi {
-  private static imodelClient: IModelHubClient;
+  private static _imodelClient: IModelHubClient;
 
   /** Initialize the iModelHub Api */
   public static async init(env: DeploymentEnv): Promise<void> {
-    IModelApi.imodelClient = new IModelHubClient(env);
+    IModelApi._imodelClient = new IModelHubClient(env);
   }
 
   /** Get all iModels in a project */
   public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
-    const iModels: IModelRepository[] = await IModelApi.imodelClient.IModels().get(accessToken, projectId, queryOptions);
+    const iModels: IModelRepository[] = await IModelApi._imodelClient.IModels().get(accessToken, projectId, queryOptions);
     if (iModels.length < 1)
       return undefined;
     for (const thisIModel of iModels) {
       if (thisIModel.name === iModelName) {
-        const versions: Version[] = await IModelApi.imodelClient.Versions().get(accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await IModelApi._imodelClient.Versions().get(accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           thisIModel.latestVersionName = versions[0].name;
           thisIModel.latestVersionChangeSetId = versions[0].changeSetId;

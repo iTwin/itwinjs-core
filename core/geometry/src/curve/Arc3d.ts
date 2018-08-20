@@ -122,7 +122,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     if (vectorToCenter) {
       const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
       const vectorX = Vector3d.createStartEnd(center, pointA);
-      const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal);
+      const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal, Angle.createDegrees (90));
       if (vectorY) {
         const vectorCenterToC = Vector3d.createStartEnd(center, pointC);
         const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);
@@ -209,7 +209,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
     const allRadians = this.allPerpendicularAngles(spacePoint);
-    if (!extend && !this._sweep.isFullCircle()) {
+    if (!extend && !this._sweep.isFullCircle) {
       allRadians.push(this._sweep.startRadians);
       allRadians.push(this._sweep.endRadians);
     }
@@ -251,7 +251,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       && Geometry.isSmallMetricDistance(this._matrix.dotColumnX(normal))
       && Geometry.isSmallMetricDistance(this._matrix.dotColumnY(normal));
   }
-  public isCircular(): boolean {
+  public get isCircular(): boolean {
     const axx = this._matrix.columnXMagnitudeSquared();
     const ayy = this._matrix.columnYMagnitudeSquared();
     const axy = this._matrix.columnXDotColumnY();
@@ -259,7 +259,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** If the arc is circular, return its radius.  Otherwise return undefined */
   public circularRadius(): number | undefined {
-    return this.isCircular() ? this._matrix.columnXMagnitude() : undefined;
+    return this.isCircular ? this._matrix.columnXMagnitude() : undefined;
   }
 
   /** Return the larger of the two defining vectors. */

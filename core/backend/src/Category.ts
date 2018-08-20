@@ -41,8 +41,8 @@ export class SubCategory extends DefinitionElement {
   public getSubCategoryId(): Id64 { return this.id; }
   /** Get the Id of this SubCategory's parent Category. */
   public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
-  /** Query if this is the default SubCategory of its parent Category. */
-  public isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
+  /** Check if this is the default SubCategory of its parent Category. */
+  public get isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]]. */

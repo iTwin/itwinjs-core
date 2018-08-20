@@ -7,6 +7,13 @@ import { Vector3d, Point3d } from "../PointVector";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { YawPitchRollAngles } from "../geometry-core";
 import { RotMatrix } from "../geometry-core";
+// import { LineSegment3d } from "../curve/LineSegment3d";
+// import { GeometryQuery } from "../curve/CurvePrimitive";
+// import { LineString3d } from "../curve/LineString3d";
+// import { Arc3d } from "../curve/Arc3d";
+// import { BSplineCurve3d } from "../bspline/BSplineCurve";
+// import { AngleSweep } from "../Geometry";
+// import { Loop, Path, ParityRegion } from "../curve/CurveChain";
 
 /* tslint:disable:no-console */
 
@@ -21,7 +28,7 @@ function emit(...data: any[]) {
     } else {
       const imjs = geometry.IModelJson.Writer.toIModelJson(d);
       if (imjs !== undefined) {
-        stringData.push(imjs);
+        stringData.push(JSON.stringify(imjs));
       } else if (d.toJSON) {
         stringData.push(d.toJSON());
       } else {

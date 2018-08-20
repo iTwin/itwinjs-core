@@ -30,7 +30,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
-  public readonly backgroundMap: BackgroundMapState;
+  private _backgroundMap: BackgroundMapState;
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
@@ -39,12 +39,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
     const monoJson = this.styles[monoName];
     this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
-    this.backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
+    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
+  }
+
+  public syncBackgroundMapState() {
+    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), this.iModel);
   }
 
   public equalState(other: DisplayStyleState): boolean {
     return JSON.stringify(this.styles) === JSON.stringify(other.styles);
   }
+
+  public get backgroundMap() { return this._backgroundMap; }
 
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
@@ -116,8 +122,8 @@ export class GroundPlane implements GroundPlaneProps {
   public elevation: number = 0.0;  // the Z height to draw the ground plane
   public aboveColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from above
   public belowColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from below
-  private aboveSymb?: Gradient.Symb; // symbology for ground plane when view is from above
-  private belowSymb?: Gradient.Symb; // symbology for ground plane when view is from below
+  private _aboveSymb?: Gradient.Symb; // symbology for ground plane when view is from above
+  private _belowSymb?: Gradient.Symb; // symbology for ground plane when view is from below
 
   public constructor(ground?: GroundPlaneProps) {
     ground = ground ? ground : {};
@@ -132,14 +138,14 @@ export class GroundPlane implements GroundPlaneProps {
    * Will store the ground colors used in the optional ColorDef array provided.
    */
   public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
-    let gradient = aboveGround ? this.aboveSymb : this.belowSymb;
+    let gradient = aboveGround ? this._aboveSymb : this._belowSymb;
     if (undefined !== gradient)
       return gradient;
 
     const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
     const color = aboveGround ? this.aboveColor : this.belowColor;
     const alpha = aboveGround ? 0x80 : 0x85;
-    const groundColors = [ color.clone(), color.clone(), color.clone() ];
+    const groundColors = [color.clone(), color.clone(), color.clone()];
     groundColors[0].setTransparency(0xff);
     groundColors[1].setTransparency(alpha);
     groundColors[2].setTransparency(alpha);
@@ -151,9 +157,9 @@ export class GroundPlane implements GroundPlaneProps {
 
     // Store the gradient for possible future use
     if (aboveGround)
-      this.aboveSymb = gradient;
+      this._aboveSymb = gradient;
     else
-      this.belowSymb = gradient;
+      this._belowSymb = gradient;
 
     return gradient;
   }
@@ -384,7 +390,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 
   public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
-    const textureIds = new Set<string>([ this.front.value, this.back.value, this.top.value, this.bottom.value, this.right.value, this.left.value]);
+    const textureIds = new Set<string>([this.front.value, this.back.value, this.top.value, this.bottom.value, this.right.value, this.left.value]);
     const promises = new Array<Promise<TextureImage | undefined>>();
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
@@ -447,7 +453,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   /** change one of the scene light specifications (Ambient, Flash, or Portrait) for this display style */
   public setSceneLight(light: Light) {
-    if (!light.isValid())
+    if (!light.isValid)
       return;
 
     const sceneLights = this.getStyle("sceneLights");
@@ -470,7 +476,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   /** change the light specification and direction of the solar light for this display style */
   public setSolarLight(light: Light, direction: Vector3d) {
     const sceneLights = this.getStyle("sceneLights");
-    if (light.lightType !== LightType.Solar || !light.isValid()) {
+    if (light.lightType !== LightType.Solar || !light.isValid) {
       delete sceneLights.sunDir;
     } else {
       sceneLights.sun = light;
@@ -501,7 +507,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
       skybox.loadParams(system, this.iModel).then((params?: SkyBox.CreateParams) => {
         this._skyBoxParams = params;
         this._skyBoxParamsLoaded = true;
-        }).catch((_err) => this._skyBoxParamsLoaded = true);
+      }).catch((_err) => this._skyBoxParamsLoaded = true);
     }
 
     return this._skyBoxParams;

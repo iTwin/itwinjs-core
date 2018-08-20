@@ -16,7 +16,7 @@ export interface MessageCenterContentProps extends CommonProps, NoChildrenProps 
   messages?: React.ReactNode;
 }
 
-// Used by [[MessageCenter]] component.
+/** Used by [[MessageCenter]] component. */
 // tslint:disable-next-line:variable-name
 export const MessageCenterContent: React.StatelessComponent<MessageCenterContentProps> = (props: MessageCenterContentProps) => {
   const className = classnames(

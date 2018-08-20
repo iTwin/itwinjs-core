@@ -12,25 +12,25 @@ import "./Icon.scss";
 export interface SnapModeIconProps extends CommonProps, NoChildrenProps {
   /** Describes if the icon is active. */
   isActive?: boolean;
-  /** Characters displayed as icon. */
+  /** Characters displayed as icon if icon is not defined. */
   text?: string;
+  /** Icon to show, fallback to text display if no icon specified. */
+  iconName?: string;
 }
 
 /** Snap mode icon displays characters as snap icon. Used in [[Snap]], [[SnapModeIndicator]] components. */
 export default class SnapModeIcon extends React.Component<SnapModeIconProps> {
   public render() {
     const className = classnames(
+      "icon icon-" + this.props.iconName,
       "nz-footer-snapMode-icon",
-      this.props.isActive && "nz-is-active",
       this.props.className);
 
-    return (
-      <div
-        className={className}
-        style={this.props.style}
-      >
-        {this.props.text}
-      </div>
-    );
+    if (this.props.iconName) {
+      return (
+        <div className={className}></div>
+      );
+    }
+    return (<div>{this.props.text}</div>);
   }
 }

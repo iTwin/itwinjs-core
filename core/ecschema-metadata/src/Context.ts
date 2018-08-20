@@ -125,13 +125,13 @@ export class SchemaCache implements ISchemaLocater {
 export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   private _locaters: ISchemaLocater[];
 
-  private knownSchemas: SchemaCache;
+  private _knownSchemas: SchemaCache;
 
   constructor() {
     this._locaters = [];
 
-    this.knownSchemas = new SchemaCache();
-    this._locaters.push(this.knownSchemas);
+    this._knownSchemas = new SchemaCache();
+    this._locaters.push(this._knownSchemas);
   }
 
   public addLocater(locater: ISchemaLocater) {
@@ -151,7 +151,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schema The schema to add to this context
    */
   public addSchemaSync(schema: Schema) {
-    this.knownSchemas.addSchemaSync(schema);
+    this._knownSchemas.addSchemaSync(schema);
   }
 
   /**

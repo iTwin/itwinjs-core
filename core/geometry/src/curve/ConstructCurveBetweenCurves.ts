@@ -19,13 +19,13 @@ import { LineString3d } from "./LineString3d";
  */
 export class ConstructCurveBetweenCurves extends NullGeometryHandler {
   // private geometry0: GeometryQuery;  <-- Never used
-  private geometry1: GeometryQuery;
-  private fraction: number;
+  private _geometry1: GeometryQuery;
+  private _fraction: number;
   private constructor(_geometry0: GeometryQuery, _fraction: number, _geometry1: GeometryQuery) {
     super();
     // this.geometry0 = _geometry0;   <-- Never used
-    this.geometry1 = _geometry1;
-    this.fraction = _fraction;
+    this._geometry1 = _geometry1;
+    this._fraction = _fraction;
   }
 
   /**
@@ -34,11 +34,11 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    * * Construct the interpoalted curve between this.geomtry1 and the supplied segment0.
    */
   public handleLineSegment3d(segment0: LineSegment3d): any {
-    if (this.geometry1 instanceof LineSegment3d) {
-      const segment1 = this.geometry1 as LineSegment3d;
+    if (this._geometry1 instanceof LineSegment3d) {
+      const segment1 = this._geometry1 as LineSegment3d;
       return LineSegment3d.create(
-        segment0.startPoint().interpolate(this.fraction, segment1.startPoint()),
-        segment0.endPoint().interpolate(this.fraction, segment1.endPoint()));
+        segment0.startPoint().interpolate(this._fraction, segment1.startPoint()),
+        segment0.endPoint().interpolate(this._fraction, segment1.endPoint()));
     }
     return undefined;
   }
@@ -48,8 +48,8 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    * * Construct the interpoalted curve between this.geomtry1 and the supplied ls0.
    */
   public handleLineString3d(ls0: LineString3d): any {
-    if (this.geometry1 instanceof LineString3d) {
-      const ls1 = this.geometry1 as LineString3d;
+    if (this._geometry1 instanceof LineString3d) {
+      const ls1 = this._geometry1 as LineString3d;
       if (ls0.numPoints() === ls1.numPoints()) {
         const ls = LineString3d.create();
         const workPoint = Point3d.create();
@@ -58,7 +58,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
         for (let i = 0; i < ls0.numPoints(); i++) {
           ls0.pointAt(i, workPoint0);
           ls1.pointAt(i, workPoint1);
-          workPoint0.interpolate(this.fraction, workPoint1, workPoint);
+          workPoint0.interpolate(this._fraction, workPoint1, workPoint);
           ls.addPoint(workPoint);
         }
         return ls;
@@ -72,26 +72,26 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    * * Construct the interpoalted curve between this.geomtry1 and the supplied arc0.
    */
   public handleArc3d(arc0: Arc3d): any {
-    if (this.geometry1 instanceof Arc3d) {
-      const arc1 = this.geometry1 as Arc3d;
+    if (this._geometry1 instanceof Arc3d) {
+      const arc1 = this._geometry1 as Arc3d;
       return Arc3d.create(
-        arc0.center.interpolate(this.fraction, arc1.center),
-        arc0.vector0.interpolate(this.fraction, arc1.vector0),
-        arc0.vector90.interpolate(this.fraction, arc1.vector90),
-        arc0.sweep.interpolate(this.fraction, arc1.sweep));
+        arc0.center.interpolate(this._fraction, arc1.center),
+        arc0.vector0.interpolate(this._fraction, arc1.vector0),
+        arc0.vector90.interpolate(this._fraction, arc1.vector90),
+        arc0.sweep.interpolate(this._fraction, arc1.sweep));
     }
     return undefined;
   }
-/**
- * Construct a geometry item which is fractionally interpolated btween two others.
- * * The construction is only supported between certain types:
- * * * LineSegment3d+LineSegment3d -- endpoints are interpolated
- * * * LineString3d+LineString3d with matching counts.  Each point is interpolated.
- * * * Arc3d+Arc3d -- center, vector0, vector90, and limit angles of the sweep are interpolated.
- * @param geometry0 geometry "at fraction 0"
- * @param fraction  fractional positon
- * @param geometry1 geometry "at fraction 1"
- */
+  /**
+   * Construct a geometry item which is fractionally interpolated btween two others.
+   * * The construction is only supported between certain types:
+   * * * LineSegment3d+LineSegment3d -- endpoints are interpolated
+   * * * LineString3d+LineString3d with matching counts.  Each point is interpolated.
+   * * * Arc3d+Arc3d -- center, vector0, vector90, and limit angles of the sweep are interpolated.
+   * @param geometry0 geometry "at fraction 0"
+   * @param fraction  fractional positon
+   * @param geometry1 geometry "at fraction 1"
+   */
   public static InterpolateBetween(geometry0: GeometryQuery, fraction: number, geometry1: GeometryQuery): GeometryQuery | undefined {
     const handler = new ConstructCurveBetweenCurves(geometry0, fraction, geometry1);
     return geometry0.dispatchToGeometryHandler(handler);

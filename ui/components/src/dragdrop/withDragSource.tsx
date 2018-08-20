@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module DragDrop */
 import * as React from "react";
-import { DragSource, DragSourceSpec, DragSourceMonitor, ConnectDragSource, DragSourceConnector, ConnectDragPreview } from "react-dnd";
+import { DragSource, DragSourceMonitor, ConnectDragSource, DragSourceConnector, ConnectDragPreview } from "react-dnd";
 import { DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "./DragDropDef";
 
 /** React properties for withDragSource Higher-Order Component */
@@ -33,7 +33,7 @@ export interface WithDragSourceProps {
   /** @hidden */
   item?: any;
   /** @hidden */
-  type?: string;
+  type?: string | symbol | null;
 }
 
 /** @hidden */
@@ -61,7 +61,83 @@ export const withDragSource = <ComponentProps extends {}>(
   Component: React.ComponentType<ComponentProps>,
 ) => {
   type Props = ComponentProps & WithDragSourceProps;
-  class WithDragSource extends React.Component<Props, WithDragSourceState> {
+  return DragSource((props: Props): string => {
+    if (props.objectType) {
+      if (typeof props.objectType === "function")
+        return props.objectType();
+      else
+        return props.objectType;
+    }
+    return "";
+  }
+, {
+    beginDrag(props: Props, _monitor: DragSourceMonitor, component: any) {
+      let dropEffect = props.defaultDropEffect || DropEffects.Move;
+      if (component.state.ctrlKey) {
+        dropEffect = props.ctrlDropEffect || DropEffects.Copy;
+      } else if (component.state.altKey) {
+        dropEffect = props.altDropEffect || DropEffects.Link;
+      }
+      let dragRect: ClientRect = { left: 0, top: 0 } as ClientRect;
+      const componentElement = component.rootElement;
+      if (componentElement) {
+        dragRect = componentElement.getBoundingClientRect();
+      }
+      const obj: DragSourceArguments = {
+        dataObject: null,
+        dropEffect,
+        dropStatus: DropStatus.None,
+        dragRect,
+        clientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
+        initialClientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
+      };
+      if (props.onDragSourceBegin) return props.onDragSourceBegin(obj);
+
+      return obj;
+    },
+    endDrag(props: Props, monitor: DragSourceMonitor, component: any) {
+      let dragRect: ClientRect = { left: 0, top: 0 } as ClientRect;
+      const componentElement = component && component.rootElement;
+      if (componentElement) {
+        dragRect = componentElement.getBoundingClientRect();
+      }
+      const obj: DropTargetArguments = monitor.getDropResult() as DropTargetArguments || {
+        dataObject: {},
+        dropEffect: DropEffects.None,
+        dropStatus: DropStatus.None,
+        dragRect,
+        clientOffset: { x: 0, y: 0 },
+        initialClientOffset: { x: 0, y: 0 },
+        sourceClientOffset: { x: 0, y: 0 },
+        initialSourceClientOffset: { x: 0, y: 0 },
+      };
+      const {
+        dataObject,
+        dropEffect, dropStatus, dropRect,
+        initialClientOffset, initialSourceClientOffset,
+        local, row, col } = obj;
+
+      const clientOffset = monitor.getClientOffset() || obj.clientOffset;
+      const sourceClientOffset = monitor.getSourceClientOffset() || obj.sourceClientOffset;
+      const dragObj: DragSourceArguments = {
+        dataObject,
+        dropEffect, dropStatus, dropRect, dragRect,
+        clientOffset, initialClientOffset, sourceClientOffset, initialSourceClientOffset,
+        local, row, col,
+      };
+      if (props.onDragSourceEnd)
+        props.onDragSourceEnd(dragObj);
+    },
+    }, (connect: DragSourceConnector, monitor: DragSourceMonitor): Partial<WithDragSourceProps> => {
+    return {
+      connectDragSource: connect.dragSource(),
+      connectDragPreview: connect.dragPreview(),
+      isDragging: monitor.isDragging(),
+      canDrag: monitor.canDrag(),
+      item: monitor.getItem(),
+      type: monitor.getItemType(),
+    };
+  })(class WithDragSource extends React.Component<Props, WithDragSourceState> {
     public rootElement: HTMLDivElement | null = null;
     public readonly state: WithDragSourceState = {
       ctrlKey: false,
@@ -85,7 +161,7 @@ export const withDragSource = <ComponentProps extends {}>(
         isDragging,
         canDrag,
       };
-      const effectMap: {[key: number]: string} = {
+      const effectMap: { [key: number]: string } = {
         [DropEffects.Move]: "move",
         [DropEffects.Copy]: "copy",
         [DropEffects.Link]: "link",
@@ -97,7 +173,7 @@ export const withDragSource = <ComponentProps extends {}>(
 
       const dropEffect = this.state.ctrlKey ? ctrlEffect || "copy" : this.state.altKey ? altEffect || "link" : defaultEffect || "move";
       return connectDragSource!(
-        <div ref={(el) => {this.rootElement = el; }} style={this.props.dragStyle}>
+        <div ref={(el) => { this.rootElement = el; }} style={this.props.dragStyle}>
           <Component {...props} {...(p as any)} />
         </div>,
         { dropEffect },
@@ -105,7 +181,7 @@ export const withDragSource = <ComponentProps extends {}>(
     }
     public componentDidMount() {
       if (this.props.connectDragPreview) {
-        this.props.connectDragPreview!(getEmptyImage() as any, {captureDraggingState: true});
+        this.props.connectDragPreview!(getEmptyImage() as any, { captureDraggingState: true });
       }
       window.addEventListener("keydown", this.handleKeyChange);
       window.addEventListener("keyup", this.handleKeyChange);
@@ -114,98 +190,14 @@ export const withDragSource = <ComponentProps extends {}>(
       window.removeEventListener("keydown", this.handleKeyChange);
       window.removeEventListener("keyup", this.handleKeyChange);
     }
-    private handleKeyChange = (event: any) => {
+    public handleKeyChange = (event: any) => {
       const { ctrlKey, altKey } = event;
       if (this.state.ctrlKey !== ctrlKey) {
-        this.setState({ctrlKey});
+        this.setState({ ctrlKey });
       }
       if (this.state.altKey !== altKey) {
-        this.setState({altKey});
+        this.setState({ altKey });
       }
     }
-  }
-
-  const source: DragSourceSpec<Props> = {
-    beginDrag(props: Props, monitor: DragSourceMonitor, component: WithDragSource) {
-      if (monitor !== monitor) {}
-      let dropEffect = props.defaultDropEffect || DropEffects.Move;
-      if (component.state.ctrlKey) {
-        dropEffect = props.ctrlDropEffect || DropEffects.Copy;
-      } else if (component.state.altKey) {
-        dropEffect = props.altDropEffect || DropEffects.Link;
-      }
-      let dragRect: ClientRect = {left: 0, top: 0} as ClientRect;
-      const componentElement = component.rootElement;
-      if (componentElement) {
-        dragRect = componentElement.getBoundingClientRect();
-      }
-      const obj: DragSourceArguments = {
-        dataObject: null,
-        dropEffect,
-        dropStatus: DropStatus.None,
-        dragRect,
-        clientOffset: {x: dragRect.left || 0, y: dragRect.top || 0},
-        initialClientOffset: {x: dragRect.left || 0, y: dragRect.top || 0},
-      };
-      if (props.onDragSourceBegin) return props.onDragSourceBegin(obj);
-
-      return obj;
-    },
-    endDrag(props: Props, monitor: DragSourceMonitor, component: WithDragSource) {
-      let dragRect: ClientRect = {left: 0, top: 0} as ClientRect;
-      const componentElement = component && component.rootElement;
-      if (componentElement) {
-        dragRect = componentElement.getBoundingClientRect();
-      }
-      const obj: DropTargetArguments = monitor.getDropResult() as DropTargetArguments || {
-          dataObject: {},
-          dropEffect: DropEffects.None,
-          dropStatus: DropStatus.None,
-          dragRect,
-          clientOffset: {x: 0, y: 0},
-          initialClientOffset: {x: 0, y: 0},
-          sourceClientOffset: {x: 0, y: 0},
-          initialSourceClientOffset: {x: 0, y: 0},
-      };
-      const {
-        dataObject,
-        dropEffect, dropStatus, dropRect,
-        initialClientOffset, initialSourceClientOffset,
-        local, row, col } = obj;
-
-      const clientOffset = monitor.getClientOffset();
-      const sourceClientOffset = monitor.getSourceClientOffset();
-      const dragObj: DragSourceArguments = {
-        dataObject,
-        dropEffect, dropStatus, dropRect, dragRect,
-        clientOffset, initialClientOffset, sourceClientOffset, initialSourceClientOffset,
-        local, row, col,
-      };
-      if (props.onDragSourceEnd)
-        props.onDragSourceEnd(dragObj);
-    },
-  };
-
-  function collect(connect: DragSourceConnector, monitor: DragSourceMonitor): Partial<WithDragSourceProps> {
-    return {
-      connectDragSource: connect.dragSource(),
-      connectDragPreview: connect.dragPreview(),
-      isDragging: monitor.isDragging(),
-      canDrag: monitor.canDrag(),
-      item: monitor.getItem(),
-      type: monitor.getItemType(),
-    };
-  }
-
-  function types(props: Props): string {
-    if (props.objectType) {
-      if (typeof props.objectType === "function")
-        return props.objectType();
-      else
-        return props.objectType;
-    }
-    return "";
-  }
-
-  return DragSource(types, source, collect)(WithDragSource);
+  });
 };

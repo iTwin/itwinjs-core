@@ -13,8 +13,8 @@ import {
 import { Tree } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDropTargetDropCallback, treeDragSourceEndCallback, treeCanDropTargetDropCallback } from "./demoTreeDataProvider";
-import {ChildDropTarget} from "./ChildDropTarget";
-import {ParentDropTarget} from "./ParentDropTarget";
+import { ChildDropTarget } from "./ChildDropTarget";
+import { ParentDropTarget } from "./ParentDropTarget";
 export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -50,11 +50,11 @@ class TreeDemoWidget extends React.Component<Props, State> {
       <div>
         <label htmlFor="recieves_row">Can accept rows: </label>
         <input id="recieves_row" type="checkbox" checked={this.state.checked} onClick={() => {
-            this.setState((prevState) => ({checked: !prevState.checked}), () => {
-              demoMutableTreeDataProvider.onTreeNodeChanged &&
-                demoMutableTreeDataProvider.onTreeNodeChanged.raiseEvent();
-            });
-          }}/>
+          this.setState((prevState) => ({ checked: !prevState.checked }), () => {
+            demoMutableTreeDataProvider.onTreeNodeChanged &&
+              demoMutableTreeDataProvider.onTreeNodeChanged.raiseEvent();
+          });
+        }} />
         <Tree
           dataProvider={demoMutableTreeDataProvider}
           onDropTargetDrop={treeDropTargetDropCallback}

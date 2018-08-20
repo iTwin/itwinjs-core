@@ -239,11 +239,11 @@ type ClassesByTypedName = Map<ConstructorType, ClassEntry>;
 
 /** Manages the mapping between TypeScript and EC Classes/Properties */
 export class ECJsonTypeMap {
-  private static classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
+  private static _classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
 
   /** Gets an existing entry for a mapped class from the name of the TypeScript class */
   private static getClassByType(typedConstructor: ConstructorType): ClassEntry | undefined {
-    return ECJsonTypeMap.classesByTypedName.get(typedConstructor);
+    return ECJsonTypeMap._classesByTypedName.get(typedConstructor);
   }
 
   /** Recursively gathers all class entries for base classes starting with the specified class */
@@ -258,7 +258,7 @@ export class ECJsonTypeMap {
 
   private static addClassPlaceholder(typedConstructor: ConstructorType): ClassEntry {
     const classEntry = new ClassEntry(typedConstructor);
-    ECJsonTypeMap.classesByTypedName.set(typedConstructor, classEntry);
+    ECJsonTypeMap._classesByTypedName.set(typedConstructor, classEntry);
     ECJsonTypeMap.gatherBaseClassEntries(classEntry.baseClassEntries, classEntry);
     return classEntry;
   }

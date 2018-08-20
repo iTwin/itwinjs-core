@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module DragDrop */
 import * as React from "react";
-import { DropTarget, DropTargetSpec, DropTargetMonitor, ConnectDropTarget, DropTargetConnector } from "react-dnd";
+import { DropTarget, DropTargetMonitor, ConnectDropTarget, DropTargetConnector } from "react-dnd";
 import { DropTargetArguments, DragSourceArguments } from "./DragDropDef";
 
 /** React properties for withDropTarget Higher-Order Component */
@@ -32,7 +32,7 @@ export interface WithDropTargetProps {
   /** @hidden */
   item?: any;
   /** @hidden */
-  type?: string;
+  type?: string | symbol;
 }
 
 /**
@@ -44,7 +44,101 @@ export const withDropTarget = <ComponentProps extends {}>(
   Component: React.ComponentType<ComponentProps>,
 ) => {
   type Props = ComponentProps & WithDropTargetProps;
-  class WithDropTarget extends React.Component<Props> {
+
+  return DropTarget((props: Props): string[] => {
+    if (props.objectTypes) {
+      if (typeof props.objectTypes === "function")
+        return props.objectTypes();
+      else
+        return props.objectTypes;
+    }
+    return [];
+    }, {
+    drop(props: Props, monitor: DropTargetMonitor, component: any) {
+      const dragSourceArgs = monitor.getItem() as DragSourceArguments;
+      if (monitor.isOver({ shallow: props.shallow || false })) {
+        let dropRect: ClientRect = {} as ClientRect;
+        const componentElement = component.rootElement;
+        if (componentElement) {
+          dropRect = componentElement.getBoundingClientRect();
+        }
+
+        const clientOffset = monitor.getClientOffset() || {x: 0, y: 0};
+        const initialClientOffset = monitor.getInitialClientOffset() || {x: 0, y: 0};
+        const sourceClientOffset = monitor.getSourceClientOffset() || undefined; // react-dnd likes null instead of undefined, reconstrain to undefined for null results
+        const initialSourceClientOffset = monitor.getInitialSourceClientOffset() || undefined;
+
+        const dropTargetArgs: DropTargetArguments = {
+          dataObject: dragSourceArgs.dataObject,
+          dropEffect: dragSourceArgs.dropEffect,
+          dropStatus: dragSourceArgs.dropStatus,
+          dropRect,
+          clientOffset,
+          initialClientOffset,
+          sourceClientOffset,
+          initialSourceClientOffset,
+        };
+        if (props.onDropTargetDrop) return props.onDropTargetDrop(dropTargetArgs);
+      }
+      return;
+    },
+    hover(props: Props, monitor: DropTargetMonitor, component: any) {
+      if (monitor.isOver({ shallow: props.shallow || false }) && props.onDropTargetOver) {
+        const dragSourceArgs = monitor.getItem() as DragSourceArguments;
+        let dropRect: ClientRect = {} as ClientRect;
+        const componentElement = component.rootElement;
+        if (componentElement) {
+          dropRect = componentElement.getBoundingClientRect();
+        }
+
+        const clientOffset = monitor.getClientOffset() || {x: 0, y: 0};
+        const initialClientOffset = monitor.getInitialClientOffset() || {x: 0, y: 0};
+        const sourceClientOffset = monitor.getSourceClientOffset() || undefined; // react-dnd likes null instead of undefined, reconstrain to undefined for null results
+        const initialSourceClientOffset = monitor.getInitialSourceClientOffset() || undefined;
+
+        const dropTargetArgs: DropTargetArguments = {
+          dataObject: dragSourceArgs.dataObject,
+          dropEffect: dragSourceArgs.dropEffect,
+          dropStatus: dragSourceArgs.dropStatus,
+          dropRect,
+          clientOffset,
+          initialClientOffset,
+          sourceClientOffset,
+          initialSourceClientOffset,
+        };
+        props.onDropTargetOver(dropTargetArgs);
+      }
+    },
+    canDrop(props: Props, monitor: DropTargetMonitor) {
+      if (monitor.isOver({ shallow: props.shallow || false }) && props.canDropTargetDrop) {
+        const dragSourceArgs = monitor.getItem() as DragSourceArguments;
+        const clientOffset = monitor.getClientOffset() || {x: 0, y: 0};
+        const initialClientOffset = monitor.getInitialClientOffset() || {x: 0, y: 0};
+        const sourceClientOffset = monitor.getSourceClientOffset() || undefined; // react-dnd likes null instead of undefined, reconstrain to undefined for null results
+        const initialSourceClientOffset = monitor.getInitialSourceClientOffset() || undefined;
+
+        const dropTargetArgs: DropTargetArguments = {
+          dataObject: dragSourceArgs.dataObject,
+          dropEffect: dragSourceArgs.dropEffect,
+          dropStatus: dragSourceArgs.dropStatus,
+          clientOffset,
+          initialClientOffset,
+          sourceClientOffset,
+          initialSourceClientOffset,
+        };
+        return props.canDropTargetDrop(dropTargetArgs);
+      }
+      return true;
+    },
+  }, (connect: DropTargetConnector, monitor: DropTargetMonitor): Partial<WithDropTargetProps> => {
+    return {
+      connectDropTarget: connect.dropTarget(),
+      isOver: monitor.isOver({shallow: true}),
+      canDrop: monitor.canDrop(),
+      item: monitor.getItem(),
+      type: monitor.getItemType() || undefined,
+    };
+  })(class WithDropTarget extends React.Component<Props> {
     public rootElement: HTMLDivElement | null = null;
     public render() {
       const {
@@ -66,105 +160,5 @@ export const withDropTarget = <ComponentProps extends {}>(
         </div>,
       );
     }
-  }
-  const target: DropTargetSpec<Props> = {
-    drop(props: Props, monitor: DropTargetMonitor, component: WithDropTarget) {
-      const dragSourceArgs = monitor.getItem() as DragSourceArguments;
-      if (monitor.isOver({ shallow: props.shallow || false })) {
-        let dropRect: ClientRect = {} as ClientRect;
-        const componentElement = component.rootElement;
-        if (componentElement) {
-          dropRect = componentElement.getBoundingClientRect();
-        }
-
-        const clientOffset = monitor.getClientOffset();
-        const initialClientOffset = monitor.getInitialClientOffset();
-        const sourceClientOffset = monitor.getSourceClientOffset();
-        const initialSourceClientOffset = monitor.getInitialSourceClientOffset();
-
-        const dropTargetArgs: DropTargetArguments = {
-          dataObject: dragSourceArgs.dataObject,
-          dropEffect: dragSourceArgs.dropEffect,
-          dropStatus: dragSourceArgs.dropStatus,
-          dropRect,
-          clientOffset,
-          initialClientOffset,
-          sourceClientOffset,
-          initialSourceClientOffset,
-        };
-        if (props.onDropTargetDrop) return props.onDropTargetDrop(dropTargetArgs);
-      }
-      return;
-    },
-    hover(props: Props, monitor: DropTargetMonitor, component: WithDropTarget) {
-      if (monitor.isOver({ shallow: props.shallow || false }) && props.onDropTargetOver) {
-        const dragSourceArgs = monitor.getItem() as DragSourceArguments;
-        let dropRect: ClientRect = {} as ClientRect;
-        const componentElement = component.rootElement;
-        if (componentElement) {
-          dropRect = componentElement.getBoundingClientRect();
-        }
-
-        const clientOffset = monitor.getClientOffset();
-        const initialClientOffset = monitor.getInitialClientOffset();
-        const sourceClientOffset = monitor.getSourceClientOffset();
-        const initialSourceClientOffset = monitor.getInitialSourceClientOffset();
-
-        const dropTargetArgs: DropTargetArguments = {
-          dataObject: dragSourceArgs.dataObject,
-          dropEffect: dragSourceArgs.dropEffect,
-          dropStatus: dragSourceArgs.dropStatus,
-          dropRect,
-          clientOffset,
-          initialClientOffset,
-          sourceClientOffset,
-          initialSourceClientOffset,
-        };
-        props.onDropTargetOver(dropTargetArgs);
-      }
-    },
-    canDrop(props: Props, monitor: DropTargetMonitor) {
-      if (monitor.isOver({ shallow: props.shallow || false }) && props.canDropTargetDrop) {
-        const dragSourceArgs = monitor.getItem() as DragSourceArguments;
-        const clientOffset = monitor.getClientOffset();
-        const initialClientOffset = monitor.getInitialClientOffset();
-        const sourceClientOffset = monitor.getSourceClientOffset();
-        const initialSourceClientOffset = monitor.getInitialSourceClientOffset();
-
-        const dropTargetArgs: DropTargetArguments = {
-          dataObject: dragSourceArgs.dataObject,
-          dropEffect: dragSourceArgs.dropEffect,
-          dropStatus: dragSourceArgs.dropStatus,
-          clientOffset,
-          initialClientOffset,
-          sourceClientOffset,
-          initialSourceClientOffset,
-        };
-        return props.canDropTargetDrop(dropTargetArgs);
-      }
-      return true;
-    },
-  };
-
-  function collect(connect: DropTargetConnector, monitor: DropTargetMonitor): Partial<WithDropTargetProps> {
-    return {
-      connectDropTarget: connect.dropTarget(),
-      isOver: monitor.isOver({shallow: true}),
-      canDrop: monitor.canDrop(),
-      item: monitor.getItem(),
-      type: monitor.getItemType(),
-    };
-  }
-
-  function types(props: Props): string[] {
-    if (props.objectTypes) {
-      if (typeof props.objectTypes === "function")
-        return props.objectTypes();
-      else
-        return props.objectTypes;
-    }
-    return [];
-  }
-
-  return DropTarget(types, target, collect)(WithDropTarget);
+  });
 };

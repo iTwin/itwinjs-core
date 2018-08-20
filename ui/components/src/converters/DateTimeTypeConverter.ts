@@ -39,7 +39,7 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
     return dateValue;
   }
 
-  public isLessGreaterType(): boolean { return true; }
+  public get isLessGreaterType(): boolean { return true; }
 
   public sortCompare(valueA: any, valueB: any, _ignoreCase?: boolean): number {
     return valueA.valueOf() - valueB.valueOf();
