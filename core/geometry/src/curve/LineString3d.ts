@@ -4,7 +4,7 @@
 
 /** @module Curve */
 
-import { Geometry, BeJSONFunctions } from "../Geometry";
+import { Geometry, BeJSONFunctions, Angle } from "../Geometry";
 import { Point3d, Vector3d, XAndY } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform, RotMatrix } from "../Transform";
@@ -115,10 +115,21 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         this._points.push(p);
     }
   }
-
+  /**
+   * Add a point to the linestring.
+   * @param point
+   */
   public addPoint(point: Point3d) {
     this._points.push(point);
   }
+  /**
+   * Add a point to the linestring.
+   * @param point
+   */
+  public addPointXYZ(x: number, y: number, z: number = 0) {
+    this._points.pushXYZ(x, y, z);
+  }
+
   /**
    * If the linestring is not already closed, add a closure point.
    */
@@ -134,14 +145,46 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._points.pop();
   }
 
-  public static createRectangleXY(point0: Point3d, ax: number, ay: number, closed?: boolean): LineString3d {
-    const ls = LineString3d.create(
-      point0,
-      point0.plusXYZ(ax, 0),
-      point0.plusXYZ(ax, ay),
-      point0.plusXYZ(0, ay));
+  public static createRectangleXY(point0: Point3d, ax: number, ay: number, closed: boolean = true): LineString3d {
+    const ls = LineString3d.create();
+    const x0 = point0.x;
+    const x1 = point0.x + ax;
+    const y0 = point0.y;
+    const y1 = point0.y + ay;
+    const z = point0.z;
+    ls.addPointXYZ(x0, y0, z);
+    ls.addPointXYZ(x1, y0, z);
+    ls.addPointXYZ(x1, y1, z);
+    ls.addPointXYZ(x0, y1, z);
     if (closed)
-      ls.addPoint(point0);
+      ls.addClosurePoint();
+    return ls;
+  }
+  /**
+   * Create a regular polygon centered
+   * @param center center of the polygon.
+   * @param edgeCount number of edges.
+   * @param radius distance to vertex or edge (see `radiusToVertices`)
+   * @param radiusToVertices true if polygon is inscribed in circle (radius measured to vertices); false if polygon is outside circle (radius to edges)
+   */
+  public static createRegularPolygonXY(center: Point3d, edgeCount: number, radius: number, radiusToVertices: boolean = true): LineString3d {
+    if (edgeCount < 3)
+      edgeCount = 3;
+    const ls = LineString3d.create();
+    const i0 = radiusToVertices ? 0 : -1;   // offset to make first vector (radius,0,0)
+    const radiansStep = Math.PI / edgeCount;
+    let c;
+    let s;
+    let radians;
+    if (!radiusToVertices)
+      radius = radius / (1.0 - Math.cos(2.0 * radiansStep));
+    for (let i = 0; i < edgeCount; i++) {
+      radians = (i0 + 2 * i) * radiansStep;
+      c = Angle.cleanupTrigValue(Math.cos(radians));
+      s = Angle.cleanupTrigValue(Math.sin(radians));
+      ls.addPointXYZ(center.x + radius * c, center.y * radius * s, center.z);
+    }
+    ls.addClosurePoint();
     return ls;
   }
 

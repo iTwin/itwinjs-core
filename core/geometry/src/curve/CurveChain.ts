@@ -281,6 +281,7 @@ export class Loop extends CurveChain {
     linestring.addClosurePoint();
     return Loop.create(linestring);
   }
+
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)

@@ -212,6 +212,31 @@ describe("RotMatrix.Factors", () => {
     ck.checkpoint("RotMatrix.AxisAndAngleOfRotationB");
     expect(ck.getNumErrors()).equals(0);
   });
+  it.only("AxisAndAngleOfRotationPI", () => {
+    const ck = new Checker();
+    for (const vectorA0 of [
+      Vector3d.unitX(),
+      Vector3d.unitY(),
+      Vector3d.unitZ(),
+      Vector3d.create(1, 1, 0),
+      Vector3d.create(-1, 2, 0),
+      Vector3d.create(1, 2, 3),
+      Vector3d.create(-1, 2, 3),
+      Vector3d.create(1, -2, 3),
+      Vector3d.create(-1, -2, 3)]) {
+      for (const scale of [1, -1]) {
+        const vectorA = vectorA0.scale(scale);
+        const angleA = Angle.createDegrees(180);
+        const matrixA = RotMatrix.createRotationAroundVector(vectorA, angleA)!;
+        const vectorAndAngle = matrixA.getAxisAndAngleOfRotation();
+        ck.testAngleAllowShift(angleA, vectorAndAngle.angle);
+        ck.testTrue(vectorA.isParallelTo(vectorAndAngle.axis, true));
+      }
+    }
+    ck.checkpoint("RotMatrix.AxisAndAngleOfRotationA");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 
 function modifyPitchAngleToPreventInversion(radians: number): number { return radians; }
@@ -299,11 +324,17 @@ describe("RotMatrix.ViewConstructions", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("RotateVectorToVector", () => {
+  it.only("RotateVectorToVector", () => {
     const ck = new Checker();
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(0, 0, 1), ck);
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), ck);
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(1, 0, 0), ck);
+    // negated vector cases ...
+
+    testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(-1, 0), ck);
+    testRotateVectorToVector(Vector3d.create(0, -1, 0), Vector3d.create(-0, 1, 0), ck);
+    testRotateVectorToVector(Vector3d.create(0, 0, 1), Vector3d.create(0, 0, -1), ck);
+
     const vectorA = Vector3d.create(1, 2, 3);
     const vectorB = Vector3d.create(4, 2, 9);
     const vectorANeg = vectorA.scale(-2);
