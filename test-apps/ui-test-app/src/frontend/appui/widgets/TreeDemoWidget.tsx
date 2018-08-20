@@ -51,7 +51,8 @@ class TreeDemoWidget extends React.Component<Props, State> {
         <label htmlFor="recieves_row">Can accept rows: </label>
         <input id="recieves_row" type="checkbox" checked={this.state.checked} onClick={() => {
             this.setState((prevState) => ({checked: !prevState.checked}), () => {
-              demoMutableTreeDataProvider.onTreeNodeChanged.raiseEvent();
+              demoMutableTreeDataProvider.onTreeNodeChanged &&
+                demoMutableTreeDataProvider.onTreeNodeChanged.raiseEvent();
             });
           }}/>
         <Tree
