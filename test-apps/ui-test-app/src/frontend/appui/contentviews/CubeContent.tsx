@@ -92,12 +92,16 @@ class CubeContent extends React.Component {
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
     const m = args.rotMatrix;
-    this._box.setRotationFromMatrix(new THREE.Matrix4().set(
+    const transform = new THREE.Matrix4();
+    transform.set(
       m.at(0, 0), m.at(1, 0), m.at(2, 0), 0,
       m.at(0, 1), m.at(1, 1), m.at(2, 1), 0,
       m.at(0, 2), m.at(1, 2), m.at(2, 2), 0,
       0, 0, 0, 1,
-    ));
+    );
+    const inverse = new THREE.Matrix4();
+    inverse.getInverse(transform);
+    this._box.setRotationFromMatrix(inverse);
   }
 
   private _animate = () => {

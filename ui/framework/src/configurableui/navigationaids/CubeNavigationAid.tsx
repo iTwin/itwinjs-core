@@ -97,17 +97,17 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     animationTime: 320,
   };
 
-  public ComponentDidMount() {
-    ViewportManager.ViewRotationChangeEvent.addListener(this.handleViewRotationChangeEvent);
+  public componentDidMount() {
+    ViewportManager.ViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     this._then = Date.now();
   }
 
   public componentWillUnmount() {
-    ViewportManager.ViewRotationChangeEvent.removeListener(this.handleViewRotationChangeEvent);
+    ViewportManager.ViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
   }
 
   // Synchronize with rotation coming from the Viewport
-  private handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
+  private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
     console.log(args);
     const { animation, dragging, endRotMatrix } = this.state;
     const matrix = endRotMatrix;
@@ -122,7 +122,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     }
   }
 
-  private animate = (timestamp: number) => {
+  private _animate = (timestamp: number) => {
     const delta = Math.max(timestamp - this._then, 0);
     this._then = timestamp;
     let { animation } = this.state;
@@ -132,11 +132,11 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       animation = 1;
       ViewportManager.setCubeRotMatrix(this.state.endRotMatrix, -1);
     } else
-      requestAnimationFrame(this.animate);
+      requestAnimationFrame(this._animate);
     this.setState({ animation });
   }
 
-  private static easeInEaseOut = (t: number) => {
+  private static _easeInOut = (t: number) => {
     return -(Math.cos(t * Math.PI) - 1) / 2;
   }
 
@@ -152,7 +152,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
           if (diff) {
             const angleAxis = diff.getAxisAndAngleOfRotation();
             if (angleAxis.ok) {
-              const angle = Angle.createRadians(angleAxis.angle.radians * CubeNavigationAid.easeInEaseOut(animation));
+              const angle = Angle.createRadians(angleAxis.angle.radians * CubeNavigationAid._easeInOut(animation));
               const newDiff = RotMatrix.createRotationAroundVector(angleAxis.axis, angle);
               if (newDiff) {
                 const newMatrix = newDiff.multiplyMatrixMatrix(startRotMatrix);
@@ -168,17 +168,17 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     }
     return (
       <div className={"cube-container"}
-        onMouseDown={this.handleBoxClick} >
+        onMouseDown={this._handleBoxClick} >
         <div className={"cube-element-container"}>
           <Cube
             dragging={this.state.dragging}
             rotMatrix={rotMatrix}
-            onFaceCellClick={this.handleFaceCellClick} />
+            onFaceCellClick={this._handleFaceCellClick} />
         </div>
-        <PointerButton visible={visible} pointerType={Pointer.Up} onArrowClick={this.onArrowClick} />
-        <PointerButton visible={visible} pointerType={Pointer.Down} onArrowClick={this.onArrowClick} />
-        <PointerButton visible={visible} pointerType={Pointer.Left} onArrowClick={this.onArrowClick} />
-        <PointerButton visible={visible} pointerType={Pointer.Right} onArrowClick={this.onArrowClick} />
+        <PointerButton visible={visible} pointerType={Pointer.Up} onArrowClick={this._onArrowClick} />
+        <PointerButton visible={visible} pointerType={Pointer.Down} onArrowClick={this._onArrowClick} />
+        <PointerButton visible={visible} pointerType={Pointer.Left} onArrowClick={this._onArrowClick} />
+        <PointerButton visible={visible} pointerType={Pointer.Right} onArrowClick={this._onArrowClick} />
       </div>
     );
   }
@@ -187,7 +187,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
    * Rotates RotationMap object 90 degrees for every index increment.
    * 0 = 0deg, 1 = 90deg, 2 = 180deg, -1 = -90deg, etc.
    */
-  private static indexRotateRoute = (route: RotationMap, index: number): RotationMap => {
+  private static _indexRotateRoute = (route: RotationMap, index: number): RotationMap => {
     const { up, right, down, left } = route;
     const a = [up, right, down, left];
     const l = a.length;
@@ -199,7 +199,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     };
   }
 
-  private onArrowClick = (arrow: Pointer) => {
+  private _onArrowClick = (arrow: Pointer) => {
     const { currentFace, endRotMatrix } = this.state;
     let r = 0;
     const m = RotMatrix.createRigidFromRotMatrix(endRotMatrix);
@@ -212,7 +212,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       }
     }
     r = Math.round(Angle.adjustRadiansMinusPiPlusPi(r) * 2 / Math.PI); // regularize to 90deg = 1 etc.
-    const direction = CubeNavigationAid.indexRotateRoute(routes[currentFace], r);
+    const direction = CubeNavigationAid._indexRotateRoute(routes[currentFace], r);
     let faceTo: Face = Face.None;
 
     // map different directions to particular rotation orientations
@@ -254,18 +254,18 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
             }
           }
         }
-        this.animateRotation(startRotMatrix, rotMatrix, 320, faceTo);
+        this._animateRotation(startRotMatrix, rotMatrix, 320, faceTo);
       }
     }
   }
 
-  private handleBoxClick = (event: any) => {
+  private _handleBoxClick = (event: any) => {
     event.preventDefault();
     const { endRotMatrix } = this.state;
 
     // only start listening after drag is confirmed. Ie. the 3D box is clicked.
-    window.addEventListener("mousemove", this.onMouseDrag, false);
-    window.addEventListener("mouseup", this.onMouseStopDrag, false);
+    window.addEventListener("mousemove", this._onMouseDrag, false);
+    window.addEventListener("mouseup", this._onMouseStopDrag, false);
 
     this._start.x = event.clientX;
     this._start.y = event.clientY;
@@ -273,7 +273,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     this.setState({ startRotMatrix: endRotMatrix });
   }
 
-  private onMouseDrag = (event: any) => {
+  private _onMouseDrag = (event: any) => {
     if (this._start.x !== event.clientX || this._start.y !== event.clientY) {
       const scale = 0.05;
 
@@ -283,26 +283,23 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       const matX = RotMatrix.createRotationAroundAxisIndex(AxisIndex.X, pitch);
       const matZ = RotMatrix.createRotationAroundAxisIndex(AxisIndex.Z, yaw);
 
-      console.log(matX.multiplyMatrixMatrix(matZ));
-
       let mat = this.state.startRotMatrix;
       if (matX && matZ)
-        //  mat = matX.multiplyMatrixMatrix(matZ).multiplyMatrixMatrix(mat);
-        mat = mat.multiplyMatrixMatrix(matX).multiplyMatrixMatrix(matZ);
-      this.setRotation(mat, this.state.startRotMatrix);
+        mat = matX.multiplyMatrixMatrix(mat).multiplyMatrixMatrix(matZ);
+      this._setRotation(mat, this.state.startRotMatrix);
       if (!this.state.dragging)
         this.setState({ dragging: true });
     }
   }
 
-  private onMouseStopDrag = () => {
+  private _onMouseStopDrag = () => {
     this.setState({ dragging: false });
     // remove so event only triggers after this.on this.onMousStartDrag
-    window.removeEventListener("mousemove", this.onMouseDrag);
-    window.removeEventListener("mouseup", this.onMouseStopDrag);
+    window.removeEventListener("mousemove", this._onMouseDrag);
+    window.removeEventListener("mouseup", this._onMouseStopDrag);
   }
 
-  private handleFaceCellClick = (pos: Point3d, face: Face = Face.None) => {
+  private _handleFaceCellClick = (pos: Point3d, face: Face = Face.None) => {
     const { currentFace, endRotMatrix } = this.state;
     let rotMatrix = RotMatrix.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
     if (rotMatrix) {
@@ -324,23 +321,23 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
           }
         }
       }
-      this.animateRotation(endRotMatrix, rotMatrix, 320, face);
+      this._animateRotation(endRotMatrix, rotMatrix, 320, face);
     }
-    window.removeEventListener("mousemove", this.onMouseDrag);
+    window.removeEventListener("mousemove", this._onMouseDrag);
   }
 
-  private animateRotation = (startRotMatrix: RotMatrix, endRotMatrix: RotMatrix, animationTime: number, currentFace: Face = Face.None) => {
+  private _animateRotation = (startRotMatrix: RotMatrix, endRotMatrix: RotMatrix, animationTime: number, currentFace: Face = Face.None) => {
     // set animation variables, let css transitions animate it.
     ViewportManager.setCubeRotMatrix(startRotMatrix, 0);
     this._then = Date.now();
-    requestAnimationFrame(this.animate);
+    requestAnimationFrame(this._animate);
     this.setState({
       startRotMatrix, endRotMatrix,
       animation: 0, animationTime,
       currentFace, // only set visible when currentFace is an actual face
     });
   }
-  private setRotation = (endRotMatrix: RotMatrix, startRotMatrix?: RotMatrix, currentFace: Face = Face.None) => {
+  private _setRotation = (endRotMatrix: RotMatrix, startRotMatrix?: RotMatrix, currentFace: Face = Face.None) => {
     ViewportManager.setCubeRotMatrix(endRotMatrix, 0);
     // set variables, with animTime at 0 to prevent animation.
     this.setState({
@@ -384,7 +381,7 @@ class Cube extends React.Component<CubeProps, CubeState> {
                 key={face}
                 rotMatrix={rotMatrix}
                 onFaceCellClick={onFaceCellClick}
-                onFaceCellHoverChange={this.handleCellHoverChange}
+                onFaceCellHoverChange={this._handleCellHoverChange}
                 hoverMap={hoverMap}
                 face={face} />
             );
@@ -393,7 +390,7 @@ class Cube extends React.Component<CubeProps, CubeState> {
     );
   }
 
-  private handleCellHoverChange = (pos: Point3d, state: Hover) => {
+  private _handleCellHoverChange = (pos: Point3d, state: Hover) => {
     let hoverMap = this.state.hoverMap;
     if (!this.props.dragging) {
       hoverMap[pos.x + "|" + pos.y + "|" + pos.z] = state;
@@ -488,7 +485,7 @@ class CubeFace extends React.Component<CubeFaceProps> {
                     onFaceCellHoverChange={onFaceCellHoverChange}
                     onFaceCellClick={onFaceCellClick}
                     hoverMap={hoverMap}
-                    position={this.faceCellToPos(face, x, y)}
+                    position={this._faceCellToPos(face, x, y)}
                     face={(x === 0 && y === 0 && face) || Face.None}
                     center={x === 0}>
                     {x === 0 && y === 0 &&
@@ -502,7 +499,7 @@ class CubeFace extends React.Component<CubeFaceProps> {
       </div>
     );
   }
-  private faceCellToPos = (face: Face, x: number, y: number) => {
+  private _faceCellToPos = (face: Face, x: number, y: number) => {
     const facePos = faceLocations[face];
     const route = routes[face];
 
@@ -546,28 +543,28 @@ class FaceCell extends React.Component<FaceCellProps> {
     const hover = hoverMap[x + "|" + y + "|" + z] === Hover.Hover;
     const active = hoverMap[x + "|" + y + "|" + z] === Hover.Active;
     return <div
-      onMouseDown={this.handleMouseDown}
-      onMouseUp={this.handleMouseUp}
-      onMouseOver={this.handleMouseOver}
-      onMouseOut={this.handleMouseOut}
+      onMouseDown={this._handleMouseDown}
+      onMouseUp={this._handleMouseUp}
+      onMouseOver={this._handleMouseOver}
+      onMouseOut={this._handleMouseOut}
       className={classnames("face-cell", { center, hover, active })}
       {...props}>{children}</div>;
   }
-  private handleMouseOver = () => {
+  private _handleMouseOver = () => {
     const { position } = this.props;
     this.props.onFaceCellHoverChange(position, Hover.Hover);
   }
-  private handleMouseOut = () => {
+  private _handleMouseOut = () => {
     const { position } = this.props;
     this.props.onFaceCellHoverChange(position, Hover.None);
   }
-  private handleMouseDown = (event: React.MouseEvent) => {
+  private _handleMouseDown = (event: React.MouseEvent) => {
     const { position } = this.props;
     const { clientX, clientY } = event;
     this._startMouse = Point2d.create(clientX, clientY);
     this.props.onFaceCellHoverChange(position, Hover.Active);
   }
-  private handleMouseUp = (event: React.MouseEvent) => {
+  private _handleMouseUp = (event: React.MouseEvent) => {
     const { position, face } = this.props;
     const { clientX, clientY } = event;
     this.props.onFaceCellHoverChange(position, Hover.None);
@@ -616,10 +613,10 @@ class PointerButton extends React.Component<PointerProps> {
     );
     return (
       <div className={classes} {...props}
-        onClick={this.handleClick} />
+        onClick={this._handleClick} />
     );
   }
-  private handleClick = (event: React.MouseEvent) => {
+  private _handleClick = (event: React.MouseEvent) => {
     const { pointerType } = this.props;
     event.preventDefault();
     this.props.onArrowClick(pointerType);
