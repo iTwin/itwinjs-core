@@ -43,10 +43,6 @@ export class AccuSnap {
   private readonly _toolTipPt = new Point3d();
   /** Location of cursor when we last checked for motion */
   private readonly _lastCursorPos = new Point2d();
-  /** Accumulated distance (squared) the mouse has moved since we started checking for motion */
-  private _totalMotionSq = 0;
-  /** How much mouse movement constitutes a "move" (squared) */
-  private _motionToleranceSq = 0;
   public readonly toolState = new AccuSnap.ToolState();
   protected _settings = new AccuSnap.Settings();
 
@@ -57,7 +53,7 @@ export class AccuSnap {
   public get isLocateEnabled(): boolean { return this.toolState.locate; }
   /** Whether snapping to elements under the cursor is enabled by the current InteractiveTool. */
   public get isSnapEnabled(): boolean { return this.toolState.enabled; }
-  /** Whether the user setting for snapping is enabled. Snappping is done only when both the user and current InteractiveTool have enabled it. */
+  /** Whether the user setting for snapping is enabled. Snapping is done only when both the user and current InteractiveTool have enabled it. */
   public get isSnapEnabledByUser(): boolean { return this._settings.enableFlag; }
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
   private needsFlash(view: Viewport): boolean { return (this.needFlash.has(view)); }
@@ -120,23 +116,6 @@ export class AccuSnap {
 
   private initializeForCheckMotion(): void {
     this._lastCursorPos.setFrom(IModelApp.toolAdmin.currentInputState.lastMotion);
-    this._totalMotionSq = 0;
-    this._motionToleranceSq = IModelApp.toolAdmin.isCurrentInputSourceMouse ? 1 : 20;
-  }
-
-  public checkStopLocate(): boolean {
-    const curPos = IModelApp.toolAdmin.currentInputState.lastMotion; //  Get the current cursor pos and compute the distance moved since last check.
-    const dx = curPos.x - this._lastCursorPos.x;
-    const dy = curPos.y - this._lastCursorPos.y;
-    if (0 === dx && 0 === dy) // quick negative test
-      return false;
-
-    this._lastCursorPos.setFrom(curPos); //  Remember the new pos
-
-    // See if distance moved since we started checking is over the "move" threshold
-    const dsq = dx * dx + dy * dy;
-    this._totalMotionSq += dsq;
-    return this._totalMotionSq > this._motionToleranceSq;
   }
 
   /** Clear any AccuSnap info on the screen and release any hit path references */
@@ -576,6 +555,7 @@ export class AccuSnap {
         return thisHit;
 
       // we only care about the status of the first hit.
+      out.snapStatus = SnapStatus.FilteredByApp;
       out = ignore;
     }
 
@@ -700,11 +680,7 @@ export class AccuSnap {
       snapModes = [];
       snapModes.push(SnapMode.Intersection);
     } else {
-      // The user's finger is likely to create unwanted AccuSnaps, so don't snap unless source is a mouse.
-      if (IModelApp.toolAdmin.isCurrentInputSourceMouse)
-        snapModes = this.getActiveSnapModes();
-      else
-        snapModes = [];
+      snapModes = this.getActiveSnapModes();
     }
 
     // Consider each point snap mode and find the preferred one.

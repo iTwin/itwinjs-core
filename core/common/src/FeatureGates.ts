@@ -19,7 +19,7 @@ export class FeatureGates {
     if (feature.length === 0)
       return defaultVal;
 
-    let gate: any = this._gates;
+    let gate = this._gates;
     for (const name of feature.split(".")) {
       gate = gate[name];
       if (typeof gate !== "object")
@@ -38,13 +38,13 @@ export class FeatureGates {
    * Gate access to a feature.
    * @param feature the name of the feature to gate. May be a "path" of period-separated feature sub-groups (e.g. "feature1.groupA.showMe").
    *  Feature names are case-sensitive.
-   * @param val value to set
+   * @param val value to set. If undefined, feature is deleted.
    */
   public setGate(feature: string, val: any): void {
-    if (feature.length === 0 || typeof val === "undefined")
+    if (feature.length === 0)
       return;
 
-    let gate: any = this._gates;
+    let gate = this._gates;
     const arr = feature.split(".");
     while (arr.length > 1) {
       const obj = gate[arr[0]];
@@ -53,6 +53,9 @@ export class FeatureGates {
       gate = gate[arr.shift()!];
     }
 
-    gate[arr[0]] = val;
+    if (val === undefined)
+      delete gate[arr[0]];
+    else
+      gate[arr[0]] = val;
   }
 }

@@ -7,6 +7,7 @@ import { ModelSelectorState, IModelConnection, DrawingModelState, SheetModelStat
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/");
 
@@ -14,6 +15,7 @@ describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   before(async () => {
+    MaybeRenderApp.startup();
     imodel2 = await IModelConnection.openStandalone(iModelLocation + "mirukuru.ibim");
     imodel = await IModelConnection.openStandalone(iModelLocation + "CompatibilityTestSeed.bim");
   });
@@ -21,6 +23,7 @@ describe("ModelState", () => {
   after(async () => {
     if (imodel) imodel.closeStandalone();
     if (imodel2) imodel2.closeStandalone();
+    MaybeRenderApp.shutdown();
   });
 
   it("ModelSelectors should hold models", () => {
@@ -66,14 +69,11 @@ describe("ModelState", () => {
     const modelProps = await imodel.models.queryProps({ from: SpatialModelState.sqlName });
     assert.isAtLeast(modelProps.length, 2);
 
-    // WIP_MERGE
-    // await imodel2.models.load(["0x28", "0x1c"]);
-    // WIP_MERGE - AssertionError: expected 1 to equal 2
-    // assert.equal(imodel2.models.loaded.size, 2);
-    // const scalableMesh = imodel2.models.getLoaded("0x28");
-    // WIP_MERGE - AssertionError: ScalableMeshModel should be SpatialModel: expected undefined to be an instance of SpatialModelState
-    // assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
-    // assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
+    await imodel2.models.load(["0x28", "0x1c"]);
+    assert.equal(imodel2.models.loaded.size, 2);
+    const scalableMesh = imodel2.models.getLoaded("0x28");
+    assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
+    assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
   });
 
   it("view thumbnails", async () => {

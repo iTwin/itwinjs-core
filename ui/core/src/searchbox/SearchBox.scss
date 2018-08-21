@@ -5,36 +5,38 @@
 
 .searchbox {
   @include bwc-font-family;
+  display: flex;
+  align-items: center;
   position: relative;
-  padding: $bwc-unbordered-padding;
+  //default values (height, width, font-size, color)
+  height: 34px;
   width: 12em;
-  height: $bwc-line-height;
-  line-height: $bwc-line-height;
   font-size: $bwc-font-size;
-  .searchbox-input {
-    position: absolute;
-    font-size: $bwc-font-size;
+  color: $bwc-text-color;
+
+  input {
     @include bwc-inputs-input;
-    width: 12em;
-    height: $bwc-line-height;
-    line-height: $bwc-line-height;
-    left: 0px;
-    top: 0px;
+    padding: 0 2em 0 12px; //12px from design guide
+    height: 100%;
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    box-sizing: border-box;
   }
-  .searchbox-icon {
+
+  div {
     position: absolute;
-    padding: $bwc-bordered-padding;
-    width: $bwc-line-height;
-    height: $bwc-line-height;
-    line-height: $bwc-line-height;
-    font-size: $bwc-icons-small;
+    height: 100%;
+    right: 0;
+    width: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
     cursor: pointer;
-    top: 0px;
-    right: 0px;
-    text-align: center;
-    color: black;
-    &:hover {
-      color: $bwc-icons-blue;
-    }
+  }
+
+  div:hover span {
+    color: $bwc-icons-blue;
   }
 }

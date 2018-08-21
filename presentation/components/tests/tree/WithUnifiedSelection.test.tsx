@@ -18,7 +18,7 @@ import {
 import { Tree, TreeNodeItem } from "@bentley/ui-components";
 import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
-import { PresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "@src/tree";
+import { IPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "@src/tree";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = withUnifiedSelection(Tree);
@@ -27,7 +27,7 @@ describe("Tree withUnifiedSelection", () => {
 
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType<PresentationTreeDataProvider>();
+  const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   beforeEach(() => {
     testRulesetId = faker.random.word();
@@ -35,7 +35,7 @@ describe("Tree withUnifiedSelection", () => {
     setupDataProvider();
   });
 
-  const setupDataProvider = (providerMock?: moq.IMock<PresentationTreeDataProvider>, imodel?: IModelConnection, rulesetId?: string, rootNodes?: () => TreeNodeItem[], childNodes?: (parent: TreeNodeItem) => TreeNodeItem[]) => {
+  const setupDataProvider = (providerMock?: moq.IMock<IPresentationTreeDataProvider>, imodel?: IModelConnection, rulesetId?: string, rootNodes?: () => TreeNodeItem[], childNodes?: (parent: TreeNodeItem) => TreeNodeItem[]) => {
     if (!providerMock)
       providerMock = dataProviderMock;
     if (!imodel)
@@ -49,6 +49,7 @@ describe("Tree withUnifiedSelection", () => {
     providerMock.reset();
     providerMock.setup((x) => x.connection).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
+    providerMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
     providerMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => n.extendedData.key);
     providerMock.setup((x) => x.getRootNodes(moq.It.isAny())).returns(async () => rootNodes!());
     providerMock.setup((x) => x.getRootNodesCount()).returns(async () => rootNodes!().length);
@@ -112,7 +113,7 @@ describe("Tree withUnifiedSelection", () => {
 
     const imodelMock2 = moq.Mock.ofType<IModelConnection>();
     const rulesetId2 = faker.random.word();
-    const providerMock2 = moq.Mock.ofType<PresentationTreeDataProvider>();
+    const providerMock2 = moq.Mock.ofType<IPresentationTreeDataProvider>();
     setupDataProvider(providerMock2, imodelMock2.object, rulesetId2);
 
     tree.setProps({
