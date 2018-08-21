@@ -4,6 +4,7 @@
 import "@bentley/icons-webfont/dist/bentley-icons-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { BlueButton, HollowButton } from "@bentley/bwc/lib/index";
 import { Timer } from "@bentley/ui-core";
 import App from "@src/app/App";
 import Content from "@src/app/Content";
@@ -20,6 +21,8 @@ import SnapModeIndicator from "@src/footer/snap-mode/Indicator";
 import SnapRow from "@src/footer/snap-mode/Snap";
 import ToolAssistanceIndicator from "@src/footer/tool-assistance/Indicator";
 import ToolAssistanceDialog from "@src/footer/tool-assistance/Dialog";
+import ToolAssistanceItem from "@src/footer/tool-assistance/Item";
+import ToolAssistanceSeparator from "@src/footer/tool-assistance/Separator";
 import ActivityMessage from "@src/footer/message/Activity";
 import StatusMessage from "@src/footer/message/content/status/Message";
 import StatusLayout from "@src/footer/message/content/status/Layout";
@@ -39,15 +42,12 @@ import ModalMessage from "@src/footer/message/Modal";
 import StickyMessage from "@src/footer/message/Sticky";
 import TemporaryMessage from "@src/footer/message/Temporary";
 import ToastMessage, { Stage as ToastMessageStage } from "@src/footer/message/Toast";
-import AssistanceToolSettings from "@src/widget/tool-settings/assistance/Assistance";
-import AssistanceItem from "@src/widget/tool-settings/assistance/Item";
-import AssistanceSeparator from "@src/widget/tool-settings/assistance/Separator";
-import NestedToolSettings from "@src/widget/tool-settings/settings/Nested";
-import NoToolSettings from "@src/widget/tool-settings/settings/NoSettings";
-import ScrollableArea from "@src/widget/tool-settings/settings/ScrollableArea";
-import PopoverToggle from "@src/widget/tool-settings/settings/Toggle";
-import ToolSettings from "@src/widget/tool-settings/settings/Settings";
+import NestedToolSettings from "@src/widget/tool-settings/Nested";
+import ScrollableArea from "@src/widget/tool-settings/ScrollableArea";
+import PopoverToggle from "@src/widget/tool-settings/Toggle";
+import ToolSettings from "@src/widget/tool-settings/Settings";
 import Tooltip from "@src/widget/tool-settings/Tooltip";
+import ToolSettingsWidgetTab from "@src/widget/tool-settings/Tab";
 import ToolSettingsWidget from "@src/widget/ToolSettings";
 import ExpandableItem from "@src/toolbar/item/expandable/Expandable";
 import OverflowItem from "@src/toolbar/item/Overflow";
@@ -59,7 +59,7 @@ import { NestedWithContainIn as NestedToolGroup } from "@src/toolbar/item/expand
 import HistoryIcon from "@src/toolbar/item/expandable/history/Icon";
 import HistoryTray, { History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
 import ToolbarIcon from "@src/toolbar/item/Icon";
-import Toolbar from "@src/toolbar/Toolbar";
+import Toolbar, { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import ScrollableToolbar from "@src/toolbar/Scrollable";
 import Direction from "@src/utilities/Direction";
 import { PointProps } from "@src/utilities/Point";
@@ -110,9 +110,8 @@ export enum MessageCenterActiveTab {
 
 export enum SecondZoneContent {
   None,
-  EmptyToolSettings,
+  Minimized,
   ToolSettings,
-  ToolAssistance,
 }
 
 export enum Message {
@@ -546,7 +545,6 @@ export default class ZonesExample extends React.Component<{}, State> {
             }
             horizontalToolbar={
               <Toolbar
-                expandsTo={Direction.Bottom}
                 items={
                   <>
                     {this.getToolbarItem("angle")}
@@ -587,7 +585,32 @@ export default class ZonesExample extends React.Component<{}, State> {
               <>
                 <ToolAssistanceIndicator
                   dialog={
-                    this.state.openWidget !== FooterWidget.ToolAssistance ? undefined : <ToolAssistanceDialog />
+                    this.state.openWidget !== FooterWidget.ToolAssistance ? undefined :
+                      <ToolAssistanceDialog
+                        title="Trim Multiple - Tool Assistance"
+                        items={
+                          <>
+                            <ToolAssistanceItem>
+                              <i className="icon icon-cursor" />
+                              Identify piece to trim
+                            </ToolAssistanceItem>
+                            <ToolAssistanceSeparator label="Inputs" />
+                            <ToolAssistanceItem>
+                              <i className="icon icon-cursor-click" />
+                              Clink on element
+                            </ToolAssistanceItem>
+                            <ToolAssistanceItem>
+                              <i className="icon  icon-check-out" />
+                              Drag across elements
+                            </ToolAssistanceItem>
+                            <ToolAssistanceSeparator />
+                            <ToolAssistanceItem>
+                              <input type="checkbox" />
+                              Show prompt @ cursor
+                            </ToolAssistanceItem>
+                          </>
+                        }
+                      />
                   }
                   icons={
                     <>
@@ -1164,6 +1187,27 @@ export default class ZonesExample extends React.Component<{}, State> {
     );
   }
 
+  private getToolbarItemWithToolSettings(toolKey: string) {
+    const tool = this.state.tools[toolKey];
+    return (
+      <ToolbarIcon
+        key={toolKey}
+        isActive={this.state.secondZoneContent !== SecondZoneContent.None}
+        icon={
+          <i className={`icon ${tool.icon}`} />
+        }
+        onClick={() => this.setState((prevState) => {
+          let secondZoneContent = SecondZoneContent.None;
+          if (prevState.secondZoneContent === SecondZoneContent.None)
+            secondZoneContent = SecondZoneContent.ToolSettings;
+          return {
+            secondZoneContent,
+          };
+        })}
+      />
+    );
+  }
+
   private getToolGroup(toolKey: string) {
     const tool = this.state.tools[toolKey] as ToolGroup;
     if (!tool.isToolGroupOpen)
@@ -1258,92 +1302,37 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getToolSettingsWidget() {
-    const toolbar = (
-      <Toolbar
-        expandsTo={Direction.Bottom}
-        items={
-          <>
-            <ToolbarIcon
-              icon={
-                <i className="icon icon-settings" />
-              }
-              isActive={
-                this.state.secondZoneContent === SecondZoneContent.ToolSettings ||
-                this.state.secondZoneContent === SecondZoneContent.EmptyToolSettings
-              }
-              key="0"
-              onClick={
-                () => {
-                  this.setState((prevState) => {
-                    let secondZoneContent = SecondZoneContent.None;
-                    if (prevState.secondZoneContent === SecondZoneContent.None)
-                      secondZoneContent = SecondZoneContent.EmptyToolSettings;
-                    else if (prevState.secondZoneContent === SecondZoneContent.ToolAssistance)
-                      secondZoneContent = SecondZoneContent.ToolSettings;
-                    return {
-                      secondZoneContent,
-                    };
-                  });
-                }
-              }
-            />
-            <ToolbarIcon
-              icon={
-                <i className="icon icon-help" />
-              }
-              isActive={this.state.secondZoneContent === SecondZoneContent.ToolAssistance}
-              key="1"
-              onClick={
-                () => {
-                  this.setState((prevState) => {
-                    let secondZoneContent = SecondZoneContent.None;
-                    if (prevState.secondZoneContent === SecondZoneContent.None)
-                      secondZoneContent = SecondZoneContent.ToolAssistance;
-                    else if (prevState.secondZoneContent === SecondZoneContent.EmptyToolSettings)
-                      secondZoneContent = SecondZoneContent.ToolAssistance;
-                    else if (prevState.secondZoneContent === SecondZoneContent.ToolSettings)
-                      secondZoneContent = SecondZoneContent.ToolAssistance;
-                    return {
-                      secondZoneContent,
-                    };
-                  });
-                }
-              }
-            />
-          </>
+    const tab = (
+      <ToolSettingsWidgetTab
+        isActive={this.state.secondZoneContent === SecondZoneContent.ToolSettings}
+        onClick={
+          () => {
+            this.setState((prevState) => {
+              let secondZoneContent = SecondZoneContent.Minimized;
+              if (prevState.secondZoneContent === SecondZoneContent.Minimized)
+                secondZoneContent = SecondZoneContent.ToolSettings;
+              return {
+                secondZoneContent,
+              };
+            });
+          }
         }
-      />
+      >
+        <i className="icon icon-tools" />
+      </ToolSettingsWidgetTab>
     );
-
     switch (this.state.secondZoneContent) {
-      case SecondZoneContent.None: {
+      case SecondZoneContent.Minimized: {
         return (
           <ToolSettingsWidget
-            toolbar={toolbar}
-          />
-        );
-      }
-      case SecondZoneContent.ToolAssistance: {
-        return (
-          <ToolSettingsWidget
-            toolbar={toolbar}
-            content={
-              <AssistanceToolSettings>
-                <AssistanceItem>Identify piece to trim</AssistanceItem>
-                <AssistanceSeparator label="Inputs" />
-                <AssistanceItem>Drag across elements</AssistanceItem>
-                <AssistanceItem>Clink on element</AssistanceItem>
-                <AssistanceSeparator />
-                <AssistanceItem>Show prompt @ cursor</AssistanceItem>
-              </AssistanceToolSettings>
-            }
+            tab={tab}
           />
         );
       }
       case SecondZoneContent.ToolSettings: {
         return (
           <ToolSettingsWidget
-            toolbar={toolbar}
+            tab={tab}
             content={
               <ToolSettings>
                 <PopoverToggle
@@ -1359,7 +1348,14 @@ export default class ZonesExample extends React.Component<{}, State> {
                             !this.state.isNestedPopoverOpen ? undefined :
                               <NestedToolSettings
                                 label="Nested"
-                                onBackButtonClick={this._handleNestedToolSettingsBackButtonClick}
+                                backButton={
+                                  <HollowButton
+                                    onClick={this._handleNestedToolSettingsBackButtonClick}
+                                    style={{ padding: "5px", lineHeight: "0" }}
+                                  >
+                                    <i className="icon icon-progress-backward-2" />
+                                  </HollowButton>
+                                }
                               >
                                 <ScrollableArea>
                                   1. Settings
@@ -1381,7 +1377,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                                   17. Settings
                                   18. Settings
                                   19. Settings
-                          </ScrollableArea>
+                                </ScrollableArea>
                               </NestedToolSettings>
                           }
                         />
@@ -1389,18 +1385,6 @@ export default class ZonesExample extends React.Component<{}, State> {
                   }
                 />
               </ToolSettings>
-            }
-          />
-        );
-      }
-      case SecondZoneContent.EmptyToolSettings: {
-        return (
-          <ToolSettingsWidget
-            toolbar={toolbar}
-            content={
-              <NoToolSettings>
-                No Settings
-              </NoToolSettings>
             }
           />
         );
@@ -1460,15 +1444,16 @@ export default class ZonesExample extends React.Component<{}, State> {
                   <MessageDialogButtonsContent
                     buttons={
                       <>
-                        <button
-                          className="bwc-buttons-blue"
+                        <BlueButton
                           onClick={this._hideMessages}
                         >
                           Yes
-                        </button>
-                        <button className="bwc-buttons-hollow" onClick={this._hideMessages}>
+                        </BlueButton>
+                        <HollowButton
+                          onClick={this._hideMessages}
+                        >
                           No
-                        </button>
+                        </HollowButton>
                       </>
                     }
                     content={
@@ -1702,7 +1687,6 @@ export default class ZonesExample extends React.Component<{}, State> {
       case 3: {
         return (
           <Toolbar
-            expandsTo={Direction.Bottom}
             items={
               <>
                 {this.getToolbarItem("document")}
@@ -1713,6 +1697,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 {this.getToolbarItem("calendar")}
               </>
             }
+            panelAlignment={ToolbarPanelAlignment.End}
           />
         );
       }
@@ -1724,8 +1709,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           <ThemeContext.Consumer>
             {
               (theme) => (
-                <button
-                  className="bwc-buttons-blue"
+                <BlueButton
                   onClick={() => {
                     switch (theme.name) {
                       case PrimaryTheme.name: {
@@ -1748,7 +1732,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                   }}
                 >
                   Theme: {theme.name}
-                </button>
+                </BlueButton>
               )
             }
           </ThemeContext.Consumer>
@@ -1757,22 +1741,19 @@ export default class ZonesExample extends React.Component<{}, State> {
       case 7: {
         return (
           <>
-            <button
-              className="bwc-buttons-blue"
+            <BlueButton
               onClick={() => this.setVisibleMessage(Message.Activity)}
             >
               Show Activity Message
-            </button>
+            </BlueButton>
             <br />
-            <button
-              className="bwc-buttons-blue"
+            <BlueButton
               onClick={() => this.setVisibleMessage(Message.Modal)}
             >
               Show Modal Message
-            </button>
+            </BlueButton>
             <br />
-            <button
-              className="bwc-buttons-blue"
+            <BlueButton
               onClick={() => {
                 this.setVisibleMessage(Message.Toast);
                 this.setState(() => {
@@ -1783,18 +1764,16 @@ export default class ZonesExample extends React.Component<{}, State> {
               }}
             >
               Show Toast Message
-            </button>
+            </BlueButton>
             <br />
-            <button
-              className="bwc-buttons-blue"
+            <BlueButton
               onClick={() => this.setVisibleMessage(Message.Sticky)}
             >
               Show Sticky Message
-            </button>
+            </BlueButton>
             <br />
             <br />
-            <button
-              className="bwc-buttons-blue"
+            <BlueButton
               onClick={() => {
                 this.setState(() => {
                   return {
@@ -1804,11 +1783,10 @@ export default class ZonesExample extends React.Component<{}, State> {
               }}
             >
               Show Tooltip
-            </button>
+            </BlueButton>
             <br />
             <br />
-            <button
-              className="bwc-buttons-blue"
+            <BlueButton
               onClick={() => {
                 this.setState((prevState) => {
                   const nineZone = this._nineZone.onChangeFooterMode(!prevState.nineZone.isInFooterMode, prevState.nineZone);
@@ -1819,7 +1797,7 @@ export default class ZonesExample extends React.Component<{}, State> {
               }}
             >
               Change Footer Mode
-            </button>
+            </BlueButton>
           </>
         );
       }
@@ -1983,9 +1961,9 @@ export default class ZonesExample extends React.Component<{}, State> {
         <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>
           <ToolsWidget
             isNavigation
+            preserveSpace
             horizontalToolbar={
               <Toolbar
-                expandsTo={Direction.Bottom}
                 items={
                   <>
                     <OverflowItem
@@ -2019,9 +1997,10 @@ export default class ZonesExample extends React.Component<{}, State> {
                     >
 
                     </OverflowItem>
-                    {this.getToolbarItem("chat")}
+                    {this.getToolbarItemWithToolSettings("chat")}
                   </>
                 }
+                panelAlignment={ToolbarPanelAlignment.End}
               />
             }
             verticalToolbar={

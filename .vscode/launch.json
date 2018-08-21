@@ -341,7 +341,7 @@
         "--full-trace",
         "--file",
         "tests/index.test.ts",
-        "tests/**/*.ts"
+        "tests/**/*.{ts,tsx}"
       ],
       "console": "integratedTerminal"
     },

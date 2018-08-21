@@ -2,7 +2,7 @@
 
 exports[`<Stacked /> renders correctly 1`] = `
 <div
-  className="nz-widget-stacked nz-is-closed"
+  className="nz-widget-stacked nz-right-anchor nz-is-closed"
 >
   <div
     className="nz-content-area"

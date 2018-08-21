@@ -10,6 +10,13 @@
 
   position: relative;
 
+  > * {
+    &:not(.nz-triangle) {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
   &:hover > .nz-triangle {
     @include triangle-bottom-right-color($hovered-icon-color);
   }
@@ -32,10 +39,12 @@
   }
 
   &.nz-is-active {
-    > .nz-triangle {
-      filter: $no-shadow;
+    &:not(:active) {
+      > .nz-triangle {
+        filter: $no-shadow;
 
-      @include triangle-bottom-right-color($active-icon-color);
+        @include triangle-bottom-right-color($active-icon-color);
+      }
     }
   }
 }

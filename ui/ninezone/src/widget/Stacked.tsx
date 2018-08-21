@@ -14,13 +14,41 @@ import "./Stacked.scss";
 
 /** Available [[Stacked]] widget anchor directions. */
 export enum Anchor {
+  BottomLeft,
+  BottomRight,
   Left,
   Right,
 }
 
+/** Helpers for [[Anchor]]. */
+export class AnchorHelpers {
+  /** Class name of [[ToolbarPanelAlignment.Start]] */
+  public static readonly BOTTOM_LEFT_CLASS_NAME = "nz-bottom-left-anchor";
+  /** Class name of [[ToolbarPanelAlignment.End]] */
+  public static readonly BOTTOM_RIGHT_CLASS_NAME = "nz-bottom-right-anchor";
+  /** Class name of [[ToolbarPanelAlignment.Start]] */
+  public static readonly LEFT_CLASS_NAME = "nz-left-anchor";
+  /** Class name of [[ToolbarPanelAlignment.End]] */
+  public static readonly RIGHT_CLASS_NAME = "nz-right-anchor";
+
+  /** @returns Class name of specified [[Anchor]] */
+  public static getCssClassName(anchor: Anchor): string {
+    switch (anchor) {
+      case Anchor.BottomLeft:
+        return AnchorHelpers.BOTTOM_LEFT_CLASS_NAME;
+      case Anchor.BottomRight:
+        return AnchorHelpers.BOTTOM_RIGHT_CLASS_NAME;
+      case Anchor.Left:
+        return AnchorHelpers.LEFT_CLASS_NAME;
+      case Anchor.Right:
+        return AnchorHelpers.RIGHT_CLASS_NAME;
+    }
+  }
+}
+
 /** Properties of [[Stacked]] component. */
 export interface StackedProps extends CommonProps, NoChildrenProps {
-  /** Describes to which side the widget is anchored. */
+  /** Describes to which side the widget is anchored. Defaults to [[Anchor.Right]] */
   anchor?: Anchor;
   /** Content of this widget. */
   content?: React.ReactNode;
@@ -40,7 +68,7 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
 export const Stacked: React.StatelessComponent<StackedProps> = (props: StackedProps) => {
   const className = classnames(
     "nz-widget-stacked",
-    props.anchor === Anchor.Left && "nz-left-anchor",
+    AnchorHelpers.getCssClassName(props.anchor === undefined ? Anchor.Right : props.anchor),
     !props.isOpen && "nz-is-closed",
     props.className);
 

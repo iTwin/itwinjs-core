@@ -21,12 +21,7 @@ $navbar-hovercolor: $bwc-blue;
   -moz-transition: width .5s ease;
   -o-transition: width .5s ease;
   transition: width .5s ease;
-  z-index: 1;
-}
-
-.open-navbar:hover,
-.open-navbar.pinned {
-  width: 220px;
+  z-index: 2;
 }
 
 .open-navbar .expander {
@@ -92,6 +87,7 @@ $navbar-hovercolor: $bwc-blue;
   align-items: center;
   padding-left: 24px;
   text-decoration: none;
+  user-select: none;
   font-size: $bwc-font-size-leading;
   cursor: pointer;
   position: relative;
@@ -127,7 +123,9 @@ $navbar-hovercolor: $bwc-blue;
   padding-left: 16px;
   padding-right: 24px;
   opacity: 0;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  overflow: hidden;
   -webkit-transform: scale(0, 1);
   -ms-transform: scale(0, 1);
   transform: scale(0, 1);

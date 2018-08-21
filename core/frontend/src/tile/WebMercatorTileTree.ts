@@ -417,7 +417,7 @@ class MapBoxProvider extends ImageryProvider {
 
   constructor(mapType: MapType) {
     super(mapType);
-    this._zoomMin = this._zoomMax = 0;
+    this._zoomMin = 1; this._zoomMax = 20;
     switch (mapType) {
       case MapType.Street:
         this._baseUrl = "http://api.mapbox.com/v4/mapbox.streets/";

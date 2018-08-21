@@ -1,11 +1,8 @@
 import * as React from "react";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { Div, withOnOutsideClick } from "@bentley/ui-core";
 import { UserProfile } from "@bentley/imodeljs-clients";
+import { Popup } from "./Popup";
 import "./UserProfile.scss";
-
-// tslint:disable-next-line:variable-name
-const DivWithOnOutsideClick = withOnOutsideClick(Div);
 
 export interface IUserProfileProps {
   accessToken: AccessToken;
@@ -76,19 +73,21 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
       organization = this.state.userProfile.organization;
     }
     return (
-      <ul className="dropdown-menu fade-in-fast">
-        <li>
-          <div className="circle no-select" style={{ fontSize: "2em" }}>{this.getInitials()}</div>
-          <div className="profile-details">
-            <div className="profile-name">{this.getFullName()}</div>
-            <div className="profile-email">{email}</div>
-            <div className="profile-organization">{organization}</div>
-          </div>
-        </li>
-        <li className="divider" role="separator"></li>
-        <li className="profile-menuitem" onClick={this.splitterClicked.bind(this)}>Sign Out</li>
-      </ul>
-      );
+      <Popup className="dropdown-menu fade-in-fast" showShadow={true} onClose={this.handleOnOutsideClick}>
+        <ul>
+          <li>
+            <div className="circle no-select" style={{ fontSize: "2em" }}>{this.getInitials()}</div>
+            <div className="profile-details">
+              <div className="profile-name">{this.getFullName()}</div>
+              <div className="profile-email">{email}</div>
+              <div className="profile-organization">{organization}</div>
+            </div>
+          </li>
+          <li className="divider" role="separator"></li>
+          <li className="profile-menuitem" onClick={this.splitterClicked.bind(this)}>Sign Out</li>
+        </ul>
+      </Popup>
+    );
   }
 
   private renderContent() {
@@ -105,10 +104,10 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
 
   public render() {
     return (
-      <DivWithOnOutsideClick className="user-profile" onOutsideClick={this.handleOnOutsideClick}>
+      <div>
         <div className="circle circle-button no-select" onClick={this.splitterClicked.bind(this)}>{this.renderContent()}</div>
         {this.state.isDropdownOpen && this.renderDropdown()}
-      </DivWithOnOutsideClick>
+      </div>
     );
   }
 }

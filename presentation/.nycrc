@@ -5,13 +5,8 @@
     "tsconfig-paths/register"
   ],
   "exclude": [
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.d.ts",
-    "**/*.d.tsx",
-    "tests/**/*",
-    "lib/**/*",
-    "node_modules/**/*"
+    "**/*",
+    "!src/**/*"
   ],
   "extension": [
     ".ts",

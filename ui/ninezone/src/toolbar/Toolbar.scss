@@ -1,6 +1,5 @@
-@import "./item/_variables";
-@import "_variables";
 @import "../_z-index";
+@import "_variables";
 
 .nz-toolbar-toolbar {
   display: inline-block;
@@ -19,7 +18,15 @@
   }
 
   > .nz-history {
+    pointer-events: none;
+
     @include nz-z-index(toolbarHistory);
+
+    > .nz-item > div {
+      > * {
+        pointer-events: auto;
+      }
+    }
   }
 
   > .nz-expanded {
@@ -29,9 +36,25 @@
   &.nz-vertical {
     > .nz-expanded {
       > .nz-item {
-        height: $desktop-item-height;
         display: grid;
-        align-content: center;
+        height: $nz-desktop-item-height;
+        margin-top: $nz-desktop-space-between-toolbar-items;
+      }
+    }
+
+    &.nz-panel-alignment-start {
+      > .nz-panels {
+        > .nz-item {
+          align-content: start;
+        }
+      }
+    }
+
+    &.nz-panel-alignment-end {
+      > .nz-panels {
+        > .nz-item {
+          align-content: end;
+        }
       }
     }
   }
@@ -41,7 +64,8 @@
       display: flex;
 
       > .nz-item {
-        width: $desktop-item-width;
+        width: $nz-desktop-item-width;
+        margin-left: $nz-desktop-space-between-toolbar-items;
         display: grid;
         justify-content: center;
       }
@@ -54,28 +78,42 @@
         }
       }
     }
+
+    &.nz-panel-alignment-start {
+      > .nz-panels {
+        > .nz-item {
+          justify-content: start;
+        }
+      }
+    }
+
+    &.nz-panel-alignment-end {
+      > .nz-panels {
+        > .nz-item {
+          justify-content: end;
+        }
+      }
+    }
   }
 
   &.nz-direction-left {
     > .nz-expanded {
-      top: $items-border-width;
-      left: 0;
+      left: $nz-items-border-width;
       transform: translateX(-100%);
     }
   }
 
   &.nz-direction-right {
     > .nz-expanded {
-      top: $items-border-width;
       left: 100%;
-      transform: translateX(-$items-border-width);
+      transform: translateX(-$nz-items-border-width);
     }
   }
 
   &.nz-direction-bottom {
     > .nz-expanded {
       top: 100%;
-      left: $items-border-width;
+      transform: translateY(-$nz-items-border-width);
     }
   }
 }

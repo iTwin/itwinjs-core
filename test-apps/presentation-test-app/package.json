@@ -15,6 +15,7 @@
     "build": "tsc 1>&2 && npm run extract",
     "clean": "rimraf lib",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
+    "lint": "tslint -p ./tsconfig.json 1>&2",
     "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start"
   },
   "dependencies": {
@@ -53,7 +54,7 @@
     "webpack": "^4.16.4",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
-    "typescript": "~2.9.1"
+    "typescript": "~3.0.0"
   },
   "proxy": {
     "/presentation-test-app": {
