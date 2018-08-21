@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed warnings, improved SearchBox",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "joe.zbuchalski@bentley.com"
+}

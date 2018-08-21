@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improved SearchBox",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "joe.zbuchalski@bentley.com"
+}

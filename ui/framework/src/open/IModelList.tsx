@@ -54,26 +54,32 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       this.props.onIModelSelected!(iModelInfo);
   }
 
+  // tslint:disable-next-line:naming-convention
   private onShowThumbnails = () => {
     this.setState({ showDetails: false });
   }
 
+  // tslint:disable-next-line:naming-convention
   private onShowDetails = () => {
     this.setState({ showDetails: true });
   }
 
+  // tslint:disable-next-line:naming-convention
   private onShowProjectsSelector = () => {
     this.setState({ showProjectDialog: true });
   }
 
+  // tslint:disable-next-line:naming-convention
   private onProjectsSelectorClose = () => {
     this.setState({ showProjectDialog: false });
   }
 
+  // tslint:disable-next-line:naming-convention
   private handleSearchValueChanged = (value: string): void => {
     this.setState( { filter: value} );
   }
 
+  // tslint:disable-next-line:naming-convention
   private onIModelOfflineChange = (checked: boolean): void => {
     if (checked) {
     } else {
@@ -92,7 +98,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     const size = Math.floor(Math.random() * 100).toString() + " MB";
     const checked = Math.random() > .5;
     return (
-      <tr>
+      <tr key={iModelInfo.wsgId}>
         <td><span className="icon icon-imodel-2" />{iModelInfo.name}</td>
         <td>{size}</td>
         <td>This device</td>
