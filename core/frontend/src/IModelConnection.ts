@@ -379,8 +379,7 @@ export namespace IModelConnection {
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
       for (const id of Id64.toIdSet(modelIds)) {
-        const loaded = this.getLoaded(id);
-        if (!loaded)
+        if (undefined === this.getLoaded(id))
           notLoaded.add(id);
       }
 

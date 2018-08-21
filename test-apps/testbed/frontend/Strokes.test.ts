@@ -5,8 +5,8 @@ import { assert, expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
 import { StrokesPrimitivePointList, StrokesPrimitivePointLists } from "@bentley/imodeljs-frontend/lib/rendering";
 
-describe("StrokesPrimitivePointLists", () => {
-  it("StrokesPrimitivePointLists works as expected", () => {
+describe("StrokesPrimitivePointList", () => {
+  it("StrokesPrimitivePointList works as expected", () => {
     const b = new StrokesPrimitivePointList(0.0);
     assert.isTrue(b.startDistance === 0, "startDistance set correctly when constructor with just startDistance param used");
     assert.isTrue(b.points.length === 0, "points set correctly when constructor with just startDistance param used");
