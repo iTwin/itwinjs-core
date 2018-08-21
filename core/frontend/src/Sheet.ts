@@ -223,7 +223,7 @@ export namespace Attachments {
 
   abstract class AttachmentTileLoader extends TileLoader {
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
-    public async getTileProps(_ids: string[]): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
+    public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
     public async loadTileContents(_missing: MissingNodes): Promise<void> {
       // ###TODO: This doesn't appear to be needed, yet it gets invoked?
       return Promise.resolve();

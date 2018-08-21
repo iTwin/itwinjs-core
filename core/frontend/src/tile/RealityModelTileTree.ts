@@ -87,10 +87,10 @@ class RealityModelTileLoader extends TileLoader {
   constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 
-    tileIds.map(async (tileId) => {
+    parent.childIds.map((tileId) => {
       const foundChild = this.findTileInJson(this._tree.tilesetJson, tileId, "");
       if (foundChild !== undefined)
         props.push(new RealityModelTileProps(foundChild.json, foundChild.id, this._tree));

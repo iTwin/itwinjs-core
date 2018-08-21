@@ -152,6 +152,7 @@ export class Tile implements IDisposable {
   public get isLeaf(): boolean { return !this.hasChildren; }
   public get isDisplayable(): boolean { return this.maximumSize > 0; }
   public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
+  public get childIds(): string[] { return this._childIds; } // ###TODO: Remove...
 
   public get graphics(): RenderGraphic | undefined { return this._graphic; }
   public get hasGraphics(): boolean { return undefined !== this.graphics; }
@@ -348,7 +349,7 @@ export class Tile implements IDisposable {
   private loadChildren(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
       this._childrenLoadStatus = TileTree.LoadStatus.Loading;
-      this.root.loader.getTileProps(this._childIds).then((props: TileProps[]) => {
+      this.root.loader.getChildrenProps(this).then((props: TileProps[]) => {
         this._children = [];
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
@@ -564,7 +565,7 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
 }));
 
 export abstract class TileLoader {
-  public abstract async getTileProps(ids: string[]): Promise<TileProps[]>;
+  public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async loadTileContents(missingtiles: MissingNodes): Promise<void>;
   public abstract get maxDepth(): number;
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
@@ -630,9 +631,8 @@ export class IModelTileLoader extends TileLoader {
   protected static _viewFlagOverrides = new ViewFlag.Overrides();
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
 
-  public async getTileProps(ids: string[]): Promise<TileProps[]> {
-    const tileIds: TileId[] = ids.map((id: string) => new TileId(this._rootId, id));
-    return this._iModel.tiles.getTileProps(tileIds);
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
+    return this._iModel.tiles.getChildrenProps(new TileId(this._rootId, parent.id));
   }
 
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {

@@ -84,7 +84,6 @@ class WebMercatorTileTreeProps implements TileTreeProps {
 }
 class WebMercatorTileProps implements TileProps {
   public id: TileId;
-  public parentId?: string;
   public range: Range3dProps;
   public contentRange?: Range3dProps;
   public maximumSize: number;
@@ -133,9 +132,11 @@ class WebMercatorTileLoader extends TileLoader {
     this.mercatorToDb = dbToMercator.inverse() as Transform;
   }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: WebMercatorTileProps[] = [];
-    for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.mercatorToDb)); }
+    for (const tileId of parent.childIds) {
+      props.push(new WebMercatorTileProps(tileId, this.mercatorToDb));
+    }
 
     return props;
   }

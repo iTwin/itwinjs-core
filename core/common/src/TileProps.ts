@@ -27,8 +27,6 @@ export class TileId implements TileIdProps {
 export interface TileProps {
   /** The unique identifier of the tile within the iModel */
   id: TileIdProps;
-  /** The id of the tile's parent within its TileTree, if it is not the root tile. */
-  parentId?: string;
   /** The volume in which all of the tile's contents reside */
   range: Range3dProps;
   /** Optional volume within the tile's range which more tightly encloses the tile geometry */
