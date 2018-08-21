@@ -97,7 +97,7 @@ export class ViewSelector extends React.Component<ViewsProps, ViewsState> {
 
   private onOKPressed = () => {
     if (this.props.OnViewsSelected && this.state.views)
-      this.props.OnViewsSelected(this.props.iModel, this.iModelConnection!, this.state.views);
+      this.props.OnViewsSelected(this.props.iModel, this.iModelConnection!, this.state.selectedViews);
   }
 
   private async startRetrieveViews() {
@@ -170,4 +170,3 @@ export class ViewSelector extends React.Component<ViewsProps, ViewsState> {
     );
   }
 }
-
