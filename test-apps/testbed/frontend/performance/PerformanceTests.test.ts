@@ -6,14 +6,15 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport, OffScreenViewport } from "@bentley/imodeljs-frontend";
-import { Target, UpdatePlan, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, UpdatePlan, PerformanceMetrics/*, System*/ } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
-import { CONSTANTS } from "../../common/Testbed";
-import * as path from "path";
+// import { CONSTANTS } from "../../common/Testbed";
+// import * as path from "path";
 import { StopWatch } from "@bentley/bentleyjs-core";
 
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
+// const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
+// const glContext: WebGLRenderingContext | null = null;
 
 const wantConsoleOutput: boolean = true;
 function debugPrint(msg: string): void {
@@ -29,10 +30,52 @@ function resolveAfterXMilSeconds(ms: number) { // must call await before this fu
   });
 }
 
+async function nextFrame() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(resolve);
+  });
+}
+
+// /** The main event processing loop for Tools (and rendering). */
+// let eventLoopCount = 0;
+// function eventLoop(): void {
+//   debugPrint("--start of event loop");
+//   (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
+//   theViewport!.sync.setRedrawPending;
+//   theViewport!.sync.invalidateScene();
+//   theViewport!.renderFrame(new UpdatePlan());
+
+//   if (eventLoopCount < 20)
+//     requestAnimationFrame(eventLoop);
+//   eventLoopCount++;
+// }
+
+// async function nextFrame() {
+//   debugPrint("--start of event loop");
+//   (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
+//   theViewport!.sync.setRedrawPending;
+//   theViewport!.sync.invalidateScene();
+//   theViewport!.renderFrame(new UpdatePlan());
+
+//   if (eventLoopCount < 20)
+//     requestAnimationFrame(eventLoop);
+
+//   return new Promise(resolve => {
+//       requestAnimationFrame(resolve)
+//   });
+//   eventLoopCount++;
+
+// }
+
+
+
 function createWindow() {
   const canv = document.createElement("canvas");
   canv.id = "imodelview";
   document.body.appendChild(canv);
+  // debugPrint("canv.context: " + canv.getContext("webgl"));
+  // debugPrint("getelement.context: " + (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl"));
+  // glContext = canv.getContext("webgl");
 }
 
 async function waitForTilesToLoad() {
@@ -122,27 +165,62 @@ async function printResults(tileLoadingTime: number, frameTimes: number[]) {
   await PerformanceWriterClient.addEntry(new PerformanceEntry(tileLoadingTime, frameTimes, configuration.iModelName, configuration.viewName));
 }
 
-export function savePng() {
-  const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
-  // const tempUrl = IModelApp.renderSystem.canvas.toDataURL("image/png");
-  const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
-  // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
-  const newlink = document.createElement("a");
-  // newlink.innerHTML = "Google";
-  // newlink.setAttribute("title", "Google");
+// export function savePng() {
+//   // write((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob().toString(), "demo.png", "image/png");
 
-  newlink.setAttribute("href", tempUrl);
-  newlink.setAttribute("id", "download");
-  newlink.setAttribute("download", defaultFileLocation);
-  newlink.setAttribute("target", "_blank");
-  document.body.appendChild(newlink);
 
-  // const link = $('<a href="' + tempUrl + '" id="download" download="' + fileName + '" target="_blank"> </a>');
-  document.body.appendChild(newlink);
-  (document.getElementById("download") as HTMLCanvasElement).click();
-  // $("#download").get(0).click();
+//   (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob((blob) => {
+//     // IModelApp.renderSystem.canvas!.toBlob((blob) => {
+//     const url = URL.createObjectURL(blob);
+//     // localStorage.setItem("elephant.png", url);
 
-}
+//     const a = document.createElement("a");
+//     a.href = url, a.download = "demoModel.png";
+//     document.body.appendChild(a);
+//     a.click();
+//     setTimeout(() => {
+//       document.body.removeChild(a);
+//       window.URL.revokeObjectURL(url);
+//     }, 0);
+//   });
+
+//   // const a = document.createElement("a");
+//   // const url = URL.createObjectURL((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob());
+//   // a.href = url, a.download = "demoModel.png";
+//   // document.body.appendChild(a);
+//   // a.click();
+//   // setTimeout(() => {
+//   //   document.body.removeChild(a);
+//   //   window.URL.revokeObjectURL(url);
+//   // }, 0);
+
+
+
+
+
+//   // (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob();
+
+
+//   const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
+//   // const tempUrl = IModelApp.renderSystem.canvas.toDataURL("image/png");
+//   const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
+//   // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
+//   const newlink = document.createElement("a");
+//   // newlink.innerHTML = "Google";
+//   // newlink.setAttribute("title", "Google");
+
+//   newlink.setAttribute("href", tempUrl);
+//   newlink.setAttribute("id", "download");
+//   newlink.setAttribute("download", defaultFileLocation);
+//   newlink.setAttribute("target", "_blank");
+//   document.body.appendChild(newlink);
+
+//   // const link = $('<a href="' + tempUrl + '" id="download" download="' + fileName + '" target="_blank"> </a>');
+//   document.body.appendChild(newlink);
+//   (document.getElementById("download") as HTMLCanvasElement).click();
+//   // $("#download").get(0).click();
+
+// }
 
 class SimpleViewState {
   public accessToken?: AccessToken;
@@ -169,7 +247,8 @@ async function _changeView(view: ViewState) {
 async function openView(state: SimpleViewState) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
-  htmlCanvas!.width = htmlCanvas!.height = 500;
+  htmlCanvas!.width = 1239;
+  htmlCanvas!.height = 685;
   document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
@@ -179,7 +258,7 @@ async function openView(state: SimpleViewState) {
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
     await _changeView(state.viewState!);
-    IModelApp.viewManager.addViewport(theViewport);
+    // IModelApp.viewManager.addViewport(theViewport);
   }
 }
 
@@ -221,7 +300,7 @@ async function mainBody() {
   configuration = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
-    iModelName: path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
+    iModelName: "D:\\models\\ibim_bim0200dev\\Wraith_MultiMulti.ibim", // path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
     viewName: "V0",
   } as SVTConfiguration;
 
@@ -250,16 +329,17 @@ async function mainBody() {
   debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
 
   // await savePng();
-  // const gl = (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl");
+  // let gl = (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl");
+  // if (!gl) gl = (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("experimental-webgl");
   // const gl: WebGLRenderingContext = System.instance.context;
   // debugPrint("gl: " + gl);
   // await gl!.clearColor(0, 1, 0, 1);
   // await gl!.clear(gl!.COLOR_BUFFER_BIT);
-  await resolveAfterXMilSeconds(2000);
+  // await resolveAfterXMilSeconds(2000);
   debugPrint("1111111111111111111111 - b4 save png " + theViewport!.continuousRendering);
-  await savePng();
+  // await savePng();
   debugPrint("1111111111111111111111 - after save png " + theViewport!.continuousRendering);
-  await resolveAfterXMilSeconds(2000);
+  // await resolveAfterXMilSeconds(2000);
 
   // savePng();
 
@@ -276,7 +356,18 @@ async function mainBody() {
   debugPrint("///////////////////////////////// start extra renderFrames");
 
   for (let i = 0; i < 10; ++i) {
-    debugPrint("///////////////////////////////// extra renderFrames " + i);
+    (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
+    theViewport!.sync.setRedrawPending;
+    theViewport!.sync.invalidateScene();
+    theViewport!.renderFrame(plan);
+  }
+  const finalFrameTimings: number[][] = [];
+  const timer = new StopWatch(undefined, true);
+  // await requestAnimationFrame(eventLoop);
+
+
+  for (let i = 0; i < 20; ++i) {
+    // debugPrint("///////////////////////////////// extra renderFrames " + i + " " + glContext); // (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl"));
     // await gl!.clearColor(0, 1, 0, 1);
     // await gl!.clear(gl!.COLOR_BUFFER_BIT);
     // await resolveAfterXMilSeconds(2000);
@@ -284,15 +375,24 @@ async function mainBody() {
     (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
     theViewport!.sync.setRedrawPending;
     theViewport!.sync.invalidateScene();
-    debugPrint("///////////--- start collecting timing data");
+    // debugPrint("///////////--- start collecting timing data");
     theViewport!.renderFrame(plan);
-    await resolveAfterXMilSeconds(2000);
+    // await resolveAfterXMilSeconds(2000);
     // render to an offscreen viewport // Nate sheet.ts has some offscreen rendering!!!!!!!!!!!!!!!!!!!!!!`
-    await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
-    await savePng();
-    await resolveAfterXMilSeconds(2000);
-    debugPrint("///////////--- finish collecting timing data");
+
+    // await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
+    finalFrameTimings[i] = (theViewport!.target as Target).frameTimings.slice();
+    // await savePng();
+    // await resolveAfterXMilSeconds(2000);
+    // debugPrint("///////////--- finish collecting timing data");
+    await nextFrame();
   }
+  timer.stop();
+  debugPrint("88888888888888 Elapsed Time: " + timer.elapsed.milliseconds + "/20= " + timer.elapsed.milliseconds / 20.0);
+  for (const t of finalFrameTimings) {
+    await printResults(curTileLoadingTime, t);
+  }
+
 
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
