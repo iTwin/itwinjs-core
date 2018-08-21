@@ -142,10 +142,7 @@ describe("IModelConnection (#integration)", () => {
     expect(range.low.isAlmostEqualXYZ(-50.0075, -50.0075, -20.003)).to.be.true;
     expect(range.high.isAlmostEqualXYZ(50.0075, 50.0075, 20.003)).to.be.true;
 
-    if (undefined === rootTile.geometry || undefined === rootTile.contentRange)
-      return; // ###TODO: The add-on doesn't wait for tile geometry to be saved to the cache, so it may be undefined...
-
-    expect(rootTile.geometry).not.to.be.undefined;
+    expect(rootTile.hasGeometry).to.be.true;
     expect(rootTile.contentRange).not.to.be.undefined;
 
     const contentRange = Range3d.fromJSON(rootTile.contentRange);
