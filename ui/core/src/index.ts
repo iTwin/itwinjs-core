@@ -35,6 +35,7 @@ export * from "./validationTextbox";
 /**
  * @docs-group-description Cube
  * Component for 3D Cube.
+ */
 /**
  * @docs-group-description Dialog
  * Classes for working with a Dialog.
