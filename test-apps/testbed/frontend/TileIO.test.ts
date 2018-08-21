@@ -869,7 +869,7 @@ describe("TileIO", () => {
 
     const rootTile = tree.rootTile;
     expect(rootTile.id.treeId).to.equal(tree.id);
-    expect(rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
+    expect(rootTile.id.tileId).to.equal("0/0/0/0:1");
 
     expect(rootTile.hasGeometry).to.be.true;
     expect(rootTile.contentRange).not.to.be.undefined;
