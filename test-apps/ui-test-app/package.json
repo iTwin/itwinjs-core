@@ -12,7 +12,7 @@
     "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start",
     "test": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js test",
     "cover": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js cover",
-    "clean": "rimraf lib && rimraf dist",
+    "clean": "rimraf lib dist package-deps.json",
     "docs": ""
   },
   "repository": {},
