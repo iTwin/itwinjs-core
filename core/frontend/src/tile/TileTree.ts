@@ -637,8 +637,9 @@ export class IModelTileLoader extends TileLoader {
 
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
     for (const tile of missingTiles.extractArray()) {
+      tile.setIsQueued();
       this._iModel.tiles.getTileContent(tile.root.constructTileId(tile.id)).then((content: string) => {
-        if (tile.isLoading)
+        if (tile.isQueued)
           this.loadGraphics(tile, content);
       }).catch((_err: any) => {
         tile.setNotFound();
