@@ -522,7 +522,7 @@ export class Point3d extends XYZ {
    * @param scale scale factor to apply to its x,y,z parts
    * @param result optional point to receive coordinates
    */
-  public static createScale(source: XYZ, scale: number, result?: Point3d): Point3d {
+  public static createScale(source: XYAndZ, scale: number, result?: Point3d): Point3d {
     return Point3d.create(source.x * scale, source.y * scale, source.z * scale, result);
   }
   /** create a point that is a linear combination (weighted sum) of 2 input points.
@@ -531,7 +531,7 @@ export class Point3d extends XYZ {
    * @param pointB second input point
    * @param scaleB scale factor for pointB
    */
-  public static add2Scaled(pointA: XYZ, scaleA: number, pointB: XYZ, scaleB: number, result?: Point3d): Point3d {
+  public static add2Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, result?: Point3d): Point3d {
     return Point3d.create(
       pointA.x * scaleA + pointB.x * scaleB,
       pointA.y * scaleA + pointB.y * scaleB,
@@ -547,7 +547,7 @@ export class Point3d extends XYZ {
    * @param pointC third input point.
    * @param scaleC scale factor for pointC
    */
-  public static add3Scaled(pointA: XYZ, scaleA: number, pointB: XYZ, scaleB: number, pointC: XYZ, scaleC: number, result?: Point3d): Point3d {
+  public static add3Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number, result?: Point3d): Point3d {
     return Point3d.create(
       pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
       pointA.y * scaleA + pointB.y * scaleB + pointC.y * scaleC,
@@ -1545,10 +1545,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
 
   // unit X vector
-  public static unitX(): Vector2d { return new Vector2d(1, 0); }
+  public static unitX(scale: number = 1): Vector2d { return new Vector2d(scale, 0); }
 
   // unit Y vector
-  public static unitY(): Vector2d { return new Vector2d(0, 1); }
+  public static unitY(scale: number = 1): Vector2d { return new Vector2d(0, scale); }
 
   // zero vector
   public static createZero(result?: Vector2d): Vector2d { return Vector2d.create(0, 0, result); }
