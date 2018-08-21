@@ -3,10 +3,12 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "outDir": "./lib",
-    "baseUrl": "./node_modules"
+    "baseUrl": "./node_modules",
+    "jsx": "react"
   },
   "include": [
-    "./**/*.ts"
+    "./**/*.ts",
+    "./**/*.tsx"
   ],
   "exclude": [
     "lib",

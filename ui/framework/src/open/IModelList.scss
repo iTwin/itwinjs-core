@@ -25,13 +25,13 @@
   .searchbox {
     margin-left: auto;
     width: 15em;
-    margin-right: .5em;
+    margin-right: 12px;
   }
 
   .viewtype {
     padding: 7px;
     border: 1px solid #ccc;
-    font-size: 22px;
+    font-size: 18px;
     color: $bwc-icons-light;
     cursor: pointer;
     -webkit-transition: color .3s ease;
@@ -58,6 +58,7 @@
   bottom: 0px;
   position: absolute;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -100,6 +101,8 @@
   position: absolute;
   top: 40%;
   left: 50%;
+  width: 100%;
+  text-align: center;
   transform: translate(-50%,-50%);
   font-style: italic;
   font-size: 1.25em;

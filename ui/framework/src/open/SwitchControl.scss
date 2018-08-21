@@ -12,7 +12,7 @@ input {
   &.sw {
 		opacity: 0;
 		position:absolute;
-		left: -9999px;
+    left: -9999px;
 
     & + label {
       user-select: none;
@@ -23,6 +23,7 @@ input {
       position:relative;
       box-shadow: inset 0 0 0px 2px #e4e4e4;
 			border-radius: $sw-height*2;
+      cursor: pointer;
 
       &:before {
         content: "";

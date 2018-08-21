@@ -261,7 +261,7 @@ export class TransientIdSequence {
   private _localId: number = 0;
 
   /** Generate and return the next transient Id64 in the sequence. */
-  public get next(): Id64 { return new Id64([++this._localId, 0xffffffff]); }
+  public get next(): Id64 { return new Id64([++this._localId, 0xffffff]); }
 }
 
 /** A string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid.
@@ -270,10 +270,7 @@ export class TransientIdSequence {
 export class Guid {
   public readonly value: string;
   private static _uuidPattern = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-  private static _hexChars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
-  private static _v4VariantChars = ["8", "9", "a", "b"];
 
-  /** construct  */
   public constructor(input?: Guid | string | boolean) {
     if (typeof input === "string") { this.value = input.toLowerCase(); if (Guid.isGuid(this.value)) return; }
     if (input instanceof Guid) { this.value = input.value; return; }
@@ -291,52 +288,16 @@ export class Guid {
    */
   public static isGuid(value: string) { return Guid._uuidPattern.test(value); }
 
-  /** determine whether the input string is a valid V4 Guid string */
+  /** Determine whether the input string is a valid V4 Guid string */
   public static isV4Guid(value: string) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value); }
-
-  private static randomCharFrom(array: string[]): string {
-    return array[Math.floor(array.length * Math.random())];
-  }
 
   /** Create a new V4 Guid value */
   public static createValue(): string {
-    return [
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      "-",
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      "-",
-      "4",
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      "-",
-      Guid.randomCharFrom(Guid._v4VariantChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      "-",
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-      Guid.randomCharFrom(Guid._hexChars),
-    ].join("");
+    // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      const v = c === "x" ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 }

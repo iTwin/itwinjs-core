@@ -122,16 +122,11 @@ export class Decoration implements IDisposable {
     this.overrides = overrides;
   }
 
-  public dispose() {
-    dispose(this.graphic);
-  }
+  public dispose() { dispose(this.graphic); }
 }
 
 export class DecorationList implements IDisposable {
-  public readonly list: Decoration[];
-
-  public constructor() { this.list = []; }
-
+  public readonly list: Decoration[] = [];
   public dispose() {
     for (const decoration of this.list)
       dispose(decoration);

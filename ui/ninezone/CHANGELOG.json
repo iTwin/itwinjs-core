@@ -2,6 +2,24 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "0.118.0",
+      "tag": "@bentley/ui-ninezone_v0.118.0",
+      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SnapMode statusbar field to UI framework."
+          },
+          {
+            "comment": "TSLint New Rule Enforcements"
+          },
+          {
+            "comment": "Updated to use TypeScript 3.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.117.0",
       "tag": "@bentley/ui-ninezone_v0.117.0",
       "date": "Wed, 15 Aug 2018 17:08:54 GMT",

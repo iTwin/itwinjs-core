@@ -2,6 +2,24 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "0.118.0",
+      "tag": "@bentley/ecschema-metadata_v0.118.0",
+      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update KindOfQuantity in ecschema-metadata to use relativeError instead of precision"
+          },
+          {
+            "comment": "TSLint New Rule Enforcements"
+          },
+          {
+            "comment": "Updated to use TypeScript 3.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.117.0",
       "tag": "@bentley/ecschema-metadata_v0.117.0",
       "date": "Wed, 15 Aug 2018 17:08:53 GMT",
