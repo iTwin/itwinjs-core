@@ -3,28 +3,20 @@
 exports[`SearchBox <SearchBox /> renders correctly 1`] = `
 <div
   className="searchbox"
-  style={
-    Object {
-      "width": "12em",
-    }
-  }
 >
   <input
-    className="searchbox-input"
     onChange={[Function]}
     onCut={[Function]}
     onKeyUp={[Function]}
     onPaste={[Function]}
     placeholder="searchbox.search"
-    style={
-      Object {
-        "width": "12em",
-      }
-    }
   />
   <div
-    className="searchbox-icon icon icon-search"
     onClick={[Function]}
-  />
+  >
+    <span
+      className="searchbox-icon icon icon-search"
+    />
+  </div>
 </div>
 `;
