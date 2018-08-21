@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Aug 2018 17:20:41 GMT and should not be manually modified.
+
+## 0.118.0
+Tue, 21 Aug 2018 17:20:41 GMT
+
+### Updates
+
+- convertTouchMoveStartToButtonDownAndMotion now calls onMouseStartDrag. Added SelectTool touch support.
+- ViewManip touch event support. Don't disable snapping when touch move converted to mouse motion.
+- Fix TransientIdSequence. Fix AccuSnap.findLocatableHit not setting filtered status.
+- TSLint New Rule Enforcements
+- Updated to use TypeScript 3.0
 
 ## 0.117.0
 Wed, 15 Aug 2018 17:08:54 GMT

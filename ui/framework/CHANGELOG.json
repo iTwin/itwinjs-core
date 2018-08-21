@@ -2,6 +2,39 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.118.0",
+      "tag": "@bentley/ui-framework_v0.118.0",
+      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added DragDrop API"
+          },
+          {
+            "comment": "Added user and version info to DefaultModelServices"
+          },
+          {
+            "comment": "Add SnapMode statusbar field to UI framework."
+          },
+          {
+            "comment": "Second round of changes for IModel Open"
+          },
+          {
+            "comment": "Fixed warnings, improved SearchBox"
+          },
+          {
+            "comment": "Fixed warnings"
+          },
+          {
+            "comment": "TSLint New Rule Enforcements"
+          },
+          {
+            "comment": "Updated to use TypeScript 3.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.117.0",
       "tag": "@bentley/ui-framework_v0.117.0",
       "date": "Wed, 15 Aug 2018 17:08:54 GMT",
