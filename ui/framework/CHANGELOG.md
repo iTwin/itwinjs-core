@@ -1,6 +1,20 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Aug 2018 17:20:41 GMT and should not be manually modified.
+
+## 0.118.0
+Tue, 21 Aug 2018 17:20:41 GMT
+
+### Updates
+
+- Added DragDrop API
+- Added user and version info to DefaultModelServices
+- Add SnapMode statusbar field to UI framework.
+- Second round of changes for IModel Open
+- Fixed warnings, improved SearchBox
+- Fixed warnings
+- TSLint New Rule Enforcements
+- Updated to use TypeScript 3.0
 
 ## 0.117.0
 Wed, 15 Aug 2018 17:08:54 GMT

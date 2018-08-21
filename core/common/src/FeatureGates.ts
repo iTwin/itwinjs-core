@@ -1,13 +1,19 @@
+
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module FeatureGates */
 
+import { BeEvent } from "@bentley/bentleyjs-core";
+
+export type GateValue = number | boolean | string | undefined;
+
 /**
  * A set of "gates" that can enable or disable [features at runtime]($docs/learning/common/FeatureGates.md).
  */
 export class FeatureGates {
-  private readonly _gates: any = {};
+  public onChanged = new BeEvent<(feature: string, val: GateValue) => void>();
+  private readonly _gates = new Map<string, GateValue>();
 
   /**
    * Get the value of a potentially gated feature.
@@ -15,23 +21,9 @@ export class FeatureGates {
    *       Feature names are case-sensitive.
    * @param defaultVal optionally, value to return if feature is undefined.
    */
-  public check(feature: string, defaultVal?: any): any {
-    if (feature.length === 0)
-      return defaultVal;
-
-    let gate = this._gates;
-    for (const name of feature.split(".")) {
-      gate = gate[name];
-      if (typeof gate !== "object")
-        break;
-    }
-    switch (typeof gate) {
-      case "undefined":
-        return defaultVal;
-      case "object":
-        return Object.assign(gate); // always return a copy of objects so caller doesn't accidentally change their value.
-    }
-    return gate;
+  public check(feature: string, defaultVal?: GateValue): GateValue {
+    const val = this._gates.get(feature);
+    return val === undefined ? defaultVal : val;
   }
 
   /**
@@ -40,22 +32,21 @@ export class FeatureGates {
    *  Feature names are case-sensitive.
    * @param val value to set. If undefined, feature is deleted.
    */
-  public setGate(feature: string, val: any): void {
+  public setGate(feature: string, val: GateValue): void {
     if (feature.length === 0)
       return;
-
-    let gate = this._gates;
-    const arr = feature.split(".");
-    while (arr.length > 1) {
-      const obj = gate[arr[0]];
-      if (typeof obj !== "object")
-        gate[arr[0]] = {};
-      gate = gate[arr.shift()!];
-    }
-
     if (val === undefined)
-      delete gate[arr[0]];
+      this._gates.delete(feature);
     else
-      gate[arr[0]] = val;
+      this._gates.set(feature, val);
+
+    this.onChanged.raiseEvent(feature, val);
   }
+
+  /** Register a listener to be called whenever the value of a specific gate changes.
+   * @param feature The name of the feature to monitor
+   * @param monitor The listener to call when `feature` changes. Receives a single argument holding the new value of the feature (may be undefined).
+   * @returns A function that may be called to remove the listener.
+   */
+  public addMonitor(feature: string, monitor: (val: GateValue) => void): () => void { return this.onChanged.addListener((changed, val) => { if (changed === feature) monitor(val); }); }
 }

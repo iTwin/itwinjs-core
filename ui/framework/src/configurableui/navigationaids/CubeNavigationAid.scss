@@ -3,57 +3,141 @@
  *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/index.scss";
 
-$cube-width: 96px;
+$cube-outer-width: 96px;
 $button-width: 14px;
+$nav-cube-width: 64px;
+$nav-cube-side-width: 12px;
+
+
+$grad-start: $bwc-gray-c;
+$grad-end: $bwc-gray-9;
+
+$grad-start-highlight: $bwc-gray-a;
+$grad-end-highlight: $bwc-gray-7;
+
 
 .cube-container {
   position: relative;
-  width: $cube-width;
-  height: $cube-width;
+  width: $cube-outer-width;
+  height: $cube-outer-width;
 
-  .cube-canvas-container {
+  .cube-element-container {
     position: absolute;
     left: 0;
     top: 0;
-    width: $cube-width;
-    height: $cube-width;
-  }
-
-  .cube-pointer-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: $cube-width;
-    height: $cube-width;
+    width: $cube-outer-width;
+    height: $cube-outer-width;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    .cube-row {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-
-      &.cube-pointer-center {
-        justify-content: space-between;
+    justify-content: center;
+    align-items: center;
+    .nav-cube {
+      width: $nav-cube-width;
+      height: $nav-cube-width;
+      .nav-cube-face {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        font-size: $bwc-cap-size;
+        font-weight: $bwc-font-weight-bold;
+        color: $bwc-text-color;
+        box-shadow: 0px 0px .0px 1px #000;
+        .face-row {
+          display: flex;
+          flex-direction: row;
+          height: $nav-cube-side-width;
+          width: 100%;
+          &.center {
+            height: auto;
+            flex-grow: 1;
+          }
+          .face-cell {
+            cursor: pointer;
+            user-select: none;
+            width: $nav-cube-side-width;
+            &.center {
+              width: auto;
+              flex-grow: 1;
+            }
+            &.hover {
+              background: $bwc-blue;
+            }
+            &.active {
+              background: $bwc-blue-highlight;
+            }
+          }
+          &.center .face-cell.center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+      }
+      .left, .right, .front, .back {
+          background: linear-gradient(#{$grad-start}, #{$grad-end});
+      }
+      .top {
+        background: $grad-start;
+      }
+      .bottom {
+        background: $grad-end;
+      }
+      &.dragging {
+        .face-row .face-cell {
+          &.hover, &.active {
+            background: transparent;
+          }
+        }
+        .left, .right, .front, .back {
+            background: linear-gradient(#{$grad-start-highlight}, #{$grad-end-highlight});
+        }
+        .top {
+          background: $grad-start-highlight;
+        }
+        .bottom {
+          background: $grad-end-highlight;
+        }
       }
     }
-
-    .cube-pointer {
-      height: $button-width;
-      width: $button-width;
-      font-size: $button-width;
-      color: $bwc-gray;
-      text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-      cursor: pointer;
-
-      &:hover {
-        color: $bwc-blue;
-      }
-    }
+  }
+  .cube-pointer {
+    position: absolute;
+    height: $button-width;
+    width: $button-width;
+    font-size: $button-width;
+    color: $bwc-gray;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    cursor: pointer;
 
     &:not(.visible) {
       display: none;
+    }
+    &:hover {
+      color: $bwc-blue;
+    }
+    &.up {
+      margin: 0 auto;
+      left: 0px;
+      right: 0px;
+      top: 0px;
+    }
+    &.down {
+      margin: 0 auto;
+      left: 0px;
+      right: 0px;
+      bottom: 0px;
+    }
+    &.left {
+      margin: auto 0;
+      top: 0px;
+      bottom: 0px;
+      left: 0px;
+    }
+    &.right {
+      margin: auto 0;
+      top: 0px;
+      bottom: 0px;
+      right: 0px;
     }
   }
 }

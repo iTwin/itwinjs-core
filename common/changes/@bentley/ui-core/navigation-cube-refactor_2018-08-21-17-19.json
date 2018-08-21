@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Added Cube component for use in the CubeNavigationAid and CubeContent.",
       "packageName": "@bentley/ui-core",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-core",
-  "email": "joe.zbuchalski@bentley.com"
+  "email": "Simeon.McGraw@bentley.com"
 }
