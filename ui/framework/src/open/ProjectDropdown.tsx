@@ -5,7 +5,7 @@ import { ProjectInfo } from "../clientservices/ProjectServices";
 import { ProjectDialog } from "./ProjectDialog";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { Popup } from "./Popup";
-import "./ProjectDropDown.scss";
+import "./ProjectDropdown.scss";
 
 export interface IProjectDropdownProps {
   accessToken: AccessToken;
@@ -33,11 +33,13 @@ export class ProjectDropdown extends React.Component<IProjectDropdownProps, IPro
     this.state = { isDropdownOpen: false, showProjectsDialog: false };
   }
 
+  // tslint:disable-next-line:naming-convention
   private onMoreClicked = (_event: React.MouseEvent<HTMLDivElement>) => {
     this.closeDropdown();
     this.setState((_prevState) => ({ showProjectsDialog: true }));
   }
 
+  // tslint:disable-next-line:naming-convention
   private onCloseProjectDialog = () => {
     this.closeDialog();
   }
@@ -47,15 +49,18 @@ export class ProjectDropdown extends React.Component<IProjectDropdownProps, IPro
     this.props.onProjectClicked(project);
   }
 
+  // tslint:disable-next-line:naming-convention
   private onProjectSelected = (project: ProjectInfo) => {
     this.closeDialog();
     this.props.onProjectClicked(project);
   }
 
+  // tslint:disable-next-line:naming-convention
   private splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
     this.setState((_prevState) => ({ isDropdownOpen: !this.state.isDropdownOpen }));
   }
 
+  // tslint:disable-next-line:naming-convention
   private handleOnOutsideClick = () => {
     this.closeDropdown();
   }

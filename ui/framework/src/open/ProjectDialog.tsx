@@ -83,12 +83,12 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   // tslint:disable-next-line:naming-convention
   private handleSearchValueChanged = (value: string): void => {
     if (!value || value.trim().length === 0) {
-      this.setState ({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All, filter: value });
+      this.setState({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All, filter: value });
     } else {
       const filter = "Name like '" + value + "'";
       this.setState({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
       UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.All, 40, 0, filter).then((projectInfos: ProjectInfo[]) => {
-        this.setState ({ isLoading: false,  projects: projectInfos, filter: value });
+        this.setState({ isLoading: false, projects: projectInfos, filter: value });
       });
     }
   }
@@ -164,7 +164,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
                 </thead>
                 <tbody>
                   {(this.state.projects && this.state.projects.length > 0) && this.state.projects.map((project: ProjectInfo) => (this.renderProject(project)))}
-                 </tbody>
+                </tbody>
               </table>
               {this.state.isLoading && <div className="projects-loading"><div><i /><i /><i /><i /><i /><i /></div></div>}
               {(!this.state.isLoading && (!this.state.projects || this.state.projects.length === 0)) && <div className="projects-none">{this.getNoProjectsPrompt()}</div>}

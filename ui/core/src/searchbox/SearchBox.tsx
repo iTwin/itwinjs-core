@@ -5,13 +5,12 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { ClassNameProps } from "@bentley/ui-ninezone/lib/utilities/Props";
 import UiCore from "../UiCore";
 
 import "./SearchBox.scss";
 
 /** Property interface for SearchBox */
-export interface SearchBoxProps extends ClassNameProps {
+export interface SearchBoxProps {
   /** value to set SearchBox to initially */
   initialValue?: string;
   /** placeholder value to show in gray before anything is entered in */
@@ -65,7 +64,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
         ></input>
         <div onClick={this._handleIconClick}>
-          <span className={iconClassName}/>
+          <span className={iconClassName} />
         </div>
       </div>
     );
