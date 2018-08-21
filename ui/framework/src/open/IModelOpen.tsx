@@ -98,7 +98,7 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
     this.props.setIModels(iModelInfos);
     this.setState(Object.assign({}, this.state, {
       isLoadingiModels: false,
-      iModels: iModelInfos
+      iModels: iModelInfos,
     }));
   }
 
@@ -109,10 +109,12 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
     }
   }
 
+  // tslint:disable-next-line:naming-convention
   private onNavigationChanged = (expanded: boolean) => {
     this.setState(Object.assign({}, this.state, { isNavigationExpanded: expanded }));
   }
 
+  // tslint:disable-next-line:naming-convention
   private onIModelSelected = (iModelInfo: IModelInfo) => {
     this.props.setCurrentIModel(iModelInfo);
   }

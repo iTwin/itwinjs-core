@@ -5,13 +5,13 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-
+import { ClassNameProps } from "@bentley/ui-ninezone/lib/utilities/Props";
 import UiCore from "../UiCore";
 
 import "./SearchBox.scss";
 
 /** Property interface for SearchBox */
-export interface SearchBoxProps {
+export interface SearchBoxProps extends ClassNameProps {
   /** value to set SearchBox to initially */
   initialValue?: string;
   /** placeholder value to show in gray before anything is entered in */
@@ -26,8 +26,6 @@ export interface SearchBoxProps {
   onEscPressed?: () => void;
   /** listens for onClick event for Clear (x) icon */
   onClear?: () => void;
-  /** width of SearchBox, measured in em */
-  size?: number;
 }
 
 /** @hidden */
@@ -41,10 +39,6 @@ export interface SearchBoxState {
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   private _inputElement: HTMLInputElement | null = null;
   private _timeoutId: number = 0;
-
-  public static defaultProps: Partial<SearchBoxProps> = {
-    size: 12,
-  };
 
   /** @hidden */
   public readonly state: Readonly<SearchBoxState> = { value: this.props.initialValue || "" };
@@ -60,24 +54,19 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         "icon-close": !emptyString,
       },
     );
-    const sizeStyle = {
-      width: this.props.size ? this.props.size.toString() + "em" : "12em",
-    };
     return (
-      <div className={"searchbox"} style={sizeStyle}>
+      <div className={"searchbox"}>
         <input
-          className={"searchbox-input"}
           ref={(el) => { this._inputElement = el; }}
           onChange={this._trackChange}
           onKeyUp={this._trackChange}
           onPaste={this._trackChange}
           onCut={this._trackChange}
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
-          style={sizeStyle}
         ></input>
-        <div
-          className={iconClassName}
-          onClick={this._handleIconClick}></div>
+        <div onClick={this._handleIconClick}>
+          <span className={iconClassName}/>
+        </div>
       </div>
     );
   }
