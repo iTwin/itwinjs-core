@@ -65,6 +65,14 @@
     "ElementSet": {
       "Prompt": {
         "IdentifyElement": "Identify element",
+        "IdentifyLine": "Identify elements by crossing line",
+        "IdentifyBox": "Identify elements by box corner points",
+        "IdentifyElementAdd": "Identify element to add",
+        "IdentifyLineAdd": "Identify elements to add by crossing line",
+        "IdentifyBoxAdd": "Identify elements to add by box corner points",
+        "IdentifyElementRemove": "Identify element to remove",
+        "IdentifyLineRemove": "Identify elements to remove by crossing line",
+        "IdentifyBoxRemove": "Identify elements to remove by box corner points",
         "AcceptSelection": "Accept/Reject Selection",
         "AcceptFence": "Accept/Reject Fence Contents"
       },

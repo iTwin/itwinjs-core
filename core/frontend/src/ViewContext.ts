@@ -58,11 +58,7 @@ export class RenderContext extends ViewContext {
 }
 
 export class DecorateContext extends RenderContext {
-  private readonly _decorations: Decorations;
-  constructor(vp: Viewport, decorations: Decorations = new Decorations()) {
-    super(vp);
-    this._decorations = decorations;
-  }
+  constructor(vp: Viewport, private readonly _decorations: Decorations) { super(vp); }
 
   /** wrapped nRepetitions and min in object to preserve changes */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
@@ -455,7 +451,7 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Display skyBox (cube) graphic which encompasses entire scene and rotates with camera.  See RenderSystem.createSkyBox(). */
+  /** Display skyBox (cube) graphic which encompasses entire scene and rotates with camera. See RenderSystem.createSkyBox(). */
   public setSkyBox(graphic: RenderGraphic) { this._decorations.skyBox = graphic; }
 
   /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */
