@@ -7,7 +7,7 @@ import { Viewport } from "@bentley/imodeljs-frontend";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { ViewportComponent } from "./ViewportComponent";
-import { YawPitchRollAngles } from "@bentley/geometry-core";
+import { RotMatrix } from "@bentley/geometry-core";
 
 /** ActiveViewportChanged Event Args class.
  */
@@ -22,7 +22,7 @@ export class ActiveViewportChangedEvent extends UiEvent<ActiveViewportChangedEve
 /** CubeRotationChangeEvent Event Args class.
  */
 export interface CubeRotationChangeEventArgs {
-    rotation: YawPitchRollAngles;
+    rotMatrix: RotMatrix;
     animationTime?: number;
 }
 
@@ -44,7 +44,7 @@ export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeE
  */
 export interface ViewRotationChangeEventArgs {
     viewport: Viewport;
-    rotation: YawPitchRollAngles;
+    rotMatrix: RotMatrix;
     animationTime?: number;
 }
 
@@ -56,7 +56,7 @@ export class ViewRotationChangeEvent extends UiEvent<ViewRotationChangeEventArgs
  */
 export class ViewportManager {
     private static _activeViewport?: Viewport;
-    private static _viewportRotation: YawPitchRollAngles;
+    private static _viewportRotMatrix: RotMatrix;
 
     private static _activeViewportChangedEvent: ActiveViewportChangedEvent = new ActiveViewportChangedEvent();
     private static _cubeRotationChangeEvent: CubeRotationChangeEvent = new CubeRotationChangeEvent();
@@ -82,27 +82,27 @@ export class ViewportManager {
             ViewportManager.ActiveViewportChangedEvent.emit({ activeViewport });
 
             if (activeViewport) {
-                const yawPitchRoll = ViewportComponent.getViewportYawPitchRoll(activeViewport);
-                if (yawPitchRoll && yawPitchRoll !== ViewportManager.getViewRotation())
-                    ViewportManager.setViewRotation(activeViewport, yawPitchRoll);
+                const rotMatrix = ViewportComponent.getViewportRotMatrix(activeViewport);
+                if (rotMatrix && (!ViewportManager._viewportRotMatrix || !rotMatrix.isAlmostEqual(ViewportManager._viewportRotMatrix)))
+                    ViewportManager.setViewRotMatrix(activeViewport, rotMatrix);
             }
         }
     }
 
-    public static setCubeRotation(rotation: YawPitchRollAngles, animationTime?: number): void {
-        this._viewportRotation = rotation;
-        this.CubeRotationChangeEvent.emit({ rotation, animationTime });
+    public static setCubeRotMatrix(rotMatrix: RotMatrix, animationTime?: number): void {
+        this._viewportRotMatrix = rotMatrix;
+        this.CubeRotationChangeEvent.emit({ rotMatrix, animationTime });
     }
 
     public static setStandardRotation(standardRotation: StandardViewId): void {
         this.StandardRotationChangeEvent.emit({ standardRotation });
     }
 
-    public static getViewRotation(): YawPitchRollAngles { return this._viewportRotation; }
+    public static getViewRotMatrix(): RotMatrix { return this._viewportRotMatrix; }
 
-    public static setViewRotation(viewport: Viewport, rotation: YawPitchRollAngles, animationTime?: number): void {
-        this._viewportRotation = rotation;
-        this.ViewRotationChangeEvent.emit({ viewport, rotation, animationTime });
+    public static setViewRotMatrix(viewport: Viewport, rotMatrix: RotMatrix, animationTime?: number): void {
+        this._viewportRotMatrix = rotMatrix;
+        this.ViewRotationChangeEvent.emit({ viewport, rotMatrix, animationTime });
     }
 
 }

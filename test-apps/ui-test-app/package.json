@@ -46,7 +46,6 @@
     "@types/react": "^16.4.7",
     "@types/react-dom": "^16.0.6",
     "@types/react-redux": "^5.0.15",
-    "@types/three": "^0.92.0",
     "cpx": "^1.5.0",
     "electron": "2.0.1",
     "electron-builder": "^20.13.3",
@@ -74,8 +73,7 @@
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-redux": "^5.0.7",
-    "redux": "^4.0.0",
-    "three": "^0.92.0"
+    "redux": "^4.0.0"
   },
   "proxy": {
     "/ui-test-app": {
