@@ -68,6 +68,9 @@ export default class MultiClientPresentationManager implements IBackendPresentat
     this._clientsStorage.dispose();
   }
 
+  /** @hidden */
+  public get props() { return this._props; }
+
   // tslint:disable-next-line:naming-convention
   private createClientManager = (clientId: string): IBackendPresentationManager => {
     const props: IBackendPresentationManagerProps = {

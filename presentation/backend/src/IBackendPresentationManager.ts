@@ -34,6 +34,9 @@ export interface Props {
  * an iModel.
  */
 export default interface IBackendPresentationManager extends IPresentationManager<IModelDb>, IDisposable {
+  /** @hidden */
+  props: Props;
+
   /**
    * Get rulesets manager
    * @param clientId Id of the client requesting rulesets

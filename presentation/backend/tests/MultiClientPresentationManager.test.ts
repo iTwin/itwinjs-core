@@ -73,6 +73,23 @@ describe("MultiClientPresentationManager", () => {
 
   });
 
+  describe("props", () => {
+
+    it("returns empty object if initialized without props", () => {
+      using(new MultiClientPresentationManager(undefined), (newManager) => {
+        expect(newManager.props).to.deep.eq({});
+      });
+    });
+
+    it("returns initialization props", () => {
+      const props = { unusedClientLifetime: faker.random.number() };
+      using(new MultiClientPresentationManager(props), (newManager) => {
+        expect(newManager.props).to.equal(props);
+      });
+    });
+
+  });
+
   describe("activeLocale", () => {
 
     it("by default uses activeLocale set in props", () => {

@@ -3,25 +3,24 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
+import { resetBackend } from "./Helpers";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 
-describe("Multiple frontends for one backend", async () => {
+describe("Multiple backends for one frontend", async () => {
 
-  describe("Localization", () => {
+  describe("Hierarchies", () => {
 
     let imodel: IModelConnection;
-    let frontends: PresentationManager[];
+    let frontend: PresentationManager;
 
     before(async () => {
       initialize();
-
       const testIModelName: string = "assets/datasets/1K.bim";
       imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
       expect(imodel).is.not.null;
-
-      frontends = ["en", "test"].map((locale) => PresentationManager.create({ activeLocale: locale }));
+      frontend = PresentationManager.create();
     });
 
     after(async () => {
@@ -29,19 +28,18 @@ describe("Multiple frontends for one backend", async () => {
       terminate();
     });
 
-    it("Handles multiple simultaneous requests from different frontends with different locales", async () => {
-      for (let i = 0; i < 100; ++i) {
-        const nodes = {
-          en: await frontends[0].getRootNodes({ imodel, rulesetId: "Localization" }),
-          test: await frontends[1].getRootNodes({ imodel, rulesetId: "Localization" }),
-        };
+    it("Gets child nodes after backend is reset", async () => {
+      const props = { imodel, rulesetId: "SimpleHierarchy" };
 
-        expect(nodes.en[0].label).to.eq("test value");
-        expect(nodes.en[0].description).to.eq("test nested value");
+      const rootNodes = await frontend.getRootNodes(props);
+      expect(rootNodes.length).to.eq(1);
+      expect(rootNodes[0].key.type).to.eq("root");
 
-        expect(nodes.test[0].label).to.eq("_test_ string");
-        expect(nodes.test[0].description).to.eq("_test_ nested string");
-      }
+      resetBackend();
+
+      const childNodes = await frontend.getChildren(props, rootNodes[0].key);
+      expect(childNodes.length).to.eq(1);
+      expect(childNodes[0].key.type).to.eq("child");
     });
 
   });

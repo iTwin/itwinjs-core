@@ -98,6 +98,23 @@ describe("SingleClientPresentationManager", () => {
 
   });
 
+  describe("props", () => {
+
+    it("returns empty object if initialized without props", () => {
+      using(new PresentationManager(undefined), (newManager) => {
+        expect(newManager.props).to.deep.eq({});
+      });
+    });
+
+    it("returns initialization props", () => {
+      const props = { activeLocale: faker.random.locale() };
+      using(new PresentationManager(props), (newManager) => {
+        expect(newManager.props).to.equal(props);
+      });
+    });
+
+  });
+
   describe("activeLocale", () => {
 
     const addonMock = moq.Mock.ofType<NativePlatformDefinition>();

@@ -8,14 +8,6 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset, RuleTypes, RuleSpecificationTypes } from "@bentley/presentation-common";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("Multiple frontends for one backend", async () => {
 
   describe("Rulesets", () => {
@@ -24,6 +16,8 @@ describe("Multiple frontends for one backend", async () => {
     let frontends: PresentationManager[];
 
     before(async () => {
+      initialize();
+
       const testIModelName: string = "assets/datasets/1K.bim";
       imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
       expect(imodel).is.not.null;
@@ -33,6 +27,7 @@ describe("Multiple frontends for one backend", async () => {
 
     after(async () => {
       await imodel.closeStandalone();
+      terminate();
     });
 
     it("Handles multiple simultaneous requests from different frontends with different rulesets with same id", async () => {

@@ -2,26 +2,26 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as faker from "faker";
 import { initialize, terminate } from "../../IntegrationTests";
+import { resetBackend } from "./Helpers";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 
-describe("Multiple frontends for one backend", async () => {
+describe("Multiple backends for one frontend", async () => {
 
-  describe("Localization", () => {
+  describe("RulesetVariables", () => {
 
     let imodel: IModelConnection;
-    let frontends: PresentationManager[];
+    let frontend: PresentationManager;
 
     before(async () => {
       initialize();
-
       const testIModelName: string = "assets/datasets/1K.bim";
       imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
       expect(imodel).is.not.null;
-
-      frontends = ["en", "test"].map((locale) => PresentationManager.create({ activeLocale: locale }));
+      frontend = PresentationManager.create();
     });
 
     after(async () => {
@@ -29,19 +29,17 @@ describe("Multiple frontends for one backend", async () => {
       terminate();
     });
 
-    it("Handles multiple simultaneous requests from different frontends with different locales", async () => {
-      for (let i = 0; i < 100; ++i) {
-        const nodes = {
-          en: await frontends[0].getRootNodes({ imodel, rulesetId: "Localization" }),
-          test: await frontends[1].getRootNodes({ imodel, rulesetId: "Localization" }),
-        };
+    it("Can use the same frontend-registered ruleset variables after backend is reset", async () => {
+      const vars = frontend.vars("SimpleHierarchy");
+      const varId = faker.random.uuid();
+      const varValue = faker.random.words();
 
-        expect(nodes.en[0].label).to.eq("test value");
-        expect(nodes.en[0].description).to.eq("test nested value");
+      vars.setString(varId, varValue);
+      expect(await vars.getString(varId)).to.eq(varValue);
 
-        expect(nodes.test[0].label).to.eq("_test_ string");
-        expect(nodes.test[0].description).to.eq("_test_ nested string");
-      }
+      resetBackend();
+
+      expect(await vars.getString(varId)).to.eq(varValue);
     });
 
   });

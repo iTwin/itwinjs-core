@@ -37,6 +37,7 @@ export interface Props extends IBackendPresentationManagerProps {
  */
 export default class SingleClientPresentationManager implements IBackendPresentationManager {
 
+  private _props: Props;
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
   private _isDisposed: boolean;
@@ -47,6 +48,7 @@ export default class SingleClientPresentationManager implements IBackendPresenta
    * @param props Optional configuration properties.
    */
   constructor(props?: Props) {
+    this._props = props || {};
     this._isDisposed = false;
     if (props && props.addon)
       this._nativePlatform = props.addon;
@@ -68,6 +70,9 @@ export default class SingleClientPresentationManager implements IBackendPresenta
     }
     this._isDisposed = true;
   }
+
+  /** @hidden */
+  public get props() { return this._props; }
 
   /**
    * Get rulesets manager
