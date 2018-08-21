@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Migrated CubeNavigationCube to use CSS3D to elliminate three.js dependency.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Simeon.McGraw@bentley.com"
+}
