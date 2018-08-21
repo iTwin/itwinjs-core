@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed errors in tests when SCSS/CSS files are imported from packages in node_modules.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Bill.Goehrig@bentley.com"
+}
