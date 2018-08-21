@@ -4,15 +4,17 @@
 @import "@bentley/bwc/lib/index.scss";
 
 $cube-outer-width: 96px;
-$cube-width: 64px;
-$cube-side-width: 12px;
 $button-width: 14px;
+$nav-cube-width: 64px;
+$nav-cube-side-width: 12px;
+
 
 $grad-start: $bwc-gray-c;
 $grad-end: $bwc-gray-9;
 
 $grad-start-highlight: $bwc-gray-a;
 $grad-end-highlight: $bwc-gray-7;
+
 
 .cube-container {
   position: relative;
@@ -28,19 +30,14 @@ $grad-end-highlight: $bwc-gray-7;
     display: flex;
     justify-content: center;
     align-items: center;
-    .cube-nav-cube {
-      width: $cube-width;
-      height: $cube-width;
-      perspective: 300px;
-      transform-style: preserve-3d;
-      .face {
+    .nav-cube {
+      width: $nav-cube-width;
+      height: $nav-cube-width;
+      .nav-cube-face {
         display: flex;
-        transition: inherit;
         flex-direction: column;
         width: 100%;
         height: 100%;
-        position: absolute;
-        backface-visibility: inherit;
         font-size: $bwc-cap-size;
         font-weight: $bwc-font-weight-bold;
         color: $bwc-text-color;
@@ -48,7 +45,7 @@ $grad-end-highlight: $bwc-gray-7;
         .face-row {
           display: flex;
           flex-direction: row;
-          height: $cube-side-width;
+          height: $nav-cube-side-width;
           width: 100%;
           &.center {
             height: auto;
@@ -56,8 +53,8 @@ $grad-end-highlight: $bwc-gray-7;
           }
           .face-cell {
             cursor: pointer;
-            width: $cube-side-width;
             user-select: none;
+            width: $nav-cube-side-width;
             &.center {
               width: auto;
               flex-grow: 1;
@@ -68,7 +65,6 @@ $grad-end-highlight: $bwc-gray-7;
             &.active {
               background: $bwc-blue-highlight;
             }
-
           }
           &.center .face-cell.center {
             display: flex;
@@ -76,29 +72,29 @@ $grad-end-highlight: $bwc-gray-7;
             align-items: center;
           }
         }
-        &.left, &.right, &.front, &.back {
-            background: linear-gradient(#{$grad-start}, #{$grad-end});
-        }
-        &.top {
-          background: $grad-start;
-        }
-        &.bottom {
-          background: $grad-end;
-        }
       }
-      &.dragging .face {
+      .left, .right, .front, .back {
+          background: linear-gradient(#{$grad-start}, #{$grad-end});
+      }
+      .top {
+        background: $grad-start;
+      }
+      .bottom {
+        background: $grad-end;
+      }
+      &.dragging {
         .face-row .face-cell {
           &.hover, &.active {
             background: transparent;
           }
         }
-        &.left, &.right, &.front, &.back {
+        .left, .right, .front, .back {
             background: linear-gradient(#{$grad-start-highlight}, #{$grad-end-highlight});
         }
-        &.top {
+        .top {
           background: $grad-start-highlight;
         }
-        &.bottom {
+        .bottom {
           background: $grad-end-highlight;
         }
       }

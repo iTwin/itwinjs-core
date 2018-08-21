@@ -30,6 +30,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "0.117.0",
+    "@bentley/geometry-core": "0.117.0",
     "@bentley/imodeljs-i18n": "0.117.0"
   },
   "//devDependencies": [
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@bentley/bentleyjs-tools": "0.117.0",
     "@bentley/bentleyjs-core": "0.117.0",
+    "@bentley/geometry-core": "0.117.0",
     "@bentley/imodeljs-i18n": "0.117.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

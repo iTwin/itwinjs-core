@@ -5,10 +5,11 @@
 
 import * as React from "react";
 
+import { Cube, Face } from "@bentley/ui-core";
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
 import * as classnames from "classnames";
-import { Angle, AxisIndex, Geometry, RotMatrix, Vector3d, Point3d, Point2d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Geometry, Angle, AxisIndex, RotMatrix, Point3d, Point2d, YawPitchRollAngles } from "@bentley/geometry-core";
 
 import "./CubeNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";
@@ -40,24 +41,14 @@ export enum HitBoxZ {
   Bottom = -1,
 }
 
-export enum Face {
-  None = 0,
-  Left,
-  Right,
-  Back,
-  Front,
-  Bottom,
-  Top,
-}
-
-interface RotationMap {
+export interface RotationMap {
   up: Face;
   down: Face;
   left: Face;
   right: Face;
 }
 
-const faceLocations: { [key: number]: Point3d } = {
+export const faceLocations: { [key: number]: Point3d } = {
   [Face.Right]: Point3d.create(HitBoxX.Right, HitBoxY.None, HitBoxZ.None),
   [Face.Left]: Point3d.create(HitBoxX.Left, HitBoxY.None, HitBoxZ.None),
   [Face.Top]: Point3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Top),
@@ -67,7 +58,7 @@ const faceLocations: { [key: number]: Point3d } = {
 };
 
 // data relating Up/Down/Left/Right directions relative to every surface
-const routes: { [key: number]: RotationMap } = {
+export const routes: { [key: number]: RotationMap } = {
   [Face.Front]: { up: Face.Top, down: Face.Bottom, left: Face.Left, right: Face.Right },
   [Face.Back]: { up: Face.Top, down: Face.Bottom, left: Face.Right, right: Face.Left },
   [Face.Top]: { up: Face.Back, down: Face.Front, left: Face.Left, right: Face.Right },
@@ -75,6 +66,29 @@ const routes: { [key: number]: RotationMap } = {
   [Face.Right]: { up: Face.Top, down: Face.Bottom, left: Face.Front, right: Face.Back },
   [Face.Left]: { up: Face.Top, down: Face.Bottom, left: Face.Back, right: Face.Front },
 };
+
+/**
+ * Rotates RotationMap object 90 degrees for every index increment.
+ * 0 = 0deg, 1 = 90deg, 2 = 180deg, -1 = -90deg, etc.
+ */
+export const rotateRouteByIndex = (route: RotationMap, index: number): RotationMap => {
+  const { up, right, down, left } = route;
+  const a = [up, right, down, left];
+  const l = a.length;
+  return {
+    up: a[Geometry.modulo(0 + index, l)],
+    right: a[Geometry.modulo(1 + index, l)],
+    down: a[Geometry.modulo(2 + index, l)],
+    left: a[Geometry.modulo(3 + index, l)],
+  };
+};
+
+enum Hover {
+  None = 0,
+  Hover,
+  Active,
+}
+
 export interface CubeNavigationState {
   currentFace: Face;
   dragging: boolean;
@@ -82,6 +96,7 @@ export interface CubeNavigationState {
   endRotMatrix: RotMatrix;
   animation: number;
   animationTime: number;
+  hoverMap: { [key: string]: Hover };
 }
 
 /** A Cube Navigation Aid */
@@ -95,6 +110,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     endRotMatrix: RotMatrix.createIdentity(),
     animation: 1,
     animationTime: 320,
+    hoverMap: {},
   };
 
   public componentDidMount() {
@@ -108,7 +124,6 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   // Synchronize with rotation coming from the Viewport
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
-    console.log(args);
     const { animation, dragging, endRotMatrix } = this.state;
     const matrix = endRotMatrix;
     const newMatrix = args.rotMatrix;
@@ -166,14 +181,40 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
         }
       }
     }
+
+    const labels: {[key: number]: string} = {
+      [Face.Right]: UiFramework.i18n.translate("UiFramework:cube.right"),
+      [Face.Left]: UiFramework.i18n.translate("UiFramework:cube.left"),
+      [Face.Back]: UiFramework.i18n.translate("UiFramework:cube.back"),
+      [Face.Front]: UiFramework.i18n.translate("UiFramework:cube.front"),
+      [Face.Top]: UiFramework.i18n.translate("UiFramework:cube.top"),
+      [Face.Bottom]: UiFramework.i18n.translate("UiFramework:cube.bottom"),
+    };
+
+    const faces: {[key: string]: React.ReactNode} = {};
+    for (const key in labels) {
+      if (labels.hasOwnProperty(key)) {
+        const f = parseInt(key, 10) as Face;
+        const label = labels[f];
+        faces[f] = (
+          <NavCubeFace
+            face={f}
+            label={label}
+            hoverMap={this.state.hoverMap}
+            onFaceCellClick={this._handleFaceCellClick}
+            onFaceCellHoverChange={this._handleCellHoverChange}/>
+        );
+      }
+    }
+
     return (
       <div className={"cube-container"}
         onMouseDown={this._handleBoxClick} >
         <div className={"cube-element-container"}>
           <Cube
-            dragging={this.state.dragging}
+            className={classnames("nav-cube", {dragging: this.state.dragging})}
             rotMatrix={rotMatrix}
-            onFaceCellClick={this._handleFaceCellClick} />
+            faces={faces} />
         </div>
         <PointerButton visible={visible} pointerType={Pointer.Up} onArrowClick={this._onArrowClick} />
         <PointerButton visible={visible} pointerType={Pointer.Down} onArrowClick={this._onArrowClick} />
@@ -183,20 +224,10 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     );
   }
 
-  /**
-   * Rotates RotationMap object 90 degrees for every index increment.
-   * 0 = 0deg, 1 = 90deg, 2 = 180deg, -1 = -90deg, etc.
-   */
-  private static _indexRotateRoute = (route: RotationMap, index: number): RotationMap => {
-    const { up, right, down, left } = route;
-    const a = [up, right, down, left];
-    const l = a.length;
-    return {
-      up: a[Geometry.modulo(0 + index, l)],
-      right: a[Geometry.modulo(1 + index, l)],
-      down: a[Geometry.modulo(2 + index, l)],
-      left: a[Geometry.modulo(3 + index, l)],
-    };
+  private _handleCellHoverChange = (pos: Point3d, state: Hover) => {
+    const hoverMap = this.state.hoverMap;
+    hoverMap[pos.x + "|" + pos.y + "|" + pos.z] = state;
+    this.setState({ hoverMap });
   }
 
   private _onArrowClick = (arrow: Pointer) => {
@@ -212,7 +243,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       }
     }
     r = Math.round(Angle.adjustRadiansMinusPiPlusPi(r) * 2 / Math.PI); // regularize to 90deg = 1 etc.
-    const direction = CubeNavigationAid._indexRotateRoute(routes[currentFace], r);
+    const direction = rotateRouteByIndex(routes[currentFace], r);
     let faceTo: Face = Face.None;
 
     // map different directions to particular rotation orientations
@@ -349,132 +380,19 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   }
 }
 
-interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement> {
-  dragging: boolean;
-  rotMatrix: RotMatrix;
-  onFaceCellClick: (position: Point3d, face?: Face) => void;
-}
-
-enum Hover {
-  None = 0,
-  Hover,
-  Active,
-}
-
-interface CubeState {
-  hoverMap: { [key: string]: Hover };
-}
-
-class Cube extends React.Component<CubeProps, CubeState> {
-  public readonly state: CubeState = {
-    hoverMap: {},
-  };
-  public render(): React.ReactNode {
-    const { dragging, rotMatrix, onFaceCellClick, ...props } = this.props;
-    const { hoverMap } = this.state;
-    return (
-      <div className={classnames("cube-nav-cube", { dragging })} {...props}>
-        {[Face.Front, Face.Back, Face.Right, Face.Left, Face.Top, Face.Bottom]
-          .map((face: Face) => {
-            return (
-              <CubeFace
-                key={face}
-                rotMatrix={rotMatrix}
-                onFaceCellClick={onFaceCellClick}
-                onFaceCellHoverChange={this._handleCellHoverChange}
-                hoverMap={hoverMap}
-                face={face} />
-            );
-          })}
-      </div>
-    );
-  }
-
-  private _handleCellHoverChange = (pos: Point3d, state: Hover) => {
-    let hoverMap = this.state.hoverMap;
-    if (!this.props.dragging) {
-      hoverMap[pos.x + "|" + pos.y + "|" + pos.z] = state;
-    } else {
-      hoverMap = {};
-    }
-    this.setState({ hoverMap });
-  }
-}
-
-const faceNames: { [key: number]: string } = {
-  [Face.None]: "",
-  [Face.Front]: "front",
-  [Face.Back]: "back",
-  [Face.Right]: "right",
-  [Face.Left]: "left",
-  [Face.Top]: "top",
-  [Face.Bottom]: "bottom",
-};
-
-interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
-  rotMatrix: RotMatrix;
+interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
   face: Face;
+  label: string;
   hoverMap: { [key: string]: Hover };
   onFaceCellClick: (position: Point3d, face?: Face) => void;
   onFaceCellHoverChange: (position: Point3d, state: Hover) => void;
 }
 
-class CubeFace extends React.Component<CubeFaceProps> {
-  private _faceWidth: number = 0;
+class NavCubeFace extends React.Component<NavCubeFaceProps> {
   public render(): React.ReactNode {
-    const { rotMatrix, face, hoverMap, onFaceCellClick, onFaceCellHoverChange, style, ...props } = this.props;
-    if (face === Face.None)
-      return null;
-    const name = faceNames[face];
-    const classes = classnames("face", name);
-    const label = UiFramework.i18n.translate(`UiFramework:cube.${name}`);
-    // orient face (flip because of y axis reversal, rotate as neccesary)
-    let reorient: RotMatrix = RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
-    // Position face correctly (applies to rotation, as well as translation)
-    let reposition: RotMatrix = RotMatrix.createIdentity();
-    switch (this.props.face) {
-      case Face.Bottom:
-        reposition = RotMatrix.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, -1);
-        reorient = RotMatrix.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, 1);
-        break;
-      case Face.Right:
-        reposition = RotMatrix.createRowValues(0, 0, 1, 0, 1, 0, -1, 0, 0);
-        reorient = RotMatrix.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, 1);
-        break;
-      case Face.Left:
-        reposition = RotMatrix.createRowValues(0, 0, -1, 0, 1, 0, 1, 0, 0);
-        reorient = RotMatrix.createRowValues(0, -1, 0, -1, 0, 0, 0, 0, 1);
-        break;
-      case Face.Back:
-        reposition = RotMatrix.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0);
-        reorient = RotMatrix.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, 1);
-        break;
-      case Face.Front:
-        reposition = RotMatrix.createRowValues(1, 0, 0, 0, 0, -1, 0, 1, 0);
-        reorient = RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
-        break;
-    }
-    const repositioned = rotMatrix.multiplyMatrixMatrix(reposition);
-    const vect = repositioned.multiplyVector(Vector3d.create(0, 0, this._faceWidth));
-    const m = repositioned.multiplyMatrixMatrix(reorient);
-    const list = [
-      m.at(0, 0), -m.at(1, 0), m.at(2, 0), 0,
-      m.at(0, 1), -m.at(1, 1), m.at(2, 1), 0,
-      m.at(0, 2), -m.at(1, 2), m.at(2, 2), 0,
-      vect.at(0), -vect.at(1), vect.at(2) - this._faceWidth /* move back faceWidth so face is on screen level */, 1,
-    ];
-    const transform = `matrix3d(${list.join(",")})`;
-    const s: React.CSSProperties = {
-      transform,
-      WebkitTransform: transform,
-      ...style,
-    };
-
+    const { face, hoverMap, onFaceCellClick, onFaceCellHoverChange, label } = this.props;
     return (
-      <div style={s}
-        className={classes}
-        ref={(e) => { this._faceWidth = (e && e.clientWidth / 2) || 0; }}
-        {...props}>
+      <div className="nav-cube-face">
         {[-1, 0, 1].map((y: number) => {
           return (
             <FaceRow key={y} center={y === 0}>
