@@ -196,8 +196,6 @@ export class IdMap implements IDisposable {
   public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
-  /** Array of textures without key values (unnamed). */
-  public readonly keylessTextures: RenderTexture[] = [];
   /** Mapping of ClipVectors to corresponding clipping volumes. */
   public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
 
@@ -216,14 +214,11 @@ export class IdMap implements IDisposable {
       dispose(texture);
     for (const gradient of gradientArr)
       dispose(gradient);
-    for (const texture of this.keylessTextures)
-      dispose(texture);
     for (const clipVolume of clipVolumeArr)
       dispose(clipVolume);
     this.textures.clear();
     this.gradients.clear();
     this.clipVolumes.clear();
-    this.keylessTextures.length = 0;
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -236,8 +231,6 @@ export class IdMap implements IDisposable {
   public addTexture(texture: RenderTexture) {
     if (texture.key)
       this.textures.set(texture.key, texture);
-    else
-      this.keylessTextures.push(texture);
   }
 
   /** Add a texture to this IdMap using gradient symbology. */

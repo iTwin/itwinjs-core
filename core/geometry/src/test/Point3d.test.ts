@@ -96,7 +96,7 @@ describe("Point3d", () => {
       for (const pointJ of boxJ) {
         const vectorJ = origin.vectorTo(pointJ);
         const sizeQ0 = 0.754;
-        const vectorIJcross = vectorI.sizedCrossProduct(vectorJ, sizeQ0);
+        const vectorIJcross = vectorI.sizedCrossProduct(vectorJ, sizeQ0)!;
         ck.testCoordinate(sizeQ0, vectorIJcross.magnitude());
         const signedAngle = vectorI.signedAngleTo(vectorJ, vectorIJcross);
         ck.testAngleNoShift(

@@ -210,7 +210,7 @@ export class Point4d implements BeJSONFunctions {
   }
 
   /** Return point + vectorA \* scalarA + vectorB \* scalarB */
-  public static add2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d {
+  public static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d {
     return Point4d.create(
       vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB,
       vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB,
@@ -220,7 +220,7 @@ export class Point4d implements BeJSONFunctions {
   }
 
   /** Return point + vectorA \* scalarA + vectorB \* scalarB + vectorC \* scalarC */
-  public static add3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d {
+  public static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d {
     return Point4d.create(
       vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB + vectorC.xyzw[0] * scalarC,
       vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB + vectorC.xyzw[1] * scalarC,
