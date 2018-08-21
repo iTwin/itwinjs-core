@@ -494,11 +494,11 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     // The w parts of the formal xyzw sums are identically 0.
     // Here the X' and its w' are taken from each vectorUw and vectorVw
     result.origin.set(originw[0] * dw, originw[1] * dw, originw[2] * dw);
-    Vector3d.add2ScaledXYZ(
+    Vector3d.createAdd2ScaledXYZ(
       vectorUw[0], vectorUw[1], vectorUw[2], dw,
       originw[0], originw[1], originw[2], -au,
       result.vectorU);
-    Vector3d.add2ScaledXYZ(
+    Vector3d.createAdd2ScaledXYZ(
       vectorVw[0], vectorVw[1], vectorVw[2], dw,
       originw[0], originw[1], originw[2], -av,
       result.vectorV);
@@ -516,7 +516,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     return this.origin.plus2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
   public fractionToVector(u: number, v: number, result?: Vector3d): Vector3d {
-    return Vector3d.add2Scaled(this.vectorU, u, this.vectorV, v, result);
+    return Vector3d.createAdd2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
   public setFromJSON(json?: any) {
     if (!json || !json.origin || !json.vectorV) {
