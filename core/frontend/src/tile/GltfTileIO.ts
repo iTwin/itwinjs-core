@@ -718,7 +718,7 @@ export namespace GltfTileIO {
 
         const textureParams = new RenderTexture.Params(undefined, textureType);
         return ImageUtil.extractImage(imageSource)
-          .then((image) => this._canceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
+          .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {
         return undefined;

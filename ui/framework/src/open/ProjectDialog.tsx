@@ -40,9 +40,9 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   }
 
   private getRecentProjects(projectScope: ProjectScope) {
-    this.setState ({ isLoading: true, projects: undefined, activeFilter: projectScope });
+    this.setState({ isLoading: true, projects: undefined, activeFilter: projectScope });
     UiFramework.projectServices.getProjects(this.props.accessToken, projectScope, 40, 0).then((projectInfos: ProjectInfo[]) => {
-    this.setState ({ isLoading: false,  projects: projectInfos });
+      this.setState({ isLoading: false, projects: projectInfos });
     });
   }
 
@@ -69,7 +69,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
 
   // tslint:disable-next-line:naming-convention
   private onSearchClicked = () => {
-    this.setState ({ projects: undefined, activeFilter: ProjectScope.All });
+    this.setState({ projects: undefined, activeFilter: ProjectScope.All });
     // this.getRecentProjects(ProjectScope.All);
   }
 
@@ -86,7 +86,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
       this.setState ({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All, filter: value });
     } else {
       const filter = "Name like '" + value + "'";
-      this.setState ({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
+      this.setState({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
       UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.All, 40, 0, filter).then((projectInfos: ProjectInfo[]) => {
         this.setState ({ isLoading: false,  projects: projectInfos, filter: value });
       });
@@ -125,10 +125,10 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
       <tr key={project.wsgId} onClick={this.onProjectSelected.bind(this, project)}>
         <td>{project.projectNumber}</td>
         <td>{project.name}</td>
-        <td/>
-        <td/>
+        <td />
+        <td />
       </tr>
-     );
+    );
   }
 
   public render() {
@@ -144,9 +144,9 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
             <div className="tabs-container">
               <Tabs defaultTab={this.getTabIndexFromProjectScope()}>
                 <Tab label="My Projects" icon="icon-manager" onTabClicked={this.onMyProjectsClicked} />
-                <Tab label="Favorites" icon="icon-star" onTabClicked={this.onFavoritesClicked}/>
-                <Tab label="Recent" icon="icon-history" onTabClicked={this.onRecentClicked}/>
-                <Tab label="Search" icon="icon-search" onTabClicked={this.onSearchClicked}/>
+                <Tab label="Favorites" icon="icon-star" onTabClicked={this.onFavoritesClicked} />
+                <Tab label="Recent" icon="icon-history" onTabClicked={this.onRecentClicked} />
+                <Tab label="Search" icon="icon-search" onTabClicked={this.onSearchClicked} />
               </Tabs>
               <div className={searchClassName}>
                 <SearchBox placeholder="Search..." onValueChanged={this.handleSearchValueChanged} valueChangedDelay={400} />

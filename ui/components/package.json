@@ -100,7 +100,8 @@
     "lodash": "^4.17.10",
     "react": "^16.4.2",
     "react-data-grid": "^3.0.0",
-    "react-dom": "^16.4.2"
+    "react-dom": "^16.4.2",
+    "react-dnd": "^5.0.0"
   },
   "nyc": {
     "nycrc-path": "../.nycrc"

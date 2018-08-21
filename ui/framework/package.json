@@ -97,6 +97,8 @@
     "classnames": "^2.2.5",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "react-dnd": "^5.0.0",
+    "react-dnd-html5-backend": "^5.0.1",
     "react-redux": "^5.0.7",
     "react-split-pane": "^0.1.77",
     "redux": "^4.0.0",

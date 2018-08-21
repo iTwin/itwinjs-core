@@ -10,6 +10,10 @@ import { OpenIModel } from "../openimodel/OpenIModel";
 import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 
+import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
+import HTML5Backend from "react-dnd-html5-backend";
+import { DragDropContext } from "react-dnd";
+
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
   appHeaderIcon: React.ReactNode;
@@ -53,17 +57,23 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     const configurableUiContentProps = {
       appBackstage: this.props.appBackstage,
     };
+    let element: JSX.Element | undefined;
     if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
-      return <OpenIModel {...openIModelProps} />;
+      element = <OpenIModel {...openIModelProps} />;
     } else if (OverallContentPage.ConfigurableUIPage === this.props.currentPage) {
-      return <ConfigurableUIContent {...configurableUiContentProps} />;
+      element =  <ConfigurableUIContent {...configurableUiContentProps} />;
     } else if (React.Children.count(this.props.children) > this.props.currentPage) {
-      return React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
+      element =  React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
     }
-    return undefined;
+    return (
+      <>
+        {element}
+        <DragDropLayerRenderer />
+      </>
+    );
   }
 }
 
 // we declare the variable and export that rather than using export default.
 /** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
-export const OverallContent = connect(mapStateToProps, mapDispatch)(OverallContentComponent);
+export const OverallContent = DragDropContext(HTML5Backend)(connect(mapStateToProps, mapDispatch)(OverallContentComponent));

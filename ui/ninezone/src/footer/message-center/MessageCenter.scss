@@ -1,7 +1,8 @@
 @import "@bentley/ui-core/lib/colors";
+@import "../_variables";
 
 .nz-footer-messageCenter-messageCenter {
-  min-width: 274px;
+  min-width: $nz-footer-popover-min-width;
   transform: translateX(-50%);
   color: $background-5;
 }

@@ -250,7 +250,7 @@ describe("Full Schema Deserialization", () => {
           },
           TestKoQ: {
             schemaItemType: "KindOfQuantity",
-            precision: 5,
+            relativeError: 5,
             persistenceUnit: "TestSchema.M",
           },
         },

@@ -3,9 +3,9 @@ import * as classnames from "classnames";
 import { CSSProperties } from "react";
 import { ProjectInfo } from "../clientservices/ProjectServices";
 import { ProjectDialog } from "./ProjectDialog";
-import "./ProjectPicker.scss";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { Popup } from "./Popup";
+import "./ProjectDropDown.scss";
 
 export interface IProjectDropdownProps {
   accessToken: AccessToken;

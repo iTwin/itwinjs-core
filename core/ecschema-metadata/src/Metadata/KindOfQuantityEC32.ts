@@ -27,11 +27,11 @@ interface FormatOverride {
  */
 export default class KindOfQuantityEC32 extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line
-  protected _precision: number = 1.0;
+  protected _relativeError: number = 1.0;
   protected _presentationUnits: Array<Format | OverrideFormat>;
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
-  get precision() { return this._precision; }
+  get relativeError() { return this._relativeError; }
 
   get presentationUnits(): Array<Format | OverrideFormat> | undefined { return this._presentationUnits; }
 
@@ -154,7 +154,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    schemaJson.precision = this.precision;
+    schemaJson.relativeError = this.relativeError;
     schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
     if (this.presentationUnits !== undefined) {
       schemaJson.presentationUnits = [];
@@ -269,11 +269,11 @@ export default class KindOfQuantityEC32 extends SchemaItem {
   }
 
   private loadKOQProperties(jsonObj: any) {
-    if (undefined === jsonObj.precision)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'precision'.`);
-    if (typeof (jsonObj.precision) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
-    this._precision = jsonObj.precision;
+    if (undefined === jsonObj.relativeError)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'relativeError'.`);
+    if (typeof (jsonObj.relativeError) !== "number")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'relativeError' attribute. It should be of type 'number'.`);
+    this._relativeError = jsonObj.relativeError;
   }
 
   public async accept(visitor: SchemaItemVisitor) {

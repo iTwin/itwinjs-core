@@ -449,6 +449,11 @@ function updateRenderModeOptionsMap() {
   (document.getElementById("mapProviderList") as HTMLSelectElement)!.value = providerName;
   (document.getElementById("mapTypeList") as HTMLSelectElement)!.value = mapTypeToString(mapType);
 
+  const backgroundMapDisabled = !theViewport!.iModel.isGeoLocated;
+  (document.getElementById("backgroundMap")! as HTMLInputElement).disabled = backgroundMapDisabled;
+  (document.getElementById("mapProviderList")! as HTMLInputElement).disabled = backgroundMapDisabled;
+  (document.getElementById("mapTypeList")! as HTMLInputElement).disabled = backgroundMapDisabled;
+
   renderModeOptions.mode = viewflags.renderMode;
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
 }

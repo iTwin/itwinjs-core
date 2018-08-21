@@ -645,7 +645,42 @@ export class RotMatrix implements BeJSONFunctions {
       return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
     }
     if (Math.abs(s) < Geometry.smallAngleRadians) {
-      return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: true };
+      // There is no significant skew.
+      // The matrix is symmetric
+      // So it has simple eigenvalues -- either (1,1,1) or (1,-1,-1).
+      if (c > 0)  // no rotation
+        return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: true };
+      // 180 degree flip around some axis ?
+      // Look for the simple case of a principal rotation ...
+      // look for a pair of (-1) entries on the diagonal ...
+      const axx = this.coffs[0];
+      const ayy = this.coffs[4];
+      const azz = this.coffs[8];
+      const theta180 = Angle.createDegrees(180);
+      // Look for principal axis flips as a special case . ..
+      if (Geometry.isAlmostEqualNumber(-1.0, ayy) && Geometry.isAlmostEqualNumber(-1, azz)) {
+        // rotate around
+        return { axis: Vector3d.create(1, 0, 0), angle: theta180, ok: true };
+      } else if (Geometry.isAlmostEqualNumber(-1.0, axx) && Geometry.isAlmostEqualNumber(-1, azz)) {
+        return { axis: Vector3d.create(0, 1, 0), angle: theta180, ok: true };
+      } else if (Geometry.isAlmostEqualNumber(-1.0, axx) && Geometry.isAlmostEqualNumber(-1, ayy)) {
+        return { axis: Vector3d.create(0, 0, 1), angle: theta180, ok: true };
+      }
+
+      // 180 degree flip around some other axis ...
+      const eigenvectors = RotMatrix.createIdentity();
+      const eigenvalues = Vector3d.create(0, 0, 0);
+      if (this.fastSymmetricEigenvalues(eigenvectors, eigenvalues)) {
+        if (Geometry.isAlmostEqualNumber(1, eigenvalues.x))
+          return { axis: eigenvectors.getColumn(0), angle: theta180, ok: true };
+        if (Geometry.isAlmostEqualNumber(1, eigenvalues.y))
+          return { axis: eigenvectors.getColumn(1), angle: theta180, ok: true };
+        if (Geometry.isAlmostEqualNumber(1, eigenvalues.z))
+          return { axis: eigenvectors.getColumn(2), angle: theta180, ok: true };
+        // Don't know if this can be reached ....
+        return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
+      }
+      return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
     }
     const a = 1.0 / (2.0 * s);
     const result = { axis: Vector3d.create(skewYZ * a, skewZX * a, skewXY * a), angle: Angle.createAtan2(s, c), ok: true };

@@ -122,7 +122,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     if (vectorToCenter) {
       const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
       const vectorX = Vector3d.createStartEnd(center, pointA);
-      const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal);
+      const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal, Angle.createDegrees (90));
       if (vectorY) {
         const vectorCenterToC = Vector3d.createStartEnd(center, pointC);
         const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);

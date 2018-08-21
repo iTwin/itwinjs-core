@@ -35,8 +35,11 @@ export default class Management {
     switch (zoneId) {
       case 1:
       case 4:
-      case 7:
         return Anchor.Left;
+      case 7:
+        return Anchor.BottomLeft;
+      case 9:
+        return Anchor.BottomRight;
       default:
         return Anchor.Right;
     }
