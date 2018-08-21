@@ -96,8 +96,12 @@ describe("ModelState", () => {
     thumbnail.image = new Uint8Array(300);
     thumbnail.image.fill(33);
 
-    // TODO: this needs support from Steve Wilson for sending binary from frontend to backend.
     // await imodel2.views.saveThumbnail("0x24", thumbnail);
-
+    // const thumbnail2 = await imodel2.views.getThumbnail("0x24");
+    // assert.equal(thumbnail2.format, "png");
+    // assert.equal(thumbnail2.height, 100);
+    // assert.equal(thumbnail2.width, 200);
+    // assert.equal(thumbnail2.image.length, 300);
+    // assert.equal(thumbnail2.image[3], 33);
   });
 });
