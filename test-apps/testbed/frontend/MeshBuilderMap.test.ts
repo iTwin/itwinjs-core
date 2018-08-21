@@ -223,7 +223,8 @@ describe("MeshBuilderMap Tests", () => {
     const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.length).to.equal(1);
-    expect(builder.vertexMap.length).to.equal(7);
+    // EDL Why is this a hard coded count?
+    expect(builder.vertexMap.length).to.lte(25);
     expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
     const map2 = new MeshBuilderMap(tolerance, range, is2d);
     expect(map2.length).to.equal(0);
@@ -380,7 +381,7 @@ describe("MeshBuilderMap Tests", () => {
     const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.length).to.equal(1);
-    expect(builder.vertexMap.length).to.equal(7);
+    expect(builder.vertexMap.length).to.equal(25);
     expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
   });
 
@@ -427,7 +428,7 @@ describe("MeshBuilderMap Tests", () => {
     const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.length).to.equal(1);
-    expect(builder.vertexMap.length).to.equal(7);
+    expect(builder.vertexMap.length).to.equal(25);
     expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
   });
 

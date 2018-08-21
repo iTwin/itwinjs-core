@@ -131,7 +131,9 @@ describe("Mesh Builder Tests", () => {
     expect(mb.mesh.polylines!.length).to.equal(0);
     mb.addStrokePointLists(strksPrims, false, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(strksPrims.length);
-    expect(mb.mesh.points.length).to.be.lessThan(strksPrims[0].points.length);
+    const lengthA = mb.mesh.points.length;
+    const lengthB = strksPrims[0].points.length;
+    expect(lengthA).to.be.lte(lengthB);
     expect(mb.mesh.points.length).to.be.greaterThan(0);
     // calls addPointString for each stroke points list in strokes
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
