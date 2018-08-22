@@ -130,7 +130,7 @@ export class AccuDrawShortcuts {
     return accept;
   }
 
-  public counterRotate(angle: number): void {
+  public static counterRotate(angle: number): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -142,10 +142,11 @@ export class AccuDrawShortcuts {
     accudraw.axes.fromRotMatrix(rMatrix);
     accudraw.flags.lockedRotation = true;
   }
+
   public static processPendingHints() { IModelApp.accuDraw.processHints(); }
+
   public static saveToolState(restore: boolean, ignoreFlags: AccuDrawFlags, stateBuffer?: SavedState) {
     const accudraw = IModelApp.accuDraw;
-
     if (restore) {
       if (!stateBuffer)
         stateBuffer = accudraw.savedState;
@@ -233,9 +234,9 @@ export class AccuDrawShortcuts {
   }
 
   public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
+
   public static itemFieldAcceptInput(index: ItemField, str: string): void {
     const accudraw = IModelApp.accuDraw;
-
     accudraw.processFieldInput(index, str, true);
     accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
 
@@ -364,7 +365,7 @@ export class AccuDrawShortcuts {
   }
 
   //   //! Shortcut implementations for GUI entry points...
-  public setOrigin(explicitOrigin?: Point3d): void {
+  public static setOrigin(explicitOrigin?: Point3d): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -410,7 +411,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public changeCompassMode(): void {
+  public static changeCompassMode(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -445,7 +446,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockSmart(): void {
+  public static lockSmart(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -534,7 +535,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockX(): void {
+  public static lockX(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -561,7 +562,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockY(): void {
+  public static lockY(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -588,7 +589,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockZ(): void {
+  public static lockZ(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -612,7 +613,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockDistance(): void {
+  public static lockDistance(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -643,7 +644,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockAngle(): void {
+  public static lockAngle(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -658,7 +659,7 @@ export class AccuDrawShortcuts {
 
     if (accudraw.flags.indexLocked) {
       if (accudraw.locked)
-        this.lockSmart();
+        AccuDrawShortcuts.lockSmart();
 
       accudraw.flags.indexLocked = false;
     } else {
@@ -669,27 +670,27 @@ export class AccuDrawShortcuts {
         }
 
         if (accudraw.indexed & LockedStates.DIST_BM)
-          this.lockDistance();
+          AccuDrawShortcuts.lockDistance();
       } else {
         if (accudraw.indexed & LockedStates.X_BM) {
-          this.lockX();
+          AccuDrawShortcuts.lockX();
 
           if (accudraw.indexed & LockedStates.DIST_BM)
-            this.lockY();
+            AccuDrawShortcuts.lockY();
         }
 
         if (accudraw.indexed & LockedStates.Y_BM) {
-          this.lockY();
+          AccuDrawShortcuts.lockY();
 
           if (accudraw.indexed & LockedStates.DIST_BM)
-            this.lockX();
+            AccuDrawShortcuts.lockX();
         }
 
         if (accudraw.indexed & LockedStates.DIST_BM && !(accudraw.indexed & LockedStates.XY_BM)) {
           if (accudraw.locked & LockedStates.X_BM)
-            this.lockY();
+            AccuDrawShortcuts.lockY();
           else
-            this.lockX();
+            AccuDrawShortcuts.lockX();
         }
       }
 
@@ -698,6 +699,7 @@ export class AccuDrawShortcuts {
 
     accudraw.refreshDecorationsAndDynamics();
   }
+
   public static setStandardRotation(rotation: RotationMode, restoreContext: boolean = false): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
@@ -769,6 +771,7 @@ export class AccuDrawShortcuts {
   }
 
   public static rotateToBase(restoreContext: boolean): void { this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation, restoreContext); }
+
   public static rotateToACS(restoreContext: boolean): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
@@ -1047,7 +1050,7 @@ export class AccuDrawShortcuts {
     return BentleyStatus.SUCCESS;
   }
 
-  public writeACS(_acsName: string): BentleyStatus {
+  public static writeACS(_acsName: string): BentleyStatus {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return BentleyStatus.ERROR;
