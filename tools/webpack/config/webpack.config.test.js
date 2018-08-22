@@ -126,7 +126,11 @@ const config = {
               loader: require.resolve("ts-loader"),
               options: {
                 // onlyCompileBundledFiles: true,
-                logLevel: "warn"
+                logLevel: "warn",
+                compilerOptions: {
+                  declaration: false,
+                  declarationMap: false,
+                }
               },
             }
           },

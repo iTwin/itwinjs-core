@@ -120,6 +120,10 @@ module.exports = (publicPath) => {
                 options: {
                   onlyCompileBundledFiles: true,
                   logLevel: "warn",
+                  compilerOptions: {
+                    declaration: false,
+                    declarationMap: false,
+                  }
                 }
               }
             },
