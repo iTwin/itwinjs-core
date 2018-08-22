@@ -158,7 +158,7 @@ export class ViewSelector extends React.Component<ViewsProps, ViewsState> {
       <div className="modal-background fade-in-fast">
         <div className="views animate">
           <div className="views-header">
-            <h3>Select Views</h3>
+            <h3>Select Views - {this.props.iModel.name}</h3>
             <span onClick={this.onClose.bind(this)} className="close icon icon-close" title="Close" />
           </div>
           {this.renderViews()}

@@ -154,8 +154,8 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   public render() {
     return (
       <div className="imodel-card" /*onMouseEnter={this.handleMouseEnter}*/>
-        <div className="imodel-card-content" onClick={this.onCardClicked}>
-          <div className="imodel-card-preview">
+        <div className="imodel-card-content" >
+          <div className="imodel-card-preview" onClick={this.onCardClicked}>
             {this.renderThumbnail()}
           </div>
           <div className="imodel-card-name">
